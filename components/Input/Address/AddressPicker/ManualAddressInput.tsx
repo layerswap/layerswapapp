@@ -7,8 +7,8 @@ import { NetworkType } from "../../../../Models/Network";
 import FilledX from "../../../icons/FilledX";
 import { AddressGroup, AddressItem } from ".";
 import { addressFormat } from "../../../../lib/address/formatter";
-import { Wallet } from "../../../../stores/walletStore";
 import AddressWithIcon from "./AddressWithIcon";
+import { Wallet } from "../../../../Models/WalletProvider";
 
 type AddressInput = {
     manualAddress: string,
@@ -107,7 +107,7 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
                 {
                     manualAddress && !errorMessage && destination &&
                     <div onClick={handleSaveNewAddress} className={`group/addressItem text-left min-h-12 cursor-pointer space-x-2 bg-secondary-800 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-secondary-700 transition duration-200 p-3 hover:shadow-xl mt-3`}>
-                        <AddressWithIcon addressItem={addressFromList || { address: manualAddress, group: AddressGroup.ManualAdded }} connectedWallet={connectedWallet} partner={partner} destination={destination} />
+                        <AddressWithIcon addressItem={addressFromList || { address: manualAddress, group: AddressGroup.ManualAdded }} connectedWallet={connectedWallet} partner={partner} network={destination} />
                     </div>
                 }
             </div>

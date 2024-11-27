@@ -11,7 +11,6 @@ import {
 } from "@solana/wallet-adapter-react";
 import { ReactNode, useMemo } from "react";
 import { CoinbaseWalletAdapter } from "@solana/wallet-adapter-coinbase";
-import { WalletModalProvider } from "./SolanaWalletModalProvider";
 
 const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
 
@@ -44,9 +43,7 @@ function SolanaProvider({ children }: { children: ReactNode }) {
     return (
         <ConnectionProvider endpoint={endpoint}>
             <WalletProvider wallets={wallets} autoConnect={true}>
-                <WalletModalProvider>
-                    {children}
-                </WalletModalProvider>
+                {children}
             </WalletProvider>
         </ConnectionProvider>
     );

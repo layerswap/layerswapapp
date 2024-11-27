@@ -36,14 +36,14 @@ export default function useBalanceProvider() {
         setAllGases
     } = useBalancesUpdate()
 
-    const { getAutofillProvider } = useWallet()
+    const { getProvider } = useWallet()
     const isWindowVisible = useIsWindowVisible()
 
     const fetchNetworkBalances = async (network: NetworkWithTokens, address?: string) => {
         if (!isWindowVisible) return
 
-        const provider = getAutofillProvider(network)
-        const wallet = provider?.getConnectedWallet(network)
+        const provider = getProvider(network, 'autofil')
+        const wallet = provider?.activeWallet
         address = address || query.account || wallet?.address
 
         const balance = address ? balances[address]?.find(b => b?.network === network?.name) : undefined
@@ -78,8 +78,8 @@ export default function useBalanceProvider() {
     const fetchBalance = async (network: Network, token: Token, address?: string) => {
         if (!isWindowVisible) return
 
-        const provider = getAutofillProvider(network)
-        const wallet = provider?.getConnectedWallet(network)
+        const provider = getProvider(network, 'autofil')
+        const wallet = provider?.activeWallet
         address = address || query.account || wallet?.address
 
         const balance = balances[address || '']?.find(b => b?.network === network?.name && b?.token === token?.symbol)
@@ -124,8 +124,8 @@ export default function useBalanceProvider() {
         const gas = gases[network.name]?.find(g => g?.token === token?.symbol)
         const isGasOutDated = !gas || (gas.request_time ? (new Date().getTime() - new Date(gas.request_time).getTime() > 15000) : true)
 
-        const provider = getAutofillProvider(network)
-        const wallet = provider?.getConnectedWallet(network)
+        const provider = getProvider(network, 'autofil')
+        const wallet = provider?.activeWallet
 
         if (
             isGasOutDated

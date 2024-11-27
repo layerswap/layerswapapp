@@ -28,7 +28,7 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status, showIn
         {
             showInModal ?
                 <div className="text-left space-y-1 w-full max-w-2xl">
-                    <button onClick={() => setShowErrorModal(true)} className="flex justify-between w-full">
+                    <button type="button" onClick={() => setShowErrorModal(true)} className="flex justify-between w-full">
                         <p className="text-md font-semibold self-center text-primary-text">
                             {header}
                         </p>

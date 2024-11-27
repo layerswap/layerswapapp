@@ -1,30 +1,23 @@
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { useBalancesState } from "../../../context/balances";
 import useWallet from "../../../hooks/useWallet";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import useBalance from "../../../hooks/useBalance";
 import { isValidAddress } from "../../../lib/address/validator";
+import { useSwapDataState } from "../../../context/swap";
 
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
-    const { to, fromCurrency, toCurrency, from, destination_address, amount } = values
-    const { balances, isBalanceLoading, gases } = useBalancesState()
-    const { getAutofillProvider: getProvider } = useWallet()
-
-    const sourceWalletProvider = useMemo(() => {
-        return from && getProvider(from)
-    }, [from, getProvider])
-
-    const destinationWalletProvider = useMemo(() => {
-        return to && getProvider(to)
-    }, [to, getProvider])
+    const { to, fromCurrency, toCurrency, from, destination_address } = values
+    const { balances, isBalanceLoading } = useBalancesState()
+    const { provider: destinationWalletProvider } = useWallet(to, 'autofil')
+    const { selectedSourceAccount } = useSwapDataState()
     const { fetchNetworkBalances, fetchGas } = useBalance()
 
-    const sourceNetworkWallet = sourceWalletProvider?.getConnectedWallet(values.from)
-    const destinationNetworkWallet = destinationWalletProvider?.getConnectedWallet(values.to)
+    const destinationNetworkWallet = destinationWalletProvider?.activeWallet
 
-    const walletBalance = sourceNetworkWallet && balances[sourceNetworkWallet.address]?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
+    const walletBalance = selectedSourceAccount ? balances[selectedSourceAccount.address || '']?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol) : undefined
     const destinationBalance = balances[destination_address || (destinationNetworkWallet?.address || '')]?.find(b => b?.network === to?.name && b?.token === toCurrency?.symbol)
 
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, fromCurrency?.precision)
@@ -37,13 +30,13 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
 
     useEffect(() => {
         if (((previouslySelectedSource.current && (from?.type == previouslySelectedSource.current?.type))
-            || (from && isValidAddress(sourceNetworkWallet?.address, from)))
+            || (from && isValidAddress(selectedSourceAccount?.address, from)))
             && from
             && direction === 'from') {
-            fetchNetworkBalances(from, sourceNetworkWallet?.address);
+            fetchNetworkBalances(from, selectedSourceAccount?.address);
         }
         previouslySelectedSource.current = from
-    }, [from, sourceNetworkWallet?.address])
+    }, [from, selectedSourceAccount?.address])
 
     const previouslySelectedDestination = useRef(to);
 
@@ -58,36 +51,21 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
 
     useEffect(() => {
         direction === 'from'
-            && sourceNetworkWallet?.address
+            && selectedSourceAccount
             && from
             && fromCurrency
-            && fetchGas(from, fromCurrency, destination_address || sourceNetworkWallet.address)
+            && fetchGas(from, fromCurrency, destination_address || selectedSourceAccount.address)
 
-    }, [from, fromCurrency, sourceNetworkWallet?.address])
-
+    }, [from, fromCurrency, selectedSourceAccount?.address])
     return (
         <>
             {
-                (direction === 'from' ? (from && fromCurrency && sourceNetworkWallet) : (to && toCurrency)) &&
+                (direction === 'from' ? (from && fromCurrency && selectedSourceAccount) : (to && toCurrency)) &&
                     isBalanceLoading ?
-                    <div className="text-xs text-right absolute right-0 -top-7">
-                        <div className='bg-secondary-700 py-1.5 pl-2 text-xs'>
-                            <div>
-                                <span>Balance:&nbsp;</span>
-                                <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
-                            </div>
-                        </div>
-                    </div>
+                    <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
                     :
                     (balanceAmount !== undefined && !isNaN(balanceAmount)) &&
-                    <div className="text-xs text-right absolute right-0 -top-7">
-                        <div className='bg-secondary-700 py-1.5 pl-2 text-xs'>
-                            <div>
-                                <span>Balance:&nbsp;</span>
-                                <span>{balanceAmount > 0 ? balanceAmount.toFixed(token?.precision): balanceAmount}</span>
-                            </div>
-                        </div>
-                    </div>
+                    <span>{balanceAmount > 0 ? balanceAmount.toFixed(token?.precision) : balanceAmount}</span>
             }
         </>
     )

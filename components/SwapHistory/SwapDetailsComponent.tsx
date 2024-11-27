@@ -21,7 +21,7 @@ import { SwapStatus } from '../../Models/SwapStatus';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
-import VaulDrawer from '../modal/vaul';
+import VaulDrawer from '../modal/vaulModal';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../shadcn/tooltip';
 
 type Props = {
@@ -63,7 +63,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     const calculatedFeeAmountInUsd = inputTransactionFeeInUsd ? inputTransactionFeeInUsd + quote?.total_fee_in_usd : quote?.total_fee_in_usd
     const displayCalculatedFeeAmountInUsd = calculatedFeeAmountInUsd ? (calculatedFeeAmountInUsd < 0.01 ? '<$0.01' : `$${calculatedFeeAmountInUsd?.toFixed(2)}`) : null
     const displayLayerswapFeeInUsd = quote?.total_fee_in_usd ? (quote?.total_fee_in_usd < 0.01 ? '<$0.01' : `$${quote?.total_fee_in_usd?.toFixed(2)}`) : null
-
     const nativeCurrency = refuel?.token
     const truncatedRefuelAmount = nativeCurrency && !!refuel ?
         truncateDecimals(refuel.amount, nativeCurrency?.precision) : null
@@ -84,7 +83,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     }
 
     return (
-
         <>
             <VaulDrawer.Snap id='item-1' className='pb-3 space-y-3'>
                 <div className='p-3 bg-secondary-700 rounded-xl'>
@@ -217,7 +215,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
                     </div>
                 </div>
-
                 {/* Fees */}
                 <div className='p-3 bg-secondary-700 rounded-xl'>
                     {
@@ -297,9 +294,8 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
             </VaulDrawer.Snap>
 
-
-            <VaulDrawer.Snap id='item-2'>
-                <div className='flex flex-col justify-between w-full h-full gap-3 pb-4'>
+            <VaulDrawer.Snap className='pb-3' id='item-2'>
+                <div className='flex flex-col justify-between w-full h-full gap-3'>
                     <div className='space-y-3'>
 
                         {/* Source and Destination Transactions */}
@@ -349,6 +345,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                     {
                         swap.status === SwapStatus.Completed &&
                         <button
+                            type='button'
                             onClick={() => router.push({
                                 pathname: `/`,
                                 query: {
@@ -372,6 +369,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                     {
                         (swap.status !== SwapStatus.Completed && swap.status !== SwapStatus.Expired && swap.status !== SwapStatus.Failed) &&
                         <button
+                            type='button'
                             onClick={() => router.push({
                                 pathname: `/swap/${swap.id}`,
                                 query: resolvePersistantQueryParams(router.query),
@@ -386,9 +384,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
                 </div>
             </VaulDrawer.Snap>
-
         </>
-
     )
 }
 

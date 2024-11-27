@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react"
 
 const Menu = ({ children }: { children: ReactNode }) => {
-    return <div className="flex flex-col gap-3 mt-3">
+    return <div className="flex flex-col gap-3">
         {children}
     </div>
 }

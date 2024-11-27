@@ -1,7 +1,7 @@
 import { useSwapDataState } from "../context/swap"
 import { NetworkType } from "../Models/Network"
 import useWallet from "./useWallet"
-import { useEffect, useMemo } from "react"
+import { useEffect } from "react"
 import { useContractWalletsStore } from "../stores/contractWalletsStore"
 import resolveChain from "../lib/resolveChain"
 import { createPublicClient, http } from "viem"
@@ -13,13 +13,9 @@ export default function useWalletTransferOptions() {
     const { swap } = swapResponse || {}
     const { source_network } = swap || {}
     const { addContractWallet, getContractWallet, updateContractWallet } = useContractWalletsStore()
-    const { getWithdrawalProvider: getProvider } = useWallet()
+    const { provider } = useWallet(source_network, 'withdrawal')
 
-    const provider = useMemo(() => {
-        return source_network && getProvider(source_network)
-    }, [source_network, getProvider])
-
-    const wallet = provider?.getConnectedWallet()
+    const wallet = provider?.activeWallet
     useEffect(() => {
         if (wallet?.address == undefined || source_network == undefined) return;
         let contractWallet = getContractWallet(wallet.address, source_network.name);

@@ -1,4 +1,3 @@
-import { useMemo } from "react"
 import { useBalancesState } from "../context/balances"
 import useWallet from "../hooks/useWallet"
 import WarningMessage from "./WarningMessage"
@@ -15,14 +14,10 @@ const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: Balance, netwo
     const { balances, gases } = useBalancesState()
     const { minAllowedAmount } = useFee()
 
-    const { getWithdrawalProvider: getProvider } = useWallet()
-    const provider = useMemo(() => {
-        return values.from && getProvider(values.from)
-    }, [values.from, getProvider])
+    const { provider } = useWallet(values.from, 'autofil')
+    const wallet = provider?.activeWallet
 
-    const wallet = provider?.getConnectedWallet()
-
-    const walletBalance = wallet && balances[wallet.address]?.find(b => b?.network === values?.from?.name && b?.token === values?.fromCurrency?.symbol)
+    const walletBalance = wallet && balances[wallet.address || '']?.find(b => b?.network === values?.from?.name && b?.token === values?.fromCurrency?.symbol)
     const networkGas = values.from?.name ?
         gases?.[values.from?.name]?.find(g => g?.token === values?.fromCurrency?.symbol)
         : null

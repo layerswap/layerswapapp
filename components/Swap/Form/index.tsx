@@ -32,8 +32,8 @@ import { DepositMethodProvider } from "../../../context/depositMethodContext";
 import { dynamicWithRetries } from "../../../lib/dynamicWithRetries";
 import AddressNote from "../../Input/Address/AddressNote";
 import { addressFormat } from "../../../lib/address/formatter";
-import { useAddressesStore } from "../../../stores/addressesStore";
 import { AddressGroup } from "../../Input/Address/AddressPicker";
+import { useAddressesStore } from "../../../stores/addressesStore";
 import { useAsyncModal } from "../../../context/asyncModal";
 import { ValidationProvider } from "../../../context/validationErrorContext";
 import { TrackEvent } from "../../../pages/_document";
@@ -56,6 +56,7 @@ const SwapDetails = dynamicWithRetries(() => import(".."),
 )
 
 export default function Form() {
+
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
     const [showSwapModal, setShowSwapModal] = useState(false);
@@ -63,7 +64,7 @@ export default function Form() {
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const router = useRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
-    const { getSourceProvider } = useWallet()
+    const { getProvider } = useWallet()
     const addresses = useAddressesStore(state => state.addresses)
     const { getConfirmation } = useAsyncModal();
     const { fetchBalance } = useBalance()
@@ -101,7 +102,6 @@ export default function Form() {
             else if (!confirmed) {
                 return
             }
-
         }
         try {
             const accessToken = TokenService.getAuthData()?.access_token
@@ -117,10 +117,7 @@ export default function Form() {
                     return;
                 }
             }
-            const provider = values.from && getSourceProvider(values.from)
-            const wallet = provider?.getConnectedWallet()
-
-            const swapId = await createSwap(values, wallet?.address, query, partner);
+            const swapId = await createSwap(values, query, partner);
             plausible(TrackEvent.SwapInitiated)
             setSwapId(swapId)
             pollFee(false)
@@ -158,7 +155,13 @@ export default function Form() {
                 toast.error(data?.message || error?.message)
             }
         }
-    }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getSourceProvider])
+    }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getProvider])
+
+    const destAddress: string = query?.destAddress as string;
+
+    const isPartnerAddress = partner && destAddress;
+
+    const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
 
     const initialValues: SwapFormValues = swapResponse ? generateSwapInitialValuesFromSwap(swapResponse, settings)
         : generateSwapInitialValues(settings, query)
@@ -175,20 +178,6 @@ export default function Form() {
             fetchBalance(swap?.source_network, swap?.source_token)
         }
     }, [router, swap])
-
-
-    // const handleCloseSwapModal = () => {
-    //     let homeURL = window.location.protocol + "//"
-    //         + window.location.host
-
-    //     const params = resolvePersistantQueryParams(router.query)
-    //     if (params && Object.keys(params).length) {
-    //         const search = new URLSearchParams(params as any);
-    //         if (search)
-    //             homeURL += `?${search}`
-    //     }
-    //     window.history.replaceState({ ...window.history.state, as: homeURL, url: homeURL }, '', homeURL);
-    // }
 
     return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
@@ -232,7 +221,7 @@ export default function Form() {
                 <SwapForm partner={partner} />
             </ValidationProvider>
         </Formik>
-    </DepositMethodProvider>
+    </DepositMethodProvider >
 }
 
 const textMotion = {
@@ -319,7 +308,6 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                         }
                     </div>
                 </div>
-
             </motion.div>
         </motion.div>
     </motion.div>
@@ -336,7 +324,7 @@ const setSwapPath = (swapId: string, router: NextRouter) => {
         if (search)
             swapURL += `?${search}`
     }
-    
+
     window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
 }
 

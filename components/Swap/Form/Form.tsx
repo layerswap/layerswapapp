@@ -25,10 +25,13 @@ import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import { RouteNetwork } from "../../../Models/Network";
 import { resolveExchangesURLForSelectedToken } from "../../../helpers/routes";
 import ValidationError from "../../validationError";
-import { ImtblPassportProvider } from "../../WalletProviders/ImtblPassportProvider";
 import { Exchange, ExchangeToken } from "../../../Models/Exchange";
 import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
 import { useValidationContext } from "../../../context/validationErrorContext";
+import { FormSourceWalletButton } from "../../Input/SourceWalletPicker";
+import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
+import { ImtblPassportProvider } from "../../WalletProviders/ImtblPassportProvider";
+import useWallet from "../../../hooks/useWallet";
 
 type Props = {
     partner?: Partner,
@@ -37,11 +40,6 @@ type Props = {
 const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
     loading: () => <></>,
 });
-
-const Address = dynamic(() => import("../../Input/Address"), {
-    loading: () => <></>,
-});
-
 
 const SwapForm: FC<Props> = ({ partner }) => {
     const {
@@ -56,8 +54,12 @@ const SwapForm: FC<Props> = ({ partner }) => {
         from: source,
         fromExchange,
         toExchange,
-        currencyGroup
+        currencyGroup,
     } = values
+
+    const { selectedSourceAccount } = useSwapDataState()
+    const { setSelectedSourceAccount } = useSwapDataUpdate()
+    const { providers } = useWallet()
 
     const { minAllowedAmount, valuesChanger } = useFee()
     const toAsset = values.toCurrency
@@ -138,28 +140,71 @@ const SwapForm: FC<Props> = ({ partner }) => {
         const newFromToken = newFrom?.tokens.find(t => t.symbol === toCurrency?.symbol)
         const newToToken = newTo?.tokens.find(t => t.symbol === fromCurrency?.symbol)
 
-        setValues({ ...values, from: newFrom, to: newTo, fromCurrency: newFromToken, toCurrency: newToToken, toExchange: newToExchange, fromExchange: newFromExchange, currencyGroup: (fromExchange || toExchange) ? (fromExchange ? newToExchangeToken : newFromExchangeToken) : undefined }, true)
-    }, [values, sourceRoutes, destinationRoutes, exchanges])
+        const destinationProvider = (destination && !toExchange)
+            ? providers.find(p => p.withdrawalSupportedNetworks?.includes(destination?.name) && p.connectedWallets?.some(w => !w.isNotAvailable && w.addresses.some(a => a.toLowerCase() === values.destination_address?.toLowerCase())))
+            : undefined
 
-    const hideAddress = query?.hideAddress
-        && query?.to
-        && query?.destAddress
-        && (query?.lockTo || query?.hideTo)
-        && isValidAddress(query?.destAddress as string, destination)
+        const newDestinationProvider = (newTo && !toExchange) ? providers.find(p => p.name === destinationProvider?.name) : undefined
+        const oldDestinationWallet = newDestinationProvider?.connectedWallets?.find(w => w.autofillSupportedNetworks?.some(n => n.toLowerCase() === newTo?.name.toLowerCase()) && w.addresses.some(a => a.toLowerCase() === values.destination_address?.toLowerCase()))
+        const oldDestinationWalletIsNotCompatible = destinationProvider?.name !== newDestinationProvider?.name || !(newTo && oldDestinationWallet?.autofillSupportedNetworks?.some(n => n.toLowerCase() === newTo?.name.toLowerCase()))
+        const destinationAvailableWallets = newTo ? newDestinationProvider?.connectedWallets?.filter(w => w.autofillSupportedNetworks?.some(n => n.toLowerCase() === newTo.name.toLowerCase()) && w.addresses.some(a => a.toLowerCase() === selectedSourceAccount?.address.toLowerCase())) : undefined
+
+        const oldSourceWalletIsNotCompatible = selectedSourceAccount?.wallet.providerName !== destinationProvider?.name || !(newFrom && selectedSourceAccount?.wallet.withdrawalSupportedNetworks?.some(n => n.toLowerCase() === newFrom.name.toLowerCase()))
+
+
+        const changeDestinationAddress = newTo && (oldDestinationWalletIsNotCompatible || oldSourceWalletIsNotCompatible) && destinationAvailableWallets
+
+        const newVales: SwapFormValues = {
+            ...values,
+            from: newFrom,
+            to: newTo,
+            fromCurrency: newFromToken,
+            toCurrency: newToToken,
+            toExchange: newToExchange,
+            fromExchange: newFromExchange,
+            currencyGroup: (fromExchange || toExchange) ? (fromExchange ? newToExchangeToken : newFromExchangeToken) : undefined,
+            destination_address: values.destination_address,
+        }
+
+        if (changeDestinationAddress) {
+            newVales.destination_address = selectedSourceAccount?.address
+        }
+
+        setValues(newVales, true);
+
+        const changeSourceAddress = newFrom && values.depositMethod !== 'deposit_address' && destinationProvider && (oldSourceWalletIsNotCompatible || changeDestinationAddress)
+
+        if (changeSourceAddress && values.destination_address) {
+            const sourceAvailableWallet = destinationProvider?.connectedWallets?.find(w => w.withdrawalSupportedNetworks?.some(n => n.toLowerCase() === newFrom.name.toLowerCase()) && w.addresses.some(a => a.toLowerCase() === values.destination_address?.toLowerCase()))
+            if (sourceAvailableWallet) {
+                setSelectedSourceAccount({
+                    wallet: sourceAvailableWallet,
+                    address: values.destination_address
+                })
+            }
+            else {
+                setSelectedSourceAccount(undefined)
+            }
+
+        }
+    }, [values, sourceRoutes, destinationRoutes, exchanges])
 
     const handleReserveGas = useCallback((walletBalance: Balance, networkGas: Gas) => {
         if (walletBalance && networkGas)
             setFieldValue('amount', walletBalance?.amount - networkGas?.gas)
     }, [values.amount])
 
+    const sourceWalletNetwork = values.fromExchange ? undefined : values.from
+    const shoouldConnectWallet = sourceWalletNetwork && values.depositMethod !== 'deposit_address' && !selectedSourceAccount
+
     return <ImtblPassportProvider from={source} to={destination}>
         <>
-            <Widget className="sm:min-h-[504px]">
-                <Form className={`h-full ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
+            <Form className={`h-full ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
+                <Widget className="sm:min-h-[504px]">
                     <Widget.Content>
                         <div className='flex-col relative flex justify-between w-full space-y-0.5 mb-3.5 leading-4'>
                             {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
-                                <NetworkFormField direction="from" label="From" className="rounded-t-lg pb-5" />
+                                <NetworkFormField direction="from" label="From" className="rounded-t-lg pb-5" partner={partner} />
                             </div>}
                             {!query?.hideFrom && !query?.hideTo &&
                                 <button
@@ -167,28 +212,28 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                     aria-label="Reverse the source and destination"
                                     disabled={valuesSwapperDisabled || sourceLoading || destinationLoading || exchnagesDataLoading}
                                     onClick={valuesSwapper}
-                                    className={`${sourceLoading || destinationLoading || exchnagesDataLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[86px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-full disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
+                                    className={`${sourceLoading || destinationLoading || exchnagesDataLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[118px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
                                     <motion.div
                                         animate={animate}
                                         transition={{ duration: 0.3 }}
                                         onTap={() => !valuesSwapperDisabled && cycle()}
                                     >
                                         {sourceLoading || destinationLoading || exchnagesDataLoading ?
-                                            <Loader2 className="opacity-50 w-7 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30 animate-spin" />
+                                            <Loader2 className="opacity-50 w-7 h-auto p-1 bg-secondary-500 rounded-lg disabled:opacity-30 animate-spin" />
                                             :
-                                            <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-900 border-2 border-secondary-500 rounded-full disabled:opacity-30")} />
+                                            <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-500 rounded-lg disabled:opacity-30")} />
                                         }
                                     </motion.div>
                                 </button>}
                             {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
-                                <NetworkFormField direction="to" label="To" className="rounded-b-lg" />
+                                <NetworkFormField direction="to" label="To" className="rounded-b-lg" partner={partner} />
                             </div>}
                         </div>
                         {
                             (((fromExchange && destination) || (toExchange && source)) && currencyGroup) ?
                                 <div className="mb-6 leading-4">
                                     <ResizablePanel>
-                                        <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
+                                        <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} partner={partner} />
                                     </ResizablePanel>
                                 </div>
                                 : <></>
@@ -196,11 +241,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
                         <div className="mb-6 leading-4">
                             <AmountField />
                         </div>
-                        {
-                            !hideAddress ?
-                                <Address partner={partner} />
-                                : <></>
-                        }
                         <div className="w-full">
                             {validationMessage ?
                                 <ValidationError />
@@ -214,15 +254,21 @@ const SwapForm: FC<Props> = ({ partner }) => {
                         </div>
                     </Widget.Content>
                     <Widget.Footer>
-                        <SwapButton
-                            type='submit'
-                            isDisabled={!isValid}
-                            isSubmitting={isSubmitting}>
-                            {ActionText(errors, actionDisplayName)}
-                        </SwapButton>
+                        {
+                            shoouldConnectWallet ?
+                                <FormSourceWalletButton />
+                                :
+                                <SwapButton
+                                    className="plausible-event-name=Swap+initiated"
+                                    type='submit'
+                                    isDisabled={!isValid}
+                                    isSubmitting={isSubmitting}>
+                                    {ActionText(errors, actionDisplayName)}
+                                </SwapButton>
+                        }
                     </Widget.Footer>
-                </Form>
-            </Widget>
+                </Widget>
+            </Form>
             {
                 process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
                 && values.from

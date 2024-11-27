@@ -74,9 +74,9 @@ const DepositMethodComponent: FC = () => {
         return null
 
     return (
-        <div className="relative w-full mb-1.5">
+        <div className="relative w-full mb-1">
             <Popover open={showModal} onOpenChange={setShowModal}>
-                <PopoverTrigger className="font-semibold text-secondary-text text-xs flex items-center space-x-1">
+                <PopoverTrigger className="font-semibold text-secondary-text text-xs flex items-center space-x-1 p-2">
                     <span> Transfer via </span> <span>{selectedMethod?.toLowerCase()}</span> <motion.div
                         animate={showModal ? "open" : "closed"}
                         variants={variants}

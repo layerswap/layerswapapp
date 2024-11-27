@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { FC, useEffect, useRef, useState } from "react"
 import { SwapFormValues } from "../../DTOs/SwapFormValues"
 import { useFormikContext } from "formik"
 import { Partner } from "../../../Models/Partner"
-import AddressPicker from "./AddressPicker"
+import AddressPicker, { AddressTriggerProps } from "./AddressPicker"
 import useSWR from "swr"
 import { ApiResponse } from "../../../Models/ApiResponse"
 import LayerSwapApiClient, { AddressBookItem } from "../../../lib/layerSwapApiClient"
@@ -11,11 +11,11 @@ import { isValidAddress } from "../../../lib/address/validator"
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap"
 
 type AddressProps = {
+    children: (props: AddressTriggerProps) => JSX.Element;
     partner: Partner | undefined
 }
 
-const Address = ({ partner }: AddressProps) => {
-
+const Address = ({ partner, children }: AddressProps) => {
     const {
         values,
         setFieldValue
@@ -34,46 +34,43 @@ const Address = ({ partner }: AddressProps) => {
     const previouslySelectedDestination = useRef(destination);
     const depositAddressIsFromAccountRef = useRef<boolean | null | undefined>(depositAddressIsFromAccount);
 
-    useEffect(() => {
-        depositAddressIsFromAccountRef.current = depositAddressIsFromAccount
-        return () => { (depositAddressIsFromAccountRef.current = null); return }
-    }, [depositAddressIsFromAccount])
+    // useEffect(() => {
+    //     depositAddressIsFromAccountRef.current = depositAddressIsFromAccount
+    //     return () => { (depositAddressIsFromAccountRef.current = null); return }
+    // }, [depositAddressIsFromAccount])
 
-    useEffect(() => {
-        if ((previouslySelectedDestination.current &&
-            (destination?.type != previouslySelectedDestination.current?.type)
-            || destination && !isValidAddress(values.destination_address, destination))) {
-            setFieldValue("destination_address", '')
-            setDepositAddressIsFromAccount(false)
-        }
-        previouslySelectedDestination.current = destination
-    }, [destination])
+    // useEffect(() => {   
+    //     if ((previouslySelectedDestination.current &&
+    //         (destination?.type != previouslySelectedDestination.current?.type)
+    //         || destination && !isValidAddress(values.destination_address, destination))) {
+    //         setFieldValue("destination_address", '')
+    //         setDepositAddressIsFromAccount(false)
+    //     }
+    //     previouslySelectedDestination.current = destination
+    // }, [destination])
 
     const previouslySelectedDestinationExchange = useRef(toExchange);
 
-    //If destination exchange changed, remove destination_address
-    useEffect(() => {
-        if (previouslySelectedDestinationExchange.current && (toExchange?.name != previouslySelectedDestinationExchange.current?.name)) {
-            setFieldValue("destination_address", '')
-        }
-        previouslySelectedDestinationExchange.current = toExchange
-    }, [toExchange])
+    // //If destination exchange changed, remove destination_address
+    // useEffect(() => {
+    //     if (previouslySelectedDestinationExchange.current && (toExchange?.name != previouslySelectedDestinationExchange.current?.name)) {
+    //         setFieldValue("destination_address", '')
+    //     }
+    //     previouslySelectedDestinationExchange.current = toExchange
+    // }, [toExchange])
 
     return (
-        <div className="w-full mb-3.5 leading-4">
-            <label htmlFor="destination_address" className="block font-semibold text-secondary-text text-xs">
-                Send To
-            </label>
-            <AddressPicker
-                showAddressModal={showAddressModal}
-                setShowAddressModal={setShowAddressModal}
-                close={() => setShowAddressModal(false)}
-                disabled={!values.to}
-                name={"destination_address"}
-                partner={partner}
-                address_book={address_book?.data}
-            />
-        </div>
+        <AddressPicker
+            showAddressModal={showAddressModal}
+            setShowAddressModal={setShowAddressModal}
+            close={() => setShowAddressModal(false)}
+            disabled={!values.to}
+            name={"destination_address"}
+            partner={partner}
+            address_book={address_book?.data}
+        >
+            {children}
+        </AddressPicker>
     )
 }
 

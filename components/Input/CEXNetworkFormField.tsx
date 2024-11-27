@@ -13,13 +13,17 @@ import { ExchangeNetwork } from "../../Models/Exchange";
 import { isValidAddress } from "../../lib/address/validator";
 import TransferCEX from "./TransferCEX";
 import Image from 'next/image'
+import Address from "./Address";
+import { SecondDestinationWalletPicker } from "./NetworkFormField";
+import { Partner } from "../../Models/Partner";
 
 type SwapDirection = "from" | "to";
 type Props = {
     direction: SwapDirection,
+    partner: Partner | undefined
 }
 
-const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction }: Props, ref: any) {
+const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction, partner }: Props, ref: any) {
     const {
         values,
         setFieldValue,
@@ -33,7 +37,8 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         toCurrency,
         fromExchange,
         toExchange,
-        currencyGroup
+        currencyGroup,
+        destination_address
     } = values
 
 
@@ -106,8 +111,8 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
 
     const header = direction === 'from' ? 'Withdrawal network' : 'Deposit network'
 
-    return (<div className={`p-2 rounded-lg bg-secondary-700 border border-secondary-500`}>
-        <label htmlFor={name} className="font-semibold flex justify-between text-secondary-text text-xs mb-1.5">
+    return (<div className="p-2 rounded-lg bg-secondary-700 border border-secondary-500 space-y-2">
+        <label htmlFor={name} className="font-semibold flex justify-between text-secondary-text text-xs">
             <div className="flex space-x-1">
                 <span>{header}</span>
             </div>
@@ -136,6 +141,12 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             key={value?.id}
             header={header}
         />
+        {
+            direction === "to" && !destination_address &&
+            <div className="flex items-center col-span-6">
+                <Address partner={partner} >{SecondDestinationWalletPicker}</Address>
+            </div>
+        }
     </div>)
 })
 

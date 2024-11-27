@@ -1,8 +1,8 @@
 import { useWalletStore } from "../../../stores/walletStore"
 import ImtblClient from "../../imtbl"
 import KnownInternalNames from "../../knownIds"
-import { WalletProvider } from "../../../hooks/useWallet"
 import IMX from "../../../components/icons/Wallets/IMX"
+import { WalletProvider } from "../../../Models/WalletProvider"
 
 export default function useImtblX(): WalletProvider {
     const withdrawalSupportedNetworks = [
@@ -11,13 +11,18 @@ export default function useImtblX(): WalletProvider {
         KnownInternalNames.Networks.ImmutableXSepolia,
     ]
 
-    const name = 'imx'
+    const name = 'ImmutableX'
+    const id = 'imx'
     const wallets = useWalletStore((state) => state.connectedWallets)
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
+    const wallet = wallets.find(wallet => wallet.providerName === name)
 
     const getWallet = () => {
-        return wallets.find(wallet => wallet.providerName === name)
+        if (wallet) {
+            return [wallet]
+        }
+        return undefined
     }
     type ConnectProps = {
         chain?: string | number
@@ -29,12 +34,20 @@ export default function useImtblX(): WalletProvider {
         try {
             const imtblClient = new ImtblClient(networkName)
             const res = await imtblClient.ConnectWallet();
-            addWallet({
+
+            const wallet = {
                 address: res.address,
                 connector: 'imx',
                 providerName: name,
-                icon: IMX
-            });
+                icon: IMX,
+                disconnect: () => disconnectWallet(),
+                connect: () => connectWallet({ chain }),
+                isActive: true,
+                addresses: [res.address]
+            }
+
+            addWallet(wallet);
+            return wallet
         }
         catch (e) {
             console.log(e)
@@ -45,18 +58,15 @@ export default function useImtblX(): WalletProvider {
         return removeWallet(name)
     }
 
-    const reconnectWallet = async ({ chain }: { chain: string | number }) => {
-        disconnectWallet()
-        await connectWallet({ chain })
-    }
-
     return {
-        getConnectedWallet: getWallet,
+        switchAccount: async () => { },
+        connectedWallets: getWallet(),
+        activeWallet: wallet,
         connectWallet,
-        disconnectWallet,
-        reconnectWallet,
+        disconnectWallets: disconnectWallet,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks: withdrawalSupportedNetworks,
-        name
+        name,
+        id,
     }
 }

@@ -1,11 +1,10 @@
 import { useRouter } from "next/router"
-import { FC, useCallback, useMemo } from "react"
+import { FC, useCallback } from "react"
 import Image from 'next/image'
 import { Gift } from "lucide-react"
 import LayerSwapApiClient, { Campaign } from "../../../lib/layerSwapApiClient"
 import useSWR from "swr"
 import { ApiResponse } from "../../../Models/ApiResponse"
-import { useAccount } from "wagmi"
 import SubmitButton from "../../buttons/submitButton";
 import WalletIcon from "../../icons/WalletIcon";
 import LinkWrapper from "../../LinkWraapper";
@@ -24,16 +23,13 @@ function CampaignDetails() {
     const campaign = campaignsData?.data?.find(c => c.name === camapaignName)
     const network = campaign?.network
 
-    const { getAutofillProvider: getProvider } = useWallet()
-    const provider = useMemo(() => {
-        return network && getProvider(network)
-    }, [network, getProvider])
+    const { provider } = useWallet(network, 'autofil')
 
     const handleConnect = useCallback(async () => {
         await provider?.connectWallet({ chain: network?.chain_id })
     }, [provider, network])
 
-    const wallet = provider?.getConnectedWallet()
+    const wallet = provider?.activeWallet
     const isConnected = !!wallet?.address
 
     if (isLoading) {
