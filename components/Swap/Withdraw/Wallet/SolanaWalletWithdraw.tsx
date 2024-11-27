@@ -26,14 +26,6 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
     const solanaNode = network?.node_url
 
     const { getBalance } = useSolanaBalance()
-    async function getTokenBalance() {
-        if (token && networkName && wallet?.address) {
-            const res = await getBalance({ networkName, token, address: wallet?.address });
-            if (res && typeof res === "object" && "amount" in res) {
-                return res?.amount;
-            }
-        }
-    }
 
     useEffect(() => {
         setInsufficientFunds(false);
@@ -57,11 +49,12 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
             const feeInSol = feeInLamports / LAMPORTS_PER_SOL
 
             const solBalance = walletPublicKey && await connection.getBalance(walletPublicKey)
-            const tokenBalance = await getTokenBalance()
+            const tokenbalanceData = token && networkName && wallet?.address ? await getBalance({ networkName, token, address: wallet?.address }) : undefined
+            const tokenBalanceAmount = tokenbalanceData?.amount
 
-            if ((solBalance || solBalance === 0) && solBalance < feeInSol) setInsufficientToken('SOL')
-            else if ((tokenBalance || tokenBalance === 0) && amount && token?.symbol && tokenBalance < amount) setInsufficientToken(token?.symbol)
-
+            if (Number(solBalance) < feeInSol) setInsufficientToken('SOL')
+            else if (amount && token?.symbol && Number(tokenBalanceAmount) < amount) setInsufficientToken(token?.symbol)
+        
             const signature = await configureAndSendCurrentTransaction(
                 transaction,
                 connection,
