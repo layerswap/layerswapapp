@@ -77,11 +77,10 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
         const default_currency = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === (query?.toAsset)?.toUpperCase())
-            || currencyMenuItems?.[0]
+            || currencyMenuItems?.find(c => c.baseObject.status === 'active')
 
         const selected_currency = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === fromCurrency?.symbol?.toUpperCase())
-
         if (selected_currency && routes?.data?.find(r => r.name === to?.name)?.tokens?.some(r => r.symbol === selected_currency.name && r.status === 'active')) {
             setFieldValue(name, selected_currency.baseObject, true)
         }
@@ -97,10 +96,9 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.symbol === currencyAsset)
 
         if (currencyIsAvailable) return
-
         const default_currency = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === (query?.fromAsset)?.toUpperCase())
-            || currencyMenuItems?.[0]
+            || currencyMenuItems?.find(c => c.baseObject.status === 'active')
 
         const selected_currency = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === toCurrency?.symbol?.toUpperCase())

@@ -62,9 +62,14 @@ export const resolveRoutesURLForSelectedToken = ({ direction, network, token, in
         include_unmatched,
         include_swaps,
         include_unavailable,
-        ...(network && token ?
+        ...(network ?
             {
                 [direction === 'to' ? 'source_network' : 'destination_network']: network,
+            }
+            : {}
+        ),
+        ...(token ?
+            {
                 [direction === 'to' ? 'source_token' : 'destination_token']: token,
             }
             : {}
