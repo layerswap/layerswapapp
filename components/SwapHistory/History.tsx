@@ -181,7 +181,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                             >
                                 {collapsablePendingSwap &&
                                     <div className="w-full flex justify-end pb-2">
-                                        <button onClick={() => setShowAll(!showAll)} className='flex items-center gap-1 text-xs font-normal text-secondary-text hover:text-primary-text pr-2 '>
+                                        <button type="button" onClick={() => setShowAll(!showAll)} className='flex items-center gap-1 text-xs font-normal text-secondary-text hover:text-primary-text pr-2 '>
                                             <p className="select-none">See all incomplete swaps</p>
                                             <ChevronDown className={`${showAll && 'rotate-180'} transition-transform duation-200 w-4 h-4`} />
                                         </button>
@@ -317,7 +317,7 @@ const SignIn = ({ onLogin }: SignInProps) => {
                         <GuestCard onLogin={onLogin} />
                     </div>
                     :
-                    <button onClick={() => setShowGuestCard(true)} className="text-secondary-text w-fit mx-auto flex justify-center mt-2 underline hover:no-underline">
+                    <button type="button" onClick={() => setShowGuestCard(true)} className="text-secondary-text w-fit mx-auto flex justify-center mt-2 underline hover:no-underline">
                         <span>Sign in with your email</span>
                     </button>
             }

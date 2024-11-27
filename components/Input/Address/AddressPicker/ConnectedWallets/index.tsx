@@ -40,6 +40,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                 <div className="flex items-center justify-between w-full">
                     <p className="text-sm font-medium text-secondary-text">Connected Wallet</p>
                     <button
+                        type="button"
                         onClick={connect}
                         disabled={isLoading}
                         className="text-secondary-text hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200"
