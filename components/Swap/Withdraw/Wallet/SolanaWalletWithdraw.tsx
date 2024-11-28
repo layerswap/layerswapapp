@@ -22,7 +22,7 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
     const networkName = network?.name
     const provider = getWithdrawalProvider(network!);
     const wallet = provider?.getConnectedWallet(network);
-    const { publicKey: walletPublicKey, signTransaction } = useSolanaWallet();
+    const { publicKey: walletPublicKey, signTransaction, wallet: solanaWallet } = useSolanaWallet();
     const solanaNode = network?.node_url
 
     const { getBalance } = useSolanaBalance()

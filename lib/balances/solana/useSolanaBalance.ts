@@ -17,7 +17,11 @@ export default function useSolanaBalance(): BalanceProvider {
     const { networks } = useSettingsState()
 
     const supportedNetworks = [
-        KnownInternalNames.Networks.SolanaMainnet
+        KnownInternalNames.Networks.SolanaMainnet,
+        KnownInternalNames.Networks.SolanaDevnet,
+        KnownInternalNames.Networks.SolanaTestnet,
+        KnownInternalNames.Networks.EclipseTestnet,
+        KnownInternalNames.Networks.EclipseMainnet
     ]
 
     const getNetworkBalances = async ({ networkName, address }: NetworkBalancesProps) => {
@@ -71,7 +75,9 @@ export default function useSolanaBalance(): BalanceProvider {
                     if (!associatedTokenFrom) return
                     result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
                 } else {
-                    result = await connection.getBalance(walletPublicKey)
+                    const balance = await connection.getBalance(walletPublicKey)
+
+                    result = formatAmount(balance, asset?.decimals)
                 }
 
                 if (result != null && !isNaN(result)) {
@@ -144,7 +150,9 @@ export default function useSolanaBalance(): BalanceProvider {
             if (!associatedTokenFrom) return
             result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
         } else {
-            result = await connection.getBalance(walletPublicKey)
+            const balance = await connection.getBalance(walletPublicKey)
+
+            result = formatAmount(balance, token?.decimals)
         }
 
         if (result != null && !isNaN(result)) {
