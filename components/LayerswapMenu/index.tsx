@@ -111,7 +111,7 @@ export default function LayerswapMenu() {
                                     }} target="_blank" icon={<ChatIcon strokeWidth={2} className="h-5 w-5" />} >
                                         Help
                                     </Menu.Item>
-                                    <Menu.Item pathname='https://layerswap.notion.site/Layerswap-V8-Atomic-Bridging-Protocol-58944b7ddce54b838a23feee3aebebf5/' target="_blank" icon={<BookOpen className="h-5 w-5" />} >
+                                    <Menu.Item pathname='https://v8-docs.layerswap.io/protocol/introduction' target="_blank" icon={<BookOpen className="h-5 w-5" />} >
                                         Protocol Docs
                                     </Menu.Item>
                                 </Menu.Group>

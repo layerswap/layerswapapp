@@ -3,6 +3,7 @@ import TwitterLogo from "./icons/TwitterLogo";
 import DiscordLogo from "./icons/DiscordLogo";
 import GitHubLogo from "./icons/GitHubLogo";
 import YoutubeLogo from "./icons/YoutubeLogo";
+import { BookOpen } from "lucide-react";
 
 const GLobalFooter = () => {
 
@@ -42,6 +43,13 @@ const GLobalFooter = () => {
                 href: 'https://www.youtube.com/@layerswaphq/',
                 icon: () => (
                     <YoutubeLogo className="h-6 w-6" aria-hidden="true" />
+                ),
+            },
+            {
+                name: 'Docs',
+                href: 'https://v8-docs.layerswap.io/protocol/introduction',
+                icon: () => (
+                    <BookOpen className="h-6 w-6" aria-hidden="true" />
                 ),
             },
         ],

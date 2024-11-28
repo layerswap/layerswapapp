@@ -177,7 +177,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                         Experience fully permissionless and trustless bridging without relying on any third party.
                                     </p>
                                     <a className="mt-6 text-sm  cursor-pointer leading-1 text-primary hover:underline flex items-center gap-1 w-fit"
-                                        href="https://layerswap.notion.site/" target="_blank" rel="noreferrer"
+                                        href="https://v8-docs.layerswap.io/protocol/introduction" target="_blank" rel="noreferrer"
                                     >
                                         <span>Learn more about the protocol</span> <ExternalLink className="w-4 h-4" />
                                     </a>
