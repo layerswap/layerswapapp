@@ -92,15 +92,13 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
     }
 
-    if (!toCurrency || !fromCurrency) {
-        return (
-            <ValidationContext.Provider
-                value={{ validationMessage: '', validationDetails: {} }}
-            >
-                {children}
-            </ValidationContext.Provider>
-        );
-    }
+    return (
+        <ValidationContext.Provider
+            value={{ validationMessage: '', validationDetails: {} }}
+        >
+            {children}
+        </ValidationContext.Provider>
+    );
 };
 
 export const useValidationContext = () => React.useContext(ValidationContext);
