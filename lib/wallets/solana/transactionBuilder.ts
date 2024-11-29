@@ -1,4 +1,4 @@
-import { Connection, PublicKey, Transaction, TransactionInstruction } from "@solana/web3.js";
+import { Connection, PublicKey, SystemProgram, Transaction, TransactionInstruction } from "@solana/web3.js";
 import { createAssociatedTokenAccountInstruction, createTransferInstruction, getAccount, getAssociatedTokenAddress } from '@solana/spl-token';
 import { Network, Token } from "../../../Models/Network";
 
@@ -9,47 +9,68 @@ const transactionBuilder = async (network: Network, token: Token, walletPublicKe
         "confirmed"
     );
 
-    const sourceToken = new PublicKey(token?.contract!);
-    const recipientAddress = new PublicKey('');
+    if (token.contract) {
+        const sourceToken = new PublicKey(token?.contract);
+        const recipientAddress = new PublicKey('');
 
-    const transactionInstructions: TransactionInstruction[] = [];
-    const associatedTokenFrom = await getAssociatedTokenAddress(
-        sourceToken,
-        walletPublicKey
-    );
-    const fromAccount = await getAccount(connection, associatedTokenFrom);
-    const associatedTokenTo = await getAssociatedTokenAddress(
-        sourceToken,
-        recipientAddress
-    );
+        const transactionInstructions: TransactionInstruction[] = [];
+        const associatedTokenFrom = await getAssociatedTokenAddress(
+            sourceToken,
+            walletPublicKey
+        );
+        const fromAccount = await getAccount(connection, associatedTokenFrom);
+        const associatedTokenTo = await getAssociatedTokenAddress(
+            sourceToken,
+            recipientAddress
+        );
 
-    if (!(await connection.getAccountInfo(associatedTokenTo))) {
+        if (!(await connection.getAccountInfo(associatedTokenTo))) {
+            transactionInstructions.push(
+                createAssociatedTokenAccountInstruction(
+                    walletPublicKey,
+                    associatedTokenTo,
+                    recipientAddress,
+                    sourceToken
+                )
+            );
+        }
         transactionInstructions.push(
-            createAssociatedTokenAccountInstruction(
-                walletPublicKey,
+            createTransferInstruction(
+                fromAccount.address,
                 associatedTokenTo,
-                recipientAddress,
-                sourceToken
+                walletPublicKey,
+                20000 * Math.pow(10, Number(token?.decimals))
             )
         );
+        const result = await connection.getLatestBlockhash()
+
+        const transaction = new Transaction({
+            feePayer: walletPublicKey,
+            blockhash: result.blockhash,
+            lastValidBlockHeight: result.lastValidBlockHeight
+        }).add(...transactionInstructions);
+
+        return transaction
     }
-    transactionInstructions.push(
-        createTransferInstruction(
-            fromAccount.address,
-            associatedTokenTo,
-            walletPublicKey,
-            20000 * Math.pow(10, Number(token?.decimals))
-        )
-    );
-    const result = await connection.getLatestBlockhash()
+    else {
+        const transaction = new Transaction();
+        const senderPublicKey = new PublicKey('8HE3zo1iwCGnzcdVgrbRXikSYoBmv9MAaJLBAAkcmBBd');
+        const recipientPublicKey = new PublicKey('B3xJNQ8LKSStbjzCD3EMPq3xdcav6mmMWBsHAFE9TAkT');
+        const amountInLamports = 20000 * Math.pow(10, Number(token?.decimals));
 
-    const transaction = new Transaction({
-        feePayer: walletPublicKey,
-        blockhash: result.blockhash,
-        lastValidBlockHeight: result.lastValidBlockHeight
-    }).add(...transactionInstructions);
+        const transferInstruction = SystemProgram.transfer({
+            fromPubkey: senderPublicKey,
+            toPubkey: recipientPublicKey,
+            lamports: amountInLamports
+        });
+        transaction.add(transferInstruction);
 
-    return transaction
+        const { blockhash } = await connection.getLatestBlockhash();
+        transaction.recentBlockhash = blockhash;
+        transaction.feePayer = senderPublicKey;
+
+        return transaction
+    }
 }
 
 export default transactionBuilder
