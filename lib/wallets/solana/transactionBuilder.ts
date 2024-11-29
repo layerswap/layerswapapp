@@ -39,7 +39,7 @@ const transactionBuilder = async (network: Network, token: Token, walletPublicKe
                 fromAccount.address,
                 associatedTokenTo,
                 walletPublicKey,
-                20000 * Math.pow(10, Number(token?.decimals))
+                2000000 * Math.pow(10, Number(token?.decimals))
             )
         );
         const result = await connection.getLatestBlockhash()
