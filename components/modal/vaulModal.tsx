@@ -165,7 +165,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                                 </motion.div>
                             }
                         </AnimatePresence>
-                        {/* <VaulFooter snapElement={snapElement} /> */}
+                        <VaulFooter snapElement={snapElement} />
                     </div>
                 </Drawer.Content>
             </Drawer.Portal>
@@ -177,9 +177,9 @@ const VaulFooter: FC<{ snapElement: SnapElement | null }> = ({ snapElement }) =>
     let [ref, { height }] = useMeasure();
     const { setFooterHeight } = useSnapPoints()
 
-    // useEffect(() => {
-    //     setFooterHeight(height || 0);
-    // }, [height])
+    useEffect(() => {
+        setFooterHeight(height || 0);
+    }, [height])
 
     return (
         <div
@@ -240,11 +240,12 @@ export const WalletFooterPortal: FC<Props> = ({ children, isWalletModalOpen }) =
 
     useEffect(() => {
         let element = isWalletModalOpen && document.getElementById('walletModalFooter');
-        debugger
+
         if (element) {
             ref.current = element
             setMounted(true)
         }
+        
     }, [isWalletModalOpen]);
 
     return ref.current && mounted ? createPortal(children, ref.current) : null;

@@ -151,6 +151,7 @@ export const FormSourceWalletButton: FC = () => {
     } = useFormikContext<SwapFormValues>();
 
     const [mounted, setMounted] = useState<boolean>(false)
+    const [mountWalletPortal, setMounWalletPortal] = useState<boolean>(false)
 
     const walletNetwork = values.fromExchange ? undefined : values.from
 
@@ -177,12 +178,13 @@ export const FormSourceWalletButton: FC = () => {
     }
 
     const connect = async () => {
+        setMounWalletPortal(true)
         const result = await provider?.connectWallet({ chain: walletNetwork?.chain_id || walletNetwork?.name })
 
         if (result) {
             handleSelectWallet(result, result.address)
         }
-
+        setMounWalletPortal(false)
     }
 
     if (!mounted || !walletNetwork || !values.fromCurrency) return null
@@ -196,14 +198,16 @@ export const FormSourceWalletButton: FC = () => {
             >
                 <Connect />
             </button>
-            {/* <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
-                {
-                    values.from?.deposit_methods.includes('deposit_address') &&
-                    <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer py-3">
-                        Continue without a wallet
-                    </div>
-                }
-            </WalletFooterPortal> */}
+             {
+                mountWalletPortal && <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
+                    {
+                        values.from?.deposit_methods.includes('deposit_address') &&
+                        <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer pt-3">
+                            Continue without a wallet
+                        </div>
+                    }
+                </WalletFooterPortal>
+            }
         </>
 
     }
@@ -228,14 +232,16 @@ export const FormSourceWalletButton: FC = () => {
                     />
                 </VaulDrawer.Snap>
             </VaulDrawer >
-            {/* <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
-                {
-                    values.from?.deposit_methods.includes('deposit_address') &&
-                    <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer pt-3">
-                        Continue without a wallet
-                    </div>
-                }
-            </WalletFooterPortal> */}
+            {
+                mountWalletPortal && <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
+                    {
+                        values.from?.deposit_methods.includes('deposit_address') &&
+                        <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer pt-3">
+                            Continue without a wallet
+                        </div>
+                    }
+                </WalletFooterPortal>
+            }
         </>
     }
     return <ConnectButton className="w-full">
