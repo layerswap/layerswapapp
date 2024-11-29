@@ -7,6 +7,7 @@ import { useMeasure } from '@uidotdev/usehooks';
 import { SnapElement, SnapPointsProvider, useSnapPoints } from '../../context/snapPointsContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Drawer } from './vaul';
+import { createPortal } from 'react-dom';
 
 type VaulDrawerProps = {
     children: ReactNode;
@@ -164,11 +165,29 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                                 </motion.div>
                             }
                         </AnimatePresence>
+                        {/* <VaulFooter snapElement={snapElement} /> */}
                     </div>
                 </Drawer.Content>
             </Drawer.Portal>
         </Drawer.Root >
     );
+}
+
+const VaulFooter: FC<{ snapElement: SnapElement | null }> = ({ snapElement }) => {
+    let [ref, { height }] = useMeasure();
+    const { setFooterHeight } = useSnapPoints()
+
+    // useEffect(() => {
+    //     setFooterHeight(height || 0);
+    // }, [height])
+
+    return (
+        <div
+            ref={ref}
+            id='walletModalFooter'
+            style={{ top: `${Number(snapElement?.height?.toString().replace('px', '')) - 50}px` }} className={`w-full fixed left-0 z-50`}
+        />
+    )
 }
 
 const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement> & { id: string }> = (props) => {
@@ -208,5 +227,28 @@ const VaulDrawer: typeof Comp & { Snap: typeof VaulDrawerSnap } = (props) => {
 }
 
 VaulDrawer.Snap = VaulDrawerSnap;
+
+
+type Props = {
+    children: React.ReactNode,
+    isWalletModalOpen?: boolean
+}
+
+export const WalletFooterPortal: FC<Props> = ({ children, isWalletModalOpen }) => {
+    const ref = useRef<Element | null>(null);
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        let element = isWalletModalOpen && document.getElementById('walletModalFooter');
+        debugger
+        if (element) {
+            ref.current = element
+            setMounted(true)
+        }
+    }, [isWalletModalOpen]);
+
+    return ref.current && mounted ? createPortal(children, ref.current) : null;
+};
+
 
 export default VaulDrawer;

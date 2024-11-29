@@ -12,7 +12,7 @@ export type WalletsListProps = {
     onFinish: (connectedWallet: Wallet | undefined) => void;
 };
 
-const WalletsList: FC<WalletsListProps> = ({ modalWalletProvider, onFinish, setSelectedProvider, selectedProvider }) => {
+const ConnectorsList: FC<WalletsListProps> = ({ modalWalletProvider, onFinish, setSelectedProvider, selectedProvider }) => {
 
     if (modalWalletProvider?.availableWalletsForConnect) {
         return <ConnectList
@@ -94,13 +94,15 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
                             >
                                 <div className="flex gap-3 items-center font-semibold">
                                     <Icon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
-                                    <p>{connectorName}</p>
+                                    <div className='flex flex-col items-start'>
+                                        <p>{connectorName}</p>
+                                        {
+                                            connector.type === 'injected' &&
+                                            <p className='text-xs text-secondary-text font-medium'>Installed</p>
+                                        }
+                                    </div>
                                 </div>
                                 <div className='inline-flex items-center gap-2'>
-                                    {
-                                        connector.type === 'injected' &&
-                                        <p className='text-xs text-secondary-text'>Detected</p>
-                                    }
                                     {
                                         isLoading &&
                                         <Loader className='h-4 w-4 animate-spin' />
@@ -116,4 +118,4 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
 }
 
 
-export default WalletsList
+export default ConnectorsList
