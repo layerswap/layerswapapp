@@ -167,7 +167,7 @@ export default function useSolanaBalance(): BalanceProvider {
         }
     }
 
-    const getGas = async ({ network, token, address }: GasProps) => {
+    const getGas = async ({ network, token, address, recipientAddress }: GasProps) => {
         if (!address)
             return
         const { PublicKey, Connection } = await import("@solana/web3.js");
@@ -186,7 +186,7 @@ export default function useSolanaBalance(): BalanceProvider {
         try {
             const transactionBuilder = ((await import("../../wallets/solana/transactionBuilder")).default);
 
-            const transaction = await transactionBuilder(network, token, walletPublicKey)
+            const transaction = await transactionBuilder(network, token, walletPublicKey, recipientAddress)
 
             if (!transaction || !network.token) return
 

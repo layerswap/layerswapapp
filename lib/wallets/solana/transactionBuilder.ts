@@ -2,7 +2,7 @@ import { Connection, PublicKey, SystemProgram, Transaction, TransactionInstructi
 import { createAssociatedTokenAccountInstruction, createTransferInstruction, getAccount, getAssociatedTokenAddress } from '@solana/spl-token';
 import { Network, Token } from "../../../Models/Network";
 
-const transactionBuilder = async (network: Network, token: Token, walletPublicKey: PublicKey) => {
+const transactionBuilder = async (network: Network, token: Token, walletPublicKey: PublicKey, recipientAddress: string | undefined) => {
 
     const connection = new Connection(
         `${network.node_url}`,
@@ -11,7 +11,7 @@ const transactionBuilder = async (network: Network, token: Token, walletPublicKe
 
     if (token.contract) {
         const sourceToken = new PublicKey(token?.contract);
-        const recipientAddress = new PublicKey('');
+        const recipientPublicKey = new PublicKey(recipientAddress || '');
 
         const transactionInstructions: TransactionInstruction[] = [];
         const associatedTokenFrom = await getAssociatedTokenAddress(
@@ -21,7 +21,7 @@ const transactionBuilder = async (network: Network, token: Token, walletPublicKe
         const fromAccount = await getAccount(connection, associatedTokenFrom);
         const associatedTokenTo = await getAssociatedTokenAddress(
             sourceToken,
-            recipientAddress
+            recipientPublicKey
         );
 
         if (!(await connection.getAccountInfo(associatedTokenTo))) {
@@ -29,7 +29,7 @@ const transactionBuilder = async (network: Network, token: Token, walletPublicKe
                 createAssociatedTokenAccountInstruction(
                     walletPublicKey,
                     associatedTokenTo,
-                    recipientAddress,
+                    recipientPublicKey,
                     sourceToken
                 )
             );
@@ -54,12 +54,11 @@ const transactionBuilder = async (network: Network, token: Token, walletPublicKe
     }
     else {
         const transaction = new Transaction();
-        const senderPublicKey = new PublicKey('8HE3zo1iwCGnzcdVgrbRXikSYoBmv9MAaJLBAAkcmBBd');
-        const recipientPublicKey = new PublicKey('B3xJNQ8LKSStbjzCD3EMPq3xdcav6mmMWBsHAFE9TAkT');
+        const recipientPublicKey = new PublicKey(recipientAddress || '');
         const amountInLamports = 20000 * Math.pow(10, Number(token?.decimals));
 
         const transferInstruction = SystemProgram.transfer({
-            fromPubkey: senderPublicKey,
+            fromPubkey: walletPublicKey,
             toPubkey: recipientPublicKey,
             lamports: amountInLamports
         });
@@ -67,7 +66,7 @@ const transactionBuilder = async (network: Network, token: Token, walletPublicKe
 
         const { blockhash } = await connection.getLatestBlockhash();
         transaction.recentBlockhash = blockhash;
-        transaction.feePayer = senderPublicKey;
+        transaction.feePayer = walletPublicKey;
 
         return transaction
     }
