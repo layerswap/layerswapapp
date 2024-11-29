@@ -21,9 +21,23 @@ export const WalletModal: FC = () => {
 
         for (const wallet of wallets) {
             if (wallet.readyState === WalletReadyState.Installed) {
-                installed.push(wallet);
+                if (visible?.network == "eclipse") {
+                    if (wallet.adapter.name === 'Backpack' || wallet.adapter.name === 'Nightly') {
+                        installed.push(wallet);
+                    }
+                }
+                else {
+                    installed.push(wallet);
+                }
             } else {
-                notInstalled.push(wallet);
+                if (visible?.network == "eclipse") {
+                    if (wallet.adapter.name === 'Nightly') {
+                        notInstalled.push(wallet);
+                    }
+                }
+                else {
+                    notInstalled.push(wallet);
+                }
             }
         }
 
@@ -102,9 +116,6 @@ export const WalletModal: FC = () => {
         };
     }, [hideModal, handleTabKey]);
 
-    const listedFiltered = visible?.network == 'eclipse' ? listedWallets.filter((wallet) => wallet.adapter.name === 'Backpack' || wallet.adapter.name === "Nightly") : listedWallets;
-    const collapsedFiltered = visible?.network == 'eclipse' ? collapsedWallets.filter((wallet) => wallet.adapter.name === 'Backpack' || wallet.adapter.name === "Nightly") : collapsedWallets;
-
     return (
         <Dialog open={visible?.show} onOpenChange={(open) => { !open && setVisible(undefined) }}>
             <DialogContent className="sm:max-w-[425px] text-primary-text bg-secondary-900">
@@ -115,16 +126,16 @@ export const WalletModal: FC = () => {
                 </DialogHeader>
                 <div>
                     <ul className="flex flex-col gap-2">
-                        {listedFiltered.map((wallet) => (
+                        {listedWallets.map((wallet) => (
                             <WalletListItem
                                 key={wallet.adapter.name}
                                 handleClick={(event) => handleWalletClick(event, wallet.adapter.name)}
                                 wallet={wallet}
                             />
                         ))}
-                        {collapsedFiltered.length ? (
+                        {collapsedWallets.length ? (
                             <Collapse expanded={expanded} id="wallet-adapter-modal-collapse">
-                                {collapsedFiltered.map((wallet) => (
+                                {collapsedWallets.map((wallet) => (
                                     <WalletListItem
                                         key={wallet.adapter.name}
                                         handleClick={(event) =>
@@ -137,7 +148,7 @@ export const WalletModal: FC = () => {
                             </Collapse>
                         ) : null}
                     </ul>
-                    {collapsedFiltered.length ? (
+                    {collapsedWallets.length ? (
                         <div className='flex pt-3 justify-end w-full'>
                             <button
                                 className="flex items-center gap-1 w-fit"
