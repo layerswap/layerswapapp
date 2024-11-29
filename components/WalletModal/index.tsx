@@ -18,6 +18,7 @@ type SharedType = { provider?: WalletProvider, connectCallback: (value: Wallet |
 
 type ConnectModalContextType = {
     connect: ({ provider, connectCallback }: SharedType) => void;
+    cancel: () => void;
     selectedProvider: ModalWalletProvider | undefined;
     setSelectedProvider: (value: ModalWalletProvider | undefined) => void;
     isWalletModalOpen?: boolean;
@@ -40,6 +41,14 @@ export function WalletModalProvider({ children }) {
         setOpen(true)
         setConnectConfig({ provider, connectCallback });
         return;
+    }
+
+    const cancel = () => {
+        if (connectConfig) {
+            connectConfig.connectCallback(undefined);
+            setConnectConfig(undefined);
+        }
+        setOpen(false);
     }
 
     const onFinish = (connectedWallet?: Wallet | undefined) => {
@@ -66,7 +75,7 @@ export function WalletModalProvider({ children }) {
     }, [open])
 
     return (
-        <ConnectModalContext.Provider value={{ connect, selectedProvider, setSelectedProvider, isWalletModalOpen }}>
+        <ConnectModalContext.Provider value={{ connect, cancel, selectedProvider, setSelectedProvider, isWalletModalOpen }}>
             {children}
             <VaulDrawer
                 show={open}

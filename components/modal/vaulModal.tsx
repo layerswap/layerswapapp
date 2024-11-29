@@ -185,7 +185,11 @@ const VaulFooter: FC<{ snapElement: SnapElement | null }> = ({ snapElement }) =>
         <div
             ref={ref}
             id='walletModalFooter'
-            style={{ top: `${Number(snapElement?.height?.toString().replace('px', '')) - 50}px` }} className={`w-full fixed left-0 z-50`}
+            style={{
+                top: snapElement?.height !== 1 ? `${Number(snapElement?.height?.toString().replace('px', '')) - 50}px` : undefined,
+                bottom: snapElement?.height === 1 ? '12px' : undefined
+            }}
+            className={`w-full fixed left-0 z-50`}
         />
     )
 }
@@ -245,7 +249,7 @@ export const WalletFooterPortal: FC<Props> = ({ children, isWalletModalOpen }) =
             ref.current = element
             setMounted(true)
         }
-        
+
     }, [isWalletModalOpen]);
 
     return ref.current && mounted ? createPortal(children, ref.current) : null;

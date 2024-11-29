@@ -156,7 +156,7 @@ export const FormSourceWalletButton: FC = () => {
     const walletNetwork = values.fromExchange ? undefined : values.from
 
     const { wallets, provider } = useWallet(walletNetwork, 'withdrawal')
-    const { isWalletModalOpen } = useConnectModal()
+    const { isWalletModalOpen, cancel } = useConnectModal()
 
     const handleWalletChange = () => {
         setOpenModal(true)
@@ -174,6 +174,7 @@ export const FormSourceWalletButton: FC = () => {
         else {
             setFieldValue('depositMethod', 'wallet')
         }
+        cancel()
         setOpenModal(false)
     }
 
@@ -198,14 +199,12 @@ export const FormSourceWalletButton: FC = () => {
             >
                 <Connect />
             </button>
-             {
-                mountWalletPortal && <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
-                    {
-                        values.from?.deposit_methods.includes('deposit_address') &&
-                        <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer pt-3">
-                            Continue without a wallet
-                        </div>
-                    }
+            {
+                mountWalletPortal && values.from?.deposit_methods.includes('deposit_address') && values.depositMethod !== 'deposit_address' &&
+                <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
+                    <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer pt-3">
+                        Continue without a wallet
+                    </div>
                 </WalletFooterPortal>
             }
         </>
@@ -233,13 +232,11 @@ export const FormSourceWalletButton: FC = () => {
                 </VaulDrawer.Snap>
             </VaulDrawer >
             {
-                mountWalletPortal && <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
-                    {
-                        values.from?.deposit_methods.includes('deposit_address') &&
-                        <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer pt-3">
-                            Continue without a wallet
-                        </div>
-                    }
+                mountWalletPortal && values.from?.deposit_methods.includes('deposit_address') && values.depositMethod !== 'deposit_address' &&
+                <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
+                    <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer pt-3">
+                        Continue without a wallet
+                    </div>
                 </WalletFooterPortal>
             }
         </>
