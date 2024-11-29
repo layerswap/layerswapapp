@@ -48,15 +48,17 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
             const feeInLamports = await transaction.getEstimatedFee(connection)
             const feeInSol = feeInLamports / LAMPORTS_PER_SOL
 
-            const solBalance = walletPublicKey && await connection.getBalance(walletPublicKey)
+            const nativeTokenBalance = network?.token && networkName && wallet?.address ? await getBalance({ networkName, token: network.token, address: wallet?.address }) : undefined
             const tokenbalanceData = token && networkName && wallet?.address ? await getBalance({ networkName, token, address: wallet?.address }) : undefined
             const tokenBalanceAmount = tokenbalanceData?.amount
+            const nativeTokenBalanceAmount = nativeTokenBalance?.amount
 
             const insufficientTokensArr: string[] = []
-            if (Number(solBalance) < feeInSol) insufficientTokensArr.push('SOL')
-            if (amount && token?.symbol && Number(tokenBalanceAmount) < amount) insufficientTokensArr.push(token?.symbol)
-            setInsufficientTokens(insufficientTokensArr)
 
+            if (network?.token && Number(nativeTokenBalanceAmount) < feeInSol) insufficientTokensArr.push(network.token?.symbol)
+            if (network?.token?.symbol !== token?.symbol && amount && token?.symbol && Number(tokenBalanceAmount) < amount) insufficientTokensArr.push(token?.symbol)
+            setInsufficientTokens(insufficientTokensArr)
+            
             const signature = await configureAndSendCurrentTransaction(
                 transaction,
                 connection,
@@ -78,7 +80,7 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
         finally {
             setLoading(false)
         }
-    }, [swapId, callData, walletPublicKey, signTransaction])
+    }, [swapId, callData, walletPublicKey, signTransaction, network])
 
     if (!wallet) {
         return <ConnectWalletButton />
