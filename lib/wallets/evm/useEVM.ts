@@ -199,7 +199,8 @@ export default function useEVM(): WalletProvider {
 
         const parsedResult = {
             ...result,
-            hashlock: result.hashlock !== "0x0000000000000000000000000000000000000000000000000000000000000000" ? result.hashlock : null,
+            secret: Number(result.secret) !== 1 ? result.secret : null,
+            hashlock: (result.hashlock == "0x0100000000000000000000000000000000000000000000000000000000000000" || result.hashlock == "0x0000000000000000000000000000000000000000000000000000000000000000") ? null : result.hashlock,
             amount: formatAmount(Number(result.amount), networkToken?.decimals),
             timelock: Number(result.timelock)
         }

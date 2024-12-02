@@ -528,6 +528,11 @@
                         "type": "bytes32"
                     },
                     {
+                        "internalType": "uint256",
+                        "name": "secret",
+                        "type": "uint256"
+                    },
+                    {
                         "internalType": "address",
                         "name": "tokenContract",
                         "type": "address"
@@ -538,9 +543,9 @@
                         "type": "uint48"
                     },
                     {
-                        "internalType": "bool",
+                        "internalType": "uint8",
                         "name": "claimed",
-                        "type": "bool"
+                        "type": "uint8"
                     },
                     {
                         "internalType": "address payable",
