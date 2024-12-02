@@ -112,7 +112,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                                 ) : (
                                     <div className="space-x-1 flex">
                                         {notCompatibleWallets?.map((wallet) => (
-                                            <div className="inline-flex items-center relative">
+                                            <div key={wallet.address} className="inline-flex items-center relative">
                                                 <wallet.icon className="w-4 h-4 rounded-sm bg-secondary-800" />
                                             </div>
                                         ))}
