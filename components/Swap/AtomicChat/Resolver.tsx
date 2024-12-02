@@ -374,7 +374,7 @@ export const ActionsWithProgressbar: FC = () => {
                             </div>
                     }
                     {
-                        timelock && Number(timelock) - (Date.now() / 1000) > 0 && !sourceDetails?.claimed &&
+                        timelock && Number(timelock) - (Date.now() / 1000) > 0 && sourceDetails?.claimed == 1 &&
                         <TimelockTimer timelock={Number(timelock) - (Date.now() / 1000)} />
                     }
                 </div>
