@@ -25,9 +25,9 @@ type CommitStatus = 'committed' | 'user_locked' | 'lp_locked' | 'completed' | 'r
 
 const commitStatusResolver = (commit: Commit, destination_details: Commit | undefined | null): CommitStatus => {
 
-    if (destination_details?.redeemed || commit?.redeemed) return 'completed'
+    if (destination_details?.claimed || commit?.claimed) return 'completed'
     //TODO check&implement source lock refund
-    else if (commit.refunded) return 'refunded'
+    else if (commit.claimed == 2) return 'refunded'
     else if (commit.timelock && Number(commit.timelock) * 1000 < Date.now()) return 'timelock_expired'
     else if (commit.hashlock) return 'user_locked'
     else if (destination_details) return 'lp_locked'
@@ -69,96 +69,96 @@ function CommittmentsHistory() {
 
     const PAGE_SIZE = 5
 
-    const getCommitments = async (page: number, commitIds: string[], sourceAtomicContract: string, sourceType: 'native' | 'erc20') => {
-        let commits: (HistoryCommit)[] = []
+    // const getCommitments = async (page: number, commitIds: string[], sourceAtomicContract: string, sourceType: 'native' | 'erc20') => {
+    //     let commits: (HistoryCommit)[] = []
 
-        for (let i = page * PAGE_SIZE; i < (page + 1) * PAGE_SIZE; i++) {
-            const commit = commitIds[i] && await source_provider?.getDetails({ id: commitIds[i], chainId: activeNetwork?.chain_id as string, contractAddress: sourceAtomicContract as `0x${string}`, type: sourceType })
+    //     for (let i = page * PAGE_SIZE; i < (page + 1) * PAGE_SIZE; i++) {
+    //         const commit = commitIds[i] && await source_provider?.getDetails({ id: commitIds[i], chainId: activeNetwork?.chain_id as string, contractAddress: sourceAtomicContract as `0x${string}`, type: sourceType })
 
-            const destination_network = commit && networks.find(network => network.name === commit.dstChain) || null
-            const destination_provider = destination_network && getWithdrawalProvider(destination_network)
-            const destination_asset = commit && destination_network && destination_network?.tokens.find(token => token.symbol === commit.dstAsset) || null
-            const destinationAtomicContract = destination_asset?.contract ? destination_network?.metadata.htlc_token_contract : destination_network?.metadata.htlc_native_contract
-            const destinationType = destination_asset?.contract ? 'erc20' : 'native'
+    //         const destination_network = commit && networks.find(network => network.name === commit.dstChain) || null
+    //         const destination_provider = destination_network && getWithdrawalProvider(destination_network)
+    //         const destination_asset = commit && destination_network && destination_network?.tokens.find(token => token.symbol === commit.dstAsset) || null
+    //         const destinationAtomicContract = destination_asset?.contract ? destination_network?.metadata.htlc_token_contract : destination_network?.metadata.htlc_native_contract
+    //         const destinationType = destination_asset?.contract ? 'erc20' : 'native'
 
-            let destinationDetails: Commit | undefined | null = undefined
+    //         let destinationDetails: Commit | undefined | null = undefined
 
-            if (destination_network && destination_provider && destination_network.chain_id && destination_asset) {
+    //         if (destination_network && destination_provider && destination_network.chain_id && destination_asset) {
 
-                try {
+    //             try {
 
-                    destinationDetails = await destination_provider.getDetails({
-                        type: destinationType,
-                        id: commitIds[i],
-                        chainId: destination_network.chain_id,
-                        contractAddress: destinationAtomicContract as `0x${string}`
-                    })
+    //                 destinationDetails = await destination_provider.getDetails({
+    //                     type: destinationType,
+    //                     id: commitIds[i],
+    //                     chainId: destination_network.chain_id,
+    //                     contractAddress: destinationAtomicContract as `0x${string}`
+    //                 })
 
-                } catch (e) {
-                    console.log(e)
-                }
-            }
+    //             } catch (e) {
+    //                 console.log(e)
+    //             }
+    //         }
 
-            if (commit) {
-                const status = commitStatusResolver(commit, destinationDetails)
-                commits.push({
-                    ...commit,
-                    status,
-                    id: commitIds[i]
-                })
-            }
-        }
+    //         if (commit) {
+    //             const status = commitStatusResolver(commit, destinationDetails)
+    //             commits.push({
+    //                 ...commit,
+    //                 status,
+    //                 id: commitIds[i]
+    //             })
+    //         }
+    //     }
 
-        return commits
-    }
+    //     return commits
+    // }
 
-    const handleOpenCommitDetails = (commit: HistoryCommit) => {
-        setSelectedCommit(commit)
-        setOpenSwapDetailsModal(true)
-    }
+    // const handleOpenCommitDetails = (commit: HistoryCommit) => {
+    //     setSelectedCommit(commit)
+    //     setOpenSwapDetailsModal(true)
+    // }
 
-    useEffect(() => {
-        (async () => {
-            if (providers.length === 0 || !activeNetwork || !activeNetwork.chain_id || !source_provider?.getContracts || !selectedProvider) return
-            setPage(0)
-            setIsLastPage(false)
-            setLoading(true)
+    // useEffect(() => {
+    //     (async () => {
+    //         if (providers.length === 0 || !activeNetwork || !activeNetwork.chain_id || !source_provider?.getContracts || !selectedProvider) return
+    //         setPage(0)
+    //         setIsLastPage(false)
+    //         setLoading(true)
 
-            const commIds = activeNetwork?.metadata.htlc_native_contract && await source_provider?.getContracts({ contractAddress: activeNetwork?.metadata.htlc_native_contract as `0x${string}`, chainId: activeNetwork.chain_id, type: 'native' })
-            if (commIds) setAllCommitIds(ids => ({ ...ids, [selectedProvider]: commIds }))
-            const erc20CommIds = await source_provider?.getContracts({ contractAddress: activeNetwork?.metadata.htlc_token_contract as `0x${string}`, chainId: activeNetwork.chain_id, type: 'erc20' })
-            if (erc20CommIds) setAllErc20CommIds(ids => ({ ...ids, [selectedProvider]: erc20CommIds }))
+    //         const commIds = activeNetwork?.metadata.htlc_native_contract && await source_provider?.getContracts({ contractAddress: activeNetwork?.metadata.htlc_native_contract as `0x${string}`, chainId: activeNetwork.chain_id, type: 'native' })
+    //         if (commIds) setAllCommitIds(ids => ({ ...ids, [selectedProvider]: commIds }))
+    //         const erc20CommIds = await source_provider?.getContracts({ contractAddress: activeNetwork?.metadata.htlc_token_contract as `0x${string}`, chainId: activeNetwork.chain_id, type: 'erc20' })
+    //         if (erc20CommIds) setAllErc20CommIds(ids => ({ ...ids, [selectedProvider]: erc20CommIds }))
 
-            const commits = commIds && await getCommitments(0, commIds, activeNetwork?.metadata.htlc_native_contract, 'native') || []
-            const erc20Commits = erc20CommIds && activeNetwork?.metadata.htlc_token_contract && await getCommitments(0, erc20CommIds, activeNetwork?.metadata.htlc_token_contract, 'erc20') || []
-            setAllCommitments(allCommits => ({ ...allCommits, [selectedProvider]: [...commits, ...erc20Commits] }))
+    //         const commits = commIds && await getCommitments(0, commIds, activeNetwork?.metadata.htlc_native_contract, 'native') || []
+    //         const erc20Commits = erc20CommIds && activeNetwork?.metadata.htlc_token_contract && await getCommitments(0, erc20CommIds, activeNetwork?.metadata.htlc_token_contract, 'erc20') || []
+    //         setAllCommitments(allCommits => ({ ...allCommits, [selectedProvider]: [...commits, ...erc20Commits] }))
 
-            setPage(1)
-            if ((commIds ? (Number(commIds?.length) <= PAGE_SIZE) : true) && (erc20CommIds ? (Number(erc20CommIds?.length) <= PAGE_SIZE) : true)) setIsLastPage(true)
-            setLoading(false)
-        })()
-    }, [router.query, selectedWallet?.address, selectedWallet?.chainId])
+    //         setPage(1)
+    //         if ((commIds ? (Number(commIds?.length) <= PAGE_SIZE) : true) && (erc20CommIds ? (Number(erc20CommIds?.length) <= PAGE_SIZE) : true)) setIsLastPage(true)
+    //         setLoading(false)
+    //     })()
+    // }, [router.query, selectedWallet?.address, selectedWallet?.chainId])
 
-    const handleLoadMore = useCallback(async () => {
-        if (!selectedProvider) return null
-        setLoading(true)
+    // const handleLoadMore = useCallback(async () => {
+    //     if (!selectedProvider) return null
+    //     setLoading(true)
 
-        const commits = commitIds && activeNetwork?.metadata.htlc_native_contract && await getCommitments(page, commitIds, activeNetwork?.metadata.htlc_native_contract, 'native') || []
-        const erc20Commits = erc20CommIds && activeNetwork?.metadata.htlc_token_contract && await getCommitments(page, erc20CommIds, activeNetwork?.metadata.htlc_token_contract, 'erc20') || []
+    //     const commits = commitIds && activeNetwork?.metadata.htlc_native_contract && await getCommitments(page, commitIds, activeNetwork?.metadata.htlc_native_contract, 'native') || []
+    //     const erc20Commits = erc20CommIds && activeNetwork?.metadata.htlc_token_contract && await getCommitments(page, erc20CommIds, activeNetwork?.metadata.htlc_token_contract, 'erc20') || []
 
-        setAllCommitments(allCommits => ({ ...allCommits, [selectedProvider]: [...(allCommits?.[selectedProvider] || []), ...commits, ...erc20Commits] }))
+    //     setAllCommitments(allCommits => ({ ...allCommits, [selectedProvider]: [...(allCommits?.[selectedProvider] || []), ...commits, ...erc20Commits] }))
 
-        const nextPage = page + 1
-        setPage(nextPage)
-        if ((commitIds ? (Number(commitIds?.length) <= PAGE_SIZE * nextPage) : true) && (erc20CommIds ? (Number(erc20CommIds?.length) <= PAGE_SIZE * nextPage) : true)) setIsLastPage(true)
-        setLoading(false)
-    }, [page, setAllCommitments, commitIds, erc20CommIds])
+    //     const nextPage = page + 1
+    //     setPage(nextPage)
+    //     if ((commitIds ? (Number(commitIds?.length) <= PAGE_SIZE * nextPage) : true) && (erc20CommIds ? (Number(erc20CommIds?.length) <= PAGE_SIZE * nextPage) : true)) setIsLastPage(true)
+    //     setLoading(false)
+    // }, [page, setAllCommitments, commitIds, erc20CommIds])
 
-    useEffect(() => {
-        if (!selectedWallet) {
-            setSelectedProvider(providers?.[0]?.connector)
-        }
-    }, [providers])
+    // useEffect(() => {
+    //     if (!selectedWallet) {
+    //         setSelectedProvider(providers?.[0]?.connector)
+    //     }
+    // }, [providers])
 
     if (providers.length === 0) return <HistoryWrapper>
         <div className="absolute top-1/4 right-0 text-center w-full px-6">
@@ -179,7 +179,7 @@ function CommittmentsHistory() {
     return (
         <HistoryWrapper>
             <WalletSelector wallets={providers} selectedWallet={selectedProvider} setSelectedWallet={setSelectedProvider} />
-            {
+            {/* {
                 page == 0 && loading ?
                     <SwapHistoryComponentSceleton />
                     : <>
@@ -328,7 +328,7 @@ function CommittmentsHistory() {
                             </div>
                         </Modal>
                     </>
-            }
+            } */}
         </HistoryWrapper>
     )
 }

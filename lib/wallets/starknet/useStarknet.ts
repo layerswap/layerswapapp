@@ -217,19 +217,14 @@ export default function useStarknet(): WalletProvider {
         const networkToken = networks.find(network => chainId && Number(network.chain_id) == Number(chainId))?.tokens.find(token => token.symbol === shortString.decodeShortString(ethers.utils.hexlify(result.srcAsset as BigNumberish)))
 
         const parsedResult = {
-            dstAddress: result.dstAddress,
-            dstChain: shortString.decodeShortString(ethers.utils.hexlify(result.dstChain as BigNumberish)),
-            dstAsset: shortString.decodeShortString(ethers.utils.hexlify(result.dstAsset as BigNumberish)),
-            srcAsset: shortString.decodeShortString(ethers.utils.hexlify(result.srcAsset as BigNumberish)),
             sender: ethers.utils.hexlify(result.sender as BigNumberish),
             srcReceiver: ethers.utils.hexlify(result.srcReceiver as BigNumberish),
             timelock: Number(result.timelock),
             id: result.lockId && toHex(result.id, { size: 32 }),
             amount: formatAmount(Number(result.amount), networkToken?.decimals),
-            refunded: result.refunded,
             hashlock: result.hashlock && toHex(result.hashlock, { size: 32 }),
             secret: result.secret || null,
-            redeemed: result.redeemed || false,
+            claimed: result.refunded ? 2 : result.redeemed ? 3 : 1
         }
 
         return parsedResult

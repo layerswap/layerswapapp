@@ -8,27 +8,24 @@ import { useRouter } from 'next/router';
 import { Eye } from 'lucide-react';
 import StatusIcon from './StatusIcons';
 import { HistoryCommit } from '.';
-import { NetworkWithTokens } from '../../../Models/Network';
+import { NetworkWithTokens, Token } from '../../../Models/Network';
 import { truncateDecimals } from '../../utils/RoundDecimals';
 
 type Props = {
     commit: HistoryCommit,
     source_network: NetworkWithTokens
+    source_asset: Token,
+    destination_network: NetworkWithTokens,
 }
 
-const CommitDetails: FC<Props> = ({ commit, source_network }) => {
+const CommitDetails: FC<Props> = ({ commit, source_network, destination_network, source_asset }) => {
     const router = useRouter()
 
-    const { amount, dstAddress, dstAsset, dstChain, srcAsset, id } = commit
-
-    const { networks } = useSettingsState()
-    const source_token = source_network?.tokens.find(t => t.symbol === srcAsset)
-
-    const destination_network = networks.find(n => n.name.toUpperCase() === dstChain.toUpperCase())
+    const { amount, id } = commit
 
     return (
         <>
-            <div className="w-full grid grid-flow-row animate-fade-in">
+            {/* <div className="w-full grid grid-flow-row animate-fade-in">
                 <div className="rounded-md w-full grid grid-flow-row">
                     <div className="items-center space-y-1.5 block text-base font-lighter leading-6 text-secondary-text">
                         <div className="flex justify-between p items-baseline">
@@ -111,7 +108,7 @@ const CommitDetails: FC<Props> = ({ commit, source_network }) => {
                         <div className="flex justify-between items-baseline">
                             <span className="text-left">Committed amount</span>
                             <span className='text-primary-text font-normal flex'>
-                                {source_token && truncateDecimals(amount, source_token?.precision)} {source_token?.symbol}
+                                {source_asset && truncateDecimals(amount, source_asset?.precision)} {source_asset?.symbol}
                             </span>
                         </div>
                     </div>
@@ -124,7 +121,7 @@ const CommitDetails: FC<Props> = ({ commit, source_network }) => {
                         onClick={() => router.push({
                             pathname: `/atomic`,
                             query: {
-                                amount: source_token && truncateDecimals(amount, source_token?.precision),
+                                amount: source_asset && truncateDecimals(amount, source_asset?.precision),
                                 address: dstAddress,
                                 source: source_network?.name,
                                 destination: destination_network?.name,
@@ -140,7 +137,7 @@ const CommitDetails: FC<Props> = ({ commit, source_network }) => {
                         View swap
                     </SubmitButton>
                 </div>
-            </div>
+            </div> */}
         </>
     )
 }

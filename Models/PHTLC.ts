@@ -1,15 +1,10 @@
 export type Commit = {
-    dstAddress: string,
-    dstChain: string,
-    dstAsset: string,
-    srcAsset: string,
     sender: string,
     srcReceiver: string,
     timelock: number,
     amount: number,
     id?: string | undefined,
     hashlock: string | undefined,
-    refunded: boolean,
-    secret: number,
-    redeemed: boolean,
+    secret: number | undefined,
+    claimed: number,
 }

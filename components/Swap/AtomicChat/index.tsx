@@ -27,8 +27,8 @@ const Commitment: FC<ContainerProps> = (props) => {
 
     const { commitId, sourceDetails } = useAtomicState()
 
-    const source_network = networks.find(n => n.name.toUpperCase() === source.toUpperCase())
-    const destination_network = networks.find(n => n.name.toUpperCase() === destination.toUpperCase())
+    const source_network = networks.find(n => n.name.toUpperCase() === source?.toUpperCase())
+    const destination_network = networks.find(n => n.name.toUpperCase() === destination?.toUpperCase())
     const source_token = source_network?.tokens.find(t => t.symbol === source_asset)
     const destination_token = destination_network?.tokens.find(t => t.symbol === destination_asset)
 
@@ -58,7 +58,7 @@ const Commitment: FC<ContainerProps> = (props) => {
                                 <Summary
                                     destination={destination_network}
                                     source={source_network}
-                                    destinationAddress={sourceDetails?.dstAddress || address}
+                                    destinationAddress={address}
                                     destinationCurrency={destination_token}
                                     requestedAmount={amount}
                                     sourceCurrency={source_token}

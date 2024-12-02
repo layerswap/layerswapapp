@@ -5,17 +5,86 @@
         "type": "constructor"
     },
     {
-        "anonymous": false,
+        "inputs": [],
+        "name": "AlreadyClaimed",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "ECDSAInvalidSignature",
+        "type": "error"
+    },
+    {
         "inputs": [
             {
-                "indexed": false,
-                "internalType": "bytes",
-                "name": "lowLevelData",
-                "type": "bytes"
+                "internalType": "uint256",
+                "name": "length",
+                "type": "uint256"
             }
         ],
-        "name": "LowLevelErrorOccurred",
-        "type": "event"
+        "name": "ECDSAInvalidSignatureLength",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "s",
+                "type": "bytes32"
+            }
+        ],
+        "name": "ECDSAInvalidSignatureS",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "FundsNotSent",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "HTLCAlreadyExists",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "HTLCNotExists",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "HashlockAlreadySet",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "HashlockNotMatch",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "InvalidSigniture",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "NoAllowance",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "NotFutureTimelock",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "NotPassedTimelock",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "TransferFailed",
+        "type": "error"
     },
     {
         "anonymous": false,
@@ -88,12 +157,37 @@
             },
             {
                 "indexed": false,
-                "internalType": "uint256",
+                "internalType": "uint48",
                 "name": "timelock",
-                "type": "uint256"
+                "type": "uint48"
             }
         ],
         "name": "TokenCommitted",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "bytes32",
+                "name": "Id",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes32",
+                "name": "hashlock",
+                "type": "bytes32"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint48",
+                "name": "timelock",
+                "type": "uint48"
+            }
+        ],
+        "name": "TokenLockAdded",
         "type": "event"
     },
     {
@@ -155,9 +249,9 @@
             },
             {
                 "indexed": false,
-                "internalType": "uint256",
+                "internalType": "uint48",
                 "name": "timelock",
-                "type": "uint256"
+                "type": "uint48"
             }
         ],
         "name": "TokenLocked",
@@ -177,6 +271,18 @@
                 "internalType": "address",
                 "name": "redeemAddress",
                 "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "secret",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "bytes32",
+                "name": "hashlock",
+                "type": "bytes32"
             }
         ],
         "name": "TokenRedeemed",
@@ -208,9 +314,9 @@
                 "type": "bytes32"
             },
             {
-                "internalType": "uint256",
+                "internalType": "uint48",
                 "name": "timelock",
-                "type": "uint256"
+                "type": "uint48"
             }
         ],
         "name": "addLock",
@@ -239,19 +345,14 @@
                         "type": "bytes32"
                     },
                     {
-                        "internalType": "uint256",
+                        "internalType": "uint48",
                         "name": "timelock",
-                        "type": "uint256"
+                        "type": "uint48"
                     }
                 ],
                 "internalType": "struct LayerswapV8.addLockMsg",
                 "name": "message",
                 "type": "tuple"
-            },
-            {
-                "internalType": "uint8",
-                "name": "v",
-                "type": "uint8"
             },
             {
                 "internalType": "bytes32",
@@ -262,6 +363,11 @@
                 "internalType": "bytes32",
                 "name": "s",
                 "type": "bytes32"
+            },
+            {
+                "internalType": "uint8",
+                "name": "v",
+                "type": "uint8"
             }
         ],
         "name": "addLockSig",
@@ -318,9 +424,9 @@
                 "type": "address"
             },
             {
-                "internalType": "uint256",
+                "internalType": "uint48",
                 "name": "timelock",
-                "type": "uint256"
+                "type": "uint48"
             }
         ],
         "name": "commit",
@@ -337,25 +443,6 @@
     {
         "inputs": [
             {
-                "internalType": "address",
-                "name": "senderAddr",
-                "type": "address"
-            }
-        ],
-        "name": "getContracts",
-        "outputs": [
-            {
-                "internalType": "bytes32[]",
-                "name": "",
-                "type": "bytes32[]"
-            }
-        ],
-        "stateMutability": "view",
-        "type": "function"
-    },
-    {
-        "inputs": [
-            {
                 "internalType": "bytes32",
                 "name": "Id",
                 "type": "bytes32"
@@ -366,24 +453,14 @@
             {
                 "components": [
                     {
-                        "internalType": "string",
-                        "name": "dstAddress",
-                        "type": "string"
+                        "internalType": "uint256",
+                        "name": "amount",
+                        "type": "uint256"
                     },
                     {
-                        "internalType": "string",
-                        "name": "dstChain",
-                        "type": "string"
-                    },
-                    {
-                        "internalType": "string",
-                        "name": "dstAsset",
-                        "type": "string"
-                    },
-                    {
-                        "internalType": "string",
-                        "name": "srcAsset",
-                        "type": "string"
+                        "internalType": "bytes32",
+                        "name": "hashlock",
+                        "type": "bytes32"
                     },
                     {
                         "internalType": "address payable",
@@ -396,33 +473,13 @@
                         "type": "address"
                     },
                     {
-                        "internalType": "bytes32",
-                        "name": "hashlock",
-                        "type": "bytes32"
-                    },
-                    {
-                        "internalType": "uint256",
+                        "internalType": "uint48",
                         "name": "timelock",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "amount",
-                        "type": "uint256"
-                    },
-                    {
-                        "internalType": "uint256",
-                        "name": "secret",
-                        "type": "uint256"
+                        "type": "uint48"
                     },
                     {
                         "internalType": "bool",
-                        "name": "redeemed",
-                        "type": "bool"
-                    },
-                    {
-                        "internalType": "bool",
-                        "name": "refunded",
+                        "name": "claimed",
                         "type": "bool"
                     }
                 ],
@@ -447,9 +504,9 @@
                 "type": "bytes32"
             },
             {
-                "internalType": "uint256",
+                "internalType": "uint48",
                 "name": "timelock",
-                "type": "uint256"
+                "type": "uint48"
             },
             {
                 "internalType": "address payable",

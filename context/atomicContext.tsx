@@ -55,8 +55,8 @@ export function AtomicProvider({ children }) {
     const [completedRefundHash, setCompletedRefundHash] = useState<string | undefined>(undefined)
     const [error, setError] = useState<string | undefined>(undefined)
 
-    const source_network = networks.find(n => n.name.toUpperCase() === (source as string).toUpperCase())
-    const destination_network = networks.find(n => n.name.toUpperCase() === (destination as string).toUpperCase())
+    const source_network = networks.find(n => n.name.toUpperCase() === (source as string)?.toUpperCase())
+    const destination_network = networks.find(n => n.name.toUpperCase() === (destination as string)?.toUpperCase())
     const source_token = source_network?.tokens.find(t => t.symbol === source_asset)
     const destination_token = destination_network?.tokens.find(t => t.symbol === destination_asset)
 
@@ -73,7 +73,7 @@ export function AtomicProvider({ children }) {
         const time = (Number(sourceDetails?.timelock) * 1000) - Date.now()
 
 
-        if (!sourceDetails.hashlock || (destinationDetails && !destinationDetails.redeemed)) {
+        if (!sourceDetails.hashlock || (destinationDetails && destinationDetails.claimed == 1)) {
             if (time < 0) {
                 setIsTimelockExpired(true)
                 return
