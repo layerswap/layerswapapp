@@ -16,6 +16,7 @@ import { BAKO_STATE } from "./Basko";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { useConnectModal } from "../../../components/WalletModal";
+import { useMemo } from "react";
 
 export default function useFuel(): WalletProvider {
     const autofillSupportedNetworks = [KnownInternalNames.Networks.FuelTestnet, KnownInternalNames.Networks.FuelMainnet]
@@ -28,14 +29,13 @@ export default function useFuel(): WalletProvider {
     const { address: evmAddress, connector: evmConnector } = useAccount()
     const { connectors } = useConnectors()
 
-    const getWallet = () => {
+    const connectedWallets: Wallet[] | undefined = useMemo(() => {
 
-        if (wallet) {
-            const result = resolveWallet(wallet.address.toB256(), connectors, evmAddress, evmConnector, connectWallet, disconnectWallets, name, getItem)
+        if (!wallet) return
+        const result = resolveWallet(wallet.address.toB256(), connectors, evmAddress, evmConnector, connectWallet, disconnectWallets, name, getItem)
 
-            return [result]
-        }
-    }
+        return [result]
+    }, [wallet, connectors, evmAddress, evmConnector, name])
 
     const { connect } = useConnectModal()
 
@@ -120,8 +120,8 @@ export default function useFuel(): WalletProvider {
         switchAccount: reconnectWallet,
         availableWalletsForConnect,
         autofillSupportedNetworks,
-        activeWallet: getWallet()?.[0],
-        connectedWallets: getWallet(),
+        activeWallet: connectedWallets?.[0],
+        connectedWallets,
         name,
         id,
     }
