@@ -9,6 +9,7 @@ import SecondaryButton from '../buttons/secondaryButton';
 import { useFormikContext } from 'formik';
 import { useFee } from '../../context/feeContext';
 import useSWRBalance from '../../lib/newbalances/useSWRBalance';
+import { useSwapDataState } from '../../context/swap';
 
 type RefuelModalProps = {
     openModal: boolean,
@@ -23,16 +24,14 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
 
     const { to, toCurrency, refuel, destination_address } = values || {};
 
-    const { provider } = useWallet(to, "autofil")
     const { fee } = useFee()
 
     const nativeAsset = to?.token
     const token_usd_price = fee?.quote?.destination_network?.token?.price_in_usd || nativeAsset?.price_in_usd
 
-    //BALANCE:TODO: pass source address from form values
-    const connectedWallet = provider?.activeWallet
+    const { selectedSourceAccount } = useSwapDataState()
 
-    const { balance } = useSWRBalance(destination_address || (connectedWallet?.address || ''), to)
+    const { balance } = useSWRBalance(destination_address || (selectedSourceAccount?.address || ''), to)
     const destNativeTokenBalance = balance?.find(b => b.token === nativeAsset?.symbol && b.network === to?.name)
     const amountInUsd = (destNativeTokenBalance && token_usd_price) ? (destNativeTokenBalance.amount * token_usd_price).toFixed(2) : undefined
 

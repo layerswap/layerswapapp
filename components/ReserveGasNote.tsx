@@ -9,20 +9,19 @@ import { useFee } from "../context/feeContext"
 import { Balance, Gas } from "../Models/Balance"
 import useSWRBalance from "../lib/newbalances/useSWRBalance"
 import useSWRGas from "../lib/newgases/useSWRGas"
+import { useSwapDataState } from "../context/swap"
 
 const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: Balance, networkGas: Gas) => void }) => {
     const {
         values,
     } = useFormikContext<SwapFormValues>();
     const { minAllowedAmount } = useFee()
+    const { selectedSourceAccount } = useSwapDataState()
 
-    const { provider } = useWallet(values.from, 'autofil')
-    const wallet = provider?.activeWallet
-    //BALANCE:TODO: pass source address from form values
-    const { balance } = useSWRBalance(wallet?.address, values.from)
-    const { gas } = useSWRGas(wallet?.address, values.from, values.fromCurrency)
+    const { balance } = useSWRBalance(selectedSourceAccount?.address, values.from)
+    const { gas } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromCurrency)
 
-    const walletBalance = wallet && balance?.find(b => b?.network === values?.from?.name && b?.token === values?.fromCurrency?.symbol)
+    const walletBalance = selectedSourceAccount && balance?.find(b => b?.network === values?.from?.name && b?.token === values?.fromCurrency?.symbol)
     const networkGas = values.from?.name ?
         gas?.find(g => g?.token === values?.fromCurrency?.symbol)
         : null
