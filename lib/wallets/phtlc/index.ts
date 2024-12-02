@@ -36,9 +36,9 @@ export type RefundParams = {
     type: 'erc20' | 'native';
     chainId: string,
     contractAddress: `0x${string}`,
-    commit: Commit
     id: string,
     hashlock?: string | undefined,
+    sourceAsset: Token,
 }
 
 export type GetCommitsParams = {

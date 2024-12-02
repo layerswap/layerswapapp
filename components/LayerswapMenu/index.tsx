@@ -87,12 +87,12 @@ export default function LayerswapMenu() {
 
                                 <Menu.Group>
                                     <>
-                                        {
+                                        {/* {
                                             router.pathname != '/committments' &&
                                             <Menu.Item pathname='/committments/' icon={<ScrollText className="h-5 w-5" />} >
                                                 History
                                             </Menu.Item>
-                                        }
+                                        } */}
                                     </>
                                     <>
                                         {

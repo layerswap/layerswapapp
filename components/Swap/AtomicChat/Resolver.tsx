@@ -165,7 +165,7 @@ export const ResolveMessages: FC = () => {
 
     const assetsLocked = sourceDetails?.hashlock && destinationDetails?.hashlock ? true : false;
 
-    const redeemCompleted = (destinationDetails?.redeemed ? true : false) || lpRedeemTransaction?.hash;
+    const redeemCompleted = (destinationDetails?.claimed == 3 ? true : false) || lpRedeemTransaction?.hash;
     const { getWithdrawalProvider } = useWallet()
     const source_provider = source_network && getWithdrawalProvider(source_network)
     const wallet = source_provider?.getConnectedWallet()
@@ -192,7 +192,7 @@ export const ResolveMessages: FC = () => {
                 <AssetsLockedByLP address={lp_address} destination_network={destination_network} tx_id={lpLockTransaction?.hash} amount={destinationDetailsAmount} asset={destination_asset?.symbol} />
                 <AssetsLockedByUser walletIcon={WalletIcon} />
                 {
-                    sourceDetails?.refunded ?
+                    sourceDetails?.claimed == 2 ?
                         <RefundCompleted walletIcon={WalletIcon} source_network={source_network} tx_id={completedRefundHash} />
                         :
                         completedRefundHash ?
@@ -206,7 +206,7 @@ export const ResolveMessages: FC = () => {
             return <div className="flex w-full grow flex-col space-y-2" >
                 <Committed walletIcon={WalletIcon} amount={commitAmount} asset={source_asset?.symbol} />
                 {
-                    sourceDetails?.refunded ?
+                    sourceDetails?.claimed == 2 ?
                         <RefundCompleted walletIcon={WalletIcon} source_network={source_network} tx_id={completedRefundHash} />
                         :
                         completedRefundHash ?
@@ -271,7 +271,7 @@ const ResolveAction: FC = () => {
     const commited = sourceDetails ? true : false;
     const lpLockDetected = destinationDetails?.hashlock ? true : false;
     const assetsLocked = sourceDetails?.hashlock && destinationDetails?.hashlock ? true : false;
-    const redeemCompleted = (destinationDetails?.redeemed ? true : false) || lpRedeemTransaction?.hash;
+    const redeemCompleted = (destinationDetails?.claimed == 3 ? true : false) || lpRedeemTransaction?.hash;
 
     if (error) {
         return <div className="w-full flex flex-col gap-4">
@@ -296,7 +296,7 @@ const ResolveAction: FC = () => {
         </div>
     }
     if (isTimelockExpired) {
-        if (sourceDetails?.refunded) {
+        if (sourceDetails?.claimed == 2) {
             return <div className="flex w-full grow flex-col space-y-2" >
                 <ActionStatus
                     status="success"
@@ -354,7 +354,7 @@ export const ActionsWithProgressbar: FC = () => {
     }
     const lpRedeemTransaction = commitFromApi?.transactions.find(t => t.type === 'redeem' && t.network === destination_network?.name)
 
-    const allDone = ((sourceDetails?.hashlock && destinationDetails?.redeemed) || lpRedeemTransaction?.hash) ? true : false
+    const allDone = ((sourceDetails?.hashlock && destinationDetails?.claimed == 3) || lpRedeemTransaction?.hash) ? true : false
     const showSteps = !allDone && !isTimelockExpired
     const timelock = sourceDetails?.timelock || sourceDetails?.timelock
 
@@ -374,7 +374,7 @@ export const ActionsWithProgressbar: FC = () => {
                             </div>
                     }
                     {
-                        timelock && Number(timelock) - (Date.now() / 1000) > 0 && !sourceDetails?.redeemed &&
+                        timelock && Number(timelock) - (Date.now() / 1000) > 0 && sourceDetails?.claimed == 1 &&
                         <TimelockTimer timelock={Number(timelock) - (Date.now() / 1000)} />
                     }
                 </div>

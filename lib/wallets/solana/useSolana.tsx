@@ -8,7 +8,7 @@ import { AnchorHtlc } from "./anchorHTLC"
 import { AnchorProvider, Program, setProvider } from '@coral-xyz/anchor'
 import { PublicKey } from "@solana/web3.js"
 import { useSettingsState } from "../../../context/settings"
-import { NetworkType } from "../../../Models/Network"
+import { NetworkType, Token } from "../../../Models/Network"
 import { useCallback } from "react"
 import { lockTransactionBuilder, phtlcTransactionBuilder } from "./transactionBuilder"
 
@@ -129,12 +129,11 @@ export default function useSolana(): WalletProvider {
         }
     }
 
-    const addLock = async (params: CommitmentParams & LockParams) => {
+    const addLock = async (params: CommitmentParams & LockParams & { destinationAsset: Token }) => {
 
-        const network = networks.find(n => n.chain_id === params.chainId)
-        if (!program || !publicKey || !network) return null
+        if (!program || !publicKey) return null
 
-        const transaction = await lockTransactionBuilder({ connection, program, walletPublicKey: publicKey, network: network, ...params })
+        const transaction = await lockTransactionBuilder({ connection, program, walletPublicKey: publicKey, ...params })
 
         const signed = transaction?.lockCommit && signTransaction && await signTransaction(transaction.lockCommit);
         const signature = signed && await connection.sendRawTransaction(signed.serialize());
@@ -161,9 +160,7 @@ export default function useSolana(): WalletProvider {
     }
 
     const refund = async (params: RefundParams) => {
-        const { commit, id, chainId } = params
-
-        const sourceAsset = networks.find(n => n.chain_id === chainId)?.tokens.find(t => t.symbol === commit.srcAsset)
+        const { id, sourceAsset } = params
 
         if (!program || !sourceAsset?.contract || !publicKey) return null
 

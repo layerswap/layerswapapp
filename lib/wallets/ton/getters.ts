@@ -41,19 +41,14 @@ export const getTONDetails = async (params: CommitmentParams & { network: Networ
     const hashlock = (Number(details[8]) != 0) ? toHex(details[8]) : undefined
 
     const parsedResult: Commit = {
-        dstAddress: details[0].beginParse().loadStringTail(),
-        dstChain: details[1].beginParse().loadStringTail(),
-        dstAsset: details[2].beginParse().loadStringTail(),
-        srcAsset,
         sender,
         srcReceiver: details[6].beginParse().loadAddress().toString(),
         timelock: Number(details[10]),
         amount,
         hashlock,
         id,
-        refunded: Number(details[12]) === 1,
         secret: Number(details[7]),
-        redeemed: Number(details[11]) === 1
+        claimed: Number(details[12]) === 1 ? 2 : Number(details[11]) === 1 ? 3 : 1
     }
 
     return parsedResult

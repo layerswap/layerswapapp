@@ -10,7 +10,6 @@ export const UserCommitAction: FC = () => {
     const { getWithdrawalProvider } = useWallet()
     const source_provider = source_network && getWithdrawalProvider(source_network)
     const destination_provider = destination_network && getWithdrawalProvider(destination_network)
-
     const wallet = source_provider?.getConnectedWallet()
     const requestingCommit = useRef(false)
 
@@ -152,7 +151,7 @@ export const UserLockAction: FC = () => {
                 contractAddress: atomicContract,
                 lockData: destinationDetails
             })
-            
+
             posthog.capture("Lock", {
                 commitId: commitId,
                 hashlock: destinationDetails?.hashlock,
@@ -238,14 +237,15 @@ export const UserRefundAction: FC = () => {
             if (!commitId) throw new Error("No commitment details")
             if (!sourceDetails) throw new Error("No commitment")
             if (!source_network.chain_id) throw new Error("No chain id")
+            if (!source_asset) throw new Error("No source asset")
 
             const res = await source_provider?.refund({
                 type: source_asset?.contract ? 'erc20' : 'native',
                 id: commitId,
-                commit: sourceDetails,
                 hashlock: sourceDetails?.hashlock,
                 chainId: source_network.chain_id,
-                contractAddress: sourceAtomicContract
+                contractAddress: sourceAtomicContract,
+                sourceAsset: source_asset,
             })
 
             posthog.capture("Refund", {
@@ -279,7 +279,7 @@ export const UserRefundAction: FC = () => {
                     id: commitId as string,
                     contractAddress: sourceAtomicContract
                 })
-                if (data?.refunded) {
+                if (data?.claimed == 2) {
                     setSourceDetails(data)
                     clearInterval(commitHandler)
                 }
@@ -305,7 +305,7 @@ export const UserRefundAction: FC = () => {
                 })
 
                 if (data) setDestinationDetails(data)
-                if (data?.refunded) {
+                if (data?.claimed == 2) {
                     clearInterval(lockHandler)
                 }
             }, 5000)

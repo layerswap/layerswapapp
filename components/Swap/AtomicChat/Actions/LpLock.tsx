@@ -10,11 +10,10 @@ import { useAtomicState } from "../../../../context/atomicContext";
 import ActionStatus from "./ActionStatus";
 import shortenAddress from "../../../utils/ShortenAddress";
 import { ExternalLink } from "lucide-react";
-import { NextRouter, useRouter } from "next/router";
 import { Commit } from "../../../../Models/PHTLC";
 
 export const LpLockingAssets: FC = () => {
-    const { destination_network, commitId, setDestinationDetails, destination_asset } = useAtomicState()
+    const { destination_network, commitId, setDestinationDetails, destination_asset, source_network } = useAtomicState()
     const { getWithdrawalProvider } = useWallet()
 
     const destination_provider = destination_network && getWithdrawalProvider(destination_network)
