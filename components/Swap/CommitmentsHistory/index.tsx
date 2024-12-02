@@ -25,7 +25,7 @@ type CommitStatus = 'committed' | 'user_locked' | 'lp_locked' | 'completed' | 'r
 
 const commitStatusResolver = (commit: Commit, destination_details: Commit | undefined | null): CommitStatus => {
 
-    if (destination_details?.claimed || commit?.claimed) return 'completed'
+    if (destination_details?.claimed == 3 || commit?.claimed == 3) return 'completed'
     //TODO check&implement source lock refund
     else if (commit.claimed == 2) return 'refunded'
     else if (commit.timelock && Number(commit.timelock) * 1000 < Date.now()) return 'timelock_expired'

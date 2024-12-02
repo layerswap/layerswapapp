@@ -30,7 +30,7 @@ export const RedeemAction: FC = () => {
                         contractAddress: destination_contract as `0x${string}`,
                     }) : null
                     if (data) setDestinationDetails(data)
-                    if (data?.claimed) {
+                    if (data?.claimed == 3) {
                         clearInterval(commitHandler)
                     }
                 }, 5000)
@@ -56,7 +56,7 @@ export const RedeemAction: FC = () => {
                         contractAddress: source_contract as `0x${string}`,
                     }) : null
                     if (data) setSourceDetails(data)
-                    if (data?.claimed) {
+                    if (data?.claimed == 3) {
                         clearInterval(commitHandler)
                     }
                 }, 5000)
