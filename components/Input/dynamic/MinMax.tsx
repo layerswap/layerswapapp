@@ -7,8 +7,9 @@ import { useFee } from "../../../context/feeContext";
 import { useQueryState } from "../../../context/query";
 import useSWRBalance from "../../../lib/newbalances/useSWRBalance";
 import useSWRGas from "../../../lib/newgases/useSWRGas";
+import { useSwapDataState } from "../../../context/swap";
 
-const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) => {
+const MinMax = () => {
 
     const { values, setFieldValue } = useFormikContext<SwapFormValues>();
     const { fromCurrency, from } = values || {};
@@ -16,18 +17,17 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
 
     const query = useQueryState()
 
-    const { provider } = useWallet(from, 'autofil')
+    const { selectedSourceAccount } = useSwapDataState()
 
-    const wallet = provider?.activeWallet
-    const { gas } = useSWRGas(wallet?.address, values.from, fromCurrency)
-    const { balance } = useSWRBalance(wallet?.address, values.from)
+    const { gas } = useSWRGas(selectedSourceAccount?.address, values.from, fromCurrency)
+    const { balance } = useSWRBalance(selectedSourceAccount?.address, values.from)
+
+    const gasAmount = gas || 0;
 
     const handleSetMinAmount = () => {
         setFieldValue('amount', minAllowedAmount);
     }
-
-    const gasAmount = gas?.find(g => g?.token === fromCurrency?.symbol)?.gas || 0
-    const walletBalance = wallet && balance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
+    const walletBalance = selectedSourceAccount?.address && balance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
     const native_currency = from?.token
 
     let maxAllowedAmount: number | null = maxAmountFromApi || 0
@@ -55,10 +55,6 @@ const MinMax = ({ onAddressGet }: { onAddressGet: (address: string) => void }) =
     const handleSetMaxAmount = async () => {
         setFieldValue('amount', maxAllowedAmount);
     }
-
-    useEffect(() => {
-        wallet?.address && onAddressGet(wallet.address)
-    }, [wallet])
 
     return (
         <div className="flex flex-col justify-center">

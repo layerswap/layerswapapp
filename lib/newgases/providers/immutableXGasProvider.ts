@@ -7,6 +7,6 @@ export class ImmutableXGasProvider {
     }
 
     async getGas({ address: string, network: Network, token: Token }): Promise<any> {
-        return null;
+        return undefined;
     }
 }

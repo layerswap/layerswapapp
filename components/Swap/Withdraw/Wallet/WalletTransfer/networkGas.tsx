@@ -10,9 +10,7 @@ type NetworkGasProps = {
 }
 const NetworkGas: FC<NetworkGasProps> = ({ address, token, network }) => {
 
-    const { gas, isGasLoading } = useSWRGas(address, network, token)
-    const networkGas = network.name ?
-        gas?.find(g => g?.token === token.symbol)?.gas : null
+    const { gas: networkGas, isGasLoading } = useSWRGas(address, network, token)
 
     if (!networkGas)
         return <></>

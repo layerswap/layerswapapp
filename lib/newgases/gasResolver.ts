@@ -13,11 +13,8 @@ export class GasResolver {
     private providers = [
         new StarknetGasProvider(),
         new EVMGasProvider(),
-        new FuelGasProvider(),
-        new ImmutableXGasProvider(),
         new LoopringGasProvider(),
         new SolanaGasProvider(),
-        new TonGasProvider(),
         new ZkSyncGasProvider()
     ];
 

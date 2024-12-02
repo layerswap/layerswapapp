@@ -1,9 +1,10 @@
-import { Gas, GasProps } from "../../../Models/Balance";
+import { GasProps } from "../../../Models/Balance";
 import { Network } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
+import { Provider } from "./types";
 
-export class SolanaGasProvider {
+export class SolanaGasProvider implements Provider {
     supportsNetwork(network: Network): boolean {
         return KnownInternalNames.Networks.SolanaMainnet.includes(network.name)
     }
@@ -14,8 +15,6 @@ export class SolanaGasProvider {
         const { PublicKey, Connection } = await import("@solana/web3.js");
 
         const walletPublicKey = new PublicKey(address)
-
-        let gas: Gas[] = [];
 
         const connection = new Connection(
             `${network.node_url}`,
@@ -36,16 +35,10 @@ export class SolanaGasProvider {
 
             const formatedGas = formatAmount(result.value, network.token?.decimals)
 
-            gas = [{
-                token: token.symbol,
-                gas: formatedGas,
-                request_time: new Date().toJSON()
-            }]
+            return formatedGas
         }
         catch (e) {
             console.log(e)
         }
-
-        return gas
     }
 }

@@ -8,7 +8,6 @@ import ConnectButton from "../buttons/connectButton";
 import Balance from "./dynamic/Balance";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
 import VaulDrawer, { WalletFooterPortal } from "../modal/vaulModal";
-import useBalance from "../../hooks/useBalance";
 import { Wallet } from "../../Models/WalletProvider";
 import WalletIcon from "../icons/WalletIcon";
 import SubmitButton from "../buttons/submitButton";
@@ -29,7 +28,6 @@ const Component: FC = () => {
     const source_token = values.fromCurrency
     const destination_address = values.destination_address
     const { provider } = useWallet(walletNetwork, 'withdrawal')
-    const { fetchBalance } = useBalance()
     const wallets = provider?.connectedWallets || []
 
     const selectedWallet = selectedSourceAccount?.wallet
@@ -53,15 +51,6 @@ const Component: FC = () => {
         }
     }, [values.depositMethod, defaultWallet?.address, wallets.length])
 
-    useEffect(() => {
-        if (walletNetwork && source_token) {
-            connectedWallets?.forEach(wallet => {
-                wallet.addresses.forEach(address => {
-                    fetchBalance(walletNetwork, source_token, address);
-                })
-            })
-        }
-    }, [walletNetwork, connectedWallets?.length, source_token])
 
     const handleWalletChange = () => {
         setOpenModal(true)

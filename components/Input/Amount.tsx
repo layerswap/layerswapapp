@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 import { useQueryState } from "../../context/query";
 import useSWRGas from "../../lib/newgases/useSWRGas";
 import useSWRBalance from "../../lib/newbalances/useSWRBalance";
+import { useSwapDataState } from "../../context/swap";
 
 const MinMax = dynamic(() => import("./dynamic/MinMax"), {
     loading: () => <></>,
@@ -19,16 +20,17 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { fromCurrency, from, to, amount, toCurrency, fromExchange, toExchange } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fee, isFeeLoading } = useFee()
     const [isFocused, setIsFocused] = useState(false);
-    const [walletAddress, setWalletAddress] = useState<string>()
-    const { balance, isBalanceLoading } = useSWRBalance(walletAddress, from)
-    const {gas, isGasLoading} = useSWRGas(walletAddress, from, fromCurrency)
+    const { selectedSourceAccount } = useSwapDataState()
+    const sourceAddress = selectedSourceAccount?.address
 
+    const { balance, isBalanceLoading } = useSWRBalance(sourceAddress, from)
+    const { gas, isGasLoading } = useSWRGas(sourceAddress, from, fromCurrency)
+    const gasAmount = gas || 0;
     const native_currency = from?.token
     const query = useQueryState()
 
-    const gasAmount = gas?.find(g => g?.token === fromCurrency?.symbol)?.gas || 0
     const name = "amount"
-    const walletBalance = walletAddress && balance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
+    const walletBalance = sourceAddress && balance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
     let maxAllowedAmount: number | null = maxAmountFromApi || 0
     if (query.balances && fromCurrency) {
         try {
@@ -99,10 +101,8 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                 </NumericInput>
             </div>
             {
-                from && to && fromCurrency ?
-                    <MinMax onAddressGet={(a) => setWalletAddress(a)} />
-                    :
-                    <></>
+                from && to && fromCurrency &&
+                <MinMax />
             }
         </div >
     </>)

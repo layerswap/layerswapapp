@@ -7,6 +7,6 @@ export class FuelGasProvider {
     }
 
     async getGas({address: string, network: Network, token: Token}): Promise<any> {
-        return null;
+        return undefined;
     }
 }

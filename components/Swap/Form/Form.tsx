@@ -6,20 +6,18 @@ import NetworkFormField from "../../Input/NetworkFormField";
 import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
-import { isValidAddress } from "../../../lib/address/validator";
 import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { motion, useCycle } from "framer-motion";
 import { ArrowUpDown, Loader2 } from 'lucide-react'
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
-import GasDetails from "../../gasDetails";
 import { useQueryState } from "../../../context/query";
 import FeeDetailsComponent from "../../FeeDetails";
 import { useFee } from "../../../context/feeContext";
 import AmountField from "../../Input/Amount"
 import dynamic from "next/dynamic";
-import { Balance, Gas } from "../../../Models/Balance";
+import { Balance } from "../../../Models/Balance";
 import ResizablePanel from "../../ResizablePanel";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import { RouteNetwork } from "../../../Models/Network";
@@ -189,9 +187,9 @@ const SwapForm: FC<Props> = ({ partner }) => {
         }
     }, [values, sourceRoutes, destinationRoutes, exchanges])
 
-    const handleReserveGas = useCallback((walletBalance: Balance, networkGas: Gas) => {
+    const handleReserveGas = useCallback((walletBalance: Balance, networkGas: number) => {
         if (walletBalance && networkGas)
-            setFieldValue('amount', walletBalance?.amount - networkGas?.gas)
+            setFieldValue('amount', walletBalance?.amount - networkGas)
     }, [values.amount])
 
     const sourceWalletNetwork = values.fromExchange ? undefined : values.from
@@ -269,12 +267,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
                     </Widget.Footer>
                 </Widget>
             </Form>
-            {
-                process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
-                && values.from
-                && values.fromCurrency &&
-                <GasDetails network={values.from} currency={values.fromCurrency} />
-            }
         </>
     </ImtblPassportProvider>
 }

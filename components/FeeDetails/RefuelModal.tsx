@@ -29,9 +29,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
     const nativeAsset = to?.token
     const token_usd_price = fee?.quote?.destination_network?.token?.price_in_usd || nativeAsset?.price_in_usd
 
-    const { selectedSourceAccount } = useSwapDataState()
-
-    const { balance } = useSWRBalance(destination_address || (selectedSourceAccount?.address || ''), to)
+    const { balance } = useSWRBalance(destination_address, to)
     const destNativeTokenBalance = balance?.find(b => b.token === nativeAsset?.symbol && b.network === to?.name)
     const amountInUsd = (destNativeTokenBalance && token_usd_price) ? (destNativeTokenBalance.amount * token_usd_price).toFixed(2) : undefined
 

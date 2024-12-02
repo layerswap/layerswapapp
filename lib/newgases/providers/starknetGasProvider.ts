@@ -1,19 +1,19 @@
-import { Balance, GasProps } from "../../../Models/Balance";
+import { GasProps } from "../../../Models/Balance";
 import { Network } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
-import Erc20Abi from '../../abis/ERC20.json'
 import KnownInternalNames from "../../knownIds";
 import InternalApiClient from "../../internalApiClient";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { EstimateFee } from "starknet";
 import { useRouter } from "next/router";
+import { Provider } from "./types";
 
-export class StarknetGasProvider {
+export class StarknetGasProvider implements Provider {
     supportsNetwork(network: Network): boolean {
         return (KnownInternalNames.Networks.StarkNetMainnet || KnownInternalNames.Networks.StarkNetGoerli || KnownInternalNames.Networks.StarkNetSepolia).includes(network.name)
     }
 
-    getGas = async ({ address, network, token, wallet }: GasProps) => {
+    getGas = async ({ address, network, token }: GasProps) => {
 
         const nodeUrl = network.node_url
         const contract_address = token?.contract
@@ -31,21 +31,15 @@ export class StarknetGasProvider {
 
         const client = new InternalApiClient()
         const basePath = router.basePath ?? '/'
-        const feeEstimateResponse: ApiResponse<EstimateFee> = await client.GetStarknetFee(`nodeUrl=${nodeUrl}&walletAddress=${wallet?.address}&contractAddress=${contract_address}&recipient=${recipient}&watchDogContract=${watchdogContract}`, basePath)
+        const feeEstimateResponse: ApiResponse<EstimateFee> = await client.GetStarknetFee(`nodeUrl=${nodeUrl}&walletAddress=${address}&contractAddress=${contract_address}&recipient=${recipient}&watchDogContract=${watchdogContract}`, basePath)
 
         if (!feeEstimateResponse?.data?.suggestedMaxFee) {
             throw new Error(`Couldn't get fee estimation for the transfer. Response: ${JSON.stringify(feeEstimateResponse)}`);
         };
 
         const feeInWei = feeEstimateResponse.data.suggestedMaxFee.toString();
+        const gas = formatAmount(feeInWei, network.token.decimals)
 
-        const gas = {
-            token: token.symbol,
-            gas: formatAmount(feeInWei, network.token.decimals),
-            request_time: new Date().toJSON()
-        }
-
-        return [gas]
-
+        return gas
     }
 }
