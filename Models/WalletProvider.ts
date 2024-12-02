@@ -15,7 +15,7 @@ export type Wallet = {
     // TODO: might be unused and unnecessary check
     isActive: boolean;
     address: string | `0x${string}`;
-    addresses: string[] | `0x${string}`[];
+    addresses: string[];
     providerName: string
     icon: (props: any) => React.JSX.Element;
     //TODO: this is name of the connector, should be changed to connectorId

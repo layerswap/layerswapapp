@@ -3,7 +3,7 @@ import { ChevronLeft } from 'lucide-react';
 import IconButton from '../buttons/iconButton';
 import VaulDrawer from '../modal/vaulModal';
 import { Wallet, WalletProvider } from '../../Models/WalletProvider';
-import WalletsList from './WalletsList';
+import ConnectorsList from './ConnectorsList';
 import ProvidersList from './ProvidersList';
 
 export type ModalWalletProvider = WalletProvider & {
@@ -18,8 +18,10 @@ type SharedType = { provider?: WalletProvider, connectCallback: (value: Wallet |
 
 type ConnectModalContextType = {
     connect: ({ provider, connectCallback }: SharedType) => void;
+    cancel: () => void;
     selectedProvider: ModalWalletProvider | undefined;
     setSelectedProvider: (value: ModalWalletProvider | undefined) => void;
+    isWalletModalOpen?: boolean;
 };
 
 const ConnectModalContext = createContext<ConnectModalContextType | null>(null);
@@ -29,6 +31,7 @@ export function WalletModalProvider({ children }) {
 
     const [selectedProvider, setSelectedProvider] = useState<ModalWalletProvider | undefined>(undefined);
     const [open, setOpen] = useState(false);
+    const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
     const connect = async ({ provider, connectCallback }: SharedType) => {
         if (!provider?.availableWalletsForConnect) {
@@ -40,15 +43,19 @@ export function WalletModalProvider({ children }) {
         return;
     }
 
-    const onFinish = (connectedWallet: Wallet | undefined) => {
+    const cancel = () => {
         if (connectConfig) {
-            connectConfig.connectCallback(connectedWallet);
+            connectConfig.connectCallback(undefined);
+            setConnectConfig(undefined);
         }
         setOpen(false);
     }
 
-    const onClose = () => {
-        connectConfig?.connectCallback(undefined);
+    const onFinish = (connectedWallet?: Wallet | undefined) => {
+        if (connectConfig) {
+            connectConfig.connectCallback(connectedWallet);
+            setConnectConfig(undefined);
+        }
         setOpen(false);
     }
 
@@ -64,15 +71,16 @@ export function WalletModalProvider({ children }) {
         if (!open && selectedProvider) {
             setSelectedProvider(undefined)
         }
+        setIsWalletModalOpen(open)
     }, [open])
 
     return (
-        <ConnectModalContext.Provider value={{ connect, selectedProvider, setSelectedProvider }}>
+        <ConnectModalContext.Provider value={{ connect, cancel, selectedProvider, setSelectedProvider, isWalletModalOpen }}>
             {children}
             <VaulDrawer
                 show={open}
                 setShow={setOpen}
-                onClose={onClose}
+                onClose={onFinish}
                 modalId={"connectNewWallet"}
                 header={
                     <div className="flex items-center gap-1">
@@ -91,7 +99,7 @@ export function WalletModalProvider({ children }) {
                 <VaulDrawer.Snap id='item-1'>
                     {
                         selectedProvider ?
-                            <WalletsList
+                            <ConnectorsList
                                 modalWalletProvider={selectedProvider}
                                 onFinish={onFinish}
                                 setSelectedProvider={setSelectedProvider}

@@ -54,7 +54,7 @@ const DepositMethodComponent: FC = () => {
             setFieldValue(name, defaultMethod?.id, true)
             return
         }
-        else {
+        else if (!(menuItems?.find(i => i.id === depositMethod))) {
             setFieldValue(name, first, true)
             return
         }

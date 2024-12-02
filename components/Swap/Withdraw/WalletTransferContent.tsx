@@ -7,11 +7,11 @@ import { AddressGroup } from '../../Input/Address/AddressPicker';
 import { ChevronRight } from 'lucide-react';
 import { truncateDecimals } from '../../utils/RoundDecimals';
 import { useSwitchAccount } from 'wagmi';
-import { WalletsList } from '../../Input/SourceWalletPicker';
 import VaulDrawer from '../../modal/vaulModal';
 import { Wallet } from '../../../Models/WalletProvider';
 import useSWRBalance from '../../../lib/newbalances/useSWRBalance';
 import { useSettingsState } from '../../../context/settings';
+import WalletsList from '../../Wallet/WalletsList';
 
 const WalletTransferContent: FC = () => {
     const { networks } = useSettingsState()
@@ -92,7 +92,12 @@ const WalletTransferContent: FC = () => {
                 modalId="connectedWallets"
             >
                 <VaulDrawer.Snap id='item-1'>
-                    <WalletsList network={source_network} token={source_token} purpose={'autofil'} onSelect={changeWallet} />
+                    <WalletsList
+                        network={source_network}
+                        token={source_token}
+                        onSelect={changeWallet}
+                        wallets={wallets}
+                    />
                 </VaulDrawer.Snap>
             </VaulDrawer>
         }

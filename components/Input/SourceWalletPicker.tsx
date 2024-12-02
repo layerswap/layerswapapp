@@ -1,23 +1,19 @@
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { FC, useEffect, useState } from "react";
-import useWallet, { WalletPurpose } from "../../hooks/useWallet";
+import useWallet from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
-import { ChevronDown, Plus } from "lucide-react";
-import { Network, Token } from "../../Models/Network";
+import { ChevronDown } from "lucide-react";
 import ConnectButton from "../buttons/connectButton";
-import FilledCheck from "../icons/FilledCheck";
 import Balance from "./dynamic/Balance";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
-import VaulDrawer from "../modal/vaulModal";
+import VaulDrawer, { WalletFooterPortal } from "../modal/vaulModal";
 import useBalance from "../../hooks/useBalance";
-import { useBalancesState } from "../../context/balances";
-import { truncateDecimals } from "../utils/RoundDecimals";
-import AddressWithIcon from "./Address/AddressPicker/AddressWithIcon";
-import { AddressGroup } from "./Address/AddressPicker";
 import { Wallet } from "../../Models/WalletProvider";
 import WalletIcon from "../icons/WalletIcon";
 import SubmitButton from "../buttons/submitButton";
+import { useConnectModal } from "../WalletModal";
+import WalletsList from "../Wallet/WalletsList";
 
 const Component: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -129,7 +125,13 @@ const Component: FC = () => {
             modalId="connectedWallets"
         >
             <VaulDrawer.Snap id="item-1" className="space-y-3 pb-3">
-                <WalletsList network={walletNetwork} purpose={'withdrawal'} onSelect={handleSelectWallet} token={source_token} />
+                <WalletsList
+                    wallets={wallets}
+                    onSelect={handleSelectWallet}
+                    token={values.fromCurrency}
+                    network={walletNetwork}
+                    selectable
+                />
                 {
                     values.from?.deposit_methods.includes('deposit_address') &&
                     <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer">
@@ -141,13 +143,6 @@ const Component: FC = () => {
     </>
 }
 
-type WalletListProps = {
-    network: Network,
-    purpose: WalletPurpose,
-    token: Token,
-    onSelect: (wallet?: Wallet, address?: string) => void
-}
-
 export const FormSourceWalletButton: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
     const {
@@ -156,10 +151,12 @@ export const FormSourceWalletButton: FC = () => {
     } = useFormikContext<SwapFormValues>();
 
     const [mounted, setMounted] = useState<boolean>(false)
+    const [mountWalletPortal, setMounWalletPortal] = useState<boolean>(false)
 
     const walletNetwork = values.fromExchange ? undefined : values.from
 
     const { wallets, provider } = useWallet(walletNetwork, 'withdrawal')
+    const { isWalletModalOpen, cancel } = useConnectModal()
 
     const handleWalletChange = () => {
         setOpenModal(true)
@@ -177,28 +174,41 @@ export const FormSourceWalletButton: FC = () => {
         else {
             setFieldValue('depositMethod', 'wallet')
         }
+        cancel()
         setOpenModal(false)
     }
 
     const connect = async () => {
+        setMounWalletPortal(true)
         const result = await provider?.connectWallet({ chain: walletNetwork?.chain_id || walletNetwork?.name })
 
-        if(result) {
+        if (result) {
             handleSelectWallet(result, result.address)
         }
-
+        setMounWalletPortal(false)
     }
 
     if (!mounted || !walletNetwork || !values.fromCurrency) return null
 
     if (!provider?.connectedWallets?.length && walletNetwork) {
-        return <button
-            type='button'
-            onClick={connect}
-            className="w-full"
-        >
-            <Connect />
-        </button>
+        return <>
+            <button
+                type='button'
+                onClick={connect}
+                className="w-full"
+            >
+                <Connect />
+            </button>
+            {
+                mountWalletPortal && values.from?.deposit_methods.includes('deposit_address') && values.depositMethod !== 'deposit_address' &&
+                <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
+                    <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer pt-3">
+                        Continue without a wallet
+                    </div>
+                </WalletFooterPortal>
+            }
+        </>
+
     }
     else if (wallets.length > 0) {
         return <>
@@ -212,15 +222,23 @@ export const FormSourceWalletButton: FC = () => {
                 modalId="connectedWallets"
             >
                 <VaulDrawer.Snap id="item-1" className="space-y-3 pb-3">
-                    <WalletsList network={walletNetwork} purpose={'withdrawal'} onSelect={handleSelectWallet} token={values.fromCurrency} />
-                    {
-                        values.from?.deposit_methods.includes('deposit_address') &&
-                        <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer">
-                            Continue without a wallet
-                        </div>
-                    }
+                    <WalletsList
+                        wallets={wallets}
+                        onSelect={handleSelectWallet}
+                        token={values.fromCurrency}
+                        network={walletNetwork}
+                        selectable
+                    />
                 </VaulDrawer.Snap>
             </VaulDrawer >
+            {
+                mountWalletPortal && values.from?.deposit_methods.includes('deposit_address') && values.depositMethod !== 'deposit_address' &&
+                <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
+                    <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer pt-3">
+                        Continue without a wallet
+                    </div>
+                </WalletFooterPortal>
+            }
         </>
     }
     return <ConnectButton className="w-full">
@@ -229,67 +247,10 @@ export const FormSourceWalletButton: FC = () => {
 
 }
 
-export const WalletsList: FC<WalletListProps> = ({ network, purpose, onSelect, token }) => {
-
-    const { provider, wallets } = useWallet(network, purpose)
-    const connectedWallets = network ? provider?.connectedWallets : wallets
-    const { selectedSourceAccount } = useSwapDataState()
-    const { balances, isBalanceLoading } = useBalancesState()
-
-    const connect = async () => {
-        const result = await provider?.connectWallet({ chain: network?.chain_id || network?.name })
-
-        if(result) {
-            onSelect(result, result.address)
-        }
-
-    }
-
-    return (
-        <div className="space-y-3">
-            <button onClick={connect} type="button" className="w-full flex justify-center p-2 bg-secondary-700 rounded-md hover:bg-secondary-600">
-                <div className="flex items-center text-secondary-text gap-1 px-3 py-1">
-                    <Plus className="h-4 w-4" />
-                    <span className="text-sm">
-                        Connect new wallet
-                    </span>
-                </div>
-            </button>
-            <div className="flex flex-col justify-start space-y-3">
-                {
-                    connectedWallets?.map((wallet) => (
-                        wallet.addresses?.map((address, index) => {
-                            const walletBalance = balances[address]?.find(b => b?.network === network?.name && b?.token === token?.symbol)
-                            const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, token?.precision)
-
-                            const isSelected = selectedSourceAccount?.address === address
-                            return <div key={index} onClick={() => onSelect(wallet, address)} className="w-full cursor-pointer group/addressItem relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
-                                <AddressWithIcon
-                                    addressItem={{ address: address, group: AddressGroup.ConnectedWallet }}
-                                    connectedWallet={wallet}
-                                    network={network}
-                                    balance={(walletBalanceAmount !== undefined && token) ? { amount: walletBalanceAmount, symbol: token?.symbol, isLoading: isBalanceLoading } : undefined}
-                                />
-                                <div className="flex h-6 items-center px-1">
-                                    {
-                                        isSelected &&
-                                        <FilledCheck />
-                                    }
-                                </div>
-                            </div>
-                        })
-                    ))
-                }
-            </div>
-        </div>
-    )
-}
-
 const Connect: FC = () => {
     return <SubmitButton type="button" icon={<WalletIcon className="h-6 w-6" strokeWidth={2} />} >
         Connect a wallet
     </SubmitButton>
 }
-
 
 export default Component

@@ -117,7 +117,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
 
 type ExtendedAddressProps = {
     address: string;
-    network: Network;
+    network?: Network;
     addressClassNames?: string;
 }
 
@@ -156,12 +156,15 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, ad
                                 : <Copy className="w-4 h-4" />
                         }
                     </div>
-                    <Link href={network?.account_explorer_template?.replace('{0}', address)} target="_blank" className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
-                        <p>
-                            Open in explorer
-                        </p>
-                        <ExternalLink className="w-4 h-4" />
-                    </Link>
+                    {
+                        network &&
+                        <Link href={network?.account_explorer_template?.replace('{0}', address)} target="_blank" className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
+                            <p>
+                                Open in explorer
+                            </p>
+                            <ExternalLink className="w-4 h-4" />
+                        </Link>
+                    }
                 </PopoverContent>
             </Popover>
         </div>
