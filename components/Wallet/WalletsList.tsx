@@ -130,7 +130,7 @@ const WalletsList: FC<Props> = ({ wallets, selectable, onSelect, provider, token
                                             wallet.addresses.map((address, index) => {
 
                                                 const isNestedSelected = selectable && address == selectedSourceAccount?.address
-                                                const nestedWalletBalance = (network && token) && balances[wallet.address]?.find(b => b?.network === network?.name && b?.token === token?.symbol)
+                                                const nestedWalletBalance = (network && token) && balances[address]?.find(b => b?.network === network?.name && b?.token === token?.symbol)
                                                 const nestedWalletBalanceAmount = nestedWalletBalance?.amount && truncateDecimals(nestedWalletBalance?.amount, token?.precision)
                                                 return (
                                                     <div
