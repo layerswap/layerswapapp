@@ -7,6 +7,7 @@ import { FC } from "react";
 import AddressWithIcon from "./AddressWithIcon";
 import { Partner } from "../../../../Models/Partner";
 import { Wallet } from "../../../../Models/WalletProvider";
+import { BookOpen } from "lucide-react";
 
 type AddressBookProps = {
     addressBook: AddressItem[];
@@ -24,7 +25,10 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                 <CommandList>
                     <CommandGroup
                         heading={
-                            <p className="text-sm text-secondary-text">Address Book</p>
+                            <div className="flex items-center space-x-1">
+                                <BookOpen className="h-4 w-4 stroke-2" aria-hidden="true" />
+                                <p className="text-sm text-secondary-text">Address Book</p>
+                            </div>
                         }
                         className="[&_[cmdk-group-heading]]:!pb-1 [&_[cmdk-group-heading]]:!px-0 !py-0 !px-0"
                     >
