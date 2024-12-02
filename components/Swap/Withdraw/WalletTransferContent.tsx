@@ -96,6 +96,7 @@ const WalletTransferContent: FC = () => {
                         network={source_network}
                         token={source_token}
                         onSelect={changeWallet}
+                        selectable
                         wallets={wallets}
                     />
                 </VaulDrawer.Snap>
