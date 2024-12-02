@@ -3,7 +3,6 @@ import { SwapItem, BackendTransactionStatus, TransactionType, SwapResponse } fro
 import { SwapStatus } from '../Models/SwapStatus';
 import { SwapData, SwapDataStateContext, SwapDataUpdateContext } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
-import { BalancesStateContext, BalancesStateUpdateContext } from '../context/balances';
 import { FC, useEffect, useRef } from 'react';
 import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { swap } from './Data/swaps'
@@ -16,8 +15,6 @@ import Layout from '../components/layout';
 import SwapDetails from '../components/Swap';
 import SwapMockFunctions from './Mocks/context/SwapDataUpdate';
 import AuthMockFunctions from './Mocks/context/AuthDataUpdate';
-import WalletMockFunctions from './Mocks/context/BalancesMockFunctions';
-import BalancesStateMock from './Mocks/context/BalancesState';
 import { Formik, FormikProps } from 'formik';
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import MainStepValidation from '../lib/mainStepValidator';
@@ -44,21 +41,17 @@ const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme
                         <AuthStateContext.Provider value={{ authData: undefined, email: "asd@gmail.com", codeRequested: false, guestAuthData: undefined, tempEmail: undefined, userId: "1", userLockedOut: false, userType: UserType.AuthenticatedUser }}>
                             <AuthDataUpdateContext.Provider value={AuthMockFunctions}>
                                 <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
-                                    <BalancesStateContext.Provider value={BalancesStateMock}>
-                                        <BalancesStateUpdateContext.Provider value={WalletMockFunctions}>
-                                            <Formik
-                                                innerRef={formikRef}
-                                                initialValues={initialValues!}
-                                                validateOnMount={true}
-                                                validate={MainStepValidation({ minAllowedAmount: 8, maxAllowedAmount: 10 })}
-                                                onSubmit={() => { }}
-                                            >
-                                                <FeeProvider>
-                                                    <Component initialValues={initialValues} />
-                                                </FeeProvider>
-                                            </Formik>
-                                        </BalancesStateUpdateContext.Provider>
-                                    </BalancesStateContext.Provider>
+                                    <Formik
+                                        innerRef={formikRef}
+                                        initialValues={initialValues!}
+                                        validateOnMount={true}
+                                        validate={MainStepValidation({ minAllowedAmount: 8, maxAllowedAmount: 10 })}
+                                        onSubmit={() => { }}
+                                    >
+                                        <FeeProvider>
+                                            <Component initialValues={initialValues} />
+                                        </FeeProvider>
+                                    </Formik>
                                 </SwapDataUpdateContext.Provider>
                             </AuthDataUpdateContext.Provider>
                         </AuthStateContext.Provider>

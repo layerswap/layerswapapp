@@ -5,7 +5,6 @@ import Withdraw from './Withdraw';
 import Processing from './Withdraw/Processing';
 import { BackendTransactionStatus, TransactionType } from '../../lib/layerSwapApiClient';
 import { SwapStatus } from '../../Models/SwapStatus';
-import GasDetails from '../gasDetails';
 
 type Props = {
     type: "widget" | "contained",
@@ -15,8 +14,8 @@ import SubmitButton from '../buttons/submitButton';
 
 const SwapDetails: FC<Props> = ({ type }) => {
     const { swapResponse } = useSwapDataState()
-
     const { swap } = swapResponse || {}
+
     const swapStatus = swap?.status;
     const storedWalletTransactions = useSwapTransactionStore()
 
@@ -58,11 +57,6 @@ const SwapDetails: FC<Props> = ({ type }) => {
                         </>
                 }
             </Container>
-            {
-                process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
-                && swap &&
-                <GasDetails network={swap.source_network.name} currency={swap.source_token.symbol} />
-            }
         </>
     )
 }

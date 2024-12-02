@@ -1,13 +1,70 @@
+
 import { PublicClient } from "viem"
-import formatAmount from "../../../formatAmount"
+import { Balance } from "../../../Models/Balance"
+import { Network, NetworkType, NetworkWithTokens, Token } from "../../../Models/Network"
+import formatAmount from "../../formatAmount"
 import { http, createConfig } from '@wagmi/core'
 import { erc20Abi } from 'viem'
 import { multicall } from '@wagmi/core'
 import { getBalance, GetBalanceReturnType } from '@wagmi/core'
-import { Network, NetworkWithTokens, Token } from "../../../../Models/Network"
-import { Balance } from "../../../../Models/Balance"
+import resolveChain from "../../resolveChain"
 import { datadogRum } from "@datadog/browser-rum"
-import resolveChain from "../../../resolveChain"
+
+export class EVMBalanceProvider {
+    supportsNetwork(network: NetworkWithTokens): boolean {
+        return network.type === NetworkType.EVM && !!network.token
+    }
+
+    fetchBalance = async (address: string, network: NetworkWithTokens) => {
+
+        if (!network) return
+    
+        try {
+
+            const chain = resolveChain(network)
+            if (!chain) return
+    
+            const { createPublicClient, http } = await import("viem")
+            const publicClient = createPublicClient({
+                chain,
+                transport: http()
+            })
+    
+            const erc20BalancesContractRes = await getErc20Balances({
+                address,
+                assets: network.tokens,
+                network,
+                publicClient,
+                hasMulticall: !!network.metadata?.evm_multicall_contract
+            });
+    
+            const erc20Balances = (erc20BalancesContractRes && await resolveERC20Balances(
+                erc20BalancesContractRes,
+                network
+            )) || [];
+    
+            const nativeTokens = network.tokens.filter(t => !t.contract)
+            const nativeBalances: Balance[] = []
+    
+            for (let i = 0; i < nativeTokens.length; i++) {
+                const token = nativeTokens[i]
+                const nativeBalanceData = await getTokenBalance(address as `0x${string}`, network)
+                const nativeBalance = (nativeBalanceData
+                    && await resolveBalance(network, token, nativeBalanceData))
+                if (nativeBalance)
+                    nativeBalances.push(nativeBalance)
+            }
+    
+            let res: Balance[] = []
+            return res.concat(erc20Balances, nativeBalances)
+        }
+        catch (e) {
+            console.log(e)
+        }
+    }
+}
+
+
 
 export type ERC20ContractRes = ({
     error: Error;

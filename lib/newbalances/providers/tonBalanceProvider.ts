@@ -1,8 +1,43 @@
-import formatAmount from "../../../formatAmount";
-import { Network, Token } from "../../../../Models/Network";
 import { datadogRum } from "@datadog/browser-rum";
-import tonClient from "../../../wallets/ton/client";
-import retryWithExponentialBackoff from "../../../retryWithExponentialBackoff";
+import { Balance } from "../../../Models/Balance";
+import { Network, NetworkWithTokens, Token } from "../../../Models/Network";
+import formatAmount from "../../formatAmount";
+
+import KnownInternalNames from "../../knownIds";
+import retryWithExponentialBackoff from "../../retryWithExponentialBackoff";
+import tonClient from "../../wallets/ton/client";
+
+export class TonBalanceProvider {
+    supportsNetwork(network: NetworkWithTokens): boolean {
+        return KnownInternalNames.Networks.TONMainnet.includes(network.name)
+    }
+
+    fetchBalance = async (address: string, network: NetworkWithTokens) => {
+        let balances: Balance[] = []
+
+        for (let i = 0; i < network.tokens.length; i++) {
+            try {
+                const token = network.tokens[i]
+                const balance = await resolveBalance({ network, address, token })
+
+                if (!balance) return
+
+                balances = [
+                    ...balances,
+                    balance,
+                ]
+
+            }
+            catch (e) {
+                console.log(e)
+            }
+        }
+
+        return balances
+    }
+}
+
+
 
 export const resolveBalance = async ({ address, network, token }: {
     network: Network,
@@ -23,7 +58,7 @@ export const resolveBalance = async ({ address, network, token }: {
 
 const getNativeAssetBalance = async ({ network, token, address }: { network: Network, token: Token, address: string }) => {
     try {
-        
+
         const { Address } = await import("@ton/ton");
 
         const getBalance = async () => {
