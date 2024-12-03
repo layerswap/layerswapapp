@@ -1,8 +1,8 @@
-import { CommitmentParams, GetCommitsParams } from "../phtlc";
+import { CommitmentParams } from "../phtlc";
 import { Address } from "@ton/ton"
 import tonClient from "./client";
 import { hexToBigInt, toHex } from "viem";
-import { beginCell, TupleBuilder } from "@ton/core"
+import { TupleBuilder } from "@ton/core"
 import { NetworkWithTokens } from "../../../Models/Network";
 import { Commit } from "../../../Models/PHTLC";
 
@@ -52,28 +52,4 @@ export const getTONDetails = async (params: CommitmentParams & { network: Networ
     }
 
     return parsedResult
-}
-
-export const getTONCommits = async (params: GetCommitsParams & { address: string }) => {
-    const { address, contractAddress } = params
-    let args = new TupleBuilder();
-    args.writeSlice(beginCell().storeAddress(Address.parse(address)).endCell());
-
-    const commitsResponse = await tonClient.runMethod(
-        Address.parse(contractAddress),
-        "getCommits",
-        args.build()
-    );
-
-    const commits = (commitsResponse.stack as any)?.items?.[0]?.type !== 'null' ? (commitsResponse.stack as any).items : null
-
-    if (!commits) return []
-
-    const parsedCommits = commits?.map((commit: any) => {
-        debugger
-        commit.cell.beginParse().loadStringTail();
-        commit.cell.beginParse().loadAddress().toString()
-    })
-
-
 }
