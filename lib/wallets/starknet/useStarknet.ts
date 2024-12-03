@@ -98,8 +98,10 @@ export default function useStarknet(): WalletProvider {
                     },
                     isActive: true,
                     connect: () => connectWallet(),
-                    disconnect: () => disconnectWallets()
-
+                    disconnect: () => disconnectWallets(),
+                    withdrawalSupportedNetworks,
+                    autofillSupportedNetworks: commonSupportedNetworks,
+                    asSourceSupportedNetworks: commonSupportedNetworks,
                 }
 
                 addWallet(wallet)
@@ -146,7 +148,7 @@ export default function useStarknet(): WalletProvider {
         withdrawalSupportedNetworks,
         autofillSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,
-        availableWalletsForConnect: availableWalletsForConnect,
+        availableWalletsForConnect,
         name,
         id,
     }

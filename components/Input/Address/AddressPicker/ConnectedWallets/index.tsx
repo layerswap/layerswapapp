@@ -33,7 +33,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
 
     const notCompatibleWallets = wallets.filter(wallet => wallet.providerName !== provider.name || wallet.isNotAvailable)
 
-    return <>
+    return <div className="space-y-2">
         {
             connectedWallets && connectedWallets?.length > 0 &&
             <div className="flex flex-col gap-2">
@@ -159,7 +159,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
         }
 
 
-    </>
+    </div>
 }
 
 export default ConnectedWallets;

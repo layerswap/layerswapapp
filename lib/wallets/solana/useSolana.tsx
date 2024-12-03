@@ -27,7 +27,10 @@ export default function useSolana({ network }: { network: Network | undefined })
         disconnect,
         connect: () => connectWallet(),
         isActive: true,
-        addresses: [publicKey.toBase58()]
+        addresses: [publicKey.toBase58()],
+        withdrawalSupportedNetworks: commonSupportedNetworks,
+        asSourceSupportedNetworks: commonSupportedNetworks,
+        autofillSupportedNetworks: commonSupportedNetworks,
     } : undefined
 
     const getWallet = () => {
@@ -69,7 +72,10 @@ export default function useSolana({ network }: { network: Network | undefined })
             disconnect,
             connect: () => connectWallet(),
             isActive: true,
-            addresses: [connectedAddress]
+            addresses: [connectedAddress],
+            withdrawalSupportedNetworks: commonSupportedNetworks,
+            asSourceSupportedNetworks: commonSupportedNetworks,
+            autofillSupportedNetworks: commonSupportedNetworks,
         } : undefined
 
         return wallet

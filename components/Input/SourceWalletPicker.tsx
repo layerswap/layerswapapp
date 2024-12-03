@@ -117,7 +117,7 @@ const Component: FC = () => {
                     provider={provider}
                     wallets={wallets}
                     onSelect={handleSelectWallet}
-                    token={values.fromCurrency}
+                    token={source_token}
                     network={walletNetwork}
                     selectable
                 />

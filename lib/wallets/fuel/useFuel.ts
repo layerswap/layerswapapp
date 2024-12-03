@@ -19,7 +19,10 @@ import { useConnectModal } from "../../../components/WalletModal";
 import { useMemo } from "react";
 
 export default function useFuel(): WalletProvider {
-    const autofillSupportedNetworks = [KnownInternalNames.Networks.FuelTestnet, KnownInternalNames.Networks.FuelMainnet]
+    const autofillSupportedNetworks = [
+        KnownInternalNames.Networks.FuelTestnet,
+        KnownInternalNames.Networks.FuelMainnet
+    ]
     const name = 'Fuel'
     const id = 'fuel'
 
@@ -32,7 +35,7 @@ export default function useFuel(): WalletProvider {
     const connectedWallets: Wallet[] | undefined = useMemo(() => {
 
         if (!wallet) return
-        const result = resolveWallet(wallet.address.toB256(), connectors, evmAddress, evmConnector, connectWallet, disconnectWallets, name, getItem)
+        const result = resolveWallet(wallet.address.toB256(), connectors, evmAddress, evmConnector, connectWallet, disconnectWallets, name, getItem, autofillSupportedNetworks)
 
         return [result]
     }, [wallet, connectors, evmAddress, evmConnector, name])
@@ -70,7 +73,7 @@ export default function useFuel(): WalletProvider {
             if (connectedWallets) {
                 const wallet = Address.fromAddressOrString(connectedWallets[0]).toB256()
 
-                const result = resolveWallet(wallet, connectors, evmAddress, evmConnector, connectWallet, disconnectWallets, name, getItem)
+                const result = resolveWallet(wallet, connectors, evmAddress, evmConnector, connectWallet, disconnectWallets, name, getItem, autofillSupportedNetworks)
 
                 return result
             }
@@ -129,7 +132,7 @@ export default function useFuel(): WalletProvider {
     return provider
 }
 
-const resolveWallet = (address: string, connectors, evmAddress, evmConnector, connectWallet, disconnectWallets, name, getItem) => {
+const resolveWallet = (address: string, connectors, evmAddress, evmConnector, connectWallet, disconnectWallets, name, getItem, autofillSupportedNetworks) => {
     let fuelCurrentConnector = getItem('fuel-current-connector', 'localStorage')
 
     let customConnectorname: string | undefined = undefined
@@ -160,7 +163,8 @@ const resolveWallet = (address: string, connectors, evmAddress, evmConnector, co
         disconnect: disconnectWallets,
         connector: fuelCurrentConnector,
         providerName: name,
-        icon: resolveWalletConnectorIcon({ connector: customConnectorname || fuelCurrentConnector, address: address })
+        icon: resolveWalletConnectorIcon({ connector: customConnectorname || fuelCurrentConnector, address: address }),
+        autofillSupportedNetworks
     }
 
     return w

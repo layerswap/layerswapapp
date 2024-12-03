@@ -13,23 +13,32 @@ import useSWRBalance from "../../lib/newbalances/useSWRBalance";
 import { useSettingsState } from "../../context/settings";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
 
-type Props = {
+type Props = ({
+    selectable?: false;
     wallets: Wallet[];
     token?: Token;
     network?: Network;
-    provider?: WalletProvider;
-    selectable?: boolean;
+    provider?: WalletProvider | undefined;
     onSelect?: (wallet: Wallet, address: string) => void;
-}
+} | {
+    selectable?: true;
+    wallets: Wallet[];
+    token: Token;
+    network: Network;
+    provider: WalletProvider | undefined;
+    onSelect: (wallet: Wallet, address: string) => void;
+})
 
-const WalletsList: FC<Props> = ({ wallets, selectable, onSelect, provider, token, network }) => {
+const WalletsList: FC<Props> = (props) => {
+
+    const { wallets, token, network, provider, selectable, onSelect } = props
 
     const { connect } = useConnectModal()
 
     const connectWallet = async () => {
         const result = await connect(provider)
 
-        if (result && onSelect) {
+        if (result && onSelect && result.withdrawalSupportedNetworks?.some(n => n === network?.name)) {
             onSelect(result, result.address)
         }
 
@@ -90,22 +99,28 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
             <div
                 onClick={() => (selectable && wallet.addresses.length == 1 && onWalletSelect) && onWalletSelect(wallet, wallet.address)}
                 className={clsx('w-full relative items-center justify-between gap-2 flex rounded-lg outline-none bg-secondary-700 text-primary-text p-3 group/addressItem', {
-                    'hover:bg-secondary-600 cursor-pointer': selectable && wallet.addresses.length == 1
+                    'hover:bg-secondary-600 cursor-pointer': selectable && wallet.addresses.length == 1,
+                    'bg-secondary-800 py-2': wallet.addresses.length > 1
                 })}>
 
-                <div className="flex space-x-4 items-center grow">
+                <div className="flex space-x-2 items-center grow">
                     {
                         wallet.connector &&
                         <div className="inline-flex items-center relative">
-                            <wallet.icon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
+                            <wallet.icon
+                                className={clsx('w-9 h-9 p-0.5 rounded-md bg-secondary-800', {
+                                    '!w-6 !h-6': wallet.addresses.length > 1,
+                                })}
+                            />
                         </div>
                     }
                     {
                         wallet.addresses.length > 1 ?
                             <div>
-                                <span className="text-base">{wallet.connector}</span>
+                                <span className="text-sm">{wallet.connector}</span>
                             </div>
-                            : <div className="w-full inline-flex items-center justify-between grow">
+                            :
+                            <div className="w-full inline-flex items-center justify-between grow">
                                 <div>
                                     {
                                         !wallet.isLoading && wallet.address &&
@@ -211,11 +226,11 @@ const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddre
             })}
         >
             <div className='flex items-center w-fit gap-3' >
-                <div className="flex bg-secondary-400  items-center justify-center rounded-md h-6 overflow-hidden w-6 ">
+                <div className="flex bg-secondary-400  items-center justify-center rounded-md h-8 w-8 overflow-hidden">
                     <AddressIcon
-                        className="scale-150 h-6 w-6 p-0.5"
+                        className="scale-150 h-8 w-8 p-0.5"
                         address={address}
-                        size={24}
+                        size={32}
                     />
                 </div>
 
