@@ -34,7 +34,6 @@ const Component: FC = () => {
     //TODO: sort by active wallet
     const defaultWallet = walletNetwork && wallets?.find(w => !w.isNotAvailable)
     const source_addsress = selectedSourceAccount?.address
-    const connectedWallets = provider?.connectedWallets
 
     useEffect(() => {
         if (!source_addsress && defaultWallet && values.depositMethod !== 'deposit_address') {
@@ -115,6 +114,7 @@ const Component: FC = () => {
         >
             <VaulDrawer.Snap id="item-1" className="space-y-3 pb-3">
                 <WalletsList
+                    provider={provider}
                     wallets={wallets}
                     onSelect={handleSelectWallet}
                     token={values.fromCurrency}
@@ -212,6 +212,7 @@ export const FormSourceWalletButton: FC = () => {
             >
                 <VaulDrawer.Snap id="item-1" className="space-y-3 pb-3">
                     <WalletsList
+                        provider={provider}
                         wallets={wallets}
                         onSelect={handleSelectWallet}
                         token={values.fromCurrency}

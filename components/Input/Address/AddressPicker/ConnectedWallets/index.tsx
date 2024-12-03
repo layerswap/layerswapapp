@@ -1,19 +1,18 @@
 
 import { ChevronDown, Plus, RefreshCw } from "lucide-react";
-import { addressFormat } from "../../../../../lib/address/formatter";
 import { Network } from "../../../../../Models/Network";
-import FilledCheck from "../../../../icons/FilledCheck";
 import AddressWithIcon from "../AddressWithIcon";
 import { FC, useState } from "react";
 import { AddressGroup } from "..";
 import ResizablePanel from "../../../../ResizablePanel";
 import { Wallet, WalletProvider } from "../../../../../Models/WalletProvider";
 import WalletIcon from "../../../../icons/WalletIcon";
+import { WalletItem } from "../../../../Wallet/WalletsList";
 
 type Props = {
     provider: WalletProvider,
     wallets: Wallet[],
-    onClick: (address: string, wallet: Wallet) => void,
+    onClick: (wallet: Wallet, address: string,) => void,
     onConnect?: (wallet: Wallet) => void,
     destination: Network,
     destination_address?: string | undefined
@@ -41,7 +40,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                 <div className="flex items-center justify-between w-full">
                     <div className="text-sm font-medium text-secondary-text flex items-center space-x-1">
                         <WalletIcon className="h-4 w-4 stroke-2" aria-hidden="true" />
-                        <p>Connected Wallet</p>
+                        <p className="text-sm font-medium text-secondary-text"><span>Connected</span> <span>{connectedWallets.length > 1 ? 'Wallets' : 'Wallet'}</span></p>
                     </div>
                     <button
                         type="button"
@@ -60,30 +59,15 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                 </div>
                 {
                     connectedWallets.map((wallet, index) => {
-                        return <span key={index}>
-                            {
-                                wallet.addresses?.map((address) => {
-                                    const addressItem = {
-                                        address: address,
-                                        group: AddressGroup.ConnectedWallet,
-                                    }
-
-                                    return <div key={address} className="flex flex-col gap-2">
-                                        <button type="button" onClick={() => onClick(address, wallet)} className={`group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 ${address && addressFormat(address, destination!) === addressFormat(destination_address!, destination!) && 'bg-secondary-800'}`}>
-                                            <div className={`flex items-center justify-between w-full`}>
-                                                <AddressWithIcon addressItem={addressItem} connectedWallet={wallet} network={destination} />
-                                                <div className="flex h-6 items-center px-1">
-                                                    {
-                                                        addressFormat(address, destination!) === addressFormat(destination_address!, destination!) &&
-                                                        <FilledCheck className="text-primary" />
-                                                    }
-                                                </div>
-                                            </div>
-                                        </button>
-                                    </div>
-                                })
-                            }
-                        </span>
+                        return <WalletItem
+                            key={`${index}${wallet.providerName}`}
+                            wallet={wallet}
+                            selectable
+                            network={destination}
+                            provider={provider}
+                            onWalletSelect={onClick}
+                            selectedAddress={destination_address}
+                        />
                     })
                 }
             </div>

@@ -100,7 +100,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const connectedWallet = (destination && destination_address) ? connectedWallets?.find(w => w.addresses?.find(a => addressFormat(a, destination) === addressFormat(destination_address, destination))) : undefined
 
-    const handleSelectAddress = useCallback((address: string, wallet: Wallet | undefined) => {
+    const handleSelectAddress = useCallback((address: string) => {
         const selected = destination && groupedAddresses?.find(a => addressFormat(a.address, destination) === addressFormat(address, destination))
         const formattedAddress = selected?.address
         setFieldValue("destination_address", formattedAddress)
@@ -200,7 +200,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         <ConnectedWallets
                             provider={provider}
                             wallets={wallets}
-                            onClick={(address: string, wallet: Wallet) => { handleSelectAddress(address, wallet) }}
+                            onClick={(wallet, address) => handleSelectAddress(address)}
                             onConnect={onConnect}
                             destination={destination}
                             destination_address={destination_address}
