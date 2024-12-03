@@ -32,7 +32,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
     }
 
     const notCompatibleWallets = wallets.filter(wallet => wallet.providerName !== provider.name || wallet.isNotAvailable)
-    console.log('connectedWallets', notCompatibleWallets)
+
     return <>
         {
             connectedWallets && connectedWallets?.length > 0 &&

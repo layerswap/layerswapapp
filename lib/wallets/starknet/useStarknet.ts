@@ -131,7 +131,7 @@ export default function useStarknet(): WalletProvider {
         return {
             name: name,
             id: connector.id,
-            icon: typeof connector.icon === 'string' ? connector.icon : `data:image/svg+xml;base64,${btoa(connector.icon.dark)}`,
+            icon: typeof connector.icon === 'string' ? connector.icon : (connector.icon.light.startsWith('data:') ? connector.icon.light : `data:image/svg+xml;base64,${btoa(connector.icon.light)}`),
             type: connector?.["_wallet"] ? 'injected' : 'other',
         }
     })
@@ -162,7 +162,7 @@ const connectorsConfigs = [
         installLink: "https://chromewebstore.google.com/detail/braavos-starknet-wallet/jnlgamecbpmbajjfhmmmlhejkemejdma"
     },
     {
-        id: "argent",
+        id: "argentX",
         name: 'Argent X',
         installLink: "https://chromewebstore.google.com/detail/argent-x-starknet-wallet/dlcobpjiigpikoobohmabehhmhfoodbb"
     },
