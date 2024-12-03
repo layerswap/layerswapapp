@@ -32,14 +32,6 @@ export default function useFuel(): WalletProvider {
     const { address: evmAddress, connector: evmConnector } = useAccount()
     const { connectors } = useConnectors()
 
-    const connectedWallets: Wallet[] | undefined = useMemo(() => {
-
-        if (!wallet) return
-        const result = resolveWallet(wallet.address.toB256(), connectors, evmAddress, evmConnector, connectWallet, disconnectWallets, name, getItem, autofillSupportedNetworks)
-
-        return [result]
-    }, [wallet, connectors, evmAddress, evmConnector, name])
-
     const { connect } = useConnectModal()
 
     const connectWallet = async () => {
@@ -104,6 +96,14 @@ export default function useFuel(): WalletProvider {
             console.log(e)
         }
     }
+
+    const connectedWallets: Wallet[] | undefined = useMemo(() => {
+
+        if (!wallet) return
+        const result = resolveWallet(wallet.address.toB256(), connectors, evmAddress, evmConnector, connectWallet, disconnectWallets, name, getItem, autofillSupportedNetworks)
+
+        return [result]
+    }, [wallet, connectors, evmAddress, evmConnector, name])
 
     const availableWalletsForConnect: InternalConnector[] = connectors.map(c => {
 
