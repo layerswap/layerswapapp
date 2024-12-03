@@ -8,6 +8,7 @@ import { FC, useState } from "react";
 import { AddressGroup } from "..";
 import ResizablePanel from "../../../../ResizablePanel";
 import { Wallet, WalletProvider } from "../../../../../Models/WalletProvider";
+import WalletIcon from "../../../../icons/WalletIcon";
 
 type Props = {
     provider: WalletProvider,
@@ -32,13 +33,16 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
     }
 
     const notCompatibleWallets = wallets.filter(wallet => wallet.providerName !== provider.name || wallet.isNotAvailable)
-
+    console.log('connectedWallets', notCompatibleWallets)
     return <>
         {
             connectedWallets && connectedWallets?.length > 0 &&
             <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between w-full">
-                    <p className="text-sm font-medium text-secondary-text">Connected Wallet</p>
+                    <div className="text-sm font-medium text-secondary-text flex items-center space-x-1">
+                        <WalletIcon className="h-4 w-4 stroke-2" aria-hidden="true" />
+                        <p>Connected Wallet</p>
+                    </div>
                     <button
                         type="button"
                         onClick={connect}
@@ -88,48 +92,88 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
 
         {
             notCompatibleWallets.length > 0 &&
-            <ResizablePanel>
-                <div className="flex flex-col gap-2">
-                    <button
-                        onClick={() => { setShowIncompatibleWallets(!showIncompatibleWallets) }}
-                        disabled={isLoading}
-                        type="button" className="flex items-center justify-between w-full">
-                        <p className="text-sm font-medium text-secondary-text"><span>Not compatible with</span> <span>{destination.display_name}</span></p>
-                        <div
-
-                            className="text-secondary-text hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200"
+            (notCompatibleWallets.length > 1 ? (
+                <ResizablePanel>
+                    <div className="flex flex-col gap-2">
+                        <button
+                            onClick={() => setShowIncompatibleWallets(!showIncompatibleWallets)}
+                            disabled={isLoading}
+                            type="button"
+                            className="flex items-center justify-between w-full"
                         >
-                            {
-                                isLoading ?
+                            <p className="text-sm font-medium text-secondary-text">
+                                <span>Not compatible with</span> <span>{destination.display_name}</span>
+                            </p>
+                            <div
+                                className="text-secondary-text hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200"
+                            >
+                                {isLoading ? (
                                     <RefreshCw className="h-3 w-auto animate-spin" />
-                                    :
-                                    <ChevronDown className={`h-5 w-auto ${showIncompatibleWallets && 'rotate-180'} transition-all duration-200`} />
-                            }
-                        </div>
-                    </button>
-                    {
-                        showIncompatibleWallets && notCompatibleWallets && notCompatibleWallets.map((wallet, index) => {
-                            return <span key={index}>
-                                {
-                                    wallet.addresses?.map((address) => {
+                                ) : (
+                                    <div className="space-x-1 flex">
+                                        {notCompatibleWallets?.map((wallet) => (
+                                            <div key={wallet.address} className="inline-flex items-center relative">
+                                                <wallet.icon className="w-4 h-4 rounded-sm bg-secondary-800" />
+                                            </div>
+                                        ))}
+                                        <ChevronDown
+                                            className={`h-5 w-auto ${showIncompatibleWallets ? 'rotate-180' : ''} transition-all duration-200`}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        </button>
+                        {showIncompatibleWallets &&
+                            notCompatibleWallets.map((wallet, index) => (
+                                <span key={index}>
+                                    {wallet.addresses?.map((address) => {
                                         const addressItem = {
                                             address: address,
                                             group: AddressGroup.ConnectedWallet,
-                                        }
+                                        };
 
-                                        return <div key={address} className="flex flex-col gap-2">
-                                            <div className={`group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 opacity-50`}>
-                                                <AddressWithIcon addressItem={addressItem} connectedWallet={wallet} network={destination} />
+                                        return (
+                                            <div key={address} className="flex flex-col gap-2">
+                                                <div className="group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 opacity-50">
+                                                    <AddressWithIcon
+                                                        addressItem={addressItem}
+                                                        connectedWallet={wallet}
+                                                        network={destination}
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
-                                    })
-                                }
-                            </span>
-                        })
-                    }
+                                        );
+                                    })}
+                                </span>
+                            ))}
+                    </div>
+                </ResizablePanel>
+            ) : (
+                <div
+                    className="relative group/notCompatible w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 opacity-50"
+                >
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 w-max px-2 py-0.5 text-secondary-text font-medium text-sm rounded-md transition-opacity duration-200 bg-secondary-500 opacity-0 group-hover/notCompatible:opacity-100 max-w-[150px] break-words sm:max-w-none sm:whitespace-nowrap">
+                        Not compatible with {destination.display_name}
+                    </div>
+                    {notCompatibleWallets[0].addresses?.map((address) => {
+                        const addressItem = {
+                            address: address,
+                            group: AddressGroup.ConnectedWallet,
+                        };
+
+                        return (
+                            <AddressWithIcon
+                                key={address}
+                                addressItem={addressItem}
+                                connectedWallet={notCompatibleWallets[0]}
+                                network={destination}
+                            />
+                        );
+                    })}
                 </div>
-            </ResizablePanel >
+            ))
         }
+
 
     </>
 }
