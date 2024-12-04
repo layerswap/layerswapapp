@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useMemo } from "react";
+import { FC, useCallback, useEffect } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
@@ -18,7 +18,6 @@ import { ONE_WEEK } from "./NetworkFormField";
 import RouteIcon from "./RouteIcon";
 import { useSwapDataState } from "../../context/swap";
 import useSWRBalance from "../../lib/newbalances/useSWRBalance";
-import useWallet from "../../hooks/useWallet";
 
 const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {

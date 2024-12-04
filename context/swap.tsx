@@ -67,7 +67,9 @@ export function SwapDataProvider({ children }) {
         }
         const { wallet, address } = props || {}
         const provider = providers?.find(p => p.name === wallet.providerName)
-        provider?.switchAccount && provider?.switchAccount(wallet, address)
+        if (provider?.activeWallet?.address.toLowerCase() !== address.toLowerCase()) {
+            provider?.switchAccount && provider?.switchAccount(wallet, address)
+        }
         setSelectedSourceAccount({ wallet, address })
     }
 

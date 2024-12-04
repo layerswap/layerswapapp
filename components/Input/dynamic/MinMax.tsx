@@ -1,5 +1,3 @@
-import { useEffect, useMemo } from "react"
-import useWallet from "../../../hooks/useWallet"
 import SecondaryButton from "../../buttons/secondaryButton"
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";

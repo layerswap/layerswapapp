@@ -63,8 +63,10 @@ export default function useEVM({ network }: Props): WalletProvider {
 
     const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
         try {
+
             setSelectedProvider({ ...provider, connector: { name: connector.name } })
             await connector.disconnect()
+            await disconnectAsync({ connector })
 
             if (isMobile()) {
                 getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
@@ -115,7 +117,6 @@ export default function useEVM({ network }: Props): WalletProvider {
 
     const resolvedConnectors: Wallet[] = useMemo(() => {
         const connections = getConnections(config)
-
         return activeConnectors.map((w): Wallet | undefined => {
 
             //TODO: handle Ronin wallet case

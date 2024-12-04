@@ -1,15 +1,15 @@
 import { useFormikContext } from "formik";
-import React, { FC, useCallback, useEffect, useRef, useState } from "react";
+import React, { FC, useCallback, useEffect, useRef } from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Network } from "../../../Models/Network";
 import { Popover, PopoverContent, PopoverTrigger } from "../../shadcn/popover";
 import WalletIcon from "../../icons/WalletIcon";
-import { AlignLeft, ChevronDown, ChevronUp } from "lucide-react"
+import { AlignLeft, ChevronDown } from "lucide-react"
 import { motion } from "framer-motion";
 import { useDepositMethod } from "../../../context/depositMethodContext";
 import { useQueryState } from "../../../context/query";
 import KnownInternalNames from "../../../lib/knownIds";
-import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
+import { useSwapDataUpdate } from "../../../context/swap";
 
 const variants = {
     open: { rotate: 180 },

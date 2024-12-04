@@ -42,7 +42,7 @@ const WalletTransferContent: FC = () => {
                 address: activeWallet.address
             })
         }
-    }, [activeWallet, setSelectedSourceAccount])
+    }, [activeWallet?.address, setSelectedSourceAccount])
 
 
     const { balance, isBalanceLoading } = useSWRBalance(selectedSourceAccount?.address, source_network)

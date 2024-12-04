@@ -69,7 +69,7 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swa
                 toast(e.message)
         }
         setLoading(false)
-    }, [wallet, swapId, starknet, token, callData, amount])
+    }, [wallet?.address, swapId, starknet, token, callData, amount])
 
 
     return (
