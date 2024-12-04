@@ -4,7 +4,11 @@ import SolanaProvider from "./SolanaProvider"
 import { ThemeData } from "../../Models/Theme"
 import Wagmi from "./Wagmi";
 import StarknetProvider from "./StarknetProvider";
-import TronProvider from "./TronProvider";
+import dynamic from "next/dynamic";
+
+const TronProvider = dynamic(() => import("./TronProvider").then((comp) => comp.default), {
+    loading: () => null
+})
 
 const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], basePath: string, themeData: ThemeData, appName: string | undefined }> = ({ children, basePath, themeData, appName }) => {
     return (
@@ -13,7 +17,14 @@ const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], basePath: st
                 <TronProvider>
                     <StarknetProvider>
                         <Wagmi>
-                            {children}
+                            {
+                                TronProvider ?
+                                    <TronProvider>
+                                        {children}
+                                    </TronProvider>
+                                    :
+                                    children
+                            }
                         </Wagmi>
                     </StarknetProvider>
                 </TronProvider>

@@ -3,7 +3,6 @@ import { WalletDisconnectedError, WalletNotFoundError } from '@tronweb3/tronwall
 import { toast } from 'react-hot-toast';
 import { useEffect, useState } from 'react';
 import { WalletProvider } from '@tronweb3/tronwallet-adapter-react-hooks';
-import { LedgerAdapter } from '@tronweb3/tronwallet-adapter-ledger';
 
 const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
 
@@ -23,7 +22,8 @@ export default function TronProvider({ children }: { children: React.ReactNode }
                 OkxWalletAdapter,
                 TokenPocketAdapter,
                 TronLinkAdapter,
-                WalletConnectAdapter
+                WalletConnectAdapter,
+                LedgerAdapter,
             } = res;
             const tronLinkAdapter = new TronLinkAdapter();
             const ledger = new LedgerAdapter({
@@ -43,9 +43,7 @@ export default function TronProvider({ children }: { children: React.ReactNode }
                 },
                 web3ModalConfig: {
                     themeMode: 'dark',
-                    themeVariables: {
-                        '--wcm-z-index': '1000',
-                    },
+                
                 },
             });
             const bitKeepAdapter = new BitKeepAdapter();
