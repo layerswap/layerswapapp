@@ -2,7 +2,7 @@ import { FC, useState } from "react"
 import { AddressGroup, AddressItem } from ".";
 import AddressIcon from "../../../AddressIcon";
 import shortenAddress from "../../../utils/ShortenAddress";
-import { History, ExternalLink, Copy, Check, ChevronDown, WalletIcon, Pencil, Link2 } from "lucide-react";
+import { History, ExternalLink, Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, Power } from "lucide-react";
 import Image from "next/image";
 import { Partner } from "../../../../Models/Partner";
 import { Network } from "../../../../Models/Network";
@@ -119,9 +119,10 @@ type ExtendedAddressProps = {
     address: string;
     network?: Network;
     addressClassNames?: string;
+    onDisconnect?: () => void;
 }
 
-export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, addressClassNames }) => {
+export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, addressClassNames, onDisconnect }) => {
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
 
@@ -164,6 +165,15 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, ad
                             </p>
                             <ExternalLink className="w-4 h-4" />
                         </Link>
+                    }
+                    {
+                        onDisconnect &&
+                        <div onClick={(e) => { e.stopPropagation(), onDisconnect() }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
+                            <p>
+                                Disconnect
+                            </p>
+                            <Power className="w-4 h-4" />
+                        </div>
                     }
                 </PopoverContent>
             </Popover>
