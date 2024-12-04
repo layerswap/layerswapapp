@@ -30,18 +30,20 @@ export default function useTON(): WalletProvider {
     // }, [])
 
     const address = tonWallet?.account && Address.parse(tonWallet.account.address).toString({ bounceable: false })
-    const iconUrl = tonWallet?.["imageUrl"]
+    const iconUrl = tonWallet?.["imageUrl"] as string
 
-    const wallet = tonWallet && address ? {
+    const wallet: Wallet | undefined = tonWallet && address ? {
         addresses: [address],
         address,
-        iconUrl,
         connector: tonWallet.device.appName,
         providerName: id,
         isActive: true,
         icon: resolveWalletConnectorIcon({ connector: name, address, iconUrl }),
         disconnect: () => disconnectWallets(),
         connect: () => connectWallet(),
+        withdrawalSupportedNetworks: commonSupportedNetworks,
+        autofillSupportedNetworks: commonSupportedNetworks,
+        asSourceSupportedNetworks: commonSupportedNetworks,
     } : undefined
 
     const getWallet = () => {
@@ -88,6 +90,9 @@ export default function useTON(): WalletProvider {
                     icon: resolveWalletConnectorIcon({ connector: connectedName, address: connectedAddress }),
                     disconnect: () => disconnectWallets(),
                     connect: () => connectWallet(),
+                    withdrawalSupportedNetworks: commonSupportedNetworks,
+                    autofillSupportedNetworks: commonSupportedNetworks,
+                    asSourceSupportedNetworks: commonSupportedNetworks,
                 } : undefined
 
                 return wallet ? wallet : undefined

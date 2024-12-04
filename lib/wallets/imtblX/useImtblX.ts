@@ -43,7 +43,9 @@ export default function useImtblX(): WalletProvider {
                 disconnect: () => disconnectWallet(),
                 connect: () => connectWallet({ chain }),
                 isActive: true,
-                addresses: [res.address]
+                addresses: [res.address],
+                withdrawalSupportedNetworks,
+                asSourceSupportedNetworks: withdrawalSupportedNetworks,
             }
 
             addWallet(wallet);

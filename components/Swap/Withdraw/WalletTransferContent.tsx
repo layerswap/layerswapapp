@@ -85,6 +85,7 @@ const WalletTransferContent: FC = () => {
         {
             source_network &&
             source_token &&
+            provider &&
             <VaulDrawer
                 show={openModal}
                 setShow={setOpenModal}
@@ -98,6 +99,7 @@ const WalletTransferContent: FC = () => {
                         onSelect={changeWallet}
                         selectable
                         wallets={wallets}
+                        provider={provider}
                     />
                 </VaulDrawer.Snap>
             </VaulDrawer>

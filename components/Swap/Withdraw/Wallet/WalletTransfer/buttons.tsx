@@ -108,6 +108,7 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
             text_align='center'
             buttonStyle='filled'
             size="medium"
+            type="button"
             {...props}
         >
             {props.children}

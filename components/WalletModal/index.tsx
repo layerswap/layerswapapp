@@ -32,8 +32,10 @@ export function WalletModalProvider({ children }) {
     const [selectedProvider, setSelectedProvider] = useState<ModalWalletProvider | undefined>(undefined);
     const [open, setOpen] = useState(false);
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+    const [isPorivderProvidedInitally, setIsPorivderProvidedInitally] = useState(false);
 
     const connect = async ({ provider, connectCallback }: SharedType) => {
+        setIsPorivderProvidedInitally(!!provider)
         if (!provider?.availableWalletsForConnect) {
             await provider?.connectWallet()
         }
@@ -85,7 +87,7 @@ export function WalletModalProvider({ children }) {
                 header={
                     <div className="flex items-center gap-1">
                         {
-                            selectedProvider &&
+                            selectedProvider && !isPorivderProvidedInitally &&
                             <div className='-ml-2 mt-0.5'>
                                 <IconButton onClick={goBack} icon={
                                     <ChevronLeft className="h-6 w-6" />

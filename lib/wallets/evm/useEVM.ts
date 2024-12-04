@@ -98,7 +98,10 @@ export default function useEVM({ network }: Props): WalletProvider {
                 icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(activeAccount.connector), address, iconUrl: activeAccount.connector?.icon }),
                 connect: connectWallet,
                 disconnect: () => disconnectWallet(activeAccount.connector?.name || ""),
-                isNotAvailable: isNotAvailable(activeAccount.connector, network)
+                isNotAvailable: isNotAvailable(activeAccount.connector, network),
+                asSourceSupportedNetworks: activeAccount.connector.id === "com.immutable.passport" ? asSourceSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : asSourceSupportedNetworks,
+                autofillSupportedNetworks: activeAccount.connector.id === "com.immutable.passport" ? autofillSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : autofillSupportedNetworks,
+                withdrawalSupportedNetworks: activeAccount.connector.id === "com.immutable.passport" ? withdrawalSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : withdrawalSupportedNetworks,
             }
 
             return wallet

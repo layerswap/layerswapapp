@@ -19,11 +19,11 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
     const { publicKey: walletPublicKey, signTransaction } = useSolanaWallet();
     const solanaNode = network?.node_url
     const handleTransfer = useCallback(async () => {
-
-        if (!signTransaction || !callData || !swapId) return
-
         setLoading(true)
         try {
+
+            if (!signTransaction || !callData || !swapId) throw new Error('Missing data')
+
             const connection = new Connection(
                 `${solanaNode}`,
                 "confirmed"
