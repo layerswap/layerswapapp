@@ -7,6 +7,7 @@ import { FC } from "react";
 import AddressWithIcon from "./AddressWithIcon";
 import { Partner } from "../../../../Models/Partner";
 import { Wallet } from "../../../../Models/WalletProvider";
+import { BookOpen } from "lucide-react";
 
 type AddressBookProps = {
     addressBook: AddressItem[];
@@ -24,7 +25,10 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                 <CommandList>
                     <CommandGroup
                         heading={
-                            <p className="text-sm text-secondary-text">Address Book</p>
+                            <div className="flex items-center space-x-1">
+                                <BookOpen className="h-4 w-4 stroke-2" aria-hidden="true" />
+                                <p className="text-sm text-secondary-text">Address Book</p>
+                            </div>
                         }
                         className="[&_[cmdk-group-heading]]:!pb-1 [&_[cmdk-group-heading]]:!px-0 !py-0 !px-0"
                     >
@@ -32,7 +36,7 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                             {addressBook.sort(sortingByDate).map(item => {
                                 const isSelected = addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!)
                                 return (
-                                    <button type="button" key={item.address} onClick={() => onSelectAddress(item.address, item.wallet)} className={`group/addressItem px-3 py-3 rounded-md hover:bg-secondary-700 w-full transition duration-200 ${isSelected && 'bg-secondary-800'}`}>
+                                    <button type="button" key={item.address} onClick={() => onSelectAddress(item.address, item.wallet)} className={`group/addressItem px-3 py-3 rounded-lg hover:bg-secondary-600 w-full transition duration-200 bg-secondary-700 ${isSelected && 'bg-secondary-800'}`}>
                                         <div className={`flex items-center justify-between w-full`}>
                                             <AddressWithIcon addressItem={item} partner={partner} network={destination} connectedWallet={item.wallet} />
                                             <div className="flex h-6 items-center px-1">

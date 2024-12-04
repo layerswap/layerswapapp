@@ -3,7 +3,6 @@ import { useSwapDataState, useSwapDataUpdate } from "../context/swap";
 import SwapDetails from "./Swap";
 import { Widget } from "./Widget/Index";
 import NotFound from "./Swap/NotFound";
-import { BalancesDataProvider } from "../context/balances";
 import { ImtblPassportProvider } from "./WalletProviders/ImtblPassportProvider";
 
 const SwapWithdrawal: FC = () => {
@@ -26,9 +25,7 @@ const SwapWithdrawal: FC = () => {
 
     return (
         <ImtblPassportProvider from={swap.swap.source_network}>
-            <BalancesDataProvider>
-                <SwapDetails type="widget" />
-            </BalancesDataProvider>
+            <SwapDetails type="widget" />
         </ImtblPassportProvider>
     )
 };

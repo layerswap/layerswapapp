@@ -345,6 +345,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                     {
                         swap.status === SwapStatus.Completed &&
                         <button
+                            type='button'
                             onClick={() => router.push({
                                 pathname: `/`,
                                 query: {
@@ -368,6 +369,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                     {
                         (swap.status !== SwapStatus.Completed && swap.status !== SwapStatus.Expired && swap.status !== SwapStatus.Failed) &&
                         <button
+                            type='button'
                             onClick={() => router.push({
                                 pathname: `/swap/${swap.id}`,
                                 query: resolvePersistantQueryParams(router.query),

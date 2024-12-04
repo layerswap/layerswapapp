@@ -8,7 +8,7 @@ import { Wallet } from "../../Models/WalletProvider";
 
 
 const Component = (props: AddressTriggerProps) => {
-    const { destination, disabled, addressItem, connectedWallet, partner } = props
+    const { addressItem, connectedWallet, partner } = props
     return <>
         {
             addressItem &&
@@ -28,7 +28,7 @@ const Component = (props: AddressTriggerProps) => {
                 </>
                 }
             </div >
-        }
+        }   
     </>
 }
 type AdderssIconprops = {

@@ -10,7 +10,7 @@ const transactionBuilder = async (network: Network, token: Token, walletPublicKe
     );
 
     const sourceToken = new PublicKey(token?.contract!);
-    const recipientAddress = new PublicKey('');
+    const recipientAddress = new PublicKey(new Array(32).fill(0));
 
     const transactionInstructions: TransactionInstruction[] = [];
     const associatedTokenFrom = await getAssociatedTokenAddress(

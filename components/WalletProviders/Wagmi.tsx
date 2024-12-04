@@ -74,9 +74,9 @@ function WagmiComponent({ children }: Props) {
                             </WalletModalProvider>
                         </FuelProviderWrapper>
                         :
-                        <>
+                        <WalletModalProvider>
                             {children}
-                        </>
+                        </WalletModalProvider>
                 }
             </QueryClientProvider>
         </WagmiProvider >
@@ -84,4 +84,3 @@ function WagmiComponent({ children }: Props) {
 }
 
 export default WagmiComponent
-

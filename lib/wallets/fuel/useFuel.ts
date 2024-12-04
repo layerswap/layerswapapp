@@ -2,7 +2,7 @@ import KnownInternalNames from "../../knownIds";
 import {
     useDisconnect,
     useWallet,
-    useConnectors
+    useConnectors,
 } from '@fuels/react';
 import useStorage from "../../../hooks/useStorage";
 import { useAccount } from "wagmi";
@@ -15,10 +15,14 @@ import shortenAddress from "../../../components/utils/ShortenAddress";
 import { BAKO_STATE } from "./Basko";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
-import { useWalletModalState } from "../../../stores/walletModalStateStore";
+import { useConnectModal } from "../../../components/WalletModal";
+import { useMemo } from "react";
 
 export default function useFuel(): WalletProvider {
-    const autofillSupportedNetworks = [KnownInternalNames.Networks.FuelTestnet, KnownInternalNames.Networks.FuelMainnet]
+    const autofillSupportedNetworks = [
+        KnownInternalNames.Networks.FuelTestnet,
+        KnownInternalNames.Networks.FuelMainnet
+    ]
     const name = 'Fuel'
     const id = 'fuel'
 
@@ -28,55 +32,11 @@ export default function useFuel(): WalletProvider {
     const { address: evmAddress, connector: evmConnector } = useAccount()
     const { connectors } = useConnectors()
 
-    const setWalletModalIsOpen = useWalletModalState((state) => state.setOpen)
-    const setSelectedProvider = useWalletModalState((state) => state.setSelectedProvider)
-
-    const getWallet = () => {
-
-        if (wallet) {
-            let fuelCurrentConnector = getItem('fuel-current-connector', 'localStorage')
-
-            let customConnectorname: string | undefined = undefined
-            const fuelEvmConnector = connectors.find(c => c.name === 'Ethereum Wallets')
-            const fuelSolanaConnector = connectors.find(c => c.name === 'Solana Wallets')
-
-            const address = wallet.address.toB256()
-
-            if (fuelEvmConnector && evmAddress && fuelEvmConnector.connected && evmConnector) {
-                // @ts-expect-error processPredicateData is only available in the Predicate class
-                const { predicateBytes } = Predicate.processPredicateData(
-                    (fuelEvmConnector as any)?.predicateAccount?.bytecode,
-                    (fuelEvmConnector as any)?.predicateAccount?.abi,
-                    {
-                        SIGNER: (fuelEvmConnector as any)?.predicateAccount?.adapter?.convertAddress(evmAddress),
-                    },
-                );
-                const convertedAddress = Address.fromB256(getPredicateRoot(predicateBytes)).toString();
-                if (convertedAddress.toLowerCase() === address.toLowerCase()) {
-                    fuelCurrentConnector = `${evmConnector.name} (${shortenAddress(evmAddress)})`
-                    customConnectorname = evmConnector.name
-                }
-            }
-
-            const w: Wallet = {
-                address: address,
-                addresses: [address],
-                isActive: true,
-                connect: connectWallet,
-                disconnect: disconnectWallets,
-                connector: fuelCurrentConnector,
-                providerName: name,
-                icon: resolveWalletConnectorIcon({ connector: customConnectorname || fuelCurrentConnector, address: address })
-            }
-
-            return [w]
-        }
-    }
+    const { connect } = useConnectModal()
 
     const connectWallet = async () => {
         try {
-            setSelectedProvider(provider)
-            setWalletModalIsOpen(true)
+            return await connect(provider)
         }
         catch (e) {
             console.log(e)
@@ -89,9 +49,9 @@ export default function useFuel(): WalletProvider {
             const fuelConnector = connectors.find(w => w.name === connector.name)
 
             if (!fuelConnector?.installed) {
-                const installLink = connectorsConfigs.find(c => c.id === connector.id)
+                const installLink = fuelConnector?.metadata.install.link
                 if (installLink) {
-                    window.open(installLink.installLink, "_blank");
+                    window.open(installLink, "_blank");
                     return
                 }
             }
@@ -99,6 +59,17 @@ export default function useFuel(): WalletProvider {
             BAKO_STATE.state.last_req = undefined
             BAKO_STATE.period_durtion = 120_000
             await fuelConnector?.connect()
+
+            const connectedWallets = await fuelConnector?.accounts()
+
+            if (connectedWallets) {
+                const wallet = Address.fromAddressOrString(connectedWallets[0]).toB256()
+
+                const result = resolveWallet(wallet, connectors, evmAddress, evmConnector, connectWallet, disconnectWallets, name, getItem, autofillSupportedNetworks)
+
+                return result
+            }
+
         }
         catch (e) {
             console.log(e)
@@ -126,6 +97,14 @@ export default function useFuel(): WalletProvider {
         }
     }
 
+    const connectedWallets: Wallet[] | undefined = useMemo(() => {
+
+        if (!wallet) return
+        const result = resolveWallet(wallet.address.toB256(), connectors, evmAddress, evmConnector, connectWallet, disconnectWallets, name, getItem, autofillSupportedNetworks)
+
+        return [result]
+    }, [wallet, connectors, evmAddress, evmConnector, name])
+
     const availableWalletsForConnect: InternalConnector[] = connectors.map(c => {
 
         const name = c.installed ? c.name : `Install ${c.name}`
@@ -144,9 +123,8 @@ export default function useFuel(): WalletProvider {
         switchAccount: reconnectWallet,
         availableWalletsForConnect,
         autofillSupportedNetworks,
-        activeAccountAddress: wallet?.address.toB256(),
-        activeWallet: getWallet()?.[0],
-        connectedWallets: getWallet(),
+        activeWallet: connectedWallets?.[0],
+        connectedWallets,
         name,
         id,
     }
@@ -154,13 +132,40 @@ export default function useFuel(): WalletProvider {
     return provider
 }
 
-const connectorsConfigs = [
-    {
-        id: "Fuel Wallet",
-        installLink: "https://chromewebstore.google.com/detail/fuel-wallet/dldjpboieedgcmpkchcjcbijingjcgok"
-    },
-    {
-        id: "Fuelet Wallet",
-        installLink: "https://fuelet.app/download/"
-    },
-]
+const resolveWallet = (address: string, connectors, evmAddress, evmConnector, connectWallet, disconnectWallets, name, getItem, autofillSupportedNetworks) => {
+    let fuelCurrentConnector = getItem('fuel-current-connector', 'localStorage')
+
+    let customConnectorname: string | undefined = undefined
+    const fuelEvmConnector = connectors.find(c => c.name === 'Ethereum Wallets')
+    const fuelSolanaConnector = connectors.find(c => c.name === 'Solana Wallets')
+
+    if (fuelEvmConnector && evmAddress && fuelEvmConnector.connected && evmConnector) {
+        // @ts-expect-error processPredicateData is only available in the Predicate class
+        const { predicateBytes } = Predicate.processPredicateData(
+            (fuelEvmConnector as any)?.predicateAccount?.bytecode,
+            (fuelEvmConnector as any)?.predicateAccount?.abi,
+            {
+                SIGNER: (fuelEvmConnector as any)?.predicateAccount?.adapter?.convertAddress(evmAddress),
+            },
+        );
+        const convertedAddress = Address.fromB256(getPredicateRoot(predicateBytes)).toString();
+        if (convertedAddress.toLowerCase() === address.toLowerCase()) {
+            fuelCurrentConnector = `${evmConnector.name} (${shortenAddress(evmAddress)})`
+            customConnectorname = evmConnector.name
+        }
+    }
+
+    const w: Wallet = {
+        address: address,
+        addresses: [address],
+        isActive: true,
+        connect: connectWallet,
+        disconnect: disconnectWallets,
+        connector: fuelCurrentConnector,
+        providerName: name,
+        icon: resolveWalletConnectorIcon({ connector: customConnectorname || fuelCurrentConnector, address: address }),
+        autofillSupportedNetworks
+    }
+
+    return w
+}

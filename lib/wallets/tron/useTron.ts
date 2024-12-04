@@ -1,9 +1,8 @@
 import KnownInternalNames from "../../knownIds";
-import TON from "../../../components/icons/Wallets/TON";
 import { useWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
-import { InternalConnector, WalletProvider } from "../../../Models/WalletProvider";
-import { useWalletModalState } from "../../../stores/walletModalStateStore";
+import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
+import { useConnectModal } from "../../../components/WalletModal";
 
 export default function useTron(): WalletProvider {
     const commonSupportedNetworks = [
@@ -15,8 +14,7 @@ export default function useTron(): WalletProvider {
     const id = 'tron'
     const { wallets, wallet: tronWallet, disconnect, select } = useWallet();
 
-    const setWalletModalIsOpen = useWalletModalState((state) => state.setOpen)
-    const setSelectedProvider = useWalletModalState((state) => state.setSelectedProvider)
+    const { connect } = useConnectModal()
 
     const address = tronWallet?.adapter.address
 
@@ -40,8 +38,9 @@ export default function useTron(): WalletProvider {
 
     const connectWallet = async () => {
         try {
-            setSelectedProvider(provider)
-            setWalletModalIsOpen(true)
+            const result = await connect(provider)
+
+            return result
         }
         catch (e) {
             console.log(e)
@@ -54,6 +53,23 @@ export default function useTron(): WalletProvider {
         try {
             select(tronConnector.adapter.name)
             await tronConnector.adapter.connect()
+
+            const connectedWallet = wallets.find(w => w.adapter.connected === true)
+            const connectedAddress = connectedWallet?.adapter.address
+            const wallet: Wallet | undefined = connectedAddress ? {
+                address: connectedAddress,
+                connector: connectedWallet?.adapter.name,
+                providerName: name,
+                icon: resolveWalletConnectorIcon({ connector: String(connectedWallet?.adapter.name), address: connectedAddress }),
+                disconnect,
+                connect: () => connectWallet(),
+                isActive: true,
+                addresses: [connectedAddress],
+                withdrawalSupportedNetworks: commonSupportedNetworks,
+                asSourceSupportedNetworks: commonSupportedNetworks,
+                autofillSupportedNetworks: commonSupportedNetworks,
+            } : undefined
+            return wallet
         }
         catch (e) {
             console.log(e)

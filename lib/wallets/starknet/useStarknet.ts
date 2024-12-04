@@ -4,8 +4,8 @@ import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import toast from "react-hot-toast";
 import { useSettingsState } from "../../../context/settings";
 import { useConnect, useDisconnect } from "@starknet-react/core";
-import { useWalletModalState } from "../../../stores/walletModalStateStore";
-import { InternalConnector, WalletProvider } from "../../../Models/WalletProvider";
+import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
+import { useConnectModal } from "../../../components/WalletModal";
 
 export default function useStarknet(): WalletProvider {
     const commonSupportedNetworks = [
@@ -31,9 +31,6 @@ export default function useStarknet(): WalletProvider {
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
 
-    const setWalletModalIsOpen = useWalletModalState((state) => state.setOpen)
-    const setSelectedProvider = useWalletModalState((state) => state.setSelectedProvider)
-
     const isMainnet = networks?.some(network => network.name === KnownInternalNames.Networks.StarkNetMainnet)
 
     const getWallet = () => {
@@ -45,10 +42,11 @@ export default function useStarknet(): WalletProvider {
         return [wallet]
     }
 
+    const { connect } = useConnectModal()
+
     const connectWallet = async () => {
         try {
-            setSelectedProvider(provider)
-            setWalletModalIsOpen(true)
+            return await connect(provider)
         }
         catch (e) {
             console.log(e)
@@ -87,7 +85,7 @@ export default function useStarknet(): WalletProvider {
 
                 const starknetWalletAccount = new WalletAccount({ nodeUrl: starkent?.node_url }, (starknetConnector as any).wallet);
 
-                addWallet({
+                const wallet: Wallet = {
                     address: result?.account,
                     addresses: [result?.account],
                     chainId: walletChain,
@@ -100,9 +98,15 @@ export default function useStarknet(): WalletProvider {
                     },
                     isActive: true,
                     connect: () => connectWallet(),
-                    disconnect: () => disconnectWallets()
+                    disconnect: () => disconnectWallets(),
+                    withdrawalSupportedNetworks,
+                    autofillSupportedNetworks: commonSupportedNetworks,
+                    asSourceSupportedNetworks: commonSupportedNetworks,
+                }
 
-                })
+                addWallet(wallet)
+
+                return wallet
             }
         }
 
@@ -129,7 +133,7 @@ export default function useStarknet(): WalletProvider {
         return {
             name: name,
             id: connector.id,
-            icon: typeof connector.icon === 'string' ? connector.icon : `data:image/svg+xml;base64,${btoa(connector.icon.dark)}`,
+            icon: typeof connector.icon === 'string' ? connector.icon : (connector.icon.light.startsWith('data:') ? connector.icon.light : `data:image/svg+xml;base64,${btoa(connector.icon.light)}`),
             type: connector?.["_wallet"] ? 'injected' : 'other',
         }
     })
@@ -141,11 +145,10 @@ export default function useStarknet(): WalletProvider {
         disconnectWallets,
         connectedWallets: getWallet(),
         activeWallet: getWallet()?.[0],
-        activeAccountAddress: getWallet()?.[0]?.address,
         withdrawalSupportedNetworks,
         autofillSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,
-        availableWalletsForConnect: availableWalletsForConnect,
+        availableWalletsForConnect,
         name,
         id,
     }
@@ -161,7 +164,7 @@ const connectorsConfigs = [
         installLink: "https://chromewebstore.google.com/detail/braavos-starknet-wallet/jnlgamecbpmbajjfhmmmlhejkemejdma"
     },
     {
-        id: "argent",
+        id: "argentX",
         name: 'Argent X',
         installLink: "https://chromewebstore.google.com/detail/argent-x-starknet-wallet/dlcobpjiigpikoobohmabehhmhfoodbb"
     },

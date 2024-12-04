@@ -1,23 +1,18 @@
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { FC, useEffect, useState } from "react";
-import useWallet, { WalletPurpose } from "../../hooks/useWallet";
+import useWallet from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
-import { ChevronDown, Plus } from "lucide-react";
-import { Network, Token } from "../../Models/Network";
+import { ChevronDown } from "lucide-react";
 import ConnectButton from "../buttons/connectButton";
-import FilledCheck from "../icons/FilledCheck";
-import SwapButton from "../buttons/swapButton";
 import Balance from "./dynamic/Balance";
-import { isValidAddress } from "../../lib/address/validator";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
-import VaulDrawer from "../modal/vaulModal";
-import useBalance from "../../hooks/useBalance";
-import { useBalancesState } from "../../context/balances";
-import { truncateDecimals } from "../utils/RoundDecimals";
-import AddressWithIcon from "./Address/AddressPicker/AddressWithIcon";
-import { AddressGroup } from "./Address/AddressPicker";
+import VaulDrawer, { WalletFooterPortal } from "../modal/vaulModal";
 import { Wallet } from "../../Models/WalletProvider";
+import WalletIcon from "../icons/WalletIcon";
+import SubmitButton from "../buttons/submitButton";
+import { useConnectModal } from "../WalletModal";
+import WalletsList from "../Wallet/WalletsList";
 
 const Component: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -32,54 +27,29 @@ const Component: FC = () => {
     const walletNetwork = values.fromExchange ? undefined : values.from
     const source_token = values.fromCurrency
     const destination_address = values.destination_address
-    const { provider, wallets } = useWallet(walletNetwork, 'asSource')
-    const { fetchBalance } = useBalance()
+    const { provider } = useWallet(walletNetwork, 'withdrawal')
+    const wallets = provider?.connectedWallets || []
 
     const selectedWallet = selectedSourceAccount?.wallet
-    const activeWallet = walletNetwork ? provider?.activeWallet : wallets[0]
+    //TODO: sort by active wallet
+    const defaultWallet = walletNetwork && wallets?.find(w => !w.isNotAvailable)
     const source_addsress = selectedSourceAccount?.address
-    const connectedWallets = provider?.connectedWallets
 
     useEffect(() => {
-
-        if (source_addsress && walletNetwork && !isValidAddress(source_addsress, walletNetwork)) {
-            const defaultValue = activeWallet?.addresses?.find(a => a === destination_address)
-            if (defaultValue && isValidAddress(defaultValue, walletNetwork) && activeWallet) {
-                setSelectedSourceAccount({
-                    wallet: activeWallet,
-                    address: defaultValue
-                })
-                return
-            }
-
-            setSelectedSourceAccount(undefined)
-        }
-    }, [source_addsress, walletNetwork])
-
-    useEffect(() => {
-        if (!source_addsress && activeWallet && values.depositMethod !== 'deposit_address') {
+        if (!source_addsress && defaultWallet && values.depositMethod !== 'deposit_address') {
             setSelectedSourceAccount({
-                wallet: activeWallet,
-                address: activeWallet.address
+                wallet: defaultWallet,
+                address: defaultWallet.address
             })
         }
-    }, [activeWallet, source_addsress, values.depositMethod, destination_address])
+    }, [defaultWallet, source_addsress, values.depositMethod, destination_address])
 
     useEffect(() => {
-        if (values.depositMethod === 'deposit_address' || !activeWallet?.address || (selectedSourceAccount && !wallets.some(w => w?.addresses?.some(a => a === selectedSourceAccount.address)))) {
+        if (values.depositMethod === 'deposit_address' || !defaultWallet?.address || (selectedSourceAccount && !wallets.some(w => w?.addresses?.some(a => a === selectedSourceAccount.address)))) {
             setSelectedSourceAccount(undefined)
         }
-    }, [values.depositMethod, activeWallet?.address, wallets.length])
+    }, [values.depositMethod, defaultWallet?.address, wallets.length])
 
-    useEffect(() => {
-        if (walletNetwork && source_token) {
-            connectedWallets?.forEach(wallet => {
-                wallet.addresses.forEach(address => {
-                    fetchBalance(walletNetwork, source_token, address);
-                })
-            })
-        }
-    }, [walletNetwork, connectedWallets?.length, source_token])
 
     const handleWalletChange = () => {
         setOpenModal(true)
@@ -143,7 +113,14 @@ const Component: FC = () => {
             modalId="connectedWallets"
         >
             <VaulDrawer.Snap id="item-1" className="space-y-3 pb-3">
-                <WalletsList network={walletNetwork} purpose={'withdrawal'} onSelect={handleSelectWallet} token={source_token} />
+                <WalletsList
+                    provider={provider}
+                    wallets={wallets}
+                    onSelect={handleSelectWallet}
+                    token={source_token}
+                    network={walletNetwork}
+                    selectable
+                />
                 {
                     values.from?.deposit_methods.includes('deposit_address') &&
                     <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer">
@@ -155,13 +132,6 @@ const Component: FC = () => {
     </>
 }
 
-type WalletListProps = {
-    network: Network,
-    purpose: WalletPurpose,
-    token: Token,
-    onSelect: (wallet?: Wallet, address?: string) => void
-}
-
 export const FormSourceWalletButton: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
     const {
@@ -170,10 +140,12 @@ export const FormSourceWalletButton: FC = () => {
     } = useFormikContext<SwapFormValues>();
 
     const [mounted, setMounted] = useState<boolean>(false)
+    const [mountWalletPortal, setMounWalletPortal] = useState<boolean>(false)
 
     const walletNetwork = values.fromExchange ? undefined : values.from
 
     const { wallets, provider } = useWallet(walletNetwork, 'withdrawal')
+    const { isWalletModalOpen, cancel } = useConnectModal()
 
     const handleWalletChange = () => {
         setOpenModal(true)
@@ -191,37 +163,47 @@ export const FormSourceWalletButton: FC = () => {
         else {
             setFieldValue('depositMethod', 'wallet')
         }
+        cancel()
         setOpenModal(false)
     }
 
     const connect = async () => {
-        await provider?.connectWallet({ chain: walletNetwork?.chain_id || walletNetwork?.name })
+        setMounWalletPortal(true)
+        const result = await provider?.connectWallet({ chain: walletNetwork?.chain_id || walletNetwork?.name })
+
+        if (result) {
+            handleSelectWallet(result, result.address)
+        }
+        setMounWalletPortal(false)
     }
 
     if (!mounted || !walletNetwork || !values.fromCurrency) return null
 
-    if (!wallets.length && walletNetwork) {
-        return <SwapButton
-            className="plausible-event-name=Swap+initiated"
-            type='button'
-            isDisabled={false}
-            isSubmitting={false}
-            onClick={connect}
-        >
-            Connect Wallet
-        </SwapButton>
+    if (!provider?.connectedWallets?.length && walletNetwork) {
+        return <>
+            <button
+                type='button'
+                onClick={connect}
+                className="w-full"
+            >
+                <Connect />
+            </button>
+            {
+                mountWalletPortal && values.from?.deposit_methods.includes('deposit_address') && values.depositMethod !== 'deposit_address' &&
+                <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
+                    <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer pt-3">
+                        Continue without a wallet
+                    </div>
+                </WalletFooterPortal>
+            }
+        </>
+
     }
     else if (wallets.length > 0) {
         return <>
-            <SwapButton
-                className="plausible-event-name=Swap+initiated"
-                type='button'
-                isDisabled={false}
-                isSubmitting={false}
-                onClick={handleWalletChange}
-            >
-                Connect Wallet
-            </SwapButton>
+            <button type="button" className="w-full" onClick={handleWalletChange}>
+                <Connect />
+            </button>
             <VaulDrawer
                 show={openModal}
                 setShow={setOpenModal}
@@ -229,82 +211,36 @@ export const FormSourceWalletButton: FC = () => {
                 modalId="connectedWallets"
             >
                 <VaulDrawer.Snap id="item-1" className="space-y-3 pb-3">
-                    <WalletsList network={walletNetwork} purpose={'withdrawal'} onSelect={handleSelectWallet} token={values.fromCurrency} />
-                    {
-                        values.from?.deposit_methods.includes('deposit_address') &&
-                        <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer">
-                            Continue without a wallet
-                        </div>
-                    }
+                    <WalletsList
+                        provider={provider}
+                        wallets={wallets}
+                        onSelect={handleSelectWallet}
+                        token={values.fromCurrency}
+                        network={walletNetwork}
+                        selectable
+                    />
                 </VaulDrawer.Snap>
             </VaulDrawer >
+            {
+                mountWalletPortal && values.from?.deposit_methods.includes('deposit_address') && values.depositMethod !== 'deposit_address' &&
+                <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
+                    <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer pt-3">
+                        Continue without a wallet
+                    </div>
+                </WalletFooterPortal>
+            }
         </>
     }
     return <ConnectButton className="w-full">
-        <SwapButton
-            className="plausible-event-name=Swap+initiated"
-            type='button'
-            isDisabled={false}
-            isSubmitting={false}
-        >
-            Connect Wallet
-        </SwapButton>
+        <Connect />
     </ConnectButton>
 
 }
 
-export const WalletsList: FC<WalletListProps> = ({ network, purpose, onSelect, token }) => {
-
-    const { provider, wallets } = useWallet(network, purpose)
-    const connectedWallets = network ? provider?.connectedWallets : wallets
-    const { selectedSourceAccount } = useSwapDataState()
-    const { balances, isBalanceLoading } = useBalancesState()
-
-    const connect = async () => {
-        await provider?.connectWallet({ chain: network.chain_id })
-    }
-
-    return (
-        <div className="space-y-3">
-            <button onClick={connect} type="button" className="w-full flex justify-center p-2 bg-secondary-700 rounded-md hover:bg-secondary-600">
-                <div className="flex items-center text-secondary-text gap-1 px-3 py-1">
-                    <Plus className="h-4 w-4" />
-                    <span className="text-sm">
-                        Connect new wallet
-                    </span>
-                </div>
-            </button>
-            <div className="flex flex-col justify-start space-y-3">
-                {
-                    connectedWallets?.map((wallet) => {
-                        return <>
-                            {wallet.addresses?.map((address) => {
-                                const walletBalance = balances[address]?.find(b => b?.network === network?.name && b?.token === token?.symbol)
-                                const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, token?.precision)
-
-                                const isSelected = selectedSourceAccount?.address === address
-                                return <div key={address} onClick={() => onSelect(wallet, address)} className="w-full cursor-pointer group/addressItem relative items-center justify-between gap-2 flex rounded-md outline-none bg-secondary-700 text-primary-text p-3 border border-secondary-500 ">
-                                    <AddressWithIcon
-                                        addressItem={{ address: address, group: AddressGroup.ConnectedWallet }}
-                                        connectedWallet={wallet}
-                                        network={network}
-                                        balance={(walletBalanceAmount !== undefined && token) ? { amount: walletBalanceAmount, symbol: token?.symbol, isLoading: isBalanceLoading } : undefined}
-                                    />
-                                    <div className="flex h-6 items-center px-1">
-                                        {
-                                            isSelected &&
-                                            <FilledCheck />
-                                        }
-                                    </div>
-                                </div>
-                            })}
-                        </>
-                    })
-                }
-            </div>
-        </div>
-    )
+const Connect: FC = () => {
+    return <SubmitButton type="button" icon={<WalletIcon className="h-6 w-6" strokeWidth={2} />} >
+        Connect a wallet
+    </SubmitButton>
 }
-
 
 export default Component

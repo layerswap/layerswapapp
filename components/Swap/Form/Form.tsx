@@ -6,20 +6,18 @@ import NetworkFormField from "../../Input/NetworkFormField";
 import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
-import { isValidAddress } from "../../../lib/address/validator";
 import useSWR from "swr";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { motion, useCycle } from "framer-motion";
 import { ArrowUpDown, Loader2 } from 'lucide-react'
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
-import GasDetails from "../../gasDetails";
 import { useQueryState } from "../../../context/query";
 import FeeDetailsComponent from "../../FeeDetails";
 import { useFee } from "../../../context/feeContext";
 import AmountField from "../../Input/Amount"
 import dynamic from "next/dynamic";
-import { Balance, Gas } from "../../../Models/Balance";
+import { Balance } from "../../../Models/Balance";
 import ResizablePanel from "../../ResizablePanel";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import { RouteNetwork } from "../../../Models/Network";
@@ -140,7 +138,21 @@ const SwapForm: FC<Props> = ({ partner }) => {
         const newFromToken = newFrom?.tokens.find(t => t.symbol === toCurrency?.symbol)
         const newToToken = newTo?.tokens.find(t => t.symbol === fromCurrency?.symbol)
 
-        setValues({
+        const destinationProvider = (destination && !toExchange)
+            ? providers.find(p => p.withdrawalSupportedNetworks?.includes(destination?.name) && p.connectedWallets?.some(w => !w.isNotAvailable && w.addresses.some(a => a.toLowerCase() === values.destination_address?.toLowerCase())))
+            : undefined
+
+        const newDestinationProvider = (newTo && !toExchange) ? providers.find(p => p.name === destinationProvider?.name) : undefined
+        const oldDestinationWallet = newDestinationProvider?.connectedWallets?.find(w => w.autofillSupportedNetworks?.some(n => n.toLowerCase() === newTo?.name.toLowerCase()) && w.addresses.some(a => a.toLowerCase() === values.destination_address?.toLowerCase()))
+        const oldDestinationWalletIsNotCompatible = destinationProvider?.name !== newDestinationProvider?.name || !(newTo && oldDestinationWallet?.autofillSupportedNetworks?.some(n => n.toLowerCase() === newTo?.name.toLowerCase()))
+        const destinationAvailableWallets = newTo ? newDestinationProvider?.connectedWallets?.filter(w => w.autofillSupportedNetworks?.some(n => n.toLowerCase() === newTo.name.toLowerCase()) && w.addresses.some(a => a.toLowerCase() === selectedSourceAccount?.address.toLowerCase())) : undefined
+
+        const oldSourceWalletIsNotCompatible = selectedSourceAccount?.wallet.providerName !== destinationProvider?.name || !(newFrom && selectedSourceAccount?.wallet.withdrawalSupportedNetworks?.some(n => n.toLowerCase() === newFrom.name.toLowerCase()))
+
+
+        const changeDestinationAddress = newTo && (oldDestinationWalletIsNotCompatible || oldSourceWalletIsNotCompatible) && destinationAvailableWallets
+
+        const newVales: SwapFormValues = {
             ...values,
             from: newFrom,
             to: newTo,
@@ -149,39 +161,43 @@ const SwapForm: FC<Props> = ({ partner }) => {
             toExchange: newToExchange,
             fromExchange: newFromExchange,
             currencyGroup: (fromExchange || toExchange) ? (fromExchange ? newToExchangeToken : newFromExchangeToken) : undefined,
-            destination_address: (selectedSourceAccount?.address && isValidAddress(selectedSourceAccount?.address, newFrom)) ? selectedSourceAccount?.address : values.destination_address
-        }, true);
+            destination_address: values.destination_address,
+        }
 
-        if (newFrom && values.depositMethod !== 'deposit_address' && values.destination_address) {
-            const sourceProvider = providers.find(p => p.withdrawalSupportedNetworks?.includes(newFrom?.name))
-            const sourceWallet = sourceProvider?.connectedWallets?.find(w => !w.isNotAvailable && w.addresses.some(a => a.toLowerCase() === values.destination_address?.toLowerCase()))
-            if (sourceWallet) {
+        if (changeDestinationAddress) {
+            newVales.destination_address = selectedSourceAccount?.address
+        }
+
+        setValues(newVales, true);
+
+        const changeSourceAddress = newFrom && values.depositMethod !== 'deposit_address' && destinationProvider && (oldSourceWalletIsNotCompatible || changeDestinationAddress)
+
+        if (changeSourceAddress && values.destination_address) {
+            const sourceAvailableWallet = destinationProvider?.connectedWallets?.find(w => w.withdrawalSupportedNetworks?.some(n => n.toLowerCase() === newFrom.name.toLowerCase()) && w.addresses.some(a => a.toLowerCase() === values.destination_address?.toLowerCase()))
+            if (sourceAvailableWallet) {
                 setSelectedSourceAccount({
-                    wallet: sourceWallet,
+                    wallet: sourceAvailableWallet,
                     address: values.destination_address
                 })
             }
+            else {
+                setSelectedSourceAccount(undefined)
+            }
+
         }
     }, [values, sourceRoutes, destinationRoutes, exchanges])
 
-    const hideAddress = query?.hideAddress
-        && query?.to
-        && query?.destAddress
-        && (query?.lockTo || query?.hideTo)
-        && isValidAddress(query?.destAddress as string, destination)
-
-    const handleReserveGas = useCallback((walletBalance: Balance, networkGas: Gas) => {
+    const handleReserveGas = useCallback((walletBalance: Balance, networkGas: number) => {
         if (walletBalance && networkGas)
-            setFieldValue('amount', walletBalance?.amount - networkGas?.gas)
+            setFieldValue('amount', walletBalance?.amount - networkGas)
     }, [values.amount])
 
     const sourceWalletNetwork = values.fromExchange ? undefined : values.from
     const shoouldConnectWallet = sourceWalletNetwork && values.depositMethod !== 'deposit_address' && !selectedSourceAccount
 
     return <ImtblPassportProvider from={source} to={destination}>
-        <>
-            <Form className={`h-full ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
-                <Widget className="sm:min-h-[504px]">
+            <Widget className="sm:min-h-[504px] h-full">
+                <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
                     <Widget.Content>
                         <div className='flex-col relative flex justify-between w-full space-y-0.5 mb-3.5 leading-4'>
                             {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
@@ -248,15 +264,8 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                 </SwapButton>
                         }
                     </Widget.Footer>
-                </Widget>
-            </Form>
-            {
-                process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
-                && values.from
-                && values.fromCurrency &&
-                <GasDetails network={values.from.name} currency={values.fromCurrency.symbol} />
-            }
-        </>
+                </Form>
+            </Widget>
     </ImtblPassportProvider>
 }
 

@@ -7,6 +7,7 @@ import { useMeasure } from '@uidotdev/usehooks';
 import { SnapElement, SnapPointsProvider, useSnapPoints } from '../../context/snapPointsContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Drawer } from './vaul';
+import { createPortal } from 'react-dom';
 
 type VaulDrawerProps = {
     children: ReactNode;
@@ -16,9 +17,10 @@ type VaulDrawerProps = {
     description?: ReactNode;
     modalId: string;
     modalConstantHeight?: boolean;
+    onClose?: () => void;
 }
 
-const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, modalConstantHeight }) => {
+const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, modalConstantHeight, onClose }) => {
     const { isMobile } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
@@ -64,6 +66,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
     const handleOpenChange = (open: boolean) => {
         setSnap(open ? snapPoints[0].height : null);
         setShow(open);
+        if (!open) return onClose && onClose()
     }
 
     useEffect(() => {
@@ -155,18 +158,40 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                                     transition={{ duration: 0.15 }}
                                     ref={expandRef}
                                     style={{ top: `${Number(snapElement.height?.toString().replace('px', '')) - 88}px` }} className={`w-full fixed left-0 z-50`}>
-                                    <button onClick={goToNextSnap} className="w-full px-6 pt-10 pb-6 justify-center from-secondary-900 bg-gradient-to-t items-center gap-2 inline-flex text-secondary-text">
+                                    <button type='button' onClick={goToNextSnap} className="w-full px-6 pt-10 pb-6 justify-center from-secondary-900 bg-gradient-to-t items-center gap-2 inline-flex text-secondary-text">
                                         <ChevronUp className="w-6 h-6 relative" />
                                         <div className="text-sm font-medium">Expand</div>
                                     </button>
                                 </motion.div>
                             }
                         </AnimatePresence>
+                        <VaulFooter snapElement={snapElement} />
                     </div>
                 </Drawer.Content>
             </Drawer.Portal>
         </Drawer.Root >
     );
+}
+
+const VaulFooter: FC<{ snapElement: SnapElement | null }> = ({ snapElement }) => {
+    let [ref, { height }] = useMeasure();
+    const { setFooterHeight } = useSnapPoints()
+
+    useEffect(() => {
+        setFooterHeight(height || 0);
+    }, [height])
+
+    return (
+        <div
+            ref={ref}
+            id='walletModalFooter'
+            style={{
+                top: snapElement?.height !== 1 ? `${Number(snapElement?.height?.toString().replace('px', '')) - 50}px` : undefined,
+                bottom: snapElement?.height === 1 ? '12px' : undefined
+            }}
+            className={`w-full fixed left-0 z-50`}
+        />
+    )
 }
 
 const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement> & { id: string }> = (props) => {
@@ -206,5 +231,29 @@ const VaulDrawer: typeof Comp & { Snap: typeof VaulDrawerSnap } = (props) => {
 }
 
 VaulDrawer.Snap = VaulDrawerSnap;
+
+
+type Props = {
+    children: React.ReactNode,
+    isWalletModalOpen?: boolean
+}
+
+export const WalletFooterPortal: FC<Props> = ({ children, isWalletModalOpen }) => {
+    const ref = useRef<Element | null>(null);
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        let element = isWalletModalOpen && document.getElementById('walletModalFooter');
+
+        if (element) {
+            ref.current = element
+            setMounted(true)
+        }
+
+    }, [isWalletModalOpen]);
+
+    return ref.current && mounted ? createPortal(children, ref.current) : null;
+};
+
 
 export default VaulDrawer;

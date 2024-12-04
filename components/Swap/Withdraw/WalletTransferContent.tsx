@@ -1,27 +1,26 @@
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useMemo, useState, useEffect } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
 import WalletIcon from '../../icons/WalletIcon';
 import useWallet from '../../../hooks/useWallet';
-import { useBalancesState } from '../../../context/balances';
-import useBalance from '../../../hooks/useBalance';
 import AddressWithIcon from '../../Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '../../Input/Address/AddressPicker';
 import { ChevronRight } from 'lucide-react';
 import { truncateDecimals } from '../../utils/RoundDecimals';
 import { useSwitchAccount } from 'wagmi';
-import { WalletsList } from '../../Input/SourceWalletPicker';
 import VaulDrawer from '../../modal/vaulModal';
 import { Wallet } from '../../../Models/WalletProvider';
+import useSWRBalance from '../../../lib/newbalances/useSWRBalance';
+import { useSettingsState } from '../../../context/settings';
+import WalletsList from '../../Wallet/WalletsList';
 
 const WalletTransferContent: FC = () => {
+    const { networks } = useSettingsState()
     const { swapResponse, selectedSourceAccount } = useSwapDataState()
     const { setSelectedSourceAccount } = useSwapDataUpdate()
     const { swap } = swapResponse || {}
-    const { source_token, source_network } = swap || {}
+    const { source_token, source_network: swap_source_network } = swap || {}
+    const source_network = swap_source_network && networks.find(n => n.name === swap_source_network?.name)
     const { provider, wallets } = useWallet(source_network, 'withdrawal')
-    const all_wallets = provider?.connectedWallets
-    const { balances, isBalanceLoading } = useBalancesState()
-    const { fetchBalance, fetchGas } = useBalance()
     const { switchAccount, connectors } = useSwitchAccount()
     const [openModal, setOpenModal] = useState(false)
 
@@ -33,20 +32,8 @@ const WalletTransferContent: FC = () => {
         setOpenModal(false)
     }, [provider, connectors])
 
-    useEffect(() => {
-        if (source_network && source_token) {
-            all_wallets?.forEach(wallet => {
-                wallet.addresses.forEach(address => {
-                    fetchBalance(source_network, source_token, address);
-                })
-            })
-        }
-    }, [source_network, source_token, all_wallets?.length])
-
     const selectedWallet = selectedSourceAccount?.wallet
     const activeWallet = source_network ? provider?.activeWallet : wallets[0]
-    const walletBalance = balances[selectedSourceAccount?.address || '']?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
-    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
 
     useEffect(() => {
         if (!selectedSourceAccount && activeWallet) {
@@ -57,9 +44,11 @@ const WalletTransferContent: FC = () => {
         }
     }, [activeWallet, setSelectedSourceAccount])
 
-    useEffect(() => {
-        selectedSourceAccount?.address && source_network && source_token && fetchGas(source_network, source_token, selectedSourceAccount.address)
-    }, [source_network, source_token, selectedSourceAccount?.address])
+
+    const { balance, isBalanceLoading } = useSWRBalance(selectedSourceAccount?.address, source_network)
+
+    const walletBalance = source_network && balance?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
+    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
 
     let accountAddress: string | undefined = ""
     if (swap?.source_exchange) {
@@ -96,6 +85,7 @@ const WalletTransferContent: FC = () => {
         {
             source_network &&
             source_token &&
+            provider &&
             <VaulDrawer
                 show={openModal}
                 setShow={setOpenModal}
@@ -103,7 +93,14 @@ const WalletTransferContent: FC = () => {
                 modalId="connectedWallets"
             >
                 <VaulDrawer.Snap id='item-1'>
-                    <WalletsList network={source_network} token={source_token} purpose={'autofil'} onSelect={changeWallet} />
+                    <WalletsList
+                        network={source_network}
+                        token={source_token}
+                        onSelect={changeWallet}
+                        selectable
+                        wallets={wallets}
+                        provider={provider}
+                    />
                 </VaulDrawer.Snap>
             </VaulDrawer>
         }

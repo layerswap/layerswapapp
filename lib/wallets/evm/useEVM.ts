@@ -5,13 +5,13 @@ import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useMemo } from "react"
-import { useWalletModalState } from "../../../stores/walletModalStateStore"
-import { getConnections } from '@wagmi/core'
+import { getAccount, getConnections } from '@wagmi/core'
 import toast from "react-hot-toast"
 import { isMobile } from "../../isMobile"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
 import { LSConnector } from "../connectors/EthereumProvider"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
+import { useConnectModal } from "../../../components/WalletModal"
 
 type Props = {
     network: Network | undefined,
@@ -43,11 +43,6 @@ export default function useEVM({ network }: Props): WalletProvider {
         KnownInternalNames.Networks.BrineMainnet,
     ]
 
-    const setWalletModalIsOpen = useWalletModalState((state) => state.setOpen)
-    const setSelectedProvider = useWalletModalState((state) => state.setSelectedProvider)
-    const setActiveAccountAddress = useWalletModalState((state) => state.setActiveAccountAddress)
-    const activeAccountAddress = useWalletModalState((state) => state.activeAccountAddress)
-
     const { disconnectAsync } = useDisconnect()
     const { connectors: activeConnectors, switchAccountAsync } = useSwitchAccount()
     const activeAccount = useAccount()
@@ -55,10 +50,11 @@ export default function useEVM({ network }: Props): WalletProvider {
     const config = useConfig()
     const { connectAsync } = useConnect();
 
-    const connectWallet = () => {
+    const { connect, setSelectedProvider } = useConnectModal()
+
+    const connectWallet = async () => {
         try {
-            setSelectedProvider(provider)
-            setWalletModalIsOpen(true)
+            return await connect(provider)
         }
         catch (e) {
             console.log(e)
@@ -88,6 +84,27 @@ export default function useEVM({ network }: Props): WalletProvider {
                 connector: connector,
             });
 
+            const activeAccount = getAccount(config)
+            const address = activeAccount.address
+
+            if (!activeAccount || !activeAccount.connector || !address) return undefined
+
+            const wallet: Wallet = {
+                isActive: true,
+                address: address,
+                addresses: activeAccount.addresses as string[] || [address],
+                connector: activeAccount.connector?.name,
+                providerName: name,
+                icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(activeAccount.connector), address, iconUrl: activeAccount.connector?.icon }),
+                connect: connectWallet,
+                disconnect: () => disconnectWallet(activeAccount.connector?.name || ""),
+                isNotAvailable: isNotAvailable(activeAccount.connector, network),
+                asSourceSupportedNetworks: activeAccount.connector.id === "com.immutable.passport" ? asSourceSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : asSourceSupportedNetworks,
+                autofillSupportedNetworks: activeAccount.connector.id === "com.immutable.passport" ? autofillSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : autofillSupportedNetworks,
+                withdrawalSupportedNetworks: activeAccount.connector.id === "com.immutable.passport" ? withdrawalSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : withdrawalSupportedNetworks,
+            }
+
+            return wallet
 
         } catch (e) {
             //TODO: handle error like in transfer
@@ -99,7 +116,7 @@ export default function useEVM({ network }: Props): WalletProvider {
     const resolvedConnectors: Wallet[] = useMemo(() => {
         const connections = getConnections(config)
 
-        return activeConnectors.map(w => {
+        return activeConnectors.map((w): Wallet | undefined => {
 
             //TODO: handle Ronin wallet case
             // let roninWalletNetworks = [
@@ -131,16 +148,19 @@ export default function useEVM({ network }: Props): WalletProvider {
                 icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(w), address, iconUrl: w.icon }),
                 connect: connectWallet,
                 disconnect: () => disconnectWallet(w.name),
-                isNotAvailable: isNotAvailable(w, network)
+                isNotAvailable: isNotAvailable(w, network),
+                //TODO:refactor this
+                asSourceSupportedNetworks: w.id === "com.immutable.passport" ? asSourceSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : asSourceSupportedNetworks,
+                autofillSupportedNetworks: w.id === "com.immutable.passport" ? autofillSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : autofillSupportedNetworks,
+                withdrawalSupportedNetworks: w.id === "com.immutable.passport" ? withdrawalSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : withdrawalSupportedNetworks,
             }
         }).filter(w => w !== undefined) as Wallet[]
-    }, [activeAccount, activeConnectors, config])
+    }, [activeAccount, activeConnectors, config, network])
 
     const disconnectWallet = async (connectorName: string) => {
 
         try {
             const connector = activeConnectors.find(w => w.name.toLowerCase() === connectorName.toLowerCase())
-            // connector && await connector.disconnect()
             await disconnectAsync({
                 connector: connector
             })
@@ -169,7 +189,6 @@ export default function useEVM({ network }: Props): WalletProvider {
         const account = accounts.find(a => a.toLowerCase() === address.toLowerCase())
         if (!account)
             throw new Error("Account not found")
-        setActiveAccountAddress(account)
     }
 
     {/* //TODO: refactor ordering */ }
@@ -182,7 +201,6 @@ export default function useEVM({ network }: Props): WalletProvider {
         switchAccount,
         connectedWallets: resolvedConnectors,
         activeWallet: resolvedConnectors.find(w => w.isActive),
-        activeAccountAddress: activeAccountAddress || activeAccount?.address,
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks,
@@ -207,7 +225,6 @@ const getWalletConnectUri = async (
     }
     return new Promise<void>((resolve) => {
         return provider?.['once'] && provider['once']('display_uri', (uri) => {
-            const converted = uriConverter(uri);
             resolve(useCallback(uriConverter(uri)));
         })
     }
