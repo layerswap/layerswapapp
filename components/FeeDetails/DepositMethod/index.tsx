@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import { useDepositMethod } from "../../../context/depositMethodContext";
 import { useQueryState } from "../../../context/query";
 import KnownInternalNames from "../../../lib/knownIds";
+import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 
 const variants = {
     open: { rotate: 180 },
@@ -33,7 +34,7 @@ const DepositMethodComponent: FC = () => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const { setShowModal, showModal } = useDepositMethod()
-
+    const { setSelectedSourceAccount } = useSwapDataUpdate()
     const { depositMethod: defaultDepositMethod, hideDepositMethod, appName } = useQueryState()
     const { from, depositMethod, fromExchange } = values
     const name = 'depositMethod'

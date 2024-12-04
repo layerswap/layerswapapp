@@ -138,9 +138,14 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             {
                 direction === "from" ?
                     <SourceWalletPicker />
-                    : <span><Address partner={partner} >{
-                        ({ destination, disabled, addressItem, connectedWallet, partner }) => <DestinationWalletPicker destination={destination} disabled={disabled} addressItem={addressItem} connectedWallet={connectedWallet} partner={partner} />
-                    }</Address></span> //TODO: implement destination hidden
+                    : <>
+                        {
+                            !value?.isExchange &&
+                            <span><Address partner={partner} >{
+                                ({ destination, disabled, addressItem, connectedWallet, partner }) => <DestinationWalletPicker destination={destination} disabled={disabled} addressItem={addressItem} connectedWallet={connectedWallet} partner={partner} />
+                            }</Address></span> //TODO: implement destination hidden
+                        }
+                    </>
             }
         </div>
         <div ref={ref} className="bg-secondary-700 p-3 rounded-xl mt-1 grid grid-flow-row-dense grid-cols-6 items-center gap-2">
@@ -177,7 +182,6 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
 });
 
 export const SecondDestinationWalletPicker = () => {
-
     return <div className=" justify-center w-full pl-3 pr-2 py-2 bg-secondary-600 items-center flex font-light space-x-2 mx-auto rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 ">
         <PlusIcon className="stroke-1" /> <span>Destination Address</span>
     </div>

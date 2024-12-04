@@ -73,9 +73,12 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     //TODO: sort by active wallet
     const defaultWallet = provider?.connectedWallets?.find(w => !w.isNotAvailable)
     const defaultAddress = (selectedSourceAccount && defaultWallet?.addresses.find(a => a == selectedSourceAccount?.address)) || defaultWallet?.address
-    const [isConnecting, setIsConnecting] = useState(false)
     const [manualAddress, setManualAddress] = useState<string>('')
     const [newAddress, setNewAddress] = useState<{ address: string, networkType: NetworkType | string } | undefined>()
+
+    useEffect(() => {
+        setFieldValue("destination_address", undefined)
+    }, [])
 
     useEffect(() => {
         if (destination_address && !isValidAddress(destination_address, destination)) {
@@ -159,22 +162,16 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                 <div className='flex flex-col self-center grow w-full space-y-5 h-full'>
 
                     {
-                        destinationExchange ?
-                            <ExchangeNote
-                                destination={destination}
-                                destinationAsset={destinationAsset}
-                                destinationExchange={destinationExchange}
-                            />
-                            :
-                            !disabled
-                            && destination
-                            && provider
-                            && !defaultWallet &&
-                            <ConnectWalletButton
-                                provider={provider}
-                                onConnect={onConnect}
-                                destination={destination}
-                            />
+                        !destinationExchange &&
+                        !disabled
+                        && destination
+                        && provider
+                        && !defaultWallet &&
+                        <ConnectWalletButton
+                            provider={provider}
+                            onConnect={onConnect}
+                            destination={destination}
+                        />
                     }
 
                     <ManualAddressInput
@@ -190,7 +187,14 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         addresses={groupedAddresses}
                         connectedWallet={connectedWallet}
                     />
-
+                    {
+                        destinationExchange &&
+                        <ExchangeNote
+                            destination={destination}
+                            destinationAsset={destinationAsset}
+                            destinationExchange={destinationExchange}
+                        />
+                    }
                     {
                         !disabled
                         && destination

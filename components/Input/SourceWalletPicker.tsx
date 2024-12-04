@@ -42,13 +42,14 @@ const Component: FC = () => {
                 address: defaultWallet.address
             })
         }
-    }, [defaultWallet, source_addsress, values.depositMethod, destination_address])
+    }, [defaultWallet?.address, source_addsress, values.depositMethod, destination_address])
 
     useEffect(() => {
         if (values.depositMethod === 'deposit_address' || !defaultWallet?.address || (selectedSourceAccount && !wallets.some(w => w?.addresses?.some(a => a === selectedSourceAccount.address)))) {
             setSelectedSourceAccount(undefined)
         }
     }, [values.depositMethod, defaultWallet?.address, wallets.length])
+
 
 
     const handleWalletChange = () => {
@@ -139,7 +140,8 @@ export const FormSourceWalletButton: FC = () => {
         setFieldValue
     } = useFormikContext<SwapFormValues>();
 
-    const [mounted, setMounted] = useState<boolean>(false)
+    const { setSelectedSourceAccount } = useSwapDataUpdate()
+
     const [mountWalletPortal, setMounWalletPortal] = useState<boolean>(false)
 
     const walletNetwork = values.fromExchange ? undefined : values.from
@@ -150,18 +152,23 @@ export const FormSourceWalletButton: FC = () => {
     const handleWalletChange = () => {
         setOpenModal(true)
     }
+    const [mounted, setMounted] = useState<boolean>(false)
+
     useEffect(() => {
         setMounted(true)
     }, [])
 
     const handleSelectWallet = (wallet?: Wallet, address?: string) => {
-        setFieldValue('source_wallet', wallet)
-        setFieldValue('source_address', address)
-        if (!wallet) {
-            setFieldValue('depositMethod', 'deposit_address')
+        if (wallet && address) {
+            setSelectedSourceAccount({
+                wallet,
+                address
+            })
+            setFieldValue('depositMethod', 'wallet')
         }
         else {
-            setFieldValue('depositMethod', 'wallet')
+            setSelectedSourceAccount(undefined)
+            setFieldValue('depositMethod', 'deposit_address')
         }
         cancel()
         setOpenModal(false)
@@ -177,7 +184,7 @@ export const FormSourceWalletButton: FC = () => {
         setMounWalletPortal(false)
     }
 
-    if (!mounted || !walletNetwork || !values.fromCurrency) return null
+    if (!walletNetwork || !values.fromCurrency) return null
 
     if (!provider?.connectedWallets?.length && walletNetwork) {
         return <>
@@ -189,7 +196,7 @@ export const FormSourceWalletButton: FC = () => {
                 <Connect />
             </button>
             {
-                mountWalletPortal && values.from?.deposit_methods.includes('deposit_address') && values.depositMethod !== 'deposit_address' &&
+                mountWalletPortal && values.from?.deposit_methods.includes('deposit_address') && values.depositMethod === 'wallet' &&
                 <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
                     <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer pt-3">
                         Continue without a wallet
@@ -222,7 +229,7 @@ export const FormSourceWalletButton: FC = () => {
                 </VaulDrawer.Snap>
             </VaulDrawer >
             {
-                mountWalletPortal && values.from?.deposit_methods.includes('deposit_address') && values.depositMethod !== 'deposit_address' &&
+                mountWalletPortal && values.from?.deposit_methods.includes('deposit_address') && values.depositMethod === 'wallet' &&
                 <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
                     <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer pt-3">
                         Continue without a wallet

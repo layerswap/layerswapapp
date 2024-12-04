@@ -60,6 +60,17 @@ export function SwapDataProvider({ children }) {
 
     const [selectedSourceAccount, setSelectedSourceAccount] = useState<{ wallet: Wallet, address: string } | undefined>()
 
+    const handleChangeSelectedSourceAccount = (props: { wallet: Wallet, address: string } | undefined) => {
+        if (!props) {
+            setSelectedSourceAccount(undefined)
+            return
+        }
+        const { wallet, address } = props || {}
+        const provider = providers?.find(p => p.name === wallet.providerName)
+        provider?.switchAccount && provider?.switchAccount(wallet, address)
+        setSelectedSourceAccount({ wallet, address })
+    }
+
     const swapResponse = swapData?.data
 
     const sourceIsSupported = swapResponse && WalletIsSupportedForSource({
@@ -147,7 +158,7 @@ export function SwapDataProvider({ children }) {
         setDepositAddressIsFromAccount: setDepositAddressIsFromAccount,
         setWithdrawType,
         setSwapId,
-        setSelectedSourceAccount
+        setSelectedSourceAccount: handleChangeSelectedSourceAccount
     };
     return (
         <SwapDataStateContext.Provider value={{

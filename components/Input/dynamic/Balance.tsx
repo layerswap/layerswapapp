@@ -8,14 +8,10 @@ import useSWRBalance from "../../../lib/newbalances/useSWRBalance";
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
     const { to, fromCurrency, toCurrency, from, destination_address } = values
-    const { provider: destinationWalletProvider } = useWallet(to, 'autofil')
     const { selectedSourceAccount } = useSwapDataState()
 
-    const destinationNetworkWallet = destinationWalletProvider?.activeWallet
-
-
     const { balance: sourceBalance, isBalanceLoading: isSourceBalanceLoading } = useSWRBalance(selectedSourceAccount?.address, from)
-    const { balance: destBalance, isBalanceLoading: isDestBalanceLoading } = useSWRBalance(destination_address || (destinationNetworkWallet?.address || ''), to)
+    const { balance: destBalance, isBalanceLoading: isDestBalanceLoading } = useSWRBalance(destination_address, to)
 
     const walletBalance = selectedSourceAccount && sourceBalance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
     const destinationBalance = destBalance?.find(b => b?.network === to?.name && b?.token === toCurrency?.symbol)
@@ -37,7 +33,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
 
     useEffect(() => {
         previouslySelectedDestination.current = to
-    }, [to, destination_address, destinationNetworkWallet?.address])
+    }, [to, destination_address])
 
     return (
         <>

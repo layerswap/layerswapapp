@@ -32,10 +32,8 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const query = useQueryState()
     const { selectedSourceAccount } = useSwapDataState()
 
-    const { provider: destinationWalletProvider } = useWallet(to, 'autofil')
-    const { provider: sourceWalletProvider } = useWallet(from, 'autofil')
 
-    const address = direction === 'from' ? (selectedSourceAccount?.address || sourceWalletProvider?.activeWallet?.address) : (destination_address || destinationWalletProvider?.activeWallet?.address)
+    const address = direction === 'from' ? (selectedSourceAccount?.address) : (destination_address)
 
     const { balance } = useSWRBalance(address, direction === 'from' ? from : to)
 

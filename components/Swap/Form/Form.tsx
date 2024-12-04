@@ -149,7 +149,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
 
         const oldSourceWalletIsNotCompatible = selectedSourceAccount?.wallet.providerName !== destinationProvider?.name || !(newFrom && selectedSourceAccount?.wallet.withdrawalSupportedNetworks?.some(n => n.toLowerCase() === newFrom.name.toLowerCase()))
 
-
         const changeDestinationAddress = newTo && (oldDestinationWalletIsNotCompatible || oldSourceWalletIsNotCompatible) && destinationAvailableWallets
 
         const newVales: SwapFormValues = {
@@ -162,6 +161,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
             fromExchange: newFromExchange,
             currencyGroup: (fromExchange || toExchange) ? (fromExchange ? newToExchangeToken : newFromExchangeToken) : undefined,
             destination_address: values.destination_address,
+            depositMethod: undefined
         }
 
         if (changeDestinationAddress) {
@@ -170,8 +170,8 @@ const SwapForm: FC<Props> = ({ partner }) => {
 
         setValues(newVales, true);
 
-        const changeSourceAddress = newFrom && values.depositMethod !== 'deposit_address' && destinationProvider && (oldSourceWalletIsNotCompatible || changeDestinationAddress)
-
+        const changeSourceAddress = newFrom && values.depositMethod === 'deposit_address' && destinationProvider && (oldSourceWalletIsNotCompatible || changeDestinationAddress)
+        
         if (changeSourceAddress && values.destination_address) {
             const sourceAvailableWallet = destinationProvider?.connectedWallets?.find(w => w.withdrawalSupportedNetworks?.some(n => n.toLowerCase() === newFrom.name.toLowerCase()) && w.addresses.some(a => a.toLowerCase() === values.destination_address?.toLowerCase()))
             if (sourceAvailableWallet) {
@@ -193,7 +193,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
     }, [values.amount])
 
     const sourceWalletNetwork = values.fromExchange ? undefined : values.from
-    const shoouldConnectWallet = sourceWalletNetwork && values.depositMethod !== 'deposit_address' && !selectedSourceAccount
+    const shoouldConnectWallet = sourceWalletNetwork && values.depositMethod === 'wallet' && !selectedSourceAccount
 
     return <ImtblPassportProvider from={source} to={destination}>
             <Widget className="sm:min-h-[504px] h-full">
