@@ -8,7 +8,7 @@ import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useEffect, useState } from "react"
 import { CreatePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams, RefundParams } from "../phtlc"
-import { writeContract, simulateContract, readContract, waitForTransactionReceipt } from '@wagmi/core'
+import { writeContract, simulateContract, readContract, waitForTransactionReceipt, signMessage, signTypedData } from '@wagmi/core'
 import { ethers } from "ethers"
 import { Commit } from "../../../Models/PHTLC"
 import PHTLCAbi from "../../../lib/abis/atomic/EVM_PHTLC.json"
@@ -218,6 +218,34 @@ export default function useEVM(): WalletProvider {
         const LOCK_TIME = 1000 * 60 * 15 // 15 minutes
         const timeLockMS = Date.now() + LOCK_TIME
         const timeLock = Math.floor(timeLockMS / 1000)
+
+
+        const domain = {
+            name: "LayerswapV8",
+            version: "1",
+            chainId: Number(chainId),
+            verifyingContract: "0x76fdbD22FD91059c8ff28197b4E30132EBd190b8" as `0x${string}`,
+            salt: "0x2e4ff7169d640efc0d28f2e302a56f1cf54aff7e127eededda94b3df0946f5c0" as `0x${string}`
+        };
+
+        const types = {
+            addLockMsg: [
+                { name: "Id", type: "bytes32" },
+                { name: "hashlock", type: "bytes32" },
+                { name: "timelock", type: "uint48" },
+            ],
+        };
+
+        const message = {
+            Id: id,
+            hashlock: hashlock,
+            timelock: timeLock,
+        };
+
+        const signature = await signTypedData(config, {
+            domain, types, message,
+            primaryType: "addLockMsg"
+        });
 
         const { request, result } = await simulateContract(config, {
             abi: abi,
