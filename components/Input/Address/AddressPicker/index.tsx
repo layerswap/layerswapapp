@@ -70,6 +70,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const { selectedSourceAccount } = useSwapDataState()
     const { provider, wallets } = useWallet(destinationExchange ? undefined : destination, 'autofil')
     const connectedWallets = provider?.connectedWallets
+    const connectedWalletskey = connectedWallets?.map(w => w.addresses.join('')).join('')
     //TODO: sort by active wallet
     const defaultWallet = provider?.connectedWallets?.find(w => !w.isNotAvailable)
     const defaultAddress = (selectedSourceAccount && defaultWallet?.addresses.find(a => a == selectedSourceAccount?.address)) || defaultWallet?.address
@@ -78,7 +79,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     useEffect(() => {
         setFieldValue("destination_address", undefined)
-    }, [])
+    }, [destinationExchange])
 
     useEffect(() => {
         if (destination_address && !isValidAddress(destination_address, destination)) {
@@ -93,7 +94,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         const groupedAddresses = destination && resolveAddressGroups({ address_book, destination, destinationExchange, wallets: connectedWallets, newAddress, addressFromQuery: query.destAddress })
         if (groupedAddresses) setAddresses(groupedAddresses)
 
-    }, [address_book, destination, destinationExchange, newAddress, query.destAddress, connectedWallets?.length])
+    }, [address_book, destination, destinationExchange, newAddress, query.destAddress, connectedWalletskey])
 
     const destinationAddressItem = destination && destination_address ?
         groupedAddresses?.find(a => a.address.toLowerCase() === destination_address.toLowerCase()) || { address: destination_address, group: AddressGroup.ManualAdded }
@@ -107,6 +108,8 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         const selected = destination && groupedAddresses?.find(a => addressFormat(a.address, destination) === addressFormat(address, destination))
         const formattedAddress = selected?.address
         setFieldValue("destination_address", formattedAddress)
+        if (selected?.wallet)
+            previouslyAutofilledAddress.current = selected?.address
         close()
     }, [close, setFieldValue, groupedAddresses])
 
@@ -121,6 +124,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [setFieldValue, setShowAddressModal, showAddressModal, destination, defaultWallet, defaultAddress, destination_address])
 
     const onConnect = (wallet: Wallet) => {
+        previouslyAutofilledAddress.current = wallet.address
         setFieldValue("destination_address", wallet.address)
         close()
     }
@@ -135,19 +139,13 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         if (previouslyAutofilledAddress.current === destination_address && !defaultWallet) {
             setFieldValue("destination_address", undefined)
         }
-    }, [defaultWallet?.address, previouslyAutofilledAddress])
+    }, [connectedWallet?.address, previouslyAutofilledAddress])
 
     useEffect(() => {
         if (canFocus) {
             inputReference?.current?.focus()
         }
     }, [canFocus])
-
-    useEffect(() => {
-        if (!connectedWallet && previouslyAutofilledAddress.current) {
-            setFieldValue("destination_address", undefined)
-        }
-    }, [connectedWallet?.address])
 
     return (<>
         <AddressButton
