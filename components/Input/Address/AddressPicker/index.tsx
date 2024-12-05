@@ -136,7 +136,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [defaultWallet?.address, destination_address])
 
     useEffect(() => {
-        if (previouslyAutofilledAddress.current === destination_address && !defaultWallet) {
+        if (previouslyAutofilledAddress && previouslyAutofilledAddress.current?.toLowerCase() === destination_address?.toLowerCase() && !connectedWallet?.address) {
             setFieldValue("destination_address", undefined)
         }
     }, [connectedWallet?.address, previouslyAutofilledAddress])
