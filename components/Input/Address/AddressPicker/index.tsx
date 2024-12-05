@@ -136,11 +136,18 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             setFieldValue("destination_address", undefined)
         }
     }, [defaultWallet?.address, previouslyAutofilledAddress])
+
     useEffect(() => {
         if (canFocus) {
             inputReference?.current?.focus()
         }
     }, [canFocus])
+
+    useEffect(() => {
+        if (!connectedWallet && previouslyAutofilledAddress.current) {
+            setFieldValue("destination_address", undefined)
+        }
+    }, [connectedWallet?.address])
 
     return (<>
         <AddressButton
