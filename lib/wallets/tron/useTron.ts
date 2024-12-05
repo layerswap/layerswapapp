@@ -27,6 +27,9 @@ export default function useTron(): WalletProvider {
         icon: resolveWalletConnectorIcon({ connector: name, address, iconUrl: tronWallet.adapter.icon }),
         disconnect: () => disconnectWallet(),
         connect: () => connectWallet(),
+        withdrawalSupportedNetworks: commonSupportedNetworks,
+        asSourceSupportedNetworks: commonSupportedNetworks,
+        autofillSupportedNetworks: commonSupportedNetworks,
     } : undefined
 
     const getWallet = () => {
