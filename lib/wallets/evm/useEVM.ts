@@ -69,9 +69,11 @@ export default function useEVM({ network }: Props): WalletProvider {
             await disconnectAsync({ connector })
 
             if (isMobile()) {
-                getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
-                    window.location.href = uri;
-                })
+                if (connector.id !== "walletConnect") {
+                    getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
+                        window.location.href = uri;
+                    })
+                }
             }
             else {
                 getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
