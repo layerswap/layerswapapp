@@ -224,7 +224,7 @@ export default function useEVM(): WalletProvider {
             name: "LayerswapV8",
             version: "1",
             chainId: Number(chainId),
-            verifyingContract: "0x76fdbD22FD91059c8ff28197b4E30132EBd190b8" as `0x${string}`,
+            verifyingContract: contractAddress as `0x${string}`,
             salt: "0x2e4ff7169d640efc0d28f2e302a56f1cf54aff7e127eededda94b3df0946f5c0" as `0x${string}`
         };
 
@@ -246,12 +246,19 @@ export default function useEVM(): WalletProvider {
             domain, types, message,
             primaryType: "addLockMsg"
         });
+        
+        const sig = ethers.utils.splitSignature(signature)
 
         const { request, result } = await simulateContract(config, {
             abi: abi,
             address: contractAddress,
-            functionName: 'addLock',
-            args: [id, hashlock, timeLock],
+            functionName: 'addLockSig',
+            args: [
+                message,
+                sig.r,
+                sig.s,
+                sig.v
+            ],
             chainId: Number(chainId),
         })
 
