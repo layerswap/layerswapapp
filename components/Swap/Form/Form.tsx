@@ -57,7 +57,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
 
     const { selectedSourceAccount } = useSwapDataState()
     const { setSelectedSourceAccount } = useSwapDataUpdate()
-    const { providers } = useWallet()
+    const { providers, wallets } = useWallet()
 
     const { minAllowedAmount, valuesChanger } = useFee()
     const toAsset = values.toCurrency
@@ -191,16 +191,16 @@ const SwapForm: FC<Props> = ({ partner }) => {
             setFieldValue('amount', walletBalance?.amount - networkGas)
     }, [values.amount])
 
-    const sourceWalletNetwork = !values.fromExchange
-    const shoouldConnectWallet = sourceWalletNetwork && values.depositMethod !== 'deposit_address' && !selectedSourceAccount
+    const sourceWalletNetwork = values.fromExchange ? undefined : values.from
+    const shoouldConnectWallet = (sourceWalletNetwork && values.depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!values.from && !values.fromExchange && !wallets.length)
 
     return <ImtblPassportProvider from={source} to={destination}>
         <Widget className="sm:min-h-[504px] h-full">
             <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
                 <Widget.Content>
-                    <div className='flex-col relative flex justify-between w-full space-y-0.5 mb-3.5 leading-4'>
+                    <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4 bg-secondary-700 rounded-xl'>
                         {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
-                            <NetworkFormField direction="from" label="From" className="rounded-t-lg pb-5" partner={partner} />
+                            <NetworkFormField direction="from" label="From" className="rounded-t-lg pt-2.5" partner={partner} />
                         </div>}
                         {!query?.hideFrom && !query?.hideTo &&
                             <button
@@ -208,7 +208,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                 aria-label="Reverse the source and destination"
                                 disabled={valuesSwapperDisabled || sourceLoading || destinationLoading || exchnagesDataLoading}
                                 onClick={valuesSwapper}
-                                className={`${sourceLoading || destinationLoading || exchnagesDataLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[118px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
+                                className={`${sourceLoading || destinationLoading || exchnagesDataLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[122px] z-10 border-2 border-secondary-700 bg-secondary-600 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
                                 <motion.div
                                     animate={animate}
                                     transition={{ duration: 0.3 }}
