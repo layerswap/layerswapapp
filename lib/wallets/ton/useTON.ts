@@ -35,7 +35,7 @@ export default function useTON(): WalletProvider {
     const wallet: Wallet | undefined = tonWallet && address ? {
         addresses: [address],
         address,
-        connector: tonWallet.device.appName,
+        connector: tonWallet?.["name"] || tonWallet.device.appName,
         providerName: id,
         isActive: true,
         icon: resolveWalletConnectorIcon({ connector: name, address, iconUrl }),
