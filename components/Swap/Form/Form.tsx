@@ -28,7 +28,6 @@ import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
 import { useValidationContext } from "../../../context/validationErrorContext";
 import { FormSourceWalletButton } from "../../Input/SourceWalletPicker";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
-import { ImtblPassportProvider } from "../../WalletProviders/ImtblPassportProvider";
 import useWallet from "../../../hooks/useWallet";
 
 type Props = {
@@ -194,78 +193,76 @@ const SwapForm: FC<Props> = ({ partner }) => {
     const sourceWalletNetwork = values.fromExchange ? undefined : values.from
     const shoouldConnectWallet = (sourceWalletNetwork && values.depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!values.from && !values.fromExchange && !wallets.length)
 
-    return <ImtblPassportProvider from={source} to={destination}>
-        <Widget className="sm:min-h-[504px] h-full">
-            <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
-                <Widget.Content>
-                    <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4 bg-secondary-700 rounded-xl'>
-                        {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
-                            <NetworkFormField direction="from" label="From" className="rounded-t-lg pt-2.5" partner={partner} />
-                        </div>}
-                        {!query?.hideFrom && !query?.hideTo &&
-                            <button
-                                type="button"
-                                aria-label="Reverse the source and destination"
-                                disabled={valuesSwapperDisabled || sourceLoading || destinationLoading || exchnagesDataLoading}
-                                onClick={valuesSwapper}
-                                className={`${sourceLoading || destinationLoading || exchnagesDataLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[122px] z-10 border-2 border-secondary-700 bg-secondary-600 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
-                                <motion.div
-                                    animate={animate}
-                                    transition={{ duration: 0.3 }}
-                                    onTap={() => !valuesSwapperDisabled && cycle()}
-                                >
-                                    {sourceLoading || destinationLoading || exchnagesDataLoading ?
-                                        <Loader2 className="opacity-50 w-7 h-auto p-1 bg-secondary-500 rounded-lg disabled:opacity-30 animate-spin" />
-                                        :
-                                        <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-500 rounded-lg disabled:opacity-30")} />
-                                    }
-                                </motion.div>
-                            </button>}
-                        {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
-                            <NetworkFormField direction="to" label="To" className="rounded-b-lg" partner={partner} />
-                        </div>}
-                    </div>
-                    {
-                        (((fromExchange && destination) || (toExchange && source)) && currencyGroup) ?
-                            <div className="mb-6 leading-4">
-                                <ResizablePanel>
-                                    <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} partner={partner} />
-                                </ResizablePanel>
-                            </div>
-                            : <></>
+    return <Widget className="sm:min-h-[504px] h-full">
+        <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
+            <Widget.Content>
+                <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4 bg-secondary-700 rounded-xl'>
+                    {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
+                        <NetworkFormField direction="from" label="From" className="rounded-t-lg pt-2.5" partner={partner} />
+                    </div>}
+                    {!query?.hideFrom && !query?.hideTo &&
+                        <button
+                            type="button"
+                            aria-label="Reverse the source and destination"
+                            disabled={valuesSwapperDisabled || sourceLoading || destinationLoading || exchnagesDataLoading}
+                            onClick={valuesSwapper}
+                            className={`${sourceLoading || destinationLoading || exchnagesDataLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[122px] z-10 border-2 border-secondary-700 bg-secondary-600 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
+                            <motion.div
+                                animate={animate}
+                                transition={{ duration: 0.3 }}
+                                onTap={() => !valuesSwapperDisabled && cycle()}
+                            >
+                                {sourceLoading || destinationLoading || exchnagesDataLoading ?
+                                    <Loader2 className="opacity-50 w-7 h-auto p-1 bg-secondary-500 rounded-lg disabled:opacity-30 animate-spin" />
+                                    :
+                                    <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-500 rounded-lg disabled:opacity-30")} />
+                                }
+                            </motion.div>
+                        </button>}
+                    {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
+                        <NetworkFormField direction="to" label="To" className="rounded-b-lg" partner={partner} />
+                    </div>}
+                </div>
+                {
+                    (((fromExchange && destination) || (toExchange && source)) && currencyGroup) ?
+                        <div className="mb-6 leading-4">
+                            <ResizablePanel>
+                                <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} partner={partner} />
+                            </ResizablePanel>
+                        </div>
+                        : <></>
+                }
+                <div className="mb-6 leading-4">
+                    <AmountField />
+                </div>
+                <div className="w-full">
+                    {validationMessage ?
+                        <ValidationError />
+                        :
+                        <FeeDetailsComponent values={values} />
                     }
-                    <div className="mb-6 leading-4">
-                        <AmountField />
-                    </div>
-                    <div className="w-full">
-                        {validationMessage ?
-                            <ValidationError />
-                            :
-                            <FeeDetailsComponent values={values} />
-                        }
-                        {
-                            values.amount &&
-                            <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
-                        }
-                    </div>
-                </Widget.Content>
-                <Widget.Footer>
                     {
-                        shoouldConnectWallet ?
-                            <FormSourceWalletButton />
-                            :
-                            <SwapButton
-                                className="plausible-event-name=Swap+initiated"
-                                type='submit'
-                                isDisabled={!isValid}
-                                isSubmitting={isSubmitting}>
-                                {ActionText(errors, actionDisplayName)}
-                            </SwapButton>
+                        values.amount &&
+                        <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
                     }
-                </Widget.Footer>
-            </Form>
-        </Widget>
-    </ImtblPassportProvider>
+                </div>
+            </Widget.Content>
+            <Widget.Footer>
+                {
+                    shoouldConnectWallet ?
+                        <FormSourceWalletButton />
+                        :
+                        <SwapButton
+                            className="plausible-event-name=Swap+initiated"
+                            type='submit'
+                            isDisabled={!isValid}
+                            isSubmitting={isSubmitting}>
+                            {ActionText(errors, actionDisplayName)}
+                        </SwapButton>
+                }
+            </Widget.Footer>
+        </Form>
+    </Widget>
 }
 
 function ActionText(errors: FormikErrors<SwapFormValues>, actionDisplayName: string): string {

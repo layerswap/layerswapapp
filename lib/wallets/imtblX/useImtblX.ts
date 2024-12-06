@@ -37,8 +37,8 @@ export default function useImtblX(): WalletProvider {
 
             const wallet = {
                 address: res.address,
-                connector: 'imx',
-                providerName: name,
+                connector: name,
+                providerName: id,
                 icon: IMX,
                 disconnect: () => disconnectWallet(),
                 connect: () => connectWallet({ chain }),

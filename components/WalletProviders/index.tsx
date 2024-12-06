@@ -4,6 +4,7 @@ import SolanaProvider from "./SolanaProvider"
 import { ThemeData } from "../../Models/Theme"
 import Wagmi from "./Wagmi";
 import StarknetProvider from "./StarknetProvider";
+import { ImtblPassportProvider } from "./ImtblPassportProvider";
 
 const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], basePath: string, themeData: ThemeData, appName: string | undefined }> = ({ children, basePath, themeData, appName }) => {
     return (
@@ -11,7 +12,9 @@ const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], basePath: st
             <SolanaProvider>
                 <StarknetProvider>
                     <Wagmi>
-                        {children}
+                        <ImtblPassportProvider>
+                            {children}
+                        </ImtblPassportProvider>
                     </Wagmi>
                 </StarknetProvider>
             </SolanaProvider>
