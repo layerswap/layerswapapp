@@ -131,8 +131,8 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const isLocked = direction === 'from' ? !!lockFrom : !!lockTo
 
     return (<div className={`${className}`}>
-        <div className="flex justify-between items-center">
-            <label htmlFor={name} className="block font-semibold text-secondary-text text-xs p-2">
+        <div className="flex justify-between items-center px-3 pt-2">
+            <label htmlFor={name} className="block font-medium text-secondary-text text-sm pl-1 py-1">
                 {label}
             </label>
             {
@@ -148,7 +148,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     </>
             }
         </div>
-        <div ref={ref} className="bg-secondary-700 p-3 rounded-xl mt-1 grid grid-flow-row-dense grid-cols-6 items-center gap-2">
+        <div ref={ref} className="p-3 rounded-xl grid grid-flow-row-dense grid-cols-6 items-center gap-2">
             <div className="col-span-4">
                 <CommandSelectWrapper
                     disabled={isLocked || isLoading}

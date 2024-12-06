@@ -1,10 +1,9 @@
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { FC, useEffect, useState } from "react";
+import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
 import useWallet from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
 import { ChevronDown } from "lucide-react";
-import ConnectButton from "../buttons/connectButton";
 import Balance from "./dynamic/Balance";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
 import VaulDrawer, { WalletFooterPortal } from "../modal/vaulModal";
@@ -88,7 +87,7 @@ const Component: FC = () => {
                     </div>
                 </div>
                 :
-                <div className="rounded-lg bg-secondary-700 pl-2 flex items-center space-x-2 text-sm leading-4">
+                <div className="rounded-lg bg-secondary-800 pl-2 flex items-center space-x-2 text-sm leading-4">
                     {
                         selectedWallet && selectedSourceAccount?.address && <>
                             <div><Balance values={values} direction="from" /></div>
@@ -152,11 +151,6 @@ export const FormSourceWalletButton: FC = () => {
     const handleWalletChange = () => {
         setOpenModal(true)
     }
-    const [mounted, setMounted] = useState<boolean>(false)
-
-    useEffect(() => {
-        setMounted(true)
-    }, [])
 
     const handleSelectWallet = (wallet?: Wallet, address?: string) => {
         if (wallet && address) {
@@ -184,19 +178,11 @@ export const FormSourceWalletButton: FC = () => {
         setMounWalletPortal(false)
     }
 
-    if (!walletNetwork || !values.fromCurrency) return null
-
     if (!provider?.connectedWallets?.length && walletNetwork) {
         return <>
-            <button
-                type='button'
-                onClick={connect}
-                className="w-full"
-            >
-                <Connect />
-            </button>
+            <Connect connectFn={connect} />
             {
-                mountWalletPortal && values.from?.deposit_methods.includes('deposit_address') && values.depositMethod === 'wallet' &&
+                mountWalletPortal && values.from?.deposit_methods.includes('deposit_address') && values.depositMethod !== 'deposit_address' &&
                 <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
                     <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer pt-3">
                         Continue without a wallet
@@ -206,7 +192,7 @@ export const FormSourceWalletButton: FC = () => {
         </>
 
     }
-    else if (wallets.length > 0) {
+    else if (wallets.length > 0 && walletNetwork && values.fromCurrency) {
         return <>
             <button type="button" className="w-full" onClick={handleWalletChange}>
                 <Connect />
@@ -229,7 +215,7 @@ export const FormSourceWalletButton: FC = () => {
                 </VaulDrawer.Snap>
             </VaulDrawer >
             {
-                mountWalletPortal && values.from?.deposit_methods.includes('deposit_address') && values.depositMethod === 'wallet' &&
+                mountWalletPortal && values.from?.deposit_methods.includes('deposit_address') && values.depositMethod !== 'deposit_address' &&
                 <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
                     <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer pt-3">
                         Continue without a wallet
@@ -238,14 +224,29 @@ export const FormSourceWalletButton: FC = () => {
             }
         </>
     }
-    return <ConnectButton className="w-full">
-        <Connect />
-    </ConnectButton>
-
+    return <>
+        <Connect setMountWalletPortal={setMounWalletPortal} />
+        {
+            mountWalletPortal &&
+            <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
+                <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer pt-3">
+                    Continue without a wallet
+                </div>
+            </WalletFooterPortal>
+        }
+    </>
 }
 
-const Connect: FC = () => {
-    return <SubmitButton type="button" icon={<WalletIcon className="h-6 w-6" strokeWidth={2} />} >
+const Connect: FC<{ connectFn?: () => Promise<Wallet | undefined | void>; setMountWalletPortal?: Dispatch<SetStateAction<boolean>> }> = ({ connectFn, setMountWalletPortal }) => {
+    const { connect } = useConnectModal()
+
+    const connectWallet = async () => {
+        setMountWalletPortal && setMountWalletPortal(true)
+        await connect()
+        setMountWalletPortal && setMountWalletPortal(false)
+    }
+
+    return <SubmitButton onClick={() => connectFn ? connectFn() : connectWallet()} type="button" icon={<WalletIcon className="h-6 w-6" strokeWidth={2} />} >
         Connect a wallet
     </SubmitButton>
 }

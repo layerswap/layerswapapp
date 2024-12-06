@@ -191,8 +191,8 @@ const SwapForm: FC<Props> = ({ partner }) => {
             setFieldValue('amount', walletBalance?.amount - networkGas)
     }, [values.amount])
 
-    const sourceWalletNetwork = values.fromExchange ? undefined : values.from
-    const shoouldConnectWallet = sourceWalletNetwork && values.depositMethod === 'wallet' && !selectedSourceAccount
+    const sourceWalletNetwork = !values.fromExchange
+    const shoouldConnectWallet = sourceWalletNetwork && values.depositMethod !== 'deposit_address' && !selectedSourceAccount
 
     return <ImtblPassportProvider from={source} to={destination}>
         <Widget className="sm:min-h-[504px] h-full">
