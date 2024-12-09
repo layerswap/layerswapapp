@@ -25,7 +25,7 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick }) => {
 
     const destinationNativeBalance = destination_address && balances[destination_address]?.find(b => (b.token === to?.token?.symbol) && (b.network === to.name))
     const needRefuel = toCurrency && toCurrency.refuel && to && to.token && isValidAddress(destination_address, to) && destinationNativeBalance && destinationNativeBalance?.amount == 0 && !refuel
-    const precviouslySelectedDestination = useRef(to)
+    const previouslySelectedDestination = useRef(to)
 
     useEffect(() => {
 
@@ -35,10 +35,10 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick }) => {
             })()
         }
 
-        if (to && precviouslySelectedDestination.current !== to && !!refuel) {
+        if (to && previouslySelectedDestination.current !== to && !!refuel) {
             setFieldValue('refuel', false)
         }
-        precviouslySelectedDestination.current = to
+        previouslySelectedDestination.current = to
 
     }, [to, destination_address, toCurrency])
 
