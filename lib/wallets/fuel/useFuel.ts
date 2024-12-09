@@ -15,7 +15,7 @@ import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { useConnectModal } from "../../../components/WalletModal";
 import { useEffect } from "react";
-import { useFuelState } from "../../../context/fuelContext";
+import { useWalletStore } from "../../../stores/walletStore";
 
 export default function useFuel(): WalletProvider {
     const autofillSupportedNetworks = [
@@ -29,7 +29,11 @@ export default function useFuel(): WalletProvider {
     const { connectors } = useConnectors()
     const { connect } = useConnectModal()
 
-    const { connectedWallets, setConnectedWallets } = useFuelState()
+    const wallets = useWalletStore((state) => state.connectedWallets)
+    const addWallet = useWalletStore((state) => state.connectWallet)
+    const removeWallet = useWalletStore((state) => state.disconnectWallet)
+
+    const connectedWallets = wallets.filter(wallet => wallet.providerName === name)
 
     const connectWallet = async () => {
         try {
@@ -73,7 +77,7 @@ export default function useFuel(): WalletProvider {
                     autofillSupportedNetworks
                 })
 
-                setConnectedWallets((v) => v ? [...v, result] : [result])
+                addWallet(result)
 
                 return result
             }
@@ -91,7 +95,7 @@ export default function useFuel(): WalletProvider {
             if (!fuelConnector) throw new Error('Connector not found')
 
             await fuelConnector.disconnect()
-            setConnectedWallets((v) => v?.filter(w => w.connector !== connectorName))
+            removeWallet(name, connectorName)
         }
         catch (e) {
             console.log(e)
@@ -104,6 +108,7 @@ export default function useFuel(): WalletProvider {
             BAKO_STATE.period_durtion = 10_000
             for (const connector of connectors.filter(c => c.connected)) {
                 await connector.disconnect()
+                removeWallet(name)
             }
         }
         catch (e) {
@@ -123,35 +128,31 @@ export default function useFuel(): WalletProvider {
 
     useEffect(() => {
         (async () => {
-            const wallets: Wallet[] | undefined = []
             for (const connector of connectors.filter(c => c.connected)) {
+                try {
+                    const addresses = (await connector.accounts()).map(a => Address.fromAddressOrString(a).toB256())
 
-                const addresses = (await connector.accounts()).map(a => Address.fromAddressOrString(a).toB256())
+                    if (connector.connected) {
+                        const w = resolveFuelWallet({
+                            address: addresses?.[0],
+                            addresses,
+                            connector,
+                            evmAddress,
+                            evmConnector,
+                            connectWallet,
+                            disconnectWallet,
+                            name,
+                            autofillSupportedNetworks
+                        })
+                        addWallet(w)
+                    }
 
-                if (connector.connected) {
-                    const w = resolveFuelWallet({
-                        address: addresses?.[0],
-                        addresses,
-                        connector,
-                        evmAddress,
-                        evmConnector,
-                        connectWallet,
-                        disconnectWallet,
-                        name,
-                        autofillSupportedNetworks
-                    })
-                    wallets.push(w)
+                } catch (e) {
+                    console.log(e)
                 }
-            }
-            setConnectedWallets((v) => {
 
-                const mergedArray = [...(v || []), ...wallets];
-                const uniqueArray = mergedArray.filter(
-                    (item, index, self) =>
-                        index === self.findIndex((t) => t.connector === item.connector)
-                );
-                return uniqueArray
-            })
+            }
+
         })()
     }, [connectors])
 
