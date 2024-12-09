@@ -167,7 +167,7 @@ export default function useSolanaBalance(): BalanceProvider {
         }
     }
 
-    const getGas = async ({ network, token, address, recipientAddress }: GasProps) => {
+    const getGas = async ({ network, token, address, recipientAddress = '2ZUoHEPcN7bsSXw6YTj85CMrU8xNtcYNGiSMXPLomaa2' }: GasProps) => {
         if (!address)
             return
         const { PublicKey, Connection } = await import("@solana/web3.js");

@@ -93,29 +93,6 @@ export const WalletModal: FC = () => {
         [ref]
     );
 
-    useLayoutEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') {
-                hideModal();
-            } else if (event.key === 'Tab') {
-                handleTabKey(event);
-            }
-        };
-
-        // Get original overflow
-        const { overflow } = window.getComputedStyle(document.body);
-        // Prevent scrolling on mount
-        document.body.style.overflow = 'hidden';
-        // Listen for keydown events
-        window.addEventListener('keydown', handleKeyDown, false);
-
-        return () => {
-            // Re-enable scrolling when component unmounts
-            document.body.style.overflow = overflow;
-            window.removeEventListener('keydown', handleKeyDown, false);
-        };
-    }, [hideModal, handleTabKey]);
-
     return (
         <Dialog open={visible?.show} onOpenChange={(open) => { !open && setVisible(undefined) }}>
             <DialogContent className="sm:max-w-[425px] text-primary-text bg-secondary-900">
