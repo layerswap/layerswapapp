@@ -12,6 +12,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { FuelProvider } from '@fuels/react';
 import { FueletWalletConnector } from '../../lib/fuels/connectors/fuelet-wallet';
 import { FuelWalletConnector } from '../../lib/fuels/connectors/fuel-wallet';
+import { FuelConnectedWalletsProvider } from '../../context/fuelContext';
 const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
 
 const queryClient = new QueryClient()
@@ -19,8 +20,6 @@ const queryClient = new QueryClient()
 const FuelProviderWrapper = ({
     children
 }: { children: React.ReactNode }) => {
-
-
     const { networks } = useSettingsState()
 
     const network = networks.find(network => network.name === KnownInternalNames.Networks.FuelMainnet || network.name === KnownInternalNames.Networks.FuelTestnet)
@@ -49,7 +48,9 @@ const FuelProviderWrapper = ({
 
     return (
         <FuelProvider uiConfig={{ suggestBridge: false }} theme={'dark'} fuelConfig={fuelConfig}>
-            {children}
+            <FuelConnectedWalletsProvider>
+                {children}
+            </FuelConnectedWalletsProvider>
         </FuelProvider>
     );
 };

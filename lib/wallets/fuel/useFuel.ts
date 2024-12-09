@@ -14,7 +14,8 @@ import { BAKO_STATE } from "./Basko";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { useConnectModal } from "../../../components/WalletModal";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useFuelState } from "../../../context/fuelContext";
 
 export default function useFuel(): WalletProvider {
     const autofillSupportedNetworks = [
@@ -25,9 +26,10 @@ export default function useFuel(): WalletProvider {
     const id = 'fuel'
 
     const { address: evmAddress, connector: evmConnector } = useAccount()
-    const { connectors, isFetched, isSuccess, isFetchedAfterMount } = useConnectors()
+    const { connectors } = useConnectors()
     const { connect } = useConnectModal()
-    const [connectedWallets, setConnectedWallets] = useState<Wallet[] | undefined>([])
+
+    const { connectedWallets, setConnectedWallets } = useFuelState()
 
     const connectWallet = async () => {
         try {
@@ -37,7 +39,7 @@ export default function useFuel(): WalletProvider {
             console.log(e)
         }
     }
-    
+
     const connectConnector = async ({ connector }: { connector: InternalConnector }) => {
         try {
 
@@ -59,7 +61,7 @@ export default function useFuel(): WalletProvider {
 
             if (addresses && fuelConnector) {
 
-                const result = resolveWallet({
+                const result = resolveFuelWallet({
                     address: addresses[0],
                     addresses: addresses,
                     connector: fuelConnector,
@@ -70,6 +72,8 @@ export default function useFuel(): WalletProvider {
                     name,
                     autofillSupportedNetworks
                 })
+
+                setConnectedWallets((v) => v ? [...v, result] : [result])
 
                 return result
             }
@@ -83,9 +87,11 @@ export default function useFuel(): WalletProvider {
     const disconnectWallet = async (connectorName: string) => {
         try {
             const fuelConnector = connectors.find(c => c.name === connectorName)
-            if (fuelConnector) {
-                await fuelConnector.disconnect()
-            }
+
+            if (!fuelConnector) throw new Error('Connector not found')
+
+            await fuelConnector.disconnect()
+            setConnectedWallets((v) => v?.filter(w => w.connector !== connectorName))
         }
         catch (e) {
             console.log(e)
@@ -123,7 +129,7 @@ export default function useFuel(): WalletProvider {
                 const addresses = (await connector.accounts()).map(a => Address.fromAddressOrString(a).toB256())
 
                 if (connector.connected) {
-                    const w = resolveWallet({
+                    const w = resolveFuelWallet({
                         address: addresses?.[0],
                         addresses,
                         connector,
@@ -137,9 +143,17 @@ export default function useFuel(): WalletProvider {
                     wallets.push(w)
                 }
             }
-            setConnectedWallets(wallets)
+            setConnectedWallets((v) => {
+
+                const mergedArray = [...(v || []), ...wallets];
+                const uniqueArray = mergedArray.filter(
+                    (item, index, self) =>
+                        index === self.findIndex((t) => t.connector === item.connector)
+                );
+                return uniqueArray
+            })
         })()
-    }, [connectors, isFetched, isSuccess, isFetchedAfterMount])
+    }, [connectors])
 
     const availableWalletsForConnect: InternalConnector[] = connectors.map(c => {
 
@@ -180,12 +194,12 @@ type ResolveWalletProps = {
     autofillSupportedNetworks: string[]
 }
 
-const resolveWallet = ({ address, addresses, autofillSupportedNetworks, connectWallet, connector, disconnectWallet, evmAddress, evmConnector, name }: ResolveWalletProps) => {
+const resolveFuelWallet = ({ address, addresses, autofillSupportedNetworks, connectWallet, connector, disconnectWallet, evmAddress, evmConnector, name }: ResolveWalletProps) => {
     let fuelCurrentConnector: string | undefined = undefined
 
     let customConnectorname: string | undefined = undefined
     const fuelEvmConnector = connector.name === 'Ethereum Wallets' ? connector : undefined
-    const fuelSolanaConnector = connector.name === 'Solana Wallets' ? connector : undefined
+    // const fuelSolanaConnector = connector.name === 'Solana Wallets' ? connector : undefined
 
     if (fuelEvmConnector && evmAddress && fuelEvmConnector.connected && evmConnector) {
         // @ts-expect-error processPredicateData is only available in the Predicate class
