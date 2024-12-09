@@ -22,14 +22,8 @@ const TransferFromWallet: FC<WithdrawPageProps> = ({
     const wallet = provider?.activeWallet
 
     const networkChainId = Number(network?.chain_id) ?? undefined
-    const { switchChain } = useSwitchChain();
 
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
-
-    useEffect(() => {
-        if (activeChain?.id === networkChainId)
-            switchChain({ chainId: networkChainId })
-    }, [activeChain, networkChainId])
 
     useEffect(() => {
         try {

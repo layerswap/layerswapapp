@@ -6,6 +6,7 @@ import useStarknet from "../lib/wallets/starknet/useStarknet";
 import useTON from "../lib/wallets/ton/useTON";
 import useFuel from "../lib/wallets/fuel/useFuel"
 import { Wallet, WalletProvider } from "../Models/WalletProvider";
+import { useMemo } from "react";
 
 export type WalletPurpose = "autofil" | "withdrawal" | "asSource"
 
@@ -22,18 +23,15 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
 
     const provider = network && resolveProvider(network, walletProviders, purpose)
 
-    const resolveConnectedWallets = () => {
-        let connectedWallets: Wallet[] = []
+    const wallets = useMemo(() => {
+        let connectedWallets: Wallet[] = [];
+        walletProviders.forEach((wallet) => {
+            const w = wallet.connectedWallets;
+            connectedWallets = w ? [...connectedWallets, ...w] : [...connectedWallets];
+        });
+        return connectedWallets;
+    }, [walletProviders]);
 
-        walletProviders.forEach(wallet => {
-            const w = wallet.connectedWallets
-            connectedWallets = w && [...connectedWallets, ...w] || [...connectedWallets]
-        })
-
-        return connectedWallets
-    }
-
-    const wallets = resolveConnectedWallets()
     const getProvider = (network: Network, purpose: WalletPurpose) => {
         return network && resolveProvider(network, walletProviders, purpose)
     }
@@ -44,11 +42,10 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
         providers: walletProviders,
         getProvider
     }
-
 }
 
-const resolveProvider = (network: Network, walletProviders: WalletProvider[], purpose?: WalletPurpose) => {
-    if (!purpose) return
+const resolveProvider = (network: Network | undefined, walletProviders: WalletProvider[], purpose?: WalletPurpose) => {
+    if (!purpose || !network) return
     switch (purpose) {
         case "withdrawal":
             return walletProviders.find(provider => provider.withdrawalSupportedNetworks?.includes(network.name))
