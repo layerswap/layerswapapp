@@ -45,8 +45,10 @@ const WalletTransferContent: FC = () => {
                 wallet: activeWallet,
                 address: activeWallet.address
             })
+        } else if (selectedSourceAccount && activeWallet && !activeWallet.addresses.some(a => a.toLowerCase() === selectedSourceAccount.address.toLowerCase())) {
+            provider.switchAccount && provider.switchAccount(selectedSourceAccount.wallet, selectedSourceAccount.address)
         }
-    }, [activeWallet?.address, setSelectedSourceAccount])
+    }, [activeWallet?.address, setSelectedSourceAccount, provider])
 
 
     const { balance, isBalanceLoading } = useSWRBalance(selectedSourceAccount?.address, source_network)
