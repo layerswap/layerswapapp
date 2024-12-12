@@ -14,7 +14,7 @@ import { BAKO_STATE } from "./Basko";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { useConnectModal } from "../../../components/WalletModal";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useWalletStore } from "../../../stores/walletStore";
 
 export default function useFuel(): WalletProvider {
@@ -126,12 +126,13 @@ export default function useFuel(): WalletProvider {
         }
     }
 
+    const connectedConnectors = useMemo(() => connectors.filter(w => w.connected), [connectors])
+
     useEffect(() => {
         (async () => {
-            for (const connector of connectors.filter(c => c.connected)) {
+            for (const connector of connectedConnectors) {
                 try {
                     const addresses = (await connector.accounts()).map(a => Address.fromAddressOrString(a).toB256())
-
                     if (connector.connected) {
                         const w = resolveFuelWallet({
                             address: addresses?.[0],
@@ -154,7 +155,7 @@ export default function useFuel(): WalletProvider {
             }
 
         })()
-    }, [connectors])
+    }, [connectedConnectors])
 
     const availableWalletsForConnect: InternalConnector[] = connectors.map(c => {
 
