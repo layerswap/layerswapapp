@@ -33,6 +33,7 @@ export type Wallet = {
     withdrawalSupportedNetworks?: string[],
     asSourceSupportedNetworks?: string[],
     autofillSupportedNetworks?: string[],
+    networkIcon?: string,
 }
 
 

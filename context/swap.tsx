@@ -52,7 +52,7 @@ export function SwapDataProvider({ children }) {
     const router = useRouter();
     const { providers } = useWallet()
     const [swapId, setSwapId] = useState<string | undefined>(router.query.swapId?.toString())
-
+    
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `/swaps/${swapId}?exclude_deposit_actions=true`
     const [interval, setInterval] = useState(0)

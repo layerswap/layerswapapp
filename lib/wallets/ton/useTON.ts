@@ -1,12 +1,14 @@
 import { ConnectedWallet, useTonConnectUI, useTonWallet, WalletInfo } from "@tonconnect/ui-react"
 import { Address } from "@ton/core";
 import KnownInternalNames from "../../knownIds";
-import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
+import { Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
-import { useEffect, useState } from "react";
-import { useConnectModal } from "../../../components/WalletModal";
+import { useSettingsState } from "../../../context/settings";
 
+
+const tonNames = [KnownInternalNames.Networks.TONMainnet, KnownInternalNames.Networks.TONTestnet]
 export default function useTON(): WalletProvider {
+    const { networks } = useSettingsState()
 
     const commonSupportedNetworks = [
         KnownInternalNames.Networks.TONMainnet,
@@ -18,16 +20,6 @@ export default function useTON(): WalletProvider {
 
     const tonWallet = useTonWallet();
     const [tonConnectUI] = useTonConnectUI();
-
-    // const [tonWallets, setTonWallets] = useState<WalletInfo[] | undefined>([])
-
-    // useEffect(() => {
-    //     const getWallets = async () => {
-    //         const wallets = await tonConnectUI.getWallets()
-    //         setTonWallets(wallets)
-    //     }
-    //     getWallets()
-    // }, [])
 
     const address = tonWallet?.account && Address.parse(tonWallet.account.address).toString({ bounceable: false })
     const iconUrl = tonWallet?.["imageUrl"] as string
@@ -44,6 +36,7 @@ export default function useTON(): WalletProvider {
         withdrawalSupportedNetworks: commonSupportedNetworks,
         autofillSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,
+        networkIcon: networks.find(n => tonNames.some(name => name === n.name))?.logo
     } : undefined
 
     const getWallet = () => {
@@ -93,6 +86,7 @@ export default function useTON(): WalletProvider {
                     withdrawalSupportedNetworks: commonSupportedNetworks,
                     autofillSupportedNetworks: commonSupportedNetworks,
                     asSourceSupportedNetworks: commonSupportedNetworks,
+                    networkIcon: networks.find(n => tonNames.some(name => name === n.name))?.logo
                 } : undefined
 
                 return wallet ? wallet : undefined

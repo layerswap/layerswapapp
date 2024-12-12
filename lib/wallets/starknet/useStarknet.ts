@@ -7,6 +7,7 @@ import { useConnect, useDisconnect } from "@starknet-react/core";
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { useConnectModal } from "../../../components/WalletModal";
 
+const starknetNames = [KnownInternalNames.Networks.StarkNetGoerli, KnownInternalNames.Networks.StarkNetMainnet, KnownInternalNames.Networks.StarkNetSepolia]
 export default function useStarknet(): WalletProvider {
     const commonSupportedNetworks = [
         KnownInternalNames.Networks.StarkNetMainnet,
@@ -102,6 +103,7 @@ export default function useStarknet(): WalletProvider {
                     withdrawalSupportedNetworks,
                     autofillSupportedNetworks: commonSupportedNetworks,
                     asSourceSupportedNetworks: commonSupportedNetworks,
+                    networkIcon: networks.find(n => starknetNames.some(name => name === n.name))?.logo
                 }
 
                 addWallet(wallet)

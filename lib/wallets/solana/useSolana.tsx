@@ -5,6 +5,9 @@ import { Network } from "../../../Models/Network"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useMemo } from "react"
 import { useConnectModal } from "../../../components/WalletModal"
+import { useSettingsState } from "../../../context/settings"
+
+const solanaNames = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet, KnownInternalNames.Networks.SolanaTestnet]
 
 export default function useSolana({ network }: { network: Network | undefined }): WalletProvider {
 
@@ -18,6 +21,7 @@ export default function useSolana({ network }: { network: Network | undefined })
     const name = 'Solana'
     const id = 'solana'
     const { disconnect, wallet: solanaWallet, select, wallets } = useWallet();
+    const { networks } = useSettingsState()
 
 
     const connectedWallet = wallets.find(w => w.adapter.connected === true)
@@ -42,6 +46,7 @@ export default function useSolana({ network }: { network: Network | undefined })
             withdrawalSupportedNetworks: commonSupportedNetworks,
             asSourceSupportedNetworks: commonSupportedNetworks,
             autofillSupportedNetworks: commonSupportedNetworks,
+            networkIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo
         } : undefined
 
         if (wallet) {
@@ -81,6 +86,7 @@ export default function useSolana({ network }: { network: Network | undefined })
             withdrawalSupportedNetworks: commonSupportedNetworks,
             asSourceSupportedNetworks: commonSupportedNetworks,
             autofillSupportedNetworks: commonSupportedNetworks,
+            networkIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo
         } : undefined
 
         return wallet

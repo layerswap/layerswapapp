@@ -16,6 +16,8 @@ import { useConnectModal } from "../../../components/WalletModal"
 type Props = {
     network: Network | undefined,
 }
+const ethereumNames = [KnownInternalNames.Networks.EthereumMainnet, KnownInternalNames.Networks.EthereumSepolia]
+const immutableZKEvm = [KnownInternalNames.Networks.ImmutableZkEVM]
 
 export default function useEVM({ network }: Props): WalletProvider {
     const name = 'EVM'
@@ -106,6 +108,7 @@ export default function useEVM({ network }: Props): WalletProvider {
                 asSourceSupportedNetworks: activeAccount.connector.id === "com.immutable.passport" ? asSourceSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : asSourceSupportedNetworks,
                 autofillSupportedNetworks: activeAccount.connector.id === "com.immutable.passport" ? autofillSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : autofillSupportedNetworks,
                 withdrawalSupportedNetworks: activeAccount.connector.id === "com.immutable.passport" ? withdrawalSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : withdrawalSupportedNetworks,
+                networkIcon: networks.find(n => activeAccount?.connector?.id === "com.immutable.passport" ? immutableZKEvm.some(name => name === n.name) : ethereumNames.some(name => name === n.name))?.logo
             }
 
             return wallet
@@ -155,6 +158,8 @@ export default function useEVM({ network }: Props): WalletProvider {
                 asSourceSupportedNetworks: w.id === "com.immutable.passport" ? asSourceSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : asSourceSupportedNetworks,
                 autofillSupportedNetworks: w.id === "com.immutable.passport" ? autofillSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : autofillSupportedNetworks,
                 withdrawalSupportedNetworks: w.id === "com.immutable.passport" ? withdrawalSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : withdrawalSupportedNetworks,
+                networkIcon: networks.find(n => w?.id === "com.immutable.passport" ? immutableZKEvm.some(name => name === n.name) : ethereumNames.some(name => name === n.name))?.logo
+
             }
         }).filter(w => w !== undefined) as Wallet[]
     }, [activeAccount, activeConnectors, config, network])

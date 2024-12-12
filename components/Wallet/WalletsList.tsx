@@ -12,6 +12,7 @@ import { truncateDecimals } from "../utils/RoundDecimals";
 import useSWRBalance from "../../lib/newbalances/useSWRBalance";
 import { useSettingsState } from "../../context/settings";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
+import Image from 'next/image'
 
 type Props = ({
     selectable?: false;
@@ -93,7 +94,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
 
     const isSelected = selectable && (wallet.addresses.length == 1 && wallet.address == selectedAddress)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, token?.precision)
-
+    console.log(wallet)
     return (
         <div {...props} className="rounded-md outline-none text-primary-tex">
             <div
@@ -112,8 +113,21 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                                     '!w-6 !h-6': wallet.addresses.length > 1,
                                 })}
                             />
+                            {
+                                wallet?.networkIcon && <div className="h-5 w-5 absolute -right-1 -bottom-1">
+                                    <Image
+                                        src={wallet?.networkIcon || ''}
+                                        alt="Wallet default network icon"
+                                        height="40"
+                                        width="40"
+                                        loading="eager"
+                                        className="object-contain rounded-md border-2 border-secondary-800" />
+                                </div>
+                            }
+
                         </div>
                     }
+
                     {
                         wallet.addresses.length > 1 ?
                             <div>
