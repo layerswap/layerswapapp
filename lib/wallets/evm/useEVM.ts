@@ -8,13 +8,14 @@ import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useEffect, useState } from "react"
 import { CreatePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams, RefundParams } from "../phtlc"
-import { writeContract, simulateContract, readContract, waitForTransactionReceipt } from '@wagmi/core'
+import { writeContract, simulateContract, readContract, waitForTransactionReceipt, signMessage, signTypedData } from '@wagmi/core'
 import { ethers } from "ethers"
 import { Commit } from "../../../Models/PHTLC"
 import PHTLCAbi from "../../../lib/abis/atomic/EVM_PHTLC.json"
 import ERC20PHTLCAbi from "../../../lib/abis/atomic/EVMERC20_PHTLC.json"
 import IMTBLZKERC20 from "../../../lib/abis/IMTBLZKERC20.json"
 import formatAmount from "../../formatAmount"
+import LayerSwapApiClient from "../../layerSwapApiClient"
 
 export default function useEVM(): WalletProvider {
     const { networks } = useSettingsState()
@@ -219,16 +220,51 @@ export default function useEVM(): WalletProvider {
         const timeLockMS = Date.now() + LOCK_TIME
         const timeLock = Math.floor(timeLockMS / 1000)
 
-        const { request, result } = await simulateContract(config, {
-            abi: abi,
-            address: contractAddress,
-            functionName: 'addLock',
-            args: [id, hashlock, timeLock],
-            chainId: Number(chainId),
-        })
+        const apiClient = new LayerSwapApiClient()
 
-        const hash = await writeContract(config, request)
-        return { hash, result: result }
+        const domain = {
+            name: "LayerswapV8",
+            version: "1",
+            chainId: Number(chainId),
+            verifyingContract: contractAddress as `0x${string}`,
+            salt: "0x2e4ff7169d640efc0d28f2e302a56f1cf54aff7e127eededda94b3df0946f5c0" as `0x${string}`
+        };
+
+        const types = {
+            addLockMsg: [
+                { name: "Id", type: "bytes32" },
+                { name: "hashlock", type: "bytes32" },
+                { name: "timelock", type: "uint48" },
+            ],
+        };
+
+        const message = {
+            Id: id,
+            hashlock: hashlock,
+            timelock: timeLock,
+        };
+
+        const signature = await signTypedData(config, {
+            domain, types, message,
+            primaryType: "addLockMsg"
+        });
+
+        const sig = ethers.utils.splitSignature(signature)
+
+        try {
+            account.address && await apiClient.AddLockSig({
+                signature,
+                signer_address: account.address,
+                v: sig.v.toString(),
+                r: sig.r,
+                s: sig.s,
+                timelock: timeLock,
+            }, id)
+        } catch (e) {
+            throw new Error("Failed to add lock")
+        }
+
+        return { hash: signature, result: signature }
     }
 
     const refund = async (params: RefundParams) => {
