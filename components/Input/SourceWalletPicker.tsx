@@ -27,11 +27,11 @@ const Component: FC = () => {
     const source_token = values.fromCurrency
     const destination_address = values.destination_address
     const { provider } = useWallet(walletNetwork, 'withdrawal')
-    const wallets = provider?.connectedWallets || []
+    const availableWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
 
     const selectedWallet = selectedSourceAccount?.wallet
     //TODO: sort by active wallet
-    const defaultWallet = walletNetwork && wallets?.find(w => !w.isNotAvailable)
+    const defaultWallet = walletNetwork && availableWallets?.find(w => !w.isNotAvailable)
     const source_addsress = selectedSourceAccount?.address
 
     useEffect(() => {
@@ -44,10 +44,10 @@ const Component: FC = () => {
     }, [defaultWallet?.address, source_addsress, values.depositMethod, destination_address])
 
     useEffect(() => {
-        if (values.depositMethod === 'deposit_address' || !defaultWallet?.address || (selectedSourceAccount && !wallets.some(w => w?.addresses?.some(a => a === selectedSourceAccount.address)))) {
+        if (values.depositMethod === 'deposit_address' || !defaultWallet?.address || (selectedSourceAccount && !availableWallets.some(w => w?.addresses?.some(a => a === selectedSourceAccount.address)))) {
             setSelectedSourceAccount(undefined)
         }
-    }, [values.depositMethod, defaultWallet?.address, wallets.length])
+    }, [values.depositMethod, defaultWallet?.address, availableWallets.length])
 
 
 
@@ -115,7 +115,7 @@ const Component: FC = () => {
             <VaulDrawer.Snap id="item-1" className="space-y-3 pb-3">
                 <WalletsList
                     provider={provider}
-                    wallets={wallets}
+                    wallets={availableWallets}
                     onSelect={handleSelectWallet}
                     token={source_token}
                     network={walletNetwork}
@@ -145,7 +145,7 @@ export const FormSourceWalletButton: FC = () => {
 
     const walletNetwork = values.fromExchange ? undefined : values.from
 
-    const { wallets, provider } = useWallet(walletNetwork, 'withdrawal')
+    const { provider } = useWallet(walletNetwork, 'withdrawal')
     const { isWalletModalOpen, cancel } = useConnectModal()
 
     const handleWalletChange = () => {
@@ -177,8 +177,8 @@ export const FormSourceWalletButton: FC = () => {
         }
         setMounWalletPortal(false)
     }
-
-    if (!provider?.connectedWallets?.length && walletNetwork) {
+    const availableWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
+    if (!availableWallets.length && walletNetwork) {
         return <>
             <Connect connectFn={connect} />
             {
@@ -192,7 +192,7 @@ export const FormSourceWalletButton: FC = () => {
         </>
 
     }
-    else if (wallets.length > 0 && walletNetwork && values.fromCurrency) {
+    else if (availableWallets.length > 0 && walletNetwork && values.fromCurrency) {
         return <>
             <button type="button" className="w-full" onClick={handleWalletChange}>
                 <Connect />
@@ -206,7 +206,7 @@ export const FormSourceWalletButton: FC = () => {
                 <VaulDrawer.Snap id="item-1" className="space-y-3 pb-3">
                     <WalletsList
                         provider={provider}
-                        wallets={wallets}
+                        wallets={availableWallets}
                         onSelect={handleSelectWallet}
                         token={values.fromCurrency}
                         network={walletNetwork}

@@ -141,7 +141,6 @@ export default function useEVM({ network }: Props): WalletProvider {
 
             const address = accountIsActive ? activeAddress : addresses?.[0]
             if (!address) return undefined
-
             return {
                 isActive: accountIsActive,
                 address,
