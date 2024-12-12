@@ -79,8 +79,9 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const [newAddress, setNewAddress] = useState<{ address: string, networkType: NetworkType | string } | undefined>()
 
     useEffect(() => {
-        setFieldValue("destination_address", undefined)
-    }, [destinationExchange])
+        if (!destination || destinationExchange)
+            setFieldValue("destination_address", undefined)
+    }, [destinationExchange, destination])
 
     useEffect(() => {
         if (destination_address && !isValidAddress(destination_address, destination)) {
@@ -89,6 +90,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [destination, destination_address])
 
     const inputReference = useRef<HTMLInputElement>(null);
+    const previouslyAutofilledAddress = useRef<string | undefined>(undefined)
 
     useEffect(() => {
 
@@ -114,11 +116,8 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         close()
     }, [close, setFieldValue, groupedAddresses])
 
-    const previouslyAutofilledAddress = useRef<string | undefined>(undefined)
-
     const autofillConnectedWallet = useCallback(() => {
         if (destination_address || !destination) return
-
         setFieldValue("destination_address", defaultAddress)
         previouslyAutofilledAddress.current = defaultAddress
         if (showAddressModal && defaultWallet) setShowAddressModal(false)
