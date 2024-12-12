@@ -250,30 +250,32 @@ export default function useEVM(): WalletProvider {
         });
 
         const sig = ethers.utils.splitSignature(signature)
-        debugger
+        
         const addLockSigResult = account.address && await apiClient.AddLockSig({
             signature,
             signer_address: account.address,
             v: sig.v.toString(),
             r: sig.r,
-            s: sig.s
+            s: sig.s,
+            timelock: timeLock,
         }, id)
 
-        const { request, result } = await simulateContract(config, {
-            abi: abi,
-            address: contractAddress,
-            functionName: 'addLockSig',
-            args: [
-                message,
-                sig.r,
-                sig.s,
-                sig.v
-            ],
-            chainId: Number(chainId),
-        })
+        // const { request, result } = await simulateContract(config, {
+        //     abi: abi,
+        //     address: contractAddress,
+        //     functionName: 'addLockSig',
+        //     args: [
+        //         message,
+        //         sig.r,
+        //         sig.s,
+        //         sig.v
+        //     ],
+        //     chainId: Number(chainId),
+        // })
 
-        const hash = await writeContract(config, request)
-        return { hash, result: result }
+        // const hash = await writeContract(config, request)
+        // return { hash, result: result }
+        return { hash: 'addLockSigResult', result: 'addLockSigResult' }
     }
 
     const refund = async (params: RefundParams) => {

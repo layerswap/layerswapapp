@@ -119,6 +119,7 @@ export type AddLockSig = {
     v: string
     signer_address: string,
     signature: string
+    timelock: number
 }
 
 export type CommitFromApi = {
