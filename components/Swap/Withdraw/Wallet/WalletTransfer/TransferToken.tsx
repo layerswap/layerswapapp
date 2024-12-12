@@ -1,7 +1,6 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import {
     useAccount,
-    useConfig,
     useSendTransaction
 } from "wagmi";
 import { createPublicClient, http, parseEther } from 'viem'
