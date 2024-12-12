@@ -72,7 +72,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const connectedWallets = provider?.connectedWallets
     const connectedWalletskey = connectedWallets?.map(w => w.addresses.join('')).join('')
 
-    const defaultWallet = provider?.connectedWallets?.sort((x, y) => (x === y) ? 0 : x ? -1 : 1).find(w => !w.isNotAvailable)
+    const defaultWallet = provider?.connectedWallets?.sort((x, y) => (x.isActive === y.isActive) ? 0 : x.isActive ? -1 : 1).find(w => !w.isNotAvailable)
     const defaultAddress = (selectedSourceAccount && defaultWallet?.addresses.find(a => a.toLowerCase() == selectedSourceAccount?.address.toLowerCase())) || defaultWallet?.address
 
     const [manualAddress, setManualAddress] = useState<string>('')
