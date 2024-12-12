@@ -184,7 +184,7 @@ export default function useEVM({ network }: Props): WalletProvider {
     }
 
     const switchAccount = async (wallet: Wallet, address: string) => {
-        const connector = activeConnectors.find(c => c.name === wallet.connector)
+        const connector = getConnections(config).find(c => c.connector.name === wallet.connector)?.connector
         if (!connector)
             throw new Error("Connector not found")
         const { accounts } = await switchAccountAsync({ connector })
