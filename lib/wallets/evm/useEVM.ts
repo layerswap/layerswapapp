@@ -15,6 +15,7 @@ import PHTLCAbi from "../../../lib/abis/atomic/EVM_PHTLC.json"
 import ERC20PHTLCAbi from "../../../lib/abis/atomic/EVMERC20_PHTLC.json"
 import IMTBLZKERC20 from "../../../lib/abis/IMTBLZKERC20.json"
 import formatAmount from "../../formatAmount"
+import LayerSwapApiClient from "../../layerSwapApiClient"
 
 export default function useEVM(): WalletProvider {
     const { networks } = useSettingsState()
@@ -219,6 +220,7 @@ export default function useEVM(): WalletProvider {
         const timeLockMS = Date.now() + LOCK_TIME
         const timeLock = Math.floor(timeLockMS / 1000)
 
+        const apiClient = new LayerSwapApiClient()
 
         const domain = {
             name: "LayerswapV8",
@@ -246,8 +248,16 @@ export default function useEVM(): WalletProvider {
             domain, types, message,
             primaryType: "addLockMsg"
         });
-        
+
         const sig = ethers.utils.splitSignature(signature)
+        debugger
+        const addLockSigResult = account.address && await apiClient.AddLockSig({
+            signature,
+            signer_address: account.address,
+            v: sig.v.toString(),
+            r: sig.r,
+            s: sig.s
+        }, id)
 
         const { request, result } = await simulateContract(config, {
             abi: abi,

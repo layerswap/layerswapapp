@@ -38,6 +38,10 @@ export default class LayerSwapApiClient {
         return await this.UnauthenticatedRequest<ApiResponse<NetworkWithTokens[]>>("GET", `/networks`);
     }
 
+    async AddLockSig(params: AddLockSig, commit_id: string): Promise<ApiResponse<{}>> {
+        return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("POST", `/swap/${commit_id}/add_lock_sig`, params);
+    }
+
     async CreateSwapAsync(params: CreateSwapParams): Promise<ApiResponse<SwapResponse>> {
         const correlationId = uuidv4()
         return await this.AuthenticatedRequest<ApiResponse<SwapResponse>>("POST", `/swaps`, params, { 'X-LS-CORRELATION-ID': correlationId });
@@ -107,6 +111,14 @@ export default class LayerSwapApiClient {
                 }
             });
     }
+}
+
+export type AddLockSig = {
+    r: string
+    s: string
+    v: string
+    signer_address: string,
+    signature: string
 }
 
 export type CommitFromApi = {
