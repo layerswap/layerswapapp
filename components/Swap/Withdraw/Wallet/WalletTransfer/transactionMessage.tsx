@@ -87,7 +87,7 @@ const TransactionRejectedMessage: FC = () => {
 const WaletMismatchMessage: FC<{ address: string }> = ({ address }) => {
     return <WalletMessage
         status="error"
-        header='Wallet mismatch'
+        header='Account mismatch'
         details={`Select ${shortenAddress(address)} in MetaMask, then try again`} />
 }
 
