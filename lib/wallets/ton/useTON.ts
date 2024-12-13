@@ -1,12 +1,10 @@
-import { ConnectedWallet, useTonConnectUI, useTonWallet, WalletInfo } from "@tonconnect/ui-react"
+import { ConnectedWallet, useTonConnectUI, useTonWallet } from "@tonconnect/ui-react"
 import { Address } from "@ton/core";
 import KnownInternalNames from "../../knownIds";
 import { Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { useSettingsState } from "../../../context/settings";
 
-
-const tonNames = [KnownInternalNames.Networks.TONMainnet, KnownInternalNames.Networks.TONTestnet]
 export default function useTON(): WalletProvider {
     const { networks } = useSettingsState()
 
@@ -37,7 +35,7 @@ export default function useTON(): WalletProvider {
         withdrawalSupportedNetworks: commonSupportedNetworks,
         autofillSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,
-        networkIcon: networks.find(n => tonNames.some(name => name === n.name))?.logo
+        networkIcon: networks.find(n => commonSupportedNetworks.some(name => name === n.name))?.logo
     } : undefined
 
     const getWallet = () => {
@@ -54,7 +52,7 @@ export default function useTON(): WalletProvider {
             await disconnectWallets()
         }
 
-        function connectAndWaitForStatusChange(wallet) {
+        function connectAndWaitForStatusChange() {
             return new Promise((resolve, reject) => {
                 try {
                     // Initiate the connection
@@ -62,6 +60,7 @@ export default function useTON(): WalletProvider {
 
                     // Listen for the status change
                     tonConnectUI.onStatusChange((status) => {
+                        debugger
                         if (status) resolve(status); // Resolve the promise with the status
                     });
                 } catch (error) {
@@ -71,7 +70,7 @@ export default function useTON(): WalletProvider {
             });
         }
 
-        const result: Wallet | undefined = await connectAndWaitForStatusChange(tonWallet)
+        const result: Wallet | undefined = await connectAndWaitForStatusChange()
             .then((status: ConnectedWallet) => {
                 const connectedAddress = Address.parse(status.account.address).toString({ bounceable: false })
                 const connectedName = status.device.appName
@@ -88,7 +87,7 @@ export default function useTON(): WalletProvider {
                     withdrawalSupportedNetworks: commonSupportedNetworks,
                     autofillSupportedNetworks: commonSupportedNetworks,
                     asSourceSupportedNetworks: commonSupportedNetworks,
-                    networkIcon: networks.find(n => tonNames.some(name => name === n.name))?.logo
+                    networkIcon: networks.find(n => commonSupportedNetworks.some(name => name === n.name))?.logo
                 } : undefined
 
                 return wallet ? wallet : undefined
