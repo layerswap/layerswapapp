@@ -158,7 +158,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
             toExchange: newToExchange,
             fromExchange: newFromExchange,
             currencyGroup: (fromExchange || toExchange) ? (fromExchange ? newToExchangeToken : newFromExchangeToken) : undefined,
-            destination_address: values.destination_address,
+            destination_address: (toExchange || fromExchange) ? undefined : values.destination_address,
             depositMethod: undefined
         }
 
