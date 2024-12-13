@@ -21,7 +21,6 @@ Router.events.on("routeChangeComplete", progress.finish);
 Router.events.on("routeChangeError", progress.finish);
 
 const INTERCOM_APP_ID = 'h5zisg78'
-import "@rainbow-me/rainbowkit/styles.css";
 
 function App({ Component, pageProps }) {
   const router = useRouter()
