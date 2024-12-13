@@ -10,9 +10,6 @@ import { resolveExchangesURLForSelectedToken } from "../../helpers/routes";
 import { ApiResponse } from "../../Models/ApiResponse";
 import useSWR from "swr";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
-import { CircleAlert, RouteOff } from "lucide-react";
-import { QueryParams } from "../../Models/QueryParams";
 import RouteIcon from "./RouteIcon";
 
 const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {

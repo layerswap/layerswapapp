@@ -99,7 +99,7 @@ export function getPublicProvider(chainId: string): Starknet.ProviderInterface {
     chainId === STARKNET_MAINNET_CHAIN_ID
       ? RPC_NODES_MAINNET
       : RPC_NODES_TESTNET;
-      debugger
+
   const randIdx = Math.floor(Math.random() * nodes.length);
   const node = nodes[randIdx];
   if (node == null) throw new Error('No public provider defined');
@@ -115,7 +115,6 @@ async function getAccountClassHash(
     const classHash = await provider.getClassHashAt(accountAddress);
     return classHash;
   } catch (cause) {
-    debugger
     const message =
       'Cannot determine account type. Make sure your' +
       ' account contract is deployed and try again.';
