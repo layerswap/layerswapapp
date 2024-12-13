@@ -257,7 +257,7 @@ const ContinueWithoutWallet: FC<{ onClick: () => void }> = ({ onClick }) => {
                     </div>
                 </TooltipTrigger>
                 <TooltipContent className="max-w-[300px]">
-                    <p>Get a deposit address, send your crypto from any external wallet or exchange, and we'll handle the rest.</p>
+                    <p>Get a deposit address, send your crypto from any external wallet or exchange, and we&apos;ll handle the rest.</p>
                 </TooltipContent>
             </Tooltip>
         </div>
