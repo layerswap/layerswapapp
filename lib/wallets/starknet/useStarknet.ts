@@ -87,11 +87,12 @@ export default function useStarknet(): WalletProvider {
                 const starknetWalletAccount = new WalletAccount({ nodeUrl: starkent?.node_url }, (starknetConnector as any).wallet);
 
                 const wallet: Wallet = {
+                    id: connector.name,
+                    displayName: `${connector.name} - Starknet`,
                     address: result?.account,
                     addresses: [result?.account],
                     chainId: walletChain,
                     icon: resolveWalletConnectorIcon({ connector: connector.name, address: result?.account }),
-                    connector: connector.name,
                     providerName: name,
                     metadata: {
                         starknetAccount: starknetWalletAccount,

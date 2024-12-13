@@ -31,6 +31,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
         setIsLoading(false)
     }
 
+    //TODO: should check for real compatibility, in the future network can have wallets from multiple providers
     const notCompatibleWallets = wallets.filter(wallet => wallet.providerName !== provider.name || wallet.isNotAvailable)
 
     return <div className="space-y-2">
@@ -64,7 +65,6 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                             wallet={wallet}
                             selectable
                             network={destination}
-                            provider={provider}
                             onWalletSelect={onClick}
                             selectedAddress={destination_address}
                         />
@@ -109,25 +109,16 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                         </button>
                         {showIncompatibleWallets &&
                             notCompatibleWallets.map((wallet, index) => (
-                                <span key={index}>
-                                    {wallet.addresses?.map((address) => {
-                                        const addressItem = {
-                                            address: address,
-                                            group: AddressGroup.ConnectedWallet,
-                                        };
-
-                                        return (
-                                            <div key={address} className="flex flex-col gap-2">
-                                                <div className="group/addressItem w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 opacity-50">
-                                                    <AddressWithIcon
-                                                        addressItem={addressItem}
-                                                        connectedWallet={wallet}
-                                                        network={destination}
-                                                    />
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
+                                <span key={`${index}${wallet.address}`}>
+                                    <div className="group/addressItem w-full rounded-md hover:!bg-secondary-700 transition duration-200 opacity-50">
+                                        <WalletItem
+                                            key={`${index}${wallet.providerName}`}
+                                            wallet={wallet}
+                                            selectable={false}
+                                            network={destination}
+                                            selectedAddress={undefined}
+                                        />
+                                    </div>
                                 </span>
                             ))}
                     </div>
@@ -139,25 +130,15 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                     <div className="absolute right-2 top-1/2 -translate-y-1/2 w-max px-2 py-0.5 text-secondary-text font-medium text-sm rounded-md transition-opacity duration-200 bg-secondary-500 opacity-0 group-hover/notCompatible:opacity-100 max-w-[150px] break-words sm:max-w-none sm:whitespace-nowrap">
                         Not compatible with {destination.display_name}
                     </div>
-                    {notCompatibleWallets[0].addresses?.map((address) => {
-                        const addressItem = {
-                            address: address,
-                            group: AddressGroup.ConnectedWallet,
-                        };
-
-                        return (
-                            <AddressWithIcon
-                                key={address}
-                                addressItem={addressItem}
-                                connectedWallet={notCompatibleWallets[0]}
-                                network={destination}
-                            />
-                        );
-                    })}
+                    <WalletItem
+                        wallet={notCompatibleWallets[0]}
+                        selectable={false}
+                        network={destination}
+                        selectedAddress={undefined}
+                    />
                 </div>
             ))
         }
-
 
     </div>
 }

@@ -23,7 +23,6 @@ export default function useSolana({ network }: { network: Network | undefined })
     const { disconnect, wallet: solanaWallet, select, wallets } = useWallet();
     const { networks } = useSettingsState()
 
-
     const connectedWallet = wallets.find(w => w.adapter.connected === true)
     const connectedAddress = connectedWallet?.adapter.publicKey?.toBase58()
     const connectedAdapterName = connectedWallet?.adapter.name
@@ -34,9 +33,10 @@ export default function useSolana({ network }: { network: Network | undefined })
             return undefined
         }
 
-        const wallet: Wallet | undefined = connectedAddress ? {
+        const wallet: Wallet | undefined = (connectedAddress && connectedAdapterName) ? {
+            id: connectedAdapterName,
             address: connectedAddress,
-            connector: connectedAdapterName,
+            displayName: `${connectedAdapterName} - Solana`,
             providerName: name,
             icon: resolveWalletConnectorIcon({ connector: String(connectedAdapterName), address: connectedAddress, iconUrl: connectedWallet?.adapter.icon }),
             disconnect,
@@ -46,7 +46,7 @@ export default function useSolana({ network }: { network: Network | undefined })
             withdrawalSupportedNetworks: commonSupportedNetworks,
             asSourceSupportedNetworks: commonSupportedNetworks,
             autofillSupportedNetworks: commonSupportedNetworks,
-            networkIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo
+            networkIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo,
         } : undefined
 
         if (wallet) {
@@ -74,9 +74,10 @@ export default function useSolana({ network }: { network: Network | undefined })
 
         const connectedWallet = wallets.find(w => w.adapter.connected === true)
         const connectedAddress = connectedWallet?.adapter.publicKey?.toBase58()
-        const wallet: Wallet | undefined = connectedAddress ? {
+        const wallet: Wallet | undefined = connectedAddress && connectedWallet ? {
+            id: connectedWallet.adapter.name,
             address: connectedAddress,
-            connector: connectedWallet?.adapter.name,
+            displayName: `${connectedWallet?.adapter.name} - Solana`,
             providerName: name,
             icon: resolveWalletConnectorIcon({ connector: String(connectedWallet?.adapter.name), address: connectedAddress, iconUrl: connectedWallet?.adapter.icon }),
             disconnect,

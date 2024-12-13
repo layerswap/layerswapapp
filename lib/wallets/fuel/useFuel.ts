@@ -228,12 +228,13 @@ const resolveFuelWallet = ({ address, addresses, autofillSupportedNetworks, conn
     }
 
     const w: Wallet = {
+        id: fuelCurrentConnector || connector.name,
         address: address,
         addresses: addresses,
         isActive: true,
         connect: connectWallet,
         disconnect: () => disconnectWallet(connector.name),
-        connector: fuelCurrentConnector || connector.name,
+        displayName: `${fuelCurrentConnector || connector.name} - Fuel`,
         providerName: name,
         icon: resolveWalletConnectorIcon({ connector: customConnectorname || connector.name, address: address, iconUrl: typeof connector.metadata.image === 'string' ? connector.metadata.image : (connector.metadata.image?.light.startsWith('data:') ? connector.metadata.image.light : `data:image/svg+xml;base64,${connector.metadata.image && btoa(connector.metadata.image.light)}`) }),
         autofillSupportedNetworks,

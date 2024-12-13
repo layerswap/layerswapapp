@@ -29,7 +29,7 @@ const WalletTransferContent: FC = () => {
 
     const changeWallet = async (wallet: Wallet, address: string) => {
         const connections = getConnections(config)
-        const connector = connections?.find(c => c.connector.name === wallet.connector)
+        const connector = connections?.find(c => c.connector.name === wallet.id)
         if (!connector) return
         switchAccount({ connector: connector.connector })
         setSelectedSourceAccount({ wallet, address })

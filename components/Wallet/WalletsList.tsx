@@ -65,7 +65,6 @@ const WalletsList: FC<Props> = (props) => {
                         selectable={selectable}
                         token={token}
                         network={network}
-                        provider={provider}
                         onWalletSelect={onSelect}
                         selectedAddress={selectedSourceAccount?.address}
                     />)
@@ -80,7 +79,6 @@ type WalletItemProps = {
     selectable?: boolean,
     token?: Token;
     network?: Network;
-    provider?: WalletProvider;
     selectedAddress: string | undefined;
     onWalletSelect?: (wallet: Wallet, address: string) => void;
 }
@@ -94,6 +92,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
 
     const isSelected = selectable && (wallet.addresses.length == 1 && wallet.address == selectedAddress)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, token?.precision)
+
     return (
         <div {...props} className="rounded-md outline-none text-primary-tex">
             <div
@@ -105,7 +104,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
 
                 <div className="flex space-x-2 items-center grow">
                     {
-                        wallet.connector &&
+                        wallet &&
                         <div className="inline-flex items-center relative">
                             <wallet.icon
                                 className={clsx('w-9 h-9 p-0.5 rounded-md bg-secondary-800', {
@@ -130,7 +129,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                     {
                         wallet.addresses.length > 1 ?
                             <div>
-                                <span className="text-sm">{wallet.connector}</span>
+                                <span className="text-sm">{wallet.displayName}</span>
                             </div>
                             :
                             <div className="w-full inline-flex items-center justify-between grow">
@@ -145,7 +144,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                                         />
                                     }
                                     <p className="text-xs text-secondary-text">
-                                        {wallet.connector}
+                                        {wallet.displayName}
                                     </p>
                                 </div>
                                 {

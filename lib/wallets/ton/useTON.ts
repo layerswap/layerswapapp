@@ -23,11 +23,12 @@ export default function useTON(): WalletProvider {
 
     const address = tonWallet?.account && Address.parse(tonWallet.account.address).toString({ bounceable: false })
     const iconUrl = tonWallet?.["imageUrl"] as string
-
+    const wallet_id = tonWallet?.["name"] || tonWallet?.device.appName
     const wallet: Wallet | undefined = tonWallet && address ? {
+        id: wallet_id,
+        displayName: `${wallet_id} - Ton`,
         addresses: [address],
         address,
-        connector: tonWallet?.["name"] || tonWallet.device.appName,
         providerName: id,
         isActive: true,
         icon: resolveWalletConnectorIcon({ connector: name, address, iconUrl }),
@@ -74,10 +75,11 @@ export default function useTON(): WalletProvider {
             .then((status: ConnectedWallet) => {
                 const connectedAddress = Address.parse(status.account.address).toString({ bounceable: false })
                 const connectedName = status.device.appName
-                const wallet = status && connectedAddress ? {
+                const wallet: Wallet | undefined = status && connectedAddress ? {
+                    id: connectedName,
+                    displayName: `${connectedName} - Ton`,
                     addresses: [connectedAddress],
                     address: connectedAddress,
-                    connector: connectedName,
                     providerName: id,
                     isActive: true,
                     icon: resolveWalletConnectorIcon({ connector: connectedName, address: connectedAddress }),

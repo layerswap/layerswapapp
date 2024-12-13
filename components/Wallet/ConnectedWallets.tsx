@@ -51,11 +51,11 @@ const WalletsIcons = ({ wallets }: { wallets: Wallet[] }) => {
     return (
         <div className="-space-x-2 flex">
             {
-                firstWallet?.connector &&
+                firstWallet?.displayName &&
                 <firstWallet.icon className="rounded-full border-2 border-secondary-600 bg-secondary-700 flex-shrink-0 h-6 w-6" />
             }
             {
-                secondWallet?.connector &&
+                secondWallet?.displayName &&
                 <secondWallet.icon className="rounded-full border-2 border-secondary-600 bg-secondary-700 flex-shrink-0 h-6 w-6" />
             }
             {

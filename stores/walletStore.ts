@@ -17,7 +17,7 @@ export const useWalletStore = create<WalletState>()((set) => ({
     // we check if the wallet is already connected do not modify the state
     // TODO: get rid of useEffect hooks and implement singelton pattern
     connectWallet: (wallet) => set((state) => {
-        if (state.connectedWallets.find(w => w.providerName == wallet.providerName && w.connector == wallet.connector && w.address == wallet.address)) {
+        if (state.connectedWallets.find(w => w.providerName == wallet.providerName && w.id == wallet.id && w.address == wallet.address)) {
             return state
         }
         return ({
@@ -28,6 +28,6 @@ export const useWalletStore = create<WalletState>()((set) => ({
         })
     }),
     disconnectWallet: (providerName, connectorName) => set((state) => ({
-        connectedWallets: state.connectedWallets.filter(w => connectorName ? !(w.providerName == providerName && w.connector == connectorName) : w.providerName != providerName)
+        connectedWallets: state.connectedWallets.filter(w => connectorName ? !(w.providerName == providerName && w.id == connectorName) : w.providerName != providerName)
     }))
 }))
