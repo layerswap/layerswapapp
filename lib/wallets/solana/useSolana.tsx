@@ -36,7 +36,7 @@ export default function useSolana({ network }: { network: Network | undefined })
         const wallet: Wallet | undefined = (connectedAddress && connectedAdapterName) ? {
             id: connectedAdapterName,
             address: connectedAddress,
-            displayName: `${connectedWallet?.adapter.name} - 'Solana'}`,
+            displayName: `${connectedWallet?.adapter.name} - Solana}`,
             providerName: name,
             icon: resolveWalletConnectorIcon({ connector: String(connectedAdapterName), address: connectedAddress, iconUrl: connectedWallet?.adapter.icon }),
             disconnect,
@@ -77,7 +77,7 @@ export default function useSolana({ network }: { network: Network | undefined })
         const wallet: Wallet | undefined = connectedAddress && connectedWallet ? {
             id: connectedWallet.adapter.name,
             address: connectedAddress,
-            displayName: `${connectedWallet?.adapter.name} - 'Solana'}`,
+            displayName: `${connectedWallet?.adapter.name} - Solana}`,
             providerName: name,
             icon: resolveWalletConnectorIcon({ connector: String(connectedWallet?.adapter.name), address: connectedAddress, iconUrl: connectedWallet?.adapter.icon }),
             disconnect,
