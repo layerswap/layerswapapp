@@ -18,7 +18,7 @@ const MinMax = () => {
     const { selectedSourceAccount } = useSwapDataState()
 
     const { gas } = useSWRGas(selectedSourceAccount?.address, values.from, fromCurrency)
-    const { balance } = useSWRBalance(selectedSourceAccount?.address, values.from)
+    const { balance, mutate } = useSWRBalance(selectedSourceAccount?.address, values.from)
 
     const gasAmount = gas || 0;
 
@@ -51,6 +51,7 @@ const MinMax = () => {
     }
 
     const handleSetMaxAmount = async () => {
+        mutate()
         setFieldValue('amount', maxAllowedAmount);
     }
 
