@@ -169,8 +169,7 @@ export const FormSourceWalletButton: FC = () => {
 
     const connect = async () => {
         setMounWalletPortal(true)
-        const result = await provider?.connectWallet({ chain: walletNetwork?.chain_id || walletNetwork?.name })
-
+        const result = await provider?.connectWallet()
         if (result) {
             handleSelectWallet(result, result.address)
         }

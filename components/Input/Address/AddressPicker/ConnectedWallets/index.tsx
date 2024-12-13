@@ -26,7 +26,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
 
     const connect = async () => {
         setIsLoading(true)
-        const result = await provider.connectWallet({ chain: destination.chain_id })
+        const result = await provider.connectWallet()
         if (onConnect && result) onConnect(result)
         setIsLoading(false)
     }

@@ -39,7 +39,7 @@ export type Wallet = {
 
 
 export type WalletProvider = {
-    connectWallet: (props?: { chain?: string | number | undefined | null, destination?: RouteNetwork }) => Promise<Wallet | undefined>,
+    connectWallet: () => Promise<Wallet | undefined>,
     connectConnector?: (props?: { connector: InternalConnector }) => Promise<Wallet | undefined> | undefined
     disconnectWallets: () => Promise<void> | undefined | void,
     switchAccount?: (connector: Wallet, address: string) => Promise<void>

@@ -2,7 +2,7 @@ import { useWalletStore } from "../../../stores/walletStore"
 import ImtblClient from "../../imtbl"
 import KnownInternalNames from "../../knownIds"
 import IMX from "../../../components/icons/Wallets/IMX"
-import { WalletProvider } from "../../../Models/WalletProvider"
+import { Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useSettingsState } from "../../../context/settings"
 
 export default function useImtblX(): WalletProvider {
@@ -19,7 +19,7 @@ export default function useImtblX(): WalletProvider {
     const wallets = useWalletStore((state) => state.connectedWallets)
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
-    const wallet = wallets.find(wallet => wallet.providerName === name)
+    const wallet = wallets.find(wallet => wallet.providerName === id)
 
     const getWallet = () => {
         if (wallet) {
@@ -27,12 +27,10 @@ export default function useImtblX(): WalletProvider {
         }
         return undefined
     }
-    type ConnectProps = {
-        chain?: string | number
-    }
-    const connectWallet = async ({ chain }: ConnectProps) => {
+
+    const connectWallet = async () => {
         const isMainnet = networks?.some(network => network.name === KnownInternalNames.Networks.ImmutableXMainnet)
-        chain = chain || (isMainnet ? KnownInternalNames.Networks.ImmutableXMainnet : KnownInternalNames.Networks.ImmutableXGoerli)
+        const chain = (isMainnet ? KnownInternalNames.Networks.ImmutableXMainnet : KnownInternalNames.Networks.ImmutableXGoerli)
 
         if (!chain) throw new Error('No chain id for imx connect wallet')
         const networkName = chain == 'testnet' ? KnownInternalNames.Networks.ImmutableXGoerli : KnownInternalNames.Networks.ImmutableXMainnet
@@ -41,13 +39,13 @@ export default function useImtblX(): WalletProvider {
             const imtblClient = new ImtblClient(networkName)
             const res = await imtblClient.ConnectWallet();
 
-            const wallet = {
+            const wallet: Wallet = {
+                id: 'immutablex',
+                displayName: name,
                 address: res.address,
-                connector: name,
                 providerName: id,
                 icon: IMX,
                 disconnect: () => disconnectWallet(),
-                connect: () => connectWallet({ chain }),
                 isActive: true,
                 addresses: [res.address],
                 withdrawalSupportedNetworks,
@@ -63,7 +61,7 @@ export default function useImtblX(): WalletProvider {
     }
 
     const disconnectWallet = () => {
-        return removeWallet(name)
+        return removeWallet(id)
     }
 
     return {

@@ -57,7 +57,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
     const { selectedSourceAccount } = useSwapDataState()
     const { setSelectedSourceAccount } = useSwapDataUpdate()
     const { providers, wallets } = useWallet()
-
+    console.log(providers, wallets)
     const { minAllowedAmount, valuesChanger } = useFee()
     const toAsset = values.toCurrency
     const fromAsset = values.fromCurrency
