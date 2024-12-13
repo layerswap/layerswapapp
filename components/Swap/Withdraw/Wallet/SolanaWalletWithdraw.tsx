@@ -10,33 +10,37 @@ import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
 import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
 import WalletMessage from './WalletTransfer/message';
-import useSolanaBalance from '../../../../lib/balances/solana/useSolanaBalance';
+import useSWRBalance from '../../../../lib/balances/useSWRBalance';
+import { useSettingsState } from '../../../../context/settings';
 
 const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, token, amount }) => {
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(false);
     const [insufficientFunds, setInsufficientFunds] = useState<boolean>(false)
     const [insufficientTokens, setInsufficientTokens] = useState<string[]>([])
-    const { getWithdrawalProvider } = useWallet()
+
+    const { provider } = useWallet(network, 'withdrawal');
     const { setSwapTransaction } = useSwapTransactionStore();
 
-    const networkName = network?.name
-    const provider = getWithdrawalProvider(network!);
-    const wallet = provider?.getConnectedWallet(network);
-    const { publicKey: walletPublicKey, signTransaction, wallet: solanaWallet } = useSolanaWallet();
+    const wallet = provider?.activeWallet
+    const { publicKey: walletPublicKey, signTransaction } = useSolanaWallet();
     const solanaNode = network?.node_url
+    const networkName = network?.name
 
-    const { getBalance } = useSolanaBalance()
+    const { networks } = useSettingsState()
+    const networkWithTokens = networks.find(n => n.name === networkName)
+    const { balance } = useSWRBalance(wallet?.address, networkWithTokens)
+
 
     useEffect(() => {
         setInsufficientFunds(false);
     }, [walletPublicKey]);
 
     const handleTransfer = useCallback(async () => {
-
-        if (!signTransaction || !callData || !swapId) return
-
         setLoading(true)
         try {
+
+            if (!signTransaction || !callData || !swapId) throw new Error('Missing data')
+
             const connection = new Connection(
                 `${solanaNode}`,
                 "confirmed"
@@ -48,8 +52,9 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
             const feeInLamports = await transaction.getEstimatedFee(connection)
             const feeInSol = feeInLamports / LAMPORTS_PER_SOL
 
-            const nativeTokenBalance = network?.token && networkName && wallet?.address ? await getBalance({ networkName, token: network.token, address: wallet?.address }) : undefined
-            const tokenbalanceData = token && networkName && wallet?.address ? await getBalance({ networkName, token, address: wallet?.address }) : undefined
+
+            const nativeTokenBalance = balance?.find(b => b.token == network?.token?.symbol)
+            const tokenbalanceData = balance?.find(b => b.token == token?.symbol)
             const tokenBalanceAmount = tokenbalanceData?.amount
             const nativeTokenBalanceAmount = nativeTokenBalance?.amount
 
@@ -58,7 +63,7 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
             if (network?.token && Number(nativeTokenBalanceAmount) < feeInSol) insufficientTokensArr.push(network.token?.symbol)
             if (network?.token?.symbol !== token?.symbol && amount && token?.symbol && Number(tokenBalanceAmount) < amount) insufficientTokensArr.push(token?.symbol)
             setInsufficientTokens(insufficientTokensArr)
-            
+
             const signature = await configureAndSendCurrentTransaction(
                 transaction,
                 connection,

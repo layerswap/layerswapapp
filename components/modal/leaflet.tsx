@@ -1,4 +1,4 @@
-import { Dispatch, PropsWithChildren, SetStateAction, useCallback, useEffect, useRef, useState } from 'react'
+import { Dispatch, PropsWithChildren, SetStateAction, useCallback, useEffect, useRef } from 'react'
 import { motion, useAnimation } from "framer-motion";
 import { forwardRef } from 'react';
 import IconButton from '../buttons/iconButton';
@@ -94,7 +94,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 key="mobile-modal"
                 ref={mobileModalRef}
                 animate={controls}
-                className={`max-h-full overflow-y-hidden group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'rounded-t-2xl border-t border-secondary-500' : ''}  bg-secondary-900 ${wrapperHeightClass} ${className} shadow-lg`}
+                className={`max-h-full overflow-y-hidden group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'rounded-t-2xl' : ''}  bg-secondary-900 ${wrapperHeightClass} ${className} shadow-lg`}
                 initial={{ y: "20%" }}
                 exit={{ y: "100%" }}
                 transition={transitionProps}
@@ -104,8 +104,8 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 dragElastic={{ top: 0, bottom: 1 }}
                 dragConstraints={{ top: 0, bottom: 0 }}
             >
-                <div className={`py-3 overflow-y-auto flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 border-t border-secondary-500 rounded-t-2xl ' : ''} pb-6`}>
-                    <div className={`px-6 flex justify-between items-center ${height != 'full' && 'hover:cursor-grab'}`}>
+                <div className={`py-3 overflow-y-auto flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 rounded-t-2xl ' : ''} pb-6`}>
+                    <div className={`px-6 pb-2 flex justify-between items-center ${height != 'full' && 'hover:cursor-grab'}`}>
                         <div className="text-lg text-secondary-text font-semibold">
                             <div>{title}</div>
                         </div>

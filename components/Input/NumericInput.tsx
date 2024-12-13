@@ -1,5 +1,5 @@
 import { useField, useFormikContext } from "formik";
-import { ChangeEvent, FC, forwardRef, useEffect, useRef, useState } from "react";
+import { ChangeEvent, FC, forwardRef } from "react";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
 
