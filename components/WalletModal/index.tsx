@@ -108,7 +108,9 @@ export function WalletModalProvider({ children }) {
                                 selectedProvider={selectedProvider}
                             />
                             :
-                            <ProvidersList />
+                            <ProvidersList
+                                onFinish={onFinish}
+                            />
                     }
                 </VaulDrawer.Snap>
             </VaulDrawer>

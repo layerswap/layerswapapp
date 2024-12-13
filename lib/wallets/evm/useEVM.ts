@@ -148,18 +148,6 @@ export default function useEVM({ network }: Props): WalletProvider {
         const connections = getConnections(config)
         return activeConnectors.map((w): Wallet | undefined => {
 
-            //TODO: handle Ronin wallet case
-            // let roninWalletNetworks = [
-            //     KnownInternalNames.Networks.RoninMainnet,
-            //     KnownInternalNames.Networks.EthereumMainnet,
-            //     KnownInternalNames.Networks.PolygonMainnet,
-            //     KnownInternalNames.Networks.BNBChainMainnet,
-            //     KnownInternalNames.Networks.ArbitrumMainnet];
-
-            // if (connector == "com.roninchain.wallet" && network && !roninWalletNetworks.includes(network.name)) {
-            //     return undefined;
-            // }
-
             const connection = connections.find(c => c.connector.id === w.id)
 
             const wallet = ResolveWallet({
@@ -236,7 +224,7 @@ const getWalletConnectUri = async (
 const isNotAvailable = (connector: Connector | undefined, network: Network | undefined) => {
     if (!network) return false
     if (!connector) return true
-    return connector.id === "com.immutable.passport" && !network.name.toLowerCase().startsWith("immutable")
+    return resolveSupportedNetworks([network.name], connector.id).length === 0
 }
 
 type ResolveWalletProps = {
@@ -259,6 +247,7 @@ type ResolveWalletProps = {
     },
     providerName: string
 }
+
 const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
     const { activeConnection, connection, networks, discconnect, network, supportedNetworks, providerName } = props
     const accountIsActive = activeConnection?.id === connection?.connector.id
@@ -273,7 +262,8 @@ const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
     if (!address) return undefined
 
     const walletname = `${connector?.name} - ${connector.id === "com.immutable.passport" ? "Immutable" : "EVM"}`
-    return {
+
+    const wallet = {
         id: connector.name,
         isActive: accountIsActive,
         address,
@@ -283,10 +273,46 @@ const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
         icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector), address, iconUrl: connector.icon }),
         disconnect: () => discconnect(connector.name),
         isNotAvailable: isNotAvailable(connector, network),
-        //TODO:refactor this
-        asSourceSupportedNetworks: connector.id === "com.immutable.passport" ? supportedNetworks.asSource.filter(n => n.toLowerCase().startsWith("immutable")) : supportedNetworks.asSource,
-        autofillSupportedNetworks: connector.id === "com.immutable.passport" ? supportedNetworks.autofill.filter(n => n.toLowerCase().startsWith("immutable")) : supportedNetworks.autofill,
-        withdrawalSupportedNetworks: connector.id === "com.immutable.passport" ? supportedNetworks.withdrawal.filter(n => n.toLowerCase().startsWith("immutable")) : supportedNetworks.withdrawal,
+        asSourceSupportedNetworks: resolveSupportedNetworks(supportedNetworks.asSource, connector.id),
+        autofillSupportedNetworks: resolveSupportedNetworks(supportedNetworks.autofill, connector.id),
+        withdrawalSupportedNetworks: resolveSupportedNetworks(supportedNetworks.withdrawal, connector.id),
         networkIcon: networks.find(n => connector?.id === "com.immutable.passport" ? immutableZKEvm.some(name => name === n.name) : ethereumNames.some(name => name === n.name))?.logo
     }
+
+    return wallet
+}
+
+const resolveSupportedNetworks = (supportedNetworks: string[], connectorId: string) => {
+
+    const specificNetworksConnectors = [
+        {
+            id: "com.immutable.passport",
+            supportedNetworks: [
+                KnownInternalNames.Networks.ImmutableXMainnet,
+                KnownInternalNames.Networks.ImmutableXGoerli,
+                KnownInternalNames.Networks.ImmutableXSepolia,
+                KnownInternalNames.Networks.ImmutableZkEVM
+            ]
+        },
+        {
+            id: "com.roninchain.wallet",
+            supportedNetworks: [
+                KnownInternalNames.Networks.RoninMainnet,
+                KnownInternalNames.Networks.EthereumMainnet,
+                KnownInternalNames.Networks.PolygonMainnet,
+                KnownInternalNames.Networks.BNBChainMainnet,
+                KnownInternalNames.Networks.ArbitrumMainnet
+            ]
+        }
+    ]
+
+    const specificNetworks = specificNetworksConnectors.find(c => c.id === connectorId)
+
+    if (specificNetworks) {
+        const values = specificNetworks.supportedNetworks.filter(n => supportedNetworks.some(name => name === n))
+        return values
+    }
+
+    return supportedNetworks
+
 }

@@ -3,7 +3,7 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
 import useWallet from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, CircleHelp } from "lucide-react";
 import Balance from "./dynamic/Balance";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
 import VaulDrawer, { WalletFooterPortal } from "../modal/vaulModal";
@@ -12,6 +12,7 @@ import WalletIcon from "../icons/WalletIcon";
 import SubmitButton from "../buttons/submitButton";
 import { useConnectModal } from "../WalletModal";
 import WalletsList from "../Wallet/WalletsList";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
 
 const Component: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -79,7 +80,7 @@ const Component: FC = () => {
                 <div className="flex items-center space-x-2 text-sm leading-4">
                     <div onClick={handleWalletChange} className="rounded-md bg-secondary-500 flex space-x-1 items-center py-0.5 pl-2 pr-1 cursor-pointer">
                         <div className="text-secondary-text">
-                            Deposit address
+                            Manual Transfer
                         </div>
                         <div className="w-5 h-5 items-center flex">
                             <ChevronDown className="h-4 w-4" aria-hidden="true" />
@@ -123,9 +124,7 @@ const Component: FC = () => {
                 />
                 {
                     values.from?.deposit_methods.includes('deposit_address') &&
-                    <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer">
-                        Continue without a wallet
-                    </div>
+                    <ContinueWithoutWallet onClick={handleSelectWallet} />
                 }
             </VaulDrawer.Snap >
         </VaulDrawer>
@@ -184,9 +183,8 @@ export const FormSourceWalletButton: FC = () => {
             {
                 mountWalletPortal && values.from?.deposit_methods.includes('deposit_address') && values.depositMethod !== 'deposit_address' &&
                 <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
-                    <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer pt-3">
-                        Continue without a wallet
-                    </div>
+                    <ContinueWithoutWallet onClick={handleSelectWallet} />
+
                 </WalletFooterPortal>
             }
         </>
@@ -217,9 +215,7 @@ export const FormSourceWalletButton: FC = () => {
             {
                 mountWalletPortal && values.from?.deposit_methods.includes('deposit_address') && values.depositMethod !== 'deposit_address' &&
                 <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
-                    <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer pt-3">
-                        Continue without a wallet
-                    </div>
+                    <ContinueWithoutWallet onClick={handleSelectWallet} />
                 </WalletFooterPortal>
             }
         </>
@@ -229,9 +225,7 @@ export const FormSourceWalletButton: FC = () => {
         {
             mountWalletPortal &&
             <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
-                <div onClick={() => handleSelectWallet()} className="underline text-base text-center text-secondary-text cursor-pointer pt-3">
-                    Continue without a wallet
-                </div>
+                <ContinueWithoutWallet onClick={handleSelectWallet} />
             </WalletFooterPortal>
         }
     </>
@@ -249,6 +243,26 @@ const Connect: FC<{ connectFn?: () => Promise<Wallet | undefined | void>; setMou
     return <SubmitButton onClick={() => connectFn ? connectFn() : connectWallet()} type="button" icon={<WalletIcon className="h-6 w-6" strokeWidth={2} />} >
         Connect a wallet
     </SubmitButton>
+}
+
+const ContinueWithoutWallet: FC<{ onClick: () => void }> = ({ onClick }) => {
+    return (
+        <div className="inline-flex items-center gap-1.5 justify-center w-full pt-3">
+            <button onClick={onClick} className="underline hover:no-underline text-base text-center text-secondary-text cursor-pointer ">
+                Continue without a wallet
+            </button>
+            <Tooltip delayDuration={100}>
+                <TooltipTrigger>
+                    <div className="text-xs text-secondary-text hover:text-primary-text rounded-full transition-colors duration-200 ">
+                        <CircleHelp className="h-5 w-5" />
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-[300px]">
+                    <p>Get a deposit address, send your crypto from any external wallet or exchange, and we'll handle the rest.</p>
+                </TooltipContent>
+            </Tooltip>
+        </div>
+    )
 }
 
 export default Component

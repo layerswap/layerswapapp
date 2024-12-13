@@ -4,7 +4,7 @@ import resolveError from "./resolveError"
 import { ActionData } from "./sharedTypes"
 import { BaseError } from 'viem'
 import { datadogRum } from '@datadog/browser-rum';
-import { addressFormat } from "../../../../../lib/address/formatter"
+import shortenAddress from "../../../../utils/ShortenAddress"
 
 type TransactionMessageProps = {
     wait?: ActionData,
@@ -33,7 +33,7 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
         return <TransactionRejectedMessage />
     }
     else if (transaction.isError && activeAddress && selectedSourceAddress && (activeAddress?.toLowerCase() !== selectedSourceAddress?.toLowerCase())) {
-        return <UnknowndMessage />
+        return <WaletMismatchMessage address={selectedSourceAddress} />
     }
     else if (hasError) {
         const unexpectedError = transaction?.error?.['data']?.message || transaction?.error
@@ -84,11 +84,11 @@ const TransactionRejectedMessage: FC = () => {
         details={`You've rejected the transaction in your wallet. Click “Try again” to open the prompt again.`} />
 }
 
-const UnknowndMessage: FC = () => {
+const WaletMismatchMessage: FC<{ address: string }> = ({ address }) => {
     return <WalletMessage
         status="error"
-        header='Unknown Message'
-        details={`Lorem ipsum`} />
+        header='Wallet mismatch'
+        details={`Select ${shortenAddress(address)} in MetaMask, then try again`} />
 }
 
 const UexpectedErrorMessage: FC<{ message: string }> = ({ message }) => {
