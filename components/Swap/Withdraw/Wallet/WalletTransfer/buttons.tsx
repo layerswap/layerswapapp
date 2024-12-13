@@ -1,4 +1,4 @@
-import { FC, useCallback, useMemo, useState } from "react";
+import { FC, useCallback, useState } from "react";
 import { useSwitchChain } from "wagmi";
 import WalletIcon from "../../../../icons/WalletIcon";
 import WalletMessage from "./message";
@@ -16,10 +16,7 @@ export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { source_network } = swap || {}
     const [loading, setLoading] = useState(false)
 
-    const { getWithdrawalProvider: getProvider } = useWallet()
-    const provider = useMemo(() => {
-        return source_network && getProvider(source_network)
-    }, [source_network, getProvider])
+    const { provider } = useWallet(source_network, 'withdrawal')
 
     const clickHandler = useCallback(async () => {
         try {
@@ -27,7 +24,7 @@ export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
 
             if (!provider) throw new Error(`No provider from ${source_network?.name}`)
 
-            await provider.connectWallet({ chain: source_network?.chain_id || source_network?.name })
+            await provider.connectWallet()
         }
         catch (e) {
             toast.error(e.message)
@@ -111,6 +108,7 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
             text_align='center'
             buttonStyle='filled'
             size="medium"
+            type="button"
             {...props}
         >
             {props.children}

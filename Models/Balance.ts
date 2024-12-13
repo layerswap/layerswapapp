@@ -1,5 +1,5 @@
-import { Wallet } from "../stores/walletStore"
 import { Network, Token } from "./Network"
+import { Wallet } from "./WalletProvider"
 
 export type BalanceProps = {
     networkName: string,
@@ -17,7 +17,6 @@ export type GasProps = {
     token: Token,
     address?: `0x${string}`,
     recipientAddress?: string,
-    isSweeplessTx?: boolean,
     wallet?: Wallet
 }
 

@@ -13,13 +13,19 @@ import { ExchangeNetwork } from "../../Models/Exchange";
 import { isValidAddress } from "../../lib/address/validator";
 import TransferCEX from "./TransferCEX";
 import Image from 'next/image'
+import Address from "./Address";
+import { Partner } from "../../Models/Partner";
+import { ExtendedAddress } from "./Address/AddressPicker/AddressWithIcon";
+import { ChevronRight, PlusIcon } from "lucide-react";
+import AddressIcon from "../AddressIcon";
 
 type SwapDirection = "from" | "to";
 type Props = {
     direction: SwapDirection,
+    partner: Partner | undefined
 }
 
-const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction }: Props, ref: any) {
+const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction, partner }: Props, ref: any) {
     const {
         values,
         setFieldValue,
@@ -33,9 +39,8 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         toCurrency,
         fromExchange,
         toExchange,
-        currencyGroup
+        currencyGroup,
     } = values
-
 
     const apiClient = new LayerSwapApiClient()
 
@@ -104,10 +109,11 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
         <TransferCEX direction={direction} />
     </div>
 
-    const header = direction === 'from' ? 'Withdrawal network' : 'Deposit network'
+    const header = direction === 'from' ? 'Withdrawal network' : 'Deposit details'
 
-    return (<div className={`p-2 rounded-lg bg-secondary-700 border border-secondary-500`}>
-        <label htmlFor={name} className="font-semibold flex justify-between text-secondary-text text-xs mb-1.5">
+
+    return (<div className="p-2 rounded-lg bg-secondary-700 border border-secondary-500 space-y-2">
+        <label htmlFor={name} className="font-semibold flex justify-between text-secondary-text text-xs">
             <div className="flex space-x-1">
                 <span>{header}</span>
             </div>
@@ -136,8 +142,41 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction 
             key={value?.id}
             header={header}
         />
+        {
+            direction === "to" && to &&
+            <div className="flex items-center col-span-6">
+                <Address partner={partner} >{
+                    ({ destination, disabled, addressItem, connectedWallet, partner }) => <>
+                        {
+                            addressItem ? <>
+                                <AddressButton addressItem={addressItem} network={network} disabled={disabled} />
+                            </>
+                                : <div className=" justify-center w-full pl-3 pr-2 py-2 bg-secondary-600 items-center flex font-light space-x-2 mx-auto rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 ">
+                                    <PlusIcon className="stroke-1" /> <span>Destination Address</span>
+                                </div>
+                        }
+                    </>
+                }</Address>
+            </div>
+        }
     </div>)
 })
+
+const AddressButton = ({ addressItem, network, disabled }) => {
+
+    return <div className="justify-between w-full pl-3 pr-2 py-2 bg-secondary-600 items-center flex font-light space-x-2 mx-auto rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 ">
+        <div className="flex items-center gap-3">
+            <div className='flex text-primary-text items-center justify-center rounded-md h-6 overflow-hidden w-6'>
+                <AddressIcon className="scale-150 h-3 w-3" address={addressItem.address} size={36} />
+            </div>
+            <ExtendedAddress address={addressItem.address} network={network} />
+        </div>
+        <span className="ml-3 justify-self-end right-0 flex items-center pr-2 pointer-events-none  text-primary-text">
+            {!disabled && <ChevronRight className="h-4 w-4" aria-hidden="true" />}
+        </span>
+    </div>
+}
+
 
 function GenerateMenuItems(
     historicalNetworks: ExchangeNetwork[],
