@@ -9,7 +9,7 @@ import { truncateDecimals } from '../../utils/RoundDecimals';
 import { useConfig, useSwitchAccount } from 'wagmi';
 import VaulDrawer from '../../modal/vaulModal';
 import { Wallet } from '../../../Models/WalletProvider';
-import useSWRBalance from '../../../lib/newbalances/useSWRBalance';
+import useSWRBalance from '../../../lib/balances/useSWRBalance';
 import { useSettingsState } from '../../../context/settings';
 import WalletsList from '../../Wallet/WalletsList';
 import { getConnections } from '@wagmi/core'

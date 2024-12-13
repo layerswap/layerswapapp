@@ -2,7 +2,7 @@ import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { useEffect, useRef } from "react";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import { useSwapDataState } from "../../../context/swap";
-import useSWRBalance from "../../../lib/newbalances/useSWRBalance";
+import useSWRBalance from "../../../lib/balances/useSWRBalance";
 
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 

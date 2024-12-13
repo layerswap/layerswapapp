@@ -5,7 +5,7 @@ import { FC, useEffect, useRef } from "react";
 import { Info } from "lucide-react";
 import { isValidAddress } from "../../lib/address/validator";
 import ResizablePanel from "../ResizablePanel";
-import useSWRBalance from "../../lib/newbalances/useSWRBalance";
+import useSWRBalance from "../../lib/balances/useSWRBalance";
 
 type RefuelProps = {
     onButtonClick: () => void

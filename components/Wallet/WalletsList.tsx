@@ -9,7 +9,7 @@ import { Network, Token } from "../../Models/Network";
 import { useSwapDataState } from "../../context/swap";
 import FilledCheck from "../icons/FilledCheck";
 import { truncateDecimals } from "../utils/RoundDecimals";
-import useSWRBalance from "../../lib/newbalances/useSWRBalance";
+import useSWRBalance from "../../lib/balances/useSWRBalance";
 import { useSettingsState } from "../../context/settings";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
 import Image from 'next/image'

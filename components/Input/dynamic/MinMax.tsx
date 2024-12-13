@@ -3,8 +3,8 @@ import { useFormikContext } from "formik";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { useFee } from "../../../context/feeContext";
 import { useQueryState } from "../../../context/query";
-import useSWRBalance from "../../../lib/newbalances/useSWRBalance";
-import useSWRGas from "../../../lib/newgases/useSWRGas";
+import useSWRBalance from "../../../lib/balances/useSWRBalance";
+import useSWRGas from "../../../lib/gases/useSWRGas";
 import { useSwapDataState } from "../../../context/swap";
 
 const MinMax = () => {

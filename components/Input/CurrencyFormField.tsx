@@ -17,7 +17,7 @@ import { resolveNetworkRoutesURL } from "../../helpers/routes";
 import { ONE_WEEK } from "./NetworkFormField";
 import RouteIcon from "./RouteIcon";
 import { useSwapDataState } from "../../context/swap";
-import useSWRBalance from "../../lib/newbalances/useSWRBalance";
+import useSWRBalance from "../../lib/balances/useSWRBalance";
 
 const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {

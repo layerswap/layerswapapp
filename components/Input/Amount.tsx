@@ -5,8 +5,8 @@ import NumericInput from "./NumericInput";
 import { useFee } from "../../context/feeContext";
 import dynamic from "next/dynamic";
 import { useQueryState } from "../../context/query";
-import useSWRGas from "../../lib/newgases/useSWRGas";
-import useSWRBalance from "../../lib/newbalances/useSWRBalance";
+import useSWRGas from "../../lib/gases/useSWRGas";
+import useSWRBalance from "../../lib/balances/useSWRBalance";
 import { useSwapDataState } from "../../context/swap";
 
 const MinMax = dynamic(() => import("./dynamic/MinMax"), {

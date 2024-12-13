@@ -1,7 +1,7 @@
 import { FC } from "react"
 import { Network, Token } from "../../../../../Models/Network"
 import { Fuel } from "lucide-react"
-import useSWRGas from "../../../../../lib/newgases/useSWRGas"
+import useSWRGas from "../../../../../lib/gases/useSWRGas"
 
 type NetworkGasProps = {
     address: string,
