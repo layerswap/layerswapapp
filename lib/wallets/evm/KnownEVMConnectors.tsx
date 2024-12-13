@@ -59,7 +59,7 @@ const KnownEVMConnectors = [
         icon: Argent
     },
     {
-        id: 'immutable passport',
+        id: 'com.immutable.passport',
         icon: ImtblPassportIcon
     }
 ]

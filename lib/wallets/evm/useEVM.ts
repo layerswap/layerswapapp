@@ -182,7 +182,12 @@ export default function useEVM({ network }: Props): WalletProvider {
     }
 
     {/* //TODO: refactor ordering */ }
-    const availableWalletsForConnect = allConnectors.filter(w => !isNotAvailable(w, network)).map(w => ({ ...w, order: resolveWalletConnectorIndex(w.id) }))
+    const availableWalletsForConnect = allConnectors.filter(w => !isNotAvailable(w, network))
+        .map(w => ({
+            ...w,
+            order: resolveWalletConnectorIndex(w.id),
+            type: (!network?.name.toLowerCase().includes("immutable") && w.id === "com.immutable.passport") ? "other" : w.type
+        }))
 
     const provider = {
         connectWallet,
