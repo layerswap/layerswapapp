@@ -334,7 +334,7 @@ export function makeMarket<R extends TokenInfo = TokenInfo>(raw_data: R[]): TOKE
       totalCoinMap[item.symbol] = coinInfo
       addressIndex[item.address.toLowerCase()] = item.symbol
       // @ts-ignore
-      idIndex[/vaulModalt/gi.test(item.type?.toLowerCase()) ? item?.vaultTokenId : item.tokenId] =
+      idIndex[/vault/gi.test(item.type?.toLowerCase()) ? item?.vaultTokenId : item.tokenId] =
         item.symbol
     })
   }
