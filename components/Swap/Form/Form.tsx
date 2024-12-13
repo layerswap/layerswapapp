@@ -192,7 +192,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
     const sourceWalletNetwork = values.fromExchange ? undefined : values.from
     const shoouldConnectWallet = (sourceWalletNetwork && values.depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!values.from && !values.fromExchange && !wallets.length && values.depositMethod !== 'deposit_address')
 
-    return <Widget className="sm:min-h-[504px] h-full">
+    return <Widget className="sm:min-h-[450px] h-full">
         <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
             <Widget.Content>
                 <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4 bg-secondary-700 rounded-xl'>
