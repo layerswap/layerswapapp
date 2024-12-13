@@ -23,8 +23,8 @@ export class QueryBalanceProvider {
                 fromAsset: null,
             };
         }
-    
-        const urlParams = new URLSearchParams(location.search); 
+
+        const urlParams = new URLSearchParams(location.search);
         return {
             from: urlParams.get('from'),
             to: urlParams.get('to'),
@@ -34,6 +34,7 @@ export class QueryBalanceProvider {
     }
 
     supportsNetwork(network: NetworkWithTokens): boolean {
+        if (!this.query.balances) return false
         return network?.name?.toLocaleLowerCase() === this.query.from?.toLowerCase() || network?.name?.toLocaleLowerCase() === this.query.to?.toLowerCase()
     }
 

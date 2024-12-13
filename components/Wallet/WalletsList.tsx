@@ -94,7 +94,6 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
 
     const isSelected = selectable && (wallet.addresses.length == 1 && wallet.address == selectedAddress)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, token?.precision)
-    console.log(wallet)
     return (
         <div {...props} className="rounded-md outline-none text-primary-tex">
             <div

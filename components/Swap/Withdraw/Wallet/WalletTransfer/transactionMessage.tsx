@@ -4,19 +4,22 @@ import resolveError from "./resolveError"
 import { ActionData } from "./sharedTypes"
 import { BaseError } from 'viem'
 import { datadogRum } from '@datadog/browser-rum';
+import { addressFormat } from "../../../../../lib/address/formatter"
 
 type TransactionMessageProps = {
     wait?: ActionData,
     transaction: ActionData,
-    applyingTransaction: boolean
+    applyingTransaction: boolean,
+    activeAddress: string | undefined
+    selectedSourceAddress: string | undefined
 }
 
 const TransactionMessage: FC<TransactionMessageProps> = ({
-    wait, transaction, applyingTransaction
+    wait, transaction, applyingTransaction, activeAddress, selectedSourceAddress
 }) => {
     const transactionResolvedError = resolveError(transaction?.error as BaseError)
     const hasError = transaction?.isError || wait?.isError
-    
+
     if (wait?.isPending || applyingTransaction) {
         return <TransactionInProgressMessage />
     }
@@ -28,7 +31,11 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     }
     else if (transaction?.isError && transactionResolvedError === "transaction_rejected") {
         return <TransactionRejectedMessage />
-    } else if (hasError) {
+    }
+    else if (transaction.isError && activeAddress && selectedSourceAddress && (activeAddress?.toLowerCase() !== selectedSourceAddress?.toLowerCase())) {
+        return <UnknowndMessage />
+    }
+    else if (hasError) {
         const unexpectedError = transaction?.error?.['data']?.message || transaction?.error
             || wait?.error
 
@@ -75,6 +82,13 @@ const TransactionRejectedMessage: FC = () => {
         status="error"
         header='Transaction rejected'
         details={`You've rejected the transaction in your wallet. Click “Try again” to open the prompt again.`} />
+}
+
+const UnknowndMessage: FC = () => {
+    return <WalletMessage
+        status="error"
+        header='Unknown Message'
+        details={`Lorem ipsum`} />
 }
 
 const UexpectedErrorMessage: FC<{ message: string }> = ({ message }) => {

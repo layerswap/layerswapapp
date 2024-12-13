@@ -3,7 +3,7 @@ import {
     useAccount,
     useSendTransaction
 } from "wagmi";
-import { createPublicClient, http, parseEther } from 'viem'
+import { parseEther } from 'viem'
 import SubmitButton from "../../../../buttons/submitButton";
 import { BackendTransactionStatus } from "../../../../../lib/layerSwapApiClient";
 import WalletIcon from "../../../../icons/WalletIcon";
@@ -29,18 +29,13 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
 
     const { selectedSourceAccount } = useSwapDataState()
 
-    const { chain } = useAccount();
+    const { address } = useAccount();
     const { setSwapTransaction } = useSwapTransactionStore();
     const { depositActionsResponse } = useSwapDataState()
 
     const callData = depositActionsResponse?.find(da => true)?.call_data as `0x${string}` | undefined
 
     const transaction = useSendTransaction()
-
-    const publicClient = createPublicClient({
-        chain: chain,
-        transport: http()
-    })
 
     useEffect(() => {
         (async () => {
@@ -111,6 +106,8 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
             <TransactionMessage
                 transaction={transaction}
                 applyingTransaction={applyingTransaction}
+                activeAddress={address}
+                selectedSourceAddress={selectedSourceAccount?.address}
             />
         }
         {

@@ -100,10 +100,11 @@ export default function useFuel(): WalletProvider {
             if (!fuelConnector) throw new Error('Connector not found')
 
             await fuelConnector.disconnect()
-            removeWallet(name, connectorName)
         }
         catch (e) {
             console.log(e)
+        } finally {
+            removeWallet(name, connectorName)
         }
     }
 
