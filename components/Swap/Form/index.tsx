@@ -267,9 +267,6 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                 variants={textMotion}
                 className="flex items-center bg-secondary-600 rounded-r-lg">
                 <div className="text-primary-text flex px-3 p-2 items-center space-x-2">
-                    <span className="flex items-center">
-                        {swap && <StatusIcon swap={swap} short={true} />}
-                    </span>
                     <div className="flex-shrink-0 h-5 w-5 relative">
                         {source_exchange ? <Image
                             src={source_exchange.logo}
