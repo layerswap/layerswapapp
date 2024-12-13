@@ -12,7 +12,7 @@ import WalletIcon from "../icons/WalletIcon";
 import SubmitButton from "../buttons/submitButton";
 import { useConnectModal } from "../WalletModal";
 import WalletsList from "../Wallet/WalletsList";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 
 const Component: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -183,7 +183,6 @@ export const FormSourceWalletButton: FC = () => {
                 mountWalletPortal && values.from?.deposit_methods.includes('deposit_address') && values.depositMethod !== 'deposit_address' &&
                 <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
                     <ContinueWithoutWallet onClick={handleSelectWallet} />
-
                 </WalletFooterPortal>
             }
         </>
@@ -250,16 +249,16 @@ const ContinueWithoutWallet: FC<{ onClick: () => void }> = ({ onClick }) => {
             <button onClick={onClick} className="underline hover:no-underline text-base text-center text-secondary-text cursor-pointer ">
                 Continue without a wallet
             </button>
-            <Tooltip delayDuration={100}>
-                <TooltipTrigger>
+            <Popover>
+                <PopoverTrigger>
                     <div className="text-xs text-secondary-text hover:text-primary-text rounded-full transition-colors duration-200 ">
                         <CircleHelp className="h-5 w-5" />
                     </div>
-                </TooltipTrigger>
-                <TooltipContent className="max-w-[300px]">
+                </PopoverTrigger>
+                <PopoverContent side="top" className="max-w-[250px] text-xs">
                     <p>Get a deposit address, send your crypto from any external wallet or exchange, and we&apos;ll handle the rest.</p>
-                </TooltipContent>
-            </Tooltip>
+                </PopoverContent>
+            </Popover>
         </div>
     )
 }
