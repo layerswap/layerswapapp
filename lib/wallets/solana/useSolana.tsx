@@ -36,7 +36,7 @@ export default function useSolana({ network }: { network: Network | undefined })
         const wallet: Wallet | undefined = (connectedAddress && connectedAdapterName) ? {
             id: connectedAdapterName,
             address: connectedAddress,
-            displayName: `${connectedAdapterName} - ${network?.name.toLowerCase().startsWith('eclipse') ? 'Eclipse' : 'Solana'}`,
+            displayName: `${connectedWallet?.adapter.name} - 'Solana'}`,
             providerName: name,
             icon: resolveWalletConnectorIcon({ connector: String(connectedAdapterName), address: connectedAddress, iconUrl: connectedWallet?.adapter.icon }),
             disconnect,
@@ -46,7 +46,7 @@ export default function useSolana({ network }: { network: Network | undefined })
             withdrawalSupportedNetworks: commonSupportedNetworks,
             asSourceSupportedNetworks: commonSupportedNetworks,
             autofillSupportedNetworks: commonSupportedNetworks,
-            networkIcon: networks.find(n => network ? n.name === network.name : solanaNames.some(name => name === n.name))?.logo
+            networkIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo
         } : undefined
 
         if (wallet) {
@@ -77,7 +77,7 @@ export default function useSolana({ network }: { network: Network | undefined })
         const wallet: Wallet | undefined = connectedAddress && connectedWallet ? {
             id: connectedWallet.adapter.name,
             address: connectedAddress,
-            displayName: `${connectedWallet?.adapter.name} - ${network?.name.toLowerCase().startsWith('eclipse') ? 'Eclipse' : 'Solana'}`,
+            displayName: `${connectedWallet?.adapter.name} - 'Solana'}`,
             providerName: name,
             icon: resolveWalletConnectorIcon({ connector: String(connectedWallet?.adapter.name), address: connectedAddress, iconUrl: connectedWallet?.adapter.icon }),
             disconnect,
@@ -87,7 +87,7 @@ export default function useSolana({ network }: { network: Network | undefined })
             withdrawalSupportedNetworks: commonSupportedNetworks,
             asSourceSupportedNetworks: commonSupportedNetworks,
             autofillSupportedNetworks: commonSupportedNetworks,
-            networkIcon: networks.find(n => network ? n.name === network.name : solanaNames.some(name => name === n.name))?.logo
+            networkIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo
         } : undefined
 
         return wallet
