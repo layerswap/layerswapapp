@@ -60,7 +60,6 @@ export default function useTON(): WalletProvider {
 
                     // Listen for the status change
                     tonConnectUI.onStatusChange((status) => {
-                        debugger
                         if (status) resolve(status); // Resolve the promise with the status
                     });
                 } catch (error) {

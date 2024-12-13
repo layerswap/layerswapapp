@@ -1,9 +1,7 @@
 
 import { ChevronDown, Plus, RefreshCw } from "lucide-react";
 import { Network } from "../../../../../Models/Network";
-import AddressWithIcon from "../AddressWithIcon";
 import { FC, useState } from "react";
-import { AddressGroup } from "..";
 import ResizablePanel from "../../../../ResizablePanel";
 import { Wallet, WalletProvider } from "../../../../../Models/WalletProvider";
 import WalletIcon from "../../../../icons/WalletIcon";
@@ -33,7 +31,6 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
 
     //TODO: should check for real compatibility, in the future network can have wallets from multiple providers
     const notCompatibleWallets = wallets.filter(wallet => wallet.providerName !== provider.name || wallet.isNotAvailable)
-
     return <div className="space-y-2">
         {
             connectedWallets && connectedWallets?.length > 0 &&
@@ -109,33 +106,32 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                         </button>
                         {showIncompatibleWallets &&
                             notCompatibleWallets.map((wallet, index) => (
-                                <span key={`${index}${wallet.address}`}>
-                                    <div className="group/addressItem w-full rounded-md hover:!bg-secondary-700 transition duration-200 opacity-50">
-                                        <WalletItem
-                                            key={`${index}${wallet.providerName}`}
-                                            wallet={wallet}
-                                            selectable={false}
-                                            network={destination}
-                                            selectedAddress={undefined}
-                                        />
-                                    </div>
-                                </span>
+                                <div key={`${index}${wallet.address}`} className="group/addressItem w-full rounded-md hover:!bg-secondary-700 transition duration-200 opacity-50 cursor-not-allowed">
+                                    <WalletItem
+                                        wallet={wallet}
+                                        selectable={true}
+                                        network={destination}
+                                        selectedAddress={undefined}
+                                    />
+                                </div>
                             ))}
                     </div>
                 </ResizablePanel>
             ) : (
                 <div
-                    className="relative group/notCompatible w-full px-3 py-3 rounded-md hover:!bg-secondary-700 transition duration-200 opacity-50"
+                    className="relative group/notCompatible w-full rounded-md transition duration-200 opacity-50 cursor-not-allowed"
                 >
-                    <div className="absolute right-2 top-1/2 -translate-y-1/2 w-max px-2 py-0.5 text-secondary-text font-medium text-sm rounded-md transition-opacity duration-200 bg-secondary-500 opacity-0 group-hover/notCompatible:opacity-100 max-w-[150px] break-words sm:max-w-none sm:whitespace-nowrap">
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 w-max px-2 py-0.5 text-secondary-text font-medium text-sm rounded-md transition-opacity duration-200 bg-secondary-500 group-hover/notCompatible:opacity-100 opacity-0 max-w-[150px] break-words sm:max-w-none sm:whitespace-nowrap z-20">
                         Not compatible with {destination.display_name}
                     </div>
-                    <WalletItem
-                        wallet={notCompatibleWallets[0]}
-                        selectable={false}
-                        network={destination}
-                        selectedAddress={undefined}
-                    />
+                    <div className="w-full z-10">
+                        <WalletItem
+                            wallet={notCompatibleWallets[0]}
+                            selectable={true}
+                            network={destination}
+                            selectedAddress={undefined}
+                        />
+                    </div>
                 </div>
             ))
         }
