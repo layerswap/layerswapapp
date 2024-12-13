@@ -26,7 +26,7 @@ function CampaignDetails() {
     const { provider } = useWallet(network, 'autofil')
 
     const handleConnect = useCallback(async () => {
-        await provider?.connectWallet({ chain: network?.chain_id })
+        await provider?.connectWallet()
     }, [provider, network])
 
     const wallet = provider?.activeWallet
