@@ -37,6 +37,7 @@ import { AddressGroup } from "../../Input/Address/AddressPicker";
 import { useAsyncModal } from "../../../context/asyncModal";
 import { ValidationProvider } from "../../../context/validationErrorContext";
 import { TrackEvent } from "../../../pages/_document";
+import useBalance from "../../../hooks/useBalance";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -65,6 +66,7 @@ export default function Form() {
     const { getSourceProvider } = useWallet()
     const addresses = useAddressesStore(state => state.addresses)
     const { getConfirmation } = useAsyncModal();
+    const { fetchBalance } = useBalance()
 
     const settings = useSettingsState();
     const query = useQueryState()
@@ -169,6 +171,9 @@ export default function Form() {
         pollFee(!value)
         setShowSwapModal(value)
         value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
+        if (value === false && swap?.source_network) {
+            fetchBalance(swap?.source_network, swap?.source_token)
+        }
     }, [router, swap])
 
 
@@ -278,9 +283,6 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                 variants={textMotion}
                 className="flex items-center bg-secondary-600 rounded-r-lg">
                 <div className="text-primary-text flex px-3 p-2 items-center space-x-2">
-                    <span className="flex items-center">
-                        {swap && <StatusIcon swap={swap} short={true} />}
-                    </span>
                     <div className="flex-shrink-0 h-5 w-5 relative">
                         {source_exchange ? <Image
                             src={source_exchange.logo}

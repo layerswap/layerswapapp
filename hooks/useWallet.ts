@@ -7,13 +7,14 @@ import useStarknet from "../lib/wallets/starknet/useStarknet"
 import useImtblX from "../lib/wallets/imtblX/useImtblX"
 import useSolana from "../lib/wallets/solana/useSolana"
 import { Network, RouteNetwork } from "../Models/Network"
+import useFuel from "../lib/wallets/fuel/useFuel"
 
 export type WalletProvider = {
     connectWallet: (props?: { chain?: string | number | undefined | null, destination?: RouteNetwork }) => Promise<void> | undefined | void,
     disconnectWallet: () => Promise<void> | undefined | void,
     reconnectWallet: (props?: { chain?: string | number | undefined | null }) => Promise<void> | undefined | void,
     getConnectedWallet: (network?: Network) => Wallet | undefined,
-    withdrawalSupportedNetworks: string[],
+    withdrawalSupportedNetworks?: string[],
     autofillSupportedNetworks?: string[],
     asSourceSupportedNetworks?: string[],
     name: string,
@@ -26,7 +27,8 @@ export default function useWallet() {
         useEVM(),
         useStarknet(),
         useImtblX(),
-        useSolana()
+        useSolana(),
+        useFuel()
     ]
 
     async function connectWallet({ providerName, chain }: { providerName: string, chain?: string | number | null }) {
@@ -77,7 +79,7 @@ export default function useWallet() {
     }
 
     const getWithdrawalProvider = (network: Network) => {
-        const provider = WalletProviders.find(provider => provider.withdrawalSupportedNetworks.includes(network.name))
+        const provider = WalletProviders.find(provider => provider?.withdrawalSupportedNetworks?.includes(network.name))
         return provider
     }
 

@@ -10,13 +10,18 @@ import {
     NetworkBalancesProps
 } from "../../../Models/Balance";
 import { useSettingsState } from "../../../context/settings";
+import { datadogRum } from "@datadog/browser-rum";
 
 export default function useSolanaBalance(): BalanceProvider {
 
     const { networks } = useSettingsState()
 
     const supportedNetworks = [
-        KnownInternalNames.Networks.SolanaMainnet
+        KnownInternalNames.Networks.SolanaMainnet,
+        KnownInternalNames.Networks.SolanaDevnet,
+        KnownInternalNames.Networks.SolanaTestnet,
+        KnownInternalNames.Networks.EclipseTestnet,
+        KnownInternalNames.Networks.EclipseMainnet
     ]
 
     const getNetworkBalances = async ({ networkName, address }: NetworkBalancesProps) => {
@@ -39,8 +44,20 @@ export default function useSolanaBalance(): BalanceProvider {
         );
 
         async function getTokenBalanceWeb3(connection: SolanaConnection, tokenAccount) {
-            const info = await connection.getTokenAccountBalance(tokenAccount);
-            return info?.value?.uiAmount;
+            try {
+                const info = await connection.getTokenAccountBalance(tokenAccount);
+                return info?.value?.uiAmount;
+            } catch (error) {
+                if (error.message && error.message.includes("could not find account")) {
+                    return 0;
+                } else {
+                    const solanaAccountError = new Error("Solana account error: " + error.message);
+                    solanaAccountError.name = "SolanaAccountError";
+                    solanaAccountError.cause = solanaAccountError;
+                    datadogRum.addError(solanaAccountError);
+                    return 0;
+                }
+            }
         }
 
         for (let i = 0; i < network.tokens.length; i++) {
@@ -58,7 +75,9 @@ export default function useSolanaBalance(): BalanceProvider {
                     if (!associatedTokenFrom) return
                     result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
                 } else {
-                    result = await connection.getBalance(walletPublicKey)
+                    const balance = await connection.getBalance(walletPublicKey)
+
+                    result = formatAmount(balance, asset?.decimals)
                 }
 
                 if (result != null && !isNaN(result)) {
@@ -104,8 +123,20 @@ export default function useSolanaBalance(): BalanceProvider {
         );
 
         async function getTokenBalanceWeb3(connection: SolanaConnection, tokenAccount) {
-            const info = await connection.getTokenAccountBalance(tokenAccount);
-            return info?.value?.uiAmount;
+            try {
+                const info = await connection.getTokenAccountBalance(tokenAccount);
+                return info?.value?.uiAmount;
+            } catch (error) {
+                if (error.message && error.message.includes("could not find account")) {
+                    return 0;
+                } else {
+                    const solanaAccountError = new Error("Solana account error: " + error.message);
+                    solanaAccountError.name = "SolanaAccountError";
+                    solanaAccountError.cause = solanaAccountError;
+                    datadogRum.addError(solanaAccountError);
+                    return 0;
+                }
+            }
         }
 
         let result: number | null = null
@@ -119,7 +150,9 @@ export default function useSolanaBalance(): BalanceProvider {
             if (!associatedTokenFrom) return
             result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
         } else {
-            result = await connection.getBalance(walletPublicKey)
+            const balance = await connection.getBalance(walletPublicKey)
+
+            result = formatAmount(balance, token?.decimals)
         }
 
         if (result != null && !isNaN(result)) {
@@ -134,7 +167,7 @@ export default function useSolanaBalance(): BalanceProvider {
         }
     }
 
-    const getGas = async ({ network, token, address }: GasProps) => {
+    const getGas = async ({ network, token, address, recipientAddress = '2ZUoHEPcN7bsSXw6YTj85CMrU8xNtcYNGiSMXPLomaa2' }: GasProps) => {
         if (!address)
             return
         const { PublicKey, Connection } = await import("@solana/web3.js");
@@ -153,7 +186,7 @@ export default function useSolanaBalance(): BalanceProvider {
         try {
             const transactionBuilder = ((await import("../../wallets/solana/transactionBuilder")).default);
 
-            const transaction = await transactionBuilder(network, token, walletPublicKey)
+            const transaction = await transactionBuilder(network, token, walletPublicKey, recipientAddress)
 
             if (!transaction || !network.token) return
 

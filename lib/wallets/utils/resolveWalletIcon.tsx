@@ -1,13 +1,15 @@
 import AddressIcon from "../../../components/AddressIcon";
 import SVGWithImg from "../../../components/icons/SvgWithImg";
 import KnownEVMConnectors from "../evm/KnownEVMConnectors";
+import KnownFuelConnectors from "../fuel/KnownFuelConnectors";
 import KnownSolanaConnectors from "../solana/KnownSolanaConnectors";
 import KnownStarknetConnectors from "../starknet/KnownStarknetConnectors";
 
 const connectors = [
     ...KnownEVMConnectors,
     ...KnownSolanaConnectors,
-    ...KnownStarknetConnectors
+    ...KnownStarknetConnectors,
+    ...KnownFuelConnectors
 ]
 
 const resolveWalletConnectorIcon = ({ connector, address, iconUrl }: { connector?: string, address: string, iconUrl?: string }) => {
@@ -24,7 +26,7 @@ const AddressIconWrapper = (address: string) => (props) => {
 }
 
 const SVGIconWrapper = (iconUrl: string) => (props) => {
-    return <SVGWithImg {...props} imageUrl={iconUrl} />
+    return <SVGWithImg {...props} imageurl={iconUrl} />
 }
 
 export default resolveWalletConnectorIcon

@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { Network } from "../Models/Network";
+import { Network } from "../../Models/Network";
 import { useRouter } from "next/router";
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY;

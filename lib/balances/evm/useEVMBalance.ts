@@ -137,7 +137,9 @@ export default function useEVMBalance(): BalanceProvider {
 
             const gas = await gasProvider.resolveGas()
 
-            return [gas!]
+            if (!gas) return
+
+            return [gas]
 
         }
         catch (e) {

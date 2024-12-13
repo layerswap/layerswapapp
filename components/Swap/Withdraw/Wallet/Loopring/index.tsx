@@ -9,10 +9,11 @@ import SignatureIcon from '../../../../icons/SignatureIcon';
 import { ActivationTokenPicker } from './ActivationTokentPicker';
 import { useActivationData, useLoopringAccount, useLoopringTokens } from './hooks';
 import { LoopringAPI } from '../../../../../lib/loopring/LoopringAPI';
-import { UnlockedAccount } from '../../../../../lib/loopring/defs';
+import { ChainId, UnlockedAccount } from '../../../../../lib/loopring/defs';
 import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
 import { WithdrawPageProps } from '../WalletTransferContent';
 import { useConfig } from 'wagmi'
+import AppSettings from '../../../../../lib/AppSettings';
 
 const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId, callData, depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);
@@ -129,11 +130,11 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
     if (!isConnected) {
         return <ConnectWalletButton />
     }
-
-    if (network && chain?.id !== Number(network.chain_id)) {
+    let walletChainId = AppSettings.ApiVersion === "sandbox" ? ChainId.SEPOLIA : ChainId.MAINNET
+    if (network && chain?.id !== Number(walletChainId)) {
         return (
             <ChangeNetworkButton
-                chainId={Number(network?.chain_id)}
+                chainId={Number(walletChainId)}
                 network={network?.display_name}
             />
         )

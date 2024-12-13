@@ -45,11 +45,11 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
             validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
         }
         else if (fromCurrency?.status === 'inactive' || (currencyGroup?.status === 'inactive' && fromExchange)) {
-            validationMessage = `Sorry, transfers from ${fromDisplayName} ${fromCurrency?.symbol || currencyGroup?.symbol} are not available at the moment. Please try later.`;
+            validationMessage = `Sorry, transfers of ${fromCurrency?.symbol || currencyGroup?.symbol} from ${fromDisplayName} are not available at the moment. Please try later.`;
             validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info stroke='#f8974b' className='w-4 h-4 ' /> };
         }
         else if (!toCurrency) {
-            validationMessage = `Sorry, transfers to ${toDisplayName || query.to} ${query?.toAsset} are not available at the moment. Please try later.`;
+            validationMessage = `Sorry, transfers of ${query?.toAsset} to ${toDisplayName || query.to} are not available at the moment. Please try later.`;
             validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info stroke='#f8974b' className='w-4 h-4 ' /> };
         }
     }
@@ -59,11 +59,11 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
             validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
         }
         else if (toCurrency?.status === 'inactive' || (currencyGroup?.status === 'inactive' && toExchange)) {
-            validationMessage = `Sorry, transfers to ${toDisplayName} ${toCurrency?.symbol || currencyGroup?.symbol} are not available at the moment. Please try later.`;
+            validationMessage = `Sorry, transfers of ${toCurrency?.symbol || currencyGroup?.symbol} to ${toDisplayName} are not available at the moment. Please try later.`;
             validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info stroke='#f8974b' className='w-4 h-4 ' /> };
         }
         else if (!fromCurrency) {
-            validationMessage = `Sorry, transfers from ${fromDisplayName || query.from} ${query?.fromAsset} are not available at the moment. Please try later.`;
+            validationMessage = `Sorry, transfers of ${query?.fromAsset} from ${fromDisplayName || query.from} are not available at the moment. Please try later.`;
             validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info stroke='#f8974b' className='w-4 h-4 ' /> };
         }
     }
@@ -74,13 +74,11 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         const unfilteredSourceCurrency = unfilteredSourceRoute?.tokens?.find(t => t.symbol === fromCurrency?.symbol)
 
         if (unfilteredDestinationCurrency?.status === 'inactive') {
-            const unavailableDirection = `${toDisplayName} ${toCurrency?.symbol}`;
-            validationMessage = `Sorry, transfers to ${unavailableDirection} are not available at the moment. Please try later.`;
+            validationMessage = `Sorry, transfers of ${toCurrency?.symbol} to ${toDisplayName} are not available at the moment. Please try later.`;
             validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info stroke='#f8974b' className='w-4 h-4 ' /> };
         }
         else if (unfilteredSourceCurrency?.status === 'inactive') {
-            const unavailableDirection = `${fromDisplayName} ${fromCurrency?.symbol}`;
-            validationMessage = `Sorry, transfers from ${unavailableDirection} are not available at the moment. Please try later.`;
+            validationMessage = `Sorry, transfers of ${fromCurrency?.symbol} from ${fromDisplayName} are not available at the moment. Please try later.`;
             validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info stroke='#f8974b' className='w-4 h-4 ' /> };
         }
         else {
