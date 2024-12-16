@@ -7,6 +7,7 @@ import useSWR from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
 import { CommitFromApi } from '../lib/layerSwapApiClient';
 import { toHex } from 'viem';
+import EVM_PHTLC from '../lib/abis/atomic/EVM_PHTLC.json';
 
 const AtomicStateContext = createContext<DataContextType | null>(null);
 
@@ -65,6 +66,38 @@ export function AtomicProvider({ children }) {
     const parsedCommitId = commitId ? toHex(BigInt(commitId)) : undefined
     const { data } = useSWR<ApiResponse<CommitFromApi>>(parsedCommitId ? `${url}/api/swap/${parsedCommitId}` : null, fetcher, { refreshInterval: 5000 })
     const commitFromApi = data?.data
+
+    // useEffect(() => {
+    //     (async () => {
+    //         const heliosWorker = new Worker('/workers/heliosWorker.js', {
+    //             type: 'module',
+    //         })
+
+    //         const workerMessage = {
+    //             type: 'init',
+    //             payload: {
+    //                 data: {
+    //                     commitConfigs: {
+    //                         commitId: '0xde14b5f53d16344b49b809122e828a1ab266a067c6f17c4ba797fe697fc43022',
+    //                         abi: EVM_PHTLC,
+    //                         contractAddress: '0xd40Fd3870067292E3AE1b26445419bd9CF0C7595',
+    //                     },
+    //                 },
+    //             },
+    //         }
+    //         heliosWorker.postMessage(workerMessage)
+
+    //         heliosWorker.onmessage = (event) => {
+    //             const data = event.data.data
+    //             debugger
+    //             console.log('Worker event:', event)
+    //         }
+    //         heliosWorker.onerror = (error) => {
+    //             console.error('Worker error:', error)
+    //         }
+    //     })()
+
+    // }, [])
 
     useEffect(() => {
         let timer: NodeJS.Timeout;

@@ -10,7 +10,8 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "analyze": "cross-env ANALYZE=true next build",
-    "lint": "next lint"
+    "lint": "next lint",
+    "build:workers": "tsc -p tsconfig.worker.json"
   },
   "dependencies": {
     "@badrap/bar-of-progress": "^0.2.2",

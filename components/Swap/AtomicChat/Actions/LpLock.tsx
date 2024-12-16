@@ -1,35 +1,72 @@
 import { FC, useEffect } from "react";
-import { NetworkWithTokens, Token } from "../../../../Models/Network";
+import { Network, NetworkWithTokens, Token } from "../../../../Models/Network";
 import Image from 'next/image';
 import { ExtendedAddress } from "../../../Input/Address/AddressPicker/AddressWithIcon";
 import { addressFormat } from "../../../../lib/address/formatter";
 import { truncateDecimals } from "../../../utils/RoundDecimals";
 import { ethers } from "ethers";
-import useWallet from "../../../../hooks/useWallet";
+import useWallet, { WalletProvider } from "../../../../hooks/useWallet";
 import { useAtomicState } from "../../../../context/atomicContext";
 import ActionStatus from "./ActionStatus";
 import shortenAddress from "../../../utils/ShortenAddress";
 import { ExternalLink } from "lucide-react";
 import { Commit } from "../../../../Models/PHTLC";
+import EVM_PHTLC from "../../../../lib/abis/atomic/EVM_PHTLC.json";
+import EVMERC20_PHTLC from "../../../../lib/abis/atomic/EVMERC20_PHTLC.json";
+import formatAmount from "../../../../lib/formatAmount";
 
 export const LpLockingAssets: FC = () => {
-    const { destination_network, commitId, setDestinationDetails, destination_asset, source_network } = useAtomicState()
+    const { destination_network, commitId, setDestinationDetails, destination_asset } = useAtomicState()
     const { getWithdrawalProvider } = useWallet()
 
     const destination_provider = destination_network && getWithdrawalProvider(destination_network)
 
     const atomicContract = (destination_asset?.contract ? destination_network?.metadata.htlc_token_contract : destination_network?.metadata.htlc_native_contract) as `0x${string}`
+    const supportsHelios = destination_network?.chain_id && destination_network?.chain_id == '1'
 
-    useEffect(() => {
-        let lockHandler: any = undefined
-        if (destination_provider && destination_network && commitId) {
+    const getDetails = async ({ provider, network, commitId, asset }: { provider: WalletProvider, network: Network, commitId: string, asset: Token }) => {
+        if (supportsHelios) {
+            const heliosWorker = new Worker('/workers/heliosWorker.js', {
+                type: 'module',
+            })
+
+            const workerMessage = {
+                type: 'init',
+                payload: {
+                    data: {
+                        commitConfigs: {
+                            commitId: commitId,
+                            abi: asset?.contract ? EVMERC20_PHTLC : EVM_PHTLC,
+                            contractAddress: atomicContract,
+                        },
+                    },
+                },
+            }
+            heliosWorker.postMessage(workerMessage)
+
+            heliosWorker.onmessage = (event) => {
+                const result = event.data.data
+                const parsedResult = {
+                    ...result,
+                    secret: Number(result.secret) !== 1 ? result.secret : null,
+                    amount: formatAmount(Number(result.amount), asset?.decimals),
+                    timelock: Number(result.timelock)
+                }
+                setDestinationDetails(parsedResult)
+                console.log('Worker event:', event)
+            }
+            heliosWorker.onerror = (error) => {
+                console.error('Worker error:', error)
+            }
+        } else {
+            let lockHandler: any = undefined
             lockHandler = setInterval(async () => {
-                if (!destination_network.chain_id)
+                if (!network.chain_id)
                     throw Error("No chain id")
 
-                const destiantionDetails = await destination_provider.getDetails({
-                    type: destination_asset?.contract ? 'erc20' : 'native',
-                    chainId: destination_network.chain_id,
+                const destiantionDetails = await provider.getDetails({
+                    type: asset?.contract ? 'erc20' : 'native',
+                    chainId: network.chain_id,
                     id: commitId,
                     contractAddress: atomicContract
                 })
@@ -40,10 +77,20 @@ export const LpLockingAssets: FC = () => {
                 }
 
             }, 5000)
+
+            return () => {
+                lockHandler && clearInterval(lockHandler);
+            };
         }
-        return () => {
-            lockHandler && clearInterval(lockHandler);
-        };
+
+    }
+
+    useEffect(() => {
+        (async () => {
+            if (destination_provider && destination_network && commitId && destination_asset) {
+                await getDetails({ provider: destination_provider, network: destination_network, commitId, asset: destination_asset })
+            }
+        })()
     }, [destination_provider, destination_network, commitId])
 
     return <ActionStatus
