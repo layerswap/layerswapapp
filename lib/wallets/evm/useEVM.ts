@@ -182,41 +182,17 @@ export default function useEVM({ network }: Props): WalletProvider {
             throw new Error("Account not found")
     }
 
-    {/* //TODO: refactor ordering */ }
-    const availableWalletsForConnect = allConnectors.filter(w => !isNotAvailable(w, network))
-        .map(w => {
-            /// When network is not immutable and wallet is immutable passport show last
-            if (!network?.name.toLowerCase().includes("immutable") && w.id === "com.immutable.passport") {
-                return {
-                    ...w,
-                    order: resolveWalletConnectorIndex(w.id),
-                    type: "other"
-                }
-            }
-            /// When any injected wallet is present show browser injected last
 
-            if (w.id === "injected") {
-                /// We filter out immutable passport as it also has injected type
-                if (isMobile() && explicitInjectedproviderDetected() && allConnectors.filter(c => w.id !== "com.immutable.passport" && c.type === "injected").length === 1)
-                    return {
-                        ...w,
-                        order: resolveWalletConnectorIndex(w.id),
-                        type: "injected"
-                    }
-                else {
-                    return {
-                        ...w,
-                        order: resolveWalletConnectorIndex(w.id),
-                        type: "other"
-                    }
-                }
-            }
-            return {
-                ...w,
-                order: resolveWalletConnectorIndex(w.id),
-                type: w.type
-            }
-        })
+    const activeBrowserWallet = explicitInjectedproviderDetected() && allConnectors.filter(c => c.id !== "com.immutable.passport" && c.type === "injected").length === 1
+    const filterConnectors = wallet => !isNotAvailable(wallet, network) && ((wallet.id === "injected" ? activeBrowserWallet : true))
+
+    {/* //TODO: refactor ordering */ }
+    const availableWalletsForConnect = allConnectors.filter(w => filterConnectors)
+        .map(w => ({
+            ...w,
+            order: resolveWalletConnectorIndex(w.id),
+            type: (!network?.name.toLowerCase().includes("immutable") && w.id === "com.immutable.passport") ? "other" : w.type
+        }))
 
     const provider = {
         connectWallet,
