@@ -6,7 +6,7 @@
       "noEmit": false
     },
     "include": [
-      "workers/*.ts",
-      "workers/*.js"
+      "workers/**/*.ts",
+      "workers/**/*.js"
     ]
   }
