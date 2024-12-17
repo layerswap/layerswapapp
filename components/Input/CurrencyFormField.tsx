@@ -18,6 +18,7 @@ import { ONE_WEEK } from "./NetworkFormField";
 import RouteIcon from "./RouteIcon";
 import { useSwapDataState } from "../../context/swap";
 import useSWRBalance from "../../lib/balances/useSWRBalance";
+import { useSettingsState } from "../../context/settings";
 
 const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -25,24 +26,24 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
 
-
-    const { to, fromCurrency, toCurrency, from, currencyGroup, destination_address } = values
+    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, destination_address, currencyGroup } = values
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
     const { selectedSourceAccount } = useSwapDataState()
-
+    const { destinationRoutes, sourceRoutes } = useSettingsState();
 
     const address = direction === 'from' ? (selectedSourceAccount?.address) : (destination_address)
 
     const { balance } = useSWRBalance(address, direction === 'from' ? from : to)
 
-    const networkRoutesURL = resolveNetworkRoutesURL(direction, values)
+    const shouldFilter = direction === 'from' ? ((to && toCurrency) || (toExchange && currencyGroup)) : ((from && fromCurrency) || (fromExchange && currencyGroup))
+    const networkRoutesURL = shouldFilter ? resolveNetworkRoutesURL(direction, values) : null
     const apiClient = new LayerSwapApiClient()
     const {
         data: routes,
         isLoading,
         error
-    } = useSWR<ApiResponse<RouteNetwork[]>>(`${networkRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
+    } = useSWR<ApiResponse<RouteNetwork[]>>(networkRoutesURL, apiClient.fetcher, { keepPreviousData: true, fallbackData: { data: direction === 'from' ? sourceRoutes : destinationRoutes }, dedupingInterval: 10000 })
 
     const currencies = direction === 'from' ? routes?.data?.find(r => r.name === from?.name)?.tokens : routes?.data?.find(r => r.name === to?.name)?.tokens;
     const currencyMenuItems = GenerateCurrencyMenuItems(
