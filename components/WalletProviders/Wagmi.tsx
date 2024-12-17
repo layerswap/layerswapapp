@@ -10,13 +10,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createConfig } from 'wagmi';
 import { Chain, http } from 'viem';
 import { WalletModalProvider } from '../WalletModal';
-import { my_argent } from '../../lib/wallets/connectors/argent';
-import { my_rainbow } from '../../lib/wallets/connectors/rainbow';
+import { argent } from '../../lib/wallets/connectors/argent';
+import { rainbow } from '../../lib/wallets/connectors/rainbow';
 import { coinbaseWallet, metaMask, walletConnect } from 'wagmi/connectors'
 import { hasInjectedProvider, explicitInjectedproviderDetected } from '../../lib/wallets/connectors/getInjectedConnector';
-import { my_bitget } from '../../lib/wallets/connectors/bitget';
+import { bitget } from '../../lib/wallets/connectors/bitget';
 import { isMobile } from '../../lib/isMobile';
 import FuelProviderWrapper from "./FuelProvider";
+import { browserInjected } from "../../lib/wallets/connectors/browserInjected";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -47,16 +48,15 @@ function WagmiComponent({ children }: Props) {
         flag: 'isBitKeep',
     });
 
-    const enableInjectedConnector = isMobile() && explicitInjectedproviderDetected()
     const config = createConfig({
         connectors: [
             coinbaseWallet(),
             walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' }),
-            my_argent({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'argent' }),
-            ...(enableInjectedConnector ? [injected()] : []),
+            argent({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'argent' }),
             ...(!isMetaMaskInjected ? [metaMask()] : []),
-            ...(!isRainbowInjected ? [my_rainbow({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'rainbow' })] : []),
-            ...(!isBitKeepInjected ? [my_bitget({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'bitget' })] : [])
+            ...(!isRainbowInjected ? [rainbow({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'rainbow' })] : []),
+            ...(!isBitKeepInjected ? [bitget({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'bitget' })] : []),
+            browserInjected()
         ],
         chains: settingsChains as [Chain, ...Chain[]],
         transports: transports,

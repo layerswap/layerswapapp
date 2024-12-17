@@ -12,6 +12,7 @@ import convertSvgComponentToBase64 from "../../../components/utils/convertSvgCom
 import { LSConnector } from "../connectors/EthereumProvider"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useConnectModal } from "../../../components/WalletModal"
+import { explicitInjectedproviderDetected } from "../connectors/getInjectedConnector"
 
 type Props = {
     network: Network | undefined,
@@ -183,11 +184,39 @@ export default function useEVM({ network }: Props): WalletProvider {
 
     {/* //TODO: refactor ordering */ }
     const availableWalletsForConnect = allConnectors.filter(w => !isNotAvailable(w, network))
-        .map(w => ({
-            ...w,
-            order: resolveWalletConnectorIndex(w.id),
-            type: (!network?.name.toLowerCase().includes("immutable") && w.id === "com.immutable.passport") ? "other" : w.type
-        }))
+        .map(w => {
+            /// When network is not immutable and wallet is immutable passport show last
+            if (!network?.name.toLowerCase().includes("immutable") && w.id === "com.immutable.passport") {
+                return {
+                    ...w,
+                    order: resolveWalletConnectorIndex(w.id),
+                    type: "other"
+                }
+            }
+            /// When any injected wallet is present show browser injected last
+
+            if (w.id === "injected") {
+                /// We filter out immutable passport as it also has injected type
+                if (isMobile() && explicitInjectedproviderDetected() && allConnectors.filter(c => w.id !== "com.immutable.passport" && c.type === "injected").length === 1)
+                    return {
+                        ...w,
+                        order: 0,
+                        type: "injected"
+                    }
+                else {
+                    return {
+                        ...w,
+                        order: 100,
+                        type: "other"
+                    }
+                }
+            }
+            return {
+                ...w,
+                order: resolveWalletConnectorIndex(w.id),
+                type: w.type
+            }
+        })
 
     const provider = {
         connectWallet,
