@@ -5,7 +5,7 @@ import { NetworkType } from "../../Models/Network";
 import resolveChain from "../../lib/resolveChain";
 import React from "react";
 import NetworkSettings from "../../lib/NetworkSettings";
-import { WagmiProvider } from 'wagmi'
+import { WagmiProvider, injected } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createConfig } from 'wagmi';
 import { Chain, http } from 'viem';
@@ -13,7 +13,7 @@ import { WalletModalProvider } from '../WalletModal';
 import { my_argent } from '../../lib/wallets/connectors/argent';
 import { my_rainbow } from '../../lib/wallets/connectors/rainbow';
 import { coinbaseWallet, metaMask, walletConnect } from 'wagmi/connectors'
-import { hasInjectedProvider } from '../../lib/wallets/connectors/getInjectedConnector';
+import { hasInjectedProvider, explicitInjectedproviderDetected } from '../../lib/wallets/connectors/getInjectedConnector';
 import { my_bitget } from '../../lib/wallets/connectors/bitget';
 import { isMobile } from '../../lib/isMobile';
 import FuelProviderWrapper from "./FuelProvider";
@@ -47,11 +47,13 @@ function WagmiComponent({ children }: Props) {
         flag: 'isBitKeep',
     });
 
+    const enableInjectedConnector = isMobile() && explicitInjectedproviderDetected()
     const config = createConfig({
         connectors: [
             coinbaseWallet(),
             walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' }),
             my_argent({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'argent' }),
+            ...(enableInjectedConnector ? [injected()] : []),
             ...(!isMetaMaskInjected ? [metaMask()] : []),
             ...(!isRainbowInjected ? [my_rainbow({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'rainbow' })] : []),
             ...(!isBitKeepInjected ? [my_bitget({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'bitget' })] : [])

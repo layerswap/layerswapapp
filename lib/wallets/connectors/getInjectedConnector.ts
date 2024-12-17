@@ -19,6 +19,15 @@ function getExplicitInjectedProvider(flag: WalletProviderFlags) {
             : undefined;
 }
 
+
+export function explicitInjectedproviderDetected() {
+    const _window =
+        typeof window !== 'undefined' ? (window as WindowProvider) : undefined;
+    if (typeof _window === 'undefined' || typeof _window.ethereum === 'undefined')
+        return false;
+    return !!_window.ethereum;
+}
+
 /*
  * Gets the `window.namespace` window provider if it exists
  */
