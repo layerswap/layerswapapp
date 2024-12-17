@@ -14,7 +14,7 @@ export function browserInjected() {
                 return injectedConnector.connect(...params)
             },
             get icon() {
-                return ""//INJECTED_LIGHT_ICON
+                return undefined
             },
             get name() {
                 return 'Browser Wallet'
