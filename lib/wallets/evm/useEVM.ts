@@ -12,6 +12,7 @@ import convertSvgComponentToBase64 from "../../../components/utils/convertSvgCom
 import { LSConnector } from "../connectors/EthereumProvider"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useConnectModal } from "../../../components/WalletModal"
+import { explicitInjectedproviderDetected } from "../connectors/getInjectedConnector"
 
 type Props = {
     network: Network | undefined,
@@ -181,8 +182,12 @@ export default function useEVM({ network }: Props): WalletProvider {
             throw new Error("Account not found")
     }
 
+
+    const activeBrowserWallet = explicitInjectedproviderDetected() && allConnectors.filter(c => c.id !== "com.immutable.passport" && c.type === "injected").length === 1
+    const filterConnectors = wallet => !isNotAvailable(wallet, network) && ((wallet.id === "injected" ? activeBrowserWallet : true))
+
     {/* //TODO: refactor ordering */ }
-    const availableWalletsForConnect = allConnectors.filter(w => !isNotAvailable(w, network))
+    const availableWalletsForConnect = allConnectors.filter(w => filterConnectors)
         .map(w => ({
             ...w,
             order: resolveWalletConnectorIndex(w.id),

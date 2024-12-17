@@ -74,7 +74,7 @@ export type WalletConnectParameters = Compute<
   ExactPartial<Pick<EthereumProviderOptions, 'showQrModal'>>
 >
 
-export function my_rainbow(parameters: WalletConnectParameters) {
+export function rainbow(parameters: WalletConnectParameters) {
   const isRainbowInjected = hasInjectedProvider({ flag: 'isRainbow' });
   const shouldUseWalletConnect = !isRainbowInjected;
   return shouldUseWalletConnect ? walletConnect(parameters) : getInjectedConnector({ flag: 'isRainbow' })({ id: 'rainbow', name: 'My Rainbow' });
