@@ -200,13 +200,13 @@ export default function useEVM({ network }: Props): WalletProvider {
                 if (isMobile() && explicitInjectedproviderDetected() && allConnectors.filter(c => w.id !== "com.immutable.passport" && c.type === "injected").length === 1)
                     return {
                         ...w,
-                        order: 0,
+                        order: resolveWalletConnectorIndex(w.id),
                         type: "injected"
                     }
                 else {
                     return {
                         ...w,
-                        order: 100,
+                        order: resolveWalletConnectorIndex(w.id),
                         type: "other"
                     }
                 }
