@@ -29,6 +29,7 @@ import { useValidationContext } from "../../../context/validationErrorContext";
 import { FormSourceWalletButton } from "../../Input/SourceWalletPicker";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import useWallet from "../../../hooks/useWallet";
+import { useSettingsState } from "../../../context/settings";
 
 type Props = {
     partner?: Partner,
@@ -95,14 +96,16 @@ const SwapForm: FC<Props> = ({ partner }) => {
         { rotate: 0 },
         { rotate: 180 }
     );
+    const { sourceExchanges: cachedSourceExchanges, destinationExchanges: cachedDestinationExchanges, destinationRoutes: cachedDestinationRoutes, sourceRoutes: cachedSourceRoutes } = useSettingsState();
 
-    const sourceRoutesEndpoint = (source || destination) ? resolveRoutesURLForSelectedToken({ direction: 'from', network: source?.name, token: fromCurrency?.symbol, includes: { unavailable: true, unmatched: true } }) : null
-    const destinationRoutesEndpoint = (source || destination) ? resolveRoutesURLForSelectedToken({ direction: 'to', network: destination?.name, token: toCurrency?.symbol, includes: { unavailable: true, unmatched: true } }) : null
+    const sourceRoutesEndpoint = (source && destination) ? resolveRoutesURLForSelectedToken({ direction: 'from', network: source?.name, token: fromCurrency?.symbol, includes: { unavailable: true, unmatched: true } }) : null
+    const destinationRoutesEndpoint = (source && destination) ? resolveRoutesURLForSelectedToken({ direction: 'to', network: destination?.name, token: toCurrency?.symbol, includes: { unavailable: true, unmatched: true } }) : null
     const exchangeRoutesURL = (fromExchange || toExchange) ? resolveExchangesURLForSelectedToken(fromExchange ? 'from' : 'to', values) : null
 
-    const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<RouteNetwork[]>>(sourceRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true })
-    const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<RouteNetwork[]>>(destinationRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true })
-    const { data: exchanges, isLoading: exchnagesDataLoading } = useSWR<ApiResponse<Exchange[]>>(exchangeRoutesURL, layerswapApiClient.fetcher, { keepPreviousData: true })
+    const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<RouteNetwork[]>>(sourceRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true, fallbackData: { data: cachedSourceRoutes }, dedupingInterval: 10000 })
+    const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<RouteNetwork[]>>(destinationRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true, fallbackData: { data: cachedDestinationRoutes }, dedupingInterval: 10000 })
+    const { data: sourceExchanges, isLoading: sourceExchnagesDataLoading } = useSWR<ApiResponse<Exchange[]>>(exchangeRoutesURL, layerswapApiClient.fetcher, { keepPreviousData: true, fallbackData: { data: cachedSourceExchanges }, dedupingInterval: 10000 })
+    const { data: destinationExchanges, isLoading: destinationExchnagesDataLoading } = useSWR<ApiResponse<Exchange[]>>(exchangeRoutesURL, layerswapApiClient.fetcher, { keepPreviousData: true, fallbackData: { data: cachedDestinationExchanges }, dedupingInterval: 10000 })
 
     const sourceCanBeSwapped = !source ? true : (destinationRoutes?.data?.some(l => l.name === source?.name && l.tokens.some(t => t.symbol === fromCurrency?.symbol && t.status === 'active')) ?? false)
     const destinationCanBeSwapped = !destination ? true : (sourceRoutes?.data?.some(l => l.name === destination?.name && l.tokens.some(t => t.symbol === toCurrency?.symbol && t.status === 'active')) ?? false)
@@ -123,11 +126,11 @@ const SwapForm: FC<Props> = ({ partner }) => {
         let newToExchangeToken: ExchangeToken | undefined
 
         if (toExchange) {
-            newFromExchange = exchanges?.data?.find(e => e.name === toExchange?.name)
+            newFromExchange = sourceExchanges?.data?.find(e => e.name === toExchange?.name)
             newFromExchangeToken = newFromExchange?.token_groups.find(t => t.symbol === fromCurrency?.symbol)
         }
         if (fromExchange) {
-            newToExchange = exchanges?.data?.find(e => e.name === fromExchange?.name)
+            newToExchange = destinationExchanges?.data?.find(e => e.name === fromExchange?.name)
             newToExchangeToken = newToExchange?.token_groups.find(t => t.symbol === toCurrency?.symbol)
         }
 
@@ -182,7 +185,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
             }
 
         }
-    }, [values, sourceRoutes, destinationRoutes, exchanges, selectedSourceAccount])
+    }, [values, sourceRoutes, destinationRoutes, sourceCanBeSwapped, destinationExchanges, selectedSourceAccount])
 
     const handleReserveGas = useCallback((walletBalance: Balance, networkGas: number) => {
         if (walletBalance && networkGas)
@@ -203,15 +206,15 @@ const SwapForm: FC<Props> = ({ partner }) => {
                         <button
                             type="button"
                             aria-label="Reverse the source and destination"
-                            disabled={valuesSwapperDisabled || sourceLoading || destinationLoading || exchnagesDataLoading}
+                            disabled={valuesSwapperDisabled || sourceLoading || destinationLoading || destinationExchnagesDataLoading || sourceExchnagesDataLoading}
                             onClick={valuesSwapper}
-                            className={`${sourceLoading || destinationLoading || exchnagesDataLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[122px] z-10 border-2 border-secondary-700 bg-secondary-600 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
+                            className={`${sourceLoading || destinationLoading || destinationExchnagesDataLoading || sourceExchnagesDataLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[122px] z-10 border-2 border-secondary-700 bg-secondary-600 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
                             <motion.div
                                 animate={animate}
                                 transition={{ duration: 0.3 }}
                                 onTap={() => !valuesSwapperDisabled && cycle()}
                             >
-                                {sourceLoading || destinationLoading || exchnagesDataLoading ?
+                                {sourceLoading || destinationLoading || destinationExchnagesDataLoading || sourceExchnagesDataLoading ?
                                     <Loader2 className="opacity-50 w-7 h-auto p-1 bg-secondary-500 rounded-lg disabled:opacity-30 animate-spin" />
                                     :
                                     <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-500 rounded-lg disabled:opacity-30")} />
