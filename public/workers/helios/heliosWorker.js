@@ -14,11 +14,11 @@ async function getCommit(commitConfigs) {
     try {
         await init();
 
-        // const checkpoint  = await fetch('https://sync-sepolia.beaconcha.in/checkpointz/v1/status')
+        const ethCheckpoint = await fetch(commitConfigs.hostname + '/api/getCheckpoint').then(res => res.json());
         const configEthereum = {
             executionRpc: "https://eth-sepolia.g.alchemy.com/v2/ErGCcrn6KRA91KfnRkqtyb3SJVdYGz1S",
             consensusRpc: commitConfigs.hostname + '/api/consensusRpc',
-            checkpoint: "0x5d7fbedda647649b940f099fe79832dc0b031b08e5558ff7371bcce472471ab4",
+            checkpoint: ethCheckpoint?.data.finality.finalized.root || "0x5d7fbedda647649b940f099fe79832dc0b031b08e5558ff7371bcce472471ab4",
             dbType: "localstorage",
             network: 'sepolia'
         };
