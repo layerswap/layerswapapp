@@ -18,7 +18,6 @@ export const LpLockingAssets: FC = () => {
 
     const getDetails = async ({ provider, network, commitId, asset }: { provider: WalletProvider, network: Network, commitId: string, asset: Token }) => {
         if (supportsHelios) {
-
             const lightClient = new LightClient({
                 network: network,
                 token: asset,

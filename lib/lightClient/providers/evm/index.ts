@@ -37,6 +37,7 @@ export default class EVMLightClient extends _LightClient {
                                 abi: token.contract ? EVMERC20_PHTLC : EVM_PHTLC,
                                 contractAddress: atomicContract,
                                 hostname: window.location.origin,
+                                network: network.name,
                             },
                         },
                     },
