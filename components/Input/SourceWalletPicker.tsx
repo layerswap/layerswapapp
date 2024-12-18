@@ -244,8 +244,9 @@ const Connect: FC<{ connectFn?: () => Promise<Wallet | undefined | void>; setMou
 }
 
 const ContinueWithoutWallet: FC<{ onClick: () => void }> = ({ onClick }) => {
+    //TODO: bg-secondary-900 is a hotfix, should refactor and fix sticky footer for VaulDrawer
     return (
-        <div className="inline-flex items-center gap-1.5 justify-center w-full pt-3">
+        <div className="inline-flex items-center gap-1.5 justify-center w-full pt-3 bg-secondary-900">
             <button onClick={onClick} className="underline hover:no-underline text-base text-center text-secondary-text cursor-pointer ">
                 Continue without a wallet
             </button>
