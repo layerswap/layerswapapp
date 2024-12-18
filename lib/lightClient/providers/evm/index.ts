@@ -45,12 +45,12 @@ export default class EVMLightClient extends _LightClient {
 
                 heliosWorker.onmessage = (event) => {
                     const result = event.data.data
-                    const parsedResult: Commit = {
+                    const parsedResult: Commit = result ? {
                         ...result,
                         secret: Number(hexToBigInt(result.secret._hex)) !== 1 ? result.secret : null,
                         amount: formatAmount(Number(hexToBigInt(result.amount._hex)), token.decimals),
                         timelock: Number(result.timelock)
-                    }
+                    } : undefined
                     console.log('Worker event:', event)
                     resolve(parsedResult)
                 }

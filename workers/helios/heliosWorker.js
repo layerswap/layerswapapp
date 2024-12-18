@@ -4,17 +4,17 @@ self.onmessage = (e) => {
     switch (e.data.type) {
         case 'init':
             const configEthereum = {
-                executionRpc: "https://eth-mainnet.g.alchemy.com/v2/a--NIcyeycPntQX42kunxUIVkg6_ekYc",
-                checkpoint: "0x79da0a204d128661d3fb6538f0f1a25e13a08c680a3ec845c1c29d1fc6aa62aa",
-                dbType: "localstorage"
+                executionRpc: "https://eth-sepolia.g.alchemy.com/v2/ErGCcrn6KRA91KfnRkqtyb3SJVdYGz1S",
+                consensusRpc: e.data.payload.data.commitConfigs.hostname + '/api/consensusRpc',
+                checkpoint: "0x5d7fbedda647649b940f099fe79832dc0b031b08e5558ff7371bcce472471ab4",
+                dbType: "localstorage",
+                network: 'sepolia'
             };
             const opstackConfigs = {
-                executionRpc: "https://opt-mainnet.g.alchemy.com/v2/a--NIcyeycPntQX42kunxUIVkg6_ekYc",
-                network: "op-mainnet",
-            }
-
-            const configs = e.data.payload.data.commitConfigs.network.includes('ethereum') ? configEthereum : opstackConfigs;
-
+                executionRpc: "https://opt-sepolia.g.alchemy.com/v2/ErGCcrn6KRA91KfnRkqtyb3SJVdYGz1S",
+                network: "op-sepolia",
+            };
+            const configs = e.data.payload.data.commitConfigs.network?.includes('optimism') ? opstackConfigs : configEthereum;
             getCommit(configs, e.data.payload.data.commitConfigs);
             break;
         default:
@@ -24,7 +24,7 @@ self.onmessage = (e) => {
 };
 async function getCommit(providerConfig, commitConfigs) {
     await init();
-    const heliosProvider = new HeliosProvider(providerConfig, commitConfigs.network.includes('ethereum') ? "ethereum" : 'opstack');
+    const heliosProvider = new HeliosProvider(providerConfig, commitConfigs.network?.includes('optimsim') ? "opstack" : 'ethereum');
     await heliosProvider.sync();
     const web3Provider = new ethers.providers.Web3Provider(heliosProvider);
     const { abi, contractAddress, commitId } = commitConfigs;
@@ -42,8 +42,16 @@ async function getCommit(providerConfig, commitConfigs) {
     }
     let getDetailsHandler = undefined;
     (async () => {
+        let attempts = 0;
         getDetailsHandler = setInterval(async () => {
             try {
+                if (attempts > 20) {
+                    clearInterval(getDetailsHandler);
+                    self.postMessage({ type: 'commitDetails', data: null });
+                    return;
+                }
+
+                attempts++;
                 const data = await getCommitDetails(web3Provider);
                 if (data?.hashlock && data?.hashlock !== "0x0100000000000000000000000000000000000000000000000000000000000000" && data?.hashlock !== "0x0000000000000000000000000000000000000000000000000000000000000000") {
                     self.postMessage({ type: 'commitDetails', data: data });
