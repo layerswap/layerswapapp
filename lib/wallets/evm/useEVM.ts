@@ -187,7 +187,7 @@ export default function useEVM({ network }: Props): WalletProvider {
     const filterConnectors = wallet => !isNotAvailable(wallet, network) && ((wallet.id === "injected" ? activeBrowserWallet : true))
 
     {/* //TODO: refactor ordering */ }
-    const availableWalletsForConnect = allConnectors.filter(w => filterConnectors)
+    const availableWalletsForConnect = allConnectors.filter(filterConnectors)
         .map(w => ({
             ...w,
             order: resolveWalletConnectorIndex(w.id),
