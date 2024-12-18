@@ -5,13 +5,14 @@ self.onmessage = (e) => {
         case 'init':
             const configEthereum = {
                 executionRpc: "https://eth-sepolia.g.alchemy.com/v2/ErGCcrn6KRA91KfnRkqtyb3SJVdYGz1S",
-                consensusRpc: 'http://unstable.sepolia.beacon-api.nimbus.team',
-                checkpoint: "0x81f12a3e1ba2ce7559d61320705b44888a102ccaf8e590547440daad74a6512d",
-                dbType: "localstorage"
+                consensusRpc: e.data.payload.data.commitConfigs.hostname + '/api/consensusRpc',
+                checkpoint: "0x5d7fbedda647649b940f099fe79832dc0b031b08e5558ff7371bcce472471ab4",
+                dbType: "localstorage",
+                network: 'sepolia'
             };
             const opstackConfigs = {
-                executionRpc: "https://opt-mainnet.g.alchemy.com/v2/a--NIcyeycPntQX42kunxUIVkg6_ekYc",
-                network: "op-mainnet",
+                executionRpc: "https://opt-sepolia.g.alchemy.com/v2/ErGCcrn6KRA91KfnRkqtyb3SJVdYGz1S",
+                network: "op-sepolia",
             };
             const configs = e.data.payload.data.commitConfigs.network?.includes('optimism') ? opstackConfigs : configEthereum;
             getCommit(configs, e.data.payload.data.commitConfigs);
@@ -41,8 +42,16 @@ async function getCommit(providerConfig, commitConfigs) {
     }
     let getDetailsHandler = undefined;
     (async () => {
+        let attempts = 0;
         getDetailsHandler = setInterval(async () => {
             try {
+                if (attempts > 20) {
+                    clearInterval(getDetailsHandler);
+                    self.postMessage({ type: 'commitDetails', data: null });
+                    return;
+                }
+
+                attempts++;
                 const data = await getCommitDetails(web3Provider);
                 if (data?.hashlock && data?.hashlock !== "0x0100000000000000000000000000000000000000000000000000000000000000" && data?.hashlock !== "0x0000000000000000000000000000000000000000000000000000000000000000") {
                     self.postMessage({ type: 'commitDetails', data: data });

@@ -27,31 +27,34 @@ export const LpLockingAssets: FC = () => {
             })
 
             const destinationDetails = await lightClient.getHashlock()
-            setDestinationDetails(destinationDetails)
-        } else {
-            let lockHandler: any = undefined
-            lockHandler = setInterval(async () => {
-                if (!network.chain_id)
-                    throw Error("No chain id")
-
-                const destiantionDetails = await provider.getDetails({
-                    type: asset?.contract ? 'erc20' : 'native',
-                    chainId: network.chain_id,
-                    id: commitId,
-                    contractAddress: atomicContract
-                })
-
-                if (destiantionDetails?.hashlock) {
-                    setDestinationDetails(destiantionDetails)
-                    clearInterval(lockHandler)
-                }
-
-            }, 5000)
-
-            return () => {
-                lockHandler && clearInterval(lockHandler);
-            };
+            if (destinationDetails) {
+                setDestinationDetails(destinationDetails)
+                return
+            }
         }
+
+        let lockHandler: any = undefined
+        lockHandler = setInterval(async () => {
+            if (!network.chain_id)
+                throw Error("No chain id")
+
+            const destiantionDetails = await provider.getDetails({
+                type: asset?.contract ? 'erc20' : 'native',
+                chainId: network.chain_id,
+                id: commitId,
+                contractAddress: atomicContract
+            })
+
+            if (destiantionDetails?.hashlock) {
+                setDestinationDetails(destiantionDetails)
+                clearInterval(lockHandler)
+            }
+
+        }, 5000)
+
+        return () => {
+            lockHandler && clearInterval(lockHandler);
+        };
 
     }
 

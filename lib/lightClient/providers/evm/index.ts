@@ -5,6 +5,7 @@ import EVM_PHTLC from '../../../abis/atomic/EVM_PHTLC.json'
 import { Commit } from "../../../../Models/PHTLC"
 import KnownInternalNames from "../../../knownIds"
 import { Network, Token } from "../../../../Models/Network"
+import { hexToBigInt } from "viem"
 
 export default class EVMLightClient extends _LightClient {
 
@@ -35,6 +36,7 @@ export default class EVMLightClient extends _LightClient {
                                 commitId: commitId,
                                 abi: token.contract ? EVMERC20_PHTLC : EVM_PHTLC,
                                 contractAddress: atomicContract,
+                                hostname: window.location.origin,
                             },
                         },
                     },
@@ -45,8 +47,8 @@ export default class EVMLightClient extends _LightClient {
                     const result = event.data.data
                     const parsedResult: Commit = {
                         ...result,
-                        secret: Number(result.secret) !== 1 ? result.secret : null,
-                        amount: formatAmount(Number(result.amount), token.decimals),
+                        secret: Number(hexToBigInt(result.secret._hex)) !== 1 ? result.secret : null,
+                        amount: formatAmount(Number(hexToBigInt(result.amount._hex)), token.decimals),
                         timelock: Number(result.timelock)
                     }
                     console.log('Worker event:', event)
