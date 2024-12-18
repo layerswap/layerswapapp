@@ -73,8 +73,8 @@ export type WalletConnectParameters = Compute<
     ExactPartial<Pick<EthereumProviderOptions, 'showQrModal'>>
 >
 
-my_bitget.type = 'my_walletConnect' as const
-export function my_bitget(parameters: WalletConnectParameters) {
+bitget.type = 'my_walletConnect' as const
+export function bitget(parameters: WalletConnectParameters) {
     const isNewChainsStale = parameters.isNewChainsStale ?? true
 
     type Provider = Awaited<ReturnType<(typeof EthereumProvider)['init']>>
@@ -116,7 +116,7 @@ export function my_bitget(parameters: WalletConnectParameters) {
                     ? uri
                     : `bitkeep://wc?uri=${encodeURIComponent(uri)}`;
             },
-            type: my_bitget.type,
+            type: bitget.type,
             async setup() {
                 const provider = await this.getProvider().catch(() => null)
                 if (!provider) return
