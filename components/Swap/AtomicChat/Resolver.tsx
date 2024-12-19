@@ -8,7 +8,7 @@ import { LpLockingAssets } from "./Actions/LpLock";
 import { RedeemAction } from "./Actions/Redeem";
 import ActionStatus from "./Actions/ActionStatus";
 import useWallet from "../../../hooks/useWallet";
-import { ExternalLink } from "lucide-react";
+import { CircleCheck, ExternalLink, HelpCircle } from "lucide-react";
 import SubmitButton from "../../buttons/submitButton";
 import { Network } from "../../../Models/Network";
 import TimelockTimer from "./TimelockTimer";
@@ -37,6 +37,7 @@ const RequestStep = () => {
         title={title}
         description={description}
         active={true}
+        completed={!!sourceDetails}
     >
     </Step>
 }
@@ -85,11 +86,22 @@ const SolverStatus = () => {
 }
 
 
-export const ResolveMessages: FC = () => {
+export const ResolveMessages: FC<{ timelock: number | undefined }> = ({ timelock }) => {
     //TODO: add loading steps
-    return <div className="space-y-4">
-        <RequestStep />
-        <SignAndConfirmStep />
+    return <div className="space-y-2">
+        <div className="flex items-center w-full justify-between text-primary-text-placeholder text-sm">
+            <p>
+                Follow the steps to complete swap
+            </p>
+            {
+                timelock &&
+                <TimelockTimer timelock={timelock} />
+            }
+        </div>
+        <div className="space-y-4">
+            <RequestStep />
+            <SignAndConfirmStep />
+        </div>
     </div>
 }
 const ResolveAction: FC = () => {
@@ -119,46 +131,32 @@ const ResolveAction: FC = () => {
 
     }
     if (redeemCompleted) {
-        return <div className="flex w-full grow flex-col space-y-2" >
-            <ActionStatus
-                status="success"
-                title='Transaction Completed'
-            />
-        </div>
+        return <ActionStatus
+            status="success"
+            title='Transaction Completed'
+        />
     }
     if (isTimelockExpired) {
         if (sourceDetails?.claimed == 2) {
-            return <div className="flex w-full grow flex-col space-y-2" >
-                <ActionStatus
-                    status="success"
-                    title='Refund Completed'
-                />
-            </div>
+            return <ActionStatus
+                status="success"
+                title='Refund Completed'
+            />
         }
         else {
-            return <div className="flex w-full grow flex-col space-y-2" >
-                <UserRefundAction />
-            </div>
+            return <UserRefundAction />
         }
     }
     if (assetsLocked) {
-        return <div className="flex w-full grow flex-col space-y-2" >
-            <RedeemAction />
-        </div>
+        return <RedeemAction />
     }
     if (lpLockDetected) {
-        return <div className="flex w-full grow flex-col space-y-2" >
-            <UserLockAction />
-        </div>
+        return <UserLockAction />
     }
     if (commited) {
-        return <div className="flex w-full grow flex-col space-y-2" >
-            <LpLockingAssets />
-        </div>
+        return <LpLockingAssets />
     }
-    return <div className="flex w-full grow flex-col space-y-2" >
-        <UserCommitAction />
-    </div>
+    return <UserCommitAction />
 }
 
 type StepProps = {
@@ -167,46 +165,31 @@ type StepProps = {
     description: JSX.Element | string;
     children?: JSX.Element | JSX.Element[];
     active: boolean;
+    completed?: boolean
 }
-const Step = (props: StepProps) => {
-    const { step, title, description, active, children } = props
-    return <>
-        <div className={` items-center justify-between w-full bg-secondary-700 rounded-componentRoundness p-2 ${!active ? 'opacity-40' : ''}`}>
+const Step: FC<StepProps> = ({ step, title, description, active, children, completed }) => {
+    return <div className={`flex justify-between items-center w-full bg-secondary-600 rounded-componentRoundness p-2 pr-5 ${!active ? 'opacity-40' : ''}`}>
+        <div>
             {/* TODO: text colors for none active steps */}
             <div className="flex items-center gap-3">
                 <div className="w-9 h-9 text-center content-center bg-secondary-400 rounded-md">{step}</div>
                 <div>
-                    <p className="text-primary-text text-sm leading-5">{title}</p>
-                    <p className="text-sm text-secondary-text">{description}</p>
+                    <p className="text-primary-text text-base leading-5">{title}</p>
+                    <p className="text-xs text-primary-text-placeholder">{description}</p>
                 </div>
-                {/* TODO: add loading and checmark icons logic */}
             </div>
             {children}
         </div>
-    </>
+        {
+            completed &&
+            <CircleCheck className="h-6 w-6" />
+        }
+    </div>
 }
 
 export const ActionsWithProgressbar: FC = () => {
     const { destinationDetails, isTimelockExpired, sourceDetails, commitFromApi, destination_network } = useAtomicState()
 
-    let currentStep = 1
-    let actiontext = 'Commit'
-    let firstStep = "5%"
-    let secondStep = "0%"
-    if (sourceDetails) {
-        firstStep = "80%"
-    }
-    if (destinationDetails?.hashlock) {
-        firstStep = "100%"
-        secondStep = "10%"
-        currentStep = 2
-        actiontext = 'Lock'
-    }
-    if (sourceDetails?.hashlock) {
-        firstStep = "100%"
-        secondStep = "80%"
-        currentStep = 2
-    }
     const lpRedeemTransaction = commitFromApi?.transactions.find(t => t.type === 'redeem' && t.network === destination_network?.name)
 
     const allDone = ((sourceDetails?.hashlock && destinationDetails?.claimed == 3) || lpRedeemTransaction?.hash) ? true : false
@@ -214,6 +197,7 @@ export const ActionsWithProgressbar: FC = () => {
     const timelock = sourceDetails?.timelock || sourceDetails?.timelock
 
     return <div className="space-y-4">
+        <ResolveMessages timelock={timelock} />
         <ResolveAction />
     </div>
 }
