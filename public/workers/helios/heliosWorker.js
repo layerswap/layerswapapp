@@ -61,6 +61,7 @@ async function getCommit(commitConfigs) {
                     if (data?.hashlock && data?.hashlock !== "0x0100000000000000000000000000000000000000000000000000000000000000" && data?.hashlock !== "0x0000000000000000000000000000000000000000000000000000000000000000") {
                         self.postMessage({ type: 'commitDetails', data: data });
                         clearInterval(getDetailsHandler);
+                        return
                     }
                 }
                 catch (e) {
