@@ -37,6 +37,28 @@ export const LpLockingAssets: FC = () => {
             if (!network.chain_id)
                 throw Error("No chain id")
 
+            if (provider.secureGetDetails) {
+                try {
+                    const destiantionDetails = await provider.secureGetDetails({
+                        type: asset?.contract ? 'erc20' : 'native',
+                        chainId: network.chain_id,
+                        id: commitId,
+                        contractAddress: atomicContract,
+                    })
+
+                    if (destiantionDetails?.hashlock) {
+                        setDestinationDetails(destiantionDetails)
+                        clearInterval(lockHandler)
+                    }
+                    return
+                }
+                catch (e) {
+                    clearInterval(lockHandler)
+                    console.log(e)
+                }
+
+            }
+
             const destiantionDetails = await provider.getDetails({
                 type: asset?.contract ? 'erc20' : 'native',
                 chainId: network.chain_id,
