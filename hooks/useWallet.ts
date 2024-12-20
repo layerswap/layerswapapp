@@ -24,6 +24,7 @@ export type WalletProvider = {
     claim: (/* TODO:Implement interface a*/) => Promise<void> | undefined | void,
     refund: (args: RefundParams) => Promise<any> | undefined | void,
     getDetails: (args: CommitmentParams) => Promise<Commit | null>,
+    secureGetDetails?: (args: CommitmentParams) => Promise<Commit | null>,
     addLock: (args: CommitmentParams & LockParams) => Promise<{ hash: string, result: any } | null>,
     getContracts?: (params: GetCommitsParams) => Promise<string[]>,
 }

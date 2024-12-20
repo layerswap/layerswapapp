@@ -26,13 +26,18 @@ module.exports = (phase, { defaultConfig }) => {
     compiler: {
       removeConsole: false,
     },
-    reactStrictMode: true,
+    reactStrictMode: false,
     webpack: config => {
       config.resolve.fallback = { fs: false, net: false, tls: false };
+      config.module.rules.push({
+        test: /\.wasm$/,
+        type: 'javascript/auto',
+        use: 'file-loader',
+      });
       return config;
     },
     productionBrowserSourceMaps: true,
-    transpilePackages: ['@coral-xyz/anchor','@solana/web3.js'],
+    transpilePackages: ['@coral-xyz/anchor', '@solana/web3.js'],
   }
   if (process.env.APP_BASE_PATH) {
     nextConfig.basePath = process.env.APP_BASE_PATH
