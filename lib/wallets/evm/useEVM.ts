@@ -213,8 +213,7 @@ export default function useEVM(): WalletProvider {
     }
 
     const addLock = async (params: CommitmentParams & LockParams) => {
-        const { chainId, id, hashlock, contractAddress, type } = params
-        const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
+        const { chainId, id, hashlock, contractAddress } = params
 
         const LOCK_TIME = 1000 * 60 * 15 // 15 minutes
         const timeLockMS = Date.now() + LOCK_TIME

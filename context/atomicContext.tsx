@@ -18,6 +18,7 @@ type DataContextType = {
     address?: string,
     amount?: number,
     commitId?: string,
+    commitTxId?: string,
     destinationDetails?: Commit,
     userLocked?: boolean,
     sourceDetails?: Commit,
@@ -25,7 +26,7 @@ type DataContextType = {
     completedRefundHash?: string,
     error: string | undefined,
     commitFromApi?: CommitFromApi,
-    onCommit: (commitId: string) => void;
+    onCommit: (commitId: string, txId: string) => void;
     setDestinationDetails: (data: Commit) => void;
     setSourceDetails: (data: Commit) => void;
     setUserLocked: (locked: boolean) => void,
@@ -45,6 +46,7 @@ export function AtomicProvider({ children }) {
     } = router.query
 
     const [commitId, setCommitId] = useState<string | undefined>(router.query.commitId as string | undefined)
+    const [commitTxId, setCommitTxId] = useState<string | undefined>(router.query.txId as string | undefined)
     const { networks } = useSettingsState()
     const [sourceDetails, setSourceDetails] = useState<Commit | undefined>(undefined)
     const [destinationDetails, setDestinationDetails] = useState<Commit | undefined>(undefined)
@@ -91,11 +93,12 @@ export function AtomicProvider({ children }) {
 
     }, [sourceDetails, destinationDetails])
 
-    const handleCommited = (commitId: string) => {
+    const handleCommited = (commitId: string, txId: string) => {
         setCommitId(commitId)
+        setCommitTxId(txId)
         router.replace({
             pathname: router.pathname,
-            query: { ...router.query, commitId }
+            query: { ...router.query, commitId, txId }
         }, undefined, { shallow: true })
     }
 
@@ -109,6 +112,7 @@ export function AtomicProvider({ children }) {
             amount: amount ? Number(amount) : undefined,
             destination_network,
             commitId,
+            commitTxId,
             sourceDetails,
             destinationDetails,
             userLocked,

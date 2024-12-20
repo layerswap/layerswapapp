@@ -78,7 +78,7 @@ const Commitment: FC<ContainerProps> = (props) => {
                 </ResizablePanel>
             </Widget.Content>
             <Widget.Footer sticky={true}>
-                    <ActionsWithProgressbar />
+                <ActionsWithProgressbar />
             </Widget.Footer>
         </>
     )

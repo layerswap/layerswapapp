@@ -3,10 +3,13 @@ import { useInterval } from "../../../hooks/useInterval"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../shadcn/tooltip"
 import { Popover, PopoverContent, PopoverTrigger } from "../../shadcn/popover"
 import { HelpCircle } from "lucide-react"
+import useWindowDimensions from "../../../hooks/useWindowDimensions"
 
 const TimelockTimer = ({ timelock }: { timelock: number }) => {
     const [secondsRemaining, setSecondsRemaining] = useState<number>()
     const [started, setStarted] = useState(false)
+
+    const { isMobile } = useWindowDimensions()
 
     const start = (seconds: number) => {
         setSecondsRemaining(seconds)
@@ -15,7 +18,7 @@ const TimelockTimer = ({ timelock }: { timelock: number }) => {
 
     useEffect(() => {
         if (timelock) {
-            start(timelock)
+            start(Number(timelock) - (Date.now() / 1000))
         }
     }, [timelock])
 
@@ -42,22 +45,43 @@ const TimelockTimer = ({ timelock }: { timelock: number }) => {
 
     return (
         started &&
-        <Popover>
-            <PopoverTrigger>
-                <div className="px-2 py-0.5 rounded-md bg-secondary-700 text-sm text-secondary-text w-max">
-                    <div className="flex items-center gap-1.5">
-                        <p>Refund</p>
-                        <HelpCircle className="h-4 w-4" />
-                    </div>
-                </div>
-            </PopoverTrigger>
-            <PopoverContent side="top" className="max-w-[300px] !border-0 !bg-secondary-600 p-3 space-y-1 !rounded-lg">
-                <p className="text-sm text-primary-text">
-                    <span>Refund available in</span> <span className="w-9">{twoDigits(minutesToDisplay)}:{twoDigits(secondsToDisplay)}</span>
-                </p>
-                <p className="text-xs">If the swap is not completed before the timelock expires, you can always refund</p>
-            </PopoverContent>
-        </Popover>
+        (
+            isMobile ?
+                <Popover>
+                    <PopoverTrigger>
+                        <div className="px-2 py-0.5 rounded-md bg-secondary-700 text-sm text-secondary-text w-max">
+                            <div className="flex items-center gap-1.5">
+                                <p>Refund</p>
+                                <HelpCircle className="h-4 w-4" />
+                            </div>
+                        </div>
+                    </PopoverTrigger>
+                    <PopoverContent side="top" className="max-w-[300px] !border-0 !bg-secondary-600 p-3 space-y-1 !rounded-lg">
+                        <p className="text-sm text-primary-text">
+                            <span>Refund available in</span> <span className="w-9">{twoDigits(minutesToDisplay)}:{twoDigits(secondsToDisplay)}</span>
+                        </p>
+                        <p className="text-xs">If the swap is not completed before the timelock expires, you can always refund</p>
+                    </PopoverContent>
+                </Popover>
+                :
+                <Tooltip delayDuration={150}>
+                    <TooltipTrigger>
+                        <div className="px-2 py-0.5 rounded-md bg-secondary-700 text-sm text-secondary-text w-max">
+                            <div className="flex items-center gap-1.5">
+                                <p>Refund</p>
+                                <HelpCircle className="h-4 w-4" />
+                            </div>
+                        </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-[300px] !border-0 !bg-secondary-600 p-3 space-y-1 !rounded-lg">
+                        <p className="text-sm text-primary-text">
+                            <span>Refund available in</span> <span className="w-9">{twoDigits(minutesToDisplay)}:{twoDigits(secondsToDisplay)}</span>
+                        </p>
+                        <p className="text-xs">If the swap is not completed before the timelock expires, you can always refund</p>
+                    </TooltipContent>
+                </Tooltip>
+        )
+
     )
 }
 

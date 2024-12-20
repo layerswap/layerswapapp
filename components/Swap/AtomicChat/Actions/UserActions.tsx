@@ -42,7 +42,7 @@ export const UserCommitAction: FC = () => {
                 throw new Error("No destination_provider")
             }
 
-            const { commitId } = await source_provider.createPreHTLC({
+            const { commitId, hash } = await source_provider.createPreHTLC({
                 address,
                 amount: amount.toString(),
                 destinationChain: destination_network.name,
@@ -55,8 +55,8 @@ export const UserCommitAction: FC = () => {
                 atomicContract: atomicContract,
                 chainId: source_network.chain_id,
             }) || {}
-            if (commitId) {
-                onCommit(commitId)
+            if (commitId && hash) {
+                onCommit(commitId, hash)
 
                 posthog.capture("Commit", {
                     commitId: commitId,

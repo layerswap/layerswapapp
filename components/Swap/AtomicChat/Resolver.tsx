@@ -1,19 +1,15 @@
 import { FC } from "react";
-import Message from "./Message";
-import AddressIcon from "../../AddressIcon";
 import { UserCommitAction, UserLockAction, UserRefundAction } from "./Actions/UserActions";
 import { useAtomicState } from "../../../context/atomicContext";
-import { motion } from "framer-motion";
 import { LpLockingAssets } from "./Actions/LpLock";
 import { RedeemAction } from "./Actions/Redeem";
 import ActionStatus from "./Actions/ActionStatus";
 import useWallet from "../../../hooks/useWallet";
-import { CircleCheck, ExternalLink, HelpCircle } from "lucide-react";
+import { CircleCheck } from "lucide-react";
 import SubmitButton from "../../buttons/submitButton";
-import { Network } from "../../../Models/Network";
 import TimelockTimer from "./TimelockTimer";
-import { truncateDecimals } from "../../utils/RoundDecimals";
 import shortenAddress from "../../utils/ShortenAddress";
+import LoaderIcon from "../../icons/LoaderIcon";
 
 export enum Progress {
     Commit = 'commit',
@@ -24,26 +20,26 @@ export enum Progress {
 }
 
 const RequestStep = () => {
-    const { sourceDetails, commitId } = useAtomicState()
+    const { sourceDetails, commitId, commitTxId, source_network } = useAtomicState()
 
-    const commtting = commitId ? true : false;
+    const commtting = (commitId && !sourceDetails) ? true : false;
     const commited = sourceDetails ? true : false;
 
     const title = commited ? "Requested" : "Request"
-    //TODO: get the commitment transaction id
-    const description = sourceDetails ? <div>Transaction ID:{sourceDetails?.id}</div> : <>Initiates a swap process with the solver</>
+    const description = commitTxId ? <p><span>Transaction ID:</span><a target="_blank" className="underline hover:no-underline" href={source_network?.transaction_explorer_template.replace('{0}', commitTxId)}>{shortenAddress(commitTxId)}</a></p> : <>Initiates a swap process with the solver</>
     return <Step
         step={1}
         title={title}
         description={description}
         active={true}
         completed={!!sourceDetails}
+        loading={commtting}
     >
     </Step>
 }
 
 const SignAndConfirmStep = () => {
-    const { sourceDetails, destinationDetails, source_network } = useAtomicState()
+    const { sourceDetails, destinationDetails, source_network, userLocked } = useAtomicState()
 
     const commited = sourceDetails ? true : false;
 
@@ -56,14 +52,14 @@ const SignAndConfirmStep = () => {
     const lp_address = source_network?.metadata.lp_address
 
     const title = assetsLocked ? "Signed & Confirmed" : "Sign & Confirm"
-    //TODO: get the commitment transaction id
-    const description = (assetsLocked) ? <div>Solver:{lp_address && shortenAddress(lp_address)} You: {wallet?.address && shortenAddress(wallet?.address)}</div> : <>Initiates a swap process with the solver</>
+    const description = (assetsLocked) ? <div><span>Solver:</span><span>{lp_address && shortenAddress(lp_address)}</span> <span>You:</span><span>{wallet?.address && shortenAddress(wallet?.address)}</span></div> : <>Initiates a swap process with the solver</>
 
     return <Step
         step={2}
         title={title}
         description={description}
         active={commited}
+        completed={!!userLocked}
     >
         <SolverStatus />
     </Step>
@@ -86,7 +82,7 @@ const SolverStatus = () => {
 }
 
 
-export const ResolveMessages: FC<{ timelock: number | undefined }> = ({ timelock }) => {
+export const ResolveMessages: FC<{ timelock: number | undefined, showTimer: boolean }> = ({ timelock, showTimer }) => {
     //TODO: add loading steps
     return <div className="space-y-2">
         <div className="flex items-center w-full justify-between text-primary-text-placeholder text-sm">
@@ -94,7 +90,7 @@ export const ResolveMessages: FC<{ timelock: number | undefined }> = ({ timelock
                 Follow the steps to complete swap
             </p>
             {
-                timelock &&
+                timelock && showTimer &&
                 <TimelockTimer timelock={timelock} />
             }
         </div>
@@ -166,16 +162,17 @@ type StepProps = {
     children?: JSX.Element | JSX.Element[];
     active: boolean;
     completed?: boolean
+    loading?: boolean
 }
-const Step: FC<StepProps> = ({ step, title, description, active, children, completed }) => {
+const Step: FC<StepProps> = ({ step, title, description, active, children, completed, loading }) => {
     return <div className={`flex justify-between items-center w-full bg-secondary-600 rounded-componentRoundness p-2 pr-5 ${!active ? 'opacity-40' : ''}`}>
         <div>
             {/* TODO: text colors for none active steps */}
             <div className="flex items-center gap-3">
                 <div className="w-9 h-9 text-center content-center bg-secondary-400 rounded-md">{step}</div>
                 <div>
-                    <p className="text-primary-text text-base leading-5">{title}</p>
-                    <p className="text-xs text-primary-text-placeholder">{description}</p>
+                    <div className="text-primary-text text-base leading-5">{title}</div>
+                    <div className="text-xs text-primary-text-placeholder">{description}</div>
                 </div>
             </div>
             {children}
@@ -183,6 +180,10 @@ const Step: FC<StepProps> = ({ step, title, description, active, children, compl
         {
             completed &&
             <CircleCheck className="h-6 w-6" />
+        }
+        {
+            loading &&
+            <LoaderIcon className="animate-reverse-spin h-6 w-6" />
         }
     </div>
 }
@@ -193,11 +194,11 @@ export const ActionsWithProgressbar: FC = () => {
     const lpRedeemTransaction = commitFromApi?.transactions.find(t => t.type === 'redeem' && t.network === destination_network?.name)
 
     const allDone = ((sourceDetails?.hashlock && destinationDetails?.claimed == 3) || lpRedeemTransaction?.hash) ? true : false
-    const showSteps = !allDone && !isTimelockExpired
+    const showTimer = !allDone && !isTimelockExpired
     const timelock = sourceDetails?.timelock || sourceDetails?.timelock
 
     return <div className="space-y-4">
-        <ResolveMessages timelock={timelock} />
+        <ResolveMessages timelock={timelock} showTimer={showTimer} />
         <ResolveAction />
     </div>
 }
