@@ -218,7 +218,6 @@ export default function useEVM(): WalletProvider {
         const { chainId, id, contractAddress, type } = params
         const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
 
-
         const network = networks.find(n => n.chain_id === chainId)
         const nodeUrls: string[] | undefined = network?.node_urls || (network?.node_url ? [network?.node_url] : undefined)
         if (!network?.chain_id) throw new Error("No network found")

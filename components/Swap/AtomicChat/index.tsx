@@ -72,17 +72,13 @@ const Commitment: FC<ContainerProps> = (props) => {
                                     source_token={source_token}
                                 />
                             }
-                            <div className="min-h-40">
-                                <ResolveMessages />
-                            </div>
+
                         </div>
                     </div>
                 </ResizablePanel>
             </Widget.Content>
             <Widget.Footer sticky={true}>
-                <div>
-                    <ActionsWithProgressbar />
-                </div>
+                <ActionsWithProgressbar />
             </Widget.Footer>
         </>
     )

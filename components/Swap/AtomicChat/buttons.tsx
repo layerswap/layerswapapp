@@ -1,5 +1,5 @@
 import { WalletIcon } from "lucide-react";
-import { FC, useCallback, useMemo, useState } from "react";
+import { FC, ReactNode, useCallback, useMemo, useState } from "react";
 import useWallet from "../../../hooks/useWallet";
 import { Network } from "../../../Models/Network";
 import toast from "react-hot-toast";
@@ -7,6 +7,7 @@ import SubmitButton, { SubmitButtonProps } from "../../buttons/submitButton";
 import { ActionData } from "../Withdraw/Wallet/WalletTransfer/sharedTypes";
 import WalletMessage from "../Withdraw/Wallet/WalletTransfer/message";
 import { useSwitchChain } from "wagmi";
+import ButtonStatus from "./Actions/Status/ButtonStatus";
 
 type ConnectProps = SubmitButtonProps & {
     network: Network;
@@ -16,7 +17,6 @@ type ConnectProps = SubmitButtonProps & {
 // TODO implement hifgher order component for different wallet providers
 export const ConnectWalletButton: FC<ConnectProps> = (props) => {
     const { network, defaultText } = props
-    const [loading, setLoading] = useState(false)
 
     const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
@@ -25,7 +25,6 @@ export const ConnectWalletButton: FC<ConnectProps> = (props) => {
 
     const clickHandler = useCallback(async () => {
         try {
-            setLoading(true)
 
             if (!provider) throw new Error(`No provider from ${network?.name}`)
 
@@ -33,9 +32,6 @@ export const ConnectWalletButton: FC<ConnectProps> = (props) => {
         }
         catch (e) {
             toast.error(e.message)
-        }
-        finally {
-            setLoading(false)
         }
 
     }, [provider])
@@ -125,7 +121,7 @@ type LockButtonProps = {
     network: Network,
     activeChain: any,
     onClick: () => Promise<void>,
-    children: JSX.Element | JSX.Element[] | string | undefined
+    children: ReactNode | undefined
 }
 
 export const WalletActionButton: FC<LockButtonProps> = (props) => {
@@ -133,14 +129,16 @@ export const WalletActionButton: FC<LockButtonProps> = (props) => {
     const [isPending, setIsPending] = useState(false)
 
     const handleClick = async () => {
-        setIsPending(true)
         try {
+            setIsPending(true)
             await onClick()
         }
         catch (e) {
             toast.error(e.message)
         }
-        setIsPending(false)
+        finally{
+            setIsPending(false)
+        }
     }
 
     if (!isConnected) {
@@ -155,6 +153,14 @@ export const WalletActionButton: FC<LockButtonProps> = (props) => {
             network={network.display_name}
             defaultText="Change network"
         />
+    }
+    if(isPending) {
+        return <ButtonStatus
+            isLoading={isPending}
+            isDisabled={isPending}
+        >
+           Confirm in wallet
+        </ButtonStatus>
     }
     return <SubmitButton
         onClick={handleClick}

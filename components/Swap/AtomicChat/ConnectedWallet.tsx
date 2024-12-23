@@ -43,7 +43,7 @@ const Component: FC<Props> = (props) => {
             wallet && source_network &&
             <div className="grid content-end">
                 <div className='flex w-full items-center text-sm justify-between'>
-                    <span className='ml-1'>Connected walet</span>
+                    <span className='text-primary-text-placeholder'>Connected walet</span>
                     <div onClick={handleDisconnect} className="text-secondary-text hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200 hover:cursor-pointer">
                         {
                             isLoading ?
@@ -54,7 +54,7 @@ const Component: FC<Props> = (props) => {
                         <p>Switch Wallet</p>
                     </div>
                 </div>
-                <div className="group/addressItem flex rounded-componentRoundness justify-between space-x-3 items-center shadow-sm mt-1.5 text-primary-text bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
+                <div className="group/addressItem flex rounded-componentRoundness justify-between space-x-3 items-center shadow-sm mt-1.5 text-primary-text bg-secondary-700 disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
                     <AddressWithIcon addressItem={{ address: wallet.address, group: AddressGroup.ConnectedWallet }} connectedWallet={wallet} network={source_network} />
                     <div>
                         {

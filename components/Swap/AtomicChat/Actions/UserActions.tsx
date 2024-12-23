@@ -1,9 +1,10 @@
 import { FC, useEffect, useRef, useState } from "react";
 import useWallet from "../../../../hooks/useWallet";
 import { useAtomicState } from "../../../../context/atomicContext";
-import ActionStatus from "./ActionStatus";
+import ActionStatus from "./Status/ActionStatus";
 import { WalletActionButton } from "../buttons";
 import posthog from "posthog-js";
+import ButtonStatus from "./Status/ButtonStatus";
 
 export const UserCommitAction: FC = () => {
     const { source_network, destination_network, amount, address, source_asset, destination_asset, onCommit, commitId, setSourceDetails, setError } = useAtomicState();
@@ -42,7 +43,7 @@ export const UserCommitAction: FC = () => {
                 throw new Error("No destination_provider")
             }
 
-            const { commitId } = await source_provider.createPreHTLC({
+            const { commitId, hash } = await source_provider.createPreHTLC({
                 address,
                 amount: amount.toString(),
                 destinationChain: destination_network.name,
@@ -55,8 +56,8 @@ export const UserCommitAction: FC = () => {
                 atomicContract: atomicContract,
                 chainId: source_network.chain_id,
             }) || {}
-            if (commitId) {
-                onCommit(commitId)
+            if (commitId && hash) {
+                onCommit(commitId, hash)
 
                 posthog.capture("Commit", {
                     commitId: commitId,
@@ -107,18 +108,22 @@ export const UserCommitAction: FC = () => {
     return <div className="font-normal flex flex-col w-full relative z-10 space-y-4 grow">
         {
             commitId ?
-                <ActionStatus
-                    status="pending"
-                    title='Waiting for confirmations'
-                />
+                <ButtonStatus
+                    isDisabled={true}
+                >
+                    Confirm in wallet
+                </ButtonStatus>
                 :
-                source_network.chain_id && <WalletActionButton
+                source_network.chain_id &&
+                <WalletActionButton
                     activeChain={wallet?.chainId}
                     isConnected={!!wallet}
                     network={source_network}
                     networkChainId={source_network.chain_id}
                     onClick={handleCommit}
-                >Commit</WalletActionButton>
+                >
+                    Commit
+                </WalletActionButton>
         }
     </div>
 }
@@ -211,7 +216,7 @@ export const UserLockAction: FC = () => {
                     networkChainId={source_network.chain_id}
                     onClick={handleLockAssets}
                 >
-                    Lock
+                    Sign & Confirm
                 </WalletActionButton>
         }
     </div>

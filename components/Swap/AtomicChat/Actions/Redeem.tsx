@@ -1,7 +1,7 @@
 import { FC, useEffect } from "react"
 import useWallet from "../../../../hooks/useWallet";
 import { useAtomicState } from "../../../../context/atomicContext";
-import ActionStatus from "./ActionStatus";
+import ActionStatus from "./Status/ActionStatus";
 
 export const RedeemAction: FC = () => {
     const { destination_network, source_network, sourceDetails, setDestinationDetails, setSourceDetails, destination_asset, source_asset, commitId } = useAtomicState()
@@ -67,6 +67,6 @@ export const RedeemAction: FC = () => {
 
     return <ActionStatus
         status="pending"
-        title='Releasing funds'
+        title='Assets are currently being released'
     />
 }

@@ -2,10 +2,8 @@ import { FC, useEffect } from "react";
 import { Network, Token } from "../../../../Models/Network";
 import useWallet, { WalletProvider } from "../../../../hooks/useWallet";
 import { useAtomicState } from "../../../../context/atomicContext";
-import ActionStatus from "./ActionStatus";
-import shortenAddress from "../../../utils/ShortenAddress";
-import { ExternalLink } from "lucide-react";
 import LightClient from "../../../../lib/lightClient";
+import SubmitButton from "../../../buttons/submitButton";
 
 export const LpLockingAssets: FC = () => {
     const { destination_network, commitId, setDestinationDetails, destination_asset } = useAtomicState()
@@ -87,12 +85,9 @@ export const LpLockingAssets: FC = () => {
         })()
     }, [destination_provider, destination_network, commitId])
 
-    return <ActionStatus
-        status="pending"
-        title={
-            <span>
-                <span>LP</span> <span>(</span><a target="_blank" className="inline-flex items-center gap-1" href={destination_network?.account_explorer_template.replace('{0}', destination_network.metadata.lp_address)}><span className="underline hover:no-underline">{destination_network?.metadata?.lp_address && shortenAddress(destination_network?.metadata?.lp_address)}</span> <ExternalLink className="h-3.5 w-3.5" /></a><span>)</span> <span>is locking your assets on the destination network</span>
-            </span>
-        }
-    />
+    return <SubmitButton
+        isDisabled={true}
+    >
+        Sign & Confirm
+    </SubmitButton>
 }
