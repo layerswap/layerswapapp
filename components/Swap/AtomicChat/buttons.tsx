@@ -7,6 +7,7 @@ import SubmitButton, { SubmitButtonProps } from "../../buttons/submitButton";
 import { ActionData } from "../Withdraw/Wallet/WalletTransfer/sharedTypes";
 import WalletMessage from "../Withdraw/Wallet/WalletTransfer/message";
 import { useSwitchChain } from "wagmi";
+import ButtonStatus from "./Actions/Status/ButtonStatus";
 
 type ConnectProps = SubmitButtonProps & {
     network: Network;
@@ -128,14 +129,16 @@ export const WalletActionButton: FC<LockButtonProps> = (props) => {
     const [isPending, setIsPending] = useState(false)
 
     const handleClick = async () => {
-        setIsPending(true)
         try {
+            setIsPending(true)
             await onClick()
         }
         catch (e) {
             toast.error(e.message)
         }
-        setIsPending(false)
+        finally{
+            setIsPending(false)
+        }
     }
 
     if (!isConnected) {
@@ -150,6 +153,14 @@ export const WalletActionButton: FC<LockButtonProps> = (props) => {
             network={network.display_name}
             defaultText="Change network"
         />
+    }
+    if(isPending) {
+        return <ButtonStatus
+            isLoading={isPending}
+            isDisabled={isPending}
+        >
+           Confirm in wallet
+        </ButtonStatus>
     }
     return <SubmitButton
         onClick={handleClick}

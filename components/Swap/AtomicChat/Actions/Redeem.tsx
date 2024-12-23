@@ -67,6 +67,6 @@ export const RedeemAction: FC = () => {
 
     return <ActionStatus
         status="pending"
-        title='Releasing funds'
+        title='Assets are currently being released'
     />
 }
