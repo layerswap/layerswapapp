@@ -1,7 +1,7 @@
 import { FC, useEffect, useRef, useState } from "react";
 import useWallet from "../../../../hooks/useWallet";
 import { useAtomicState } from "../../../../context/atomicContext";
-import ActionStatus from "./ActionStatus";
+import ActionStatus from "./Status/ActionStatus";
 import { WalletActionButton } from "../buttons";
 import posthog from "posthog-js";
 
@@ -112,13 +112,16 @@ export const UserCommitAction: FC = () => {
                     title='Waiting for confirmations'
                 />
                 :
-                source_network.chain_id && <WalletActionButton
+                source_network.chain_id &&
+                <WalletActionButton
                     activeChain={wallet?.chainId}
                     isConnected={!!wallet}
                     network={source_network}
                     networkChainId={source_network.chain_id}
                     onClick={handleCommit}
-                >Confirm in wallet</WalletActionButton>
+                >
+                    Commit
+                </WalletActionButton>
         }
     </div>
 }

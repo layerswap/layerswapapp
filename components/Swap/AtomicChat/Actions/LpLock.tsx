@@ -7,7 +7,7 @@ import { truncateDecimals } from "../../../utils/RoundDecimals";
 import { ethers } from "ethers";
 import useWallet from "../../../../hooks/useWallet";
 import { useAtomicState } from "../../../../context/atomicContext";
-import ActionStatus from "./ActionStatus";
+import ActionStatus from "./Status/ActionStatus";
 import shortenAddress from "../../../utils/ShortenAddress";
 import { ExternalLink } from "lucide-react";
 import { Commit } from "../../../../Models/PHTLC";

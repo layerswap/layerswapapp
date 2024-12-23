@@ -1,5 +1,5 @@
 import { WalletIcon } from "lucide-react";
-import { FC, useCallback, useMemo, useState } from "react";
+import { FC, ReactNode, useCallback, useMemo, useState } from "react";
 import useWallet from "../../../hooks/useWallet";
 import { Network } from "../../../Models/Network";
 import toast from "react-hot-toast";
@@ -16,7 +16,6 @@ type ConnectProps = SubmitButtonProps & {
 // TODO implement hifgher order component for different wallet providers
 export const ConnectWalletButton: FC<ConnectProps> = (props) => {
     const { network, defaultText } = props
-    const [loading, setLoading] = useState(false)
 
     const { getWithdrawalProvider: getProvider } = useWallet()
     const provider = useMemo(() => {
@@ -25,7 +24,6 @@ export const ConnectWalletButton: FC<ConnectProps> = (props) => {
 
     const clickHandler = useCallback(async () => {
         try {
-            setLoading(true)
 
             if (!provider) throw new Error(`No provider from ${network?.name}`)
 
@@ -33,9 +31,6 @@ export const ConnectWalletButton: FC<ConnectProps> = (props) => {
         }
         catch (e) {
             toast.error(e.message)
-        }
-        finally {
-            setLoading(false)
         }
 
     }, [provider])
@@ -125,7 +120,7 @@ type LockButtonProps = {
     network: Network,
     activeChain: any,
     onClick: () => Promise<void>,
-    children: JSX.Element | JSX.Element[] | string | undefined
+    children: ReactNode | undefined
 }
 
 export const WalletActionButton: FC<LockButtonProps> = (props) => {
