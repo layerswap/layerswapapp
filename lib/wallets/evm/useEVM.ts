@@ -8,7 +8,7 @@ import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useEffect, useState } from "react"
 import { CreatePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams, RefundParams } from "../phtlc"
-import { writeContract, simulateContract, readContract, waitForTransactionReceipt, signMessage, signTypedData } from '@wagmi/core'
+import { writeContract, simulateContract, readContract, waitForTransactionReceipt, signTypedData } from '@wagmi/core'
 import { ethers } from "ethers"
 import { Commit } from "../../../Models/PHTLC"
 import PHTLCAbi from "../../../lib/abis/atomic/EVM_PHTLC.json"
@@ -16,6 +16,8 @@ import ERC20PHTLCAbi from "../../../lib/abis/atomic/EVMERC20_PHTLC.json"
 import IMTBLZKERC20 from "../../../lib/abis/IMTBLZKERC20.json"
 import formatAmount from "../../formatAmount"
 import LayerSwapApiClient from "../../layerSwapApiClient"
+import { Chain, createPublicClient, http, PublicClient } from "viem"
+import resolveChain from "../../resolveChain"
 
 export default function useEVM(): WalletProvider {
     const { networks } = useSettingsState()
@@ -212,6 +214,49 @@ export default function useEVM(): WalletProvider {
         return parsedResult
     }
 
+    const secureGetDetails = async (params: CommitmentParams): Promise<Commit> => {
+        const { chainId, id, contractAddress, type } = params
+        const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
+
+        const network = networks.find(n => n.chain_id === chainId)
+        const nodeUrls: string[] | undefined = network?.node_urls || (network?.node_url ? [network?.node_url] : undefined)
+        if (!network?.chain_id) throw new Error("No network found")
+        if (!nodeUrls) throw new Error("No node urls found")
+
+        const chain = resolveChain(network) as Chain
+
+        async function getDetailsFetch(client: PublicClient): Promise<Commit> {
+            const result: any = await client.readContract({
+                abi: abi,
+                address: contractAddress,
+                functionName: 'getDetails',
+                args: [id],
+            })
+            return result
+        }
+
+        // Create an array of PublicClients for each RPC endpoint
+        const clients = nodeUrls.map((url) =>
+            createPublicClient({ transport: http(url), chain })
+        )
+
+        // Fetch all results in parallel
+        const results = await Promise.all(clients.map((client) => getDetailsFetch(client)))
+
+        // Extract hashlocks
+        const hashlocks = results.map(r => r.hashlock)
+
+        // Verify all hashlocks are the same
+        const [firstHashlock, ...otherHashlocks] = hashlocks
+        if (!otherHashlocks.every(h => h === firstHashlock)) {
+            throw new Error('Hashlocks do not match across the provided nodes')
+        }
+
+        // All hashlocks match, return one of the results (e.g., the first one)
+        return results[0]
+
+    }
+
     const addLock = async (params: CommitmentParams & LockParams) => {
         const { chainId, id, hashlock, contractAddress } = params
 
@@ -315,12 +360,12 @@ export default function useEVM(): WalletProvider {
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks,
         name,
-
         createPreHTLC,
         claim,
         refund,
         addLock,
         getDetails,
+        secureGetDetails,
         getContracts
     }
 }
