@@ -85,7 +85,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
                     <div className="text-secondary-text">
                         <div className="inline-flex items-center gap-1.5">
                             {itemDescription?.icon && <itemDescription.icon className="rounded flex-shrink-0 h-4 w-4" />}
-                            {itemDescription?.text}
+                            <span className="truncate sm:max-w-full max-w-[120px] whitespace-nowrap overflow-hidden">{itemDescription?.text}</span>
                         </div>
                     </div>
                 </div>
@@ -95,7 +95,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
                 <span className="text-sm flex space-x-2 justif-end">
                     {
                         balance.amount != undefined && !isNaN(balance.amount) ?
-                            <div className="text-right text-secondary-text font-normal text-sm">
+                            <div className="text-right text-secondary-text font-normal text-sm text-nowrap">
                                 {
                                     balance.isLoading ?
                                         <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
