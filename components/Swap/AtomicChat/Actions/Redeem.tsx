@@ -23,12 +23,12 @@ export const RedeemAction: FC = () => {
                     if (!destination_provider)
                         throw new Error("No destination provider")
 
-                    const data = sourceDetails?.id ? await destination_provider.getDetails({
+                    const data =  await destination_provider.getDetails({
                         type: destination_asset?.contract ? 'erc20' : 'native',
                         chainId: destination_network.chain_id,
                         id: commitId,
                         contractAddress: destination_contract as `0x${string}`,
-                    }) : null
+                    })
                     if (data) setDestinationDetails(data)
                     if (data?.claimed == 3) {
                         clearInterval(commitHandler)
@@ -49,12 +49,13 @@ export const RedeemAction: FC = () => {
                     if (!source_provider)
                         throw new Error("No destination provider")
 
-                    const data = sourceDetails?.id ? await source_provider.getDetails({
+                    const data = await source_provider.getDetails({
                         type: source_asset?.contract ? 'erc20' : 'native',
                         chainId: source_network.chain_id,
                         id: commitId,
                         contractAddress: source_contract as `0x${string}`,
-                    }) : null
+                    })
+                    console.log(data)
                     if (data) setSourceDetails(data)
                     if (data?.claimed == 3) {
                         clearInterval(commitHandler)

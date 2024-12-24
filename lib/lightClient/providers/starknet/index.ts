@@ -17,6 +17,7 @@ export default class StarknetLightClient extends _LightClient {
         return this.supportedNetworks.includes(network.name)
     }
 
+    init = async () => { return { initialized: false } }
     getDetails = async ({ network, token, commitId, atomicContract }: { network: Network, token: Token, commitId: string, atomicContract: string }) => {
         return new Promise((resolve: (value: Commit) => void, reject) => {
             try {

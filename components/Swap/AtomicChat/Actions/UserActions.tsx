@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import useWallet from "../../../../hooks/useWallet";
 import { useAtomicState } from "../../../../context/atomicContext";
 import ActionStatus from "./Status/ActionStatus";
@@ -12,7 +12,6 @@ export const UserCommitAction: FC = () => {
     const source_provider = source_network && getWithdrawalProvider(source_network)
     const destination_provider = destination_network && getWithdrawalProvider(destination_network)
     const wallet = source_provider?.getConnectedWallet()
-    const requestingCommit = useRef(false)
 
     const atomicContract = (source_asset?.contract ? source_network?.metadata.htlc_token_contract : source_network?.metadata.htlc_native_contract) as `0x${string}`
 
@@ -77,7 +76,7 @@ export const UserCommitAction: FC = () => {
 
     useEffect(() => {
         let commitHandler: any = undefined
-        if (source_network && commitId && !requestingCommit.current) {
+        if (source_network && commitId) {
             (async () => {
                 commitHandler = setInterval(async () => {
                     if (!source_network?.chain_id)
@@ -101,7 +100,7 @@ export const UserCommitAction: FC = () => {
         return () => {
             clearInterval(commitHandler)
         }
-    }, [source_network])
+    }, [source_network, commitId])
 
     if (!source_network) return <></>
 
@@ -204,10 +203,11 @@ export const UserLockAction: FC = () => {
     return <div className="font-normal flex flex-col w-full relative z-10 space-y-4 grow">
         {
             userLocked ?
-                <ActionStatus
-                    status="pending"
-                    title='Waiting for confirmations'
-                />
+                <ButtonStatus
+                    isDisabled={true}
+                >
+                    Confirm in wallet
+                </ButtonStatus>
                 :
                 source_network && <WalletActionButton
                     activeChain={wallet?.chainId}

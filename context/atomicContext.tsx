@@ -7,7 +7,7 @@ import useSWR from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
 import { CommitFromApi } from '../lib/layerSwapApiClient';
 import { toHex } from 'viem';
-import EVM_PHTLC from '../lib/abis/atomic/EVM_PHTLC.json';
+import LightClient from '../lib/lightClient';
 
 const AtomicStateContext = createContext<DataContextType | null>(null);
 
@@ -20,15 +20,16 @@ type DataContextType = {
     amount?: number,
     commitId?: string,
     commitTxId?: string,
-    destinationDetails?: Commit,
+    destinationDetails?: Commit & { fetchedByLightClient?: boolean },
     userLocked?: boolean,
     sourceDetails?: Commit,
     isTimelockExpired?: boolean,
     completedRefundHash?: string,
     error: string | undefined,
     commitFromApi?: CommitFromApi,
+    lightClient: LightClient | undefined,
     onCommit: (commitId: string, txId: string) => void;
-    setDestinationDetails: (data: Commit) => void;
+    setDestinationDetails: (data: Commit & { fetchedByLightClient?: boolean }) => void;
     setSourceDetails: (data: Commit) => void;
     setUserLocked: (locked: boolean) => void,
     setCompletedRefundHash: (hash: string) => void
@@ -46,11 +47,15 @@ export function AtomicProvider({ children }) {
         source_asset
     } = router.query
 
+    const [lightClient, setLightClient] = useState<LightClient | undefined>(undefined)
+
     const [commitId, setCommitId] = useState<string | undefined>(router.query.commitId as string | undefined)
     const [commitTxId, setCommitTxId] = useState<string | undefined>(router.query.txId as string | undefined)
     const { networks } = useSettingsState()
     const [sourceDetails, setSourceDetails] = useState<Commit | undefined>(undefined)
     const [destinationDetails, setDestinationDetails] = useState<Commit | undefined>(undefined)
+
+    const [commitFromApi, setCommitFromApi] = useState<CommitFromApi | undefined>(undefined)
 
     const [userLocked, setUserLocked] = useState<boolean>(false)
 
@@ -66,40 +71,23 @@ export function AtomicProvider({ children }) {
     const fetcher = (args) => fetch(args).then(res => res.json())
     const url = process.env.NEXT_PUBLIC_LS_API
     const parsedCommitId = commitId ? toHex(BigInt(commitId)) : undefined
-    const { data } = useSWR<ApiResponse<CommitFromApi>>(parsedCommitId ? `${url}/api/swap/${parsedCommitId}` : null, fetcher, { refreshInterval: 5000 })
-    const commitFromApi = data?.data
+    const { data } = useSWR<ApiResponse<CommitFromApi>>((parsedCommitId && commitFromApi?.transactions.length !== 3 && destinationDetails?.claimed !== 3) ? `${url}/api/swap/${parsedCommitId}` : null, fetcher, { refreshInterval: 5000 })
 
-    // useEffect(() => {
-    //     (async () => {
-    //         const heliosWorker = new Worker('/workers/heliosWorker.js', {
-    //             type: 'module',
-    //         })
+    useEffect(() => {
+        if (data?.data) {
+            setCommitFromApi(data.data)
+        }
+    }, [data])
 
-    //         const workerMessage = {
-    //             type: 'init',
-    //             payload: {
-    //                 data: {
-    //                     commitConfigs: {
-    //                         commitId: '0xde14b5f53d16344b49b809122e828a1ab266a067c6f17c4ba797fe697fc43022',
-    //                         abi: EVM_PHTLC,
-    //                         contractAddress: '0xd40Fd3870067292E3AE1b26445419bd9CF0C7595',
-    //                     },
-    //                 },
-    //             },
-    //         }
-    //         heliosWorker.postMessage(workerMessage)
-
-    //         heliosWorker.onmessage = (event) => {
-    //             const data = event.data.data
-    //             debugger
-    //             console.log('Worker event:', event)
-    //         }
-    //         heliosWorker.onerror = (error) => {
-    //             console.error('Worker error:', error)
-    //         }
-    //     })()
-
-    // }, [])
+    useEffect(() => {
+        if (destination_network && destination_network.chain_id === '11155111') {
+            (async () => {
+                const lightClient = new LightClient()
+                await lightClient.initProvider({ network: destination_network })
+                setLightClient(lightClient)
+            })()
+        }
+    }, [destination_network])
 
     useEffect(() => {
         let timer: NodeJS.Timeout;
@@ -153,6 +141,7 @@ export function AtomicProvider({ children }) {
             completedRefundHash,
             error,
             commitFromApi,
+            lightClient,
             setDestinationDetails,
             setSourceDetails,
             setUserLocked,

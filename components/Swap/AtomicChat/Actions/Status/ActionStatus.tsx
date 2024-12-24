@@ -1,5 +1,7 @@
 import { FC, ReactNode } from "react";
-import { CheckCircle2, CircleX } from "lucide-react";
+import { CircleX } from "lucide-react";
+import CheckedIcon from "../../../../icons/CheckedIcon";
+import clsx from "clsx";
 
 type Props = {
     title: ReactNode;
@@ -7,14 +9,22 @@ type Props = {
 }
 const ActionStatus: FC<Props> = ({ title, status }) => {
 
-    return <div className="flex text-center space-x-2 bg-secondary-700 p-3 rounded-componentRoundness">
+    return <div
+        className={clsx('flex text-center space-x-3.5 bg-secondary-700 p-3 rounded-componentRoundness', {
+            '!bg-primary-900 !p-2 !pl-2.5': status === 'success',
+        })}
+    >
         <div className='relative self-center'>
             {resolveIcon(status)}
         </div>
-        <div className="text-md text-left self-center text-secondary-text">
+        <div
+            className={clsx('text-md text-left self-center text-primary-text', {
+                '!text-black': status === 'success',
+            })}
+        >
             {title}
         </div>
-    </div>
+    </div >
 }
 
 const resolveIcon = (status: "pending" | "success" | "error") => {
@@ -26,9 +36,9 @@ const resolveIcon = (status: "pending" | "success" | "error") => {
                 <div className='relative top-0 left-0 w-6 h-6 md:w-7 md:h-7 scale-50 bg bg-primary rounded-full '></div>
             </>
         case "success":
-            return <CheckCircle2 className="h-5 w-5 text-primary" aria-hidden="true" />
+            return <CheckedIcon className="h-8 w-8 !text-black" aria-hidden="true" />
         case "error":
-            return <CircleX className="h-5 w-5 text-red-500" aria-hidden="true" />
+            return <CircleX className="h-7 w-7 text-red-500" aria-hidden="true" />
     }
 }
 

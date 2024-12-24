@@ -5,7 +5,7 @@ import useWallet from "../../../hooks/useWallet";
 import Summary from "./Summary";
 import { useFee } from "../../../context/feeContext";
 import ConnectedWallet from "./ConnectedWallet";
-import { ActionsWithProgressbar, ResolveMessages } from "./Resolver";
+import { Actions } from "./Resolver";
 import { useAtomicState } from "../../../context/atomicContext";
 import ResizablePanel from "../../ResizablePanel";
 
@@ -78,7 +78,7 @@ const Commitment: FC<ContainerProps> = (props) => {
                 </ResizablePanel>
             </Widget.Content>
             <Widget.Footer sticky={true}>
-                <ActionsWithProgressbar />
+                <Actions />
             </Widget.Footer>
         </>
     )

@@ -3,6 +3,9 @@ import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethe
 self.onmessage = (e) => {
     switch (e.data.type) {
         case 'init':
+            initWorker(e.data.payload.data.initConfigs)
+            break;
+        case 'getDetails':
             getCommit(e.data.payload.data.commitConfigs);
             break;
         default:
@@ -10,14 +13,15 @@ self.onmessage = (e) => {
             console.error('Unhandled message type:', e.data.type);
     }
 };
-async function getCommit(commitConfigs) {
+
+async function initWorker(initConfigs) {
     try {
         await init();
 
-        const ethCheckpoint = await fetch(commitConfigs.hostname + '/api/getCheckpoint').then(res => res.json());
+        const ethCheckpoint = await fetch(initConfigs.hostname + '/api/getCheckpoint').then(res => res.json());
         const configEthereum = {
             executionRpc: "https://eth-sepolia.g.alchemy.com/v2/ErGCcrn6KRA91KfnRkqtyb3SJVdYGz1S",
-            consensusRpc: commitConfigs.hostname + '/api/consensusRpc',
+            consensusRpc: initConfigs.hostname + '/api/consensusRpc',
             checkpoint: ethCheckpoint?.data.finality.finalized.root || "0x5d7fbedda647649b940f099fe79832dc0b031b08e5558ff7371bcce472471ab4",
             dbType: "localstorage",
             network: 'sepolia'
@@ -26,17 +30,27 @@ async function getCommit(commitConfigs) {
             executionRpc: "https://opt-mainnet.g.alchemy.com/v2/ErGCcrn6KRA91KfnRkqtyb3SJVdYGz1S",
             network: "op-mainnet",
         };
-        const networkName = commitConfigs.network?.toLowerCase().includes('optimism') ? "opstack" : 'ethereum'
+        const networkName = initConfigs.network?.toLowerCase().includes('optimism') ? "opstack" : 'ethereum'
 
         const providerConfig = networkName === 'opstack' ? opstackConfigs : configEthereum;
         const heliosProvider = new HeliosProvider(providerConfig, networkName);
         await heliosProvider.sync();
-        const web3Provider = new ethers.providers.Web3Provider(heliosProvider);
+        self.web3Provider = new ethers.providers.Web3Provider(heliosProvider);
+        self.postMessage({ type: 'init', data: { initialized: true } });
+    }
+    catch (e) {
+        self.postMessage({ type: 'init', data: { initialized: false } });
+        console.log(e);
+    }
+}
+
+async function getCommit(commitConfigs) {
+    try {
         const { abi, contractAddress, commitId } = commitConfigs;
         async function getCommitDetails(provider) {
             if (provider) {
                 try {
-                    const contract = new ethers.Contract(contractAddress, abi, web3Provider);
+                    const contract = new ethers.Contract(contractAddress, abi, provider);
                     const res = await contract.getDetails(commitId);
                     return res;
                 }
@@ -57,7 +71,7 @@ async function getCommit(commitConfigs) {
                     }
 
                     attempts++;
-                    const data = await getCommitDetails(web3Provider);
+                    const data = await getCommitDetails(self.web3Provider);
                     if (data?.hashlock && data?.hashlock !== "0x0100000000000000000000000000000000000000000000000000000000000000" && data?.hashlock !== "0x0000000000000000000000000000000000000000000000000000000000000000") {
                         self.postMessage({ type: 'commitDetails', data: data });
                         clearInterval(getDetailsHandler);

@@ -2,31 +2,31 @@ import { FC, useEffect } from "react";
 import { Network, Token } from "../../../../Models/Network";
 import useWallet, { WalletProvider } from "../../../../hooks/useWallet";
 import { useAtomicState } from "../../../../context/atomicContext";
-import LightClient from "../../../../lib/lightClient";
 import SubmitButton from "../../../buttons/submitButton";
 
 export const LpLockingAssets: FC = () => {
-    const { destination_network, commitId, setDestinationDetails, destination_asset } = useAtomicState()
+    const { destination_network, commitId, setDestinationDetails, destination_asset, lightClient } = useAtomicState()
     const { getWithdrawalProvider } = useWallet()
 
     const destination_provider = destination_network && getWithdrawalProvider(destination_network)
-
     const atomicContract = (destination_asset?.contract ? destination_network?.metadata.htlc_token_contract : destination_network?.metadata.htlc_native_contract) as `0x${string}`
-    const supportsHelios = destination_network?.chain_id && destination_network?.chain_id == "11155111"
 
     const getDetails = async ({ provider, network, commitId, asset }: { provider: WalletProvider, network: Network, commitId: string, asset: Token }) => {
-        if (supportsHelios) {
-            const lightClient = new LightClient({
-                network: network,
-                token: asset,
-                commitId,
-                atomicContract
-            })
-
-            const destinationDetails = await lightClient.getHashlock()
-            if (destinationDetails) {
-                setDestinationDetails(destinationDetails)
-                return
+        if (lightClient) {
+            try {
+                const destinationDetails = await lightClient.getHashlock({
+                    network: network,
+                    token: asset,
+                    commitId,
+                    atomicContract
+                })
+                if (destinationDetails) {
+                    setDestinationDetails({ ...destinationDetails, fetchedByLightClient: true })
+                    return
+                }
+            }
+            catch (e) {
+                console.log(e)
             }
         }
 
@@ -45,7 +45,7 @@ export const LpLockingAssets: FC = () => {
                     })
 
                     if (destiantionDetails?.hashlock) {
-                        setDestinationDetails(destiantionDetails)
+                        setDestinationDetails({ ...destiantionDetails, fetchedByLightClient: false })
                         clearInterval(lockHandler)
                     }
                     return
@@ -65,7 +65,7 @@ export const LpLockingAssets: FC = () => {
             })
 
             if (destiantionDetails?.hashlock) {
-                setDestinationDetails(destiantionDetails)
+                setDestinationDetails({ ...destiantionDetails, fetchedByLightClient: false })
                 clearInterval(lockHandler)
             }
 
