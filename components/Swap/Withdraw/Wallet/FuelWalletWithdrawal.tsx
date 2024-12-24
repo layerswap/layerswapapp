@@ -6,43 +6,42 @@ import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore
 import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
 import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
-import { useSettingsState } from '../../../../context/settings';
 import {
     useWallet as useFuelWallet,
 } from '@fuels/react';
-import { bn } from 'fuels';
+import { Provider, Contract } from 'fuels';
+import FuelWatchContractABI from '../../../../lib/abis/FuelWatchContractABI.json';
 
-const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, token, amount }) => {
+const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, token, amount, depositAddress }) => {
     const [loading, setLoading] = useState(false);
     const { setSwapTransaction } = useSwapTransactionStore()
 
     const { provider } = useWallet(network, 'withdrawal');
     const { wallet: fuelWallet } = useFuelWallet()
-
     const wallet = provider?.activeWallet
-    const networkName = network?.name
-
-    const { networks } = useSettingsState()
-    const networkWithTokens = networks.find(n => n.name === networkName)
 
     const handleTransfer = useCallback(async () => {
         setLoading(true)
         try {
 
             if (!fuelWallet) throw Error("Fuel wallet not connected")
+            if (!network) throw Error("Network not found")
 
-            // The amount of coins to transfer.
-            const bnAmount = bn(amount);
+            const fuelProvider = await Provider.create(network.node_url);
+            const contract = new Contract('0x9599a0fee081405d22a33b1ce892b47688660a38c5f8509559f34a3f960b89f7', FuelWatchContractABI, fuelWallet);
 
-            // Create a transaction request using wallet helper
-            const transactionRequest = token?.contract ? await fuelWallet.createTransfer('0x9E22044B082B1ff5B2b824De1068F9A04A02ff0E1d36807B2b9Dda8bB65071C3', bnAmount, token?.contract) : await fuelWallet.createTransfer('0x9E22044B082B1ff5B2b824De1068F9A04A02ff0E1d36807B2b9Dda8bB65071C3', bnAmount);
+            const { waitForResult } = await contract.functions
+                .test_function(42069)
+                .addTransfer({
+                    destination: depositAddress as string,
+                    amount: 100,
+                    assetId: fuelProvider.getBaseAssetId(),
+                })
+                .call();
 
-            // Broadcast the transaction to the network
-            const transactionResponse = await fuelWallet.sendTransaction(
-                transactionRequest, // The transaction to send
-            )
+            const transactionResponse = await waitForResult()
 
-            if (swapId && transactionResponse) setSwapTransaction(swapId, BackendTransactionStatus.Completed, transactionResponse.id)
+            // if (swapId && transactionResponse) setSwapTransaction(swapId, BackendTransactionStatus.Completed, transactionResponse.id)
 
         }
         catch (e) {
@@ -56,7 +55,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
         }
     }, [swapId, callData, network, token, amount, fuelWallet])
 
-    if (!fuelWallet) {
+    if (!wallet) {
         return <ConnectWalletButton />
     }
 

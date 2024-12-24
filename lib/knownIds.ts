@@ -172,6 +172,8 @@ export default class KnownInternalNames {
 
         public static readonly FuelTestnet: string = "FUEL_TESTNET"
 
+        public static readonly FuelDevnet: string = "FUEL_DEVNET"
+
         public static readonly TronMainnet: string = "TRON_MAINNET"
 
         public static readonly TronTestnet: string = "TRON_TESTNET"
