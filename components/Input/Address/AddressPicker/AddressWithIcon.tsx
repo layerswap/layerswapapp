@@ -123,7 +123,7 @@ type ExtendedAddressProps = {
 const calculateMaxWidth = (balance: string | undefined) => {
     const symbolCount = balance?.length || 0;
 
-    if (symbolCount <= 9) {
+    if (symbolCount <= 6) {
         return '';
     } else if (symbolCount <= 12) {
         return 'max-w-[100px] mr-1';
