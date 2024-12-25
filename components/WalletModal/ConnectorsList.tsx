@@ -1,7 +1,7 @@
 import { FC } from 'react'
 import { QRCodeSVG } from 'qrcode.react';
 import { resolveWalletConnectorIcon } from '../../lib/wallets/utils/resolveWalletIcon';
-import { Loader } from 'lucide-react';
+import { LoaderCircle, Loader } from 'lucide-react';
 import { Wallet } from '../../Models/WalletProvider';
 import { ModalWalletProvider } from '.';
 
@@ -50,6 +50,9 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
         }
     }
 
+    const selectedWallet = provider?.availableWalletsForConnect?.find((wallet) => wallet.name === selectedProvider?.connector?.name)
+    const ProviderIcon = resolveWalletConnectorIcon({ connector: selectedProvider?.id, iconUrl: selectedWallet?.icon });
+    
     if (selectedProvider?.connector?.qr) return <div className="flex flex-col justify-start space-y-2">
         <div className='w-full flex justify-center pt-2'>
             <QRCodeSVG
@@ -77,41 +80,47 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
     return (
         <div className="flex flex-col gap-1 w-full overflow-y-auto styled-scroll">
             {
-                provider?.availableWalletsForConnect?.sort((a, b) => (a.type === 'injected' ? 0 : a.order || 100) - (b.type === 'injected' ? 0 : b.order || 100))?.map((connector, index) => {
-                    const connectorName = connector?.name
-                    const connectorId = connector?.id
-
-                    const Icon = resolveWalletConnectorIcon({ connector: connectorId, iconUrl: connector.icon })
-                    const isLoading = provider.connector?.name === connectorName
-
-                    return (
-                        <div key={index}>
-                            <button
-                                type="button"
-                                disabled={!!provider.connector}
-                                className="w-full flex items-center justify-between hover:bg-secondary-500 transition-colors duration-200 rounded-xl px-2 py-2"
-                                onClick={() => connect(connector)}
-                            >
-                                <div className="flex gap-3 items-center font-semibold">
-                                    <Icon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
-                                    <div className='flex flex-col items-start'>
-                                        <p>{connectorName}</p>
-                                        {
-                                            connector.type === 'injected' &&
-                                            <p className='text-xs text-secondary-text font-medium'>Installed</p>
-                                        }
-                                    </div>
-                                </div>
-                                <div className='inline-flex items-center gap-2'>
-                                    {
-                                        isLoading &&
-                                        <Loader className='h-4 w-4 animate-spin' />
-                                    }
-                                </div>
-                            </button>
+                selectedWallet?.name ? (
+                    <div className="w-full flex items-center justify-center p-6">
+                        <div className="flex gap-3 items-center font-semibold">
+                            <div className="flex flex-col items-center">
+                                <ProviderIcon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
+                                <p className='text-xs'>Opening {selectedWallet?.name}...</p>
+                                <span className="text-base font-medium py-1">Confirm connection in the extension</span>
+                                <LoaderCircle className='h-4 w-4 animate-spin' />
+                            </div>
                         </div>
-                    )
-                })
+                    </div>
+                ) : (
+                    provider?.availableWalletsForConnect?.sort((a, b) => (a.type === 'injected' ? 0 : a.order || 100) - (b.type === 'injected' ? 0 : b.order || 100))?.map((connector, index) => {
+                        const connectorName = connector?.name;
+                        const connectorId = connector?.id;
+
+                        const Icon = resolveWalletConnectorIcon({ connector: connectorId, iconUrl: connector.icon });
+
+                        return (
+                            <div key={index}>
+                                <button
+                                    type="button"
+                                    disabled={!!provider.connector}
+                                    className="w-full flex items-center justify-between hover:bg-secondary-500 transition-colors duration-200 rounded-xl px-2 py-2"
+                                    onClick={() => connect(connector)}
+                                >
+                                    <div className="flex gap-3 items-center font-semibold">
+                                        <Icon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
+                                        <div className="flex flex-col items-start">
+                                            <p>{connectorName}</p>
+                                            {
+                                                connector.type === 'injected' &&
+                                                <p className="text-xs text-secondary-text font-medium">Installed</p>
+                                            }
+                                        </div>
+                                    </div>
+                                </button>
+                            </div>
+                        );
+                    })
+                )
             }
         </div>
     )
