@@ -214,7 +214,7 @@ export default function useEVM(): WalletProvider {
         return parsedResult
     }
 
-    const secureGetDetails = async (params: CommitmentParams): Promise<Commit> => {
+    const secureGetDetails = async (params: CommitmentParams): Promise<Commit | null> => {
         const { chainId, id, contractAddress, type } = params
         const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
 
@@ -244,7 +244,9 @@ export default function useEVM(): WalletProvider {
         const results = await Promise.all(clients.map((client) => getDetailsFetch(client)))
 
         // Extract hashlocks
-        const hashlocks = results.map(r => r.hashlock)
+        const hashlocks = results.map(r => r.hashlock).filter(h => h !== "0x0100000000000000000000000000000000000000000000000000000000000000" && h !== "0x0000000000000000000000000000000000000000000000000000000000000000")
+
+        if (!hashlocks.length) return null
 
         // Verify all hashlocks are the same
         const [firstHashlock, ...otherHashlocks] = hashlocks
