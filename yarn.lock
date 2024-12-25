@@ -6865,14 +6865,20 @@
   resolved "https://registry.yarnpkg.com/@starknet-react/chains/-/chains-3.1.0.tgz#35c75f8da68a8871e74a377a59b7de1345151312"
   integrity sha512-h+fxh+Bs8h0ZSEX651vG3mn1NtMKzFDSHqrX7Q8YRRIeTKolPCx4vmoi5Gg19SXr/9iIVSwgx6qe4rVZTNfhcQ==
 
-"@starknet-react/core@^3.6.0":
-  version "3.6.2"
-  resolved "https://registry.yarnpkg.com/@starknet-react/core/-/core-3.6.2.tgz#c39193e2dc5c18cf2e6db94d11b625f345c794e3"
-  integrity sha512-cEheoYB8Sy65+su1A7WzdyX/Qq89wLQXFmqOwsaIwpKNy1zzcwZfEOStCpzs6jLh7yEy3QU6arbn7wytt5OhKQ==
+"@starknet-react/chains@^3.1.1":
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/@starknet-react/chains/-/chains-3.1.1.tgz#cc2f1084a2f3fd914705c6c3240cb56c7665d2f5"
+  integrity sha512-1EboxfkZlmLNE3qegyq+/rJrj+FswQaI5j60y2l1mV6d/QuObtxwQhPAso1gklCnzr9p3G0NdZYB87P2QJfLhg==
+
+"@starknet-react/core@^3.6.3":
+  version "3.6.3"
+  resolved "https://registry.yarnpkg.com/@starknet-react/core/-/core-3.6.3.tgz#c9efc855cd3b1a1c762d9eb1680f64189d621ecb"
+  integrity sha512-838NJVlLKtb7TO9fr/PPBpelgtnsybDoI3NhPAGpBFheB/1ZvFKGWXf8NLJY1soY+ctCVTh1Uai4FH3VHa3R7A==
   dependencies:
     "@starknet-io/types-js" "^0.7.7"
-    "@starknet-react/chains" "^3.1.0"
+    "@starknet-react/chains" "^3.1.1"
     "@tanstack/react-query" "^5.25.0"
+    abi-wan-kanabi "^2.2.4"
     eventemitter3 "^5.0.1"
     viem "^2.21.1"
     zod "^3.22.4"
@@ -10627,6 +10633,16 @@ abi-wan-kanabi@^2.2.2:
   version "2.2.3"
   resolved "https://registry.yarnpkg.com/abi-wan-kanabi/-/abi-wan-kanabi-2.2.3.tgz#d1c410325aac866f31f3d589279a87b341e5641f"
   integrity sha512-JlqiAl9CPvTm5kKG0QXmVCWNWoC/XyRMOeT77cQlbxXWllgjf6SqUmaNqFon72C2o5OSZids+5FvLdsw6dvWaw==
+  dependencies:
+    ansicolors "^0.3.2"
+    cardinal "^2.1.1"
+    fs-extra "^10.0.0"
+    yargs "^17.7.2"
+
+abi-wan-kanabi@^2.2.4:
+  version "2.2.4"
+  resolved "https://registry.yarnpkg.com/abi-wan-kanabi/-/abi-wan-kanabi-2.2.4.tgz#47ebbafbb7f8df81773efbdcca60cdda8008c821"
+  integrity sha512-0aA81FScmJCPX+8UvkXLki3X1+yPQuWxEkqXBVKltgPAK79J+NB+Lp5DouMXa7L6f+zcRlIA/6XO7BN/q9fnvg==
   dependencies:
     ansicolors "^0.3.2"
     cardinal "^2.1.1"
@@ -15009,6 +15025,13 @@ get-size@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/get-size/-/get-size-3.0.0.tgz#00e39a8042a3de237b2fcf288eaf55d3f472417c"
   integrity sha512-Y8aiXLq4leR7807UY0yuKEwif5s3kbVp1nTv+i4jBeoUzByTLKkLWu/HorS6/pB+7gsB0o7OTogC8AoOOeT0Hw==
+
+get-starknet-core@^3.3.4:
+  version "3.3.4"
+  resolved "https://registry.yarnpkg.com/get-starknet-core/-/get-starknet-core-3.3.4.tgz#9ef9a7940156844d769dc8323ca4e2e9137568bf"
+  integrity sha512-KEnzAMr4f7z7dMh4g5lWDZ+eXtOEl++VPN5Flmmj8HiPmRrPOINEIwwNL/dN+Ey1kBxQOtOMQwCxJ9qlkRIgFw==
+  dependencies:
+    "@module-federation/runtime" "^0.1.2"
 
 get-starknet-core@^4.0.0-next.3:
   version "4.0.0"
