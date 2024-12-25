@@ -23,6 +23,7 @@ type Props = {
 const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, network, balance }) => {
 
     const difference_in_days = addressItem?.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(addressItem.date).getTime()) / (1000 * 3600 * 24))) : undefined
+    const maxWalletNameWidth = calculateMaxWidth(String(balance?.amount));
 
     const descriptions = [
         {
@@ -43,7 +44,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
         },
         {
             group: AddressGroup.ConnectedWallet,
-            text: <p>{connectedWallet?.displayName || 'Connected wallet'}</p>,
+            text: <p className={`${maxWalletNameWidth} text-ellipsis sm:max-w-full text-nowrap overflow-hidden`}>{connectedWallet?.displayName || 'Connected wallet'}</p>,
             icon: connectedWallet?.icon || WalletIcon
         },
         {
@@ -54,7 +55,6 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
     ]
 
     const itemDescription = descriptions.find(d => d.group === addressItem.group)
-    const maxWalletNameWidth = calculateMaxWidth(String(balance?.amount))
 
     return (
         <div className="w-full flex items-center justify-between">
@@ -85,9 +85,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
                         {itemDescription?.icon && (
                             <itemDescription.icon className="rounded flex-shrink-0 h-4 w-4" />
                         )}
-                        <span className={`${maxWalletNameWidth} text-ellipsis sm:max-w-full text-nowrap overflow-hidden`}>
-                            {itemDescription?.text}
-                        </span>
+                        {itemDescription?.text}
                     </div>
                 </div>
             </div>
