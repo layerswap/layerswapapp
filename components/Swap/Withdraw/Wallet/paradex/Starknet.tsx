@@ -1,5 +1,5 @@
 import { WalletIcon } from 'lucide-react';
-import { FC, useCallback, useMemo, useState } from 'react'
+import { FC, useCallback, useState } from 'react'
 import useWallet from '../../../../../hooks/useWallet';
 import { WithdrawPageProps } from '../WalletTransferContent';
 import * as Paradex from "./lib";
@@ -19,11 +19,8 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swa
 
     const { setSwapTransaction } = useSwapTransactionStore();
 
-    const { getWithdrawalProvider: getProvider } = useWallet()
-    const provider = useMemo(() => {
-        return starknet && getProvider(starknet)
-    }, [starknet, getProvider])
-    const wallet = provider?.getConnectedWallet()
+    const { provider } = useWallet(starknet, 'withdrawal')
+    const wallet = provider?.activeWallet
 
     const handleTransfer = useCallback(async () => {
         if (!swapId || !token) {
@@ -72,7 +69,7 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swa
                 toast(e.message)
         }
         setLoading(false)
-    }, [wallet, swapId, starknet, token, callData, amount])
+    }, [wallet?.address, swapId, starknet, token, callData, amount])
 
 
     return (

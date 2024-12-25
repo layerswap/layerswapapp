@@ -1,8 +1,6 @@
-import { FC, useEffect, useState, memo } from "react";
+import { FC } from "react";
 import Image from 'next/image'
-import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { ExchangeNetwork } from "../../Models/Exchange";
 import { useFormikContext } from "formik";
 
 type Props = {

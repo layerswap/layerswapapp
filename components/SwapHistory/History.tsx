@@ -19,7 +19,7 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import SwapDetails from "./SwapDetailsComponent"
 import { addressFormat } from "../../lib/address/formatter";
 import { useSettingsState } from "../../context/settings";
-import VaulDrawer from "../modal/vaul";
+import VaulDrawer from "../modal/vaulModal";
 
 const PAGE_SIZE = 20
 type ListProps = {
@@ -181,7 +181,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                             >
                                 {collapsablePendingSwap &&
                                     <div className="w-full flex justify-end pb-2">
-                                        <button onClick={() => setShowAll(!showAll)} className='flex items-center gap-1 text-xs font-normal text-secondary-text hover:text-primary-text pr-2 '>
+                                        <button type="button" onClick={() => setShowAll(!showAll)} className='flex items-center gap-1 text-xs font-normal text-secondary-text hover:text-primary-text pr-2 '>
                                             <p className="select-none">See all incomplete swaps</p>
                                             <ChevronDown className={`${showAll && 'rotate-180'} transition-transform duation-200 w-4 h-4`} />
                                         </button>
@@ -229,7 +229,6 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                 setShow={handleSWapDetailsShow}
                 header='Swap details'
                 modalId="swapDetails"
-                snapPointsCount={2}
             >
                 {
                     selectedSwap &&
@@ -247,7 +246,7 @@ type BlankHistoryProps = {
 
 const BlankHistory = ({ onNewTransferClick, onLogin }: BlankHistoryProps) => {
 
-    return <div className="w-full h-[70vh] sm:h-full min-h-[inherit] flex flex-col justify-between items-center ">
+    return <div className="w-full h-full min-h-[inherit] flex flex-col justify-between items-center space-y-10">
         <div />
         <div className="w-full h-full flex flex-col justify-center items-center ">
             <HistoryItemSceleton className="scale-[.63] w-full shadow-lg mr-7" />
@@ -275,7 +274,7 @@ const BlankHistory = ({ onNewTransferClick, onLogin }: BlankHistoryProps) => {
 
 const ConnectOrSignIn = ({ onLogin }: SignInProps) => {
 
-    return <div className="w-full h-full  flex flex-col justify-between items-center ">
+    return <div className="w-full h-full flex flex-col justify-between items-center space-y-10">
         <div className="flex flex-col items-center justify-center text-center w-full h-full">
             <HistoryItemSceleton className="scale-[.63] w-full shadow-lg mr-7" />
             <HistoryItemSceleton className="scale-[.63] -mt-12 shadow-card ml-7 w-full" />
@@ -289,7 +288,7 @@ const ConnectOrSignIn = ({ onLogin }: SignInProps) => {
             </div>
         </div>
         <div className="flex flex-col items-center w-full space-y-3">
-            <ConnectButton className="w-full" side="top">
+            <ConnectButton className="w-full">
                 <div className="w-full py-2.5 px-3 text-xl font-semibold bg-primary-text-placeholder hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-lg text-secondary-950">
                     <div className="text-center text-xl font-semibold">Connect Wallet</div>
                 </div>
@@ -318,7 +317,7 @@ const SignIn = ({ onLogin }: SignInProps) => {
                         <GuestCard onLogin={onLogin} />
                     </div>
                     :
-                    <button onClick={() => setShowGuestCard(true)} className="text-secondary-text w-fit mx-auto flex justify-center mt-2 underline hover:no-underline">
+                    <button type="button" onClick={() => setShowGuestCard(true)} className="text-secondary-text w-fit mx-auto flex justify-center mt-2 underline hover:no-underline">
                         <span>Sign in with your email</span>
                     </button>
             }

@@ -1,5 +1,4 @@
 import { useEffect } from "react"
-import { Network } from "../../Models/Network";
 import { useRouter } from "next/router";
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY;
@@ -29,17 +28,17 @@ export const initilizePassport = async (basePath: string) => {
 
 export var passportInstance: any = undefined
 
-export function ImtblPassportProvider({ children, from, to }: { children: JSX.Element | JSX.Element[], from: Network | undefined, to?: Network | undefined }) {
+export function ImtblPassportProvider({ children }: { children: JSX.Element | JSX.Element[] }) {
     const router = useRouter();
 
     useEffect(() => {
-        if ((from?.name.startsWith('IMMUTABLE') || to?.name.startsWith('IMMUTABLE')) && !passportInstance) {
+        if (!passportInstance) {
             (async () => {
                 await initilizePassport(router.basePath)
                 passportInstance.connectEvm() // EIP-6963
             })()
         }
-    }, [from, to, passportInstance])
+    }, [passportInstance])
 
     return (
         <>

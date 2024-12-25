@@ -1,5 +1,5 @@
 
-import { FC, useMemo } from "react"
+import { FC } from "react"
 import Image from 'next/image'
 import BackgroundField from "../../backgroundField";
 import { Clock } from "lucide-react"
@@ -19,11 +19,8 @@ type Props = {
 const Rewards: FC<Props> = ({ campaign }) => {
     const network = campaign?.network
 
-    const { getAutofillProvider: getProvider } = useWallet()
-    const provider = useMemo(() => {
-        return network && getProvider(network)
-    }, [network, getProvider])
-    const wallet = provider?.getConnectedWallet()
+    const { provider } = useWallet(network, 'autofil')
+    const wallet = provider?.activeWallet
 
     const address = wallet?.address
 

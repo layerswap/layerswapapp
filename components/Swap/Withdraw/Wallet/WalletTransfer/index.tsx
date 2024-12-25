@@ -1,7 +1,5 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
-import { useSwitchChain } from 'wagmi'
-
 import { PublishedSwapTransactions } from "../../../../../lib/layerSwapApiClient";
 import { ChangeNetworkButton, ConnectWalletButton } from "./buttons";
 import TransferTokenButton from "./TransferToken";
@@ -17,25 +15,14 @@ const TransferFromWallet: FC<WithdrawPageProps> = ({
     swapId,
 }) => {
 
-
     const { isConnected, chain: activeChain } = useAccount();
-    const { getWithdrawalProvider } = useWallet()
+    const { provider } = useWallet(network, 'withdrawal')
 
-    const provider = useMemo(() => {
-        return network && getWithdrawalProvider(network)
-    }, [network, getWithdrawalProvider])
-
-    const wallet = provider?.getConnectedWallet(network)
+    const wallet = provider?.activeWallet
 
     const networkChainId = Number(network?.chain_id) ?? undefined
-    const { switchChain } = useSwitchChain();
 
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
-
-    useEffect(() => {
-        if (activeChain?.id === networkChainId)
-            switchChain({ chainId: networkChainId })
-    }, [activeChain, networkChainId])
 
     useEffect(() => {
         try {

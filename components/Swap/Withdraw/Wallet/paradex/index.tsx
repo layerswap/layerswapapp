@@ -1,5 +1,5 @@
 import { WalletIcon } from 'lucide-react';
-import { FC, useMemo, useState } from 'react'
+import { FC, useState } from 'react'
 import useWallet from '../../../../../hooks/useWallet';
 import { WithdrawPageProps } from '../WalletTransferContent';
 import { useSettingsState } from '../../../../../context/settings';
@@ -18,18 +18,11 @@ const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ amount, token, callData,
     const starknet = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetGoerli || n.name === KnownInternalNames.Networks.StarkNetSepolia);
     const selectedProvider = useWalletStore((state) => state.selectedProveder)
 
-    const { getWithdrawalProvider } = useWallet()
+    const { provider: evmProvider } = useWallet(l1Network, 'withdrawal')
+    const { provider: starknetProvider } = useWallet(starknet, 'withdrawal')
 
-    const evmProvider = useMemo(() => {
-        return l1Network && getWithdrawalProvider(l1Network)
-    }, [l1Network, getWithdrawalProvider])
-
-    const starknetProvider = useMemo(() => {
-        return starknet && getWithdrawalProvider(starknet)
-    }, [l1Network, getWithdrawalProvider])
-
-    const evmWallet = evmProvider?.getConnectedWallet()
-    const starknetWallet = starknetProvider?.getConnectedWallet()
+    const evmWallet = evmProvider?.activeWallet
+    const starknetWallet = starknetProvider?.activeWallet
 
     if (selectedProvider === evmProvider?.name && evmWallet) {
         return <Evm amount={amount} callData={callData} token={token} swapId={swapId} />

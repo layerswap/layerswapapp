@@ -10,10 +10,8 @@ import { resolveExchangesURLForSelectedToken } from "../../helpers/routes";
 import { ApiResponse } from "../../Models/ApiResponse";
 import useSWR from "swr";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
-import { CircleAlert, RouteOff } from "lucide-react";
-import { QueryParams } from "../../Models/QueryParams";
 import RouteIcon from "./RouteIcon";
+import { useSettingsState } from "../../context/settings";
 
 const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -21,6 +19,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const { to, fromCurrency, toCurrency, from, currencyGroup, toExchange, fromExchange } = values
+    const { sourceExchanges, destinationExchanges } = useSettingsState();
 
     const name = 'currencyGroup'
     const query = useQueryState()
@@ -30,7 +29,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
     const {
         data: exchanges,
         error
-    } = useSWR<ApiResponse<Exchange[]>>(`${exchangeRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
+    } = useSWR<ApiResponse<Exchange[]>>(`${exchangeRoutesURL}`, apiClient.fetcher, { keepPreviousData: true, fallbackData: { data: direction === 'from' ? sourceExchanges : destinationExchanges }, dedupingInterval: 10000 })
 
     const availableAssetGroups = exchanges?.data?.find(e => e.name === exchange?.name)?.token_groups
 

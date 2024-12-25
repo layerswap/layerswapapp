@@ -2,16 +2,16 @@ import { Connection, PublicKey, SystemProgram, Transaction, TransactionInstructi
 import { createAssociatedTokenAccountInstruction, createTransferInstruction, getAccount, getAssociatedTokenAddress } from '@solana/spl-token';
 import { Network, Token } from "../../../Models/Network";
 
-const transactionBuilder = async (network: Network, token: Token, walletPublicKey: PublicKey, recipientAddress: string | undefined) => {
+const transactionBuilder = async (network: Network, token: Token, walletPublicKey: PublicKey, recipientAddress?: string | undefined) => {
 
     const connection = new Connection(
         `${network.node_url}`,
         "confirmed"
     );
+    const recipientPublicKey = new PublicKey(recipientAddress || new Array(32).fill(0));
 
     if (token.contract) {
         const sourceToken = new PublicKey(token?.contract);
-        const recipientPublicKey = new PublicKey(recipientAddress || '');
 
         const transactionInstructions: TransactionInstruction[] = [];
         const associatedTokenFrom = await getAssociatedTokenAddress(
@@ -54,7 +54,6 @@ const transactionBuilder = async (network: Network, token: Token, walletPublicKe
     }
     else {
         const transaction = new Transaction();
-        const recipientPublicKey = new PublicKey(recipientAddress || '');
         const amountInLamports = 20000 * Math.pow(10, Number(token?.decimals));
 
         const transferInstruction = SystemProgram.transfer({

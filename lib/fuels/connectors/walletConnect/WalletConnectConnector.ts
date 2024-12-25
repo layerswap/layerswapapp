@@ -245,7 +245,6 @@ export class WalletConnectConnector extends PredicateConnector {
   public async connect(): Promise<boolean> {
     this.createModal();
     const result = await new Promise<boolean>((resolve, reject) => {
-      console.log(this.config)
       this.config.wagmiConfig.connectors.find((c) => c.id === 'walletConnect')?.connect()
       const wagmiConfig = this.getWagmiConfig();
       const unsub = this.appKit.subscribeEvents(async (event) => {

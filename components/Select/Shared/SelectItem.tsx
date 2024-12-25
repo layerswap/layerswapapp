@@ -34,4 +34,3 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
         </div>
     );
 }
-

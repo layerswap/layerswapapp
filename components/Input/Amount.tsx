@@ -2,10 +2,12 @@ import { useFormikContext } from "formik";
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import NumericInput from "./NumericInput";
-import { useBalancesState } from "../../context/balances";
 import { useFee } from "../../context/feeContext";
 import dynamic from "next/dynamic";
 import { useQueryState } from "../../context/query";
+import useSWRGas from "../../lib/gases/useSWRGas";
+import useSWRBalance from "../../lib/balances/useSWRBalance";
+import { useSwapDataState } from "../../context/swap";
 
 const MinMax = dynamic(() => import("./dynamic/MinMax"), {
     loading: () => <></>,
@@ -18,14 +20,17 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { fromCurrency, from, to, amount, toCurrency, fromExchange, toExchange } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fee, isFeeLoading } = useFee()
     const [isFocused, setIsFocused] = useState(false);
-    const { balances, isBalanceLoading, gases, isGasLoading } = useBalancesState()
-    const [walletAddress, setWalletAddress] = useState<string>()
+    const { selectedSourceAccount } = useSwapDataState()
+    const sourceAddress = selectedSourceAccount?.address
+
+    const { balance, isBalanceLoading } = useSWRBalance(sourceAddress, from)
+    const { gas, isGasLoading } = useSWRGas(sourceAddress, from, fromCurrency)
+    const gasAmount = gas || 0;
     const native_currency = from?.token
     const query = useQueryState()
 
-    const gasAmount = gases[from?.name || '']?.find(g => g?.token === fromCurrency?.symbol)?.gas || 0
     const name = "amount"
-    const walletBalance = walletAddress && balances[walletAddress]?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
+    const walletBalance = balance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
     let maxAllowedAmount: number | null = maxAmountFromApi || 0
     if (query.balances && fromCurrency) {
         try {
@@ -68,7 +73,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     }, [amount, fromCurrency, fee, isFeeLoading])
 
     return (<>
-        <p className="block font-semibold text-secondary-text text-xs mb-1">Amount</p>
+        <p className="block font-semibold text-secondary-text text-xs mb-1 p-2">Amount</p>
         <div className="flex w-full justify-between bg-secondary-700 rounded-lg">
             <div className="relative w-full">
                 <NumericInput
@@ -96,10 +101,8 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                 </NumericInput>
             </div>
             {
-                from && to && fromCurrency ?
-                    <MinMax onAddressGet={(a) => setWalletAddress(a)} />
-                    :
-                    <></>
+                from && to && fromCurrency &&
+                <MinMax />
             }
         </div >
     </>)

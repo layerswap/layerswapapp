@@ -1,10 +1,9 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
 import { ResolveCurrencyOrder, SortAscending } from "../../lib/sorting";
-import { useBalancesState } from "../../context/balances";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { useQueryState } from "../../context/query";
 import { RouteNetwork, RouteToken } from "../../Models/Network";
@@ -12,18 +11,14 @@ import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import useSWR from "swr";
 import { ApiResponse } from "../../Models/ApiResponse";
 import { Balance } from "../../Models/Balance";
-import dynamic from "next/dynamic";
 import { QueryParams } from "../../Models/QueryParams";
 import { ApiError, LSAPIKnownErrorCode } from "../../Models/ApiError";
 import { resolveNetworkRoutesURL } from "../../helpers/routes";
-import useWallet from "../../hooks/useWallet";
 import { ONE_WEEK } from "./NetworkFormField";
 import RouteIcon from "./RouteIcon";
-import useBalance from "../../hooks/useBalance";
-
-const BalanceComponent = dynamic(() => import("./dynamic/Balance"), {
-    loading: () => <></>,
-});
+import { useSwapDataState } from "../../context/swap";
+import useSWRBalance from "../../lib/balances/useSWRBalance";
+import { useSettingsState } from "../../context/settings";
 
 const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -31,38 +26,31 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
 
-    const { to, fromCurrency, toCurrency, from, currencyGroup, destination_address } = values
+    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, destination_address, currencyGroup } = values
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
-    const { balances } = useBalancesState()
-    const { fetchBalance } = useBalance()
+    const { selectedSourceAccount } = useSwapDataState()
+    const { destinationRoutes, sourceRoutes } = useSettingsState();
 
-    const { getAutofillProvider: getProvider } = useWallet()
+    const address = direction === 'from' ? (selectedSourceAccount?.address) : (destination_address)
 
-    const sourceWalletProvider = useMemo(() => {
-        return from && getProvider(from)
-    }, [from, getProvider])
+    const { balance } = useSWRBalance(address, direction === 'from' ? from : to)
 
-    const destinationWalletProvider = useMemo(() => {
-        return to && getProvider(to)
-    }, [to, getProvider])
-
-    const address = direction === 'from' ? sourceWalletProvider?.getConnectedWallet(from)?.address : destination_address || destinationWalletProvider?.getConnectedWallet(to)?.address
-
-    const networkRoutesURL = resolveNetworkRoutesURL(direction, values)
+    const shouldFilter = direction === 'from' ? ((to && toCurrency) || (toExchange && currencyGroup)) : ((from && fromCurrency) || (fromExchange && currencyGroup))
+    const networkRoutesURL = shouldFilter ? resolveNetworkRoutesURL(direction, values) : null
     const apiClient = new LayerSwapApiClient()
     const {
         data: routes,
         isLoading,
         error
-    } = useSWR<ApiResponse<RouteNetwork[]>>(`${networkRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
+    } = useSWR<ApiResponse<RouteNetwork[]>>(networkRoutesURL, apiClient.fetcher, { keepPreviousData: true, fallbackData: { data: direction === 'from' ? sourceRoutes : destinationRoutes }, dedupingInterval: 10000 })
 
     const currencies = direction === 'from' ? routes?.data?.find(r => r.name === from?.name)?.tokens : routes?.data?.find(r => r.name === to?.name)?.tokens;
     const currencyMenuItems = GenerateCurrencyMenuItems(
         currencies!,
         values,
         direction,
-        balances[address || ''],
+        balance || [],
         query,
         error
     )
@@ -141,24 +129,6 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         }
     }, [toCurrency, currencyGroup, name, from, routes, error, isLoading])
 
-
-    const network = direction === 'from' ? from : to
-    const token = direction === 'from' ? fromCurrency : toCurrency
-    useEffect(() => {
-        let balanceGetHandler: any = undefined
-        if (network && token) {
-            (async () => {
-                balanceGetHandler = setInterval(async () => {
-                    await fetchBalance(network, token);
-                }, 60000)
-            })()
-        }
-        return () => {
-            clearInterval(balanceGetHandler)
-        }
-    }, [network, token])
-
-
     const handleSelect = useCallback((item: SelectMenuItem<RouteToken>) => {
         setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
@@ -168,7 +138,6 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     return (
         <div className="relative">
-            <BalanceComponent values={values} direction={direction} />
             <PopoverSelectWrapper
                 placeholder="Asset"
                 values={currencyMenuItems}

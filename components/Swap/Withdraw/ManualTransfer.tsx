@@ -41,7 +41,7 @@ const ManualTransfer: FC = () => {
                         </p>
                     </div>
                 </div>
-                <SubmitButton isDisabled={false} isSubmitting={false} size="medium" onClick={handleCloseNote}>
+                <SubmitButton type="button" size="medium" onClick={handleCloseNote}>
                     OK
                 </SubmitButton>
             </div>

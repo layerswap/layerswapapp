@@ -1,14 +1,15 @@
 import { useFormikContext } from "formik";
-import React, { FC, useCallback, useEffect, useRef, useState } from "react";
+import React, { FC, useCallback, useEffect, useRef } from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Network } from "../../../Models/Network";
 import { Popover, PopoverContent, PopoverTrigger } from "../../shadcn/popover";
 import WalletIcon from "../../icons/WalletIcon";
-import { AlignLeft, ChevronDown, ChevronUp } from "lucide-react"
+import { AlignLeft, ChevronDown } from "lucide-react"
 import { motion } from "framer-motion";
 import { useDepositMethod } from "../../../context/depositMethodContext";
 import { useQueryState } from "../../../context/query";
 import KnownInternalNames from "../../../lib/knownIds";
+import { useSwapDataUpdate } from "../../../context/swap";
 
 const variants = {
     open: { rotate: 180 },
@@ -33,7 +34,6 @@ const DepositMethodComponent: FC = () => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const { setShowModal, showModal } = useDepositMethod()
-
     const { depositMethod: defaultDepositMethod, hideDepositMethod, appName } = useQueryState()
     const { from, depositMethod, fromExchange } = values
     const name = 'depositMethod'
@@ -54,7 +54,7 @@ const DepositMethodComponent: FC = () => {
             setFieldValue(name, defaultMethod?.id, true)
             return
         }
-        else {
+        else if (!(menuItems?.find(i => i.id === depositMethod))) {
             setFieldValue(name, first, true)
             return
         }
@@ -74,9 +74,9 @@ const DepositMethodComponent: FC = () => {
         return null
 
     return (
-        <div className="relative w-full mb-1.5">
+        <div className="relative w-full mb-1">
             <Popover open={showModal} onOpenChange={setShowModal}>
-                <PopoverTrigger className="font-semibold text-secondary-text text-xs flex items-center space-x-1">
+                <PopoverTrigger className="font-semibold text-secondary-text text-xs flex items-center space-x-1 p-2">
                     <span> Transfer via </span> <span>{selectedMethod?.toLowerCase()}</span> <motion.div
                         animate={showModal ? "open" : "closed"}
                         variants={variants}
