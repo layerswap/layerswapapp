@@ -1,10 +1,9 @@
 import { FC } from "react";
 import { UserCommitAction, UserLockAction, UserRefundAction } from "./Actions/UserActions";
-import { useAtomicState } from "../../../context/atomicContext";
+import { CommitStatus, useAtomicState } from "../../../context/atomicContext";
 import { LpLockingAssets } from "./Actions/LpLock";
 import { RedeemAction } from "./Actions/Redeem";
 import ActionStatus from "./Actions/Status/ActionStatus";
-import useWallet from "../../../hooks/useWallet";
 import SubmitButton from "../../buttons/submitButton";
 import TimelockTimer from "./Timer";
 import shortenAddress from "../../utils/ShortenAddress";
@@ -13,14 +12,6 @@ import LockFilledCircleIcon from "../../icons/LockFilledCircleIcon";
 import CheckedIcon from "../../icons/CheckedIcon";
 import LockIcon from "../../icons/LockIcon";
 import Link from "next/link";
-
-export enum Progress {
-    Commit = 'commit',
-    LpLock = 'lp_lock',
-    Lock = 'lock',
-    Redeem = 'redeem',
-    Refund = 'refund',
-}
 
 const RequestStep: FC = () => {
     const { sourceDetails, commitId, commitTxId, source_network, commitFromApi } = useAtomicState()
@@ -44,31 +35,42 @@ const RequestStep: FC = () => {
 }
 
 const SignAndConfirmStep: FC = () => {
-    const { sourceDetails, destinationDetails, source_network, destination_network, commitFromApi } = useAtomicState()
+    const { sourceDetails, destinationDetails, source_network, destination_network, commitFromApi, commitStatus } = useAtomicState()
 
     const lpLockTx = commitFromApi?.transactions.find(t => t.type === 'lock')
     const lpRedeemTransaction = commitFromApi?.transactions.find(t => t.type === 'redeem' && t.network === destination_network?.name)
-
+    const addLockSigTx = commitFromApi?.transactions.find(t => t.type === 'addlocksig')
     const commited = (sourceDetails || lpLockTx) ? true : false;
 
-    const assetsLocked = (sourceDetails?.hashlock && destinationDetails?.hashlock) ? true : false;
-    const loading = sourceDetails && destinationDetails && !(sourceDetails?.hashlock || destinationDetails?.hashlock)
-
-    const { getWithdrawalProvider } = useWallet()
-    const source_provider = source_network && getWithdrawalProvider(source_network)
-    const wallet = source_provider?.getConnectedWallet()
-
-    const lp_address = source_network?.metadata.lp_address
+    const assetsLocked = !!(sourceDetails?.hashlock && destinationDetails?.hashlock) || commitStatus === CommitStatus.AssetsLocked || commitStatus === CommitStatus.RedeemCompleted;
+    const loading = commitStatus === CommitStatus.UserLocked
 
     const title = assetsLocked ? "Signed & Confirmed" : "Sign & Confirm"
-    const description = (assetsLocked) ? <div><span>Solver:</span> <span>{lp_address && shortenAddress(lp_address)}</span> <span>You:</span> <span>{wallet?.address && shortenAddress(wallet?.address)}</span></div> : <>Initiates a swap process with the solver</>
+    const description = (assetsLocked)
+        ? <div className="inline-flex gap-3">
+            {
+                lpLockTx && destination_network &&
+                <div className="inline-flex gap-1">
+                    <p>Solver:</p> <Link className="underline hover:no-underline" target="_blank" href={destination_network?.transaction_explorer_template.replace('{0}', lpLockTx?.hash)}>{shortenAddress(lpLockTx.hash)}</Link>
+                </div>
+            }
+            {
+                addLockSigTx && source_network &&
+                <div className="inline-flex gap-1">
+                    <p>You:</p> <Link className="underline hover:no-underline" target="_blank" href={source_network?.transaction_explorer_template.replace('{0}', addLockSigTx?.hash)}>{shortenAddress(addLockSigTx.hash)}</Link>
+                </div>
+            }
+        </div>
+        : <>Initiates a swap process with the solver</>
+
+    const completed = !!(sourceDetails?.hashlock && destinationDetails?.hashlock) || !!lpRedeemTransaction?.hash || commitStatus === CommitStatus.RedeemCompleted || commitStatus === CommitStatus.AssetsLocked
 
     return <Step
         step={2}
         title={title}
         description={description}
         active={commited}
-        completed={!!assetsLocked}
+        completed={completed}
         loading={loading}
     >
         <SolverStatus />
@@ -76,17 +78,14 @@ const SignAndConfirmStep: FC = () => {
 }
 
 const SolverStatus: FC = () => {
-    const { sourceDetails, destinationDetails, commitFromApi, destination_network } = useAtomicState()
+    const { commitId, sourceDetails, destinationDetails, commitFromApi, destination_network, commitStatus } = useAtomicState()
 
     const lpLockTx = commitFromApi?.transactions.find(t => t.type === 'lock')
 
-    const commited = sourceDetails ? true : false;
+    const commited = commitId ? true : false;
     const lpLockDetected = destinationDetails?.hashlock ? true : false;
 
-    if (sourceDetails?.hashlock && destinationDetails?.hashlock)
-        return null
-    // TODO: maybe we should show the locked amount
-    if (!commited)
+    if (sourceDetails?.hashlock && destinationDetails?.hashlock || !commited || !(commitStatus == CommitStatus.LpLockDetected || commitStatus == CommitStatus.Commited))
         return null
     //TODO: add the timer
     if (lpLockDetected) {
@@ -156,14 +155,8 @@ export const ResolveMessages: FC<{ timelock: number | undefined, showTimer: bool
     </div>
 }
 const ResolveAction: FC = () => {
-    const { sourceDetails, destinationDetails, destination_network, error, setError, isTimelockExpired, commitFromApi } = useAtomicState()
-
+    const { sourceDetails, destination_network, error, setError, commitStatus, commitFromApi } = useAtomicState()
     const lpRedeemTransaction = commitFromApi?.transactions.find(t => t.type === 'redeem' && t.network === destination_network?.name)
-
-    const commited = sourceDetails ? true : false;
-    const lpLockDetected = destinationDetails?.hashlock ? true : false;
-    const assetsLocked = sourceDetails?.hashlock && destinationDetails?.hashlock ? true : false;
-    const redeemCompleted = (destinationDetails?.claimed == 3 ? true : false) || lpRedeemTransaction?.hash;
 
     //TODO: remove lp actions just disable the button
     if (error) {
@@ -178,9 +171,8 @@ const ResolveAction: FC = () => {
                 Try again
             </SubmitButton>
         </div>
-
     }
-    if (redeemCompleted) {
+    if (commitStatus === CommitStatus.RedeemCompleted) {
         return <ActionStatus
             status="success"
             title={
@@ -196,7 +188,7 @@ const ResolveAction: FC = () => {
             }
         />
     }
-    if (isTimelockExpired) {
+    if (commitStatus === CommitStatus.TimelockExpired) {
         if (sourceDetails?.claimed == 2) {
             return <ActionStatus
                 status="success"
@@ -207,25 +199,25 @@ const ResolveAction: FC = () => {
             return <UserRefundAction />
         }
     }
-    if (assetsLocked) {
+    if (commitStatus === CommitStatus.AssetsLocked) {
         return <RedeemAction />
     }
-    if (lpLockDetected) {
+    if (commitStatus === CommitStatus.LpLockDetected || commitStatus === CommitStatus.UserLocked) {
         return <UserLockAction />
     }
-    if (commited) {
+    if (commitStatus === CommitStatus.Commited) {
         return <LpLockingAssets />
     }
     return <UserCommitAction />
 }
 
 export const Actions: FC = () => {
-    const { destinationDetails, isTimelockExpired, sourceDetails, commitFromApi, destination_network } = useAtomicState()
+    const { destinationDetails, sourceDetails, commitFromApi, destination_network, commitStatus } = useAtomicState()
 
     const lpRedeemTransaction = commitFromApi?.transactions.find(t => t.type === 'redeem' && t.network === destination_network?.name)
 
     const allDone = ((sourceDetails?.hashlock && destinationDetails?.claimed == 3) || lpRedeemTransaction?.hash) ? true : false
-    const showTimer = !allDone && !isTimelockExpired
+    const showTimer = !allDone && commitStatus !== CommitStatus.TimelockExpired
     const timelock = sourceDetails?.timelock || sourceDetails?.timelock
 
     return <div className="space-y-4">

@@ -5,14 +5,14 @@ import { useAtomicState } from "../../../../context/atomicContext";
 import SubmitButton from "../../../buttons/submitButton";
 
 export const LpLockingAssets: FC = () => {
-    const { destination_network, commitId, setDestinationDetails, destination_asset, lightClient } = useAtomicState()
+    const { destination_network, commitId, setDestinationDetails, destination_asset, lightClient, sourceDetails } = useAtomicState()
     const { getWithdrawalProvider } = useWallet()
 
     const destination_provider = destination_network && getWithdrawalProvider(destination_network)
     const atomicContract = (destination_asset?.contract ? destination_network?.metadata.htlc_token_contract : destination_network?.metadata.htlc_native_contract) as `0x${string}`
 
     const getDetails = async ({ provider, network, commitId, asset }: { provider: WalletProvider, network: Network, commitId: string, asset: Token }) => {
-        if (lightClient) {
+        if (lightClient && !sourceDetails?.hashlock) {
             try {
                 const destinationDetails = await lightClient.getHashlock({
                     network: network,
@@ -22,6 +22,7 @@ export const LpLockingAssets: FC = () => {
                 })
                 if (destinationDetails) {
                     setDestinationDetails({ ...destinationDetails, fetchedByLightClient: true })
+                    debugger
                     return
                 }
             }
