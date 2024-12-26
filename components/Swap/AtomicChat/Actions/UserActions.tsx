@@ -5,6 +5,7 @@ import ActionStatus from "./Status/ActionStatus";
 import { WalletActionButton } from "../buttons";
 import posthog from "posthog-js";
 import ButtonStatus from "./Status/ButtonStatus";
+import { useRouter } from "next/router";
 
 export const UserCommitAction: FC = () => {
     const { source_network, destination_network, amount, address, source_asset, destination_asset, onCommit, commitId, setSourceDetails, setError } = useAtomicState();
@@ -224,10 +225,10 @@ export const UserLockAction: FC = () => {
 }
 
 export const UserRefundAction: FC = () => {
-    const { source_network, commitId, sourceDetails, setCompletedRefundHash, setSourceDetails, setError, source_asset, destination_network, destination_asset, setDestinationDetails } = useAtomicState()
+    const { source_network, commitId, sourceDetails, setSourceDetails, setError, source_asset, destination_network, destination_asset, setDestinationDetails } = useAtomicState()
     const { getWithdrawalProvider } = useWallet()
     const [requestedRefund, setRequestedRefund] = useState(false)
-
+    const router = useRouter()
     const source_provider = source_network && getWithdrawalProvider(source_network)
     const destination_provider = destination_network && getWithdrawalProvider(destination_network)
 
@@ -261,7 +262,12 @@ export const UserRefundAction: FC = () => {
                 contractAddress: sourceAtomicContract
             })
 
-            setCompletedRefundHash(res)
+            if (res) {
+                router.replace({
+                    pathname: router.pathname,
+                    query: { ...router.query, refundTxId: res }
+                }, undefined, { shallow: true })
+            }
             setRequestedRefund(true)
         }
         catch (e) {

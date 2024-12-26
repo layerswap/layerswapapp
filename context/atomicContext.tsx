@@ -34,16 +34,15 @@ type DataContextType = {
     destinationDetails?: Commit & { fetchedByLightClient?: boolean },
     userLocked?: boolean,
     sourceDetails?: Commit,
-    completedRefundHash?: string,
     error: string | undefined,
     commitFromApi?: CommitFromApi,
     lightClient: LightClient | undefined,
     commitStatus: CommitStatus,
+    refundTxId?: string | undefined,
     onCommit: (commitId: string, txId: string) => void;
     setDestinationDetails: (data: Commit & { fetchedByLightClient?: boolean }) => void;
     setSourceDetails: (data: Commit) => void;
     setUserLocked: (locked: boolean) => void,
-    setCompletedRefundHash: (hash: string) => void
     setError(error: string | undefined): void
 }
 
@@ -71,20 +70,20 @@ export function AtomicProvider({ children }) {
     const [userLocked, setUserLocked] = useState<boolean>(false)
 
     const [isTimelockExpired, setIsTimelockExpired] = useState<boolean>(false)
-    const [completedRefundHash, setCompletedRefundHash] = useState<string | undefined>(undefined)
     const [error, setError] = useState<string | undefined>(undefined)
 
     const source_network = networks.find(n => n.name.toUpperCase() === (source as string)?.toUpperCase())
     const destination_network = networks.find(n => n.name.toUpperCase() === (destination as string)?.toUpperCase())
     const source_token = source_network?.tokens.find(t => t.symbol === source_asset)
     const destination_token = destination_network?.tokens.find(t => t.symbol === destination_asset)
+    const refundTxId = router.query.refundTxId as string | undefined
 
     const fetcher = (args) => fetch(args).then(res => res.json())
     const url = process.env.NEXT_PUBLIC_LS_API
     const parsedCommitId = commitId ? toHex(BigInt(commitId)) : undefined
     const { data } = useSWR<ApiResponse<CommitFromApi>>((parsedCommitId && commitFromApi?.transactions.length !== 4 && destinationDetails?.claimed !== 3) ? `${url}/api/swap/${parsedCommitId}` : null, fetcher, { refreshInterval: 5000 })
 
-    const status = useMemo(() => statusResolver({ commitFromApi, sourceDetails, destinationDetails, destination_network, timelockExpired: isTimelockExpired, userLocked }), [commitFromApi, sourceDetails, destinationDetails, destination_network, isTimelockExpired, userLocked])
+    const commitStatus = useMemo(() => statusResolver({ commitFromApi, sourceDetails, destinationDetails, destination_network, timelockExpired: isTimelockExpired, userLocked }), [commitFromApi, sourceDetails, destinationDetails, destination_network, isTimelockExpired, userLocked])
 
     useEffect(() => {
         if (data?.data) {
@@ -152,15 +151,14 @@ export function AtomicProvider({ children }) {
             sourceDetails,
             destinationDetails,
             userLocked,
-            completedRefundHash,
             error,
             commitFromApi,
             lightClient,
-            commitStatus: status,
+            commitStatus,
+            refundTxId,
             setDestinationDetails,
             setSourceDetails,
             setUserLocked,
-            setCompletedRefundHash,
             setError
         }}>
             {children}

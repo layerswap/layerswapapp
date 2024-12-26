@@ -126,7 +126,7 @@ const SolverStatus: FC = () => {
 
     return <div className="p-1 mt-2 w-full">
         <p className="p-1">Solver is locking assets</p>
-        <hr className="border-secondary-700 border-2 rounded-full" />
+        <div className="loader-line" />
     </div>
 }
 
@@ -155,7 +155,7 @@ export const ResolveMessages: FC<{ timelock: number | undefined, showTimer: bool
     </div>
 }
 const ResolveAction: FC = () => {
-    const { sourceDetails, destination_network, error, setError, commitStatus, commitFromApi } = useAtomicState()
+    const { sourceDetails, destination_network, error, setError, commitStatus, commitFromApi, refundTxId, source_network } = useAtomicState()
     const lpRedeemTransaction = commitFromApi?.transactions.find(t => t.type === 'redeem' && t.network === destination_network?.name)
 
     //TODO: remove lp actions just disable the button
@@ -192,17 +192,27 @@ const ResolveAction: FC = () => {
         if (sourceDetails?.claimed == 2) {
             return <ActionStatus
                 status="success"
-                title='Refund Completed'
+                title={
+                    <div className="flex flex-col space-y-0">
+                        <p className="text-base leading-5 font-medium">Refund Completed</p>
+                        {
+                            refundTxId && source_network &&
+                            <div className="text-sm ">
+                                <span>ID:</span>  <Link className="underline hover:no-underline" target="_blank" href={source_network?.transaction_explorer_template.replace('{0}', refundTxId)}>{shortenAddress(refundTxId)}</Link>
+                            </div>
+                        }
+                    </div>
+                }
             />
         }
         else {
             return <UserRefundAction />
         }
     }
-    if (commitStatus === CommitStatus.AssetsLocked) {
+    if (commitStatus === CommitStatus.AssetsLocked || commitStatus === CommitStatus.UserLocked) {
         return <RedeemAction />
     }
-    if (commitStatus === CommitStatus.LpLockDetected || commitStatus === CommitStatus.UserLocked) {
+    if (commitStatus === CommitStatus.LpLockDetected) {
         return <UserLockAction />
     }
     if (commitStatus === CommitStatus.Commited) {

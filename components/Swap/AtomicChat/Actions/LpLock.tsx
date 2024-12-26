@@ -22,7 +22,6 @@ export const LpLockingAssets: FC = () => {
                 })
                 if (destinationDetails) {
                     setDestinationDetails({ ...destinationDetails, fetchedByLightClient: true })
-                    debugger
                     return
                 }
             }
