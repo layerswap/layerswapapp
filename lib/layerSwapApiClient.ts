@@ -133,7 +133,7 @@ export type CommitFromApi = {
     receive_amount: number,
     fee_amount: number,
     transactions: {
-        type: 'lock' | 'redeem',
+        type: 'lock' | 'redeem' | 'addlocksig',
         hash: string,
         network: string
     }[]

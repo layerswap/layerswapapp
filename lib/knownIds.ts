@@ -54,6 +54,8 @@ export default class KnownInternalNames {
 
         public static readonly OptimismMainnet: string = "OPTIMISM_MAINNET";
 
+        public static readonly OptimismSepolia: string = "OPTIMISM_SEPOLIA";
+
         public static readonly OptimismGoerli: string = "OPTIMISM_GOERLI";
 
         public static readonly OptimismKovan: string = "OPTIMISM_KOVAN";

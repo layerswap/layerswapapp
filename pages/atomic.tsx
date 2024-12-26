@@ -5,7 +5,7 @@ import React from 'react';
 import { SwapDataProvider } from '../context/swap';
 import { TimerProvider } from '../context/timerContext';
 import { getThemeData } from '../helpers/settingsHelper';
-import AtmoicChat from '../components/Swap/AtomicChat'
+import AtmoicSteps from '../components/Swap/AtomicChat'
 import { DepositMethodProvider } from '../context/depositMethodContext';
 import { BalancesDataProvider } from '../context/balances';
 import { useRouter } from 'next/router';
@@ -33,7 +33,7 @@ const CommitmentDetails = ({ settings, themeData, apiKey }: InferGetServerSidePr
                         <BalancesDataProvider>
                             <FeeProvider>
                                 <AtomicProvider>
-                                    <AtmoicChat
+                                    <AtmoicSteps
                                         address={address as string}
                                         amount={Number(amount)}
                                         destination={destination as string}
