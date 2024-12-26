@@ -13,22 +13,28 @@ export default function TronProvider({ children }: { children: React.ReactNode }
     }
     const [adapters, setAdapters] = useState<Adapter[]>([]);
     useEffect(() => {
-        import('@tronweb3/tronwallet-adapters').then((res) => {
+        import('../../lib/wallets/tron/connectors').then((res) => {
             const {
                 BitKeepAdapter,
                 OkxWalletAdapter,
                 TokenPocketAdapter,
                 TronLinkAdapter,
-                LedgerAdapter,
+                // LedgerAdapter,
             } = res;
             const tronLinkAdapter = new TronLinkAdapter();
-            const ledger = new LedgerAdapter({
-                accountNumber: 2,
-            });
+            // const ledger = new LedgerAdapter({
+            //     accountNumber: 2,
+            // });
             const bitKeepAdapter = new BitKeepAdapter();
             const tokenPocketAdapter = new TokenPocketAdapter();
             const okxwalletAdapter = new OkxWalletAdapter();
-            setAdapters([tronLinkAdapter, bitKeepAdapter, tokenPocketAdapter, okxwalletAdapter, ledger])
+            setAdapters([
+                tronLinkAdapter,
+                bitKeepAdapter,
+                tokenPocketAdapter,
+                okxwalletAdapter,
+                // ledger
+            ])
         });
     }, [setAdapters])
 

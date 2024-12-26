@@ -3,6 +3,7 @@ import { useWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { useConnectModal } from "../../../components/WalletModal";
+import { useSettingsState } from "../../../context/settings";
 
 export default function useTron(): WalletProvider {
     const commonSupportedNetworks = [
@@ -10,6 +11,8 @@ export default function useTron(): WalletProvider {
         KnownInternalNames.Networks.TronTestnet
     ]
 
+    const { networks } = useSettingsState()
+    const network = networks.find(n => n.name === KnownInternalNames.Networks.TronMainnet || n.name === KnownInternalNames.Networks.TronTestnet)
     const name = 'Tron'
     const id = 'tron'
     const { wallets, wallet: tronWallet, disconnect, select } = useWallet();
@@ -18,10 +21,12 @@ export default function useTron(): WalletProvider {
 
     const address = tronWallet?.adapter.address
 
-    const wallet = address ? {
+    const wallet: Wallet | undefined = address ? {
+        id: tronWallet.adapter.name,
         addresses: [address],
         address,
-        connector: name,
+        displayName: `${tronWallet.adapter.name} - Tron`,
+        networkIcon: network?.logo,
         providerName: id,
         isActive: true,
         icon: resolveWalletConnectorIcon({ connector: name, address, iconUrl: tronWallet.adapter.icon }),
@@ -61,8 +66,10 @@ export default function useTron(): WalletProvider {
             const connectedAddress = connectedWallet?.adapter.address
             const wallet: Wallet | undefined = connectedAddress ? {
                 address: connectedAddress,
-                connector: connectedWallet?.adapter.name,
                 providerName: name,
+                id: connectedWallet?.adapter.name,
+                displayName: `${connectedWallet.adapter.name} - Tron`,
+                networkIcon: network?.logo,
                 icon: resolveWalletConnectorIcon({ connector: String(connectedWallet?.adapter.name), address: connectedAddress }),
                 disconnect,
                 connect: () => connectWallet(),
