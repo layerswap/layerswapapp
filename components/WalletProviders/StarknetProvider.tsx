@@ -75,24 +75,26 @@ const StarknetProvider: FC<{ children: ReactNode }> = ({ children }) => {
             typeof window !== "undefined"
                 ? /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
                 : false
+        const isAndroid = navigator.userAgent.match(/Android/i);
+        const isIOS = navigator.userAgent.match(/iPhone|iPad|iPod/i);
 
         const defaultConnectors: any[] = []
 
         if (!isSafari) {
-            defaultConnectors.push(
-                new InjectedConnector({ options: { id: "argentX" } }),
-            )
+            if (!(isAndroid || isIOS)) {
+                defaultConnectors.push(
+                    new InjectedConnector({ options: { id: "argentX" } }),
+                )
+                defaultConnectors.push(
+                    new InjectedConnector({ options: { id: "keplr" } }),
+                )
+            }
             defaultConnectors.push(
                 new InjectedConnector({ options: { id: "braavos" } }),
             )
-            defaultConnectors.push(
-                new InjectedConnector({ options: { id: "keplr" } }),
-            )
         }
 
-        const isAndroid = navigator.userAgent.match(/Android/i);
-        const isIOS = navigator.userAgent.match(/iPhone|iPad|iPod/i);
-        if (isAndroid || isIOS) {
+        if ((isAndroid || isIOS) && !defaultConnectors.some(c => c.id === "braavos")) {
             const starknet = (await import('get-starknet-core')).default
 
             const discoverWallets = (await starknet.getDiscoveryWallets()).filter(w => {
