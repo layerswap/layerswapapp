@@ -93,7 +93,7 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
                             <button
                                 type="button"
                                 disabled={!!provider.connector}
-                                className="w-full h-fit flex items-center justify-between bg-secondary-700 hover:bg-secondary-500 transition-colors duration-200 rounded-xl px-2 p-3"
+                                className="w-full h-fit flex items-center justify-between bg-secondary-700 hover:bg-secondary-500 transition-colors duration-200 rounded-xl p-2"
                                 onClick={() => connect(connector)}
                             >
                                 <div className="flex gap-3 items-center font-semibold">
