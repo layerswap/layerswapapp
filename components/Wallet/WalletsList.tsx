@@ -9,9 +9,10 @@ import { Network, Token } from "../../Models/Network";
 import { useSwapDataState } from "../../context/swap";
 import FilledCheck from "../icons/FilledCheck";
 import { truncateDecimals } from "../utils/RoundDecimals";
-import useSWRBalance from "../../lib/newbalances/useSWRBalance";
+import useSWRBalance from "../../lib/balances/useSWRBalance";
 import { useSettingsState } from "../../context/settings";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
+import Image from 'next/image'
 
 type Props = ({
     selectable?: false;
@@ -64,7 +65,6 @@ const WalletsList: FC<Props> = (props) => {
                         selectable={selectable}
                         token={token}
                         network={network}
-                        provider={provider}
                         onWalletSelect={onSelect}
                         selectedAddress={selectedSourceAccount?.address}
                     />)
@@ -79,7 +79,6 @@ type WalletItemProps = {
     selectable?: boolean,
     token?: Token;
     network?: Network;
-    provider?: WalletProvider;
     selectedAddress: string | undefined;
     onWalletSelect?: (wallet: Wallet, address: string) => void;
 }
@@ -105,19 +104,32 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
 
                 <div className="flex space-x-2 items-center grow">
                     {
-                        wallet.connector &&
+                        wallet &&
                         <div className="inline-flex items-center relative">
                             <wallet.icon
                                 className={clsx('w-9 h-9 p-0.5 rounded-md bg-secondary-800', {
                                     '!w-6 !h-6': wallet.addresses.length > 1,
                                 })}
                             />
+                            {
+                                wallet?.networkIcon && <div className="h-5 w-5 absolute -right-1 -bottom-1">
+                                    <Image
+                                        src={wallet?.networkIcon || ''}
+                                        alt="Wallet default network icon"
+                                        height="40"
+                                        width="40"
+                                        loading="eager"
+                                        className="object-contain rounded-md border-2 border-secondary-800" />
+                                </div>
+                            }
+
                         </div>
                     }
+
                     {
                         wallet.addresses.length > 1 ?
                             <div>
-                                <span className="text-sm">{wallet.connector}</span>
+                                <span className="text-sm">{wallet.displayName}</span>
                             </div>
                             :
                             <div className="w-full inline-flex items-center justify-between grow">
@@ -132,7 +144,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                                         />
                                     }
                                     <p className="text-xs text-secondary-text">
-                                        {wallet.connector}
+                                        {wallet.displayName}
                                     </p>
                                 </div>
                                 {

@@ -5,6 +5,7 @@ import { ThemeData } from "../../Models/Theme"
 import Wagmi from "./Wagmi";
 import StarknetProvider from "./StarknetProvider";
 import dynamic from "next/dynamic";
+import { ImtblPassportProvider } from "./ImtblPassportProvider";
 
 const TronProvider = dynamic(() => import("./TronProvider").then((comp) => comp.default), {
     loading: () => null
@@ -14,9 +15,10 @@ const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], basePath: st
     return (
         <TonConnectProvider basePath={basePath} themeData={themeData} appName={appName}>
             <SolanaProvider>
-                <TronProvider>
-                    <StarknetProvider>
-                        <Wagmi>
+                <StarknetProvider>
+                    <Wagmi>
+                        <ImtblPassportProvider>
+
                             {
                                 TronProvider ?
                                     <TronProvider>
@@ -25,9 +27,9 @@ const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], basePath: st
                                     :
                                     children
                             }
-                        </Wagmi>
-                    </StarknetProvider>
-                </TronProvider>
+                        </ImtblPassportProvider>
+                    </Wagmi>
+                </StarknetProvider>
             </SolanaProvider>
         </TonConnectProvider>
     )

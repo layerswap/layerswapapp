@@ -8,7 +8,7 @@ import SubmitButton from '../buttons/submitButton';
 import SecondaryButton from '../buttons/secondaryButton';
 import { useFormikContext } from 'formik';
 import { useFee } from '../../context/feeContext';
-import useSWRBalance from '../../lib/newbalances/useSWRBalance';
+import useSWRBalance from '../../lib/balances/useSWRBalance';
 import { useSwapDataState } from '../../context/swap';
 
 type RefuelModalProps = {

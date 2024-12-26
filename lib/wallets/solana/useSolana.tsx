@@ -5,6 +5,9 @@ import { Network } from "../../../Models/Network"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useMemo } from "react"
 import { useConnectModal } from "../../../components/WalletModal"
+import { useSettingsState } from "../../../context/settings"
+
+const solanaNames = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet, KnownInternalNames.Networks.SolanaTestnet]
 
 export default function useSolana({ network }: { network: Network | undefined }): WalletProvider {
 
@@ -17,33 +20,40 @@ export default function useSolana({ network }: { network: Network | undefined })
 
     const name = 'Solana'
     const id = 'solana'
-    const { publicKey, disconnect, wallet: solanaWallet, select, wallets } = useWallet();
+    const { disconnect, wallet: solanaWallet, select, wallets } = useWallet();
+    const { networks } = useSettingsState()
 
-    const wallet: Wallet | undefined = publicKey ? {
-        address: publicKey.toBase58(),
-        connector: solanaWallet?.adapter?.name,
-        providerName: name,
-        icon: resolveWalletConnectorIcon({ connector: String(solanaWallet?.adapter.name), address: publicKey?.toBase58(), iconUrl: solanaWallet?.adapter?.icon }),
-        disconnect,
-        connect: () => connectWallet(),
-        isActive: true,
-        addresses: [publicKey.toBase58()],
-        withdrawalSupportedNetworks: commonSupportedNetworks,
-        asSourceSupportedNetworks: commonSupportedNetworks,
-        autofillSupportedNetworks: commonSupportedNetworks,
-    } : undefined
+    const connectedWallet = wallets.find(w => w.adapter.connected === true)
+    const connectedAddress = connectedWallet?.adapter.publicKey?.toBase58()
+    const connectedAdapterName = connectedWallet?.adapter.name
 
-    const getWallet = () => {
+    const connectedWallets = useMemo(() => {
+
+        if (network?.name.toLowerCase().startsWith('eclipse') && !(connectedAdapterName?.toLowerCase() === "backpack" || connectedAdapterName?.toLowerCase() === "nightly")) {
+            return undefined
+        }
+
+        const wallet: Wallet | undefined = (connectedAddress && connectedAdapterName) ? {
+            id: connectedAdapterName,
+            address: connectedAddress,
+            displayName: `${connectedWallet?.adapter.name} - Solana`,
+            providerName: name,
+            icon: resolveWalletConnectorIcon({ connector: String(connectedAdapterName), address: connectedAddress, iconUrl: connectedWallet?.adapter.icon }),
+            disconnect,
+            connect: () => connectWallet(),
+            isActive: true,
+            addresses: [connectedAddress],
+            withdrawalSupportedNetworks: commonSupportedNetworks,
+            asSourceSupportedNetworks: commonSupportedNetworks,
+            autofillSupportedNetworks: commonSupportedNetworks,
+            networkIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo
+        } : undefined
 
         if (wallet) {
-            if (network?.name.toLowerCase().startsWith('eclipse') && !(solanaWallet?.adapter?.name.toLowerCase() === "backpack" || solanaWallet?.adapter?.name.toLowerCase() === "nightly")) {
-                return undefined
-            }
-
             return [wallet]
         }
-        return undefined
-    }
+
+    }, [network, connectedAddress, connectedAdapterName])
 
     const { connect } = useConnectModal()
 
@@ -55,7 +65,7 @@ export default function useSolana({ network }: { network: Network | undefined })
             console.log(e)
         }
     }
-    
+
     const connectConnector = async ({ connector }: { connector: InternalConnector }) => {
         const solanaConnector = wallets.find(w => w.adapter.name === connector.name)
         if (!solanaConnector) throw new Error('Connector not found')
@@ -64,11 +74,12 @@ export default function useSolana({ network }: { network: Network | undefined })
 
         const connectedWallet = wallets.find(w => w.adapter.connected === true)
         const connectedAddress = connectedWallet?.adapter.publicKey?.toBase58()
-        const wallet: Wallet | undefined = connectedAddress ? {
+        const wallet: Wallet | undefined = connectedAddress && connectedWallet ? {
+            id: connectedWallet.adapter.name,
             address: connectedAddress,
-            connector: connectedWallet?.adapter.name,
+            displayName: `${connectedWallet?.adapter.name} - Solana`,
             providerName: name,
-            icon: resolveWalletConnectorIcon({ connector: String(connectedWallet?.adapter.name), address: connectedAddress }),
+            icon: resolveWalletConnectorIcon({ connector: String(connectedWallet?.adapter.name), address: connectedAddress, iconUrl: connectedWallet?.adapter.icon }),
             disconnect,
             connect: () => connectWallet(),
             isActive: true,
@@ -76,6 +87,7 @@ export default function useSolana({ network }: { network: Network | undefined })
             withdrawalSupportedNetworks: commonSupportedNetworks,
             asSourceSupportedNetworks: commonSupportedNetworks,
             autofillSupportedNetworks: commonSupportedNetworks,
+            networkIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo
         } : undefined
 
         return wallet
@@ -118,8 +130,8 @@ export default function useSolana({ network }: { network: Network | undefined })
     }, [wallets]);
 
     const provider = {
-        connectedWallets: getWallet(),
-        activeWallet: wallet,
+        connectedWallets: connectedWallets,
+        activeWallet: connectedWallets?.[0],
         connectWallet,
         connectConnector,
         disconnectWallets: disconnectWallet,

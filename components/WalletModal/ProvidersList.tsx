@@ -2,16 +2,17 @@ import { FC } from "react";
 import useWallet from "../../hooks/useWallet";
 import { ResolveConnectorIcon } from "../icons/ConnectorIcons";
 import { useConnectModal } from ".";
-import { WalletProvider } from "../../Models/WalletProvider";
+import { Wallet, WalletProvider } from "../../Models/WalletProvider";
 
-const ProvidersList: FC = () => {
+const ProvidersList: FC<{ onFinish: (result: Wallet) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();
     const filteredProviders = providers.filter(p => !!p.autofillSupportedNetworks)
     const { setSelectedProvider } = useConnectModal()
 
     const connect = async (provider: WalletProvider) => {
         if (!provider.availableWalletsForConnect) {
-            await provider.connectWallet()
+            const result = await provider.connectWallet()
+            if (result) onFinish(result)
         } else {
             setSelectedProvider(provider)
         }

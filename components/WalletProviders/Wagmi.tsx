@@ -5,22 +5,19 @@ import { NetworkType } from "../../Models/Network";
 import resolveChain from "../../lib/resolveChain";
 import React from "react";
 import NetworkSettings from "../../lib/NetworkSettings";
-import { WagmiProvider } from 'wagmi'
+import { WagmiProvider, injected } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createConfig } from 'wagmi';
 import { Chain, http } from 'viem';
 import { WalletModalProvider } from '../WalletModal';
-import { my_argent } from '../../lib/wallets/connectors/argent';
-import { my_rainbow } from '../../lib/wallets/connectors/rainbow';
+import { argent } from '../../lib/wallets/connectors/argent';
+import { rainbow } from '../../lib/wallets/connectors/rainbow';
 import { coinbaseWallet, metaMask, walletConnect } from 'wagmi/connectors'
-import { hasInjectedProvider } from '../../lib/wallets/connectors/getInjectedConnector';
-import { my_bitget } from '../../lib/wallets/connectors/bitget';
+import { hasInjectedProvider, explicitInjectedproviderDetected } from '../../lib/wallets/connectors/getInjectedConnector';
+import { bitget } from '../../lib/wallets/connectors/bitget';
 import { isMobile } from '../../lib/isMobile';
-import dynamic from 'next/dynamic';
-
-const FuelProviderWrapper = dynamic(() => import("./FuelProvider").then((comp) => comp.default), {
-    loading: () => null
-})
+import FuelProviderWrapper from "./FuelProvider";
+import { browserInjected } from "../../lib/wallets/connectors/browserInjected";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -55,10 +52,11 @@ function WagmiComponent({ children }: Props) {
         connectors: [
             coinbaseWallet(),
             walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' }),
-            my_argent({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'argent' }),
+            argent({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'argent' }),
             ...(!isMetaMaskInjected ? [metaMask()] : []),
-            ...(!isRainbowInjected ? [my_rainbow({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'rainbow' })] : []),
-            ...(!isBitKeepInjected ? [my_bitget({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'bitget' })] : [])
+            ...(!isRainbowInjected ? [rainbow({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'rainbow' })] : []),
+            ...(!isBitKeepInjected ? [bitget({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'bitget' })] : []),
+            browserInjected()
         ],
         chains: settingsChains as [Chain, ...Chain[]],
         transports: transports,
@@ -66,18 +64,11 @@ function WagmiComponent({ children }: Props) {
     return (
         <WagmiProvider config={config} >
             <QueryClientProvider client={queryClient}>
-                {
-                    FuelProviderWrapper ?
-                        <FuelProviderWrapper>
-                            <WalletModalProvider>
-                                {children}
-                            </WalletModalProvider>
-                        </FuelProviderWrapper>
-                        :
-                        <WalletModalProvider>
-                            {children}
-                        </WalletModalProvider>
-                }
+                <FuelProviderWrapper>
+                    <WalletModalProvider>
+                        {children}
+                    </WalletModalProvider>
+                </FuelProviderWrapper>
             </QueryClientProvider>
         </WagmiProvider >
     )

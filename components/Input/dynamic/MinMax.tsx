@@ -1,12 +1,10 @@
-import { useEffect, useMemo } from "react"
-import useWallet from "../../../hooks/useWallet"
 import SecondaryButton from "../../buttons/secondaryButton"
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { useFee } from "../../../context/feeContext";
 import { useQueryState } from "../../../context/query";
-import useSWRBalance from "../../../lib/newbalances/useSWRBalance";
-import useSWRGas from "../../../lib/newgases/useSWRGas";
+import useSWRBalance from "../../../lib/balances/useSWRBalance";
+import useSWRGas from "../../../lib/gases/useSWRGas";
 import { useSwapDataState } from "../../../context/swap";
 
 const MinMax = () => {
@@ -20,7 +18,7 @@ const MinMax = () => {
     const { selectedSourceAccount } = useSwapDataState()
 
     const { gas } = useSWRGas(selectedSourceAccount?.address, values.from, fromCurrency)
-    const { balance } = useSWRBalance(selectedSourceAccount?.address, values.from)
+    const { balance, mutate } = useSWRBalance(selectedSourceAccount?.address, values.from)
 
     const gasAmount = gas || 0;
 
@@ -53,6 +51,7 @@ const MinMax = () => {
     }
 
     const handleSetMaxAmount = async () => {
+        mutate()
         setFieldValue('amount', maxAllowedAmount);
     }
 

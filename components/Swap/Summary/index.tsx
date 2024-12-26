@@ -8,10 +8,10 @@ import useWallet from "../../../hooks/useWallet"
 import { useQueryState } from "../../../context/query"
 
 const SwapSummary: FC = () => {
-    const { swapResponse } = useSwapDataState()
+    const { swapResponse, selectedSourceAccount } = useSwapDataState()
     const { swap, quote: swapQuote, refuel: swapRefuel } = swapResponse || {}
     const { source_network, destination_network, source_token, destination_token } = swap || {}
-    const { provider } = useWallet(source_network, 'withdrawal')
+
     const {
         hideFrom,
         account,
@@ -20,7 +20,6 @@ const SwapSummary: FC = () => {
     const sourceExchange = swap?.source_exchange
     const destExchange = swap?.destination_exchange
 
-    const wallet = provider?.activeWallet
 
     if (!swap || !source_network || !source_token || !destination_token || !destination_network) {
         return <></>
@@ -41,8 +40,8 @@ const SwapSummary: FC = () => {
     else if (swapInputTransaction?.from) {
         sourceAccountAddress = swapInputTransaction?.from;
     }
-    else if (wallet?.address) {
-        sourceAccountAddress = wallet.address;
+    else if (selectedSourceAccount?.address) {
+        sourceAccountAddress = selectedSourceAccount.address;
     }
     else if (source_network?.name === KnownInternalNames.Exchanges.Coinbase && swap?.exchange_account_connected) {
         sourceAccountAddress = shortenEmail(swap?.exchange_account_name, 10);

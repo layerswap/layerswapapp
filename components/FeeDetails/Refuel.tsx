@@ -5,7 +5,7 @@ import { FC, useEffect, useRef } from "react";
 import { Info } from "lucide-react";
 import { isValidAddress } from "../../lib/address/validator";
 import ResizablePanel from "../ResizablePanel";
-import useSWRBalance from "../../lib/newbalances/useSWRBalance";
+import useSWRBalance from "../../lib/balances/useSWRBalance";
 
 type RefuelProps = {
     onButtonClick: () => void
@@ -23,13 +23,13 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick }) => {
 
     const destinationNativeBalance = destination_address && balance?.find(b => (b.token === to?.token?.symbol) && (b.network === to.name))
     const needRefuel = toCurrency && toCurrency.refuel && to && to.token && isValidAddress(destination_address, to) && destinationNativeBalance && destinationNativeBalance?.amount == 0 && !refuel
-    const precviouslySelectedDestination = useRef(to)
+    const previouslySelectedDestination = useRef(to)
 
     useEffect(() => {
-        if (to && precviouslySelectedDestination.current !== to && !!refuel) {
+        if (to && previouslySelectedDestination.current !== to && !!refuel) {
             setFieldValue('refuel', false)
         }
-        precviouslySelectedDestination.current = to
+        previouslySelectedDestination.current = to
 
     }, [to, destination_address, toCurrency])
 

@@ -23,6 +23,7 @@ type Props = {
 const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, network, balance }) => {
 
     const difference_in_days = addressItem?.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(addressItem.date).getTime()) / (1000 * 3600 * 24))) : undefined
+    const maxWalletNameWidth = calculateMaxWidth(String(balance?.amount));
 
     const descriptions = [
         {
@@ -43,7 +44,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
         },
         {
             group: AddressGroup.ConnectedWallet,
-            text: <p>{connectedWallet?.connector || 'Connected wallet'}</p>,
+            text: <p className={`${maxWalletNameWidth} text-ellipsis sm:max-w-full text-nowrap overflow-hidden`}>{connectedWallet?.displayName || 'Connected wallet'}</p>,
             icon: connectedWallet?.icon || WalletIcon
         },
         {
@@ -57,42 +58,40 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
 
     return (
         <div className="w-full flex items-center justify-between">
-            <div className='flex gap-3 text-sm items-center'>
-                <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-md h-9 overflow-hidden w-9'>
-                    {
-                        (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) ?
-                            <div className="shrink-0 flex items-center pointer-events-none">
-                                {
-                                    partner?.logo &&
-                                    <Image
-                                        alt="Partner logo"
-                                        className='rounded-md object-contain'
-                                        src={partner.logo}
-                                        width="36"
-                                        height="36"
-                                    />
-                                }
-                            </div>
-                            :
-                            <AddressIcon className="scale-150 h-9 w-9" address={addressItem.address} size={36} />
-                    }
-                </div>
-                <div className="flex flex-col items-start">
-                    <div className="flex">
-                        <ExtendedAddress address={addressItem.address} network={network} />
-                    </div>
+            <div className="flex bg-secondary-400 text-primary-text items-center justify-center rounded-md h-9 overflow-hidden w-9">
+                {
+                    (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) ? (
+                        partner?.logo && (
+                            <Image
+                                alt="Partner logo"
+                                className="rounded-md object-contain"
+                                src={partner.logo}
+                                width="36"
+                                height="36"
+                            />
+                        )
+                    ) : (
+                        <AddressIcon className="scale-150 h-9 w-9" address={addressItem.address} size={36} />
+                    )
+                }
+            </div>
 
-                    <div className="text-secondary-text">
-                        <div className="inline-flex items-center gap-1.5">
-                            {itemDescription?.icon && <itemDescription.icon className="rounded flex-shrink-0 h-4 w-4" />}
-                            {itemDescription?.text}
-                        </div>
+            <div className="flex flex-col items-start flex-grow min-w-0 ml-3 text-sm">
+                <div className="flex w-full min-w-0">
+                    <ExtendedAddress address={addressItem.address} network={network} />
+                </div>
+                <div className="text-secondary-text w-full min-w-0 mt-1">
+                    <div className="inline-flex items-center gap-1.5">
+                        {itemDescription?.icon && (
+                            <itemDescription.icon className="rounded flex-shrink-0 h-4 w-4" />
+                        )}
+                        {itemDescription?.text}
                     </div>
                 </div>
             </div>
-            {
-                balance &&
-                <span className="text-sm flex space-x-2 justif-end">
+
+            {balance && (
+                <div className="flex-shrink-0 text-sm text-secondary-text text-right ml-3">
                     {
                         balance.amount != undefined && !isNaN(balance.amount) ?
                             <div className="text-right text-secondary-text font-normal text-sm">
@@ -108,10 +107,9 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
                             :
                             <></>
                     }
-                </span>
-            }
+                </div>
+            )}
         </div>
-
     )
 }
 
@@ -121,6 +119,18 @@ type ExtendedAddressProps = {
     addressClassNames?: string;
     onDisconnect?: () => void;
 }
+
+const calculateMaxWidth = (balance: string | undefined) => {
+    const symbolCount = balance?.length || 0;
+
+    if (symbolCount <= 6) {
+        return '';
+    } else if (symbolCount <= 12) {
+        return 'max-w-[100px] mr-1';
+    } else {
+        return 'max-w-[50px]';
+    }
+};
 
 export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, addressClassNames, onDisconnect }) => {
     const [isCopied, setCopied] = useCopyClipboard()

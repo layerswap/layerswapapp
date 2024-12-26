@@ -58,7 +58,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     } = useFormikContext<SwapFormValues>();
     const name = direction
 
-    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, destination_address } = values
+    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, destination_address, currencyGroup } = values
     const query = useQueryState()
     const { lockFrom, lockTo } = query
 
@@ -67,21 +67,23 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     let searchHint = "";
     let menuItems: (SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean })[];
 
-    const networkRoutesURL = resolveNetworkRoutesURL(direction, values)
+    const shouldFilter = direction === 'from' ? ((to && toCurrency) || (toExchange && currencyGroup)) : ((from && fromCurrency) || (fromExchange && currencyGroup))
+    const networkRoutesURL = shouldFilter ? resolveNetworkRoutesURL(direction, values) : null
     const apiClient = new LayerSwapApiClient()
+
     const {
         data: routes,
         isLoading,
         error
-    } = useSWR<ApiResponse<RouteNetwork[]>>(`${networkRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
+    } = useSWR<ApiResponse<RouteNetwork[]>>(networkRoutesURL, apiClient.fetcher, { keepPreviousData: true, dedupingInterval: 10000 })
 
     const [routesData, setRoutesData] = useState<RouteNetwork[] | undefined>(direction === 'from' ? sourceRoutes : destinationRoutes)
 
-    const exchangeRoutesURL = resolveExchangesURLForSelectedToken(direction, values)
+    const exchangeRoutesURL = shouldFilter ? resolveExchangesURLForSelectedToken(direction, values) : null
     const {
         data: exchanges,
         isLoading: exchnagesDataLoading,
-    } = useSWR<ApiResponse<Exchange[]>>(`${exchangeRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
+    } = useSWR<ApiResponse<Exchange[]>>(exchangeRoutesURL, apiClient.fetcher, { keepPreviousData: true, dedupingInterval: 10000 })
 
     const [exchangesData, setExchangesData] = useState<Exchange[]>(direction === 'from' ? sourceExchanges : destinationExchanges)
 
@@ -131,19 +133,24 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const isLocked = direction === 'from' ? !!lockFrom : !!lockTo
 
     return (<div className={`${className}`}>
-        <div className="flex justify-between items-center">
-            <label htmlFor={name} className="block font-semibold text-secondary-text text-xs p-2">
+        <div className="flex justify-between items-center px-3 pt-2">
+            <label htmlFor={name} className="block font-medium text-secondary-text text-sm pl-1 py-1">
                 {label}
             </label>
             {
                 direction === "from" ?
                     <SourceWalletPicker />
-                    : <span><Address partner={partner} >{
-                        ({ destination, disabled, addressItem, connectedWallet, partner }) => <DestinationWalletPicker destination={destination} disabled={disabled} addressItem={addressItem} connectedWallet={connectedWallet} partner={partner} />
-                    }</Address></span> //TODO: implement destination hidden
+                    : <>
+                        {
+                            !value?.isExchange &&
+                            <span><Address partner={partner} >{
+                                ({ destination, disabled, addressItem, connectedWallet, partner }) => <DestinationWalletPicker destination={destination} disabled={disabled} addressItem={addressItem} connectedWallet={connectedWallet} partner={partner} />
+                            }</Address></span> //TODO: implement destination hidden
+                        }
+                    </>
             }
         </div>
-        <div ref={ref} className="bg-secondary-700 p-3 rounded-xl mt-1 grid grid-flow-row-dense grid-cols-6 items-center gap-2">
+        <div ref={ref} className="p-3 rounded-xl grid grid-flow-row-dense grid-cols-6 items-center gap-2">
             <div className="col-span-4">
                 <CommandSelectWrapper
                     disabled={isLocked || isLoading}
@@ -166,7 +173,6 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                 }
             </div>
             {
-                /* //TODO: implement destination hidden */
                 direction === "to" && !destination_address && !toExchange && to &&
                 <div className="flex items-center col-span-6">
                     <Address partner={partner} >{SecondDestinationWalletPicker}</Address>
@@ -177,7 +183,6 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
 });
 
 export const SecondDestinationWalletPicker = () => {
-
     return <div className=" justify-center w-full pl-3 pr-2 py-2 bg-secondary-600 items-center flex font-light space-x-2 mx-auto rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 ">
         <PlusIcon className="stroke-1" /> <span>Destination Address</span>
     </div>

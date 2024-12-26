@@ -47,7 +47,7 @@ const WalletTransferContent: FC = () => {
             if (evmWallet && evmProvider) select(evmProvider.name)
             else if (starknetWallet && starknetProvider) select(starknetProvider.name)
         }
-    }, [evmAccountAddress, starknetWallet, selectedProvider])
+    }, [evmAccountAddress, starknetWallet?.address, selectedProvider])
 
     let starknetAccountAddress: string | undefined = ""
     if (swap?.source_exchange) {

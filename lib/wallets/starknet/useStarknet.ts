@@ -7,6 +7,7 @@ import { useConnect, useDisconnect } from "@starknet-react/core";
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { useConnectModal } from "../../../components/WalletModal";
 
+const starknetNames = [KnownInternalNames.Networks.StarkNetGoerli, KnownInternalNames.Networks.StarkNetMainnet, KnownInternalNames.Networks.StarkNetSepolia]
 export default function useStarknet(): WalletProvider {
     const commonSupportedNetworks = [
         KnownInternalNames.Networks.StarkNetMainnet,
@@ -86,11 +87,12 @@ export default function useStarknet(): WalletProvider {
                 const starknetWalletAccount = new WalletAccount({ nodeUrl: starkent?.node_url }, (starknetConnector as any).wallet);
 
                 const wallet: Wallet = {
+                    id: connector.name,
+                    displayName: `${connector.name} - Starknet`,
                     address: result?.account,
                     addresses: [result?.account],
                     chainId: walletChain,
                     icon: resolveWalletConnectorIcon({ connector: connector.name, address: result?.account }),
-                    connector: connector.name,
                     providerName: name,
                     metadata: {
                         starknetAccount: starknetWalletAccount,
@@ -102,6 +104,7 @@ export default function useStarknet(): WalletProvider {
                     withdrawalSupportedNetworks,
                     autofillSupportedNetworks: commonSupportedNetworks,
                     asSourceSupportedNetworks: commonSupportedNetworks,
+                    networkIcon: networks.find(n => starknetNames.some(name => name === n.name))?.logo
                 }
 
                 addWallet(wallet)
@@ -133,7 +136,7 @@ export default function useStarknet(): WalletProvider {
         return {
             name: name,
             id: connector.id,
-            icon: typeof connector.icon === 'string' ? connector.icon : (connector.icon.light.startsWith('data:') ? connector.icon.light : `data:image/svg+xml;base64,${btoa(connector.icon.light)}`),
+            icon: typeof connector.icon === 'string' ? connector.icon : (connector.icon.light.startsWith('data:') ? connector.icon.light : `data:image/svg+xml;base64,${btoa(connector.icon.light.replaceAll('currentColor', '#FFFFFF'))}`),
             type: connector?.["_wallet"] ? 'injected' : 'other',
         }
     })

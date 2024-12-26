@@ -74,8 +74,8 @@ export type WalletConnectParameters = Compute<
   ExactPartial<Pick<EthereumProviderOptions, 'showQrModal'>>
 >
 
-my_argent.type = 'my_walletConnect' as const
-export function my_argent(parameters: WalletConnectParameters) {
+argent.type = 'my_walletConnect' as const
+export function argent(parameters: WalletConnectParameters) {
   const isNewChainsStale = parameters.isNewChainsStale ?? true
 
   type Provider = Awaited<ReturnType<(typeof EthereumProvider)['init']>>
@@ -117,7 +117,7 @@ export function my_argent(parameters: WalletConnectParameters) {
           ? uri
           : `argent://app/wc?uri=${encodeURIComponent(uri)}`;
       },
-      type: my_argent.type,
+      type: argent.type,
       async setup() {
         const provider = await this.getProvider().catch(() => null)
         if (!provider) return

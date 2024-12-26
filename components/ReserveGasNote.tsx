@@ -4,8 +4,8 @@ import { SwapFormValues } from "./DTOs/SwapFormValues"
 import { truncateDecimals } from "./utils/RoundDecimals"
 import { useFee } from "../context/feeContext"
 import { Balance } from "../Models/Balance"
-import useSWRBalance from "../lib/newbalances/useSWRBalance"
-import useSWRGas from "../lib/newgases/useSWRGas"
+import useSWRBalance from "../lib/balances/useSWRBalance"
+import useSWRGas from "../lib/gases/useSWRGas"
 import { useSwapDataState } from "../context/swap"
 
 const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: Balance, networkGas: number) => void }) => {

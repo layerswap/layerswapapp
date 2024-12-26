@@ -5,8 +5,8 @@ import NumericInput from "./NumericInput";
 import { useFee } from "../../context/feeContext";
 import dynamic from "next/dynamic";
 import { useQueryState } from "../../context/query";
-import useSWRGas from "../../lib/newgases/useSWRGas";
-import useSWRBalance from "../../lib/newbalances/useSWRBalance";
+import useSWRGas from "../../lib/gases/useSWRGas";
+import useSWRBalance from "../../lib/balances/useSWRBalance";
 import { useSwapDataState } from "../../context/swap";
 
 const MinMax = dynamic(() => import("./dynamic/MinMax"), {
@@ -30,7 +30,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const query = useQueryState()
 
     const name = "amount"
-    const walletBalance = sourceAddress && balance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
+    const walletBalance = balance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
     let maxAllowedAmount: number | null = maxAmountFromApi || 0
     if (query.balances && fromCurrency) {
         try {

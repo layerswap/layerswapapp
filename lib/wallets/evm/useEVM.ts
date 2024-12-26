@@ -1,5 +1,5 @@
 import { useAccount, useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
-import { Network, NetworkType } from "../../../Models/Network"
+import { Network, NetworkType, NetworkWithTokens } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
@@ -12,10 +12,13 @@ import convertSvgComponentToBase64 from "../../../components/utils/convertSvgCom
 import { LSConnector } from "../connectors/EthereumProvider"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useConnectModal } from "../../../components/WalletModal"
+import { explicitInjectedproviderDetected } from "../connectors/getInjectedConnector"
 
 type Props = {
     network: Network | undefined,
 }
+const ethereumNames = [KnownInternalNames.Networks.EthereumMainnet, KnownInternalNames.Networks.EthereumSepolia]
+const immutableZKEvm = [KnownInternalNames.Networks.ImmutableZkEVM]
 
 export default function useEVM({ network }: Props): WalletProvider {
     const name = 'EVM'
@@ -61,102 +64,6 @@ export default function useEVM({ network }: Props): WalletProvider {
         }
     }
 
-    const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
-        try {
-            setSelectedProvider({ ...provider, connector: { name: connector.name } })
-            await connector.disconnect()
-
-            if (isMobile()) {
-                getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
-                    window.location.href = uri;
-                })
-            }
-            else {
-                getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
-                    const Icon = resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
-                    const base64Icon = convertSvgComponentToBase64(Icon)
-
-                    setSelectedProvider({ ...provider, connector: { name: connector.name, qr: uri, iconUrl: base64Icon } })
-                })
-            }
-
-            await connectAsync({
-                connector: connector,
-            });
-
-            const activeAccount = getAccount(config)
-            const address = activeAccount.address
-
-            if (!activeAccount || !activeAccount.connector || !address) return undefined
-
-            const wallet: Wallet = {
-                isActive: true,
-                address: address,
-                addresses: activeAccount.addresses as string[] || [address],
-                connector: activeAccount.connector?.name,
-                providerName: name,
-                icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(activeAccount.connector), address, iconUrl: activeAccount.connector?.icon }),
-                connect: connectWallet,
-                disconnect: () => disconnectWallet(activeAccount.connector?.name || ""),
-                isNotAvailable: isNotAvailable(activeAccount.connector, network),
-                asSourceSupportedNetworks: activeAccount.connector.id === "com.immutable.passport" ? asSourceSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : asSourceSupportedNetworks,
-                autofillSupportedNetworks: activeAccount.connector.id === "com.immutable.passport" ? autofillSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : autofillSupportedNetworks,
-                withdrawalSupportedNetworks: activeAccount.connector.id === "com.immutable.passport" ? withdrawalSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : withdrawalSupportedNetworks,
-            }
-
-            return wallet
-
-        } catch (e) {
-            //TODO: handle error like in transfer
-            toast.error('Error connecting wallet')
-            throw new Error(e)
-        }
-    }
-
-    const resolvedConnectors: Wallet[] = useMemo(() => {
-        const connections = getConnections(config)
-
-        return activeConnectors.map((w): Wallet | undefined => {
-
-            //TODO: handle Ronin wallet case
-            // let roninWalletNetworks = [
-            //     KnownInternalNames.Networks.RoninMainnet,
-            //     KnownInternalNames.Networks.EthereumMainnet,
-            //     KnownInternalNames.Networks.PolygonMainnet,
-            //     KnownInternalNames.Networks.BNBChainMainnet,
-            //     KnownInternalNames.Networks.ArbitrumMainnet];
-
-            // if (connector == "com.roninchain.wallet" && network && !roninWalletNetworks.includes(network.name)) {
-            //     return undefined;
-            // }
-
-            const connection = connections.find(c => c.connector.id === w.id)
-            const accountIsActive = activeAccount?.connector?.id === w.id
-
-            const addresses = connection?.accounts as (string[] | undefined);
-            const activeAddress = activeAccount?.address
-
-            const address = accountIsActive ? activeAddress : addresses?.[0]
-            if (!address) return undefined
-
-            return {
-                isActive: accountIsActive,
-                address,
-                addresses: addresses || [address],
-                connector: w.name,
-                providerName: name,
-                icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(w), address, iconUrl: w.icon }),
-                connect: connectWallet,
-                disconnect: () => disconnectWallet(w.name),
-                isNotAvailable: isNotAvailable(w, network),
-                //TODO:refactor this
-                asSourceSupportedNetworks: w.id === "com.immutable.passport" ? asSourceSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : asSourceSupportedNetworks,
-                autofillSupportedNetworks: w.id === "com.immutable.passport" ? autofillSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : autofillSupportedNetworks,
-                withdrawalSupportedNetworks: w.id === "com.immutable.passport" ? withdrawalSupportedNetworks.filter(n => n.toLowerCase().startsWith("immutable")) : withdrawalSupportedNetworks,
-            }
-        }).filter(w => w !== undefined) as Wallet[]
-    }, [activeAccount, activeConnectors, config, network])
-
     const disconnectWallet = async (connectorName: string) => {
 
         try {
@@ -181,8 +88,92 @@ export default function useEVM({ network }: Props): WalletProvider {
         }
     }
 
+    const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
+        try {
+
+            setSelectedProvider({ ...provider, connector: { name: connector.name } })
+            await connector.disconnect()
+            await disconnectAsync({ connector })
+
+            if (isMobile()) {
+                if (connector.id !== "walletConnect") {
+                    getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
+                        window.location.href = uri;
+                    })
+                }
+            }
+            else {
+                getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
+                    const Icon = resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
+                    const base64Icon = convertSvgComponentToBase64(Icon)
+
+                    setSelectedProvider({ ...provider, connector: { name: connector.name, qr: uri, iconUrl: base64Icon } })
+                })
+            }
+
+            await connectAsync({
+                connector: connector,
+            });
+
+            const activeAccount = getAccount(config)
+            const connections = getConnections(config)
+            const connection = connections.find(c => c.connector.id === activeAccount.connector?.id)
+
+            const wallet = ResolveWallet({
+                activeConnection: (activeAccount.connector && activeAccount.address) ? {
+                    id: activeAccount.connector.id,
+                    address: activeAccount.address
+                } : undefined,
+                connection,
+                discconnect: disconnectWallet,
+                networks,
+                network,
+                supportedNetworks: {
+                    asSource: asSourceSupportedNetworks,
+                    autofill: autofillSupportedNetworks,
+                    withdrawal: withdrawalSupportedNetworks
+                },
+                providerName: name
+            })
+
+            return wallet
+
+        } catch (e) {
+            //TODO: handle error like in transfer
+            toast.error('Error connecting wallet')
+            throw new Error(e)
+        }
+    }
+
+    const resolvedConnectors: Wallet[] = useMemo(() => {
+        const connections = getConnections(config)
+        return activeConnectors.map((w): Wallet | undefined => {
+
+            const connection = connections.find(c => c.connector.id === w.id)
+
+            const wallet = ResolveWallet({
+                activeConnection: (activeAccount.connector && activeAccount.address) ? {
+                    id: activeAccount.connector.id,
+                    address: activeAccount.address
+                } : undefined,
+                connection,
+                discconnect: disconnectWallet,
+                networks,
+                network,
+                supportedNetworks: {
+                    asSource: asSourceSupportedNetworks,
+                    autofill: autofillSupportedNetworks,
+                    withdrawal: withdrawalSupportedNetworks
+                },
+                providerName: name
+            })
+
+            return wallet
+        }).filter(w => w !== undefined) as Wallet[]
+    }, [activeAccount, activeConnectors, config, network])
+
     const switchAccount = async (wallet: Wallet, address: string) => {
-        const connector = allConnectors.find(c => c.name === wallet.connector)
+        const connector = getConnections(config).find(c => c.connector.name === wallet.id)?.connector
         if (!connector)
             throw new Error("Connector not found")
         const { accounts } = await switchAccountAsync({ connector })
@@ -191,8 +182,17 @@ export default function useEVM({ network }: Props): WalletProvider {
             throw new Error("Account not found")
     }
 
+
+    const activeBrowserWallet = explicitInjectedproviderDetected() && allConnectors.filter(c => c.id !== "com.immutable.passport" && c.type === "injected").length === 1
+    const filterConnectors = wallet => !isNotAvailable(wallet, network) && ((wallet.id === "injected" ? activeBrowserWallet : true))
+
     {/* //TODO: refactor ordering */ }
-    const availableWalletsForConnect = allConnectors.filter(w => !isNotAvailable(w, network)).map(w => ({ ...w, order: resolveWalletConnectorIndex(w.id) }))
+    const availableWalletsForConnect = allConnectors.filter(filterConnectors)
+        .map(w => ({
+            ...w,
+            order: resolveWalletConnectorIndex(w.id),
+            type: (!network?.name.toLowerCase().includes("immutable") && w.id === "com.immutable.passport") ? "other" : w.type
+        }))
 
     const provider = {
         connectWallet,
@@ -231,7 +231,98 @@ const getWalletConnectUri = async (
     );
 };
 
-const isNotAvailable = (connector: Connector, network: Network | undefined) => {
+const isNotAvailable = (connector: Connector | undefined, network: Network | undefined) => {
     if (!network) return false
-    return connector.id === "com.immutable.passport" && !network.name.toLowerCase().startsWith("immutable")
+    if (!connector) return true
+    return resolveSupportedNetworks([network.name], connector.id).length === 0
+}
+
+type ResolveWalletProps = {
+    connection: {
+        accounts: readonly [`0x${string}`, ...`0x${string}`[]];
+        chainId: number;
+        connector: Connector;
+    } | undefined,
+    networks: NetworkWithTokens[],
+    network: Network | undefined,
+    activeConnection: {
+        id: string,
+        address: string
+    } | undefined,
+    discconnect: (connectorName: string | undefined) => Promise<void>,
+    supportedNetworks: {
+        asSource: string[],
+        autofill: string[],
+        withdrawal: string[]
+    },
+    providerName: string
+}
+
+const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
+    const { activeConnection, connection, networks, discconnect, network, supportedNetworks, providerName } = props
+    const accountIsActive = activeConnection?.id === connection?.connector.id
+
+    const addresses = connection?.accounts as (string[] | undefined);
+    const activeAddress = activeConnection?.address
+    const connector = connection?.connector
+    if (!connector)
+        return undefined
+
+    const address = accountIsActive ? activeAddress : addresses?.[0]
+    if (!address) return undefined
+
+    const walletname = `${connector?.name} ${connector.id === "com.immutable.passport" ? "" : " - EVM"}`
+
+    const wallet = {
+        id: connector.name,
+        isActive: accountIsActive,
+        address,
+        addresses: addresses || [address],
+        displayName: walletname,
+        providerName,
+        icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector), address, iconUrl: connector.icon }),
+        disconnect: () => discconnect(connector.name),
+        isNotAvailable: isNotAvailable(connector, network),
+        asSourceSupportedNetworks: resolveSupportedNetworks(supportedNetworks.asSource, connector.id),
+        autofillSupportedNetworks: resolveSupportedNetworks(supportedNetworks.autofill, connector.id),
+        withdrawalSupportedNetworks: resolveSupportedNetworks(supportedNetworks.withdrawal, connector.id),
+        networkIcon: networks.find(n => connector?.id === "com.immutable.passport" ? immutableZKEvm.some(name => name === n.name) : ethereumNames.some(name => name === n.name))?.logo
+    }
+
+    return wallet
+}
+
+const resolveSupportedNetworks = (supportedNetworks: string[], connectorId: string) => {
+
+    const specificNetworksConnectors = [
+        {
+            id: "com.immutable.passport",
+            supportedNetworks: [
+                KnownInternalNames.Networks.ImmutableXMainnet,
+                KnownInternalNames.Networks.ImmutableXGoerli,
+                KnownInternalNames.Networks.ImmutableXSepolia,
+                KnownInternalNames.Networks.ImmutableZkEVM
+            ]
+        },
+        {
+            id: "com.roninchain.wallet",
+            supportedNetworks: [
+                KnownInternalNames.Networks.RoninMainnet,
+                KnownInternalNames.Networks.EthereumMainnet,
+                KnownInternalNames.Networks.PolygonMainnet,
+                KnownInternalNames.Networks.BNBChainMainnet,
+                KnownInternalNames.Networks.ArbitrumMainnet
+            ]
+        }
+    ]
+
+    const specificNetworks = specificNetworksConnectors.find(c => c.id === connectorId)
+
+    if (specificNetworks) {
+        const values = specificNetworks.supportedNetworks.filter(n => supportedNetworks.some(name => name === n))
+        return values
+    }
+
+    return supportedNetworks
+
 }

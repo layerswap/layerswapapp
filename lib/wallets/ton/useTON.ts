@@ -1,12 +1,12 @@
-import { ConnectedWallet, useTonConnectUI, useTonWallet, WalletInfo } from "@tonconnect/ui-react"
+import { ConnectedWallet, useTonConnectUI, useTonWallet } from "@tonconnect/ui-react"
 import { Address } from "@ton/core";
 import KnownInternalNames from "../../knownIds";
-import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
+import { Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
-import { useEffect, useState } from "react";
-import { useConnectModal } from "../../../components/WalletModal";
+import { useSettingsState } from "../../../context/settings";
 
 export default function useTON(): WalletProvider {
+    const { networks } = useSettingsState()
 
     const commonSupportedNetworks = [
         KnownInternalNames.Networks.TONMainnet,
@@ -19,23 +19,14 @@ export default function useTON(): WalletProvider {
     const tonWallet = useTonWallet();
     const [tonConnectUI] = useTonConnectUI();
 
-    // const [tonWallets, setTonWallets] = useState<WalletInfo[] | undefined>([])
-
-    // useEffect(() => {
-    //     const getWallets = async () => {
-    //         const wallets = await tonConnectUI.getWallets()
-    //         setTonWallets(wallets)
-    //     }
-    //     getWallets()
-    // }, [])
-
     const address = tonWallet?.account && Address.parse(tonWallet.account.address).toString({ bounceable: false })
     const iconUrl = tonWallet?.["imageUrl"] as string
-
+    const wallet_id = tonWallet?.["name"] || tonWallet?.device.appName
     const wallet: Wallet | undefined = tonWallet && address ? {
+        id: wallet_id,
+        displayName: `${wallet_id} - Ton`,
         addresses: [address],
         address,
-        connector: tonWallet.device.appName,
         providerName: id,
         isActive: true,
         icon: resolveWalletConnectorIcon({ connector: name, address, iconUrl }),
@@ -44,6 +35,7 @@ export default function useTON(): WalletProvider {
         withdrawalSupportedNetworks: commonSupportedNetworks,
         autofillSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,
+        networkIcon: networks.find(n => commonSupportedNetworks.some(name => name === n.name))?.logo
     } : undefined
 
     const getWallet = () => {
@@ -60,7 +52,7 @@ export default function useTON(): WalletProvider {
             await disconnectWallets()
         }
 
-        function connectAndWaitForStatusChange(wallet) {
+        function connectAndWaitForStatusChange() {
             return new Promise((resolve, reject) => {
                 try {
                     // Initiate the connection
@@ -77,14 +69,15 @@ export default function useTON(): WalletProvider {
             });
         }
 
-        const result: Wallet | undefined = await connectAndWaitForStatusChange(tonWallet)
+        const result: Wallet | undefined = await connectAndWaitForStatusChange()
             .then((status: ConnectedWallet) => {
                 const connectedAddress = Address.parse(status.account.address).toString({ bounceable: false })
                 const connectedName = status.device.appName
-                const wallet = status && connectedAddress ? {
+                const wallet: Wallet | undefined = status && connectedAddress ? {
+                    id: connectedName,
+                    displayName: `${connectedName} - Ton`,
                     addresses: [connectedAddress],
                     address: connectedAddress,
-                    connector: connectedName,
                     providerName: id,
                     isActive: true,
                     icon: resolveWalletConnectorIcon({ connector: connectedName, address: connectedAddress }),
@@ -93,6 +86,7 @@ export default function useTON(): WalletProvider {
                     withdrawalSupportedNetworks: commonSupportedNetworks,
                     autofillSupportedNetworks: commonSupportedNetworks,
                     asSourceSupportedNetworks: commonSupportedNetworks,
+                    networkIcon: networks.find(n => commonSupportedNetworks.some(name => name === n.name))?.logo
                 } : undefined
 
                 return wallet ? wallet : undefined
