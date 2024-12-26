@@ -6,16 +6,6 @@ import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from "starknet-types-0
 const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
 
 class DiscoveryConnector extends Connector {
-    ready(): Promise<boolean> {
-        throw new Error("Method not implemented.");
-    }
-    chainId(): Promise<bigint> {
-        throw new Error("Method not implemented.");
-    }
-    request<T extends RpcMessage["type"]>(call: RequestFnCall<T>): Promise<RpcTypeToMessageMap[T]["result"]> {
-        throw new Error("Method not implemented.");
-    }
-
     #wallet;
     #store;
 
@@ -37,7 +27,7 @@ class DiscoveryConnector extends Connector {
     }
 
     get name() {
-        return `${this.#wallet.name} Mobile`;
+        return `${this.#wallet.name} (mobile)`;
     }
 
     available() {
@@ -60,6 +50,16 @@ class DiscoveryConnector extends Connector {
     account(): any {
         throw new ConnectorNotConnectedError()
     }
+    ready(): Promise<boolean> {
+        throw new Error("Method not implemented.");
+    }
+    chainId(): Promise<bigint> {
+        throw new Error("Method not implemented.");
+    }
+    request<T extends RpcMessage["type"]>(call: RequestFnCall<T>): Promise<RpcTypeToMessageMap[T]["result"]> {
+        throw new Error("Method not implemented.");
+    }
+
 }
 
 
