@@ -1,7 +1,7 @@
-import { FC } from 'react'
+import { FC, useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react';
 import { resolveWalletConnectorIcon } from '../../lib/wallets/utils/resolveWalletIcon';
-import { LoaderCircle, Loader } from 'lucide-react';
+import { LoaderCircle, Loader, RotateCw } from 'lucide-react';
 import { Wallet } from '../../Models/WalletProvider';
 import { ModalWalletProvider } from '.';
 
@@ -34,25 +34,29 @@ const ConnectorsList: FC<WalletsListProps> = ({ modalWalletProvider, onFinish, s
 
 
 const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFinish, setSelectedProvider, selectedProvider }) => {
+    const [connectionError, setConnectionError] = useState(false);
+    const [currentConnector, setCurrentConnector] = useState<any>(null);
 
     const connect = async (connector: any) => {
         try {
-            setSelectedProvider({ ...provider, connector: { name: connector.name } })
+            setConnectionError(false);
+            setCurrentConnector(connector);
+            setSelectedProvider({ ...provider, connector: { name: connector.name } });
 
-            const result = provider?.connectConnector && await provider.connectConnector({ connector })
+            const result = provider?.connectConnector && await provider.connectConnector({ connector });
 
-            setSelectedProvider(undefined)
-            onFinish(result)
+            setSelectedProvider(undefined);
+            onFinish(result);
         } catch (e) {
-            console.log(e)
-            setSelectedProvider({ ...provider, connector: undefined })
-            onFinish(undefined)
+            setConnectionError(true);
+            setSelectedProvider({ ...provider, connector: undefined });
         }
-    }
+    };
 
-    const selectedWallet = provider?.availableWalletsForConnect?.find((wallet) => wallet.name === selectedProvider?.connector?.name)
+    const selectedWallet = currentConnector || provider?.availableWalletsForConnect?.find((wallet) => wallet.name === selectedProvider?.connector?.name);
     const ProviderIcon = resolveWalletConnectorIcon({ connector: selectedProvider?.id, iconUrl: selectedWallet?.icon });
-    
+
+
     if (selectedProvider?.connector?.qr) return <div className="flex flex-col justify-start space-y-2">
         <div className='w-full flex justify-center pt-2'>
             <QRCodeSVG
@@ -79,48 +83,57 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
 
     return (
         <div className="flex flex-col gap-1 w-full overflow-y-auto styled-scroll">
-            {
-                selectedWallet?.name ? (
-                    <div className="w-full flex items-center justify-center p-6">
-                        <div className="flex gap-3 items-center font-semibold">
-                            <div className="flex flex-col items-center">
+            {(selectedWallet || connectionError) ? (
+                <div className="w-full flex items-center justify-center p-6">
+                    <div className="flex flex-col gap-3 items-center font-semibold">
+                        {selectedWallet && (
+                            <>
                                 <ProviderIcon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
                                 <p className='text-xs'>Opening {selectedWallet?.name}...</p>
                                 <span className="text-base font-medium py-1">Confirm connection in the extension</span>
                                 <LoaderCircle className='h-4 w-4 animate-spin' />
-                            </div>
-                        </div>
+                            </>
+                        )}
+                        <button
+                            type="button"
+                            className="flex gap-1.5 items-center justify-between bg-[rgba(228,37,117,0.12)] text-[#e42575] px-4 py-2 border-none rounded-lg cursor-pointer text-sm font-medium leading-4 transition-transform duration-125 ease-in-out hover:scale-105"
+                            onClick={() => connect(currentConnector)}
+                        >
+                            <RotateCw className='h-4 w-4' />
+                            Reconnect
+                        </button>
                     </div>
-                ) : (
-                    provider?.availableWalletsForConnect?.sort((a, b) => (a.type === 'injected' ? 0 : a.order || 100) - (b.type === 'injected' ? 0 : b.order || 100))?.map((connector, index) => {
-                        const connectorName = connector?.name;
-                        const connectorId = connector?.id;
+                </div>
+            ) : (
+                provider?.availableWalletsForConnect?.sort((a, b) => (a.type === 'injected' ? 0 : a.order || 100) - (b.type === 'injected' ? 0 : b.order || 100))?.map((connector, index) => {
+                    const connectorName = connector?.name;
+                    const connectorId = connector?.id;
 
-                        const Icon = resolveWalletConnectorIcon({ connector: connectorId, iconUrl: connector.icon });
+                    const Icon = resolveWalletConnectorIcon({ connector: connectorId, iconUrl: connector.icon });
 
-                        return (
-                            <div key={index}>
-                                <button
-                                    type="button"
-                                    disabled={!!provider.connector}
-                                    className="w-full flex items-center justify-between hover:bg-secondary-500 transition-colors duration-200 rounded-xl px-2 py-2"
-                                    onClick={() => connect(connector)}
-                                >
-                                    <div className="flex gap-3 items-center font-semibold">
-                                        <Icon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
-                                        <div className="flex flex-col items-start">
-                                            <p>{connectorName}</p>
-                                            {
-                                                connector.type === 'injected' &&
-                                                <p className="text-xs text-secondary-text font-medium">Installed</p>
-                                            }
-                                        </div>
+                    return (
+                        <div key={index}>
+                            <button
+                                type="button"
+                                disabled={!!provider.connector}
+                                className="w-full flex items-center justify-between hover:bg-secondary-500 transition-colors duration-200 rounded-xl px-2 py-2"
+                                onClick={() => connect(connector)}
+                            >
+                                <div className="flex gap-3 items-center font-semibold">
+                                    <Icon className="w-9 h-9 p-0.5 rounded-md bg-secondary-800" />
+                                    <div className="flex flex-col items-start">
+                                        <p>{connectorName}</p>
+                                        {
+                                            connector.type === 'injected' &&
+                                            <p className="text-xs text-secondary-text font-medium">Installed</p>
+                                        }
                                     </div>
-                                </button>
-                            </div>
-                        );
-                    })
-                )
+                                </div>
+                            </button>
+                        </div>
+                    );
+                })
+            )
             }
         </div>
     )

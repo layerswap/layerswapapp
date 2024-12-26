@@ -90,6 +90,7 @@ export default function useFuel(): WalletProvider {
         }
         catch (e) {
             console.log(e)
+            throw new Error(e)
         }
     }
 

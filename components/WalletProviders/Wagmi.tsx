@@ -5,7 +5,7 @@ import { NetworkType } from "../../Models/Network";
 import resolveChain from "../../lib/resolveChain";
 import React from "react";
 import NetworkSettings from "../../lib/NetworkSettings";
-import { WagmiProvider, injected } from 'wagmi'
+import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createConfig } from 'wagmi';
 import { Chain, http } from 'viem';
@@ -13,7 +13,7 @@ import { WalletModalProvider } from '../WalletModal';
 import { argent } from '../../lib/wallets/connectors/argent';
 import { rainbow } from '../../lib/wallets/connectors/rainbow';
 import { coinbaseWallet, metaMask, walletConnect } from 'wagmi/connectors'
-import { hasInjectedProvider, explicitInjectedproviderDetected } from '../../lib/wallets/connectors/getInjectedConnector';
+import { hasInjectedProvider } from '../../lib/wallets/connectors/getInjectedConnector';
 import { bitget } from '../../lib/wallets/connectors/bitget';
 import { isMobile } from '../../lib/isMobile';
 import FuelProviderWrapper from "./FuelProvider";
@@ -61,6 +61,7 @@ function WagmiComponent({ children }: Props) {
         chains: settingsChains as [Chain, ...Chain[]],
         transports: transports,
     });
+    
     return (
         <WagmiProvider config={config} >
             <QueryClientProvider client={queryClient}>
