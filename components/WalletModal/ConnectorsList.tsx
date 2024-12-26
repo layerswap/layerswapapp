@@ -56,7 +56,6 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
     const selectedWallet = currentConnector || provider?.availableWalletsForConnect?.find((wallet) => wallet.name === selectedProvider?.connector?.name);
     const ProviderIcon = resolveWalletConnectorIcon({ connector: selectedProvider?.id, iconUrl: selectedWallet?.icon });
 
-
     if (selectedProvider?.connector?.qr) return <div className="flex flex-col justify-start space-y-2">
         <div className='w-full flex justify-center pt-2'>
             <QRCodeSVG
@@ -100,7 +99,7 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
                             onClick={() => connect(currentConnector)}
                         >
                             <RotateCw className='h-4 w-4' />
-                            Reconnect
+                            <span>Reconnect</span>
                         </button>
                     </div>
                 </div>
