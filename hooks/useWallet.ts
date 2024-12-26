@@ -6,6 +6,7 @@ import useStarknet from "../lib/wallets/starknet/useStarknet";
 import useTON from "../lib/wallets/ton/useTON";
 import useFuel from "../lib/wallets/fuel/useFuel"
 import { Wallet, WalletProvider } from "../Models/WalletProvider";
+import useTron from "../lib/wallets/tron/useTron";
 import { useMemo } from "react";
 
 export type WalletPurpose = "autofil" | "withdrawal" | "asSource"
@@ -19,6 +20,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
         useSolana({ network }),
         useTON(),
         useFuel(),
+        useTron()
     ]
 
     const provider = network && resolveProvider(network, walletProviders, purpose)
