@@ -9,10 +9,8 @@ import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
 import {
     useWallet as useFuelWallet,
 } from '@fuels/react';
-import { Provider, Contract } from 'fuels';
-import FuelWatchContractABI from '../../../../lib/abis/FuelWatchContractABI.json';
 
-const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, token, amount, depositAddress }) => {
+const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId }) => {
     const [loading, setLoading] = useState(false);
     const { setSwapTransaction } = useSwapTransactionStore()
 
@@ -21,27 +19,16 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
     const wallet = provider?.activeWallet
 
     const handleTransfer = useCallback(async () => {
-        setLoading(true)
         try {
+            setLoading(true)
 
             if (!fuelWallet) throw Error("Fuel wallet not connected")
-            if (!network) throw Error("Network not found")
+            if (!callData) throw Error("Call data not found")
 
-            const fuelProvider = await Provider.create(network.node_url);
-            const contract = new Contract('0x9599a0fee081405d22a33b1ce892b47688660a38c5f8509559f34a3f960b89f7', FuelWatchContractABI, fuelWallet);
+            const tx = JSON.parse(callData)
+            const transactionResponse = await fuelWallet.sendTransaction(tx)
 
-            const { waitForResult } = await contract.functions
-                .test_function(42069)
-                .addTransfer({
-                    destination: depositAddress as string,
-                    amount: 100,
-                    assetId: fuelProvider.getBaseAssetId(),
-                })
-                .call();
-
-            const transactionResponse = await waitForResult()
-
-            // if (swapId && transactionResponse) setSwapTransaction(swapId, BackendTransactionStatus.Completed, transactionResponse.id)
+            if (swapId && transactionResponse) setSwapTransaction(swapId, BackendTransactionStatus.Completed, transactionResponse.id)
 
         }
         catch (e) {
@@ -53,7 +40,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
         finally {
             setLoading(false)
         }
-    }, [swapId, callData, network, token, amount, fuelWallet])
+    }, [swapId, callData, fuelWallet])
 
     if (!wallet) {
         return <ConnectWalletButton />
