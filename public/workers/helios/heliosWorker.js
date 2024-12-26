@@ -18,11 +18,11 @@ async function initWorker(initConfigs) {
     try {
         await init();
 
-        const ethCheckpoint = await fetch(initConfigs.hostname + '/api/getCheckpoint').then(res => res.json());
+        // const ethCheckpoint = await fetch(initConfigs.hostname + '/api/getCheckpoint').then(res => res.json());
         const configEthereum = {
             executionRpc: "https://eth-sepolia.g.alchemy.com/v2/ErGCcrn6KRA91KfnRkqtyb3SJVdYGz1S",
             consensusRpc: initConfigs.hostname + '/api/consensusRpc',
-            checkpoint: ethCheckpoint?.data.finality.finalized.root || "0x5d7fbedda647649b940f099fe79832dc0b031b08e5558ff7371bcce472471ab4",
+            checkpoint: '0x81f12a3e1ba2ce7559d61320705b44888a102ccaf8e590547440daad74a6512d',
             dbType: "localstorage",
             network: 'sepolia'
         };
