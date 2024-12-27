@@ -11,7 +11,7 @@ const useSWRBalance = (address: string | undefined, network: NetworkWithTokens |
     
     return {
         balance: data,
-        isBalanceLoading: !error && !data && isLoading,
+        isBalanceLoading: isLoading,
         isError: error,
         mutate
     }

@@ -12,7 +12,7 @@ const useSWRGas = (address: any, network: Network | undefined, token?: Token) =>
 
     return {
         gas: gasData,
-        isGasLoading: !gasError && !gasData && isLoading,
+        isGasLoading: isLoading,
         gasError: gasError
     }
 }
