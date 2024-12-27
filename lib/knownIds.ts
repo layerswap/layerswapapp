@@ -180,6 +180,10 @@ export default class KnownInternalNames {
 
         public static readonly EclipseMainnet: string = "ECLIPSE_MAINNET"
 
+        public static readonly SophonMainnet: string = "SOPHON_MAINNET"
+        
+        public static readonly SophonSepolia: string = "SOPHON_SEPOLIA"
+
     }
 
     static Currencies = class {
