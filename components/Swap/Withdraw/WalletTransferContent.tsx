@@ -6,13 +6,11 @@ import AddressWithIcon from '../../Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '../../Input/Address/AddressPicker';
 import { ChevronRight } from 'lucide-react';
 import { truncateDecimals } from '../../utils/RoundDecimals';
-import { useConfig, useSwitchAccount } from 'wagmi';
 import VaulDrawer from '../../modal/vaulModal';
 import { Wallet } from '../../../Models/WalletProvider';
 import useSWRBalance from '../../../lib/balances/useSWRBalance';
 import { useSettingsState } from '../../../context/settings';
 import WalletsList from '../../Wallet/WalletsList';
-import { getConnections } from '@wagmi/core'
 
 const WalletTransferContent: FC = () => {
     const { networks } = useSettingsState()
@@ -22,16 +20,11 @@ const WalletTransferContent: FC = () => {
     const { source_token, source_network: swap_source_network } = swap || {}
     const source_network = swap_source_network && networks.find(n => n.name === swap_source_network?.name)
     const { provider } = useWallet(source_network, 'withdrawal')
-    const { switchAccount } = useSwitchAccount()
-    const config = useConfig()
 
     const [openModal, setOpenModal] = useState(false)
 
     const changeWallet = async (wallet: Wallet, address: string) => {
-        const connections = getConnections(config)
-        const connector = connections?.find(c => c.connector.name === wallet.id)
-        if (!connector) return
-        switchAccount({ connector: connector.connector })
+        provider?.switchAccount && provider.switchAccount(wallet, address)
         setSelectedSourceAccount({ wallet, address })
         setOpenModal(false)
     }
