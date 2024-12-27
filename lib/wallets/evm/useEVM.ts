@@ -271,7 +271,7 @@ const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
     const address = accountIsActive ? activeAddress : addresses?.[0]
     if (!address) return undefined
 
-    const walletname = `${connector?.name} - ${connector.id === "com.immutable.passport" ? "Immutable" : "EVM"}`
+    const walletname = `${connector?.name} ${connector.id === "com.immutable.passport" ? "" : " - EVM"}`
 
     const wallet = {
         id: connector.name,
