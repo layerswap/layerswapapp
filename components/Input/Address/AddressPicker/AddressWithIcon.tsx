@@ -81,7 +81,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
                     <ExtendedAddress address={addressItem.address} network={network} />
                 </div>
                 <div className="text-secondary-text w-full min-w-0 mt-1">
-                    <div className="inline-flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5">
                         {itemDescription?.icon && (
                             <itemDescription.icon className="rounded flex-shrink-0 h-4 w-4" />
                         )}
