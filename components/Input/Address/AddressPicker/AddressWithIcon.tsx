@@ -58,7 +58,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
 
     return (
         <div className="w-full flex items-center justify-between">
-            <div className="flex bg-secondary-400 text-primary-text items-center justify-center rounded-md h-9 overflow-hidden w-9">
+            <div className="flex bg-secondary-400 text-primary-text items-center justify-center rounded-md h-8 overflow-hidden w-8">
                 {
                     (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) ? (
                         partner?.logo && (
@@ -78,12 +78,12 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
 
             <div className="flex flex-col items-start flex-grow min-w-0 ml-3 text-sm">
                 <div className="flex w-full min-w-0">
-                    <ExtendedAddress address={addressItem.address} network={network} />
+                    <ExtendedAddress address={addressItem.address} network={network} addressClassNames="font-normal" />
                 </div>
-                <div className="text-secondary-text w-full min-w-0 mt-1">
-                    <div className="flex items-center gap-1.5">
+                <div className="text-secondary-text w-full min-w-0">
+                    <div className="flex items-center gap-1 text-xs">
                         {itemDescription?.icon && (
-                            <itemDescription.icon className="rounded flex-shrink-0 h-4 w-4" />
+                            <itemDescription.icon className="rounded flex-shrink-0 h-3.5 w-3.5" />
                         )}
                         {itemDescription?.text}
                     </div>
