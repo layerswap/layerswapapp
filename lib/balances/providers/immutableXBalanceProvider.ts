@@ -4,7 +4,7 @@ import KnownInternalNames from "../../knownIds";
 
 export class ImmutableXBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
-        return (KnownInternalNames.Networks.ImmutableXMainnet || KnownInternalNames.Networks.ImmutableXGoerli).includes(network.name)   
+        return (KnownInternalNames.Networks.ImmutableXMainnet.includes(network.name) || KnownInternalNames.Networks.ImmutableXGoerli.includes(network.name))  
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
