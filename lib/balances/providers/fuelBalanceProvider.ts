@@ -6,7 +6,7 @@ import retryWithExponentialBackoff from "../../retryWithExponentialBackoff";
 
 export class FuelBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
-        return (KnownInternalNames.Networks.FuelMainnet || KnownInternalNames.Networks.FuelTestnet).includes(network.name)
+        return KnownInternalNames.Networks.FuelMainnet.includes(network.name) || KnownInternalNames.Networks.FuelTestnet.includes(network.name)
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
