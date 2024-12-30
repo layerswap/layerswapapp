@@ -140,7 +140,7 @@ export default function useEVM({ network }: Props): WalletProvider {
 
         } catch (e) {
             //TODO: handle error like in transfer
-            toast.error('Error connecting wallet')
+            //toast.error('Error connecting wallet')
             throw new Error(e)
         }
     }
