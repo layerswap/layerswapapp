@@ -1,14 +1,17 @@
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
-import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
+import { ButtonWrapper, ChangeNetworkMessage, ConnectWalletButton } from './WalletTransfer/buttons';
 import {
     useWallet as useFuelWallet,
+    useChain,
+    useSelectNetwork,
 } from '@fuels/react';
+import { useSwapDataState } from '../../../../context/swap';
 
 const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId }) => {
     const [loading, setLoading] = useState(false);
@@ -16,7 +19,17 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
 
     const { provider } = useWallet(network, 'withdrawal');
     const { wallet: fuelWallet } = useFuelWallet()
+    const { chain, refetch } = useChain()
     const wallet = provider?.activeWallet
+    const networkChainId = Number(network?.chain_id)
+    const activeChainId = Number(chain?.consensusParameters.chainId)
+    const { selectedSourceAccount } = useSwapDataState()
+
+    useEffect(() => {
+        if (provider?.activeWallet && !fuelWallet && selectedSourceAccount) {
+            provider?.switchAccount && provider?.switchAccount(selectedSourceAccount?.wallet, selectedSourceAccount?.address)
+        }
+    }, [selectedSourceAccount, provider?.activeWallet, fuelWallet])
 
     const handleTransfer = useCallback(async () => {
         try {
@@ -45,7 +58,13 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
     if (!wallet) {
         return <ConnectWalletButton />
     }
-
+    else if (network && activeChainId !== undefined && networkChainId !== activeChainId) {
+        return <ChangeNetworkButton
+            onChange={refetch}
+            chainId={networkChainId}
+            network={network.display_name}
+        />
+    }
     return (
         <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
             {
@@ -56,6 +75,40 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
             }
         </div>
     )
+}
+
+const ChangeNetworkButton: FC<{ chainId: number, network: string, onChange: () => void }> = ({ chainId, network, onChange }) => {
+    const { selectNetworkAsync, error, isPending, isError } = useSelectNetwork();
+
+    const clickHandler = useCallback(async () => {
+        await selectNetworkAsync({ chainId });
+        onChange();
+    }, [selectNetworkAsync, chainId])
+
+    return <>
+        {
+            <ChangeNetworkMessage
+                data={{
+                    isPending: isPending,
+                    isError: isError,
+                    error
+                }}
+                network={network}
+            />
+        }
+        {
+            !isPending &&
+            <ButtonWrapper
+                onClick={clickHandler}
+                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
+            >
+                {
+                    error ? <span>Try again</span>
+                        : <span>Switch network</span>
+                }
+            </ButtonWrapper>
+        }
+    </>
 }
 
 export default FuelWalletWithdrawStep;

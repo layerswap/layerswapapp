@@ -123,16 +123,6 @@ export default function useFuel(): WalletProvider {
         }
     }
 
-    const reconnectWallet = async () => {
-        try {
-            await disconnectWallets()
-            connectWallet()
-        }
-        catch (e) {
-            console.log(e)
-        }
-    }
-
     const switchAccount = async (wallet: Wallet) => {
         await fuel.selectConnector(wallet.id)
     }
