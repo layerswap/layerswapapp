@@ -12,6 +12,7 @@ import {
     useSelectNetwork,
 } from '@fuels/react';
 import { useSwapDataState } from '../../../../context/swap';
+import { datadogRum } from '@datadog/browser-rum';
 
 const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId }) => {
     const [loading, setLoading] = useState(false);
@@ -39,6 +40,8 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
             if (!callData) throw Error("Call data not found")
 
             const tx = JSON.parse(callData)
+            datadogRum.addAction('fuelTransfer', tx);
+
             const transactionResponse = await fuelWallet.sendTransaction(tx)
 
             if (swapId && transactionResponse) setSwapTransaction(swapId, BackendTransactionStatus.Completed, transactionResponse.id)
@@ -47,6 +50,12 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
         catch (e) {
             if (e?.message) {
                 toast(e.message)
+                if (e.message !== "User rejected the transaction!") {
+                    const txError = new Error(e.message);
+                    txError.name = `SwapWithdrawalError`;
+                    txError.cause = e;
+                    datadogRum.addError(txError);
+                }
                 return
             }
         }
