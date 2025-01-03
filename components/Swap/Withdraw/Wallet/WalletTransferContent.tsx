@@ -119,6 +119,7 @@ export const WalletTransferContent: FC = () => {
             depositAddress={depositAddress}
             network={swap?.source_network}
             token={swap?.source_token}
+            sequenceNumber={swap?.metadata.sequence_number}
             swapId={swap?.id}
             callData={callData}
         />

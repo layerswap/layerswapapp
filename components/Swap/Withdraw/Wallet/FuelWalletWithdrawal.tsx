@@ -13,8 +13,10 @@ import {
 } from '@fuels/react';
 import { useSwapDataState } from '../../../../context/swap';
 import { datadogRum } from '@datadog/browser-rum';
+import { bn, Contract, Provider } from 'fuels';
+import WatchdogAbi from '../../../../lib/abis/FUELWATCHDOG.json';
 
-const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId }) => {
+const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, amount, depositAddress, sequenceNumber, token }) => {
     const [loading, setLoading] = useState(false);
     const { setSwapTransaction } = useSwapTransactionStore()
 
@@ -38,11 +40,36 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
 
             if (!fuelWallet) throw Error("Fuel wallet not connected")
             if (!callData) throw Error("Call data not found")
+            if (!network) throw Error("Network not found")
+            if (!depositAddress) throw Error("Deposit address not found")
+            if (!network.metadata.watchdog_contract) throw Error("Watchdog contract not found")
+            if (!amount) throw Error("Amount not found")
 
-            const tx = JSON.parse(callData)
-            datadogRum.addAction('fuelTransfer', tx);
+            const provider = await Provider.create(network?.node_url);
+            const contract = new Contract(network.metadata?.watchdog_contract, WatchdogAbi, provider);
 
-            const transactionResponse = await fuelWallet.sendTransaction(tx)
+            const scope = contract.functions
+                .watch(sequenceNumber)
+                .addTransfer({
+                    destination: depositAddress as string,
+                    amount: bn.parseUnits(amount.toString(), token?.decimals),
+                    assetId: token?.contract!,
+                })
+
+            // Build a transaction request from the invocation scope
+            const transactionRequest = await scope.getTransactionRequest();
+
+            const txCost = await fuelWallet.getTransactionCost(transactionRequest);
+
+            transactionRequest.gasLimit = txCost.gasUsed;
+            transactionRequest.maxFee = txCost.maxFee;
+            datadogRum.addAction('fuelTransfer', transactionRequest);
+
+            await fuelWallet.fund(transactionRequest, txCost);
+
+            // Submit the transaction
+            const transactionResponse = await fuelWallet.sendTransaction(transactionRequest);
+            await transactionResponse.waitForResult();
 
             if (swapId && transactionResponse) setSwapTransaction(swapId, BackendTransactionStatus.Completed, transactionResponse.id)
 
