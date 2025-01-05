@@ -19,12 +19,9 @@ export default function TronProvider({ children }: { children: React.ReactNode }
                 OkxWalletAdapter,
                 TokenPocketAdapter,
                 TronLinkAdapter,
-                // LedgerAdapter,
             } = res;
             const tronLinkAdapter = new TronLinkAdapter();
-            // const ledger = new LedgerAdapter({
-            //     accountNumber: 2,
-            // });
+      
             const bitKeepAdapter = new BitKeepAdapter();
             const tokenPocketAdapter = new TokenPocketAdapter();
             const okxwalletAdapter = new OkxWalletAdapter();
@@ -33,7 +30,6 @@ export default function TronProvider({ children }: { children: React.ReactNode }
                 bitKeepAdapter,
                 tokenPocketAdapter,
                 okxwalletAdapter,
-                // ledger
             ])
         });
     }, [setAdapters])
