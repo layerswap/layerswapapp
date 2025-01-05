@@ -6,7 +6,7 @@ import KnownInternalNames from "../../knownIds";
 
 export class StarknetBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
-        return (KnownInternalNames.Networks.StarkNetMainnet || KnownInternalNames.Networks.StarkNetGoerli || KnownInternalNames.Networks.StarkNetSepolia).includes(network.name)
+        return (KnownInternalNames.Networks.StarkNetMainnet.includes(network.name) || KnownInternalNames.Networks.StarkNetGoerli.includes(network.name) || KnownInternalNames.Networks.StarkNetSepolia.includes(network.name))
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {

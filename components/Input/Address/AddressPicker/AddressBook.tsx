@@ -20,7 +20,7 @@ type AddressBookProps = {
 const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, destination, destination_address, partner }) => {
 
     return (
-        <div className="text-left">
+        <div className="text-left !mt-1">
             <CommandWrapper>
                 <CommandList>
                     <CommandGroup

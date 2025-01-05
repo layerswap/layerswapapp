@@ -32,6 +32,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const name = "amount"
     const walletBalance = balance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
     let maxAllowedAmount: number | null = maxAmountFromApi || 0
+    
     if (query.balances && fromCurrency) {
         try {
             const balancesFromQueries = new URL(window.location.href.replaceAll('&quot;', '"')).searchParams.get('balances');

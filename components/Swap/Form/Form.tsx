@@ -140,7 +140,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
         const newToToken = newTo?.tokens.find(t => t.symbol === fromCurrency?.symbol)
 
         const destinationProvider = (destination && !toExchange)
-            ? providers.find(p => p.withdrawalSupportedNetworks?.includes(destination?.name) && p.connectedWallets?.some(w => !w.isNotAvailable && w.addresses.some(a => a.toLowerCase() === values.destination_address?.toLowerCase())))
+            ? providers.find(p => p.autofillSupportedNetworks?.includes(destination?.name) && p.connectedWallets?.some(w => !w.isNotAvailable && w.addresses.some(a => a.toLowerCase() === values.destination_address?.toLowerCase())))
             : undefined
 
         const newDestinationProvider = (newTo && !toExchange) ? providers.find(p => p.autofillSupportedNetworks?.includes(newTo.name) && p.connectedWallets?.some(w => !w.isNotAvailable && w.addresses.some(a => a.toLowerCase() === selectedSourceAccount?.address.toLowerCase())))
