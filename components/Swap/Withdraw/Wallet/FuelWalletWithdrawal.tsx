@@ -69,7 +69,6 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
 
             // Submit the transaction
             const transactionResponse = await fuelWallet.sendTransaction(transactionRequest);
-            await transactionResponse.waitForResult();
 
             if (swapId && transactionResponse) setSwapTransaction(swapId, BackendTransactionStatus.Completed, transactionResponse.id)
 
