@@ -56,7 +56,6 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
                     assetId: token?.contract!,
                 })
 
-            // Build a transaction request from the invocation scope
             const transactionRequest = await scope.getTransactionRequest();
 
             const txCost = await fuelWallet.getTransactionCost(transactionRequest);
@@ -67,7 +66,6 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
 
             await fuelWallet.fund(transactionRequest, txCost);
 
-            // Submit the transaction
             const transactionResponse = await fuelWallet.sendTransaction(transactionRequest);
 
             if (swapId && transactionResponse) setSwapTransaction(swapId, BackendTransactionStatus.Completed, transactionResponse.id)
