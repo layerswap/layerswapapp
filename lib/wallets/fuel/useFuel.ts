@@ -1,6 +1,7 @@
 import KnownInternalNames from "../../knownIds";
 import {
     useConnectors,
+    useFuel as useGlobalFuel
 } from '@fuels/react';
 import { Connector, useAccount } from "wagmi";
 import {
@@ -18,11 +19,10 @@ import { useEffect, useMemo } from "react";
 import { useWalletStore } from "../../../stores/walletStore";
 import { useSettingsState } from "../../../context/settings";
 
-
-const fuelNames = [KnownInternalNames.Networks.FuelMainnet, KnownInternalNames.Networks.FuelTestnet]
 export default function useFuel(): WalletProvider {
-    const autofillSupportedNetworks = [
+    const commonSupportedNetworks = [
         KnownInternalNames.Networks.FuelTestnet,
+        KnownInternalNames.Networks.FuelDevnet,
         KnownInternalNames.Networks.FuelMainnet
     ]
     const name = 'Fuel'
@@ -30,6 +30,7 @@ export default function useFuel(): WalletProvider {
 
     const { address: evmAddress, connector: evmConnector } = useAccount()
     const { connectors } = useConnectors()
+    const { fuel } = useGlobalFuel()
     const { connect } = useConnectModal()
     const { networks } = useSettingsState()
 
@@ -78,12 +79,12 @@ export default function useFuel(): WalletProvider {
                     connectWallet,
                     disconnectWallet,
                     name,
-                    autofillSupportedNetworks,
-                    networkIcon: networks.find(n => fuelNames.some(name => name === n.name))?.logo
+                    commonSupportedNetworks,
+                    networkIcon: networks.find(n => commonSupportedNetworks.some(name => name === n.name))?.logo
                 })
 
                 addWallet(result)
-
+                await switchAccount(result)
                 return result
             }
 
@@ -123,14 +124,8 @@ export default function useFuel(): WalletProvider {
         }
     }
 
-    const reconnectWallet = async () => {
-        try {
-            await disconnectWallets()
-            connectWallet()
-        }
-        catch (e) {
-            console.log(e)
-        }
+    const switchAccount = async (wallet: Wallet) => {
+        await fuel.selectConnector(wallet.id)
     }
 
     const connectedConnectors = useMemo(() => connectors.filter(w => w.connected), [connectors])
@@ -150,8 +145,8 @@ export default function useFuel(): WalletProvider {
                             connectWallet,
                             disconnectWallet,
                             name,
-                            autofillSupportedNetworks,
-                            networkIcon: networks.find(n => fuelNames.some(name => name === n.name))?.logo
+                            commonSupportedNetworks: commonSupportedNetworks,
+                            networkIcon: networks.find(n => commonSupportedNetworks.some(name => name === n.name))?.logo
                         })
                         addWallet(w)
                     }
@@ -180,9 +175,10 @@ export default function useFuel(): WalletProvider {
         connectWallet,
         connectConnector,
         disconnectWallets,
-        switchAccount: reconnectWallet,
+        switchAccount,
         availableWalletsForConnect,
-        autofillSupportedNetworks,
+        autofillSupportedNetworks: commonSupportedNetworks,
+        withdrawalSupportedNetworks: commonSupportedNetworks,
         activeWallet: connectedWallets?.[0],
         connectedWallets,
         name,
@@ -201,11 +197,11 @@ type ResolveWalletProps = {
     connectWallet: () => Promise<Wallet | undefined>,
     disconnectWallet: (connectorName: string) => Promise<void>,
     name: string,
-    autofillSupportedNetworks: string[],
+    commonSupportedNetworks: string[],
     networkIcon?: string,
 }
 
-const resolveFuelWallet = ({ address, addresses, autofillSupportedNetworks, connectWallet, connector, disconnectWallet, evmAddress, evmConnector, name, networkIcon }: ResolveWalletProps) => {
+const resolveFuelWallet = ({ address, addresses, commonSupportedNetworks, connectWallet, connector, disconnectWallet, evmAddress, evmConnector, name, networkIcon }: ResolveWalletProps) => {
     let fuelCurrentConnector: string | undefined = undefined
 
     let customConnectorname: string | undefined = undefined
@@ -229,7 +225,7 @@ const resolveFuelWallet = ({ address, addresses, autofillSupportedNetworks, conn
     }
 
     const w: Wallet = {
-        id: fuelCurrentConnector || connector.name,
+        id: connector.name,
         address: address,
         addresses: addresses,
         isActive: true,
@@ -238,7 +234,9 @@ const resolveFuelWallet = ({ address, addresses, autofillSupportedNetworks, conn
         displayName: `${fuelCurrentConnector || connector.name} - Fuel`,
         providerName: name,
         icon: resolveWalletConnectorIcon({ connector: customConnectorname || connector.name, address: address, iconUrl: typeof connector.metadata.image === 'string' ? connector.metadata.image : (connector.metadata.image?.light.startsWith('data:') ? connector.metadata.image.light : `data:image/svg+xml;base64,${connector.metadata.image && btoa(connector.metadata.image.light)}`) }),
-        autofillSupportedNetworks,
+        autofillSupportedNetworks: commonSupportedNetworks,
+        withdrawalSupportedNetworks: commonSupportedNetworks,
+        asSourceSupportedNetworks: commonSupportedNetworks,
         networkIcon
     }
 

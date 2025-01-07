@@ -4,6 +4,7 @@ import { resolveWalletConnectorIcon } from '../../lib/wallets/utils/resolveWalle
 import { LoaderCircle, Loader, RotateCw } from 'lucide-react';
 import { Wallet } from '../../Models/WalletProvider';
 import { ModalWalletProvider } from '.';
+import CopyButton from '../buttons/copyButton';
 
 export type WalletsListProps = {
     modalWalletProvider: ModalWalletProvider;
@@ -57,7 +58,7 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
     const ProviderIcon = resolveWalletConnectorIcon({ connector: selectedProvider?.id, iconUrl: selectedWallet?.icon });
 
     if (selectedProvider?.connector?.qr) return <div className="flex flex-col justify-start space-y-2">
-        <div className='w-full flex justify-center pt-2'>
+        <div className='w-full flex flex-col justify-center items-center pt-2'>
             <QRCodeSVG
                 className="rounded-lg"
                 value={selectedProvider?.connector?.qr}
@@ -77,6 +78,9 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
                         : undefined
                 }
             />
+            <div className='bg-secondary text-secondary-text px-14 py-1.5 rounded-md mt-3 flex items-center'>
+                <CopyButton toCopy={selectedProvider?.connector?.qr}>Copy QR URL</CopyButton> 
+            </div>
         </div>
     </div>
 

@@ -8,7 +8,7 @@ import { Balance } from "../../../Models/Balance";
 
 export class LoopringBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
-        return (KnownInternalNames.Networks.LoopringMainnet || KnownInternalNames.Networks.LoopringGoerli).includes(network.name)   
+        return (KnownInternalNames.Networks.LoopringMainnet.includes(network.name) || KnownInternalNames.Networks.LoopringGoerli.includes(network.name))
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {

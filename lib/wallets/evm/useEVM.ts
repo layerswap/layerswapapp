@@ -13,6 +13,7 @@ import { LSConnector } from "../connectors/EthereumProvider"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useConnectModal } from "../../../components/WalletModal"
 import { explicitInjectedproviderDetected } from "../connectors/getInjectedConnector"
+import { type ConnectorAlreadyConnectedError } from '@wagmi/core'
 
 type Props = {
     network: Network | undefined,
@@ -92,8 +93,10 @@ export default function useEVM({ network }: Props): WalletProvider {
         try {
 
             setSelectedProvider({ ...provider, connector: { name: connector.name } })
-            await connector.disconnect()
-            await disconnectAsync({ connector })
+            if (connector.id !== "coinbaseWalletSDK") {
+                await connector.disconnect()
+                await disconnectAsync({ connector })
+            }
 
             if (isMobile()) {
                 if (connector.id !== "walletConnect") {
@@ -141,6 +144,13 @@ export default function useEVM({ network }: Props): WalletProvider {
         } catch (e) {
             //TODO: handle error like in transfer
             //toast.error('Error connecting wallet')
+            const error = e as ConnectorAlreadyConnectedError
+            if (error.name == 'ConnectorAlreadyConnectedError') {
+                toast.error('Wallet is already connected.')
+            }
+            else {
+                toast.error('Error connecting wallet')
+            }
             throw new Error(e)
         }
     }
@@ -271,7 +281,7 @@ const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
     const address = accountIsActive ? activeAddress : addresses?.[0]
     if (!address) return undefined
 
-    const walletname = `${connector?.name} - ${connector.id === "com.immutable.passport" ? "Immutable" : "EVM"}`
+    const walletname = `${connector?.name} ${connector.id === "com.immutable.passport" ? "" : " - EVM"}`
 
     const wallet = {
         id: connector.name,
