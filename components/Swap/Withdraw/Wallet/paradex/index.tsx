@@ -57,7 +57,7 @@ const ConnectWalletModal = () => {
                     <ConnectWalletButton
                         secondary={false}
                         onClick={() => setOpenDialog(false)}
-                        onConnect={() => select("evm")}
+                        onConnect={() => select("EVM")}
                         network={l1Network}
                         text='EVM'
                         icon={<ResolveConnectorIcon
@@ -68,7 +68,7 @@ const ConnectWalletModal = () => {
                     <ConnectWalletButton
                         secondary={false}
                         onClick={() => setOpenDialog(false)}
-                        onConnect={() => select("starknet")}
+                        onConnect={() => select("Starknet")}
                         network={starknet}
                         text='Starknet'
                         icon={<ResolveConnectorIcon
