@@ -110,10 +110,13 @@ export class BakoSafeConnector extends FuelConnector {
     //if(this.dAppWindow?.isSafariBrowser) return;
 
     // timeout to close
-    const interval = setInterval(() => {
-      const isOpen = this.dAppWindow?.opned?.closed;
-      if (isOpen) {
-        this.emit(BakoSafeConnectorEvents.CLIENT_DISCONNECTED, {});
+    const interval = setInterval(async () => {
+      const isClosed = this.dAppWindow?.opned?.closed;
+      if (isClosed) {
+        const isConnected = await this.isConnected()
+        if (!isConnected) {
+          this.emit(BakoSafeConnectorEvents.CLIENT_DISCONNECTED, {});
+        }
         clearInterval(interval);
       }
     }, 300);
@@ -147,7 +150,6 @@ export class BakoSafeConnector extends FuelConnector {
 
     this.setupReady = true;
   }
-
   // ============================================================
   // Connector methods
   // ============================================================
