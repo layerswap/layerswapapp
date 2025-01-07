@@ -1,7 +1,7 @@
 import { FC, useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react';
 import { resolveWalletConnectorIcon } from '../../lib/wallets/utils/resolveWalletIcon';
-import { LoaderCircle, Loader, RotateCw } from 'lucide-react';
+import { LoaderCircle, Loader, RotateCw, CircleX } from 'lucide-react';
 import { Wallet } from '../../Models/WalletProvider';
 import { ModalWalletProvider } from '.';
 import CopyButton from '../buttons/copyButton';
@@ -35,12 +35,12 @@ const ConnectorsList: FC<WalletsListProps> = ({ modalWalletProvider, onFinish, s
 
 
 const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFinish, setSelectedProvider, selectedProvider }) => {
-    const [connectionError, setConnectionError] = useState(false);
+    const [connectionError, setConnectionError] = useState<string>('');
     const [currentConnector, setCurrentConnector] = useState<any>(null);
 
     const connect = async (connector: any) => {
         try {
-            setConnectionError(false);
+            setConnectionError('');
             setCurrentConnector(connector);
             setSelectedProvider({ ...provider, connector: { name: connector.name } });
 
@@ -49,7 +49,7 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
             setSelectedProvider(undefined);
             onFinish(result);
         } catch (e) {
-            setConnectionError(true);
+            setConnectionError(e.message)
             setSelectedProvider({ ...provider, connector: undefined });
         }
     };
@@ -79,7 +79,7 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
                 }
             />
             <div className='bg-secondary text-secondary-text px-14 py-1.5 rounded-md mt-3 flex items-center'>
-                <CopyButton toCopy={selectedProvider?.connector?.qr}>Copy QR URL</CopyButton> 
+                <CopyButton toCopy={selectedProvider?.connector?.qr}>Copy QR URL</CopyButton>
             </div>
         </div>
     </div>
@@ -97,6 +97,12 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
                                 <LoaderCircle className='h-4 w-4 animate-spin' />
                             </>
                         )}
+                        {connectionError &&
+                            <p className="flex items-center text-sm">
+                                <CircleX className="w-5 h-5 stroke-primary-500 mr-0.5 flex-shrink-0" />
+                                {connectionError}
+                            </p>
+                        }
                         <button
                             type="button"
                             className="flex gap-1.5 items-center justify-between bg-[rgba(228,37,117,0.12)] text-[#e42575] px-4 py-2 border-none rounded-lg cursor-pointer text-sm font-medium leading-4 transition-transform duration-125 ease-in-out hover:scale-105"
