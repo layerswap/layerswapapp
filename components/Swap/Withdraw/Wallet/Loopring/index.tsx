@@ -3,7 +3,6 @@ import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useAccount } from 'wagmi';
 import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from '../WalletTransfer/buttons';
-import WalletMessage from '../WalletTransfer/message';
 import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
 import SignatureIcon from '../../../../icons/SignatureIcon';
 import { ActivationTokenPicker } from './ActivationTokentPicker';
@@ -14,6 +13,7 @@ import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient'
 import { WithdrawPageProps } from '../WalletTransferContent';
 import { useConfig } from 'wagmi'
 import AppSettings from '../../../../../lib/AppSettings';
+import WalletMessage from '../../messages/Message';
 
 const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId, callData, depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);

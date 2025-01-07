@@ -5,10 +5,10 @@ import SubmitButton, { SubmitButtonProps } from "../../../../buttons/submitButto
 import useWallet from "../../../../../hooks/useWallet";
 import { useSwapDataState } from "../../../../../context/swap";
 import toast from "react-hot-toast";
-import WalletMessage from "../WalletTransfer/message";
 import { ActionData } from "../WalletTransfer/sharedTypes";
 import ManualTransferNote from "../WalletTransfer/manualTransferNote";
 import { NetworkWithTokens } from "../../../../../Models/Network";
+import WalletMessage from "../../messages/Message";
 
 type ConnectProps = {
     network: NetworkWithTokens | undefined,
