@@ -9,9 +9,9 @@ import { useTonConnectUI } from '@tonconnect/ui-react';
 import { Address, JettonMaster, beginCell, toNano } from '@ton/ton'
 import { Token } from '../../../../Models/Network';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import WalletMessage from './WalletTransfer/message';
 import tonClient from '../../../../lib/wallets/ton/client';
 import { ConnectWalletButton } from './WalletTransfer/buttons';
+import WalletMessage from '../messages/Message';
 
 const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {
     const [loading, setLoading] = useState(false);

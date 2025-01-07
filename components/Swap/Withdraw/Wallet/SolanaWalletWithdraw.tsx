@@ -9,9 +9,9 @@ import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore
 import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
 import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
-import WalletMessage from './WalletTransfer/message';
 import useSWRBalance from '../../../../lib/balances/useSWRBalance';
 import { useSettingsState } from '../../../../context/settings';
+import WalletMessage from '../messages/Message';
 
 const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, token, amount }) => {
     const [loading, setLoading] = useState(false);
