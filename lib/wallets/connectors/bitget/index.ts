@@ -111,6 +111,7 @@ export function bitget(parameters: WalletConnectParameters) {
         return ({
             id: 'bitget',
             name: 'BitGet',
+            rdns: 'com.bitget.web3',
             getUri: (uri: string) => {
                 return isAndroid()
                     ? uri
