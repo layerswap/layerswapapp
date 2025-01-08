@@ -7,6 +7,7 @@ import useTON from "../lib/wallets/ton/useTON";
 import useFuel from "../lib/wallets/fuel/useFuel"
 import { Wallet, WalletProvider } from "../Models/WalletProvider";
 import { useMemo } from "react";
+import useParadex from "../lib/wallets/paradex/useParadex";
 
 export type WalletPurpose = "autofil" | "withdrawal" | "asSource"
 
@@ -19,13 +20,14 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
         useSolana({ network }),
         useTON(),
         useFuel(),
+        useParadex({ network })
     ]
 
     const provider = network && resolveProvider(network, walletProviders, purpose)
 
     const wallets = useMemo(() => {
         let connectedWallets: Wallet[] = [];
-        walletProviders.forEach((wallet) => {
+        walletProviders.filter(p => !p.isWrapper).forEach((wallet) => {
             const w = wallet.connectedWallets;
             connectedWallets = w ? [...connectedWallets, ...w] : [...connectedWallets];
         });

@@ -1,7 +1,5 @@
 import { AccountInterface } from 'starknet';
 import { StarknetWindowObject } from 'starknetkit';
-import { RouteNetwork } from './Network';
-
 
 export type InternalConnector = {
     name: string,
@@ -39,9 +37,9 @@ export type Wallet = {
 
 
 export type WalletProvider = {
+    isWrapper?: boolean,
     connectWallet: () => Promise<Wallet | undefined>,
     connectConnector?: (props?: { connector: InternalConnector }) => Promise<Wallet | undefined> | undefined
-    disconnectWallets: () => Promise<void> | undefined | void,
     switchAccount?: (connector: Wallet, address: string) => Promise<void>
     availableWalletsForConnect?: InternalConnector[],
     connectedWallets: Wallet[] | undefined,
