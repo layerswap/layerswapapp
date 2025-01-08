@@ -1,5 +1,4 @@
 import { FC, useCallback, useEffect, useState } from 'react'
-import toast from 'react-hot-toast';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
@@ -164,7 +163,7 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
     else if (error === "The account(s) sending the transaction don't have enough funds to cover the transaction.") {
         return <TransactionMessages.InsufficientFundsMessage />
     }
-    else if (error === "Request cancelled without user response!") {
+    else if (error === "Request cancelled without user response!" || error === "User rejected the transaction!" || error === "User canceled sending transaction") {
         return <TransactionMessages.TransactionRejectedMessage />
     }
     else if (error) {

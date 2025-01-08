@@ -90,7 +90,6 @@ export default function useParadex({ network }: Props): WalletProvider {
     }
 
     const activeWallet = useMemo(() => {
-        console.log('activeWallet', selectedProvider, evmProvider.activeWallet, starknetProvider.activeWallet)
         if (selectedProvider === starknetProvider.name) {
             return starknetProvider?.activeWallet
         }
