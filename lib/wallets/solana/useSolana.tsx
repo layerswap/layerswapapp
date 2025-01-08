@@ -3,7 +3,7 @@ import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
 import { AnchorWallet, useAnchorWallet, useConnection, useWallet } from "@solana/wallet-adapter-react"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
-import { CommitmentParams, CreatePreHTLCParams, LockParams, RefundParams } from "../phtlc"
+import { ClaimParams, CommitmentParams, CreatePreHTLCParams, LockParams, RefundParams } from "../phtlc"
 import { AnchorHtlc } from "./anchorHTLC"
 import { AnchorProvider, Program, setProvider } from '@coral-xyz/anchor'
 import { PublicKey } from "@solana/web3.js"
@@ -191,8 +191,36 @@ export default function useSolana(): WalletProvider {
         return { result: result }
     }
 
-    const claim = () => {
-        throw new Error('Not implemented')
+    const claim = async (params: ClaimParams) => {
+        const { sourceAsset, id, secret } = params
+
+        if (!program || !sourceAsset?.contract || !publicKey) return
+
+        const tokenContract = new PublicKey(sourceAsset.contract);
+        const idBuffer = Buffer.from(id.replace('0x', ''), 'hex');
+        const secretBuffer = Buffer.from(secret.toString().replace('0x', ''), 'hex');
+        const getAssociatedTokenAddress = (await import('@solana/spl-token')).getAssociatedTokenAddress;
+        const senderTokenAddress = await getAssociatedTokenAddress(new PublicKey(sourceAsset.contract), publicKey);
+
+        let [htlc, htlcBump] = idBuffer && PublicKey.findProgramAddressSync(
+            [idBuffer],
+            program.programId
+        );
+        let [htlcTokenAccount, bump3] = idBuffer && PublicKey.findProgramAddressSync(
+            [Buffer.from("htlc_token_account"), idBuffer],
+            program.programId
+        );
+
+        await program.methods.redeem(idBuffer, secretBuffer, htlcBump).
+            accountsPartial({
+                userSigning: publicKey,
+                htlc: htlc,
+                htlcTokenAccount: htlcTokenAccount,
+                sender: publicKey,
+                tokenContract: tokenContract,
+                srcReceiverTokenAccount: senderTokenAddress,
+            })
+            .rpc();
     }
 
     return {
@@ -209,7 +237,6 @@ export default function useSolana(): WalletProvider {
         getDetails,
         addLock,
         refund,
-
         claim,
     }
 }

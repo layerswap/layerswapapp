@@ -7,7 +7,7 @@ import toast from "react-hot-toast";
 import { Call, Contract, RpcProvider, shortString } from "starknet";
 import PHTLCAbi from "../../../lib/abis/atomic/STARKNET_PHTLC.json"
 import ETHABbi from "../../../lib/abis/STARKNET_ETH.json"
-import { CommitmentParams, CreatePreHTLCParams, GetCommitsParams, LockParams, RefundParams } from "../phtlc";
+import { ClaimParams, CommitmentParams, CreatePreHTLCParams, GetCommitsParams, LockParams, RefundParams } from "../phtlc";
 import { BigNumberish, ethers } from "ethers";
 import { Commit } from "../../../Models/PHTLC";
 import { toHex } from "viem";
@@ -172,10 +172,6 @@ export default function useStarknet(): WalletProvider {
 
     }
 
-    const claim = () => {
-        throw new Error('Not implemented')
-    }
-
     const refund = async (params: RefundParams) => {
         const { contractAddress: atomicAddress, id } = params
 
@@ -196,6 +192,27 @@ export default function useStarknet(): WalletProvider {
             throw new Error("No result")
         }
         return trx.transaction_hash
+    }
+
+    const claim = async (params: ClaimParams) => {
+        const { contractAddress: atomicAddress, id, secret } = params
+
+        if (!wallet?.metadata?.starknetAccount?.account) {
+            throw new Error('Wallet not connected')
+        }
+
+        const atomicContract = new Contract(
+            PHTLCAbi,
+            atomicAddress,
+            wallet.metadata?.starknetAccount?.account,
+        )
+
+        const claimCall: Call = atomicContract.populate('redeem', [id, secret])
+        const trx = (await wallet?.metadata?.starknetAccount?.account?.execute(claimCall))
+
+        if (!trx) {
+            throw new Error("No result")
+        }
     }
 
     const getDetails = async (params: CommitmentParams): Promise<Commit> => {

@@ -7,7 +7,7 @@ import KnownInternalNames from "../../knownIds"
 import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useEffect, useState } from "react"
-import { CreatePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams, RefundParams } from "../phtlc"
+import { CreatePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams, RefundParams, ClaimParams } from "../phtlc"
 import { writeContract, simulateContract, readContract, waitForTransactionReceipt, signTypedData } from '@wagmi/core'
 import { ethers } from "ethers"
 import { Commit } from "../../../Models/PHTLC"
@@ -182,10 +182,6 @@ export default function useEVM(): WalletProvider {
         return { hash, commitId: (result as string) }
     }
 
-    const claim = () => {
-        throw new Error('Not implemented')
-    }
-
     const getDetails = async (params: CommitmentParams): Promise<Commit> => {
         const { chainId, id, contractAddress, type } = params
         const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
@@ -331,6 +327,25 @@ export default function useEVM(): WalletProvider {
             throw new Error("No result")
         }
         return result
+    }
+
+    const claim = async (params: ClaimParams) => {
+        const { chainId, id, contractAddress, type, secret } = params
+        const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
+
+        const { request } = await simulateContract(config, {
+            abi: abi,
+            address: contractAddress,
+            functionName: 'redeem',
+            args: [id, secret],
+            chainId: Number(chainId),
+        })
+
+        const result = await writeContract(config, request)
+
+        if (!result) {
+            throw new Error("No result")
+        }
     }
 
     const getContracts = async (params: GetCommitsParams) => {

@@ -4,7 +4,7 @@ import { Wallet } from "../../../stores/walletStore";
 import { WalletProvider } from "../../../hooks/useWallet";
 import TON from "../../../components/icons/Wallets/TON";
 import { useEffect, useState } from "react";
-import { CommitmentParams, CreatePreHTLCParams, LockParams, RefundParams } from "../phtlc";
+import { ClaimParams, CommitmentParams, CreatePreHTLCParams, LockParams, RefundParams } from "../phtlc";
 import { Address, beginCell, Cell, toNano } from "@ton/ton"
 import { commitTransactionBuilder } from "./transactionBuilder";
 import { Commit } from "../../../Models/PHTLC";
@@ -193,8 +193,29 @@ export default function useTON(): WalletProvider {
         return result
     }
 
-    const claim = () => {
-        throw new Error('Not implemented')
+    const claim = async (params: ClaimParams) => {
+        const { id, secret, contractAddress } = params
+
+        const opcode = 1972220037
+
+        const body = beginCell()
+            .storeUint(opcode, 32)
+            .storeInt(hexToBigInt(id as `0x${string}`), 257)
+            .storeInt(hexToBigInt(secret as `0x${string}`), 257)
+            .endCell();
+
+        const tx = {
+            validUntil: Math.floor(Date.now() / 1000) + 360,
+            messages: [
+                {
+                    address: contractAddress,
+                    amount: toNano('0.1').toString(),
+                    payload: body.toBoc().toString("base64")
+                }
+            ]
+        }
+
+        await tonConnectUI.sendTransaction(tx)
     }
 
 

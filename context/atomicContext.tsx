@@ -18,6 +18,7 @@ export enum CommitStatus {
     RedeemCompleted = 'redeemCompleted',
     TimelockExpired = 'timelockExpired',
     Refunded = 'refunded',
+    ManualClaim = 'manualClaim'
 }
 
 const AtomicStateContext = createContext<DataContextType | null>(null);
@@ -175,6 +176,7 @@ const statusResolver = ({ commitFromApi, sourceDetails, destinationDetails, dest
     const redeemCompleted = (destinationDetails?.claimed == 3 ? true : false) || lpRedeemTransaction?.hash;
 
     if (timelockExpired) return CommitStatus.TimelockExpired
+    else if (assetsLocked && sourceDetails?.claimed == 3 && destinationDetails?.claimed != 3) return CommitStatus.ManualClaim
     else if (redeemCompleted) return CommitStatus.RedeemCompleted
     else if (assetsLocked) return CommitStatus.AssetsLocked
     else if (userLocked) return CommitStatus.UserLocked
