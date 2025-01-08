@@ -118,6 +118,7 @@ export function walletConnect(parameters: WalletConnectParameters) {
     return ({
       id: 'rainbow',
       name: 'Rainbow',
+      rdns: 'me.rainbow',
       resolveURI: (uri: string) => {
         return isAndroid()
           ? uri
