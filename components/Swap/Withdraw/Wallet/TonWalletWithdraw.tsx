@@ -11,7 +11,8 @@ import { Token } from '../../../../Models/Network';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import tonClient from '../../../../lib/wallets/ton/client';
 import { ConnectWalletButton } from './WalletTransfer/buttons';
-import WalletMessage from '../messages/Message';
+import TransactionMessages from '../messages/TransactionMessages';
+import { datadogRum } from '@datadog/browser-rum';
 
 const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {
     const [loading, setLoading] = useState(false);
@@ -55,15 +56,7 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
 
         }
         catch (e) {
-            if (e?.message.includes('Reject request')) {
-                setTransactionErrorMessage('Transaction rejected')
-            }
-            else if (e?.message.includes('Transaction was not sent')) {
-                setTransactionErrorMessage('Transaction was not sent')
-            }
-            else if (e?.message) {
-                toast.error(`Something went wrong. Error: ${e.message}`)
-            }
+            setTransactionErrorMessage(e.message)
         }
         finally {
             setLoading(false)
@@ -75,21 +68,40 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
     }
 
     return (
-        <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
-            <div className='space-y-4'>
-                {
-                    transactionErrorMessage && wallet &&
-                    <WalletMessage status='error' header={transactionErrorMessage} details='Something went wrong' />
-                }
-                {
-                    wallet &&
-                    <SubmitButton isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
-                        Send from wallet
-                    </SubmitButton>
-                }
-            </div>
+        <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
+            {
+                transactionErrorMessage &&
+                <TransactionMessage isLoading={loading} error={transactionErrorMessage} />
+            }
+            {
+                !loading &&
+                <SubmitButton isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
+                    {transactionErrorMessage ? 'Try again' : 'Send from wallet'}
+                </SubmitButton>
+            }
         </div>
     )
+}
+
+const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> = ({ isLoading, error }) => {
+    if (isLoading) {
+        return <TransactionMessages.ConfirmTransactionMessage />
+    }
+    else if (error && error.includes('Reject request')) {
+        return <TransactionMessages.TransactionRejectedMessage />
+    }
+    else if (error && error.includes('Transaction was not sent')) {
+        return <TransactionMessages.TransactionFailedMessage />
+    }
+    else if (error) {
+        const swapWithdrawalError = new Error(error);
+        swapWithdrawalError.name = `SwapWithdrawalError`;
+        swapWithdrawalError.cause = error;
+        datadogRum.addError(swapWithdrawalError);
+
+        return <TransactionMessages.UexpectedErrorMessage message={error} />
+    }
+    else return <></>
 }
 
 const transactionBuilder = async (amount: number, token: Token, depositAddress: string, sourceAddress: string, callData: string) => {

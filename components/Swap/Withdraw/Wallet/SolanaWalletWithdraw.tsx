@@ -1,5 +1,4 @@
-import { FC, useCallback, useEffect, useState } from 'react'
-import toast from 'react-hot-toast';
+import { FC, useCallback, useState } from 'react'
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { Transaction, Connection, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import useWallet from '../../../../hooks/useWallet';
@@ -12,10 +11,12 @@ import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
 import useSWRBalance from '../../../../lib/balances/useSWRBalance';
 import { useSettingsState } from '../../../../context/settings';
 import WalletMessage from '../messages/Message';
+import TransactionMessages from '../messages/TransactionMessages';
+import { datadogRum } from '@datadog/browser-rum';
 
 const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, token, amount }) => {
     const [loading, setLoading] = useState(false);
-    const [insufficientFunds, setInsufficientFunds] = useState<boolean>(false)
+    const [error, setError] = useState<string | undefined>()
     const [insufficientTokens, setInsufficientTokens] = useState<string[]>([])
 
     const { provider } = useWallet(network, 'withdrawal');
@@ -30,13 +31,9 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
     const networkWithTokens = networks.find(n => n.name === networkName)
     const { balance } = useSWRBalance(wallet?.address, networkWithTokens)
 
-
-    useEffect(() => {
-        setInsufficientFunds(false);
-    }, [walletPublicKey]);
-
     const handleTransfer = useCallback(async () => {
         setLoading(true)
+        setError(undefined)
         try {
 
             if (!signTransaction || !callData || !swapId) throw new Error('Missing data')
@@ -77,8 +74,8 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
         }
         catch (e) {
             if (e?.message) {
-                if (e?.logs?.some(m => m?.includes('insufficient funds')) || e.message.includes('Attempt to debit an account')) setInsufficientFunds(true)
-                else toast(e.message)
+                if (e?.logs?.some(m => m?.includes('insufficient funds')) || e.message.includes('Attempt to debit an account')) setError('insufficientFunds')
+                else setError(e.message)
                 return
             }
         }
@@ -92,21 +89,44 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
     }
 
     return (
-        <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
-            {insufficientFunds &&
-                <WalletMessage
-                    status="error"
-                    header='Insufficient funds'
-                    details={`The balance of ${insufficientTokens?.join(" and ")} in the connected wallet is not enough`} />
-            }
+        <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
+            <TransactionMessage
+                error={error}
+                isLoading={loading}
+                insufficientTokens={insufficientTokens}
+            />
             {
-                wallet &&
+                wallet && !loading &&
                 <ButtonWrapper isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
-                    Send from wallet
+                    {error ? 'Try again' : 'Send from wallet'}
                 </ButtonWrapper>
             }
         </div>
     )
+}
+
+const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined, insufficientTokens: string[] }> = ({ isLoading, error, insufficientTokens }) => {
+    if (isLoading) {
+        return <TransactionMessages.ConfirmTransactionMessage />
+    }
+    else if (error === "insufficientFunds") {
+        return <WalletMessage
+            status="error"
+            header='Insufficient funds'
+            details={`The balance of ${insufficientTokens?.join(" and ")} in the connected wallet is not enough`} />
+    }
+    else if (error === "User rejected the request.") {
+        return <TransactionMessages.TransactionRejectedMessage />
+    }
+    else if (error) {
+        const swapWithdrawalError = new Error(error);
+        swapWithdrawalError.name = `SwapWithdrawalError`;
+        swapWithdrawalError.cause = error;
+        datadogRum.addError(swapWithdrawalError);
+
+        return <TransactionMessages.UexpectedErrorMessage message={error} />
+    }
+    else return <></>
 }
 
 export default SolanaWalletWithdrawStep;

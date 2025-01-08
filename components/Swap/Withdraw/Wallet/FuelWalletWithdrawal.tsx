@@ -104,7 +104,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
         />
     }
     return (
-        <div className="w-full space-y-1 flex flex-col justify-between h-full text-primary-text">
+        <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
             {
                 buttonClicked &&
                 <TransactionMessage
