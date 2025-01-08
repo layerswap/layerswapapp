@@ -69,7 +69,6 @@ export default function useImtblX(): WalletProvider {
         connectedWallets: getWallet(),
         activeWallet: wallet,
         connectWallet,
-        disconnectWallets: disconnectWallet,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks: withdrawalSupportedNetworks,
         name,

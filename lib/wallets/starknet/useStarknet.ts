@@ -16,9 +16,7 @@ export default function useStarknet(): WalletProvider {
     ]
 
     const withdrawalSupportedNetworks = [
-        ...commonSupportedNetworks,
-        KnownInternalNames.Networks.ParadexMainnet,
-        KnownInternalNames.Networks.ParadexTestnet,
+        ...commonSupportedNetworks
     ]
 
     const name = 'Starknet'
@@ -145,7 +143,6 @@ export default function useStarknet(): WalletProvider {
         switchAccount: async () => { },
         connectWallet,
         connectConnector,
-        disconnectWallets,
         connectedWallets: getWallet(),
         activeWallet: getWallet()?.[0],
         withdrawalSupportedNetworks,

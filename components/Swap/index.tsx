@@ -22,7 +22,7 @@ const SwapDetails: FC<Props> = ({ type }) => {
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swap?.id || '']
 
-    const cancelSwap = useCallback(() => {
+    const removeStoredTransaction = useCallback(() => {
         useSwapTransactionStore.getState().removeSwapTransaction(swap?.id || '');
     }, [swap?.id, storedWalletTransactions])
 
@@ -50,7 +50,7 @@ const SwapDetails: FC<Props> = ({ type }) => {
                             <Processing />
                             {
                                 storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
-                                <SubmitButton isDisabled={false} isSubmitting={false} onClick={cancelSwap}>
+                                <SubmitButton isDisabled={false} isSubmitting={false} onClick={removeStoredTransaction}>
                                     Try again
                                 </SubmitButton>
                             }

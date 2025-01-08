@@ -1,10 +1,9 @@
 import { FC } from "react"
-import WalletMessage from "./message"
 import resolveError from "./resolveError"
 import { ActionData } from "./sharedTypes"
 import { BaseError } from 'viem'
 import { datadogRum } from '@datadog/browser-rum';
-import shortenAddress from "../../../../utils/ShortenAddress"
+import TransactionMessages from "../../messages/TransactionMessages";
 
 type TransactionMessageProps = {
     wait?: ActionData,
@@ -21,19 +20,19 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     const hasError = transaction?.isError || wait?.isError
 
     if (wait?.isPending || applyingTransaction) {
-        return <TransactionInProgressMessage />
+        return <TransactionMessages.TransactionInProgressMessage />
     }
     else if (transaction?.isPending || applyingTransaction) {
-        return <ConfirmTransactionMessage />
+        return <TransactionMessages.ConfirmTransactionMessage />
     }
     else if (transaction?.isError && transactionResolvedError === "insufficient_funds") {
-        return <InsufficientFundsMessage />
+        return <TransactionMessages.InsufficientFundsMessage />
     }
     else if (transaction?.isError && transactionResolvedError === "transaction_rejected") {
-        return <TransactionRejectedMessage />
+        return <TransactionMessages.TransactionRejectedMessage />
     }
     else if (transaction.isError && activeAddress && selectedSourceAddress && (activeAddress?.toLowerCase() !== selectedSourceAddress?.toLowerCase())) {
-        return <WaletMismatchMessage address={selectedSourceAddress} />
+        return <TransactionMessages.WaletMismatchMessage address={selectedSourceAddress} />
     }
     else if (hasError) {
         const unexpectedError = transaction?.error?.['data']?.message || transaction?.error
@@ -44,59 +43,9 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
         renderingError.cause = unexpectedError;
         datadogRum.addError(renderingError);
 
-        return <UexpectedErrorMessage message={unexpectedError?.message} />
+        return <TransactionMessages.UexpectedErrorMessage message={unexpectedError?.message} />
     }
     else return <></>
-}
-
-const PreparingTransactionMessage: FC = () => {
-    return <WalletMessage
-        status="pending"
-        header='Preparing the transaction'
-        details='Will be ready to sign in a couple of seconds' />
-}
-
-const ConfirmTransactionMessage: FC = () => {
-    return <WalletMessage
-        status="pending"
-        header='Confirm in wallet'
-        details='Please confirm the transaction in your wallet' />
-}
-
-const TransactionInProgressMessage: FC = () => {
-    return <WalletMessage
-        status="pending"
-        header='Transaction in progress'
-        details='Waiting for your transaction to be published' />
-}
-
-const InsufficientFundsMessage: FC = () => {
-    return <WalletMessage
-        status="error"
-        header='Insufficient funds'
-        details='The balance of the connected wallet is not enough' />
-}
-
-const TransactionRejectedMessage: FC = () => {
-    return <WalletMessage
-        status="error"
-        header='Transaction rejected'
-        details={`You've rejected the transaction in your wallet. Click “Try again” to open the prompt again.`} />
-}
-
-const WaletMismatchMessage: FC<{ address: string }> = ({ address }) => {
-    return <WalletMessage
-        status="error"
-        header='Account mismatch'
-        details={`Select ${shortenAddress(address)} in MetaMask, then try again`} />
-}
-
-const UexpectedErrorMessage: FC<{ message: string }> = ({ message }) => {
-    return <WalletMessage
-        status="error"
-        header='Unexpected error'
-        details={message}
-        showInModal />
 }
 
 export default TransactionMessage

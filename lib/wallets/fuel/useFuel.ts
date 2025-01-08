@@ -123,16 +123,6 @@ export default function useFuel(): WalletProvider {
         }
     }
 
-    const reconnectWallet = async () => {
-        try {
-            await disconnectWallets()
-            connectWallet()
-        }
-        catch (e) {
-            console.log(e)
-        }
-    }
-
     const switchAccount = async (wallet: Wallet) => {
         await fuel.selectConnector(wallet.id)
     }
@@ -144,7 +134,7 @@ export default function useFuel(): WalletProvider {
             for (const connector of connectedConnectors) {
                 try {
                     const addresses = (await connector.accounts()).map(a => Address.fromAddressOrString(a).toB256())
-                    if (connector.connected) {
+                    if (connector.connected && addresses.length > 0) {
                         const w = resolveFuelWallet({
                             address: addresses?.[0],
                             addresses,

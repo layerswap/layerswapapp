@@ -3,7 +3,7 @@ import { CHAIN_IDS, Provider } from '@fuel-ts/account';
 import { WagmiProvider, useConfig } from 'wagmi';
 import KnownInternalNames from '../../lib/knownIds';
 import { useSettingsState } from '../../context/settings';
-import { BaskoRequestAPI } from '../../lib/wallets/fuel/Basko';
+import { BaskoRequestAPI } from '../../lib/wallets/fuel/Bako';
 import { BakoSafeConnector } from '../../lib/fuels/connectors/bako-safe';
 import { WalletConnectConnector } from '../../lib/fuels/connectors/walletConnect';
 // import { BakoSafeConnector, FuelWalletConnector, FueletWalletConnector, SolanaConnector, WalletConnectConnector, defaultConnectors } from '@fuels/connectors';

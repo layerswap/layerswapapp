@@ -1,7 +1,6 @@
 import { FC, useCallback, useState } from "react";
 import { useSwitchChain } from "wagmi";
 import WalletIcon from "../../../../icons/WalletIcon";
-import WalletMessage from "./message";
 import { ActionData } from "./sharedTypes";
 import SubmitButton, { SubmitButtonProps } from "../../../../buttons/submitButton";
 import useWallet from "../../../../../hooks/useWallet";
@@ -9,6 +8,7 @@ import { useSwapDataState } from "../../../../../context/swap";
 import ManualTransferNote from "./manualTransferNote";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
+import WalletMessage from "../../messages/Message";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapResponse } = useSwapDataState()

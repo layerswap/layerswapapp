@@ -67,8 +67,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     let searchHint = "";
     let menuItems: (SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean })[];
 
-    const shouldFilter = direction === 'from' ? ((to && toCurrency) || (toExchange && currencyGroup)) : ((from && fromCurrency) || (fromExchange && currencyGroup))
-    const networkRoutesURL = shouldFilter ? resolveNetworkRoutesURL(direction, values) : null
+    const networkRoutesURL = resolveNetworkRoutesURL(direction, values)
     const apiClient = new LayerSwapApiClient()
 
     const {
@@ -79,11 +78,11 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
 
     const [routesData, setRoutesData] = useState<RouteNetwork[] | undefined>(direction === 'from' ? sourceRoutes : destinationRoutes)
 
-    const exchangeRoutesURL = shouldFilter ? resolveExchangesURLForSelectedToken(direction, values) : null
+    const exchangeRoutesURL = resolveExchangesURLForSelectedToken(direction, values)
     const {
         data: exchanges,
         isLoading: exchnagesDataLoading,
-    } = useSWR<ApiResponse<Exchange[]>>(exchangeRoutesURL, apiClient.fetcher, { keepPreviousData: true, dedupingInterval: 10000 })
+    } = useSWR<ApiResponse<Exchange[]>>(exchangeRoutesURL, apiClient.fetcher, { keepPreviousData: true, dedupingInterval: 10000, })
 
     const [exchangesData, setExchangesData] = useState<Exchange[]>(direction === 'from' ? sourceExchanges : destinationExchanges)
 
@@ -145,7 +144,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                             !value?.isExchange &&
                             <span><Address partner={partner} >{
                                 ({ destination, disabled, addressItem, connectedWallet, partner }) => <DestinationWalletPicker destination={destination} disabled={disabled} addressItem={addressItem} connectedWallet={connectedWallet} partner={partner} />
-                            }</Address></span> //TODO: implement destination hidden
+                            }</Address></span> 
                         }
                     </>
             }
