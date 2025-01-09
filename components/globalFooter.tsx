@@ -13,9 +13,9 @@ const GLobalFooter = () => {
             { name: 'Product', href: '/' },
             { name: 'Company', href: '/company' },
             { name: 'FAQ', href: '/faq' },
-            { name: 'Privacy Policy', href: 'https://docs.layerswap.io/information/privacy-policy' },
-            { name: 'Terms of Services', href: 'https://docs.layerswap.io/information/terms-of-services' },
-            { name: 'Docs', href: 'https://docs.layerswap.io/onboarding-sdk/' },
+            { name: 'Privacy Policy', href: 'https://docs.layerswap.io/user-docs/more-information/privacy-policy' },
+            { name: 'Terms of Services', href: 'https://docs.layerswap.io/user-docs/more-information/terms-of-services' },
+            { name: 'Docs', href: 'https://docs.layerswap.io/onboarding-sdk' },
         ],
         social: [
             {
@@ -50,18 +50,19 @@ const GLobalFooter = () => {
     }
 
     const version = process.env.NEXT_PUBLIC_API_VERSION
+    const isMaintenance = process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true'
 
     return (
         <>
             <footer className="z-0 hidden md:block fixed bottom-0 py-4 w-full px-6 lg:px-8 mt-auto">
-                {version === 'sandbox' && <NewsComponent />}
+                {version === 'sandbox' && <TestnetNewsComponent />}
                 <div className=" flex justify-between items-center w-full">
                     <div>
                         <div className="flex mt-3 md:mt-0 gap-6">
-                            <Link target="_blank" href="https://docs.layerswap.io/information/privacy-policy" className="text-xs leading-6 text-primary-text-muted underline hover:no-underline hover:text-opacity-70 duration-200 transition-all">
+                            <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/privacy-policy/" className="text-xs leading-6 text-primary-text-muted underline hover:no-underline hover:text-opacity-70 duration-200 transition-all">
                                 Privacy Policy
                             </Link>
-                            <Link target="_blank" href="https://docs.layerswap.io/information/terms-of-services" className="text-xs leading-6 text-primary-text-muted underline hover:no-underline hover:text-opacity-70 duration-200 transition-all">
+                            <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/terms-of-services/" className="text-xs leading-6 text-primary-text-muted underline hover:no-underline hover:text-opacity-70 duration-200 transition-all">
                                 Terms of Services
                             </Link>
                         </div>
@@ -84,7 +85,7 @@ const GLobalFooter = () => {
     )
 }
 
-const NewsComponent = () => {
+const TestnetNewsComponent = () => {
     return <div className='bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative mb-5 max-w-sm text-secondary-text'>
         <div className="overflow-hidden h-1 flex rounded-t-lg bg-secondary-500" />
         <div className="w-full text-left text-base font-light p-6">

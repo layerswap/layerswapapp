@@ -21,7 +21,24 @@ module.exports = (phase, { defaultConfig }) => {
       defaultLocale: "en",
     },
     images: {
-      domains: ["stagelslayerswapbridgesa.blob.core.windows.net", "bransferstorage.blob.core.windows.net", "devlslayerswapbridgesa.blob.core.windows.net", "prodlslayerswapbridgesa.blob.core.windows.net"],
+      remotePatterns: [
+        {
+          protocol: 'https',
+          hostname: 'stagelslayerswapbridgesa.blob.core.windows.net',
+        },
+        {
+          protocol: 'https',
+          hostname: 'bransferstorage.blob.core.windows.net',
+        },
+        {
+          protocol: 'https',
+          hostname: 'devlslayerswapbridgesa.blob.core.windows.net',
+        },
+        {
+          protocol: 'https',
+          hostname: 'prodlslayerswapbridgesa.blob.core.windows.net',
+        },
+      ]
     },
     compiler: {
       removeConsole: false,
@@ -32,7 +49,7 @@ module.exports = (phase, { defaultConfig }) => {
       return config;
     },
     productionBrowserSourceMaps: true,
-    transpilePackages: ["@imtbl/sdk"]
+    transpilePackages: ['@imtbl/sdk', '@fuels/connectors', '@fuels/react', "@radix-ui/react-dismissable-layer"]
   }
   if (process.env.APP_BASE_PATH) {
     nextConfig.basePath = process.env.APP_BASE_PATH

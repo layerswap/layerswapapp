@@ -1,5 +1,4 @@
-import { FC, useEffect } from "react"
-import { useLoadingState } from "../context/loadingContext"
+import { FC } from "react"
 
 type Props = {
     name: string

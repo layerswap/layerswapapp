@@ -10,28 +10,7 @@ import { resolveExchangesURLForSelectedToken } from "../../helpers/routes";
 import { ApiResponse } from "../../Models/ApiResponse";
 import useSWR from "swr";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import ResolveRouteIcon from "./RouteIcon";
-import { Network } from "../../Models/Network";
-import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
-import Image from 'next/image'
-
-const GROUP_ORDERS = { "Popular": 1, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
-export function groupByType(values: SelectMenuItem<Network>[]) {
-    let groups: SelectMenuItemGroup[] = [];
-    values.forEach((v) => {
-        let group = groups.find(x => x.name == v.group) || new SelectMenuItemGroup({ name: v.group, items: [] });
-        group.items.push(v);
-        if (!groups.find(x => x.name == v.group)) {
-            groups.push(group);
-        }
-    });
-
-    groups.sort((a, b) => {
-        return (GROUP_ORDERS[a.name] || GROUP_ORDERS.Other) - (GROUP_ORDERS[b.name] || GROUP_ORDERS.Other);
-    });
-
-    return groups;
-}
+import { useSettingsState } from "../../context/settings";
 
 const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -39,6 +18,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const { to, fromCurrency, toCurrency, from, currencyGroup, toExchange, fromExchange } = values
+    const { sourceExchanges, destinationExchanges } = useSettingsState();
 
     const name = 'currencyGroup'
     const query = useQueryState()
@@ -48,7 +28,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
     const {
         data: exchanges,
         error
-    } = useSWR<ApiResponse<Exchange[]>>(`${exchangeRoutesURL}`, apiClient.fetcher, { keepPreviousData: true })
+    } = useSWR<ApiResponse<Exchange[]>>(`${exchangeRoutesURL}`, apiClient.fetcher, { keepPreviousData: true, fallbackData: { data: direction === 'from' ? sourceExchanges : destinationExchanges }, dedupingInterval: 10000 })
 
     const availableAssetGroups = exchanges?.data?.find(e => e.name === exchange?.name)?.token_groups
 
