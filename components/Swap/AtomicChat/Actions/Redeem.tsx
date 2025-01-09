@@ -9,11 +9,11 @@ export const RedeemAction: FC = () => {
     const { destination_network, source_network, sourceDetails, destinationDetails, setDestinationDetails, setSourceDetails, destination_asset, source_asset, commitId, commitStatus, setError } = useAtomicState()
     const [requestedManualClaim, setRequestedManualClaim] = useState(false)
 
-    const { getWithdrawalProvider } = useWallet()
+    const { getProvider } = useWallet()
 
-    const source_provider = source_network && getWithdrawalProvider(source_network)
-    const destination_provider = destination_network && getWithdrawalProvider(destination_network)
-    const destination_wallet = destination_provider?.getConnectedWallet()
+    const source_provider = source_network && getProvider(source_network, 'withdrawal')
+    const destination_provider = destination_network && getProvider(destination_network, 'autofil')
+    const destination_wallet = destination_provider?.activeWallet
     const destination_contract = destination_asset?.contract ? destination_network?.metadata.htlc_token_contract : destination_network?.metadata.htlc_native_contract
     const source_contract = source_asset?.contract ? source_network?.metadata.htlc_token_contract : source_network?.metadata.htlc_native_contract
 

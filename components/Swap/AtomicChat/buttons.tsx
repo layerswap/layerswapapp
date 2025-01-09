@@ -5,9 +5,9 @@ import { Network } from "../../../Models/Network";
 import toast from "react-hot-toast";
 import SubmitButton, { SubmitButtonProps } from "../../buttons/submitButton";
 import { ActionData } from "../Withdraw/Wallet/WalletTransfer/sharedTypes";
-import WalletMessage from "../Withdraw/Wallet/WalletTransfer/message";
 import { useSwitchChain } from "wagmi";
 import ButtonStatus from "./Actions/Status/ButtonStatus";
+import WalletMessage from "../Withdraw/messages/Message";
 
 type ConnectProps = SubmitButtonProps & {
     network: Network;
@@ -18,17 +18,14 @@ type ConnectProps = SubmitButtonProps & {
 export const ConnectWalletButton: FC<ConnectProps> = (props) => {
     const { network, defaultText } = props
 
-    const { getWithdrawalProvider: getProvider } = useWallet()
-    const provider = useMemo(() => {
-        return network && getProvider(network)
-    }, [network, getProvider])
+    const { provider } = useWallet(network, 'withdrawal')
 
     const clickHandler = useCallback(async () => {
         try {
 
             if (!provider) throw new Error(`No provider from ${network?.name}`)
 
-            await provider.connectWallet(provider?.name)
+            await provider.connectWallet()
         }
         catch (e) {
             toast.error(e.message)
@@ -136,7 +133,7 @@ export const WalletActionButton: FC<LockButtonProps> = (props) => {
         catch (e) {
             toast.error(e.message)
         }
-        finally{
+        finally {
             setIsPending(false)
         }
     }
@@ -154,12 +151,12 @@ export const WalletActionButton: FC<LockButtonProps> = (props) => {
             defaultText="Change network"
         />
     }
-    if(isPending) {
+    if (isPending) {
         return <ButtonStatus
             isLoading={isPending}
             isDisabled={isPending}
         >
-           Confirm in wallet
+            Confirm in wallet
         </ButtonStatus>
     }
     return <SubmitButton

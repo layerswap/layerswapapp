@@ -13,7 +13,6 @@ import { motion, useCycle } from "framer-motion";
 import { ArrowUpDown, ExternalLink, Loader2 } from 'lucide-react'
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
-import GasDetails from "../../gasDetails";
 import { useQueryState } from "../../../context/query";
 import FeeDetailsComponent from "../../FeeDetails";
 import { useFee } from "../../../context/feeContext";
@@ -123,9 +122,9 @@ const SwapForm: FC<Props> = ({ partner }) => {
         && (query?.lockTo || query?.hideTo)
         && isValidAddress(query?.destAddress as string, destination)
 
-    const handleReserveGas = useCallback((walletBalance: Balance, networkGas: Gas) => {
+    const handleReserveGas = useCallback((walletBalance: Balance, networkGas: number) => {
         if (walletBalance && networkGas)
-            setFieldValue('amount', walletBalance?.amount - networkGas?.gas)
+            setFieldValue('amount', walletBalance?.amount - networkGas)
     }, [values.amount])
 
     return <>
@@ -164,7 +163,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                             (((fromExchange && destination) || (toExchange && source)) && currencyGroup) ?
                                 <div className="mb-6 leading-4">
                                     <ResizablePanel>
-                                        <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} />
+                                        <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} partner={undefined} />
                                     </ResizablePanel>
                                 </div>
                                 : <></>
@@ -187,19 +186,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                     <div className="mb-6 leading-4">
                                         <AmountField />
                                     </div>
-                                    {
-                                        !hideAddress ?
-                                            <Address partner={partner} />
-                                            : <></>
-                                    }
                                     <div className="w-full">
-                                        <FeeDetailsComponent values={values} />
-                                        {
-                                            values.amount &&
-                                            <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
-                                        }
-                                    </div>
-                                    <div className="w-full hidden">
                                         <FeeDetailsComponent values={values} />
                                         {
                                             values.amount &&
@@ -221,12 +208,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
                 </Widget.Footer>
             </Form>
         </Widget>
-        {
-            process.env.NEXT_PUBLIC_SHOW_GAS_DETAILS === 'true'
-            && values.from
-            && values.fromCurrency &&
-            <GasDetails network={values.from.name} currency={values.fromCurrency.symbol} />
-        }
     </>
 }
 

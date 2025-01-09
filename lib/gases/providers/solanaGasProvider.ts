@@ -24,7 +24,7 @@ export class SolanaGasProvider implements Provider {
         if (!walletPublicKey) return
 
         try {
-            const transactionBuilder = ((await import("../../wallets/solana/transactionBuilder")).default);
+            const transactionBuilder = ((await import("../../wallets/solana/transactionBuilder")).transactionBuilder);
 
             const transaction = await transactionBuilder(network, token, walletPublicKey)
 

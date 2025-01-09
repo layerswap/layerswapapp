@@ -5,7 +5,7 @@ import KnownInternalNames from '../../lib/knownIds';
 import { useSettingsState } from '../../context/settings';
 import { BaskoRequestAPI } from '../../lib/wallets/fuel/Bako';
 import { BakoSafeConnector } from '../../lib/fuels/connectors/bako-safe';
-import { WalletConnectConnector } from '../../lib/fuels/connectors/walletConnect';
+// import { WalletConnectConnector } from '../../lib/fuels/connectors/walletConnect';
 // import { BakoSafeConnector, FuelWalletConnector, FueletWalletConnector, SolanaConnector, WalletConnectConnector, defaultConnectors } from '@fuels/connectors';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { FuelProvider } from '@fuels/react';

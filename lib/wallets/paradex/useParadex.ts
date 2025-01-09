@@ -9,6 +9,8 @@ import { type ConnectorAlreadyConnectedError } from '@wagmi/core'
 import useEVM from "../evm/useEVM"
 import useStarknet from "../starknet/useStarknet"
 import { useWalletStore } from "../../../stores/walletStore"
+import { Commit } from "../../../Models/PHTLC"
+import { CreatePreHTLCParams, ClaimParams, RefundParams, CommitmentParams, LockParams } from "../phtlc"
 
 type Props = {
     network: Network | undefined,
@@ -31,7 +33,7 @@ export default function useParadex({ network }: Props): WalletProvider {
 
     const connectWallet = async () => {
         try {
-            return await connect(provider)
+            return await connect(provider as unknown as WalletProvider)
         }
         catch (e) {
             console.log(e)
@@ -41,7 +43,24 @@ export default function useParadex({ network }: Props): WalletProvider {
     const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
 
         try {
-            setSelectedProvider({ ...provider, connector: { name: connector.name } })
+            setSelectedProvider({
+                ...provider, connector: { name: connector.name },
+                createPreHTLC: function (args: CreatePreHTLCParams): Promise<{ hash: string; commitId: string } | null | undefined> {
+                    throw new Error("Function not implemented.")
+                },
+                claim: function (args: ClaimParams): Promise<void> | undefined | void {
+                    throw new Error("Function not implemented.")
+                },
+                refund: function (args: RefundParams): Promise<any> | undefined | void {
+                    throw new Error("Function not implemented.")
+                },
+                getDetails: function (args: CommitmentParams): Promise<Commit | null> {
+                    throw new Error("Function not implemented.")
+                },
+                addLock: function (args: CommitmentParams & LockParams): Promise<{ hash: string; result: any } | null> {
+                    throw new Error("Function not implemented.")
+                }
+            })
             const isEvm = evmProvider.availableWalletsForConnect?.find(w => w.id === connector.id)
             const isStarknet = starknetProvider.availableWalletsForConnect?.find(w => w.id === connector.id)
             if (isEvm) {
@@ -111,6 +130,6 @@ export default function useParadex({ network }: Props): WalletProvider {
         isWrapper: true
     }
 
-    return provider
+    return provider as WalletProvider
 }
 

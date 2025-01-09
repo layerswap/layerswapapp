@@ -1,5 +1,7 @@
 import { AccountInterface } from 'starknet';
 import { StarknetWindowObject } from 'starknetkit';
+import { ClaimParams, CommitmentParams, CreatePreHTLCParams, GetCommitsParams, LockParams, RefundParams } from '../lib/wallets/phtlc';
+import { Commit } from './PHTLC';
 
 export type InternalConnector = {
     name: string,
@@ -49,4 +51,12 @@ export type WalletProvider = {
     asSourceSupportedNetworks?: string[],
     name: string,
     id: string,
+
+    createPreHTLC: (args: CreatePreHTLCParams) => Promise<{ hash: string, commitId: string } | null | undefined>,
+    claim: (args: ClaimParams) => Promise<void> | undefined | void,
+    refund: (args: RefundParams) => Promise<any> | undefined | void,
+    getDetails: (args: CommitmentParams) => Promise<Commit | null>,
+    secureGetDetails?: (args: CommitmentParams) => Promise<Commit | null>,
+    addLock: (args: CommitmentParams & LockParams) => Promise<{ hash: string, result: any } | null>,
+    getContracts?: (params: GetCommitsParams) => Promise<string[]>,
 }

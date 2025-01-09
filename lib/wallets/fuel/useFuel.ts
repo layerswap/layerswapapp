@@ -19,6 +19,7 @@ import { useEffect, useMemo } from "react";
 import { useWalletStore } from "../../../stores/walletStore";
 import { useSettingsState } from "../../../context/settings";
 
+
 export default function useFuel(): WalletProvider {
     const commonSupportedNetworks = [
         KnownInternalNames.Networks.FuelTestnet,
@@ -42,7 +43,7 @@ export default function useFuel(): WalletProvider {
 
     const connectWallet = async () => {
         try {
-            return await connect(provider)
+            return await connect(provider as unknown as WalletProvider)
         }
         catch (e) {
             console.log(e)
@@ -184,7 +185,7 @@ export default function useFuel(): WalletProvider {
         id,
     }
 
-    return provider
+    return provider as unknown as WalletProvider
 }
 
 type ResolveWalletProps = {

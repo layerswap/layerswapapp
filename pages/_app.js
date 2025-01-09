@@ -7,8 +7,10 @@ import { IntercomProvider } from 'react-use-intercom';
 import { SWRConfig } from 'swr'
 import ProgressBar from "@badrap/bar-of-progress";
 import DatadogInit from "../components/datadog-init";
-import ProgressBar from "@badrap/bar-of-progress";
 import Router from "next/router";
+import { useEffect } from "react";
+import { PostHogProvider } from 'posthog-js/react'
+import posthog from 'posthog-js'
 
 const progress = new ProgressBar({
   size: 2,

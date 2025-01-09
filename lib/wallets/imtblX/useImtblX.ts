@@ -5,7 +5,7 @@ import IMX from "../../../components/icons/Wallets/IMX"
 import { Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useSettingsState } from "../../../context/settings"
 
-export default function useImtblX(): WalletProvider {
+export default function useImtblX() {
     const withdrawalSupportedNetworks = [
         KnownInternalNames.Networks.ImmutableXMainnet,
         KnownInternalNames.Networks.ImmutableXGoerli,
