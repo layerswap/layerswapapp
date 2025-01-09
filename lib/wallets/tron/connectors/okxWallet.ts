@@ -29,10 +29,10 @@ export function supportOkxWallet() {
     return !!(window.okxwallet && window.okxwallet.tronLink);
 }
 
-export const isOKApp = /OKApp/i.test(navigator.userAgent);
+export const isOKApp = ()=>/OKApp/i.test(navigator.userAgent);
 
 export function openOkxWallet() {
-    if (!isOKApp && isInMobileBrowser()) {
+    if (!isOKApp() && isInMobileBrowser()) {
         window.location.href = 'okx://wallet/dapp/url?dappUrl=' + encodeURIComponent(window.location.href);
         return true;
     }

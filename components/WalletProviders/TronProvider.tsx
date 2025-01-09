@@ -1,8 +1,15 @@
-import type { Adapter, WalletError } from '@tronweb3/tronwallet-abstract-adapter';
+import type { WalletError } from '@tronweb3/tronwallet-abstract-adapter';
 import { WalletDisconnectedError, WalletNotFoundError } from '@tronweb3/tronwallet-abstract-adapter';
 import { toast } from 'react-hot-toast';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { WalletProvider } from '@tronweb3/tronwallet-adapter-react-hooks';
+import {
+    BitKeepAdapter,
+    OkxWalletAdapter,
+    TokenPocketAdapter,
+    TronLinkAdapter,
+} from '../../lib/wallets/tron/connectors'
+
 export default function TronProvider({ children }: { children: React.ReactNode }) {
     function onError(e: WalletError) {
         if (e instanceof WalletNotFoundError) {
@@ -11,31 +18,17 @@ export default function TronProvider({ children }: { children: React.ReactNode }
             toast.error(e.message);
         } else toast.error(e.message);
     }
-    const [adapters, setAdapters] = useState<Adapter[]>([]);
-    useEffect(() => {
-        import('../../lib/wallets/tron/connectors').then((res) => {
-            const {
-                BitKeepAdapter,
-                OkxWalletAdapter,
-                TokenPocketAdapter,
-                TronLinkAdapter,
-            } = res;
-            const tronLinkAdapter = new TronLinkAdapter();
-      
-            const bitKeepAdapter = new BitKeepAdapter();
-            const tokenPocketAdapter = new TokenPocketAdapter();
-            const okxwalletAdapter = new OkxWalletAdapter();
-            setAdapters([
-                tronLinkAdapter,
-                bitKeepAdapter,
-                tokenPocketAdapter,
-                okxwalletAdapter,
-            ])
-        });
-    }, [setAdapters])
+    const adapters = useMemo(() => {
+        return [
+            new TronLinkAdapter(),
+            new TokenPocketAdapter(),
+            new OkxWalletAdapter(),
+            new BitKeepAdapter(),
+        ]
+    }, [])
 
     return (
-        <WalletProvider onError={onError} adapters={adapters} disableAutoConnectOnLoad={true}>
+        <WalletProvider onError={onError} adapters={adapters} disableAutoConnectOnLoad={true} autoConnect={false}>
             {children}
         </WalletProvider>
     );

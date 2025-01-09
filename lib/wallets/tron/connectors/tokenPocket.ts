@@ -22,7 +22,7 @@ import { getNetworkInfoByTronWeb } from '@tronweb3/tronwallet-adapter-tronlink';
 import type { Tron } from '@tronweb3/tronwallet-adapter-tronlink';
 
 export function supportTokenPocket() {
-    return !!window.tronWeb && typeof (window as any).tokenpocket !== 'undefined';
+    return typeof window !== 'undefined' && !!window.tronWeb && typeof (window as any).tokenpocket !== 'undefined';
 }
 
 /**

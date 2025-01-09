@@ -320,8 +320,10 @@ export class BitKeepAdapter extends Adapter {
             this._wallet =
                 ((await adapter?.getProvider().tronLink) as unknown as TronLinkWallet) ||
                 (window.bitkeep?.tronLink as unknown as TronLinkWallet);
-            address = this._wallet.tronWeb.defaultAddress?.base58 || null;
             state = this._wallet.ready ? AdapterState.Connected : AdapterState.Disconnect;
+            if (state === AdapterState.Connected) {
+                address = this._wallet.tronWeb.defaultAddress?.base58 || null;
+            }
             if (!this._wallet.ready) {
                 this.checkForWalletReady();
             }
