@@ -15,11 +15,9 @@ import QueryProvider from "../context/query";
 import { THEME_COLORS, ThemeData } from "../Models/Theme";
 import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
-import TonConnectProvider from "./TonConnectProvider";
-import RainbowKit from "./RainbowKit";
-import Solana from "./SolanaProvider";
 import { IsExtensionError } from "../helpers/errorHelper";
 import { AsyncModalProvider } from "../context/asyncModal";
+import WalletsProviders from "./WalletProviders";
 // import { datadogRum } from '@datadog/browser-rum';
 
 type Props = {
@@ -97,6 +95,7 @@ export default function Layout({ children, settings, themeData }: Props) {
   themeData = themeData || THEME_COLORS.default
 
   const basePath = router?.basePath ?? ""
+  const isCanonical = (router.pathname === "/app" || router.pathname === "/") && Object.keys(router.query).length === 0;
 
   return (<>
     <Head>
@@ -107,13 +106,14 @@ export default function Layout({ children, settings, themeData }: Props) {
       <link rel="manifest" href={`${basePath}/favicon/site.webmanifest`} />
       <meta name="msapplication-TileColor" content="#ffffff" />
       <meta name="theme-color" content={`rgb(${themeData.secondary?.[900]})`} />
-      <meta name="description" content="Streamline your asset transaction experience with Layerswap across 35+ blockchains" />
+      <meta name="description" content="Streamline your asset transaction experience with Layerswap across 50+ blockchains and 15+ exchanges. Fast, affordable and secure." />
+      {isCanonical && <link rel="canonical" href="https://layerswap.io/app/" />}
 
       {/* Facebook Meta Tags */}
       <meta property="og:url" content={`https://www.layerswap.io/${basePath}`} />
       <meta property="og:type" content="website" />
       <meta property="og:title" content="Layerswap App" />
-      <meta property="og:description" content="Streamline your asset transaction experience with Layerswap across 35+ blockchains" />
+      <meta property="og:description" content="Streamline your asset transaction experience with Layerswap across 50+ blockchains and 15+ exchanges. Fast, affordable and secure." />
       <meta property="og:image" content={`https://layerswap.io/${basePath}/opengraph.jpg?v=2`} />
 
       {/* Twitter Meta Tags */}
@@ -121,7 +121,7 @@ export default function Layout({ children, settings, themeData }: Props) {
       <meta property="twitter:domain" content="layerswap.io" />
       <meta property="twitter:url" content={`https://www.layerswap.io/${basePath}`} />
       <meta name="twitter:title" content="Layerswap App" />
-      <meta name="twitter:description" content="Streamline your asset transaction experience with Layerswap across 35+ blockchains" />
+      <meta name="twitter:description" content="Streamline your asset transaction experience with Layerswap across 50+ blockchains and 15+ exchanges. Fast, affordable and secure." />
       <meta name="twitter:image" content={`https://layerswap.io/${basePath}/opengraphtw.jpg`} />
     </Head>
     {
@@ -134,17 +134,13 @@ export default function Layout({ children, settings, themeData }: Props) {
           <TooltipProvider delayDuration={500}>
             <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
               <ThemeWrapper>
-                <TonConnectProvider basePath={basePath} themeData={themeData} appName={router.query.appName?.toString()}>
-                  <RainbowKit>
-                    <Solana>
-                      <AsyncModalProvider>
-                        {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                          <MaintananceContent />
-                          : children}
-                      </AsyncModalProvider>
-                    </Solana>
-                  </RainbowKit>
-                </TonConnectProvider>
+                <WalletsProviders basePath={basePath} themeData={themeData} appName={router.query.appName?.toString()}>
+                  <AsyncModalProvider>
+                    {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                      <MaintananceContent />
+                      : children}
+                  </AsyncModalProvider>
+                </WalletsProviders>
               </ThemeWrapper>
             </ErrorBoundary>
           </TooltipProvider>

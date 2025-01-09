@@ -1,14 +1,14 @@
-import { FC, useCallback, useMemo, useState } from "react";
+import { FC, useCallback, useState } from "react";
 import { useSwitchChain } from "wagmi";
 import WalletIcon from "../../../../icons/WalletIcon";
 import SubmitButton, { SubmitButtonProps } from "../../../../buttons/submitButton";
 import useWallet from "../../../../../hooks/useWallet";
 import { useSwapDataState } from "../../../../../context/swap";
 import toast from "react-hot-toast";
-import WalletMessage from "../WalletTransfer/message";
 import { ActionData } from "../WalletTransfer/sharedTypes";
 import ManualTransferNote from "../WalletTransfer/manualTransferNote";
 import { NetworkWithTokens } from "../../../../../Models/Network";
+import WalletMessage from "../../messages/Message";
 
 type ConnectProps = {
     network: NetworkWithTokens | undefined,
@@ -21,18 +21,14 @@ type ConnectProps = {
 
 
 export const ConnectWalletButton: FC<ConnectProps> = ({ network, text, icon, onClick, secondary, onConnect }) => {
-    const { getWithdrawalProvider: getProvider } = useWallet()
-
-    const provider = useMemo(() => {
-        return network && getProvider(network)
-    }, [network, getProvider])
+    const { provider } = useWallet(network, 'withdrawal')
 
     const clickHandler = useCallback(async () => {
         try {
             onClick && onClick()
             if (!provider) throw new Error(`No provider from ${network?.name}`)
-            
-            await provider.connectWallet({ chain: network?.chain_id })
+
+            await provider.connectWallet()
             onConnect && onConnect()
         }
         catch (e) {

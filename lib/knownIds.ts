@@ -156,6 +156,8 @@ export default class KnownInternalNames {
 
         public static readonly TONMainnet: string = "TON_MAINNET";
 
+        public static readonly TONTestnet: string = "TON_TESTNET";
+
         public static readonly BrineMainnet: string = "BRINE_MAINNET";
 
         public static readonly BlastSepolia: string = "BLAST_SEPOLIA";
@@ -166,9 +168,23 @@ export default class KnownInternalNames {
 
         public static readonly ParadexMainnet: string = "PARADEX_MAINNET"
 
+        public static readonly FuelMainnet: string = "FUEL_MAINNET"
+
+        public static readonly FuelTestnet: string = "FUEL_TESTNET"
+
+        public static readonly FuelDevnet: string = "FUEL_DEVNET"
+
         public static readonly TronMainnet: string = "TRON_MAINNET"
 
         public static readonly TronTestnet: string = "TRON_TESTNET"
+
+        public static readonly EclipseTestnet: string = "ECLIPSE_TESTNET"
+
+        public static readonly EclipseMainnet: string = "ECLIPSE_MAINNET"
+
+        public static readonly SophonMainnet: string = "SOPHON_MAINNET"
+        
+        public static readonly SophonSepolia: string = "SOPHON_SEPOLIA"
 
     }
 

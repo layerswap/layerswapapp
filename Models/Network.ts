@@ -7,7 +7,8 @@ export enum NetworkType {
     Cosmos = "cosmos",
     StarkEx = "starkex",//TODO check this
     ZkSyncLite = "zksynclite",
-    TON = 'ton'
+    TON = 'ton',
+    Fuel = 'fuel',
 }
 
 export class Network {
@@ -52,4 +53,6 @@ export class Metadata {
     evm_oracle_contract?: `0x${string}` | null
     evm_multicall_contract?: string | null
     listing_date: string
+    zks_paymaster_contract?: `0x${string}` | null
+    watchdog_contract?: string | null
 }

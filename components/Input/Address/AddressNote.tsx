@@ -27,7 +27,7 @@ const AddressNote: FC<AddressNoteModalProps> = ({ partner, values }) => {
             <div className="text-center max-w-xs space-y-1">
                 <p className="text-2xl">Address Confirmation</p>
                 <p className="text-secondary-text">
-                    <span>Deposit address was autofilled from URL</span> {partner && <><span>by</span> <span>{partner.display_name}.</span></>} <span>Please double-check its correctness.</span>
+                    <span>Destination address was autofilled from URL</span> {partner && <><span>by</span> <span>{partner.display_name}.</span></>} <span>Please double-check its correctness.</span>
                 </p>
             </div>
 

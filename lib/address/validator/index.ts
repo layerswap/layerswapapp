@@ -30,7 +30,7 @@ export function isValidAddress(address?: string, network?: { name: string } | nu
         }
         return false
     }
-    else if (network?.name === KnownInternalNames.Networks.SolanaMainnet || network?.name === KnownInternalNames.Networks.SolanaTestnet || network?.name === KnownInternalNames.Networks.SolanaDevnet) {
+    else if (network?.name.toLowerCase().startsWith("solana") || network?.name.toLowerCase().startsWith("eclipse")) {
         try {
             let pubkey = new PublicKey(address)
             let isSolana = PublicKey.isOnCurve(pubkey.toBuffer())
@@ -48,6 +48,17 @@ export function isValidAddress(address?: string, network?: { name: string } | nu
     else if (network?.name === KnownInternalNames.Networks.TronMainnet || network?.name === KnownInternalNames.Networks.TronTestnet) {
         const decodedAddress = decodeBase58(address).toUpperCase();
         return decodedAddress.startsWith('41') && decodedAddress.length == 42
+    }
+    else if (network?.name === KnownInternalNames.Networks.FuelTestnet || network?.name === KnownInternalNames.Networks.FuelMainnet) {
+        const hexRegex = /^[0-9a-fA-F]+$/;
+
+        if (address.startsWith("0x")) {
+            address = address.slice(2); // Remove the "0x" prefix
+        } else {
+            return false;
+        }
+
+        return address.length === 64 && hexRegex.test(address);
     }
     else {
         return isValidEtherAddress(address);

@@ -2,7 +2,6 @@ import { FC, useEffect } from 'react';
 import { SwapDataProvider } from '../context/swap';
 import { TimerProvider } from '../context/timerContext';
 import SwapForm from "./Swap/Form"
-import { BalancesDataProvider } from '../context/balances';
 import { SWRConfig, mutate } from 'swr';
 import { SwapStatus } from '../Models/SwapStatus';
 import { FeeProvider } from '../context/feeContext';
@@ -13,11 +12,9 @@ const Swap: FC = () => {
       <SWRConfig value={{ use: [updatePendingCount] }}>
         <SwapDataProvider >
           <TimerProvider>
-            <BalancesDataProvider>
-              <FeeProvider>
-                <SwapForm />
-              </FeeProvider>
-            </BalancesDataProvider>
+            <FeeProvider>
+              <SwapForm />
+            </FeeProvider>
           </TimerProvider>
         </SwapDataProvider >
       </SWRConfig>

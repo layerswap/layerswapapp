@@ -6,11 +6,27 @@ import { SWRConfig, mutate } from 'swr'
 import { SwapStatus } from '../Models/SwapStatus'
 import { useEffect } from 'react'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
+import { resolveExchangesURLForSelectedToken, resolveRoutesURLForSelectedToken } from '../helpers/routes'
 
 export default function Home({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapApiClient.apiKey = apiKey
+
+  const sourceRoutesDeafultKey = resolveRoutesURLForSelectedToken({ direction: 'from', network: undefined, token: undefined, includes: { unmatched: true, unavailable: true } })
+  const destinationRoutesDefaultKey = resolveRoutesURLForSelectedToken({ direction: 'to', network: undefined, token: undefined, includes: { unmatched: true, unavailable: true } })
+
+  const sourceExchangesDeafaultkey = resolveExchangesURLForSelectedToken("from", {})
+  const destinationExchangesDeafaultkey = resolveExchangesURLForSelectedToken("to", {})
+
   return (
-    <SWRConfig value={{ use: [updatePendingCount] }}>
+    <SWRConfig value={{
+      use: [updatePendingCount],
+      fallback: {
+        [sourceRoutesDeafultKey]: { data: settings.sourceRoutes, error: null },
+        [destinationRoutesDefaultKey]: { data: settings.destinationRoutes, error: null },
+        [sourceExchangesDeafaultkey]: { data: settings.sourceExchanges, error: null },
+        [destinationExchangesDeafaultkey]: { data: settings.destinationExchanges, error: null },
+      }
+    }}>
       <Layout settings={settings} themeData={themeData}>
         <Swap />
       </Layout>
