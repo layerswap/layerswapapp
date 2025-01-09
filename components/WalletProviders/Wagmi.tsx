@@ -13,7 +13,7 @@ import { WalletModalProvider } from '../WalletModal';
 import { argent } from '../../lib/wallets/connectors/argent';
 import { rainbow } from '../../lib/wallets/connectors/rainbow';
 import { coinbaseWallet, metaMask, walletConnect } from 'wagmi/connectors'
-import { hasInjectedProvider, explicitInjectedproviderDetected } from '../../lib/wallets/connectors/getInjectedConnector';
+import { hasInjectedProvider } from '../../lib/wallets/connectors/getInjectedConnector';
 import { bitget } from '../../lib/wallets/connectors/bitget';
 import { isMobile } from '../../lib/isMobile';
 import FuelProviderWrapper from "./FuelProvider";
@@ -51,8 +51,8 @@ function WagmiComponent({ children }: Props) {
     const config = createConfig({
         connectors: [
             coinbaseWallet({
-                appName:'Layerswap',
-                appLogoUrl: 'https://layerswap.io/app/symbol.png', 
+                appName: 'Layerswap',
+                appLogoUrl: 'https://layerswap.io/app/symbol.png',
             }),
             walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' }),
             argent({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'argent' }),

@@ -1,5 +1,4 @@
 import { FC, useCallback, useEffect, useState } from 'react'
-import toast from 'react-hot-toast';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
@@ -15,9 +14,13 @@ import { useSwapDataState } from '../../../../context/swap';
 import { datadogRum } from '@datadog/browser-rum';
 import { bn, Contract, Provider } from 'fuels';
 import WatchdogAbi from '../../../../lib/abis/FUELWATCHDOG.json';
+import TransactionMessages from '../messages/TransactionMessages';
 
 const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, amount, depositAddress, sequenceNumber, token }) => {
     const [loading, setLoading] = useState(false);
+    const [buttonClicked, setButtonClicked] = useState(false)
+    const [error, setError] = useState<string | undefined>()
+
     const { setSwapTransaction } = useSwapTransactionStore()
 
     const { provider } = useWallet(network, 'withdrawal');
@@ -35,6 +38,8 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
     }, [selectedSourceAccount, provider?.activeWallet, fuelWallet])
 
     const handleTransfer = useCallback(async () => {
+        setButtonClicked(true)
+        setError(undefined)
         try {
             setLoading(true)
 
@@ -73,7 +78,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
         }
         catch (e) {
             if (e?.message) {
-                toast(e.message)
+                setError(e.message)
                 if (e.message !== "User rejected the transaction!") {
                     const txError = new Error(e.message);
                     txError.name = `SwapWithdrawalError`;
@@ -99,9 +104,16 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
         />
     }
     return (
-        <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
+        <div className="w-full space-y-1 flex flex-col justify-between h-full text-primary-text">
             {
-                wallet &&
+                buttonClicked &&
+                <TransactionMessage
+                    error={error}
+                    isLoading={loading}
+                />
+            }
+            {
+                !loading &&
                 <ButtonWrapper isDisabled={!!loading || !fuelWallet} isSubmitting={!!loading || !fuelWallet} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
                     Send from wallet
                 </ButtonWrapper>
@@ -142,6 +154,27 @@ const ChangeNetworkButton: FC<{ chainId: number, network: string, onChange: () =
             </ButtonWrapper>
         }
     </>
+}
+
+const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> = ({ isLoading, error }) => {
+    if (isLoading) {
+        return <TransactionMessages.ConfirmTransactionMessage />
+    }
+    else if (error === "The account(s) sending the transaction don't have enough funds to cover the transaction.") {
+        return <TransactionMessages.InsufficientFundsMessage />
+    }
+    else if (error === "Request cancelled without user response!" || error === "User rejected the transaction!" || error === "User canceled sending transaction") {
+        return <TransactionMessages.TransactionRejectedMessage />
+    }
+    else if (error) {
+        const renderingError = new Error(error);
+        renderingError.name = `SwapWithdrawalError`;
+        renderingError.cause = error;
+        datadogRum.addError(renderingError);
+
+        return <TransactionMessages.UexpectedErrorMessage message={error} />
+    }
+    else return <></>
 }
 
 export default FuelWalletWithdrawStep;

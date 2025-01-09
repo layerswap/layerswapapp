@@ -98,12 +98,12 @@ const SwapForm: FC<Props> = ({ partner }) => {
     );
     const { sourceExchanges: cachedSourceExchanges, destinationExchanges: cachedDestinationExchanges, destinationRoutes: cachedDestinationRoutes, sourceRoutes: cachedSourceRoutes } = useSettingsState();
 
-    const sourceRoutesEndpoint = (source && destination) ? resolveRoutesURLForSelectedToken({ direction: 'from', network: source?.name, token: fromCurrency?.symbol, includes: { unavailable: true, unmatched: true } }) : null
-    const destinationRoutesEndpoint = (source && destination) ? resolveRoutesURLForSelectedToken({ direction: 'to', network: destination?.name, token: toCurrency?.symbol, includes: { unavailable: true, unmatched: true } }) : null
-    const exchangeRoutesURL = (fromExchange || toExchange) ? resolveExchangesURLForSelectedToken(fromExchange ? 'from' : 'to', values) : null
+    const sourceRoutesEndpoint = resolveRoutesURLForSelectedToken({ direction: 'from', network: source?.name, token: fromCurrency?.symbol, includes: { unavailable: true, unmatched: true } })
+    const destinationRoutesEndpoint = resolveRoutesURLForSelectedToken({ direction: 'to', network: destination?.name, token: toCurrency?.symbol, includes: { unavailable: true, unmatched: true } })
+    const exchangeRoutesURL = resolveExchangesURLForSelectedToken(fromExchange ? 'from' : 'to', values)
 
-    const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<RouteNetwork[]>>(sourceRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true, fallbackData: { data: cachedSourceRoutes }, dedupingInterval: 10000 })
-    const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<RouteNetwork[]>>(destinationRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true, fallbackData: { data: cachedDestinationRoutes }, dedupingInterval: 10000 })
+    const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<RouteNetwork[]>>(sourceRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true, dedupingInterval: 10000 })
+    const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<RouteNetwork[]>>(destinationRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true, dedupingInterval: 10000 })
     const { data: sourceExchanges, isLoading: sourceExchnagesDataLoading } = useSWR<ApiResponse<Exchange[]>>(exchangeRoutesURL, layerswapApiClient.fetcher, { keepPreviousData: true, fallbackData: { data: cachedSourceExchanges }, dedupingInterval: 10000 })
     const { data: destinationExchanges, isLoading: destinationExchnagesDataLoading } = useSWR<ApiResponse<Exchange[]>>(exchangeRoutesURL, layerswapApiClient.fetcher, { keepPreviousData: true, fallbackData: { data: cachedDestinationExchanges }, dedupingInterval: 10000 })
 

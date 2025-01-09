@@ -36,8 +36,6 @@ export default function useEVM({ network }: Props): WalletProvider {
 
     const withdrawalSupportedNetworks = [
         ...asSourceSupportedNetworks,
-        KnownInternalNames.Networks.ParadexMainnet,
-        KnownInternalNames.Networks.ParadexTestnet,
     ]
 
     const autofillSupportedNetworks = [
