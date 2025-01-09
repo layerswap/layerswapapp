@@ -67,10 +67,8 @@ const Commitment: FC<ContainerProps> = (props) => {
                                 />
                             }
                             {
-                                !commitId && <ConnectedWallet
-                                    source_network={source_network}
-                                    source_token={source_token}
-                                />
+                                !commitId &&
+                                <ConnectedWallet />
                             }
 
                         </div>

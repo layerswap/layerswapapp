@@ -21,8 +21,8 @@ const Address = ({ partner, children }: AddressProps) => {
 
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const address_book_endpoint = authData?.access_token ? `/internal/recent_addresses` : null
-    const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
+    // const address_book_endpoint = authData?.access_token ? `/internal/recent_addresses` : null
+    // const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
 
     const [showAddressModal, setShowAddressModal] = useState(false);
 
@@ -34,7 +34,7 @@ const Address = ({ partner, children }: AddressProps) => {
             disabled={!values.to}
             name={"destination_address"}
             partner={partner}
-            address_book={address_book?.data}
+            // address_book={address_book?.data}
         >
             {children}
         </AddressPicker>

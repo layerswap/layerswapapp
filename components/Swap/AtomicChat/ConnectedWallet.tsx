@@ -8,17 +8,14 @@ import { Wallet } from "../../../Models/WalletProvider";
 import useSWRBalance from "../../../lib/balances/useSWRBalance";
 import VaulDrawer from "../../modal/vaulModal";
 import WalletsList from "../../Wallet/WalletsList";
+import { useAtomicState } from "../../../context/atomicContext";
+import { useSettingsState } from "../../../context/settings";
 
-
-type Props = {
-    source_network: any;
-    source_token: any;
-}
-
-const Component: FC<Props> = (props) => {
-    const { source_network, source_token } = props;
+const Component: FC = () => {
+    const { source_asset, source_network, setSelectedSourceAccount, selectedSourceAccount } = useAtomicState()
     const { provider } = useWallet(source_network, 'withdrawal')
-
+    const { networks } = useSettingsState()
+    const sourceNetworkWithTokens = networks.find(n => n.name === source_network?.name)
     const [openModal, setOpenModal] = useState(false)
 
     const changeWallet = async (wallet: Wallet, address: string) => {
@@ -26,31 +23,31 @@ const Component: FC<Props> = (props) => {
         setOpenModal(false)
     }
 
-    // const selectedWallet = selectedSourceAccount?.wallet
+    const selectedWallet = selectedSourceAccount?.wallet
     const activeWallet = provider?.activeWallet
 
-    // useEffect(() => {
-    //     if (!selectedSourceAccount && activeWallet) {
-    //         setSelectedSourceAccount({
-    //             wallet: activeWallet,
-    //             address: activeWallet.address
-    //         })
-    //     } else if (selectedSourceAccount && activeWallet && !activeWallet.addresses.some(a => a.toLowerCase() === selectedSourceAccount.address.toLowerCase())) {
-    //         const selectedWalletIsConnected = provider.connectedWallets?.some(w => w.addresses.some(a => a.toLowerCase() === selectedSourceAccount.address.toLowerCase()))
-    //         if (selectedWalletIsConnected) {
-    //             provider.switchAccount && provider.switchAccount(selectedSourceAccount.wallet, selectedSourceAccount.address)
-    //         }
-    //         else {
-    //             setSelectedSourceAccount(undefined)
-    //         }
-    //     }
-    // }, [activeWallet?.address, setSelectedSourceAccount, provider, selectedSourceAccount?.address])
+    useEffect(() => {
+        if (!selectedSourceAccount && activeWallet) {
+            setSelectedSourceAccount({
+                wallet: activeWallet,
+                address: activeWallet.address
+            })
+        } else if (selectedSourceAccount && activeWallet && !activeWallet.addresses.some(a => a.toLowerCase() === selectedSourceAccount.address.toLowerCase())) {
+            const selectedWalletIsConnected = provider.connectedWallets?.some(w => w.addresses.some(a => a.toLowerCase() === selectedSourceAccount.address.toLowerCase()))
+            if (selectedWalletIsConnected) {
+                provider.switchAccount && provider.switchAccount(selectedSourceAccount.wallet, selectedSourceAccount.address)
+            }
+            else {
+                setSelectedSourceAccount(undefined)
+            }
+        }
+    }, [activeWallet?.address, setSelectedSourceAccount, provider, selectedSourceAccount?.address])
 
 
-    const { balance, isBalanceLoading } = useSWRBalance(activeWallet?.address, source_network)
+    const { balance, isBalanceLoading } = useSWRBalance(activeWallet?.address, sourceNetworkWithTokens)
 
-    const walletBalance = source_network && balance?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
-    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
+    const walletBalance = source_network && balance?.find(b => b?.network === source_network?.name && b?.token === source_asset?.symbol)
+    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_asset?.precision)
 
     return <>
         <div className="grid content-end">
@@ -60,9 +57,9 @@ const Component: FC<Props> = (props) => {
                 <div onClick={() => setOpenModal(true)} className="cursor-pointer group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-sm mt-1.5 text-primary-text bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
                     <AddressWithIcon
                         addressItem={{ address: activeWallet?.address || '', group: AddressGroup.ConnectedWallet }}
-                        connectedWallet={activeWallet}
+                        connectedWallet={selectedWallet}
                         network={source_network}
-                        balance={(walletBalanceAmount !== undefined && source_token) ? { amount: walletBalanceAmount, symbol: source_token?.symbol, isLoading: isBalanceLoading } : undefined}
+                        balance={(walletBalanceAmount !== undefined && source_asset) ? { amount: walletBalanceAmount, symbol: source_asset?.symbol, isLoading: isBalanceLoading } : undefined}
                     />
                     <ChevronRight className="h-4 w-4" />
                 </div>
@@ -70,7 +67,7 @@ const Component: FC<Props> = (props) => {
         </div>
         {
             source_network &&
-            source_token &&
+            source_asset &&
             provider &&
             provider.connectedWallets &&
             <VaulDrawer
@@ -82,7 +79,7 @@ const Component: FC<Props> = (props) => {
                 <VaulDrawer.Snap id='item-1'>
                     <WalletsList
                         network={source_network}
-                        token={source_token}
+                        token={source_asset}
                         onSelect={changeWallet}
                         selectable
                         wallets={provider.connectedWallets}

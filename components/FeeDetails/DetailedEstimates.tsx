@@ -11,12 +11,12 @@ const DetailedEstimates: FC = () => {
 
     const fee_amount = fee?.quote?.total_fee
 
-    const parsedFee = fee && parseFloat(Number(fee_amount).toFixed(fromCurrency?.precision))
+    const parsedFee = fee?.quote && parseFloat(Number(fee_amount).toFixed(fromCurrency?.precision))
     const currencyName = fromCurrency?.symbol || " "
     const feeAmountInUsd = fee?.quote?.total_fee_in_usd
 
     const displayFee = parsedFee?.toFixed(fromCurrency?.precision)
-    const displayFeeInUsd = feeAmountInUsd ? (feeAmountInUsd < 0.01 ? '<$0.01' : `$${feeAmountInUsd?.toFixed(2)}`) : null
+    const displayFeeInUsd = feeAmountInUsd ? (feeAmountInUsd < 0.01 ? '<$0.01' : `$${feeAmountInUsd?.toFixed(2)}`) : undefined
 
     return <div className="flex flex-col w-full gap-2">
         <div className="flex justify-between w-full items-center">

@@ -132,9 +132,9 @@ const SwapForm: FC<Props> = ({ partner }) => {
             <Form className={`h-full ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
                 <ResizablePanel>
                     <Widget.Content>
-                        <div className='flex-col relative flex justify-between w-full space-y-0.5 mb-3.5 leading-4'>
-                            {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
-                                <NetworkFormField direction="from" label="From" className="rounded-t-componentRoundness pb-5" />
+                    <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4 bg-secondary-700 rounded-xl'>
+                    {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
+                                <NetworkFormField direction="from" label="From" className="rounded-t-componentRoundness pt-2.5" />
                             </div>}
                             {!query?.hideFrom && !query?.hideTo &&
                                 <button
@@ -142,7 +142,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                     aria-label="Reverse the source and destination"
                                     disabled={valuesSwapperDisabled || sourceLoading || destinationLoading}
                                     onClick={valuesSwapper}
-                                    className={`${sourceLoading || destinationLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[86px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-[10px] disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
+                                    className={`${sourceLoading || destinationLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[122px] z-10 border-2 border-secondary-900 bg-secondary-900 rounded-[10px] disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
                                     <motion.div
                                         animate={animate}
                                         transition={{ duration: 0.3 }}

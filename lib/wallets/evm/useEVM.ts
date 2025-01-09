@@ -573,6 +573,7 @@ const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
         addresses: addresses || [address],
         displayName: walletname,
         providerName,
+        chainId: connection?.chainId,
         icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector), address, iconUrl: connector.icon }),
         disconnect: () => discconnect(connector.name),
         isNotAvailable: isNotAvailable(connector, network),

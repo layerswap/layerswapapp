@@ -8,6 +8,8 @@ import { ApiResponse } from '../Models/ApiResponse';
 import { CommitFromApi } from '../lib/layerSwapApiClient';
 import { toHex } from 'viem';
 import LightClient from '../lib/lightClient';
+import { Wallet } from '../Models/WalletProvider';
+import useWallet from '../hooks/useWallet';
 
 export enum CommitStatus {
     Commit = 'commit',
@@ -40,11 +42,13 @@ type DataContextType = {
     lightClient: LightClient | undefined,
     commitStatus: CommitStatus,
     refundTxId?: string | undefined,
+    selectedSourceAccount?: { wallet: Wallet, address: string }
     onCommit: (commitId: string, txId: string) => void;
     setDestinationDetails: (data: Commit & { fetchedByLightClient?: boolean }) => void;
     setSourceDetails: (data: Commit) => void;
     setUserLocked: (locked: boolean) => void,
-    setError(error: string | undefined): void
+    setError(error: string | undefined): void,
+    setSelectedSourceAccount: (value: { wallet: Wallet, address: string } | undefined) => void
 }
 
 export function AtomicProvider({ children }) {
@@ -57,6 +61,23 @@ export function AtomicProvider({ children }) {
         source,
         source_asset
     } = router.query
+
+    const { providers } = useWallet()
+
+    const [selectedSourceAccount, setSelectedSourceAccount] = useState<{ wallet: Wallet, address: string } | undefined>()
+
+    const handleChangeSelectedSourceAccount = (props: { wallet: Wallet, address: string } | undefined) => {
+        if (!props) {
+            setSelectedSourceAccount(undefined)
+            return
+        }
+        const { wallet, address } = props || {}
+        const provider = providers?.find(p => p.name === wallet.providerName)
+        if (provider?.activeWallet?.address.toLowerCase() !== address.toLowerCase()) {
+            provider?.switchAccount && provider?.switchAccount(wallet, address)
+        }
+        setSelectedSourceAccount({ wallet, address })
+    }
 
     const [lightClient, setLightClient] = useState<LightClient | undefined>(undefined)
 
@@ -157,10 +178,12 @@ export function AtomicProvider({ children }) {
             lightClient,
             commitStatus,
             refundTxId,
+            selectedSourceAccount,
             setDestinationDetails,
             setSourceDetails,
             setUserLocked,
-            setError
+            setError,
+            setSelectedSourceAccount: handleChangeSelectedSourceAccount,
         }}>
             {children}
         </AtomicStateContext.Provider>
