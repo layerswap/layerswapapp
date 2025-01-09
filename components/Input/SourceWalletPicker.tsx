@@ -122,10 +122,6 @@ const Component: FC = () => {
                     network={walletNetwork}
                     selectable
                 />
-                {
-                    values.from?.deposit_methods.includes('deposit_address') &&
-                    <ContinueWithoutWallet onClick={handleSelectWallet} />
-                }
             </VaulDrawer.Snap >
         </VaulDrawer>
     </>
@@ -179,12 +175,12 @@ export const FormSourceWalletButton: FC = () => {
     if (!availableWallets.length && walletNetwork) {
         return <>
             <Connect connectFn={connect} />
-            {
+            {/* {
                 mountWalletPortal && values.from?.deposit_methods.includes('deposit_address') && values.depositMethod !== 'deposit_address' &&
                 <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
                     <ContinueWithoutWallet onClick={handleSelectWallet} />
                 </WalletFooterPortal>
-            }
+            } */}
         </>
 
     }
@@ -210,22 +206,22 @@ export const FormSourceWalletButton: FC = () => {
                     />
                 </VaulDrawer.Snap>
             </VaulDrawer >
-            {
+            {/* {
                 mountWalletPortal && values.from?.deposit_methods.includes('deposit_address') && values.depositMethod !== 'deposit_address' &&
                 <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
                     <ContinueWithoutWallet onClick={handleSelectWallet} />
                 </WalletFooterPortal>
-            }
+            } */}
         </>
     }
     return <>
         <Connect setMountWalletPortal={setMounWalletPortal} />
-        {
+        {/* {
             mountWalletPortal &&
             <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
                 <ContinueWithoutWallet onClick={handleSelectWallet} />
             </WalletFooterPortal>
-        }
+        } */}
     </>
 }
 

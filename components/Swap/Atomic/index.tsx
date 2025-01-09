@@ -82,8 +82,18 @@ export default function Form() {
             (addressFormat(query.destAddress?.toString(), to) === addressFormat(destination_address, to)) &&
             !(addresses.find(a => addressFormat(a.address, to) === addressFormat(destination_address, to) && a.group !== AddressGroup.FromQuery)) && !isAddressFromQueryConfirmed) {
 
-            setShowAddressNoteModal(true)
-            return
+            const confirmed = await getConfirmation({
+                content: <AddressNote partner={partner} values={values} />,
+                submitText: 'Confirm address',
+                dismissText: 'Cancel address'
+            })
+
+            if (confirmed) {
+                setIsAddressFromQueryConfirmed(true)
+            }
+            else if (!confirmed) {
+                return
+            }
         }
         try {
             if (!values.amount) {
@@ -103,19 +113,6 @@ export default function Form() {
             }
             if (!values.toCurrency) {
                 throw new Error("No destination asset")
-            }
-
-            const confirmed = await getConfirmation({
-                content: <AddressNote partner={partner} values={values} />,
-                submitText: 'Confirm address',
-                dismissText: 'Cancel address'
-            })
-
-            if (confirmed) {
-                setIsAddressFromQueryConfirmed(true)
-            }
-            else if (!confirmed) {
-                return
             }
 
             const source_provider = values.from && getProvider(values.from, 'withdrawal')

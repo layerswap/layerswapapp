@@ -61,11 +61,11 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const diasbled = Boolean((fromExchange && !toCurrency) || (toExchange && !fromCurrency))
 
     const updateRequestedAmountInUsd = useCallback((requestedAmount: number, fee) => {
-        if (fee?.quote.source_token?.price_in_usd && !isNaN(requestedAmount)) {
-            setRequestedAmountInUsd((fee?.quote.source_token?.price_in_usd * requestedAmount).toFixed(2));
-        } else {
-            setRequestedAmountInUsd(undefined);
-        }
+        // if (fee?.quote.source_token?.price_in_usd && !isNaN(requestedAmount)) {
+        //     setRequestedAmountInUsd((fee?.quote.source_token?.price_in_usd * requestedAmount).toFixed(2));
+        // } else {
+        //     setRequestedAmountInUsd(undefined);
+        // }
     }, [requestedAmountInUsd, fee]);
 
     useEffect(() => {

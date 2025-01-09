@@ -200,6 +200,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         containerRoundness: '24px',
         componentRoundness: '12px',
         logo: '255, 255, 255',
+        footerLogo: 'none',
         primary: {
             DEFAULT: '128, 226, 235',
             '50': '255, 255, 255',

@@ -35,7 +35,7 @@ export function ImtblPassportProvider({ children }: { children: JSX.Element | JS
         if (!passportInstance) {
             (async () => {
                 await initilizePassport(router.basePath)
-                passportInstance.connectEvm() // EIP-6963
+                passportInstance?.connectEvm() && passportInstance.connectEvm() // EIP-6963
             })()
         }
     }, [passportInstance])
