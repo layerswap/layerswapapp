@@ -22,7 +22,8 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
     const { setSwapTransaction } = useSwapTransactionStore();
 
     const wallet = provider?.activeWallet
-    const { publicKey: walletPublicKey, signTransaction } = useSolanaWallet();
+    const { wallet: solanaWallet, signTransaction } = useSolanaWallet();
+    const walletPublicKey = solanaWallet?.adapter.publicKey
     const solanaNode = network?.node_url
     const networkName = network?.name
 
@@ -87,7 +88,7 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
         }
     }, [swapId, callData, walletPublicKey, signTransaction, network])
 
-    if (!wallet) {
+    if (!wallet || !walletPublicKey) {
         return <ConnectWalletButton />
     }
 
