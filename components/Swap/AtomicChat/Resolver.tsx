@@ -226,12 +226,12 @@ export const Actions: FC = () => {
 
     const lpRedeemTransaction = commitFromApi?.transactions.find(t => t.type === 'redeem' && t.network === destination_network?.name)
 
-    const allDone = ((sourceDetails?.hashlock && destinationDetails?.claimed == 3) || lpRedeemTransaction?.hash) ? true : false
+    const allDone = ((sourceDetails?.hashlock && destinationDetails?.claimed == 3) || lpRedeemTransaction?.hash || sourceDetails?.claimed == 2) ? true : false
     const showTimer = !allDone && commitStatus !== CommitStatus.TimelockExpired
     const timelock = sourceDetails?.timelock || sourceDetails?.timelock
 
     return <div className="space-y-4">
-        <ResolveMessages timelock={timelock} showTimer={showTimer} allComplete={(!!lpRedeemTransaction || destinationDetails?.claimed == 3)} />
+        <ResolveMessages timelock={timelock} showTimer={showTimer} allComplete={allDone} />
         <ResolveAction />
     </div>
 }
