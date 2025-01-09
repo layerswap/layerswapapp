@@ -9,8 +9,8 @@ const ConnectButton = ({
     children: ReactNode;
     className?: string;
 }) => {
-    const { connectedWalletProviders } = useWallet();
-    const filteredProviders = connectedWalletProviders.filter(p => !!p.autofillSupportedNetworks)
+    const { providers } = useWallet();
+    const filteredProviders = providers.filter(p => !!p.autofillSupportedNetworks)
     const { connect } = useConnectModal()
 
     return (

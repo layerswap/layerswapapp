@@ -21,14 +21,12 @@ import { resolvePersistantQueryParams } from "../../../helpers/querryHelper";
 import { useQueryState } from "../../../context/query";
 import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
-import StatusIcon from "../../SwapHistory/StatusIcons";
 import Image from 'next/image';
 import { ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useFee } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
 import useWallet from "../../../hooks/useWallet";
-import BalancesFetcher from "./BalancesFetcher";
 import { DepositMethodProvider } from "../../../context/depositMethodContext";
 import { dynamicWithRetries } from "../../../lib/dynamicWithRetries";
 import AddressNote from "../../Input/Address/AddressNote";
@@ -176,12 +174,12 @@ export default function Form() {
     }, [router, swap])
 
     return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
-        <BalancesFetcher />
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence mode='wait'>
                 {
-                    networkToConnect &&
-                    <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
+                    swap &&
+                    !showSwapModal &&
+                    <PendingSwap key="pendingSwap" onClick={() => handleShowSwapModal(true)} />
                 }
             </AnimatePresence>
         </div>
