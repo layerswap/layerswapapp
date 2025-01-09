@@ -1,15 +1,14 @@
 import '../styles/globals.css'
 import '../styles/dialog-transition.css'
 import '../styles/manual-trasnfer-svg.css'
+import '../styles/vaul.css'
 import { useRouter } from "next/router";
 import { IntercomProvider } from 'react-use-intercom';
 import { SWRConfig } from 'swr'
 import ProgressBar from "@badrap/bar-of-progress";
 import DatadogInit from "../components/datadog-init";
+import ProgressBar from "@badrap/bar-of-progress";
 import Router from "next/router";
-import { useEffect } from "react";
-import { PostHogProvider } from 'posthog-js/react'
-import posthog from 'posthog-js'
 
 const progress = new ProgressBar({
   size: 2,
@@ -23,7 +22,6 @@ Router.events.on("routeChangeComplete", progress.finish);
 Router.events.on("routeChangeError", progress.finish);
 
 const INTERCOM_APP_ID = 'h5zisg78'
-import "@rainbow-me/rainbowkit/styles.css";
 
 // Check that PostHog is client-side (used to handle Next.js SSR)
 if (typeof window !== 'undefined') {

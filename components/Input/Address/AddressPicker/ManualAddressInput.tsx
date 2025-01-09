@@ -7,8 +7,8 @@ import { NetworkType } from "../../../../Models/Network";
 import FilledX from "../../../icons/FilledX";
 import { AddressGroup, AddressItem } from ".";
 import { addressFormat } from "../../../../lib/address/formatter";
-import { Wallet } from "../../../../stores/walletStore";
 import AddressWithIcon from "./AddressWithIcon";
+import { Wallet } from "../../../../Models/WalletProvider";
 
 type AddressInput = {
     manualAddress: string,

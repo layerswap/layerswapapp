@@ -1,12 +1,9 @@
-import { useConnectModal } from "@rainbow-me/rainbowkit"
-import { useAccount, useConfig, useDisconnect } from "wagmi"
-import { NetworkType } from "../../../Models/Network"
+import { useAccount, useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
+import { Network, NetworkType, NetworkWithTokens } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
-import { WalletProvider } from "../../../hooks/useWallet"
 import KnownInternalNames from "../../knownIds"
-import resolveWalletConnectorIcon from "../utils/resolveWalletIcon"
+import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
-import { useEffect, useState } from "react"
 import { CreatePreHTLCParams, CommitmentParams, LockParams, GetCommitsParams, RefundParams, ClaimParams } from "../phtlc"
 import { writeContract, simulateContract, readContract, waitForTransactionReceipt, signTypedData } from '@wagmi/core'
 import { ethers } from "ethers"
@@ -18,15 +15,31 @@ import formatAmount from "../../formatAmount"
 import LayerSwapApiClient from "../../layerSwapApiClient"
 import { Chain, createPublicClient, http, PublicClient } from "viem"
 import resolveChain from "../../resolveChain"
+import { useMemo } from "react"
+import { getAccount, getConnections } from '@wagmi/core'
+import toast from "react-hot-toast"
+import { isMobile } from "../../isMobile"
+import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
+import { LSConnector } from "../connectors/EthereumProvider"
+import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
+import { useConnectModal } from "../../../components/WalletModal"
+import { explicitInjectedproviderDetected } from "../connectors/getInjectedConnector"
+import { type ConnectorAlreadyConnectedError } from '@wagmi/core'
 
-export default function useEVM(): WalletProvider {
+type Props = {
+    network: Network | undefined,
+}
+const ethereumNames = [KnownInternalNames.Networks.EthereumMainnet, KnownInternalNames.Networks.EthereumSepolia]
+const immutableZKEvm = [KnownInternalNames.Networks.ImmutableZkEVMMainnet, KnownInternalNames.Networks.ImmutableZkEVMTestnet]
+
+export default function useEVM({ network }: Props): WalletProvider {
+    const name = 'EVM'
+    const id = 'evm'
     const { networks } = useSettingsState()
-    const [shouldConnect, setShouldConnect] = useState(false)
-    const { disconnectAsync } = useDisconnect()
     const config = useConfig()
 
     const asSourceSupportedNetworks = [
-        ...networks.filter(network => network.type === NetworkType.EVM && network.name !== KnownInternalNames.Networks.RoninMainnet).map(l => l.name),
+        ...networks.filter(network => network.type === NetworkType.EVM).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet,
         KnownInternalNames.Networks.LoopringGoerli,
         KnownInternalNames.Networks.LoopringMainnet,
@@ -35,8 +48,6 @@ export default function useEVM(): WalletProvider {
 
     const withdrawalSupportedNetworks = [
         ...asSourceSupportedNetworks,
-        KnownInternalNames.Networks.ParadexMainnet,
-        KnownInternalNames.Networks.ParadexTestnet,
     ]
 
     const autofillSupportedNetworks = [
@@ -46,60 +57,150 @@ export default function useEVM(): WalletProvider {
         KnownInternalNames.Networks.BrineMainnet,
     ]
 
-    const name = 'evm'
-    const account = useAccount()
-    const { openConnectModal } = useConnectModal()
+    const { disconnectAsync } = useDisconnect()
+    const { connectors: activeConnectors, switchAccountAsync } = useSwitchAccount()
+    const activeAccount = useAccount()
+    const allConnectors = useConnectors()
+    const { connectAsync } = useConnect();
 
-    useEffect(() => {
-        if (shouldConnect) {
-            connectWallet()
-            setShouldConnect(false)
+    const { connect, setSelectedProvider } = useConnectModal()
+
+    const connectWallet = async () => {
+        try {
+            return await connect(provider)
         }
-    }, [shouldConnect])
+        catch (e) {
+            console.log(e)
+        }
+    }
 
-    const getWallet = () => {
-        if (account && account.address && account.connector) {
-            const connector = account.connector.id
+    const disconnectWallet = async (connectorName: string) => {
 
-            return {
-                address: account.address,
-                connector: account.connector.name || connector.charAt(0).toUpperCase() + connector.slice(1),
-                providerName: name,
-                icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(account.connector), address: account.address }),
-                chainId: account.chainId
+        try {
+            const connector = activeConnectors.find(w => w.name.toLowerCase() === connectorName.toLowerCase())
+            await disconnectAsync({
+                connector: connector
+            })
+        }
+        catch (e) {
+            console.log(e)
+        }
+    }
+
+    const disconnectWallets = () => {
+        try {
+            activeConnectors.forEach(async (connector) => {
+                disconnectWallet(connector.name)
+            })
+        }
+        catch (e) {
+            console.log(e)
+        }
+    }
+
+    const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
+        try {
+
+            setSelectedProvider({ ...provider, connector: { name: connector.name } })
+            if (connector.id !== "coinbaseWalletSDK") {
+                await connector.disconnect()
+                await disconnectAsync({ connector })
             }
+
+            if (isMobile()) {
+                if (connector.id !== "walletConnect") {
+                    getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
+                        window.location.href = uri;
+                    })
+                }
+            }
+            else {
+                getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
+                    const Icon = resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
+                    const base64Icon = convertSvgComponentToBase64(Icon)
+
+                    setSelectedProvider({ ...provider, connector: { name: connector.name, qr: uri, iconUrl: base64Icon } })
+                })
+            }
+
+            await connectAsync({
+                connector: connector,
+            });
+
+            const activeAccount = getAccount(config)
+            const connections = getConnections(config)
+            const connection = connections.find(c => c.connector.id === activeAccount.connector?.id)
+
+            const wallet = ResolveWallet({
+                activeConnection: (activeAccount.connector && activeAccount.address) ? {
+                    id: activeAccount.connector.id,
+                    address: activeAccount.address
+                } : undefined,
+                connection,
+                discconnect: disconnectWallet,
+                networks,
+                network,
+                supportedNetworks: {
+                    asSource: asSourceSupportedNetworks,
+                    autofill: autofillSupportedNetworks,
+                    withdrawal: withdrawalSupportedNetworks
+                },
+                providerName: name
+            })
+
+            return wallet
+
+        } catch (e) {
+            //TODO: handle error like in transfer
+            const error = e as ConnectorAlreadyConnectedError
+            if (error.name == 'ConnectorAlreadyConnectedError') {
+                toast.error('Wallet is already connected.')
+            }
+            else {
+                toast.error('Error connecting wallet')
+            }
+            throw new Error(e)
         }
     }
 
-    const connectWallet = () => {
-        try {
-            return openConnectModal && openConnectModal()
-        }
-        catch (e) {
-            console.log(e)
-        }
+    const resolvedConnectors: Wallet[] = useMemo(() => {
+        const connections = getConnections(config)
+        return activeConnectors.map((w): Wallet | undefined => {
+
+            const connection = connections.find(c => c.connector.id === w.id)
+
+            const wallet = ResolveWallet({
+                activeConnection: (activeAccount.connector && activeAccount.address) ? {
+                    id: activeAccount.connector.id,
+                    address: activeAccount.address
+                } : undefined,
+                connection,
+                discconnect: disconnectWallet,
+                networks,
+                network,
+                supportedNetworks: {
+                    asSource: asSourceSupportedNetworks,
+                    autofill: autofillSupportedNetworks,
+                    withdrawal: withdrawalSupportedNetworks
+                },
+                providerName: name
+            })
+
+            return wallet
+        }).filter(w => w !== undefined) as Wallet[]
+    }, [activeAccount, activeConnectors, config, network])
+
+    const switchAccount = async (wallet: Wallet, address: string) => {
+        const connector = getConnections(config).find(c => c.connector.name === wallet.id)?.connector
+        if (!connector)
+            throw new Error("Connector not found")
+        const { accounts } = await switchAccountAsync({ connector })
+        const account = accounts.find(a => a.toLowerCase() === address.toLowerCase())
+        if (!account)
+            throw new Error("Account not found")
     }
 
-    const disconnectWallet = async () => {
-        try {
-            account.connector && await account.connector.disconnect()
-            await disconnectAsync()
-        }
-        catch (e) {
-            console.log(e)
-        }
-    }
-
-    const reconnectWallet = async () => {
-        try {
-            account.connector && await account.connector.disconnect()
-            await disconnectAsync()
-            setShouldConnect(true)
-        }
-        catch (e) {
-            console.log(e)
-        }
-    }
+    const account = resolvedConnectors.find(w => w.isActive)
 
     const createPreHTLC = async (params: CreatePreHTLCParams) => {
         const { destinationChain, destinationAsset, sourceAsset, lpAddress, address, amount, decimals, atomicContract, chainId } = params
@@ -108,7 +209,7 @@ export default function useEVM(): WalletProvider {
         const timeLockMS = Date.now() + LOCK_TIME
         const timeLock = Math.floor(timeLockMS / 1000)
 
-        if (!account.address) {
+        if (!account?.address) {
             throw Error("Wallet not connected")
         }
         if (isNaN(Number(chainId))) {
@@ -294,7 +395,7 @@ export default function useEVM(): WalletProvider {
         const sig = ethers.utils.splitSignature(signature)
 
         try {
-            account.address && await apiClient.AddLockSig({
+            account?.address && await apiClient.AddLockSig({
                 signature,
                 signer_address: account.address,
                 v: sig.v.toString(),
@@ -352,7 +453,7 @@ export default function useEVM(): WalletProvider {
         const { chainId, contractAddress, type } = params
         const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
 
-        if (!account.address) {
+        if (!account?.address) {
             throw Error("Wallet not connected")
         }
         const result = await readContract(config, {
@@ -368,15 +469,30 @@ export default function useEVM(): WalletProvider {
         return (result as string[]).reverse()
     }
 
-    return {
-        getConnectedWallet: getWallet,
+    const activeBrowserWallet = explicitInjectedproviderDetected() && allConnectors.filter(c => c.id !== "com.immutable.passport" && c.type === "injected").length === 1
+    const filterConnectors = wallet => !isNotAvailable(wallet, network) && ((wallet.id === "injected" ? activeBrowserWallet : true))
+
+    {/* //TODO: refactor ordering */ }
+    const availableWalletsForConnect = allConnectors.filter(filterConnectors)
+        .map(w => ({
+            ...w,
+            order: resolveWalletConnectorIndex(w.id),
+            type: (!network?.name.toLowerCase().includes("immutable") && w.id === "com.immutable.passport") ? "other" : w.type
+        }))
+
+    const provider = {
         connectWallet,
-        disconnectWallet,
-        reconnectWallet,
+        connectConnector,
+        disconnectWallets,
+        switchAccount,
+        connectedWallets: resolvedConnectors,
+        activeWallet: resolvedConnectors.find(w => w.isActive),
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks,
+        availableWalletsForConnect: availableWalletsForConnect as any,
         name,
+        id,
         createPreHTLC,
         claim,
         refund,
@@ -385,4 +501,122 @@ export default function useEVM(): WalletProvider {
         secureGetDetails,
         getContracts
     }
+
+    return provider
+}
+
+
+const getWalletConnectUri = async (
+    connector: Connector,
+    uriConverter: (uri: string) => string = (uri) => uri,
+    useCallback: (uri: string) => void,
+): Promise<void> => {
+    const provider = await connector.getProvider();
+    if (connector.id === 'coinbase') {
+        // @ts-expect-error
+        return provider.qrUrl;
+    }
+    return new Promise<void>((resolve) => {
+        return provider?.['once'] && provider['once']('display_uri', (uri) => {
+            resolve(useCallback(uriConverter(uri)));
+        })
+    }
+    );
+};
+
+const isNotAvailable = (connector: Connector | undefined, network: Network | undefined) => {
+    if (!network) return false
+    if (!connector) return true
+    return resolveSupportedNetworks([network.name], connector.id).length === 0
+}
+
+type ResolveWalletProps = {
+    connection: {
+        accounts: readonly [`0x${string}`, ...`0x${string}`[]];
+        chainId: number;
+        connector: Connector;
+    } | undefined,
+    networks: NetworkWithTokens[],
+    network: Network | undefined,
+    activeConnection: {
+        id: string,
+        address: string
+    } | undefined,
+    discconnect: (connectorName: string | undefined) => Promise<void>,
+    supportedNetworks: {
+        asSource: string[],
+        autofill: string[],
+        withdrawal: string[]
+    },
+    providerName: string
+}
+
+const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
+    const { activeConnection, connection, networks, discconnect, network, supportedNetworks, providerName } = props
+    const accountIsActive = activeConnection?.id === connection?.connector.id
+
+    const addresses = connection?.accounts as (string[] | undefined);
+    const activeAddress = activeConnection?.address
+    const connector = connection?.connector
+    if (!connector)
+        return undefined
+
+    const address = accountIsActive ? activeAddress : addresses?.[0]
+    if (!address) return undefined
+
+    const walletname = `${connector?.name} ${connector.id === "com.immutable.passport" ? "" : " - EVM"}`
+
+    const wallet = {
+        id: connector.name,
+        isActive: accountIsActive,
+        address,
+        addresses: addresses || [address],
+        displayName: walletname,
+        providerName,
+        icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector), address, iconUrl: connector.icon }),
+        disconnect: () => discconnect(connector.name),
+        isNotAvailable: isNotAvailable(connector, network),
+        asSourceSupportedNetworks: resolveSupportedNetworks(supportedNetworks.asSource, connector.id),
+        autofillSupportedNetworks: resolveSupportedNetworks(supportedNetworks.autofill, connector.id),
+        withdrawalSupportedNetworks: resolveSupportedNetworks(supportedNetworks.withdrawal, connector.id),
+        networkIcon: networks.find(n => connector?.id === "com.immutable.passport" ? immutableZKEvm.some(name => name === n.name) : ethereumNames.some(name => name === n.name))?.logo
+    }
+
+    return wallet
+}
+
+const resolveSupportedNetworks = (supportedNetworks: string[], connectorId: string) => {
+
+    const specificNetworksConnectors = [
+        {
+            id: "com.immutable.passport",
+            supportedNetworks: [
+                KnownInternalNames.Networks.ImmutableXMainnet,
+                KnownInternalNames.Networks.ImmutableXGoerli,
+                KnownInternalNames.Networks.ImmutableXSepolia,
+                KnownInternalNames.Networks.ImmutableZkEVMMainnet,
+                KnownInternalNames.Networks.ImmutableZkEVMTestnet,
+            ]
+        },
+        {
+            id: "com.roninchain.wallet",
+            supportedNetworks: [
+                KnownInternalNames.Networks.RoninMainnet,
+                KnownInternalNames.Networks.EthereumMainnet,
+                KnownInternalNames.Networks.PolygonMainnet,
+                KnownInternalNames.Networks.BNBChainMainnet,
+                KnownInternalNames.Networks.ArbitrumMainnet
+            ]
+        }
+    ]
+
+    const specificNetworks = specificNetworksConnectors.find(c => c.id === connectorId)
+
+    if (specificNetworks) {
+        const values = specificNetworks.supportedNetworks.filter(n => supportedNetworks.some(name => name === n))
+        return values
+    }
+
+    return supportedNetworks
+
 }
