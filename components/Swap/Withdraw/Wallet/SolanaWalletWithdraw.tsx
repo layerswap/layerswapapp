@@ -23,7 +23,8 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
     const { setSwapTransaction } = useSwapTransactionStore();
 
     const wallet = provider?.activeWallet
-    const { publicKey: walletPublicKey, signTransaction } = useSolanaWallet();
+    const { wallet: solanaWallet, signTransaction } = useSolanaWallet();
+    const walletPublicKey = solanaWallet?.adapter.publicKey
     const solanaNode = network?.node_url
     const networkName = network?.name
 
@@ -57,10 +58,14 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
 
             const insufficientTokensArr: string[] = []
 
-            if (network?.token && Number(nativeTokenBalanceAmount) < feeInSol) insufficientTokensArr.push(network.token?.symbol)
-            if (network?.token?.symbol !== token?.symbol && amount && token?.symbol && Number(tokenBalanceAmount) < amount) insufficientTokensArr.push(token?.symbol)
+            if (network?.token && (Number(nativeTokenBalanceAmount) < feeInSol || isNaN(Number(nativeTokenBalanceAmount)))) {
+                insufficientTokensArr.push(network.token?.symbol);
+            }
+            if (network?.token?.symbol !== token?.symbol && amount && token?.symbol && Number(tokenBalanceAmount) < amount) {
+                insufficientTokensArr.push(token?.symbol);
+            }
             setInsufficientTokens(insufficientTokensArr)
-
+            
             const signature = await configureAndSendCurrentTransaction(
                 transaction,
                 connection,
@@ -84,7 +89,7 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
         }
     }, [swapId, callData, walletPublicKey, signTransaction, network])
 
-    if (!wallet) {
+    if (!wallet || !walletPublicKey) {
         return <ConnectWalletButton />
     }
 

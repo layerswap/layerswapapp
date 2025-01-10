@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react"
 import GoHomeButton from "../utils/GoHome";
+import { useMeasure } from "@uidotdev/usehooks";
 
 const variants = {
     enter: () => {
@@ -31,24 +32,13 @@ type FooterProps = {
 }
 
 const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
-    const [height, setHeight] = useState(0)
-    const ref = useRef<HTMLDivElement>(null)
+    let [footerRef, { height }] = useMeasure();
 
-    useEffect(() => {
-        setHeight(Number(ref?.current?.clientHeight))
-    }, [])
-
-    const handleAnimationEnd = (variant) => {
-        if (variant == "center") {
-            setHeight(Number(ref?.current?.clientHeight))
-        }
-    }
     return (
         sticky ?
             <>
                 <motion.div
-                    onAnimationComplete={handleAnimationEnd}
-                    ref={ref}
+                    ref={footerRef}
                     transition={{
                         duration: 0.15,
                     }}
