@@ -144,23 +144,6 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         }
     }, [toCurrency, currencyGroup, name, from, routes, error, isLoading])
 
-
-    const network = direction === 'from' ? from : to
-    const token = direction === 'from' ? fromCurrency : toCurrency
-    useEffect(() => {
-        let balanceGetHandler: any = undefined
-        if (network && token) {
-            (async () => {
-                balanceGetHandler = setInterval(async () => {
-                    await fetchBalance(network, token);
-                }, 60000)
-            })()
-        }
-        return () => {
-            clearInterval(balanceGetHandler)
-        }
-    }, [network, token])
-
     const handleSelect = useCallback((item: SelectMenuItem<RouteToken>) => {
         setFieldValue(name, item.baseObject, true)
         setCurrencyIsSetManually(true)
