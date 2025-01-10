@@ -123,7 +123,7 @@ export default class NetworkSettings {
             isFeatured: true,
             AccountExplorerTemplate: 'https://arbiscan.io/address/{0}',
             DefaultPriorityFee: 0,
-            BaseFeeMultiplier: 1.7
+            BaseFeeMultiplier: 4.15
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.ArbitrumNova] = {
             ChainId: 42170,
