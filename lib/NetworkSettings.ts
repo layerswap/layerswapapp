@@ -287,6 +287,11 @@ export default class NetworkSettings {
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BlastSepolia] = {
             GasCalculationType: GasCalculation.OptimismType,
         };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.RedStoneMainnet] = {
+            GasCalculationType: GasCalculation.OptimismType,
+            BaseFeeMultiplier: 1.7,
+            DefaultPriorityFee: 1
+        };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.BlastMainnet] = {
             GasCalculationType: GasCalculation.OptimismType,
         };

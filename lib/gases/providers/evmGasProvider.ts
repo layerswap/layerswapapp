@@ -230,8 +230,8 @@ export default class getOptimismGas extends getEVMGas {
             account: this.account,
             gasPriceOracleAddress: this.from.metadata.evm_oracle_contract as `0x${string}`,
         })
-
-        const formattedGas = formatAmount(gas, this.nativeToken?.decimals)
+        const baseFeeMultiplier = NetworkSettings.KnownSettings[this.from.name]?.BaseFeeMultiplier ?? 1.2
+        const formattedGas = formatAmount(gas, this.nativeToken?.decimals) * baseFeeMultiplier
 
         return formattedGas
     }
@@ -248,6 +248,7 @@ import {
     BlockTag,
 } from 'viem'
 import resolveChain from "../../resolveChain";
+import NetworkSettings from "../../NetworkSettings";
 
 /**
  * Options to query a specific block
