@@ -113,7 +113,7 @@ const Component: FC = () => {
             header={`Send from`}
             modalId="connectedWallets"
         >
-            <VaulDrawer.Snap id="item-1" className="space-y-3 pb-3">
+            <VaulDrawer.Snap id="item-1" className="space-y-3 pb-6">
                 <WalletsList
                     provider={provider}
                     wallets={availableWallets}
@@ -195,7 +195,7 @@ export const FormSourceWalletButton: FC = () => {
                 header={`Send from`}
                 modalId="connectedWallets"
             >
-                <VaulDrawer.Snap id="item-1" className="space-y-3 pb-3">
+                <VaulDrawer.Snap id="item-1" className="space-y-3 pb-6">
                     <WalletsList
                         provider={provider}
                         wallets={availableWallets}

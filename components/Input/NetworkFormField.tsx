@@ -78,17 +78,17 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
 
     const [routesData, setRoutesData] = useState<RouteNetwork[] | undefined>(direction === 'from' ? sourceRoutes : destinationRoutes)
 
-    const exchangeRoutesURL = resolveExchangesURLForSelectedToken(direction, values)
-    const {
-        data: exchanges,
-        isLoading: exchnagesDataLoading,
-    } = useSWR<ApiResponse<Exchange[]>>(exchangeRoutesURL, apiClient.fetcher, { keepPreviousData: true, dedupingInterval: 10000, })
+    // const exchangeRoutesURL = resolveExchangesURLForSelectedToken(direction, values)
+    // const {
+    //     data: exchanges,
+    //     isLoading: exchnagesDataLoading,
+    // } = useSWR<ApiResponse<Exchange[]>>(exchangeRoutesURL, apiClient.fetcher, { keepPreviousData: true, dedupingInterval: 10000, })
 
     const [exchangesData, setExchangesData] = useState<Exchange[]>([])
 
-    useEffect(() => {
-        if (!exchnagesDataLoading && exchanges?.data) setExchangesData(exchanges.data)
-    }, [exchanges])
+    // useEffect(() => {
+    //     if (!exchnagesDataLoading && exchanges?.data) setExchangesData(exchanges.data)
+    // }, [exchanges])
 
     useEffect(() => {
         if (!isLoading && routes?.data) setRoutesData(routes.data)

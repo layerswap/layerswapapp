@@ -10,9 +10,12 @@ import VaulDrawer from "../../modal/vaulModal";
 import WalletsList from "../../Wallet/WalletsList";
 import { useAtomicState } from "../../../context/atomicContext";
 import { useSettingsState } from "../../../context/settings";
+import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 
 const Component: FC = () => {
-    const { source_asset, source_network, setSelectedSourceAccount, selectedSourceAccount } = useAtomicState()
+    const { source_asset, source_network } = useAtomicState()
+    const { selectedSourceAccount } = useSwapDataState()
+    const { setSelectedSourceAccount } = useSwapDataUpdate()
     const { provider } = useWallet(source_network, 'withdrawal')
     const { networks } = useSettingsState()
     const sourceNetworkWithTokens = networks.find(n => n.name === source_network?.name)
@@ -20,6 +23,7 @@ const Component: FC = () => {
 
     const changeWallet = async (wallet: Wallet, address: string) => {
         provider?.switchAccount && provider.switchAccount(wallet, address)
+        setSelectedSourceAccount({ wallet, address })
         setOpenModal(false)
     }
 
@@ -44,7 +48,7 @@ const Component: FC = () => {
     }, [activeWallet?.address, setSelectedSourceAccount, provider, selectedSourceAccount?.address])
 
 
-    const { balance, isBalanceLoading } = useSWRBalance(activeWallet?.address, sourceNetworkWithTokens)
+    const { balance, isBalanceLoading } = useSWRBalance(selectedWallet?.address, sourceNetworkWithTokens)
 
     const walletBalance = source_network && balance?.find(b => b?.network === source_network?.name && b?.token === source_asset?.symbol)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_asset?.precision)
@@ -52,11 +56,11 @@ const Component: FC = () => {
     return <>
         <div className="grid content-end">
             {
-                activeWallet &&
+                selectedWallet &&
                 source_network &&
-                <div onClick={() => setOpenModal(true)} className="cursor-pointer group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-sm mt-1.5 text-primary-text bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
+                <div onClick={() => setOpenModal(true)} className="cursor-pointer group/addressItem flex rounded-lg justify-between space-x-3 items-center mt-1.5 text-primary-text bg-secondary-700 disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
                     <AddressWithIcon
-                        addressItem={{ address: activeWallet?.address || '', group: AddressGroup.ConnectedWallet }}
+                        addressItem={{ address: selectedSourceAccount?.address || '', group: AddressGroup.ConnectedWallet }}
                         connectedWallet={selectedWallet}
                         network={source_network}
                         balance={(walletBalanceAmount !== undefined && source_asset) ? { amount: walletBalanceAmount, symbol: source_asset?.symbol, isLoading: isBalanceLoading } : undefined}

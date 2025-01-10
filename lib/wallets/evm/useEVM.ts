@@ -25,6 +25,7 @@ import { InternalConnector, Wallet, WalletProvider } from "../../../Models/Walle
 import { useConnectModal } from "../../../components/WalletModal"
 import { explicitInjectedproviderDetected } from "../connectors/getInjectedConnector"
 import { type ConnectorAlreadyConnectedError } from '@wagmi/core'
+import { useSwapDataState } from "../../../context/swap"
 
 type Props = {
     network: Network | undefined,
@@ -37,7 +38,8 @@ export default function useEVM({ network }: Props): WalletProvider {
     const id = 'evm'
     const { networks } = useSettingsState()
     const config = useConfig()
-
+    const { selectedSourceAccount } = useSwapDataState()
+    const account = selectedSourceAccount
     const asSourceSupportedNetworks = [
         ...networks.filter(network => network.type === NetworkType.EVM).map(l => l.name),
         KnownInternalNames.Networks.ZksyncMainnet,
@@ -200,8 +202,6 @@ export default function useEVM({ network }: Props): WalletProvider {
             throw new Error("Account not found")
     }
 
-    const account = resolvedConnectors.find(w => w.isActive)
-
     const createPreHTLC = async (params: CreatePreHTLCParams) => {
         const { destinationChain, destinationAsset, sourceAsset, lpAddress, address, amount, decimals, atomicContract, chainId } = params
 
@@ -227,6 +227,7 @@ export default function useEVM({ network }: Props): WalletProvider {
         const abi = sourceAsset.contract ? ERC20PHTLCAbi : PHTLCAbi
 
         let simulationData: any = {
+            account: account.address as `0x${string}`,
             abi: abi,
             address: atomicContract,
             functionName: 'commit',
@@ -251,6 +252,7 @@ export default function useEVM({ network }: Props): WalletProvider {
                 sourceAsset.contract
             ]
             const allowance = await readContract(config, {
+                account: account.address as `0x${string}`,
                 abi: IMTBLZKERC20,
                 address: sourceAsset.contract as `0x${string}`,
                 functionName: 'allowance',
@@ -260,6 +262,7 @@ export default function useEVM({ network }: Props): WalletProvider {
 
             if (Number(allowance) < parsedAmount) {
                 const res = await writeContract(config, {
+                    account: account.address as `0x${string}`,
                     abi: IMTBLZKERC20,
                     address: sourceAsset.contract as `0x${string}`,
                     functionName: 'approve',
@@ -387,7 +390,10 @@ export default function useEVM({ network }: Props): WalletProvider {
             timelock: timeLock,
         };
 
+        if (!account?.address) throw new Error("Wallet not connected")
+
         const signature = await signTypedData(config, {
+            account: account.address as `0x${string}`,
             domain, types, message,
             primaryType: "addLockMsg"
         });
@@ -414,7 +420,10 @@ export default function useEVM({ network }: Props): WalletProvider {
         const { chainId, id, contractAddress, type } = params
         const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
 
+        if (!account?.address) throw new Error("Wallet not connected")
+
         const { request } = await simulateContract(config, {
+            account: account.address as `0x${string}`,
             abi: abi,
             address: contractAddress,
             functionName: 'refund',
@@ -434,7 +443,10 @@ export default function useEVM({ network }: Props): WalletProvider {
         const { chainId, id, contractAddress, type, secret } = params
         const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
 
+        if (!account?.address) throw new Error("Wallet not connected")
+
         const { request } = await simulateContract(config, {
+            account: account.address as `0x${string}`,
             abi: abi,
             address: contractAddress,
             functionName: 'redeem',
