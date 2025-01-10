@@ -31,7 +31,6 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
     const networkWithTokens = networks.find(n => n.name === networkName)
     const { balance } = useSWRBalance(wallet?.address, networkWithTokens)
 
-
     useEffect(() => {
         setInsufficientFunds(false);
     }, [walletPublicKey]);
@@ -61,10 +60,14 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
 
             const insufficientTokensArr: string[] = []
 
-            if (network?.token && Number(nativeTokenBalanceAmount) < feeInSol) insufficientTokensArr.push(network.token?.symbol)
-            if (network?.token?.symbol !== token?.symbol && amount && token?.symbol && Number(tokenBalanceAmount) < amount) insufficientTokensArr.push(token?.symbol)
+            if (network?.token && (Number(nativeTokenBalanceAmount) < feeInSol || isNaN(Number(nativeTokenBalanceAmount)))) {
+                insufficientTokensArr.push(network.token?.symbol);
+            }
+            if (network?.token?.symbol !== token?.symbol && amount && token?.symbol && Number(tokenBalanceAmount) < amount) {
+                insufficientTokensArr.push(token?.symbol);
+            }
             setInsufficientTokens(insufficientTokensArr)
-
+            
             const signature = await configureAndSendCurrentTransaction(
                 transaction,
                 connection,
