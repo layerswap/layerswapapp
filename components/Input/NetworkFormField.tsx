@@ -222,7 +222,6 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
         const order = ResolveNetworkOrder(r, direction, isNewlyListed)
         const routeNotFound = isAvailable && !r.tokens?.some(r => r.status === 'active');
 
-        
         const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {
             baseObject: r,
             id: r.name,
