@@ -336,7 +336,9 @@ export class TokenPocketAdapter extends Adapter {
                 ready: window.tronWeb?.ready,
                 tronWeb: window.tokenpocket?.tronWeb,
             } as TokenPocketWallet;
-            address = this._wallet.tronWeb.defaultAddress?.base58 || null;
+            if (state === AdapterState.Connected) {
+                address = this._wallet.tronWeb.defaultAddress?.base58 || null;
+            }
             state = window.tronWeb?.ready ? AdapterState.Connected : AdapterState.Disconnect;
             if (!window.tronWeb?.ready) {
                 this.checkForWalletReady();

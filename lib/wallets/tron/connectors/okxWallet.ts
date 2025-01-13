@@ -367,7 +367,9 @@ export class OkxWalletAdapter extends Adapter {
         if (supportOkxWallet()) {
             this._wallet = window.okxwallet!.tronLink;
             this._listenEvent();
-            address = this._wallet.tronWeb?.defaultAddress?.base58 || null;
+            if (state === AdapterState.Connected) {
+                address = this._wallet.tronWeb.defaultAddress?.base58 || null;
+            }
             state = this._wallet.ready ? AdapterState.Connected : AdapterState.Disconnect;
         } else {
             this._wallet = null;
