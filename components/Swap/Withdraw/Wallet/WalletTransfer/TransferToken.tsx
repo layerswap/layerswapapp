@@ -100,7 +100,7 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     }, [transaction, estimatedGas, depositAddress, amount, callData])
 
     const isError = transaction.isError
-    return <>
+    return <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
         {
             buttonClicked &&
             <TransactionMessage
@@ -157,7 +157,7 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
                 </MessageComponent.Buttons>
             </MessageComponent>
         </Modal>
-    </>
+    </div>
 }
 
 export default TransferTokenButton
