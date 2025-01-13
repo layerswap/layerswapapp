@@ -226,11 +226,16 @@ export default class getOptimismGas extends getEVMGas {
 
     resolveGas = async () => {
 
+        const gasPrice = await this.client.getGasPrice()
+
         const gas = await this.client.estimateTotalFee({
             account: this.account,
             gasPriceOracleAddress: this.from.metadata.evm_oracle_contract as `0x${string}`,
+            chain: this.chain,
+            gasPrice: gasPrice as any,
         })
-        const formattedGas = formatAmount(gas, this.nativeToken?.decimals)
+        const baseFeeMultiplier = NetworkSettings.KnownSettings[this.from.name]?.BaseFeeMultiplier ?? 1.2
+        const formattedGas = formatAmount(gas, this.nativeToken?.decimals) * baseFeeMultiplier
 
         return formattedGas
     }
