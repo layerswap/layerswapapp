@@ -94,7 +94,7 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
 
     return (
         <ValidationContext.Provider
-            value={{ validationMessage: '', validationDetails: {} }}
+            value={{ validationMessage, validationDetails }}
         >
             {children}
         </ValidationContext.Provider>
