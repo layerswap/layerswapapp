@@ -225,19 +225,66 @@ export default class getOptimismGas extends getEVMGas {
     }).extend(publicActionsL2())
 
     resolveGas = async () => {
+        const feeData = await this.resolveFeeData()
 
-        const gasPrice = await this.client.getGasPrice()
+        const estimatedGasLimit = this.contract_address ?
+            await this.estimateERC20GasLimit()
+            : await this.estimateNativeGasLimit()
 
-        const gas = await this.client.estimateTotalFee({
-            account: this.account,
-            gasPriceOracleAddress: this.from.metadata.evm_oracle_contract as `0x${string}`,
-            chain: this.chain,
-            gasPrice: gasPrice as any,
-        })
-        const baseFeeMultiplier = NetworkSettings.KnownSettings[this.from.name]?.BaseFeeMultiplier ?? 1.2
-        const formattedGas = formatAmount(gas, this.nativeToken?.decimals) * baseFeeMultiplier
+        const multiplier = feeData.maxFeePerGas || feeData.gasPrice
 
+        if (!multiplier)
+            return undefined
+
+        let totalGas = (multiplier * estimatedGasLimit) + await this.GetOpL1Fee()
+
+        const formattedGas = formatAmount(totalGas, this.nativeToken?.decimals)
         return formattedGas
+    }
+
+    private GetOpL1Fee = async (): Promise<bigint> => {
+        const amount = BigInt(1000)
+        let serializedTransaction: TransactionSerializedEIP1559
+
+        if (this.contract_address) {
+            let encodedData = encodeFunctionData({
+                abi: erc20Abi,
+                functionName: "transfer",
+                args: [this.destination, amount]
+            })
+
+            if (encodedData) {
+                encodedData = this.constructSweeplessTxData(encodedData)
+            }
+
+            serializedTransaction = serializeTransaction({
+                client: this.client,
+                abi: erc20Abi,
+                functionName: "transfer",
+                chainId: this.chainId,
+                args: [this.destination, amount],
+                to: this.contract_address,
+                data: encodedData,
+                type: 'eip1559',
+            }) as TransactionSerializedEIP1559
+        }
+        else {
+            serializedTransaction = serializeTransaction({
+                client: this.client,
+                chainId: this.chainId,
+                to: this.destination,
+                data: this.constructSweeplessTxData(),
+                type: 'eip1559',
+            }) as TransactionSerializedEIP1559
+        }
+
+        const fee = await getL1Fee({
+            data: serializedTransaction,
+            client: this.client,
+            oracleContract: this.from.metadata.evm_oracle_contract
+        })
+
+        return fee;
     }
 
 }
@@ -252,7 +299,6 @@ import {
     BlockTag,
 } from 'viem'
 import resolveChain from "../../resolveChain";
-import NetworkSettings from "../../NetworkSettings";
 
 /**
  * Options to query a specific block
