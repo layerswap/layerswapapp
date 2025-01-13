@@ -32,8 +32,6 @@ export default function useTron(): WalletProvider {
         icon: resolveWalletConnectorIcon({ connector: name, address, iconUrl: tronWallet.adapter.icon }),
         disconnect: () => disconnectWallet(),
         connect: () => connectWallet(),
-        withdrawalSupportedNetworks: commonSupportedNetworks,
-        asSourceSupportedNetworks: commonSupportedNetworks,
         autofillSupportedNetworks: commonSupportedNetworks,
     } : undefined
 
@@ -75,8 +73,6 @@ export default function useTron(): WalletProvider {
                 connect: () => connectWallet(),
                 isActive: true,
                 addresses: [connectedAddress],
-                withdrawalSupportedNetworks: commonSupportedNetworks,
-                asSourceSupportedNetworks: commonSupportedNetworks,
                 autofillSupportedNetworks: commonSupportedNetworks,
             } : undefined
             return wallet
@@ -112,9 +108,7 @@ export default function useTron(): WalletProvider {
         activeAccountAddress: wallet?.address,
         connectedWallets: getWallet(),
         activeWallet: wallet,
-        withdrawalSupportedNetworks: commonSupportedNetworks,
         autofillSupportedNetworks: commonSupportedNetworks,
-        asSourceSupportedNetworks: commonSupportedNetworks,
         name,
         id,
     }
