@@ -80,7 +80,7 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
     if (isLoading) {
         return <TransactionMessages.ConfirmTransactionMessage />
     }
-    else if (error === "An error occurred (USER_REFUSED_OP)") {
+    else if (error === "An error occurred (USER_REFUSED_OP)" || error === "Execute failed") {
         return <TransactionMessages.TransactionRejectedMessage />
     }
     else if (error === "failedTransfer") {
