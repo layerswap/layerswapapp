@@ -230,8 +230,7 @@ export default class getOptimismGas extends getEVMGas {
             account: this.account,
             gasPriceOracleAddress: this.from.metadata.evm_oracle_contract as `0x${string}`,
         })
-        const baseFeeMultiplier = NetworkSettings.KnownSettings[this.from.name]?.BaseFeeMultiplier ?? 1.2
-        const formattedGas = formatAmount(gas, this.nativeToken?.decimals) * baseFeeMultiplier
+        const formattedGas = formatAmount(gas, this.nativeToken?.decimals)
 
         return formattedGas
     }
