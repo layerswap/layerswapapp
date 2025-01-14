@@ -12,6 +12,7 @@ import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient'
 import { useEthersSigner } from '../../../../../lib/ethersToViem/ethers';
 import toast from 'react-hot-toast';
 import WalletIcon from '../../../../icons/WalletIcon';
+import AuhorizeEthereum from '../../../../../lib/wallets/paradex/Authorize/Ethereum';
 
 const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, token, callData, swapId }) => {
 
@@ -29,47 +30,12 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, token, callD
 
     const ethersSigner = useEthersSigner()
 
-    const handleAuthorize = useCallback(async () => {
-
-        if (!ethersSigner) return
-
-        try {
-
-            const environment = process.env.NEXT_PUBLIC_API_VERSION === 'sandbox' ? 'testnet' : 'prod'
-            const config = await Paradex.Config.fetchConfig(environment);
-
-            const paraclearProvider = new Paradex.ParaclearProvider.DefaultProvider(config);
-
-            function ethersSignerAdapter(signer: typeof ethersSigner) {
-                return {
-                    async signTypedData(typedData: TypedData) {
-                        return await signer!._signTypedData(typedData.domain, typedData.types, typedData.message);
-                    },
-                };
-            }
-            const signer = ethersSignerAdapter(ethersSigner);
-
-            if (!signer) throw new Error('Signer not found');
-
-            const account = await Paradex.Account.fromEthSigner({
-                provider: paraclearProvider,
-                config,
-                signer: signer,
-            });
-
-            return account
-        } catch (e) {
-            throw new Error(e.message)
-        }
-
-    }, [Paradex, setLoading, ethersSigner])
-
     const handleTransfer = async () => {
-        if (!token || !amount || !callData || !swapId) return
-        setLoading(true)
+        if (!token || !amount || !callData || !swapId || !ethersSigner) return
 
+        setLoading(true)
         try {
-            const account = await handleAuthorize()
+            const account = await AuhorizeEthereum(ethersSigner)
 
             if (!account) throw new Error('Account not found')
 

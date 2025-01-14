@@ -15,6 +15,9 @@ type SignatureFormat =
   | 'braavos-v1.0.0-stark-signer'
   | 'braavos-v1.0.0-strong-signer'
   | 'braavos-v1.0.0-multisig'
+  | 'braavos-v1.1.0-stark-signer'
+  | 'braavos-v1.1.0-strong-signer'
+  | 'braavos-v1.1.0-multisig'
   | 'braavos-multi-owner-v1.0.0'
   | 'unknown';
 
@@ -115,7 +118,7 @@ export class AccountSupport {
       return 'argent-multisig-v0.2.0';
     }
 
-    // https://github.com/myBraavos/braavos-cairo/blob/6efdfd597bb051e99c79a512fccd14ee2523c898/README_MOA.md
+    // https://github.com/myBraavos/braavos-account-cairo/blob/6efdfd597bb051e99c79a512fccd14ee2523c898/README_MOA.md
     if (
       this.testClassHash(
         '0x041bf1e71792aecb9df3e9d04e1540091c5e13122a731e02bec588f71dc1a5c3',
@@ -124,7 +127,7 @@ export class AccountSupport {
       return 'braavos-multi-owner-v1.0.0';
     }
 
-    // https://github.com/myBraavos/braavos-cairo/tree/v1.0.0
+    // https://github.com/myBraavos/braavos-account-cairo/tree/v1.0.0
     if (
       this.testClassHash(
         '0x00816dd0297efc55dc1e7559020a3a825e81ef734b558f03c83325d4da7e6253',
@@ -155,6 +158,40 @@ export class AccountSupport {
       return 'unknown';
     }
 
+    // New Braavos account contract, not available on GitHub
+    // Reported to be an upgrade to the previous Braavos account contract
+    // https://tradeparadigm.slack.com/archives/C06TRUBLSDB/p1731706968018819?thread_ts=1720108178.898199&cid=C06TRUBLSDB
+
+    if (
+      this.testClassHash(
+        '0x02c8c7e6fbcfb3e8e15a46648e8914c6aa1fc506fc1e7fb3d1e19630716174bc',
+      )
+    ) {
+      const multiSigThreshold = (await this.contract.call(
+        'get_multisig_threshold',
+      )) as bigint;
+
+      if (multiSigThreshold !== 0n) {
+        return 'braavos-v1.1.0-multisig';
+      }
+
+      const signers = (await this.contract.call('get_signers')) as {
+        readonly secp256r1?: string[];
+        readonly stark?: string[];
+        readonly webauthn?: string[];
+      };
+
+      if (signers.secp256r1 != null && signers.secp256r1.length > 0)
+        return 'braavos-v1.1.0-strong-signer';
+      if (signers.webauthn != null && signers.webauthn.length > 0)
+        return 'braavos-v1.1.0-strong-signer';
+
+      if (signers.stark != null && signers.stark.length === 1)
+        return 'braavos-v1.1.0-stark-signer';
+
+      return 'unknown';
+    }
+
     return 'unknown';
   }
 
@@ -166,6 +203,7 @@ export class AccountSupport {
       case 'argent-v0.3.1':
       case 'argent-v0.4.0-starknet-signer':
       case 'braavos-v1.0.0-stark-signer':
+      case 'braavos-v1.1.0-stark-signer':
         return { ok: true };
       case 'argent-v0.4.0-secp256k1-signer':
         return {
@@ -200,11 +238,13 @@ export class AccountSupport {
           reason: 'Argent multisig is not supported',
         };
       case 'braavos-v1.0.0-strong-signer':
+      case 'braavos-v1.1.0-strong-signer':
         return {
           ok: false,
           reason: 'Braavos strong signer is not supported',
         };
       case 'braavos-v1.0.0-multisig':
+      case 'braavos-v1.1.0-multisig':
         return {
           ok: false,
           reason: 'Braavos multisig is not supported',
@@ -254,7 +294,8 @@ export class AccountSupport {
         throw new Error('Unsupported Argent signature');
       }
 
-      case 'braavos-v1.0.0-stark-signer': {
+      case 'braavos-v1.0.0-stark-signer':
+      case 'braavos-v1.1.0-stark-signer': {
         if (segments.length === 2) {
           const [r, _s] = segments;
           if (r == null)
@@ -279,7 +320,9 @@ export class AccountSupport {
       case 'argent-multisig-v0.1.1':
       case 'argent-multisig-v0.2.0':
       case 'braavos-v1.0.0-strong-signer':
+      case 'braavos-v1.1.0-strong-signer':
       case 'braavos-v1.0.0-multisig':
+      case 'braavos-v1.1.0-multisig':
       case 'braavos-multi-owner-v1.0.0':
         throw new Error(`${this.signatureFormat} is not supported`);
 
