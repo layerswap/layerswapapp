@@ -19,6 +19,8 @@ import RouteIcon from "./RouteIcon";
 import { useSwapDataState } from "../../context/swap";
 import useSWRBalance from "../../lib/balances/useSWRBalance";
 import { useSettingsState } from "../../context/settings";
+import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
+import { groupByType } from "./CEXNetworkFormField";
 
 const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -138,12 +140,20 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     return (
         <div className="relative">
-            <PopoverSelectWrapper
+            <CommandSelectWrapper
+                disabled={isLoading || isLocked || false}
+                valueGrouper={groupByType}
                 placeholder="Asset"
-                values={currencyMenuItems}
-                value={value}
                 setValue={handleSelect}
-                disabled={isLoading || isLocked}
+                value={value}
+                values={currencyMenuItems!}
+                searchHint=''
+                isLoading={isLoading}
+                modalHeight="full"
+                //valueDetails={valueDetails}
+                //modalContent={networkDetails}
+                key={value?.id}
+                //header={header}
             />
         </div>
     )
