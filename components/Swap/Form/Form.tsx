@@ -96,19 +96,11 @@ const SwapForm: FC<Props> = ({ partner }) => {
         { rotate: 0 },
         { rotate: 180 }
     );
-    const { sourceExchanges: cachedSourceExchanges, destinationExchanges: cachedDestinationExchanges, destinationRoutes: cachedDestinationRoutes, sourceRoutes: cachedSourceRoutes } = useSettingsState();
+    const { sourceExchanges, destinationExchanges, destinationRoutes, sourceRoutes } = useSettingsState();
 
-    const sourceRoutesEndpoint = resolveRoutesURLForSelectedToken({ direction: 'from', network: source?.name, token: fromCurrency?.symbol, includes: { unavailable: true, unmatched: true } })
-    const destinationRoutesEndpoint = resolveRoutesURLForSelectedToken({ direction: 'to', network: destination?.name, token: toCurrency?.symbol, includes: { unavailable: true, unmatched: true } })
-    const exchangeRoutesURL = resolveExchangesURLForSelectedToken(fromExchange ? 'from' : 'to', values)
 
-    const { data: sourceRoutes, isLoading: sourceLoading } = useSWR<ApiResponse<RouteNetwork[]>>(sourceRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true, dedupingInterval: 10000 })
-    const { data: destinationRoutes, isLoading: destinationLoading } = useSWR<ApiResponse<RouteNetwork[]>>(destinationRoutesEndpoint, layerswapApiClient.fetcher, { keepPreviousData: true, dedupingInterval: 10000 })
-    const { data: sourceExchanges, isLoading: sourceExchnagesDataLoading } = useSWR<ApiResponse<Exchange[]>>(exchangeRoutesURL, layerswapApiClient.fetcher, { keepPreviousData: true, fallbackData: { data: cachedSourceExchanges }, dedupingInterval: 10000 })
-    const { data: destinationExchanges, isLoading: destinationExchnagesDataLoading } = useSWR<ApiResponse<Exchange[]>>(exchangeRoutesURL, layerswapApiClient.fetcher, { keepPreviousData: true, fallbackData: { data: cachedDestinationExchanges }, dedupingInterval: 10000 })
-
-    const sourceCanBeSwapped = !source ? true : (destinationRoutes?.data?.some(l => l.name === source?.name && l.tokens.some(t => t.symbol === fromCurrency?.symbol && t.status === 'active')) ?? false)
-    const destinationCanBeSwapped = !destination ? true : (sourceRoutes?.data?.some(l => l.name === destination?.name && l.tokens.some(t => t.symbol === toCurrency?.symbol && t.status === 'active')) ?? false)
+    const sourceCanBeSwapped = !source ? true : (destinationRoutes?.some(l => l.name === source?.name && l.tokens.some(t => t.symbol === fromCurrency?.symbol && t.status === 'active')) ?? false)
+    const destinationCanBeSwapped = !destination ? true : (sourceRoutes?.some(l => l.name === destination?.name && l.tokens.some(t => t.symbol === toCurrency?.symbol && t.status === 'active')) ?? false)
 
     if (query.lockTo || query.lockFrom || query.hideTo || query.hideFrom) {
         valuesSwapperDisabled = true;
@@ -126,16 +118,16 @@ const SwapForm: FC<Props> = ({ partner }) => {
         let newToExchangeToken: ExchangeToken | undefined
 
         if (toExchange) {
-            newFromExchange = sourceExchanges?.data?.find(e => e.name === toExchange?.name)
+            newFromExchange = sourceExchanges?.find(e => e.name === toExchange?.name)
             newFromExchangeToken = newFromExchange?.token_groups.find(t => t.symbol === fromCurrency?.symbol)
         }
         if (fromExchange) {
-            newToExchange = destinationExchanges?.data?.find(e => e.name === fromExchange?.name)
+            newToExchange = destinationExchanges?.find(e => e.name === fromExchange?.name)
             newToExchangeToken = newToExchange?.token_groups.find(t => t.symbol === toCurrency?.symbol)
         }
 
-        const newFrom = sourceRoutes?.data?.find(l => l.name === destination?.name)
-        const newTo = destinationRoutes?.data?.find(l => l.name === source?.name)
+        const newFrom = sourceRoutes?.find(l => l.name === destination?.name)
+        const newTo = destinationRoutes?.find(l => l.name === source?.name)
         const newFromToken = newFrom?.tokens.find(t => t.symbol === toCurrency?.symbol)
         const newToToken = newTo?.tokens.find(t => t.symbol === fromCurrency?.symbol)
 
@@ -206,19 +198,15 @@ const SwapForm: FC<Props> = ({ partner }) => {
                         <button
                             type="button"
                             aria-label="Reverse the source and destination"
-                            disabled={valuesSwapperDisabled || sourceLoading || destinationLoading || destinationExchnagesDataLoading || sourceExchnagesDataLoading}
+                            disabled={valuesSwapperDisabled}
                             onClick={valuesSwapper}
-                            className={`${sourceLoading || destinationLoading || destinationExchnagesDataLoading || sourceExchnagesDataLoading ? "" : "hover:text-primary"} absolute right-[calc(50%-16px)] top-[122px] z-10 border-2 border-secondary-700 bg-secondary-600 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
+                            className={`hover:text-primary absolute right-[calc(50%-16px)] top-[122px] z-10 border-2 border-secondary-700 bg-secondary-600 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
                             <motion.div
                                 animate={animate}
                                 transition={{ duration: 0.3 }}
                                 onTap={() => !valuesSwapperDisabled && cycle()}
                             >
-                                {sourceLoading || destinationLoading || destinationExchnagesDataLoading || sourceExchnagesDataLoading ?
-                                    <Loader2 className="opacity-50 w-7 h-auto p-1 bg-secondary-500 rounded-lg disabled:opacity-30 animate-spin" />
-                                    :
-                                    <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-500 rounded-lg disabled:opacity-30")} />
-                                }
+                                <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-500 rounded-lg disabled:opacity-30")} />
                             </motion.div>
                         </button>}
                     {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">

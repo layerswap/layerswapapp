@@ -26,7 +26,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
 
-    const { from, to, fromCurrency, toCurrency, destination_address, currencyGroup } = values
+    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, destination_address, currencyGroup } = values
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const query = useQueryState()
     const { selectedSourceAccount } = useSwapDataState()
@@ -36,18 +36,21 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     const { balance } = useSWRBalance(address, direction === 'from' ? from : to)
 
-    const networkRoutesURL = resolveNetworkRoutesURL(direction, values)
+    const shouldFilter = direction === 'from' ? ((to && toCurrency) || (toExchange && currencyGroup)) : ((from && fromCurrency) || (fromExchange && currencyGroup))
+    const networkRoutesURL = shouldFilter ? resolveNetworkRoutesURL(direction, values) : null
 
     const apiClient = new LayerSwapApiClient()
     const {
-        data: routes,
+        data: routesFromQuery,
         isLoading,
         error
-    } = useSWR<ApiResponse<RouteNetwork[]>>(networkRoutesURL, apiClient.fetcher, { keepPreviousData: true, dedupingInterval: 10000, fallbackData: { data: direction === 'from' ? sourceRoutes : destinationRoutes }, })
+    } = useSWR<ApiResponse<RouteNetwork[]>>(networkRoutesURL, apiClient.fetcher, { keepPreviousData: true, fallbackData: { data: direction === 'from' ? sourceRoutes : destinationRoutes }, dedupingInterval: 10000 })
 
+    const routes = (shouldFilter) ? routesFromQuery : (direction === 'from' ? { data: sourceRoutes } : { data: destinationRoutes })
     const currencies = direction === 'from' ? routes?.data?.find(r => r.name === from?.name)?.tokens : routes?.data?.find(r => r.name === to?.name)?.tokens;
+
     const currencyMenuItems = GenerateCurrencyMenuItems(
-        currencies!,
+        currencies,
         values,
         direction,
         balance || [],
@@ -114,7 +117,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     useEffect(() => {
         if (name === "toCurrency" && toCurrency && !isLoading && routes) {
             const value = routes.data?.find(r => r.name === to?.name)?.tokens?.find(r => r.symbol === toCurrency?.symbol)
-            if (!value) return
+            if (!value || value === toCurrency) return
 
             setFieldValue(name, value)
         }
@@ -123,7 +126,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     useEffect(() => {
         if (name === "fromCurrency" && fromCurrency && !isLoading && routes) {
             const value = routes.data?.find(r => r.name === from?.name)?.tokens?.find(r => r.symbol === fromCurrency?.symbol)
-            if (!value) return
+            if (!value || value === fromCurrency) return
 
             setFieldValue(name, value)
         }
@@ -150,7 +153,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 };
 
 function GenerateCurrencyMenuItems(
-    currencies: RouteToken[],
+    currencies: RouteToken[] | undefined,
     values: SwapFormValues,
     direction: string,
     balances?: Balance[],
@@ -192,7 +195,7 @@ function GenerateCurrencyMenuItems(
         };
 
         return res
-    }).sort(SortAscending);
+    }).sort(SortAscending) || [];
 }
 
 export default CurrencyFormField
