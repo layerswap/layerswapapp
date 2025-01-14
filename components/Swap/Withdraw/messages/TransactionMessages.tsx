@@ -30,6 +30,13 @@ const TransactionRejectedMessage: FC = () => {
         details={`You've rejected the transaction in your wallet. Click “Try again” to open the prompt again.`} />
 }
 
+const TransactionFailedMessage: FC = () => {
+    return <WalletMessage
+        status="error"
+        header='Transaction failed'
+        details={`Transfer failed or terminated`} />
+}
+
 const WaletMismatchMessage: FC<{ address: string }> = ({ address }) => {
     return <WalletMessage
         status="error"
@@ -51,6 +58,7 @@ const TransactionMessages = {
     InsufficientFundsMessage,
     TransactionRejectedMessage,
     WaletMismatchMessage,
+    TransactionFailedMessage,
     UexpectedErrorMessage
 }
 

@@ -377,7 +377,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             className='w-full inline-flex items-center gap-2 justify-center py-2.5 px-3 text-xl font-semibold bg-primary hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-lg text-primary-text'
                         >
                             <p>
-                                Complete Swap
+                                {swap.status == SwapStatus.LsTransferPending ? "View Swap" : "Complete Swap"}
                             </p>
                         </button>
                     }
