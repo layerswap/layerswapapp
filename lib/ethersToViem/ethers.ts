@@ -5,7 +5,7 @@ import { providers } from 'ethers'
 import { WalletClient } from 'viem'
 import { useMemo } from 'react'
 
-function walletClientToSigner(walletClient: WalletClient) {
+export function walletClientToSigner(walletClient: WalletClient) {
     const { account, chain, transport } = walletClient
 
     if (!chain) throw new Error('Chain not found in public client')

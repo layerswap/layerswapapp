@@ -54,7 +54,7 @@ export default function useStarknet(): WalletProvider {
 
     const connectConnector = async ({ connector }) => {
         toast.dismiss('connect-wallet')
-
+        
         try {
             const starknetConnector = connectors.find(c => c.id === connector.id)
 
