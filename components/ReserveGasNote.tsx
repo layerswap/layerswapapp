@@ -35,7 +35,7 @@ const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: Balance, netwo
                     (Number(walletBalance.amount) < Number(networkGas)) ?
                         <WarningMessage messageType="warning" className="mt-4">
                             <div className="font-normal text-primary-text">
-                                You don't have enough funds to cover gas fees.
+                                You don&apos;t have enough funds to cover gas fees.
                             </div>
                         </WarningMessage>
                         :
