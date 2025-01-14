@@ -20,25 +20,39 @@ const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: Balance, netwo
 
     const walletBalance = selectedSourceAccount && balance?.find(b => b?.network === values?.from?.name && b?.token === values?.fromCurrency?.symbol)
 
-    const mightBeAutOfGas = !!(networkGas && walletBalance?.isNativeCurrency && (Number(values.amount)
+    const mightBeOutOfGas = !!(networkGas && walletBalance?.isNativeCurrency && (Number(values.amount)
         + networkGas) > walletBalance.amount
         && minAllowedAmount
         && walletBalance.amount > minAllowedAmount
     )
-    const gasToReserveFormatted = mightBeAutOfGas ? truncateDecimals(networkGas, values?.fromCurrency?.precision) : 0
+    const gasToReserveFormatted = mightBeOutOfGas ? truncateDecimals(networkGas, values?.fromCurrency?.precision) : 0
 
     return (
-        mightBeAutOfGas && gasToReserveFormatted > 0 &&
-        <WarningMessage messageType="warning" className="mt-4">
-            <div className="font-normal text-primary-text">
-                <div>
-                    You might not be able to complete the transaction.
-                </div>
-                <div onClick={() => onSubmit(walletBalance, networkGas)} className="cursor-pointer border-b border-dotted border-primary-text w-fit hover:text-primary hover:border-primary text-primary-text">
-                    <span>Reserve</span> <span>{gasToReserveFormatted.toFixed(values.fromCurrency?.precision)}</span> <span>{values?.fromCurrency?.symbol}</span> <span>for gas.</span>
-                </div>
-            </div>
-        </WarningMessage>
+        <>
+            {
+                mightBeOutOfGas && gasToReserveFormatted > 0 &&
+                (
+                    (Number(walletBalance.amount) < Number(networkGas)) ?
+                        <WarningMessage messageType="warning" className="mt-4">
+                            <div className="font-normal text-primary-text">
+                                You don't have enough funds to cover gas fees.
+                            </div>
+                        </WarningMessage>
+                        :
+                        <WarningMessage messageType="warning" className="mt-4">
+                            <div className="font-normal text-primary-text">
+                                <div>
+                                    You might not be able to complete the transaction.
+                                </div>
+                                <div onClick={() => onSubmit(walletBalance, networkGas)} className="cursor-pointer border-b border-dotted border-primary-text w-fit hover:text-primary hover:border-primary text-primary-text">
+                                    <span>Reserve</span> <span>{gasToReserveFormatted.toFixed(values.fromCurrency?.precision)}</span> <span>{values?.fromCurrency?.symbol}</span> <span>for gas.</span>
+                                </div>
+                            </div>
+                        </WarningMessage>
+                )
+            }
+        </>
+
     )
 }
 
