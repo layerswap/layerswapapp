@@ -94,7 +94,7 @@ export default function useParadex({ network }: Props): WalletProvider {
                 toast.error('Wallet is already connected.')
             }
             else {
-                toast.error('Error connecting wallet')
+                toast.error(e.message)
             }
             throw new Error(e)
         }
