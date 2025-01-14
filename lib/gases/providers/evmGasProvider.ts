@@ -7,6 +7,7 @@ import { erc20Abi } from "viem";
 import { datadogRum } from "@datadog/browser-rum";
 import formatAmount from "../../formatAmount";
 import { publicActionsL2 } from 'viem/op-stack'
+import resolveChain from "../../resolveChain";
 
 export class EVMGasProvider implements Provider {
     supportsNetwork(network: Network): boolean {
@@ -236,13 +237,13 @@ export default class getOptimismGas extends getEVMGas {
         if (!multiplier)
             return undefined
 
-        let totalGas = (multiplier * estimatedGasLimit) + await this.GetOpL1Fee()
+        let totalGas = (multiplier * estimatedGasLimit) + await this.GetOpL1Fee(feeData.gasPrice!)
 
         const formattedGas = formatAmount(totalGas, this.nativeToken?.decimals)
         return formattedGas
     }
 
-    private GetOpL1Fee = async (): Promise<bigint> => {
+    private GetOpL1Fee = async (gasPrice: bigint): Promise<bigint> => {
         const amount = BigInt(1000)
         let serializedTransaction: TransactionSerializedEIP1559
 
@@ -278,63 +279,15 @@ export default class getOptimismGas extends getEVMGas {
             }) as TransactionSerializedEIP1559
         }
 
-        const fee = await getL1Fee({
+        const fee = await this.client.estimateL1Fee({
             data: serializedTransaction,
-            client: this.client,
-            oracleContract: this.from.metadata.evm_oracle_contract
-        })
+            to: this.destination,
+            account: this.account,
+            gasPriceOracleAddress: this.from.metadata.evm_oracle_contract as `0x${string}`,
+            gasPrice: gasPrice as any
+        }) 
 
         return fee;
     }
 
-}
-
-//from https://github.com/ethereum-optimism/optimism/blob/develop/packages/fee-estimation/src/estimateFees.ts
-import {
-    gasPriceOracleABI,
-    gasPriceOracleAddress,
-} from '@eth-optimism/contracts-ts'
-import {
-    getContract,
-    BlockTag,
-} from 'viem'
-import resolveChain from "../../resolveChain";
-
-/**
- * Options to query a specific block
- */
-type BlockOptions = {
-    /**
-     * Block number to query from
-     */
-    blockNumber?: bigint
-    /**
-     * Block tag to query from
-     */
-    blockTag?: BlockTag
-}
-
-/**
- * Get gas price Oracle contract
- */
-const getGasPriceOracleContract = (client: PublicClient, oracleContract?: `0x${string}` | null) => {
-    return getContract({
-        address: oracleContract || gasPriceOracleAddress['420'],
-        abi: gasPriceOracleABI,
-        client
-    })
-}
-
-/**
- * Computes the L1 portion of the fee based on the size of the rlp encoded input
- * transaction, the current L1 base fee, and the various dynamic parameters.
- * @example
- * const L1FeeValue = await getL1Fee(data, params);
- */
-const getL1Fee = async (options: { data: `0x02${string}`, client: PublicClient, oracleContract: `0x${string}` | null | undefined } & BlockOptions) => {
-    const contract = getGasPriceOracleContract(options.client, options.oracleContract)
-    return contract.read.getL1Fee([options.data], {
-        blockNumber: options.blockNumber,
-        blockTag: options.blockTag,
-    })
 }
