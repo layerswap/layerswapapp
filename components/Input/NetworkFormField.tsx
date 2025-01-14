@@ -67,9 +67,10 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     let searchHint = "";
     let menuItems: (SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean })[];
 
-    const networkRoutesURL = resolveNetworkRoutesURL(direction, values)
-    const apiClient = new LayerSwapApiClient()
+    const shouldFilter = direction === 'from' ? ((to && toCurrency) || (toExchange && currencyGroup)) : ((from && fromCurrency) || (fromExchange && currencyGroup))
+    const networkRoutesURL = shouldFilter ? resolveNetworkRoutesURL(direction, values) : null
 
+    const apiClient = new LayerSwapApiClient()
     const {
         data: routes,
         isLoading,
@@ -78,7 +79,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
 
     const [routesData, setRoutesData] = useState<RouteNetwork[] | undefined>(direction === 'from' ? sourceRoutes : destinationRoutes)
 
-    const exchangeRoutesURL = resolveExchangesURLForSelectedToken(direction, values)
+    const exchangeRoutesURL = shouldFilter ? resolveExchangesURLForSelectedToken(direction, values) : null
     const {
         data: exchanges,
         isLoading: exchnagesDataLoading,
@@ -116,7 +117,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             return
         if (item.isExchange) {
             setFieldValue(name, null)
-            setFieldValue(`${name}Currency`, null)
+            // setFieldValue(`${name}Currency`, null)
             setFieldValue(`${name}Exchange`, item.baseObject, true)
         } else {
             setFieldValue(`${name}Exchange`, null)
@@ -144,7 +145,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                             !value?.isExchange &&
                             <span><Address partner={partner} >{
                                 ({ destination, disabled, addressItem, connectedWallet, partner }) => <DestinationWalletPicker destination={destination} disabled={disabled} addressItem={addressItem} connectedWallet={connectedWallet} partner={partner} />
-                            }</Address></span> 
+                            }</Address></span>
                         }
                     </>
             }
