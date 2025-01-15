@@ -1,9 +1,7 @@
-import { FC, useCallback, useState } from 'react'
+import { FC, useState } from 'react'
 import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from '../WalletTransfer/buttons';
 import useWallet from '../../../../../hooks/useWallet';
 import { WithdrawPageProps } from '../WalletTransferContent';
-import * as Paradex from "@paradex/sdk";
-import { TypedData } from '@paradex/sdk/dist/ethereum-signer';
 import { useAccount } from 'wagmi';
 import { useSettingsState } from '../../../../../context/settings';
 import KnownInternalNames from '../../../../../lib/knownIds';
