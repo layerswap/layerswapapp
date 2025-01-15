@@ -14,9 +14,9 @@ import { walletClientToSigner } from "../../ethersToViem/ethers"
 import AuhorizeEthereum from "./Authorize/Ethereum"
 import { getWalletClient } from '@wagmi/core'
 import { useConfig } from "wagmi"
-import { mainnet } from "viem/chains"
 import { usePersistedState } from "../../../hooks/usePersistedState"
 import { LOCAL_STORAGE_KEY } from "./lib/constants"
+import { useSettingsState } from "../../../context/settings"
 
 type Props = {
     network: Network | undefined,
@@ -25,6 +25,7 @@ type Props = {
 export default function useParadex({ network }: Props): WalletProvider {
     const name = 'paradex'
     const id = 'prdx'
+    const { networks } = useSettingsState()
     const selectedProvider = useWalletStore((state) => state.selectedProveder)
     const selectProvider = useWalletStore((state) => state.selectProvider)
     const [paradexAddresses, updateParadexAddresses] = usePersistedState<{ [key: string]: string }>({}, LOCAL_STORAGE_KEY);
@@ -59,8 +60,13 @@ export default function useParadex({ network }: Props): WalletProvider {
                 if (!connectionResult) return
                 selectProvider(evmProvider.name)
                 if (!paradexAddresses[connectionResult.address.toLowerCase()]) {
+                    const l1Network = networks.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
+                    const l1ChainId = Number(l1Network?.chain_id)
+                    if (!Number(l1ChainId)) {
+                        throw Error("Could not find ethereum network")
+                    }
                     const client = await getWalletClient(config, {
-                        chainId: mainnet.id,
+                        chainId: l1ChainId,
                     })
                     const ethersSigner = walletClientToSigner(client)
                     if (!ethersSigner) {
