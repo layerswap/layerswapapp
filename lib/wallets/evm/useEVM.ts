@@ -224,7 +224,7 @@ export default function useEVM(): WalletProvider {
     const addLock = async (params: CommitmentParams & LockParams) => {
         const { chainId, id, hashlock, contractAddress, type } = params
 
-        const LOCK_TIME = 1000 * 60 * 15 // 15 minutes
+        const LOCK_TIME = 1000 * 60 * 16 // 16 minutes
         const timeLockMS = Date.now() + LOCK_TIME
         const timeLock = Math.floor(timeLockMS / 1000)
 
