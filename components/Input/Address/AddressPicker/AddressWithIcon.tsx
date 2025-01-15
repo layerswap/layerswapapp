@@ -116,6 +116,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
 type ExtendedAddressProps = {
     address: string;
     network?: Network;
+    isForCurrency?: boolean;
     addressClassNames?: string;
     onDisconnect?: () => void;
 }
@@ -132,7 +133,7 @@ const calculateMaxWidth = (balance: string | undefined) => {
     }
 };
 
-export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, addressClassNames, onDisconnect }) => {
+export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, isForCurrency, addressClassNames, onDisconnect }) => {
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
 
@@ -144,7 +145,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, ad
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <div className="group-hover/addressItem:underline hover:text-secondary-text transition duration-200 no-underline flex gap-1 items-center cursor-pointer">
-                                    <p className={`block text-sm font-medium ${addressClassNames}`}>
+                                    <p className={`${isForCurrency ? "text-xs self-end" : "text-sm"} block font-medium`}>
                                         {shortenAddress(address)}
                                     </p>
                                     <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4" />
@@ -158,14 +159,16 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, ad
                 </PopoverTrigger>
                 <PopoverContent className="w-full p-2 flex flex-col gap-1 items-stretch" side="top">
                     <div onClick={(e) => { e.stopPropagation(), setCopied(address) }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
-                        <p>
-                            Copy address
-                        </p>
-                        {
-                            isCopied ?
-                                <Check className="h-4 w-4" />
-                                : <Copy className="w-4 h-4" />
-                        }
+                        {!isForCurrency && (<div onClick={(e) => { e.stopPropagation(), setCopied(address) }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
+                            <p>
+                                Copy address
+                            </p>
+                            {
+                                isCopied ?
+                                    <Check className="h-4 w-4" />
+                                    : <Copy className="w-4 h-4" />
+                            }
+                        </div>)}
                     </div>
                     {
                         network &&

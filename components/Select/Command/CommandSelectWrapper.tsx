@@ -13,6 +13,7 @@ type CommandSelectWrapperProps = {
     searchHint: string;
     disabled: boolean;
     valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
+    groupedCurrencies?: SelectMenuItemGroup[];
     isLoading: boolean;
     modalHeight?: LeafletHeight;
     valueDetails?: React.ReactNode;
@@ -20,6 +21,7 @@ type CommandSelectWrapperProps = {
     modalContent?: React.ReactNode;
     direction?: string;
     header?: string;
+    walletComp?: React.ReactNode;
 }
 
 export default function CommandSelectWrapper<T>({
@@ -30,11 +32,13 @@ export default function CommandSelectWrapper<T>({
     searchHint,
     values,
     valueGrouper,
+    groupedCurrencies,
     isLoading,
     modalHeight,
     modalContent,
     header,
-    valueDetails
+    valueDetails,
+    walletComp
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
@@ -94,11 +98,12 @@ export default function CommandSelectWrapper<T>({
                 value={value}
                 searchHint={searchHint}
                 valueGrouper={valueGrouper}
+                groupedCurrencies={groupedCurrencies}
                 values={values}
                 isLoading={isLoading}
                 modalHeight={modalHeight}
                 modalContent={modalContent}
-                header={header}
+                walletComp={walletComp}
             />
         </>
     )
