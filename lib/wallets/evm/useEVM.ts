@@ -102,7 +102,7 @@ export default function useEVM(): WalletProvider {
     const createPreHTLC = async (params: CreatePreHTLCParams) => {
         const { destinationChain, destinationAsset, sourceAsset, lpAddress, address, amount, decimals, atomicContract, chainId } = params
 
-        const LOCK_TIME = 1000 * 60 * 15 // 15 minutes
+        const LOCK_TIME = 1000 * 60 * 16 // 16 minutes
         const timeLockMS = Date.now() + LOCK_TIME
         const timeLock = Math.floor(timeLockMS / 1000)
 
@@ -123,6 +123,14 @@ export default function useEVM(): WalletProvider {
 
         const abi = sourceAsset.contract ? ERC20PHTLCAbi : PHTLCAbi
 
+        function generateBytes32Hex() {
+            const bytes = new Uint8Array(32); // 32 bytes = 64 hex characters
+            crypto.getRandomValues(bytes);
+            return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
+        const id = `0x${generateBytes32Hex()}`;
+
         let simulationData: any = {
             abi: abi,
             address: atomicContract,
@@ -135,6 +143,7 @@ export default function useEVM(): WalletProvider {
                 destinationAsset,
                 address,
                 sourceAsset.symbol,
+                id,
                 lpAddress,
                 timeLock,
             ],
@@ -174,10 +183,10 @@ export default function useEVM(): WalletProvider {
             simulationData.value = parsedAmount as any
         }
 
-        const { request, result } = await simulateContract(config, simulationData)
+        const { request } = await simulateContract(config, simulationData)
 
         const hash = await writeContract(config, request)
-        return { hash, commitId: (result as string) }
+        return { hash, commitId: id }
     }
 
     const claim = () => {
@@ -191,7 +200,7 @@ export default function useEVM(): WalletProvider {
         const result: any = await readContract(config, {
             abi: abi,
             address: contractAddress,
-            functionName: 'getDetails',
+            functionName: 'getHTLCDetails',
             args: [id],
             chainId: Number(chainId),
         })
@@ -214,7 +223,6 @@ export default function useEVM(): WalletProvider {
 
     const addLock = async (params: CommitmentParams & LockParams) => {
         const { chainId, id, hashlock, contractAddress, type } = params
-        const abi = type === 'erc20' ? ERC20PHTLCAbi : PHTLCAbi
 
         const LOCK_TIME = 1000 * 60 * 15 // 15 minutes
         const timeLockMS = Date.now() + LOCK_TIME
