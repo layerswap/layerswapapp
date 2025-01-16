@@ -76,9 +76,8 @@ export default function useParadex({ network }: Props): WalletProvider {
                     const paradexAccount = await AuhorizeEthereum(ethersSigner)
                     addParadexAccount({ l1Address: connectionResult.address, paradexAddress: paradexAccount.address })
                 }
-                const wallet: Wallet = { ...connectionResult, providerName: name }
                 selectProvider(evmProvider.name)
-                return wallet
+                return resolveSingleWallet(connectionResult, name, paradexAccounts, removeParadexAccount, paradexNetwork?.logo)
             }
             else if (isStarknet) {
                 const connectionResult = starknetProvider.connectConnector && await starknetProvider.connectConnector({ connector })
@@ -91,9 +90,8 @@ export default function useParadex({ network }: Props): WalletProvider {
                     const paradexAccount = await AuthorizeStarknet(snAccount)
                     addParadexAccount({ l1Address: connectionResult.address, paradexAddress: paradexAccount.address })
                 }
-                const wallet: Wallet = { ...connectionResult, providerName: name }
                 selectProvider(starknetProvider.name)
-                return wallet
+                return resolveSingleWallet(connectionResult, name, paradexAccounts, removeParadexAccount, paradexNetwork?.logo)
             }
         } catch (e) {
             //TODO: handle error like in transfer
@@ -133,10 +131,10 @@ export default function useParadex({ network }: Props): WalletProvider {
 
     const activeWallet = useMemo(() => {
         if (selectedProvider === starknetProvider.name && starknetProvider?.activeWallet) {
-            return { ...starknetProvider.activeWallet, providerName: name }
+            return resolveSingleWallet(starknetProvider.activeWallet, name, paradexAccounts, removeParadexAccount, paradexNetwork?.logo)
         }
         else if (selectedProvider === evmProvider.name && evmProvider?.activeWallet) {
-            return { ...evmProvider.activeWallet, providerName: name }
+            return resolveSingleWallet(evmProvider.activeWallet, name, paradexAccounts, removeParadexAccount, paradexNetwork?.logo)
         }
     }, [evmProvider.activeWallet, starknetProvider.activeWallet, selectedProvider])
 
