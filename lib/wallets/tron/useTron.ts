@@ -33,6 +33,8 @@ export default function useTron(): WalletProvider {
         disconnect: () => disconnectWallet(),
         connect: () => connectWallet(),
         autofillSupportedNetworks: commonSupportedNetworks,
+        withdrawalSupportedNetworks: commonSupportedNetworks,
+        asSourceSupportedNetworks: commonSupportedNetworks,
     } : undefined
 
     const getWallet = () => {
@@ -74,6 +76,8 @@ export default function useTron(): WalletProvider {
                 isActive: true,
                 addresses: [connectedAddress],
                 autofillSupportedNetworks: commonSupportedNetworks,
+                withdrawalSupportedNetworks: commonSupportedNetworks,
+                asSourceSupportedNetworks: commonSupportedNetworks,
             } : undefined
             return wallet
         }
@@ -109,6 +113,8 @@ export default function useTron(): WalletProvider {
         connectedWallets: getWallet(),
         activeWallet: wallet,
         autofillSupportedNetworks: commonSupportedNetworks,
+        withdrawalSupportedNetworks: commonSupportedNetworks,
+        asSourceSupportedNetworks: commonSupportedNetworks,
         name,
         id,
     }

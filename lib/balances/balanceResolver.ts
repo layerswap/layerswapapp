@@ -7,6 +7,7 @@ import { QueryBalanceProvider } from "./providers/queryBalanceProvider";
 import { SolanaBalanceProvider } from "./providers/solanaBalanceProvider";
 import { StarknetBalanceProvider } from "./providers/starknetBalanceProvider";
 import { TonBalanceProvider } from "./providers/tonBalanceProvider";
+import { TronBalanceProvider } from "./providers/tronBalanceResolver";
 import { ZkSyncBalanceProvider } from "./providers/zkSyncBalanceProvider";
 
 export class BalanceResolver {
@@ -19,7 +20,8 @@ export class BalanceResolver {
         new LoopringBalanceProvider(),
         new SolanaBalanceProvider(),
         new TonBalanceProvider(),
-        new ZkSyncBalanceProvider()
+        new ZkSyncBalanceProvider(),
+        new TronBalanceProvider()
     ];
 
     getBalance(address: string, network: NetworkWithTokens) {
