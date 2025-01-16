@@ -14,7 +14,7 @@ import { walletClientToSigner } from "../../ethersToViem/ethers"
 import AuhorizeEthereum from "./Authorize/Ethereum"
 import { getWalletClient } from '@wagmi/core'
 import { useConfig } from "wagmi"
-import { switchChain } from '@wagmi/core'
+import { switchChain, getChainId } from '@wagmi/core'
 import { useSettingsState } from "../../../context/settings"
 import shortenAddress from "../../../components/utils/ShortenAddress"
 
@@ -67,7 +67,24 @@ export default function useParadex({ network }: Props): WalletProvider {
                     if (!Number(l1ChainId)) {
                         throw Error("Could not find ethereum network")
                     }
-                    await switchChain(config, { chainId: l1ChainId })
+                    const chainId = await getChainId(config)
+                    if (l1ChainId !== chainId) {
+                        try {
+                            await sleep(1000)
+                            await switchChain(config, { chainId: l1ChainId })
+                        }
+                        catch (e) {
+                            await getChainId(config)
+                            await sleep(1000)
+                            const chainId = await getChainId(config)
+
+                            if (l1ChainId !== chainId) {
+                                throw Error("Could not switch to ethereum network")
+                            }
+                        }
+                        await sleep(1000)
+                    }
+                    await sleep(1000)
                     const client = await getWalletClient(config)
                     const ethersSigner = walletClientToSigner(client)
                     if (!ethersSigner) {
@@ -173,4 +190,8 @@ const resolveSingleWallet = (wallet: Wallet, name: string, accounts: { [key: str
         disconnect: () => disconnect(wallet.address),
         networkIcon
     }
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
