@@ -25,12 +25,12 @@ type Props = {
 export default function useParadex({ network }: Props): WalletProvider {
     const name = 'paradex'
     const id = 'prdx'
+    const { networks } = useSettingsState()
     const selectedProvider = useWalletStore((state) => state.selectedProveder)
     const selectProvider = useWalletStore((state) => state.selectProvider)
     const paradexAccounts = useWalletStore((state) => state.paradexAccounts)
     const addParadexAccount = useWalletStore((state) => state.addParadexAccount)
     const removeParadexAccount = useWalletStore((state) => state.removeParadexAccount)
-    const { networks } = useSettingsState()
     const paradexNetwork = networks.find(n => n.name === KnownInternalNames.Networks.ParadexMainnet || n.name === KnownInternalNames.Networks.ParadexTestnet)
     const withdrawalSupportedNetworks = [
         KnownInternalNames.Networks.ParadexMainnet,
