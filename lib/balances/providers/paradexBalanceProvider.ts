@@ -1,9 +1,7 @@
 import { Balance } from "../../../Models/Balance";
 import { NetworkWithTokens } from "../../../Models/Network";
-import { checkStorageIsAvailable } from "../../../helpers/storageAvailable";
 import KnownInternalNames from "../../knownIds";
 import * as Paradex from "../../wallets/paradex/lib";
-import { LOCAL_STORAGE_KEY } from "../../wallets/paradex/lib/constants";
 
 export class ParadexBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
@@ -13,10 +11,6 @@ export class ParadexBalanceProvider {
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
 
         try {
-            const paradexAccounts = checkStorageIsAvailable("localStorage") && window.localStorage?.getItem(LOCAL_STORAGE_KEY);
-            const paradexAddress = paradexAccounts && JSON.parse(paradexAccounts)[address.toLowerCase()]
-            if (!network?.tokens || !paradexAddress) return
-
             const environment = process.env.NEXT_PUBLIC_API_VERSION === 'sandbox' ? 'testnet' : 'prod'
             const config = await Paradex.Config.fetchConfig(environment);
 
@@ -29,7 +23,7 @@ export class ParadexBalanceProvider {
                 const getBalanceResult = await Paradex.Paraclear.getTokenBalance({
                     provider: paraclearProvider, //account can be passed as the provider
                     config,
-                    account: { address: paradexAddress },
+                    account: { address },
                     token: token.symbol,
                 });
                 const balance = {
@@ -41,8 +35,8 @@ export class ParadexBalanceProvider {
                     isNativeCurrency: false
                 }
                 result.push(balance)
-            }
 
+            }
             return result
         }
         catch (e) {

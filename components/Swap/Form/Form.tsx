@@ -64,7 +64,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
 
     const { validationMessage } = useValidationContext();
 
-    const layerswapApiClient = new LayerSwapApiClient()
     const query = useQueryState();
     let valuesSwapperDisabled = false;
 
