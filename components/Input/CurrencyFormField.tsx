@@ -100,6 +100,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         wallets,
         error
     );
+    console.log(networkGroupedCurrencies)
     const currencyAsset = direction === 'from' ? fromCurrency?.symbol : toCurrency?.symbol;
     const currencyNetwork = allCurrencies?.find(c => c.symbol === currencyAsset && c.network_name === from?.name)?.network_name
 

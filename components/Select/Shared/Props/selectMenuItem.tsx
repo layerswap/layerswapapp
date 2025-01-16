@@ -3,10 +3,11 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     name: string;
     order: number;
     imgSrc: string;
-    displayName?: React.ReactNode;
+    displayName?: string;
     logo?: React.ReactNode;
     noWalletsConnectedText?: React.ReactNode;
     extendedAddress?: React.ReactNode;
+    subItems?: ISelectMenuItem[];
     isAvailable: boolean;
     group?: string;
     details?: JSX.Element | JSX.Element[];
@@ -29,10 +30,11 @@ export interface ISelectMenuItem {
     id: string;
     name: string;
     imgSrc: string;
-    displayName?: React.ReactNode;
+    displayName?: string;
     logo?: React.ReactNode;
     noWalletsConnectedText?: React.ReactNode;
     extendedAddress?: React.ReactNode;
+    subItems?: ISelectMenuItem[];
     group?: string;
     isAvailable: boolean;
     details?: JSX.Element | JSX.Element[];
