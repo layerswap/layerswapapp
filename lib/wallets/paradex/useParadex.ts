@@ -14,9 +14,9 @@ import { walletClientToSigner } from "../../ethersToViem/ethers"
 import AuhorizeEthereum from "./Authorize/Ethereum"
 import { getWalletClient } from '@wagmi/core'
 import { useConfig } from "wagmi"
-import { usePersistedState } from "../../../hooks/usePersistedState"
-import { LOCAL_STORAGE_KEY } from "./lib/constants"
+import { switchChain } from '@wagmi/core'
 import { useSettingsState } from "../../../context/settings"
+import shortenAddress from "../../../components/utils/ShortenAddress"
 
 type Props = {
     network: Network | undefined,
@@ -28,8 +28,10 @@ export default function useParadex({ network }: Props): WalletProvider {
     const { networks } = useSettingsState()
     const selectedProvider = useWalletStore((state) => state.selectedProveder)
     const selectProvider = useWalletStore((state) => state.selectProvider)
-    const [paradexAddresses, updateParadexAddresses] = usePersistedState<{ [key: string]: string }>({}, LOCAL_STORAGE_KEY);
-
+    const paradexAccounts = useWalletStore((state) => state.paradexAccounts)
+    const addParadexAccount = useWalletStore((state) => state.addParadexAccount)
+    const removeParadexAccount = useWalletStore((state) => state.removeParadexAccount)
+    const paradexNetwork = networks.find(n => n.name === KnownInternalNames.Networks.ParadexMainnet || n.name === KnownInternalNames.Networks.ParadexTestnet)
     const withdrawalSupportedNetworks = [
         KnownInternalNames.Networks.ParadexMainnet,
         KnownInternalNames.Networks.ParadexTestnet,
@@ -49,6 +51,7 @@ export default function useParadex({ network }: Props): WalletProvider {
     }
     const config = useConfig()
 
+
     const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
 
         try {
@@ -58,40 +61,37 @@ export default function useParadex({ network }: Props): WalletProvider {
             if (isEvm) {
                 const connectionResult = evmProvider.connectConnector && await evmProvider.connectConnector({ connector })
                 if (!connectionResult) return
-                selectProvider(evmProvider.name)
-                if (!paradexAddresses[connectionResult.address.toLowerCase()]) {
+                if (!paradexAccounts?.[connectionResult.address.toLowerCase()]) {
                     const l1Network = networks.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
                     const l1ChainId = Number(l1Network?.chain_id)
                     if (!Number(l1ChainId)) {
                         throw Error("Could not find ethereum network")
                     }
-                    const client = await getWalletClient(config, {
-                        chainId: l1ChainId,
-                    })
+                    await switchChain(config, { chainId: l1ChainId })
+                    const client = await getWalletClient(config)
                     const ethersSigner = walletClientToSigner(client)
                     if (!ethersSigner) {
                         throw Error("Could not initialize ethers signer")
                     }
                     const paradexAccount = await AuhorizeEthereum(ethersSigner)
-                    updateParadexAddresses({ ...paradexAddresses, [connectionResult.address.toLowerCase()]: paradexAccount.address })
+                    addParadexAccount({ l1Address: connectionResult.address, paradexAddress: paradexAccount.address })
                 }
-                const wallet: Wallet = { ...connectionResult, providerName: name }
-                return wallet
+                selectProvider(evmProvider.name)
+                return resolveSingleWallet(connectionResult, name, paradexAccounts, removeParadexAccount, paradexNetwork?.logo)
             }
             else if (isStarknet) {
                 const connectionResult = starknetProvider.connectConnector && await starknetProvider.connectConnector({ connector })
                 if (!connectionResult) return
-                selectProvider(starknetProvider.name)
-                if (!paradexAddresses[connectionResult.address.toLowerCase()]) {
+                if (!paradexAccounts?.[connectionResult.address.toLowerCase()]) {
                     const snAccount = connectionResult.metadata?.starknetAccount
                     if (!snAccount) {
                         throw Error("Starknet account not found")
                     }
                     const paradexAccount = await AuthorizeStarknet(snAccount)
-                    updateParadexAddresses({ ...paradexAddresses, [connectionResult.address.toLowerCase()]: paradexAccount.address })
+                    addParadexAccount({ l1Address: connectionResult.address, paradexAddress: paradexAccount.address })
                 }
-                const wallet: Wallet = { ...connectionResult, providerName: name }
-                return wallet
+                selectProvider(starknetProvider.name)
+                return resolveSingleWallet(connectionResult, name, paradexAccounts, removeParadexAccount, paradexNetwork?.logo)
             }
         } catch (e) {
             //TODO: handle error like in transfer
@@ -106,20 +106,19 @@ export default function useParadex({ network }: Props): WalletProvider {
         }
     }
 
-    const paradexL1Addresses = useMemo(() => Object.keys(paradexAddresses), [paradexAddresses])
     const connectedWallets = useMemo(() => {
         return [
-            ...(evmProvider.connectedWallets ?
-                evmProvider.connectedWallets.filter(w => w.addresses.some(wa => paradexL1Addresses.some(pa => pa.toLowerCase() === wa.toLowerCase()))).map(w => ({ ...w, providerName: name })) : []),
-            ...(starknetProvider?.connectedWallets ?
-                starknetProvider.connectedWallets.filter(w => w.addresses.some(wa => paradexL1Addresses.some(pa => pa.toLowerCase() === wa.toLowerCase()))).map(w => ({ ...w, providerName: name })) : [])]
-    }, [evmProvider, starknetProvider, paradexL1Addresses])
+            ...resolveWalletsList(evmProvider.connectedWallets, paradexAccounts, name, removeParadexAccount, paradexNetwork?.logo),
+            ...resolveWalletsList(starknetProvider.connectedWallets, paradexAccounts, name, removeParadexAccount, paradexNetwork?.logo)
+        ]
+    }, [evmProvider, starknetProvider, paradexAccounts])
 
     const availableWalletsForConnect = useMemo(() => {
         return [...(evmProvider.availableWalletsForConnect ? evmProvider.availableWalletsForConnect : []), ...(starknetProvider?.availableWalletsForConnect ? starknetProvider.availableWalletsForConnect : [])]
     }, [evmProvider, starknetProvider])
 
     const switchAccount = async (wallet: Wallet, address: string) => {
+
         if (evmProvider.connectedWallets?.some(w => w.address.toLowerCase() === address.toLowerCase()) && evmProvider.switchAccount) {
             evmProvider.switchAccount(wallet, address)
             selectProvider(evmProvider.name)
@@ -131,11 +130,11 @@ export default function useParadex({ network }: Props): WalletProvider {
     }
 
     const activeWallet = useMemo(() => {
-        if (selectedProvider === starknetProvider.name) {
-            return starknetProvider?.activeWallet
+        if (selectedProvider === starknetProvider.name && starknetProvider?.activeWallet) {
+            return resolveSingleWallet(starknetProvider.activeWallet, name, paradexAccounts, removeParadexAccount, paradexNetwork?.logo)
         }
-        else if (selectedProvider === evmProvider.name) {
-            return evmProvider?.activeWallet
+        else if (selectedProvider === evmProvider.name && evmProvider?.activeWallet) {
+            return resolveSingleWallet(evmProvider.activeWallet, name, paradexAccounts, removeParadexAccount, paradexNetwork?.logo)
         }
     }, [evmProvider.activeWallet, starknetProvider.activeWallet, selectedProvider])
 
@@ -144,14 +143,34 @@ export default function useParadex({ network }: Props): WalletProvider {
         connectConnector,
         switchAccount,
         connectedWallets,
-        activeWallet: activeWallet,
+        activeWallet,
         withdrawalSupportedNetworks,
-        availableWalletsForConnect: availableWalletsForConnect as any,
+        availableWalletsForConnect,
         name,
         id,
-        isWrapper: true
     }
 
     return provider
 }
 
+const resolveWalletsList = (wallets: Wallet[] | undefined, accounts: { [key: string]: string } | undefined, name: string, disconnect: (address: string) => void, networkIcon?: string) => {
+    const l1Addresses = Object.keys(accounts || {})
+    if (!l1Addresses.length || !wallets?.length) return []
+    return wallets.filter(w => w.addresses.some(wa => l1Addresses.some(pa => pa.toLowerCase() === wa.toLowerCase())))
+        .map(w => (resolveSingleWallet(w, name, accounts, disconnect, networkIcon))).filter(w => w) as Wallet[]
+}
+
+const resolveSingleWallet = (wallet: Wallet, name: string, accounts: { [key: string]: string } | undefined, disconnect: (address: string) => void, networkIcon?: string): Wallet | undefined => {
+    const paradexAddress = accounts?.[wallet.address.toLowerCase()]
+    if (!paradexAddress) return
+    const displayName = `${wallet.id} (${shortenAddress(wallet.address)})`
+    return {
+        ...wallet,
+        providerName: name,
+        displayName,
+        address: paradexAddress,
+        addresses: [paradexAddress],
+        disconnect: () => disconnect(wallet.address),
+        networkIcon
+    }
+}
