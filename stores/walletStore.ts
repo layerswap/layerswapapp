@@ -2,6 +2,10 @@ import { create } from 'zustand'
 import { Wallet } from '../Models/WalletProvider';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+type ParadexAccount = {
+    l1Address: string,
+    paradexAddress: string
+}
 interface WalletState {
     connectedWallets: Wallet[];
     connectWallet: (wallet: Wallet) => void;
@@ -9,14 +13,18 @@ interface WalletState {
     selectedProveder?: string;
     selectProvider: (providerName: string) => void;
     paradexAccounts?: { [key: string]: string };
-    addParadexAccount: (v: { [key: string]: string }) => void;
-
+    addParadexAccount: (v: ParadexAccount) => void;
+    removeParadexAccount: (address: string) => void;
 }
 
 export const useWalletStore = create<WalletState>()(persist((set) => ({
     connectedWallets: [],
     selectProvider: (providerName) => set({ selectedProveder: providerName }),
-    addParadexAccount: (value) => set((state) => ({ paradexAccounts: { ...state.paradexAccounts, ...value } })),
+    addParadexAccount: (value) => set((state) => ({ paradexAccounts: { ...state.paradexAccounts, ...{ [value.l1Address.toLowerCase()]: value.paradexAddress } } })),
+    removeParadexAccount: (value) => set((state) => {
+        const { [value.toLowerCase()]: _, ...updatedAccounts } = state.paradexAccounts || {};
+        return { paradexAccounts: updatedAccounts }
+    }),
     //    As we are calling this method for adding wallets to the store from provider hooks,
     // in some providers they are called from useEffect hooks so are triggered multiple times,
     // we check if the wallet is already connected do not modify the state
