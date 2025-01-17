@@ -66,11 +66,7 @@ const Commitment: FC<ContainerProps> = (props) => {
                                     receiveAmount={receiveAmount}
                                 />
                             }
-                            {
-                                !commitId &&
-                                <ConnectedWallet />
-                            }
-
+                            <ConnectedWallet />
                         </div>
                     </div>
                 </ResizablePanel>

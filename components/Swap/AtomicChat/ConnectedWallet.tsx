@@ -13,7 +13,7 @@ import { useSettingsState } from "../../../context/settings";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 
 const Component: FC = () => {
-    const { source_asset, source_network } = useAtomicState()
+    const { source_asset, source_network, commitId } = useAtomicState()
     const { selectedSourceAccount } = useSwapDataState()
     const { setSelectedSourceAccount } = useSwapDataUpdate()
     const { provider } = useWallet(source_network, 'withdrawal')
@@ -53,45 +53,47 @@ const Component: FC = () => {
     const walletBalance = source_network && balance?.find(b => b?.network === source_network?.name && b?.token === source_asset?.symbol)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_asset?.precision)
 
-    return <>
-        <div className="grid content-end">
+    return (
+        !commitId &&
+        <>
+            <div className="grid content-end">
+                {
+                    selectedWallet &&
+                    source_network &&
+                    <div onClick={() => setOpenModal(true)} className="cursor-pointer group/addressItem flex rounded-lg justify-between space-x-3 items-center mt-1.5 text-primary-text bg-secondary-700 disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
+                        <AddressWithIcon
+                            addressItem={{ address: selectedSourceAccount?.address || '', group: AddressGroup.ConnectedWallet }}
+                            connectedWallet={selectedWallet}
+                            network={source_network}
+                            balance={(walletBalanceAmount !== undefined && source_asset) ? { amount: walletBalanceAmount, symbol: source_asset?.symbol, isLoading: isBalanceLoading } : undefined}
+                        />
+                        <ChevronRight className="h-4 w-4" />
+                    </div>
+                }
+            </div>
             {
-                selectedWallet &&
                 source_network &&
-                <div onClick={() => setOpenModal(true)} className="cursor-pointer group/addressItem flex rounded-lg justify-between space-x-3 items-center mt-1.5 text-primary-text bg-secondary-700 disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
-                    <AddressWithIcon
-                        addressItem={{ address: selectedSourceAccount?.address || '', group: AddressGroup.ConnectedWallet }}
-                        connectedWallet={selectedWallet}
-                        network={source_network}
-                        balance={(walletBalanceAmount !== undefined && source_asset) ? { amount: walletBalanceAmount, symbol: source_asset?.symbol, isLoading: isBalanceLoading } : undefined}
-                    />
-                    <ChevronRight className="h-4 w-4" />
-                </div>
+                source_asset &&
+                provider &&
+                provider.connectedWallets &&
+                <VaulDrawer
+                    show={openModal}
+                    setShow={setOpenModal}
+                    header={`Send from`}
+                    modalId="connectedWallets"
+                >
+                    <VaulDrawer.Snap id='item-1'>
+                        <WalletsList
+                            network={source_network}
+                            token={source_asset}
+                            onSelect={changeWallet}
+                            selectable
+                            wallets={provider.connectedWallets}
+                            provider={provider}
+                        />
+                    </VaulDrawer.Snap>
+                </VaulDrawer>
             }
-        </div>
-        {
-            source_network &&
-            source_asset &&
-            provider &&
-            provider.connectedWallets &&
-            <VaulDrawer
-                show={openModal}
-                setShow={setOpenModal}
-                header={`Send from`}
-                modalId="connectedWallets"
-            >
-                <VaulDrawer.Snap id='item-1'>
-                    <WalletsList
-                        network={source_network}
-                        token={source_asset}
-                        onSelect={changeWallet}
-                        selectable
-                        wallets={provider.connectedWallets}
-                        provider={provider}
-                    />
-                </VaulDrawer.Snap>
-            </VaulDrawer>
-        }
-    </>
+        </>)
 }
 export default Component;
