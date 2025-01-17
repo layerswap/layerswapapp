@@ -1,4 +1,4 @@
-import { FC, useEffect } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { Network, Token } from "../../../../Models/Network";
 import { useAtomicState } from "../../../../context/atomicContext";
 import SubmitButton from "../../../buttons/submitButton";
@@ -8,6 +8,7 @@ import { WalletProvider } from "../../../../Models/WalletProvider";
 export const LpLockingAssets: FC = () => {
     const { destination_network, commitId, setDestinationDetails, destination_asset, lightClient, sourceDetails } = useAtomicState()
     const { provider } = useWallet(destination_network, 'autofil')
+    const isLoading = useRef(false)
 
     const atomicContract = (destination_asset?.contract ? destination_network?.metadata.htlc_token_contract : destination_network?.metadata.htlc_native_contract) as `0x${string}`
 
@@ -79,11 +80,12 @@ export const LpLockingAssets: FC = () => {
 
     useEffect(() => {
         (async () => {
-            if (provider && destination_network && commitId && destination_asset) {
+            if (provider && destination_network && commitId && destination_asset && !isLoading.current) {
+                isLoading.current = true
                 await getDetails({ provider, network: destination_network, commitId, asset: destination_asset })
             }
         })()
-    }, [provider, destination_network, commitId])
+    }, [provider, destination_network, commitId, isLoading])
 
     return <SubmitButton
         isDisabled={true}
