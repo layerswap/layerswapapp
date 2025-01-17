@@ -81,12 +81,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
     }, [toAsset, destination, source, fromAsset, currencyGroup])
 
     useEffect(() => {
-        (async () => {
-            (await import("../../Input/Address")).default
-        })()
-    }, [destination])
-
-    useEffect(() => {
         if (values.refuel && minAllowedAmount && (Number(values.amount) < minAllowedAmount)) {
             setFieldValue('amount', minAllowedAmount)
         }

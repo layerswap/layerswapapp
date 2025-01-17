@@ -29,7 +29,8 @@ export type LockParams = {
     hashlock: string,
     chainId: string,
     contractAddress: `0x${string}`,
-    lockDataResolver?: (data: any[]) => Commit
+    lockDataResolver?: (data: any[]) => Commit,
+    sourceAsset?: Token,
 }
 
 export type RefundParams = {

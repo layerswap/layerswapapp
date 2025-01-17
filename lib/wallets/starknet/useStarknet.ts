@@ -171,12 +171,21 @@ export default function useStarknet(): WalletProvider {
             )
             const increaseAllowanceCall: Call = erc20Contract.populate("increaseAllowance", [atomicAddress, parsedAmount])
 
+            function generateBytes32Hex() {
+                const bytes = new Uint8Array(32); // 32 bytes = 64 hex characters
+                crypto.getRandomValues(bytes);
+                return Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join('');
+            }
+
+            const id = BigInt(`0x${generateBytes32Hex()}`)
+
             const args = [
                 parsedAmount,
                 destinationChain,
                 destinationAsset,
                 address,
                 sourceAsset.symbol,
+                id,
                 lpAddress,
                 timeLock,
                 tokenContractAddress,
@@ -192,18 +201,11 @@ export default function useStarknet(): WalletProvider {
 
             const trx = (await starknetWallet?.metadata?.starknetAccount?.execute([increaseAllowanceCall, committmentCall]))
 
-            const commitTransactionData = await starknetWallet.metadata.starknetAccount.waitForTransaction(
+            await starknetWallet.metadata.starknetAccount.waitForTransaction(
                 trx.transaction_hash
             );
-            const parsedEvents = atomicContract.parseEvents(commitTransactionData);
-            const tokenCommitedEvent = parsedEvents.find((event: any) => event.TokenCommitted || event?.['htlc::Erc20github::HashedTimelockERC20::TokenCommitted'])
 
-            const Id = tokenCommitedEvent?.TokenCommitted?.Id || tokenCommitedEvent?.['htlc::Erc20github::HashedTimelockERC20::TokenCommitted']?.Id
-            if (!Id) {
-                throw new Error('No commit id')
-            }
-
-            const res = toHex(Id as bigint, { size: 32 })
+            const res = toHex(id as bigint, { size: 32 })
             return { hash: trx.transaction_hash as `0x${string}`, commitId: res as `0x${string}` }
         }
         catch (e) {
@@ -267,7 +269,7 @@ export default function useStarknet(): WalletProvider {
             })
         )
 
-        const result = await atomicContract.functions.getDetails(id)
+        const result = await atomicContract.functions.getHTLCDetails(id)
 
         if (!result) {
             throw new Error("No result")
@@ -282,7 +284,7 @@ export default function useStarknet(): WalletProvider {
             amount: formatAmount(Number(result.amount), networkToken?.decimals),
             hashlock: result.hashlock && toHex(result.hashlock, { size: 32 }),
             secret: result.secret || null,
-            claimed: result.refunded ? 2 : result.redeemed ? 3 : 1
+            claimed: result.claimed
         }
 
         return parsedResult

@@ -32,10 +32,6 @@ const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
     loading: () => <></>,
 });
 
-const Address = dynamic(() => import("../../Input/Address"), {
-    loading: () => <></>,
-});
-
 
 const SwapForm: FC<Props> = ({ partner }) => {
     const {
@@ -72,12 +68,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
             setFieldValue('refuel', false, true)
         }
     }, [toAsset, destination, source, fromAsset, currencyGroup])
-
-    useEffect(() => {
-        (async () => {
-            (await import("../../Input/Address")).default
-        })()
-    }, [destination])
 
     useEffect(() => {
         if (values.refuel && minAllowedAmount && (Number(values.amount) < minAllowedAmount)) {

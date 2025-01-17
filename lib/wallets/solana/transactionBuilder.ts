@@ -155,13 +155,13 @@ export const phtlcTransactionBuilder = async (params: CreatePreHTLCParams & { pr
 
 }
 
-export const lockTransactionBuilder = async (params: CommitmentParams & LockParams & { program: Program<Idl>, connection: Connection, walletPublicKey: PublicKey, destinationAsset: Token }) => {
-    const { walletPublicKey, id, connection, hashlock, program, destinationAsset } = params
+export const lockTransactionBuilder = async (params: CommitmentParams & LockParams & { program: Program<Idl>, connection: Connection, walletPublicKey: PublicKey }) => {
+    const { walletPublicKey, id, connection, hashlock, program, sourceAsset } = params
 
     if (!program) {
         throw Error("No program")
     }
-    if (!destinationAsset?.contract) {
+    if (!sourceAsset?.contract) {
         throw Error("No token contract")
     }
     if (!walletPublicKey) {
@@ -190,7 +190,7 @@ export const lockTransactionBuilder = async (params: CommitmentParams & LockPara
             sender: walletPublicKey,
             htlc,
             htlcTokenAccount: htlcTokenAccount,
-            tokenContract: new PublicKey(destinationAsset.contract),
+            tokenContract: new PublicKey(sourceAsset.contract),
         })
         .transaction();
 

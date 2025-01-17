@@ -63,7 +63,17 @@
     },
     {
         "inputs": [],
-        "name": "InvalidSigniture",
+        "name": "InvaliRewardTimelock",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "InvalidSignature",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "InvalidTimelock",
         "type": "error"
     },
     {
@@ -73,17 +83,12 @@
     },
     {
         "inputs": [],
-        "name": "NotFutureTimelock",
-        "type": "error"
-    },
-    {
-        "inputs": [],
         "name": "NotPassedTimelock",
         "type": "error"
     },
     {
         "inputs": [],
-        "name": "TransferFailed",
+        "name": "ReentrancyGuardReentrantCall",
         "type": "error"
     },
     {
@@ -246,6 +251,18 @@
                 "internalType": "uint256",
                 "name": "amount",
                 "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "reward",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint48",
+                "name": "rewardTimelock",
+                "type": "uint48"
             },
             {
                 "indexed": false,
@@ -419,6 +436,11 @@
                 "type": "string"
             },
             {
+                "internalType": "bytes32",
+                "name": "Id",
+                "type": "bytes32"
+            },
+            {
                 "internalType": "address",
                 "name": "srcReceiver",
                 "type": "address"
@@ -433,7 +455,7 @@
         "outputs": [
             {
                 "internalType": "bytes32",
-                "name": "Id",
+                "name": "",
                 "type": "bytes32"
             }
         ],
@@ -448,7 +470,7 @@
                 "type": "bytes32"
             }
         ],
-        "name": "getDetails",
+        "name": "getHTLCDetails",
         "outputs": [
             {
                 "components": [
@@ -502,11 +524,52 @@
                 "internalType": "bytes32",
                 "name": "Id",
                 "type": "bytes32"
+            }
+        ],
+        "name": "getRewardDetails",
+        "outputs": [
+            {
+                "components": [
+                    {
+                        "internalType": "uint256",
+                        "name": "amount",
+                        "type": "uint256"
+                    },
+                    {
+                        "internalType": "uint48",
+                        "name": "timelock",
+                        "type": "uint48"
+                    }
+                ],
+                "internalType": "struct LayerswapV8.Reward",
+                "name": "",
+                "type": "tuple"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "bytes32",
+                "name": "Id",
+                "type": "bytes32"
             },
             {
                 "internalType": "bytes32",
                 "name": "hashlock",
                 "type": "bytes32"
+            },
+            {
+                "internalType": "uint256",
+                "name": "reward",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint48",
+                "name": "rewardTimelock",
+                "type": "uint48"
             },
             {
                 "internalType": "uint48",

@@ -217,7 +217,7 @@ export default function useSolana({ network }: { network: Network | undefined })
         }
     }
 
-    const addLock = async (params: CommitmentParams & LockParams & { destinationAsset: Token }) => {
+    const addLock = async (params: CommitmentParams & LockParams) => {
 
         if (!program || !publicKey) return null
 
@@ -225,7 +225,6 @@ export default function useSolana({ network }: { network: Network | undefined })
 
         const signed = transaction?.lockCommit && signTransaction && await signTransaction(transaction.lockCommit);
         const signature = signed && await connection.sendRawTransaction(signed.serialize());
-
 
         if (signature) {
             const blockHash = await connection.getLatestBlockhash();
