@@ -20,7 +20,7 @@ async function initWorker(initConfigs) {
         const configEthereum = {
             executionRpc: `${initConfigs.version == 'sandbox' ? 'https://eth-sepolia.g.alchemy.com/v2/' : 'https://eth-mainnet.g.alchemy.com/v2/'}${initConfigs.alchemyKey}`,
             consensusRpc: initConfigs.hostname + '/api/consensusRpc',
-            checkpoint: initConfigs.version == 'sandbox' ? '0x81f12a3e1ba2ce7559d61320705b44888a102ccaf8e590547440daad74a6512d' : '0xf5a73de5020ab47bb6648dee250e60d6f031516327f4b858bc7f3e3ecad84c40',
+            checkpoint: initConfigs.version == 'sandbox' ? '0x527a8a4949bc2128d73fa4e2a022aa56881b2053ba83c900013a66eb7c93343e' : '0xf5a73de5020ab47bb6648dee250e60d6f031516327f4b858bc7f3e3ecad84c40',
             dbType: "localstorage",
             network: initConfigs.version == 'sandbox' ? 'sepolia' : 'ethereum'
         };
@@ -60,7 +60,7 @@ async function getCommit(commitConfigs) {
             let attempts = 0;
             getDetailsHandler = setInterval(async () => {
                 try {
-                    if (attempts > 15) {
+                    if (attempts > 40) {
                         clearInterval(getDetailsHandler);
                         self.postMessage({ type: 'commitDetails', data: null });
                         return;
