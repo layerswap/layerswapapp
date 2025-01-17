@@ -26,7 +26,7 @@ export class EVMBalanceProvider {
     
             const { createPublicClient, http } = await import("viem")
             const publicClient = createPublicClient({
-                chain,
+                chain: chain,
                 transport: http()
             })
     

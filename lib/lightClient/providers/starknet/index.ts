@@ -8,6 +8,8 @@ import { Network, Token } from "../../../../Models/Network"
 
 export default class StarknetLightClient extends _LightClient {
 
+    private worker: Worker
+
     private supportedNetworks = [
         KnownInternalNames.Networks.StarkNetMainnet,
         KnownInternalNames.Networks.StarkNetSepolia,
@@ -17,14 +19,60 @@ export default class StarknetLightClient extends _LightClient {
         return this.supportedNetworks.includes(network.name)
     }
 
-    init = async () => { return { initialized: false } }
-    getDetails = async ({ network, token, commitId, atomicContract }: { network: Network, token: Token, commitId: string, atomicContract: string }) => {
-        return new Promise((resolve: (value: Commit) => void, reject) => {
+    init({ network }: { network: Network }) {
+        return new Promise((resolve: (value: { initialized: boolean }) => void, reject) => {
             try {
-
-                const heliosWorker = new Worker('/workers/beerus/beerusWorker.js', {
+                const worker = new Worker('/workers/beerus/beerusWorker.js', {
                     type: 'module',
                 })
+
+                const workerMessage = {
+                    type: 'init',
+                    payload: {
+                        data: {
+                            initConfigs: {
+                                hostname: window.location.origin,
+                                network: network.name,
+                                alchemyKey: process.env.NEXT_PUBLIC_ALCHEMY_KEY,
+                                version: network.name.toLowerCase().includes('sepolia') ? 'sandbox' : 'mainnet'
+                            },
+                        },
+                    },
+                }
+                worker.postMessage(workerMessage)
+                this.worker = worker
+
+                worker.onmessage = (event) => {
+                    const result = event.data.data
+
+                    console.log('Worker event:', event)
+                    if (result.initialized) {
+                        resolve(result)
+                    } else {
+                        reject(result)
+                    }
+                }
+                worker.onerror = (error) => {
+                    reject(error)
+                    console.error('Worker error:', error)
+                }
+
+            } catch (error) {
+                console.error('Error connecting:', error);
+                reject(error); // Reject the promise if an exception is thrown
+            }
+        });
+    }
+    getDetails = async ({ network, token, commitId, atomicContract }: { network: Network, token: Token, commitId: string, atomicContract: string }) => {
+        return new Promise(async (resolve: (value: Commit) => void, reject) => {
+            try {
+
+                if (!this.worker) {
+                    const result = await this.init({ network })
+                    if (!result.initialized) {
+                        throw new Error('Worker could not be initialized')
+                    }
+                }
 
                 const workerMessage = {
                     type: 'init',
@@ -39,9 +87,9 @@ export default class StarknetLightClient extends _LightClient {
                         },
                     },
                 }
-                heliosWorker.postMessage(workerMessage)
+                this.worker.postMessage(workerMessage)
 
-                heliosWorker.onmessage = (event) => {
+                this.worker.onmessage = (event) => {
                     const result = event.data.data
                     const parsedResult: Commit = {
                         ...result,
@@ -52,7 +100,7 @@ export default class StarknetLightClient extends _LightClient {
                     console.log('Worker event:', event)
                     resolve(parsedResult)
                 }
-                heliosWorker.onerror = (error) => {
+                this.worker.onerror = (error) => {
                     reject(error)
                     console.error('Worker error:', error)
                 }

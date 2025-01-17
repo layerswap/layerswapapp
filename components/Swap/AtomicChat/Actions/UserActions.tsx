@@ -9,7 +9,7 @@ import { useRouter } from "next/router";
 
 export const UserCommitAction: FC = () => {
     const { source_network, destination_network, amount, address, source_asset, destination_asset, onCommit, commitId, setSourceDetails, setError } = useAtomicState();
-    const { provider, wallets } = useWallet(source_network, 'withdrawal')
+    const { provider } = useWallet(source_network, 'withdrawal')
     const wallet = provider?.activeWallet
 
     const atomicContract = (source_asset?.contract ? source_network?.metadata.htlc_token_contract : source_network?.metadata.htlc_native_contract) as `0x${string}`
@@ -195,14 +195,13 @@ export const UserLockAction: FC = () => {
         return () => clearInterval(commitHandler)
     }, [provider])
 
-
     return <div className="font-normal flex flex-col w-full relative z-10 space-y-4 grow">
         {
             userLocked ?
                 <ButtonStatus
                     isDisabled={true}
                 >
-                    Confirm in wallet
+                    Sign & Confirm
                 </ButtonStatus>
                 :
                 source_network && <WalletActionButton

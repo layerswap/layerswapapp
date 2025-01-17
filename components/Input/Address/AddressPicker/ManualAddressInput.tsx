@@ -99,7 +99,7 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
 
                 {
                     errorMessage &&
-                    <div className="basis-full w-full text-start text-xs text-primary">
+                    <div className="basis-full w-full text-start text-xs text-primary pt-1.5 pl-3">
                         {errorMessage}
                     </div>
                 }
