@@ -36,6 +36,8 @@ export default class EVMLightClient extends _LightClient {
                             initConfigs: {
                                 hostname: window.location.origin,
                                 network: network.name,
+                                alchemyKey: process.env.NEXT_PUBLIC_ALCHEMY_KEY,
+                                version: network.name.toLowerCase().includes('sepolia') ? 'sandbox' : 'mainnet'
                             },
                         },
                     },

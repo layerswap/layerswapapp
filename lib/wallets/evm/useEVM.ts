@@ -338,7 +338,7 @@ export default function useEVM({ network }: Props): WalletProvider {
             const result: any = await client.readContract({
                 abi: abi,
                 address: contractAddress,
-                functionName: 'getDetails',
+                functionName: 'getHTLCDetails',
                 args: [id],
             })
             return result

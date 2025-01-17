@@ -96,7 +96,6 @@ export function AtomicProvider({ children }) {
         if (destination_network && destination_network.chain_id === '11155111') {
             (async () => {
                 const lightClient = new LightClient()
-                console.log('init')
                 await lightClient.initProvider({ network: destination_network })
                 setLightClient(lightClient)
             })()
