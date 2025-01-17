@@ -25,9 +25,9 @@ const Address = ({ partner }: AddressProps) => {
     const { depositAddressIsFromAccount } = useSwapDataState()
     const { to: destination, toExchange, destination_address } = values
 
-    const layerswapApiClient = new LayerSwapApiClient()
-    const address_book_endpoint = authData?.access_token ? `/internal/recent_addresses` : null
-    const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
+    // const layerswapApiClient = new LayerSwapApiClient()
+    // const address_book_endpoint = authData?.access_token ? `/internal/recent_addresses` : null
+    // const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })
 
     const [showAddressModal, setShowAddressModal] = useState(false);
 
@@ -71,7 +71,7 @@ const Address = ({ partner }: AddressProps) => {
                 disabled={!values.to}
                 name={"destination_address"}
                 partner={partner}
-                address_book={address_book?.data}
+                // address_book={address_book?.data}
             />
         </div>
     )

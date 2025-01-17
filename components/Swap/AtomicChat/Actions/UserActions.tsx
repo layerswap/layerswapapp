@@ -154,7 +154,8 @@ export const UserLockAction: FC = () => {
                 id: commitId as string,
                 hashlock: destinationDetails?.hashlock,
                 contractAddress: atomicContract,
-                lockData: destinationDetails
+                lockData: destinationDetails,
+                sourceAsset: source_asset,
             })
 
             posthog.capture("Lock", {
