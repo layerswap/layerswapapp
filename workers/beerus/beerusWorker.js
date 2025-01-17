@@ -28,7 +28,7 @@ self.onmessage = async event => {
     if (request.hasOwnProperty('state')) {
         try {
             let state = await client.get_state();
-            self.postMessage(`{"id":${request.id},"result":${state}}`);    
+            self.postMessage(`{"id":${request.id},"result":${state}}`);
         } catch (e) {
             console.error(e);
             let error = sanitize(e.toString());
@@ -38,7 +38,7 @@ self.onmessage = async event => {
         let req = JSON.stringify(request['execute']);
         try {
             let result = await client.execute(req);
-            self.postMessage(`{"id":${request.id},"result":${result}}`);    
+            self.postMessage(`{"id":${request.id},"result":${result}}`);
         } catch (e) {
             console.error(e);
             let error = sanitize(e.toString());
