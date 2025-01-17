@@ -17,7 +17,7 @@
   }
   
   .styled-scroll {
-    @apply scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-secondary-500  scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300  scrollbar-thumb:!bg-slate-500/50;
+    @apply scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-secondary-500  scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300  scrollbar-thumb:!bg-slate-500/50 ;
   }
   
 }
@@ -38,7 +38,8 @@
 iframe body {
   display: none;
 }
-.light .top-backdrop{
+
+.light .top-backdrop {
   display: none;
 }
 
@@ -286,6 +287,7 @@ input::-webkit-input-placeholder {
 body {
   overflow: overlay;
 }
+
 body::-webkit-scrollbar {
   --tw-bg-opacity: 1;
   background-color: rgb(var(--ls-colors-secondary-700));

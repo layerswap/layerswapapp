@@ -3,7 +3,7 @@ import { ethers } from "https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethe
 self.onmessage = (e) => {
     switch (e.data.type) {
         case 'init':
-            initWorker(e.data.payload.data.initConfigs)
+            initWorker(e.data.payload.data.initConfigs);
             break;
         case 'getDetails':
             getCommit(e.data.payload.data.commitConfigs);
@@ -13,25 +13,22 @@ self.onmessage = (e) => {
             console.error('Unhandled message type:', e.data.type);
     }
 };
-
 async function initWorker(initConfigs) {
     try {
         await init();
-
         // const ethCheckpoint = await fetch(initConfigs.hostname + '/api/getCheckpoint').then(res => res.json());
         const configEthereum = {
-            executionRpc: "https://eth-sepolia.g.alchemy.com/v2/ErGCcrn6KRA91KfnRkqtyb3SJVdYGz1S",
+            executionRpc: `${initConfigs.version == 'sandbox' ? 'https://eth-sepolia.g.alchemy.com/v2/' : 'https://eth-mainnet.g.alchemy.com/v2/'}${initConfigs.alchemyKey}`,
             consensusRpc: initConfigs.hostname + '/api/consensusRpc',
-            checkpoint: '0x81f12a3e1ba2ce7559d61320705b44888a102ccaf8e590547440daad74a6512d',
+            checkpoint: initConfigs.version == 'sandbox' ? '0x81f12a3e1ba2ce7559d61320705b44888a102ccaf8e590547440daad74a6512d' : '0xf5a73de5020ab47bb6648dee250e60d6f031516327f4b858bc7f3e3ecad84c40',
             dbType: "localstorage",
-            network: 'sepolia'
+            network: initConfigs.version == 'sandbox' ? 'sepolia' : 'ethereum'
         };
         const opstackConfigs = {
-            executionRpc: "https://opt-mainnet.g.alchemy.com/v2/ErGCcrn6KRA91KfnRkqtyb3SJVdYGz1S",
+            executionRpc: `https://opt-mainnet.g.alchemy.com/v2/${initConfigs.alchemyKey}`,
             network: "op-mainnet",
         };
-        const networkName = initConfigs.network?.toLowerCase().includes('optimism') ? "opstack" : 'ethereum'
-
+        const networkName = initConfigs.network?.toLowerCase().includes('optimism') ? "opstack" : 'ethereum';
         const providerConfig = networkName === 'opstack' ? opstackConfigs : configEthereum;
         const heliosProvider = new HeliosProvider(providerConfig, networkName);
         await heliosProvider.sync();
@@ -43,7 +40,6 @@ async function initWorker(initConfigs) {
         console.log(e);
     }
 }
-
 async function getCommit(commitConfigs) {
     try {
         const { abi, contractAddress, commitId } = commitConfigs;
@@ -51,7 +47,7 @@ async function getCommit(commitConfigs) {
             if (provider) {
                 try {
                     const contract = new ethers.Contract(contractAddress, abi, provider);
-                    const res = await contract.getDetails(commitId);
+                    const res = await contract.getHTLCDetails(commitId);
                     return res;
                 }
                 catch (e) {
@@ -64,12 +60,11 @@ async function getCommit(commitConfigs) {
             let attempts = 0;
             getDetailsHandler = setInterval(async () => {
                 try {
-                    if (attempts > 20) {
+                    if (attempts > 15) {
                         clearInterval(getDetailsHandler);
                         self.postMessage({ type: 'commitDetails', data: null });
                         return;
                     }
-
                     attempts++;
                     const data = await getCommitDetails(self.web3Provider);
                     if (data?.hashlock && data?.hashlock !== "0x0100000000000000000000000000000000000000000000000000000000000000" && data?.hashlock !== "0x0000000000000000000000000000000000000000000000000000000000000000") {
@@ -82,9 +77,9 @@ async function getCommit(commitConfigs) {
                 }
             }, 5000);
         })();
-    } catch (e) {
+    }
+    catch (e) {
         self.postMessage({ type: 'commitDetails', data: undefined });
         console.log(e);
     }
-
 }

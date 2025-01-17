@@ -1,14 +1,14 @@
 import { FC, useEffect } from "react";
 import { Network, Token } from "../../../../Models/Network";
-import useWallet, { WalletProvider } from "../../../../hooks/useWallet";
 import { useAtomicState } from "../../../../context/atomicContext";
 import SubmitButton from "../../../buttons/submitButton";
+import useWallet from "../../../../hooks/useWallet";
+import { WalletProvider } from "../../../../Models/WalletProvider";
 
 export const LpLockingAssets: FC = () => {
     const { destination_network, commitId, setDestinationDetails, destination_asset, lightClient, sourceDetails } = useAtomicState()
-    const { getWithdrawalProvider } = useWallet()
+    const { provider } = useWallet(destination_network, 'autofil')
 
-    const destination_provider = destination_network && getWithdrawalProvider(destination_network)
     const atomicContract = (destination_asset?.contract ? destination_network?.metadata.htlc_token_contract : destination_network?.metadata.htlc_native_contract) as `0x${string}`
 
     const getDetails = async ({ provider, network, commitId, asset }: { provider: WalletProvider, network: Network, commitId: string, asset: Token }) => {
@@ -79,11 +79,11 @@ export const LpLockingAssets: FC = () => {
 
     useEffect(() => {
         (async () => {
-            if (destination_provider && destination_network && commitId && destination_asset) {
-                await getDetails({ provider: destination_provider, network: destination_network, commitId, asset: destination_asset })
+            if (provider && destination_network && commitId && destination_asset) {
+                await getDetails({ provider, network: destination_network, commitId, asset: destination_asset })
             }
         })()
-    }, [destination_provider, destination_network, commitId])
+    }, [provider, destination_network, commitId])
 
     return <SubmitButton
         isDisabled={true}

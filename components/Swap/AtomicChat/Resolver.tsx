@@ -209,10 +209,10 @@ const ResolveAction: FC = () => {
             return <UserRefundAction />
         }
     }
-    if (commitStatus === CommitStatus.AssetsLocked || commitStatus === CommitStatus.UserLocked) {
+    if (commitStatus === CommitStatus.AssetsLocked) {
         return <RedeemAction />
     }
-    if (commitStatus === CommitStatus.LpLockDetected) {
+    if (commitStatus === CommitStatus.LpLockDetected || commitStatus === CommitStatus.UserLocked) {
         return <UserLockAction />
     }
     if (commitStatus === CommitStatus.Commited) {
