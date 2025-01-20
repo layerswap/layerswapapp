@@ -93,7 +93,7 @@ export function AtomicProvider({ children }) {
     }, [data])
 
     useEffect(() => {
-        if (destination_network && destination_network.chain_id === '11155111' && commitStatus !== CommitStatus.TimelockExpired && commitStatus !== CommitStatus.RedeemCompleted) {
+        if (destination_network && commitStatus !== CommitStatus.TimelockExpired && commitStatus !== CommitStatus.RedeemCompleted) {
             (async () => {
                 const lightClient = new LightClient()
                 await lightClient.initProvider({ network: destination_network })
@@ -176,8 +176,8 @@ const statusResolver = ({ commitFromApi, sourceDetails, destinationDetails, dest
     const redeemCompleted = (destinationDetails?.claimed == 3 ? true : false) || lpRedeemTransaction?.hash;
 
     if (timelockExpired) return CommitStatus.TimelockExpired
-    else if (assetsLocked && sourceDetails?.claimed == 3 && destinationDetails?.claimed != 3) return CommitStatus.ManualClaim
     else if (redeemCompleted) return CommitStatus.RedeemCompleted
+    else if (assetsLocked && sourceDetails?.claimed == 3 && destinationDetails?.claimed != 3) return CommitStatus.ManualClaim
     else if (assetsLocked) return CommitStatus.AssetsLocked
     else if (userLocked) return CommitStatus.UserLocked
     else if (lpLockDetected) return CommitStatus.LpLockDetected
