@@ -48,18 +48,12 @@ const SignAndConfirmStep: FC = () => {
     const title = assetsLocked ? "Signed & Confirmed" : "Sign & Confirm"
     const description = (assetsLocked)
         ? <div className="inline-flex gap-3">
-            {
-                lpLockTx && destination_network &&
-                <div className="inline-flex gap-1">
-                    <p>Solver:</p> <Link className="underline hover:no-underline" target="_blank" href={destination_network?.transaction_explorer_template.replace('{0}', lpLockTx?.hash)}>{shortenAddress(lpLockTx.hash)}</Link>
-                </div>
-            }
-            {
-                addLockSigTx && source_network &&
-                <div className="inline-flex gap-1">
-                    <p>You:</p> <Link className="underline hover:no-underline" target="_blank" href={source_network?.transaction_explorer_template.replace('{0}', addLockSigTx?.hash)}>{shortenAddress(addLockSigTx.hash)}</Link>
-                </div>
-            }
+            <div className="inline-flex gap-1 items-center">
+                <p>Solver:</p> {(lpLockTx && destination_network) ? <Link className="underline hover:no-underline" target="_blank" href={destination_network?.transaction_explorer_template.replace('{0}', lpLockTx?.hash)}>{shortenAddress(lpLockTx.hash)}</Link> : <div className="h-3 w-10 bg-gray-400 animate-pulse rounded" />}
+            </div>
+            <div className="inline-flex gap-1 items-center">
+                <p>You:</p> {(addLockSigTx && source_network) ? <Link className="underline hover:no-underline" target="_blank" href={source_network?.transaction_explorer_template.replace('{0}', addLockSigTx?.hash)}>{shortenAddress(addLockSigTx.hash)}</Link> : <div className="h-3 w-10 bg-gray-400 animate-pulse rounded" />}
+            </div>
         </div>
         : <>Initiates a swap process with the solver</>
 
@@ -87,7 +81,7 @@ const SolverStatus: FC = () => {
 
     if (sourceDetails?.hashlock && destinationDetails?.hashlock || !commited || !(commitStatus == CommitStatus.LpLockDetected || commitStatus == CommitStatus.Commited))
         return null
-    //TODO: add the timer
+
     if (lpLockDetected) {
         if (destinationDetails?.fetchedByLightClient) {
             return <div className="px-1 pt-3 w-full">
@@ -99,12 +93,9 @@ const SolverStatus: FC = () => {
                             <LockIcon className="h-4 w-4 text-green-500" />
                         </div>
                     </div>
-                    {
-                        lpLockTx && destination_network &&
-                        <div>
-                            <span>ID:</span> <a target="_blank" href={destination_network.transaction_explorer_template.replace('{0}', lpLockTx.hash)} className="underline hover:no-underline">{shortenAddress(lpLockTx.hash)}</a>
-                        </div>
-                    }
+                    <div className="inline-flex gap-1 items-center">
+                        <p>ID:</p> {(lpLockTx && destination_network) ? <Link target="_blank" href={destination_network.transaction_explorer_template.replace('{0}', lpLockTx.hash)} className="underline hover:no-underline">{shortenAddress(lpLockTx.hash)}</Link> : <div className="h-3 w-10 bg-gray-400 animate-pulse rounded" />}
+                    </div>
                 </div>
             </div>
         }
@@ -114,25 +105,18 @@ const SolverStatus: FC = () => {
 
             <div className="text-xs text-primary-text-placeholder">
                 <span className="text-primary-text text-base">Solver locked assets</span>
-                {
-                    lpLockTx && destination_network &&
-                    <>
-                        <span className="text-primary-text text-base ml-1">-</span> <span>Transaction ID:</span> <a target="_blank" href={destination_network.transaction_explorer_template.replace('{0}', lpLockTx.hash)} className="underline hover:no-underline">{shortenAddress(lpLockTx.hash)}</a>
-                    </>
-                }
+                <>
+                    <span className="text-primary-text text-base ml-1">-</span> <span>Transaction ID:</span> {(lpLockTx && destination_network) ? <a target="_blank" href={destination_network.transaction_explorer_template.replace('{0}', lpLockTx.hash)} className="underline hover:no-underline">{shortenAddress(lpLockTx.hash)}</a> : <div className="h-3 w-10 bg-gray-400 animate-pulse rounded" />}
+                </>
             </div>
         </div>
     }
 
-    return <div className="p-1 mt-2 w-full">
-        <p className="p-1">Solver is locking assets</p>
-        <div className="loader-line" />
-    </div>
+    return null
 }
 
 
 export const ResolveMessages: FC<{ timelock: number | undefined, showTimer: boolean, allComplete: boolean }> = ({ timelock, showTimer, allComplete }) => {
-    //TODO: add loading steps
     return <div className="space-y-2">
         <div className="flex items-center w-full justify-between text-primary-text-placeholder text-sm">
             {
@@ -178,12 +162,9 @@ const ResolveAction: FC = () => {
             title={
                 <div className="flex flex-col space-y-0">
                     <p className="text-base leading-5 font-medium">Transaction Completed</p>
-                    {
-                        lpRedeemTransaction && destination_network &&
-                        <div className="text-sm ">
-                            <span>ID:</span>  <Link className="underline hover:no-underline" target="_blank" href={destination_network?.transaction_explorer_template.replace('{0}', lpRedeemTransaction.hash)}>{shortenAddress(lpRedeemTransaction?.hash)}</Link>
-                        </div>
-                    }
+                    <div className="inline-flex gap-1 items-center text-sm text-primary-text/70">
+                        <p>ID:</p> {(lpRedeemTransaction && destination_network) ? <Link className="underline hover:no-underline" target="_blank" href={destination_network?.transaction_explorer_template.replace('{0}', lpRedeemTransaction.hash)}>{shortenAddress(lpRedeemTransaction?.hash)}</Link> : <div className="h-3 w-14 bg-gray-400 animate-pulse rounded" />}
+                    </div>
                 </div>
             }
         />
@@ -195,12 +176,9 @@ const ResolveAction: FC = () => {
                 title={
                     <div className="flex flex-col space-y-0">
                         <p className="text-base leading-5 font-medium">Refund Completed</p>
-                        {
-                            refundTxId && source_network &&
-                            <div className="text-sm ">
-                                <span>ID:</span>  <Link className="underline hover:no-underline" target="_blank" href={source_network?.transaction_explorer_template.replace('{0}', refundTxId)}>{shortenAddress(refundTxId)}</Link>
-                            </div>
-                        }
+                        <div className="inline-flex gap-1 items-center text-sm text-primary-text/70">
+                            <p>ID:</p> {(refundTxId && source_network) ? <Link className="underline hover:no-underline" target="_blank" href={source_network?.transaction_explorer_template.replace('{0}', refundTxId)}>{shortenAddress(refundTxId)}</Link> : <div className="h-3 w-14 bg-gray-400 animate-pulse rounded" />}
+                        </div>
                     </div>
                 }
             />
@@ -209,7 +187,7 @@ const ResolveAction: FC = () => {
             return <UserRefundAction />
         }
     }
-    if (commitStatus === CommitStatus.AssetsLocked) {
+    if (commitStatus === CommitStatus.AssetsLocked || commitStatus === CommitStatus.ManualClaim) {
         return <RedeemAction />
     }
     if (commitStatus === CommitStatus.LpLockDetected || commitStatus === CommitStatus.UserLocked) {

@@ -1,9 +1,9 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef } from "react";
 import { Network, Token } from "../../../../Models/Network";
 import { useAtomicState } from "../../../../context/atomicContext";
-import SubmitButton from "../../../buttons/submitButton";
 import useWallet from "../../../../hooks/useWallet";
 import { WalletProvider } from "../../../../Models/WalletProvider";
+import ActionStatus from "./Status/ActionStatus";
 
 export const LpLockingAssets: FC = () => {
     const { destination_network, commitId, setDestinationDetails, destination_asset, lightClient, sourceDetails } = useAtomicState()
@@ -87,9 +87,8 @@ export const LpLockingAssets: FC = () => {
         })()
     }, [provider, destination_network, commitId, isLoading])
 
-    return <SubmitButton
-        isDisabled={true}
-    >
-        Sign & Confirm
-    </SubmitButton>
+    return <ActionStatus
+        status="pending"
+        title='Solver is locking assets'
+    />
 }

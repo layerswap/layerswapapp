@@ -102,10 +102,10 @@ export const RedeemAction: FC = () => {
                     title='Assets are currently being released'
                 />
                 :
-                <div>
+                <div className="space-y-2">
                     <div className="inline-flex text-secondary-text">
                         <TriangleAlert className="w-6 h-6" />
-                        <p className="p-1">
+                        <p className="p- text-center">
                             The solver was unable to release your funds. Please claim them manually.
                         </p>
                     </div>

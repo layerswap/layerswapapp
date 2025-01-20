@@ -93,7 +93,7 @@ export function AtomicProvider({ children }) {
     }, [data])
 
     useEffect(() => {
-        if (destination_network && destination_network.chain_id === '11155111') {
+        if (destination_network && destination_network.chain_id === '11155111' && commitStatus !== CommitStatus.TimelockExpired && commitStatus !== CommitStatus.RedeemCompleted) {
             (async () => {
                 const lightClient = new LightClient()
                 await lightClient.initProvider({ network: destination_network })
