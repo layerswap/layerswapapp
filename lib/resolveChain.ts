@@ -2,6 +2,11 @@ import { Chain, defineChain, parseGwei } from "viem";
 import { Network } from "../Models/Network";
 import NetworkSettings from "./NetworkSettings";
 import { SendErrorMessage } from "./telegram";
+import { optimism } from "viem/chains";
+
+const overrides = [
+    optimism
+]
 
 export default function resolveChain(network: Network) {
 
@@ -19,7 +24,7 @@ export default function resolveChain(network: Network) {
         return
     }
 
-    const res = defineChain({
+    const res = overrides.find(o => o.id == Number(network.chain_id)) || defineChain({
         id: Number(network.chain_id),
         name: network.display_name,
         nativeCurrency: {

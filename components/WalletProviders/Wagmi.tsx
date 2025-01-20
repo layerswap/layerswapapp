@@ -2,7 +2,7 @@
 
 import { useSettingsState } from "../../context/settings";
 import { NetworkType } from "../../Models/Network";
-import resolveChain from "../../lib/resolveChainWithOverrides";
+import resolveChain from "../../lib/resolveChain";
 import React from "react";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { WagmiProvider } from 'wagmi'
@@ -38,7 +38,7 @@ function WagmiComponent({ children }: Props) {
         .filter(net => net.type === NetworkType.EVM
             && net.node_url
             && net.token)
-        .map(resolveChain([])).filter(isChain) as Chain[]
+        .map(resolveChain).filter(isChain) as Chain[]
 
     const transports = {}
 

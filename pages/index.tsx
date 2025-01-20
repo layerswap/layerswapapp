@@ -7,7 +7,7 @@ import { SwapStatus } from '../Models/SwapStatus'
 import { useEffect } from 'react'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { resolveExchangesURLForSelectedToken, resolveRoutesURLForSelectedToken } from '../helpers/routes'
-import { optimism } from "@wagmi/core/chains";
+import { optimism } from "viem/chains";
 
 export default function Home({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapApiClient.apiKey = apiKey
