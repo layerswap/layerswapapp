@@ -24,7 +24,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
     const { setSwapTransaction } = useSwapTransactionStore()
 
     const { provider } = useWallet(network, 'withdrawal');
-    const { wallet: fuelWallet } = useFuelWallet()
+    const { wallet: fuelWallet, } = useFuelWallet()
     const { chain, refetch } = useChain()
     const wallet = provider?.activeWallet
     const networkChainId = Number(network?.chain_id)
@@ -44,32 +44,36 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
             setLoading(true)
 
             if (!fuelWallet) throw Error("Fuel wallet not connected")
-            if (!callData) throw Error("Call data not found")
             if (!network) throw Error("Network not found")
             if (!depositAddress) throw Error("Deposit address not found")
             if (!network.metadata.watchdog_contract) throw Error("Watchdog contract not found")
             if (!amount) throw Error("Amount not found")
 
-            const provider = await Provider.create(network?.node_url);
-            const contract = new Contract(network.metadata?.watchdog_contract, WatchdogAbi, provider);
+            const provider = new Provider(network?.node_url);
+            const contract = new Contract(network.metadata?.watchdog_contract, WatchdogAbi, fuelWallet);
 
             const scope = contract.functions
                 .watch(sequenceNumber)
                 .addTransfer({
                     destination: depositAddress as string,
-                    amount: bn.parseUnits(amount.toString(), token?.decimals),
+                    amount: bn.parseUnits(amount.toFixed(token?.decimals).toString(), token?.decimals),
                     assetId: token?.contract!,
                 })
-
+            const simulationResult = await contract.functions
+                .watch(sequenceNumber).simulate()
+            debugger
             const transactionRequest = await scope.getTransactionRequest();
 
-            const txCost = await fuelWallet.getTransactionCost(transactionRequest);
+            const txCost = await scope.getTransactionCost();
 
             transactionRequest.gasLimit = txCost.gasUsed;
             transactionRequest.maxFee = txCost.maxFee;
             datadogRum.addAction('fuelTransfer', transactionRequest);
-
-            await fuelWallet.fund(transactionRequest, txCost);
+            // transactionRequest.estimateAndFund()
+            const x = await fuelWallet.fund(transactionRequest, txCost);
+            debugger
+            const p = await fuelWallet.simulateTransaction(transactionRequest);
+            debugger
 
             const transactionResponse = await fuelWallet.sendTransaction(transactionRequest);
 
@@ -77,6 +81,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
 
         }
         catch (e) {
+            debugger
             if (e?.message) {
                 setError(e.message)
                 if (e.message !== "User rejected the transaction!") {
@@ -92,7 +97,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
             setLoading(false)
         }
     }, [swapId, callData, fuelWallet])
-
+    console.log(fuelWallet)
     if (!wallet) {
         return <ConnectWalletButton />
     }
