@@ -20,10 +20,8 @@ module.exports = (phase, { defaultConfig }) => {
       locales: ["en"],
       defaultLocale: "en",
     },
-    modularizeImports: {
-      "viem/chains": {
-        transform: "viem/chains",
-      },
+    experimental: {
+      optimizePackageImports: ["viem", "viem/chains"]
     },
     images: {
       remotePatterns: [
