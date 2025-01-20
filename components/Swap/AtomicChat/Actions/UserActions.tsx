@@ -117,7 +117,7 @@ export const UserCommitAction: FC = () => {
                     networkChainId={source_network.chain_id}
                     onClick={handleCommit}
                 >
-                    Commit
+                    Request
                 </WalletActionButton>
         }
     </div>
