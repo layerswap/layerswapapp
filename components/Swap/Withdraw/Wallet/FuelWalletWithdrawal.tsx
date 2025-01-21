@@ -12,7 +12,7 @@ import {
 } from '@fuels/react';
 import { useSwapDataState } from '../../../../context/swap';
 import { datadogRum } from '@datadog/browser-rum';
-import { bn, Contract, Provider } from 'fuels';
+import { Address, AssetId, Contract, Provider } from 'fuels';
 import WatchdogAbi from '../../../../lib/abis/FUELWATCHDOG.json';
 import TransactionMessages from '../messages/TransactionMessages';
 
@@ -24,7 +24,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
     const { setSwapTransaction } = useSwapTransactionStore()
 
     const { provider } = useWallet(network, 'withdrawal');
-    const { wallet: fuelWallet, } = useFuelWallet()
+    const { wallet: fuelWallet } = useFuelWallet()
     const { chain, refetch } = useChain()
     const wallet = provider?.activeWallet
     const networkChainId = Number(network?.chain_id)
@@ -48,18 +48,28 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
             if (!depositAddress) throw Error("Deposit address not found")
             if (!network.metadata.watchdog_contract) throw Error("Watchdog contract not found")
             if (!amount) throw Error("Amount not found")
+            if (!token) throw Error("Token not found")
 
             const provider = new Provider(network?.node_url);
-            const contract = new Contract(network.metadata?.watchdog_contract, WatchdogAbi, fuelWallet);
+            const contract = new Contract(network.metadata.watchdog_contract, WatchdogAbi, fuelWallet);
+
+            const asset_id = await provider.getBaseAssetId();
+
+            const address: Address = Address.fromB256(token.contract || asset_id);
+            const assetId: AssetId = address.toAssetId();
+
+            const parsedAmount = amount * Math.pow(10, token?.decimals)
+            const receiver = { bits: Address.fromDynamicInput(depositAddress).toB256() };
 
             const scope = contract.functions
-                .watch(sequenceNumber)
-                .addTransfer({
-                    destination: depositAddress as string,
-                    amount: bn.parseUnits(amount.toFixed(token?.decimals).toString(), token?.decimals),
-                    assetId: token?.contract!,
+                .watch(sequenceNumber, receiver)
+                .txParams({
+                    variableOutputs: 1,
                 })
-   
+                .callParams({
+                    forward: [parsedAmount, assetId.bits],
+                })
+
             const transactionRequest = await scope.getTransactionRequest();
 
             const txCost = await scope.getTransactionCost();
@@ -78,7 +88,6 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
 
         }
         catch (e) {
-            debugger
             if (e?.message) {
                 setError(e.message)
                 if (e.message !== "User rejected the transaction!") {
@@ -94,7 +103,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
             setLoading(false)
         }
     }, [swapId, callData, fuelWallet])
-    console.log(fuelWallet)
+
     if (!wallet) {
         return <ConnectWalletButton />
     }
