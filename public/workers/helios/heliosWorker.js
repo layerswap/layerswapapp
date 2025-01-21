@@ -22,7 +22,7 @@ async function initWorker(initConfigs) {
             consensusRpc: initConfigs.version == 'sandbox' ? initConfigs.hostname + '/api/consensusRpc' : undefined,
             checkpoint: initConfigs.version == 'sandbox' ? '0x527a8a4949bc2128d73fa4e2a022aa56881b2053ba83c900013a66eb7c93343e' : '0xf5a73de5020ab47bb6648dee250e60d6f031516327f4b858bc7f3e3ecad84c40',
             dbType: "localstorage",
-            network: initConfigs.version == 'sandbox' ? 'sepolia' : 'ethereum'
+            network: initConfigs.version == 'sandbox' ? 'sepolia' : undefined
         };
         const opstackConfigs = {
             executionRpc: `https://opt-mainnet.g.alchemy.com/v2/${initConfigs.alchemyKey}`,
