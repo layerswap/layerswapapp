@@ -103,11 +103,12 @@ const SolverStatus: FC = () => {
         return <div className="pl-1 inline-flex items-center gap-4 pt-3 w-full">
             <LockFilledCircleIcon className="h-7 w-7" />
 
-            <div className="text-xs text-primary-text-placeholder">
+            <div className="text-xs text-primary-text-placeholder space-x-2">
                 <span className="text-primary-text text-base">Solver locked assets</span>
-                <>
-                    <span className="text-primary-text text-base ml-1">-</span> <span>Transaction ID:</span> {(lpLockTx && destination_network) ? <a target="_blank" href={destination_network.transaction_explorer_template.replace('{0}', lpLockTx.hash)} className="underline hover:no-underline">{shortenAddress(lpLockTx.hash)}</a> : <div className="h-3 w-10 bg-gray-400 animate-pulse rounded" />}
-                </>
+                <span className="text-primary-text text-base">-</span>
+                <div className="inline-flex gap-1 items-center">
+                    <p>Transaction ID:</p> {(lpLockTx && destination_network) ? <Link target="_blank" href={destination_network.transaction_explorer_template.replace('{0}', lpLockTx.hash)} className="underline hover:no-underline">{shortenAddress(lpLockTx.hash)}</Link> : <div className="h-3 w-10 bg-gray-400 animate-pulse rounded" />}
+                </div>
             </div>
         </div>
     }

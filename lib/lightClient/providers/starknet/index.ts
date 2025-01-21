@@ -75,14 +75,12 @@ export default class StarknetLightClient extends _LightClient {
                 }
 
                 const workerMessage = {
-                    type: 'init',
+                    type: 'getDetails',
                     payload: {
                         data: {
                             commitConfigs: {
                                 commitId: commitId,
-                                abi: token.contract ? EVMERC20_PHTLC : EVM_PHTLC,
                                 contractAddress: atomicContract,
-                                network: network.name
                             },
                         },
                     },

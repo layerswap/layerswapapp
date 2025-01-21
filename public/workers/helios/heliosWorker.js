@@ -80,7 +80,6 @@ async function getCommit(commitConfigs) {
         console.log(e);
     }
 }
-
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
