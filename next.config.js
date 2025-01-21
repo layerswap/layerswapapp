@@ -1,4 +1,7 @@
 const { PHASE_PRODUCTION_SERVER } = require('next/constants');
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+})
 
 const securityHeaders = [
   {
@@ -19,9 +22,6 @@ module.exports = (phase, { defaultConfig }) => {
     i18n: {
       locales: ["en"],
       defaultLocale: "en",
-    },
-    experimental: {
-      optimizePackageImports: ["viem/chains"]
     },
     images: {
       remotePatterns: [
@@ -74,5 +74,5 @@ module.exports = (phase, { defaultConfig }) => {
     }
   }
 
-  return nextConfig;
+  return withBundleAnalyzer(nextConfig);
 }

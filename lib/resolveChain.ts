@@ -1,15 +1,21 @@
-import { Chain, defineChain, parseGwei } from "viem";
+import { Chain, defineChain, parseGwei, maxInt80, slice, rpcSchema, maxInt40, maxInt208 } from "viem";
 import { Network } from "../Models/Network";
 import NetworkSettings from "./NetworkSettings";
 import { SendErrorMessage } from "./telegram";
-import { optimism } from "viem/chains";
 
 const overrides = [
-    optimism
+    maxInt80.toString()
 ]
 
 export default function resolveChain(network: Network) {
-
+    const aa = () => {
+        console.log(slice)
+        console.log(rpcSchema)
+        console.log(maxInt40)
+        console.log(maxInt208)
+        console.log(maxInt80)
+    }
+    aa()
     const nativeCurrency = network.token;
     const blockExplorersBaseURL =
         network.transaction_explorer_template ?
@@ -24,7 +30,7 @@ export default function resolveChain(network: Network) {
         return
     }
 
-    const res = overrides.find(o => o.id == Number(network.chain_id)) || defineChain({
+    const res = defineChain({
         id: Number(network.chain_id),
         name: network.display_name,
         nativeCurrency: {
