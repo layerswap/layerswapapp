@@ -56,7 +56,7 @@ module.exports = (phase, { defaultConfig }) => {
       });
       return config;
     },
-    productionBrowserSourceMaps: true,
+    productionBrowserSourceMaps: false,
     transpilePackages: ['@coral-xyz/anchor', '@solana/web3.js', '@imtbl/sdk', '@fuels/connectors', '@fuels/react', "@radix-ui/react-dismissable-layer"]
   }
   if (process.env.APP_BASE_PATH) {
