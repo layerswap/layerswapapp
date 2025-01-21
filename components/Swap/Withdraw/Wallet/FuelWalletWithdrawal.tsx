@@ -59,9 +59,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
                     amount: bn.parseUnits(amount.toFixed(token?.decimals).toString(), token?.decimals),
                     assetId: token?.contract!,
                 })
-            const simulationResult = await contract.functions
-                .watch(sequenceNumber).simulate()
-            debugger
+   
             const transactionRequest = await scope.getTransactionRequest();
 
             const txCost = await scope.getTransactionCost();
@@ -69,11 +67,10 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
             transactionRequest.gasLimit = txCost.gasUsed;
             transactionRequest.maxFee = txCost.maxFee;
             datadogRum.addAction('fuelTransfer', transactionRequest);
-            // transactionRequest.estimateAndFund()
-            const x = await fuelWallet.fund(transactionRequest, txCost);
-            debugger
-            const p = await fuelWallet.simulateTransaction(transactionRequest);
-            debugger
+
+            await fuelWallet.fund(transactionRequest, txCost);
+
+            await provider.simulate(transactionRequest);
 
             const transactionResponse = await fuelWallet.sendTransaction(transactionRequest);
 
