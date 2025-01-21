@@ -8,9 +8,10 @@ export class SelectMenuItem<T> implements ISelectMenuItem {
     noWalletsConnectedText?: React.ReactNode;
     extendedAddress?: React.ReactNode;
     subItems?: ISelectMenuItem[];
+    balanceAmount?: React.ReactNode;
     isAvailable: boolean;
     group?: string;
-    details?: JSX.Element | JSX.Element[];
+    details?: JSX.Element | JSX.Element[] | null;
     badge?: JSX.Element | JSX.Element[];
     leftIcon?: JSX.Element | JSX.Element[];
     baseObject: T;
@@ -35,9 +36,10 @@ export interface ISelectMenuItem {
     noWalletsConnectedText?: React.ReactNode;
     extendedAddress?: React.ReactNode;
     subItems?: ISelectMenuItem[];
+    balanceAmount?: React.ReactNode;
     group?: string;
     isAvailable: boolean;
-    details?: JSX.Element | JSX.Element[];
+    details?: JSX.Element | JSX.Element[] | null;
     badge?: JSX.Element | JSX.Element[];
     leftIcon?: JSX.Element | JSX.Element[];
     order?: number;

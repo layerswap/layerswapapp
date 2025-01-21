@@ -133,10 +133,11 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                                                             {item.displayName}
                                                                             <div className="flex flex-col w-full items-end space-y-2 self-baseline">
                                                                                 <p className="text-secondary-text text-sm">
+                                                                                    {item?.balanceAmount}
                                                                                     {/* {(item?.balanceAmount || item?.balanceAmount === 0) ? `$${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(item.balanceAmount)}` : ''} */}
                                                                                 </p>
                                                                                 <div className="flex justify-end items-center w-full relative">
-                                                                                    {/* {item?.balanceAmount
+                                                                                    {item?.balanceAmount
                                                                                         ? item.subItems?.filter(i => i?.balanceAmount)?.map(
                                                                                             (subItem, index) => (
                                                                                                 <div
@@ -148,7 +149,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
                                                                                                 </div>
                                                                                             )
                                                                                         )
-                                                                                        : null} */}
+                                                                                        : null}
                                                                                 </div>
                                                                             </div>
                                                                         </div>

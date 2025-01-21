@@ -30,6 +30,7 @@ import { FormSourceWalletButton } from "../../Input/SourceWalletPicker";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import useWallet from "../../../hooks/useWallet";
 import { useSettingsState } from "../../../context/settings";
+import WalletBalances from "../../WalletBalances";
 
 type Props = {
     partner?: Partner,
@@ -61,7 +62,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
     const { minAllowedAmount, valuesChanger } = useFee()
     const toAsset = values.toCurrency
     const fromAsset = values.fromCurrency
-
+    
     const { validationMessage } = useValidationContext();
 
     const layerswapApiClient = new LayerSwapApiClient()
@@ -196,6 +197,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
     const shoouldConnectWallet = values.from?.deposit_methods?.includes('wallet') && ((sourceWalletNetwork && values.depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!values.from && !values.fromExchange && !wallets.length && values.depositMethod !== 'deposit_address'))
 
     return <Widget className="sm:min-h-[450px] h-full">
+        <WalletBalances/>
         <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
             <Widget.Content>
                 <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4 bg-secondary-700 rounded-xl'>
