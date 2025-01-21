@@ -1,4 +1,4 @@
-import { Chain, defineChain, parseGwei, maxInt80, slice, rpcSchema, maxInt40, maxInt208 } from "viem";
+import { Chain, defineChain, parseGwei, maxInt80, slice, rpcSchema, maxInt40, maxInt208, Abi, minInt88, toRlp } from "viem";
 import { Network } from "../Models/Network";
 import NetworkSettings from "./NetworkSettings";
 import { SendErrorMessage } from "./telegram";
@@ -14,6 +14,9 @@ export default function resolveChain(network: Network) {
         console.log(maxInt40)
         console.log(maxInt208)
         console.log(maxInt80)
+        console.log(minInt88)
+        console.log(toRlp)
+        let a: Abi | undefined
     }
     aa()
     const nativeCurrency = network.token;

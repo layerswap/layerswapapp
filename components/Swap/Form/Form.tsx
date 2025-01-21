@@ -30,7 +30,6 @@ import { FormSourceWalletButton } from "../../Input/SourceWalletPicker";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import useWallet from "../../../hooks/useWallet";
 import { useSettingsState } from "../../../context/settings";
-import { optimism } from "viem/chains";
 
 type Props = {
     partner?: Partner,

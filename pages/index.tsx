@@ -7,11 +7,9 @@ import { SwapStatus } from '../Models/SwapStatus'
 import { useEffect } from 'react'
 import LayerSwapApiClient from '../lib/layerSwapApiClient'
 import { resolveExchangesURLForSelectedToken, resolveRoutesURLForSelectedToken } from '../helpers/routes'
-import { optimism } from "viem/chains";
 
 export default function Home({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapApiClient.apiKey = apiKey
-  console.log('optimism', optimism)
 
   const sourceRoutesDeafultKey = resolveRoutesURLForSelectedToken({ direction: 'from', network: undefined, token: undefined, includes: { unmatched: true, unavailable: true } })
   const destinationRoutesDefaultKey = resolveRoutesURLForSelectedToken({ direction: 'to', network: undefined, token: undefined, includes: { unmatched: true, unavailable: true } })
