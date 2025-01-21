@@ -2,11 +2,7 @@ import { Chain, defineChain, parseGwei } from "viem";
 import { Network } from "../Models/Network";
 import NetworkSettings from "./NetworkSettings";
 import { SendErrorMessage } from "./telegram";
-// import { optimism } from "@wagmi/core/chains";
-
-// const overrides = [
-//     optimism
-// ]
+import { chainConfig } from 'viem/op-stack'
 
 export default function resolveChain(network: Network) {
 
@@ -23,6 +19,8 @@ export default function resolveChain(network: Network) {
         SendErrorMessage("UI Settings error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: could not find native currency for ${network.name} ${JSON.stringify(network)} %0A`)
         return
     }
+
+    const opStackChainConfig = Number(network.chain_id) == 10 ? chainConfig : {}
 
     const res = defineChain({
         id: Number(network.chain_id),
@@ -55,6 +53,7 @@ export default function resolveChain(network: Network) {
                 }
             } : {}),
         },
+        ...opStackChainConfig,
     })
 
     const defaultPriorityFee = NetworkSettings.KnownSettings[network.name]?.DefaultPriorityFee?.toString()
