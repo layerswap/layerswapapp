@@ -54,7 +54,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
         toExchange,
         currencyGroup,
     } = values
-    console.log("optimism", optimism)
     const { selectedSourceAccount } = useSwapDataState()
     const { setSelectedSourceAccount } = useSwapDataUpdate()
     const { providers, wallets } = useWallet()
