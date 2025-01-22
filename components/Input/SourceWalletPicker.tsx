@@ -33,6 +33,7 @@ const Component: FC = () => {
     const selectedWallet = selectedSourceAccount?.wallet
     //TODO: sort by active wallet
     const defaultWallet = walletNetwork && availableWallets?.find(w => !w.isNotAvailable)
+
     const source_addsress = selectedSourceAccount?.address
 
     useEffect(() => {
@@ -176,6 +177,7 @@ export const FormSourceWalletButton: FC = () => {
         setMounWalletPortal(false)
     }
     const availableWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
+
     if (!availableWallets.length && walletNetwork) {
         return <>
             <Connect connectFn={connect} />
@@ -190,9 +192,9 @@ export const FormSourceWalletButton: FC = () => {
     }
     else if (availableWallets.length > 0 && walletNetwork && values.fromCurrency) {
         return <>
-            <button type="button" className="w-full" onClick={handleWalletChange}>
+            <div className="w-full" onClick={handleWalletChange}>
                 <Connect />
-            </button>
+            </div>
             <VaulDrawer
                 show={openModal}
                 setShow={setOpenModal}

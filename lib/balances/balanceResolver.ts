@@ -3,6 +3,7 @@ import { EVMBalanceProvider } from "./providers/evmBalanceProvider";
 import { FuelBalanceProvider } from "./providers/fuelBalanceProvider";
 import { ImmutableXBalanceProvider } from "./providers/immutableXBalanceProvider";
 import { LoopringBalanceProvider } from "./providers/loopringBalanceProvider";
+import { ParadexBalanceProvider } from "./providers/paradexBalanceProvider";
 import { QueryBalanceProvider } from "./providers/queryBalanceProvider";
 import { SolanaBalanceProvider } from "./providers/solanaBalanceProvider";
 import { StarknetBalanceProvider } from "./providers/starknetBalanceProvider";
@@ -21,7 +22,8 @@ export class BalanceResolver {
         new SolanaBalanceProvider(),
         new TonBalanceProvider(),
         new ZkSyncBalanceProvider(),
-        new TronBalanceProvider()
+        new TronBalanceProvider(),
+        new ParadexBalanceProvider()
     ];
 
     getBalance(address: string, network: NetworkWithTokens) {

@@ -113,10 +113,10 @@ export default function useEVM({ network }: Props): WalletProvider {
             }
 
             await connectAsync({
-                connector: connector,
+                connector: connector
             });
 
-            const activeAccount = getAccount(config)
+            const activeAccount = await attemptGetAccount(config)
             const connections = getConnections(config)
             const connection = connections.find(c => c.connector.id === activeAccount.connector?.id)
 
@@ -332,4 +332,20 @@ const resolveSupportedNetworks = (supportedNetworks: string[], connectorId: stri
 
     return supportedNetworks
 
+}
+
+async function attemptGetAccount(config, maxAttempts = 5) {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const account = await getAccount(config);
+
+        if (account.address) {
+            return account;
+        }
+        await sleep(500);
+    }
+
+    return await getAccount(config);
+}
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }

@@ -2,13 +2,14 @@ import { WalletIcon } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
 import useWallet from '../../../../../hooks/useWallet';
 import { WithdrawPageProps } from '../WalletTransferContent';
-import * as Paradex from "./lib";
+import * as Paradex from "../../../../../lib/wallets/paradex/lib";
 import { useSettingsState } from '../../../../../context/settings';
 import KnownInternalNames from '../../../../../lib/knownIds';
 import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
 import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
 import toast from 'react-hot-toast';
 import SubmitButton from '../../../../buttons/submitButton';
+import { AuthorizeStarknet } from '../../../../../lib/wallets/paradex/Authorize/Starknet';
 
 const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swapId }) => {
 
@@ -36,21 +37,11 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swa
                 throw Error("No amount")
 
             try {
-                const config = await Paradex.Config.fetchConfig(process.env.NEXT_PUBLIC_API_VERSION === "sandbox" ? 'testnet' : 'prod'); ///TODO: check environemnt may be mainnet
-
-                const paraclearProvider = new Paradex.ParaclearProvider.DefaultProvider(config);
-
                 const snAccount = wallet?.metadata?.starknetAccount
-
                 if (!snAccount) {
                     throw Error("Starknet account not found")
                 }
-
-                const paradexAccount = await Paradex.Account.fromStarknetAccount({
-                    provider: paraclearProvider,
-                    config,
-                    account: snAccount,
-                });
+                const paradexAccount = await AuthorizeStarknet(snAccount)
 
                 const parsedCallData = JSON.parse(callData || "")
 
