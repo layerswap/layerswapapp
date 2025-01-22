@@ -58,7 +58,7 @@ export default function CommandSelect({ values, value, setValue, show, setShow, 
     const filterItems = (items: ISelectMenuItem[]) => {
         const filtered = items.filter(
             (item) =>
-                item?.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                item?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 item?.id?.toLowerCase().includes(searchQuery.toLowerCase())
         );
         return filtered
