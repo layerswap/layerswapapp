@@ -87,7 +87,7 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
     return (
         <div className="flex flex-col gap-1 w-full overflow-y-auto styled-scroll">
             {(selectedWallet || connectionError) ? (
-                <div className="w-full flex items-center justify-center p-6">
+                <div className="w-full">
                     <div className="flex flex-col gap-3 items-center font-semibold">
                         {selectedWallet && (
                             <>
@@ -97,20 +97,25 @@ const ConnectList: FC<WalletsListProps> = ({ modalWalletProvider: provider, onFi
                                 <LoaderCircle className='h-4 w-4 animate-spin' />
                             </>
                         )}
-                        {connectionError &&
-                            <p className="flex items-center text-sm">
-                                <CircleX className="w-5 h-5 stroke-primary-500 mr-0.5 flex-shrink-0" />
-                                {connectionError}
-                            </p>
-                        }
-                        <button
-                            type="button"
-                            className="flex gap-1.5 items-center justify-between bg-[rgba(228,37,117,0.12)] text-[#e42575] px-4 py-2 border-none rounded-lg cursor-pointer text-sm font-medium leading-4 transition-transform duration-125 ease-in-out hover:scale-105"
-                            onClick={() => connect(currentConnector)}
-                        >
-                            <RotateCw className='h-4 w-4' />
-                            <span>Reconnect</span>
-                        </button>
+                        <div className={`${connectionError ? "bg-secondary-700 rounded-lg" : ""} flex flex-col gap-1.5 items-center p-3 w-full`}>
+                            {connectionError &&
+                                <p className="flex text-sm text-secondary-text">
+                                    <CircleX className="w-5 h-5 stroke-primary-500 mr-1 mt-0.5 flex-shrink-0" />
+                                    <div className='flex flex-col'>
+                                        <span className='text-base text-white'>Request rejected</span>
+                                        {connectionError}
+                                    </div>
+                                </p>
+                            }
+                            <button
+                                type="button"
+                                className="flex gap-1.5 items-center justify-center bg-secondary-500 w-full text-primary-text p-4 border-none rounded-lg cursor-pointer text-sm font-medium leading-4"
+                                onClick={() => connect(currentConnector)}
+                            >
+                                <RotateCw className='h-4 w-4' />
+                                <span>Try again</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             ) : (
