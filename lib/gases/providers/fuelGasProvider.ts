@@ -15,18 +15,26 @@ export class FuelGasProvider {
         if (!network?.token) throw new Error("No native token provided")
 
         try {
-            const { bn, Provider, Contract } = await import('fuels')
+            const { Provider, Contract, Address } = await import('fuels')
 
             const provider = new Provider(network?.node_url);
 
             const contract = new Contract(network.metadata?.watchdog_contract, WatchdogAbi, provider);
 
+            const asset_id = await provider.getBaseAssetId();
+            const assetAddress = Address.fromB256(token.contract || asset_id);
+            const assetId = assetAddress.toAssetId();
+
+            const parsedAmount = 0.005 * Math.pow(10, token?.decimals)
+            const receiver = { bits: Address.fromDynamicInput('0x0B1956a6737cb62fF5E66479F7770315fb5055BB75888b6C2Be43155F6dF1704').toB256() };
+
             const scope = contract.functions
-                .watch(42069)
-                .addTransfer({
-                    destination: '0x0B1956a6737cb62fF5E66479F7770315fb5055BB75888b6C2Be43155F6dF1704',
-                    amount: bn.parseUnits('0.005', token?.decimals),
-                    assetId: token?.contract!,
+                .watch(42069, receiver)
+                .txParams({
+                    variableOutputs: 1,
+                })
+                .callParams({
+                    forward: [parsedAmount, assetId.bits],
                 })
 
             const { maxFee } = await scope.getTransactionCost();
