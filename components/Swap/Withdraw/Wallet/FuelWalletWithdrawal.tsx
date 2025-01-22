@@ -25,7 +25,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
 
     const { provider } = useWallet(network, 'withdrawal');
     const { wallet: fuelWallet } = useFuelWallet()
-    const { chain, refetch } = useChain()
+    const { chain, refetch: refetchChain } = useChain()
     const wallet = provider?.activeWallet
     const networkChainId = Number(network?.chain_id)
     const activeChainId = Number(chain?.consensusParameters.chainId)
@@ -34,6 +34,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
     useEffect(() => {
         if (provider?.activeWallet && !fuelWallet && selectedSourceAccount) {
             provider?.switchAccount && provider?.switchAccount(selectedSourceAccount?.wallet, selectedSourceAccount?.address)
+            refetchChain()
         }
     }, [selectedSourceAccount, provider?.activeWallet, fuelWallet])
 
@@ -109,7 +110,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
     }
     else if (network && activeChainId !== undefined && networkChainId !== activeChainId) {
         return <ChangeNetworkButton
-            onChange={refetch}
+            onChange={refetchChain}
             chainId={networkChainId}
             network={network.display_name}
         />
@@ -141,7 +142,8 @@ const ChangeNetworkButton: FC<{ chainId: number, network: string, onChange: () =
         onChange();
     }, [selectNetworkAsync, chainId])
 
-    return <>
+    return <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
+
         {
             <ChangeNetworkMessage
                 data={{
@@ -164,7 +166,7 @@ const ChangeNetworkButton: FC<{ chainId: number, network: string, onChange: () =
                 }
             </ButtonWrapper>
         }
-    </>
+    </div>
 }
 
 const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> = ({ isLoading, error }) => {
