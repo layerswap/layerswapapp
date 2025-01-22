@@ -19,7 +19,7 @@
     "@ethereumjs/util": "^9.1.0",
     "@fuel-ts/account": "^0.96.1",
     "@fuel-ts/address": "^0.96.1",
-    "@fuels/react": "^0.36.0",
+    "@fuels/react": "^0.36.1",
     "@headlessui/react": "^2.1.1",
     "@imtbl/imx-sdk": "2.1.1",
     "@imtbl/sdk": "1.45.10",

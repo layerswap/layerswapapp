@@ -3027,7 +3027,7 @@
     chalk "4"
     cli-table "0.3.11"
 
-"@fuels/react@^0.36.0":
+"@fuels/react@^0.36.1":
   version "0.36.1"
   resolved "https://registry.yarnpkg.com/@fuels/react/-/react-0.36.1.tgz#05ddcfadea2df8ae547eea4312f024a995d41318"
   integrity sha512-vI57X6zRjoe8yWHru/EeHGsqDiAYizvt3P2B38TmnkKKaFlCZkVrDPVLMUAD/oUecE4Y35JcEOF0Su9EXPNXtQ==

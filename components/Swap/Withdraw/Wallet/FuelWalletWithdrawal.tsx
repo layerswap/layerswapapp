@@ -6,9 +6,9 @@ import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
 import { ButtonWrapper, ChangeNetworkMessage, ConnectWalletButton } from './WalletTransfer/buttons';
 import {
-    useWallet as useFuelWallet,
-    useChain,
     useSelectNetwork,
+    useFuel,
+    useNetwork,
 } from '@fuels/react';
 import { useSwapDataState } from '../../../../context/swap';
 import { datadogRum } from '@datadog/browser-rum';
@@ -24,19 +24,21 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
     const { setSwapTransaction } = useSwapTransactionStore()
 
     const { provider } = useWallet(network, 'withdrawal');
-    const { wallet: fuelWallet } = useFuelWallet()
-    const { chain, refetch: refetchChain } = useChain()
+
+    const { network: fuelNetwork, refetch: refetchNetwork } = useNetwork()
     const wallet = provider?.activeWallet
     const networkChainId = Number(network?.chain_id)
-    const activeChainId = Number(chain?.consensusParameters.chainId)
     const { selectedSourceAccount } = useSwapDataState()
+    const { fuel } = useFuel()
+
+    const activeChainId = fuelNetwork?.chainId || fuelNetwork?.url.includes('testnet') ? 0 : 9889
 
     useEffect(() => {
-        if (provider?.activeWallet && !fuelWallet && selectedSourceAccount) {
+        if (provider?.activeWallet && selectedSourceAccount) {
             provider?.switchAccount && provider?.switchAccount(selectedSourceAccount?.wallet, selectedSourceAccount?.address)
-            refetchChain()
+            refetchNetwork()
         }
-    }, [selectedSourceAccount, provider?.activeWallet, fuelWallet])
+    }, [selectedSourceAccount, provider?.activeWallet])
 
     const handleTransfer = useCallback(async () => {
         setButtonClicked(true)
@@ -44,12 +46,16 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
         try {
             setLoading(true)
 
-            if (!fuelWallet) throw Error("Fuel wallet not connected")
             if (!network) throw Error("Network not found")
             if (!depositAddress) throw Error("Deposit address not found")
             if (!network.metadata.watchdog_contract) throw Error("Watchdog contract not found")
             if (!amount) throw Error("Amount not found")
             if (!token) throw Error("Token not found")
+            if (!selectedSourceAccount?.address) throw Error("No selected account")
+
+            const fuelWallet = await fuel.getWallet(selectedSourceAccount.address);
+
+            if (!fuelWallet) throw Error("Fuel wallet not found")
 
             const provider = new Provider(network?.node_url);
             const contract = new Contract(network.metadata.watchdog_contract, WatchdogAbi, fuelWallet);
@@ -103,14 +109,14 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
         finally {
             setLoading(false)
         }
-    }, [swapId, callData, fuelWallet])
+    }, [swapId, amount, depositAddress, network, selectedSourceAccount, token, sequenceNumber, fuel])
 
     if (!wallet) {
         return <ConnectWalletButton />
     }
     else if (network && activeChainId !== undefined && networkChainId !== activeChainId) {
         return <ChangeNetworkButton
-            onChange={refetchChain}
+            onChange={refetchNetwork}
             chainId={networkChainId}
             network={network.display_name}
         />
@@ -126,7 +132,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
             }
             {
                 !loading &&
-                <ButtonWrapper isDisabled={!!loading || !fuelWallet} isSubmitting={!!loading || !fuelWallet} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
+                <ButtonWrapper isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
                     Send from wallet
                 </ButtonWrapper>
             }
