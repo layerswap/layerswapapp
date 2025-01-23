@@ -1,12 +1,9 @@
 
-import { CHAIN_IDS, Provider } from '@fuel-ts/account';
-import { WagmiProvider, useConfig } from 'wagmi';
+import { useConfig } from 'wagmi';
 import KnownInternalNames from '../../lib/knownIds';
 import { useSettingsState } from '../../context/settings';
 import { BaskoRequestAPI } from '../../lib/wallets/fuel/Bako';
 import { BakoSafeConnector } from '../../lib/fuels/connectors/bako-safe';
-import { WalletConnectConnector } from '../../lib/fuels/connectors/walletConnect';
-// import { BakoSafeConnector, FuelWalletConnector, FueletWalletConnector, SolanaConnector, WalletConnectConnector, defaultConnectors } from '@fuels/connectors';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { FuelProvider } from '@fuels/react';
 import { FueletWalletConnector } from '../../lib/fuels/connectors/fuelet-wallet';
@@ -32,17 +29,6 @@ const FuelProviderWrapper = ({
                 api: new BaskoRequestAPI(HOST_URL)
             }),
             new FueletWalletConnector(),
-            // new WalletConnectConnector({
-            //     projectId: WALLETCONNECT_PROJECT_ID,
-            //     wagmiConfig: config,
-            //     chainId: isMainnet ? CHAIN_IDS.fuel.mainnet : CHAIN_IDS.fuel.testnet,
-            //     ...(network?.node_url ? { fuelProvider: Provider.create(network?.node_url) } : {}),
-            // }),
-            // new SolanaConnector({
-            //     projectId: WALLETCONNECT_PROJECT_ID,
-            //     chainId: isMainnet ? CHAIN_IDS.fuel.mainnet : CHAIN_IDS.fuel.testnet,
-            //     ...(network?.node_url ? { fuelProvider: Provider.create(network?.node_url) } : {}),
-            // })
         ]
     }
 

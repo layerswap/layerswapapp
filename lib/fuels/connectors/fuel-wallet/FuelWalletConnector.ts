@@ -285,11 +285,11 @@ import {
        * @todo: Remove fetch provider once Fuel Wallet supports adding networks
        * by URL
        */
-      const provider = await Provider.create(networkUrl);
+      const provider = new Provider(networkUrl);
       return this.client.request('addNetwork', {
         network: {
           url: provider.url,
-          name: provider.getChain().name,
+          name: (await provider.getChain()).name,
         },
       });
     }
