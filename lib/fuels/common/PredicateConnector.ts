@@ -301,7 +301,7 @@ import {
   
     public async currentNetwork(): Promise<Network> {
       const { fuelProvider } = await this.getProviders();
-      const chainId = fuelProvider.getChainId();
+      const chainId = await fuelProvider.getChainId();
   
       return { url: fuelProvider.url, chainId: chainId };
     }
