@@ -1,4 +1,4 @@
-import React, { createContext } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
 import { ReactNode } from 'react';
 import { Info, RouteOff } from 'lucide-react';
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
@@ -30,8 +30,9 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         values,
     } = useFormikContext<SwapFormValues>();
     const { destinationRoutes: allDestinations, sourceRoutes: allSources } = useSettingsState()
+    const debouncedValues = useDebounce(values, 1500)
 
-    const { to, from, fromCurrency, toCurrency, toExchange, fromExchange, currencyGroup } = values;
+    const { to, from, fromCurrency, toCurrency, toExchange, fromExchange, currencyGroup } = debouncedValues;
     const query = useQueryState();
     const fromDisplayName = fromExchange ? fromExchange.display_name : from?.display_name;
     const toDisplayName = toExchange ? toExchange.display_name : to?.display_name;
@@ -100,5 +101,21 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         </ValidationContext.Provider>
     );
 };
+
+function useDebounce<T>(value: T, delay: number): T {
+    const [debouncedValue, setDebouncedValue] = useState(value);
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedValue(value);
+        }, delay);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [value, delay]);
+
+    return debouncedValue;
+}
 
 export const useValidationContext = () => React.useContext(ValidationContext);
