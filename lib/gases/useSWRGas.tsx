@@ -3,7 +3,7 @@ import { Network, Token } from "../../Models/Network"
 import { GasResolver } from "./gasResolver"
 
 //TODO: Add type for address
-const useSWRGas = (address: any, network: Network | undefined, token?: Token) => {
+const useSWRGas = (address: any, network: Network | undefined, token?: Token): { gas: number | undefined, isGasLoading: boolean, gasError: any } => {
 
     const { data: gasData, error: gasError, isLoading } = useSWR((network && address) ? `/gases/${address}/${network.name}/${token?.symbol}` : null, () => {
         if (!network || !token || !address) return

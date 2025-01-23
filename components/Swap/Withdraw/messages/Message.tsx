@@ -12,7 +12,7 @@ export type WalletMessageProps = {
 const WalletMessage: FC<WalletMessageProps> = ({ header, details, status, showInModal }) => {
     const [showErrorModal, setShowErrorModal] = useState(false);
 
-    return <div className="flex text-center mb-2 space-x-2">
+    return <div className="flex text-center space-x-2">
         <div className='relative'>
             {
                 status === "error" ?

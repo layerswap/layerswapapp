@@ -28,7 +28,7 @@ export default function PopoverSelectWrapper<T>({
         setShowModal(false)
     }, [setValue])
 
-    if (!values) return <Placeholder placeholder={placeholder} />
+    if (!values?.length) return <Placeholder placeholder={placeholder} />
 
     return (
         <Popover open={showModal} onOpenChange={() => !disabled && setShowModal(!showModal)}>

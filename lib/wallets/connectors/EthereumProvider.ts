@@ -905,7 +905,7 @@ export type QrModalOptions = Pick<
 >;
 
 import type { Connector, CreateConnectorFn } from 'wagmi';
-import type { WalletConnectParameters } from 'wagmi/connectors';
+import type { WalletConnectParameters } from '@wagmi/connectors';
 export type InstructionStepName =
     | 'install'
     | 'create'
