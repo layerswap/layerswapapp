@@ -50,9 +50,10 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     const routes = (shouldFilter) ? routesFromQuery : (direction === 'from' ? { data: sourceRoutes } : { data: destinationRoutes })
     const currencies = direction === 'from' ? routes?.data?.find(r => r.name === from?.name)?.tokens : routes?.data?.find(r => r.name === to?.name)?.tokens;
-
+console.log('routes', routes)
     const currencyMenuItems = GenerateCurrencyMenuItems(
         currencies,
+        routes,
         values,
         direction,
         balance || [],
@@ -119,7 +120,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         if (name === "toCurrency" && toCurrency && !isLoading && routes) {
             const value = routes.data?.find(r => r.name === to?.name)?.tokens?.find(r => r.symbol === toCurrency?.symbol)
             if (!value) return
-            
+
             if (!currencyIsSetManually && (value?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR)) {
                 const default_currency = currencyMenuItems?.find(c => c.baseObject?.status === "active")
                 if (default_currency) {
@@ -170,6 +171,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
 function GenerateCurrencyMenuItems(
     currencies: RouteToken[] | undefined,
+    routes: ApiResponse<RouteNetwork[]> | undefined,
     values: SwapFormValues,
     direction: string,
     balances?: Balance[],
@@ -188,8 +190,6 @@ function GenerateCurrencyMenuItems(
         const currencyIsAvailable = (currency?.status === "active" && error?.code !== LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) ||
             !((direction === 'from' ? query?.lockFromAsset : query?.lockToAsset) || query?.lockAsset || currency.status === 'inactive')
 
-        const routeNotFound = (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR);
-
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
         ) : undefined;
@@ -207,7 +207,7 @@ function GenerateCurrencyMenuItems(
             isAvailable: currencyIsAvailable,
             badge,
             details,
-            leftIcon: <RouteIcon direction={direction} isAvailable={currencyIsAvailable} routeNotFound={!!routeNotFound} type="token" />
+            leftIcon: <RouteIcon direction={direction} isAvailable={currencyIsAvailable} routeNotFound={false} type="token" />
         };
 
         return res
