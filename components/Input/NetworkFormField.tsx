@@ -58,6 +58,8 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     } = useFormikContext<SwapFormValues>();
     const name = direction
 
+    const [currencyIsSetManually, setCurrencyIsSetManually] = useState(false)
+
     const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, destination_address, currencyGroup } = values
     const query = useQueryState()
     const { lockFrom, lockTo } = query
@@ -113,6 +115,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         x.id == (direction === 'from' ? fromExchange : toExchange)?.name);
 
     const handleSelect = useCallback((item: SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean }) => {
+        setCurrencyIsSetManually(false)
         if (item.baseObject.name === value?.baseObject.name)
             return
         if (item.isExchange) {
@@ -170,7 +173,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     value?.isExchange ?
                         <CurrencyGroupFormField direction={name} />
                         :
-                        <CurrencyFormField direction={name} />
+                        <CurrencyFormField direction={name} currencyIsSetManually={currencyIsSetManually} setCurrencyIsSetManually={setCurrencyIsSetManually} />
                 }
             </div>
             {

@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useState } from "react";
+import { Dispatch, FC, SetStateAction, useCallback, useEffect, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
@@ -20,13 +20,11 @@ import { useSwapDataState } from "../../context/swap";
 import useSWRBalance from "../../lib/balances/useSWRBalance";
 import { useSettingsState } from "../../context/settings";
 
-const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
+const CurrencyFormField: FC<{ direction: SwapDirection, currencyIsSetManually?: boolean, setCurrencyIsSetManually?: Dispatch<SetStateAction<boolean>> }> = ({ direction, currencyIsSetManually, setCurrencyIsSetManually }) => {
     const {
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
-
-    const [currencyIsSetManually, setCurrencyIsSetManually] = useState(false)
 
     const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, destination_address, currencyGroup } = values
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
@@ -150,7 +148,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     const handleSelect = useCallback((item: SelectMenuItem<RouteToken>) => {
         setFieldValue(name, item.baseObject, true)
-        setCurrencyIsSetManually(true)
+        setCurrencyIsSetManually && setCurrencyIsSetManually(true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
     const isLocked = direction === 'from' ? query?.lockFromAsset
