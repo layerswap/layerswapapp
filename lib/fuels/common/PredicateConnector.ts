@@ -170,7 +170,7 @@ import {
   
       const b256Address = Address.fromDynamicInput(address).toString();
       const { fuelProvider } = await this.getProviders();
-      const chainId = fuelProvider.getChainId();
+      const chainId = await fuelProvider.getChainId();
       const walletAccount = this.predicateAccount.getAccountAddress(
         b256Address,
         await this.walletAccounts(),
@@ -301,7 +301,7 @@ import {
   
     public async currentNetwork(): Promise<Network> {
       const { fuelProvider } = await this.getProviders();
-      const chainId = fuelProvider.getChainId();
+      const chainId = await fuelProvider.getChainId();
   
       return { url: fuelProvider.url, chainId: chainId };
     }

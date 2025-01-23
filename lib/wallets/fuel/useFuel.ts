@@ -1,7 +1,8 @@
 import KnownInternalNames from "../../knownIds";
 import {
     useConnectors,
-    useFuel as useGlobalFuel
+    useFuel as useGlobalFuel,
+    useAccounts
 } from '@fuels/react';
 import { Connector, useAccount } from "wagmi";
 import {
@@ -37,7 +38,7 @@ export default function useFuel(): WalletProvider {
     const wallets = useWalletStore((state) => state.connectedWallets)
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
-
+    const { accounts } = useAccounts()
     const connectedWallets = wallets.filter(wallet => wallet.providerName === name)
 
     const connectWallet = async () => {
@@ -70,7 +71,7 @@ export default function useFuel(): WalletProvider {
 
             if (addresses && fuelConnector) {
 
-                const result = resolveFuelWallet({
+                const result = await resolveFuelWallet({
                     address: addresses[0],
                     addresses: addresses,
                     connector: fuelConnector,
@@ -124,7 +125,13 @@ export default function useFuel(): WalletProvider {
     }
 
     const switchAccount = async (wallet: Wallet) => {
-        await fuel.selectConnector(wallet.id)
+        try {
+            const res = await fuel.selectConnector(wallet.id)
+
+            if (!res) throw new Error('Could not switch account')
+        } catch (e) {
+            console.log(e)
+        }
     }
 
     const connectedConnectors = useMemo(() => connectors.filter(w => w.connected), [connectors])
@@ -135,7 +142,7 @@ export default function useFuel(): WalletProvider {
                 try {
                     const addresses = (await connector.accounts()).map(a => Address.fromAddressOrString(a).toB256())
                     if (connector.connected && addresses.length > 0) {
-                        const w = resolveFuelWallet({
+                        const w = await resolveFuelWallet({
                             address: addresses?.[0],
                             addresses,
                             connector,
@@ -153,9 +160,7 @@ export default function useFuel(): WalletProvider {
                 } catch (e) {
                     console.log(e)
                 }
-
             }
-
         })()
     }, [connectedConnectors])
 
@@ -200,7 +205,7 @@ type ResolveWalletProps = {
     networkIcon?: string,
 }
 
-const resolveFuelWallet = ({ address, addresses, commonSupportedNetworks, connectWallet, connector, disconnectWallet, evmAddress, evmConnector, name, networkIcon }: ResolveWalletProps) => {
+const resolveFuelWallet = async ({ address, addresses, commonSupportedNetworks, connectWallet, connector, disconnectWallet, evmAddress, evmConnector, name, networkIcon }: ResolveWalletProps) => {
     let fuelCurrentConnector: string | undefined = undefined
 
     let customConnectorname: string | undefined = undefined
@@ -222,6 +227,8 @@ const resolveFuelWallet = ({ address, addresses, commonSupportedNetworks, connec
             customConnectorname = evmConnector.name
         }
     }
+    const network = await connector.currentNetwork()
+    const chainId = network.chainId || network.url.toLowerCase().includes('testnet') ? 0 : 9889
 
     const w: Wallet = {
         id: connector.name,
@@ -229,6 +236,7 @@ const resolveFuelWallet = ({ address, addresses, commonSupportedNetworks, connec
         addresses: addresses,
         isActive: true,
         connect: connectWallet,
+        chainId: chainId,
         disconnect: () => disconnectWallet(connector.name),
         displayName: `${fuelCurrentConnector || connector.name} - Fuel`,
         providerName: name,

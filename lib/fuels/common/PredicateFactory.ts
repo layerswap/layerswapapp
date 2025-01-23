@@ -81,7 +81,7 @@ export class PredicateFactory {
 
   getMaxPredicateGasUsed = memoize(async (provider: Provider): Promise<BN> => {
     const fakeAccount = this.adapter.generateFakeAccount();
-    const chainId = provider.getChainId();
+    const chainId = await provider.getChainId();
     const fakePredicate = this.build(fakeAccount.getAddress(), provider, [0]);
     const request = new ScriptTransactionRequest();
     request.addCoinInput({

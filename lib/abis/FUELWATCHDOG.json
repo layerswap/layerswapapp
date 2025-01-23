@@ -12,9 +12,14 @@
             "concreteTypeId": "8c25cb3686462e9a86d2883c5688a22fe738b0bbc85f458d2d2b5f3f667c6d5a"
         },
         {
-            "type": "struct MyEvent",
-            "concreteTypeId": "35f8825c39ae1a89edbc75e86805508f15548895730edcd1f2b1321b5291970c",
-            "metadataTypeId": 0
+            "type": "struct SwapID",
+            "concreteTypeId": "fe04d267f8e97aed4f214782e62e801a27fa2df26a2c7585be443083908a349d",
+            "metadataTypeId": 1
+        },
+        {
+            "type": "struct std::address::Address",
+            "concreteTypeId": "f597b637c3b0f588fb8d7086c6f4735caa3122b85f0423b82e489f9bb58e2308",
+            "metadataTypeId": 2
         },
         {
             "type": "u256",
@@ -23,12 +28,26 @@
     ],
     "metadataTypes": [
         {
-            "type": "struct MyEvent",
-            "metadataTypeId": 0,
+            "type": "b256",
+            "metadataTypeId": 0
+        },
+        {
+            "type": "struct SwapID",
+            "metadataTypeId": 1,
             "components": [
                 {
                     "name": "num",
                     "typeId": "1b5759d94094368cfd443019e7ca5ec4074300e544e5ea993a979f5da627261e"
+                }
+            ]
+        },
+        {
+            "type": "struct std::address::Address",
+            "metadataTypeId": 2,
+            "components": [
+                {
+                    "name": "bits",
+                    "typeId": 0
                 }
             ]
         }
@@ -37,13 +56,21 @@
         {
             "inputs": [
                 {
-                    "name": "_Id",
+                    "name": "ID",
                     "concreteTypeId": "1b5759d94094368cfd443019e7ca5ec4074300e544e5ea993a979f5da627261e"
+                },
+                {
+                    "name": "recipient",
+                    "concreteTypeId": "f597b637c3b0f588fb8d7086c6f4735caa3122b85f0423b82e489f9bb58e2308"
                 }
             ],
             "name": "watch",
             "output": "2e38e77b22c314a449e91fafed92a43826ac6aa403ae6a8acb6cf58239fbaf5d",
             "attributes": [
+                {
+                    "name": "payable",
+                    "arguments": []
+                },
                 {
                     "name": "storage",
                     "arguments": [
@@ -60,8 +87,8 @@
             "concreteTypeId": "8c25cb3686462e9a86d2883c5688a22fe738b0bbc85f458d2d2b5f3f667c6d5a"
         },
         {
-            "logId": "3889001610850736777",
-            "concreteTypeId": "35f8825c39ae1a89edbc75e86805508f15548895730edcd1f2b1321b5291970c"
+            "logId": "18303986129540053741",
+            "concreteTypeId": "fe04d267f8e97aed4f214782e62e801a27fa2df26a2c7585be443083908a349d"
         }
     ],
     "messagesTypes": [],

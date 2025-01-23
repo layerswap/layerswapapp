@@ -25,8 +25,15 @@ export class SolanaBalanceProvider {
         );
 
         async function getTokenBalanceWeb3(connection: SolanaConnection, tokenAccount) {
-            const info = await connection.getTokenAccountBalance(tokenAccount);
-            return info?.value?.uiAmount;
+            try {
+                const info = await connection.getTokenAccountBalance(tokenAccount);
+                return info?.value?.uiAmount;
+            } catch (error) {
+                if (error.message && error.message.includes("could not find account")) {
+                    return 0;
+                }
+                throw error;
+            }
         }
 
         for (let i = 0; i < network.tokens.length; i++) {
