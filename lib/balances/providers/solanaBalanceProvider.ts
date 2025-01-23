@@ -32,7 +32,7 @@ export class SolanaBalanceProvider {
                 if (error.message && error.message.includes("could not find account")) {
                     return 0;
                 }
-                return null;
+                throw error;
             }
         }
 
