@@ -4,7 +4,7 @@ import { useSettingsState } from "../../context/settings";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
-import { ResolveExchangeOrder, ResolveNetworkOrder, SortAscending } from "../../lib/sorting"
+import { ResolveExchangeOrder, ResolveNetworkOrder, SortAscending, SortNetworks } from "../../lib/sorting"
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
 import { useQueryState } from "../../context/query";
@@ -123,6 +123,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             setFieldValue(`${name}Exchange`, null)
             setFieldValue(name, item.baseObject, true)
             const currency = name == "from" ? fromCurrency : toCurrency
+
             const assetSubstitute = (item.baseObject as RouteNetwork)?.tokens?.find(a => a.symbol === currency?.symbol)
             if (assetSubstitute) {
                 setFieldValue(`${name}Currency`, assetSubstitute, true)
@@ -236,7 +237,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             leftIcon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={false} type="network" />,
         }
         return res;
-    }).sort(SortAscending) || [];
+    }).sort(SortNetworks) || [];
 
     const mappedExchanges = exchanges?.map(e => {
         const res: SelectMenuItem<Exchange> & { isExchange: boolean } = {

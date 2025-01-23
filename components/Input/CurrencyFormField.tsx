@@ -50,7 +50,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     const routes = (shouldFilter) ? routesFromQuery : (direction === 'from' ? { data: sourceRoutes } : { data: destinationRoutes })
     const currencies = direction === 'from' ? routes?.data?.find(r => r.name === from?.name)?.tokens : routes?.data?.find(r => r.name === to?.name)?.tokens;
-console.log('routes', routes)
+
     const currencyMenuItems = GenerateCurrencyMenuItems(
         currencies,
         routes,
