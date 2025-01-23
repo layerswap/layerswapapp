@@ -19,18 +19,21 @@ export const SortNetworks = (a: SelectMenuItem<RouteNetwork> & { order?: number 
 
     return a.order - b.order;
 };
-export function ResolveNetworkOrder(network: RouteNetwork, direction: SwapDirection, is_new: boolean) {
+export function ResolveNetworkOrder(network: RouteNetwork, direction: SwapDirection, is_new: boolean, isAvailable: boolean) {
     let orderProp: keyof NetworkSettings = direction === 'from' ? 'OrderInSource' : 'OrderInDestination';
     const initial_order = resolveInitialWeightedOrder(NetworkSettings.KnownSettings[network.name]?.[orderProp], 1);
 
     const is_active = network.tokens?.some(r => r.status === 'active');
     const is_inactive = network.tokens?.every(r => r.status === 'inactive');
+    const routeNotFound = isAvailable && !network.tokens?.some(r => r.status === 'active');
 
     if (is_inactive) {
+        return initial_order + resolveConditionWeight(!is_inactive, 4) + resolveConditionWeight(is_active, 3) + resolveConditionWeight(is_new, 2) + 1;
+    } else if (routeNotFound) {
         return initial_order + resolveConditionWeight(!is_inactive, 4) + resolveConditionWeight(is_active, 3) + resolveConditionWeight(is_new, 2);
     }
 
-    return 0;  
+    return 0;
 }
 export function ResolveExchangeOrder(exchange: Exchange, direction: SwapDirection) {
 

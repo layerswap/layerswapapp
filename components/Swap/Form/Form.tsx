@@ -1,15 +1,12 @@
 import { Form, FormikErrors, useFormikContext } from "formik";
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import SwapButton from "../../buttons/swapButton";
 import React from "react";
 import NetworkFormField from "../../Input/NetworkFormField";
-import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
-import useSWR from "swr";
-import { ApiResponse } from "../../../Models/ApiResponse";
 import { motion, useCycle } from "framer-motion";
-import { ArrowUpDown, Loader2 } from 'lucide-react'
+import { ArrowUpDown } from 'lucide-react'
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
 import { useQueryState } from "../../../context/query";
@@ -20,11 +17,8 @@ import dynamic from "next/dynamic";
 import { Balance } from "../../../Models/Balance";
 import ResizablePanel from "../../ResizablePanel";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
-import { RouteNetwork } from "../../../Models/Network";
-import { resolveExchangesURLForSelectedToken } from "../../../helpers/routes";
 import ValidationError from "../../validationError";
 import { Exchange, ExchangeToken } from "../../../Models/Exchange";
-import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
 import { useValidationContext } from "../../../context/validationErrorContext";
 import { FormSourceWalletButton } from "../../Input/SourceWalletPicker";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
@@ -63,6 +57,8 @@ const SwapForm: FC<Props> = ({ partner }) => {
     const fromAsset = values.fromCurrency
 
     const { validationMessage } = useValidationContext();
+
+    const [currencyIsSetManually, setCurrencyIsSetManually] = useState<boolean>(false)
 
     const query = useQueryState();
     let valuesSwapperDisabled = false;
@@ -111,6 +107,8 @@ const SwapForm: FC<Props> = ({ partner }) => {
     }
 
     const valuesSwapper = useCallback(() => {
+        setCurrencyIsSetManually(false)
+
         let newFromExchange: Exchange | undefined
         let newToExchange: Exchange | undefined
         let newFromExchangeToken: ExchangeToken | undefined
@@ -191,7 +189,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
             <Widget.Content>
                 <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4 bg-secondary-700 rounded-xl'>
                     {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
-                        <NetworkFormField direction="from" label="From" className="rounded-t-lg pt-2.5" partner={partner} />
+                        <NetworkFormField direction="from" label="From" className="rounded-t-lg pt-2.5" partner={partner} currencyIsSetManually={currencyIsSetManually} setCurrencyIsSetManually={setCurrencyIsSetManually} />
                     </div>}
                     {!query?.hideFrom && !query?.hideTo &&
                         <button
@@ -209,7 +207,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                             </motion.div>
                         </button>}
                     {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
-                        <NetworkFormField direction="to" label="To" className="rounded-b-lg" partner={partner} />
+                        <NetworkFormField direction="to" label="To" className="rounded-b-lg" partner={partner} currencyIsSetManually={currencyIsSetManually} setCurrencyIsSetManually={setCurrencyIsSetManually} />
                     </div>}
                 </div>
                 {

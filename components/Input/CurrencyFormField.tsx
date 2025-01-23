@@ -117,7 +117,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection, currencyIsSetManually?: 
     useEffect(() => {
         if (name === "toCurrency" && toCurrency && !isLoading && routes) {
             const value = routes.data?.find(r => r.name === to?.name)?.tokens?.find(r => r.symbol === toCurrency?.symbol)
-            if (!value) return
+            if (!value || value === toCurrency) return
 
             if (!currencyIsSetManually && (value?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR)) {
                 const default_currency = currencyMenuItems?.find(c => c.baseObject?.status === "active")
@@ -128,7 +128,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection, currencyIsSetManually?: 
                 setFieldValue(name, value)
             }
         }
-    }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading])
+    }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading, currencyIsSetManually])
 
     useEffect(() => {
         if (name === "fromCurrency" && fromCurrency && !isLoading && routes) {
@@ -144,11 +144,10 @@ const CurrencyFormField: FC<{ direction: SwapDirection, currencyIsSetManually?: 
                 setFieldValue(name, value)
             }
         }
-    }, [toCurrency, currencyGroup, name, from, routes, error, isLoading])
+    }, [toCurrency, currencyGroup, name, from, routes, error, isLoading, currencyIsSetManually])
 
     const handleSelect = useCallback((item: SelectMenuItem<RouteToken>) => {
         setFieldValue(name, item.baseObject, true)
-        setCurrencyIsSetManually && setCurrencyIsSetManually(true)
     }, [name, direction, toCurrency, fromCurrency, from, to])
 
     const isLocked = direction === 'from' ? query?.lockFromAsset

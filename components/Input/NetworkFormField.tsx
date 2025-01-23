@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useEffect, useState } from "react";
+import { Dispatch, forwardRef, SetStateAction, useCallback, useEffect, useState } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
@@ -28,7 +28,9 @@ type Props = {
     direction: SwapDirection,
     label: string,
     className?: string,
-    partner?: Partner
+    partner?: Partner,
+    currencyIsSetManually?: boolean, 
+    setCurrencyIsSetManually?: Dispatch<SetStateAction<boolean>>
 }
 const Address = dynamic(() => import("../Input/Address"), {
     loading: () => <></>,
@@ -51,14 +53,12 @@ const getGroupName = (value: RouteNetwork | Exchange, type: 'cex' | 'network', c
     }
 }
 
-const NetworkFormField = forwardRef(function NetworkFormField({ direction, label, className, partner }: Props, ref: any) {
+const NetworkFormField = forwardRef(function NetworkFormField({ direction, label, className, partner, currencyIsSetManually, setCurrencyIsSetManually }: Props, ref: any) {
     const {
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const name = direction
-
-    const [currencyIsSetManually, setCurrencyIsSetManually] = useState<boolean>(false)
 
     const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, destination_address, currencyGroup } = values
     const query = useQueryState()
@@ -115,7 +115,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         x.id == (direction === 'from' ? fromExchange : toExchange)?.name);
 
     const handleSelect = useCallback((item: SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean }) => {
-        setCurrencyIsSetManually(false)
+        setCurrencyIsSetManually && setCurrencyIsSetManually(false)
         if (item.baseObject.name === value?.baseObject.name)
             return
         if (item.isExchange) {
@@ -136,7 +136,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                 setFieldValue(`${name}Currency`, manualSetCurrencySubstitute, true)
             }
         }
-    }, [name, value])
+    }, [name, value, setCurrencyIsSetManually])
 
     const isLocked = direction === 'from' ? !!lockFrom : !!lockTo
 
@@ -228,7 +228,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
                 !query.lockAsset && !query.lockFromAsset && !query.lockToAsset && !query.lockFrom && !query.lockTo && !query.lockNetwork && !query.lockExchange && r.tokens?.some(r => r.status !== 'inactive')
             );
 
-        const order = ResolveNetworkOrder(r, direction, isNewlyListed)
+        const order = ResolveNetworkOrder(r, direction, isNewlyListed, isAvailable)
         const routeNotFound = isAvailable && !r.tokens?.some(r => r.status === 'active');
 
         const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {
