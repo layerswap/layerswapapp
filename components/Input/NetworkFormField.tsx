@@ -58,7 +58,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     } = useFormikContext<SwapFormValues>();
     const name = direction
 
-    const [currencyIsSetManually, setCurrencyIsSetManually] = useState(false)
+    const [currencyIsSetManually, setCurrencyIsSetManually] = useState<boolean>(false)
 
     const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, destination_address, currencyGroup } = values
     const query = useQueryState()
@@ -126,10 +126,14 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             setFieldValue(`${name}Exchange`, null)
             setFieldValue(name, item.baseObject, true)
             const currency = name == "from" ? fromCurrency : toCurrency
+            const revCurrency = name == "from" ? toCurrency : fromCurrency
 
-            const assetSubstitute = (item.baseObject as RouteNetwork)?.tokens?.find(a => a.symbol === currency?.symbol)
+            const assetSubstitute = (item.baseObject as RouteNetwork)?.tokens?.find(a => a.symbol === currency?.symbol && a.status === 'active')
+            const manualSetCurrencySubstitute = (item.baseObject as RouteNetwork)?.tokens?.find(a => a.symbol === revCurrency?.symbol && a.status === 'active')
             if (assetSubstitute) {
                 setFieldValue(`${name}Currency`, assetSubstitute, true)
+            } else if (manualSetCurrencySubstitute) {
+                setFieldValue(`${name}Currency`, manualSetCurrencySubstitute, true)
             }
         }
     }, [name, value])
