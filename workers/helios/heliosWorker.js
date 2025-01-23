@@ -17,19 +17,23 @@ async function initWorker(initConfigs) {
     try {
         await init();
         // const ethCheckpoint = await fetch(initConfigs.hostname + '/api/getCheckpoint').then(res => res.json());
-        const configEthereum = {
+        const ethereumConfig = {
             executionRpc: `${initConfigs.version == 'sandbox' ? 'https://eth-sepolia.g.alchemy.com/v2/' : 'https://eth-mainnet.g.alchemy.com/v2/'}${initConfigs.alchemyKey}`,
             consensusRpc: initConfigs.version == 'sandbox' ? initConfigs.hostname + '/api/consensusRpc' : undefined,
             checkpoint: initConfigs.version == 'sandbox' ? '0x527a8a4949bc2128d73fa4e2a022aa56881b2053ba83c900013a66eb7c93343e' : '0xf5a73de5020ab47bb6648dee250e60d6f031516327f4b858bc7f3e3ecad84c40',
             dbType: "localstorage",
             network: initConfigs.version == 'sandbox' ? 'sepolia' : undefined
         };
-        const opstackConfigs = {
+        const opstackConfig = {
             executionRpc: `https://opt-mainnet.g.alchemy.com/v2/${initConfigs.alchemyKey}`,
             network: "op-mainnet",
         };
-        const networkName = initConfigs.network?.toLowerCase().includes('optimism') ? "opstack" : 'ethereum';
-        const providerConfig = networkName === 'opstack' ? opstackConfigs : configEthereum;
+        const baseConfig = {
+            executionRpc: `https://base-mainnet.g.alchemy.com/v2/${initConfigs.alchemyKey}`,
+            network: "base",
+        };
+        const networkName = initConfigs.network?.toLowerCase().includes('ethereum') ? "ethereum" : 'opstack';
+        const providerConfig = networkName === 'opstack' ? (initConfigs.network.toLowerCase().includes('base') ? baseConfig : opstackConfig) : ethereumConfig;
         const heliosProvider = new HeliosProvider(providerConfig, networkName);
         await heliosProvider.sync();
         self.web3Provider = new ethers.providers.Web3Provider(heliosProvider);
