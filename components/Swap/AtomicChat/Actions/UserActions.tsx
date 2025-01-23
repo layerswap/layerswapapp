@@ -5,7 +5,8 @@ import ActionStatus from "./Status/ActionStatus";
 import { WalletActionButton } from "../buttons";
 import posthog from "posthog-js";
 import ButtonStatus from "./Status/ButtonStatus";
-import { useRouter } from "next/router";
+import { NextRouter, useRouter } from "next/router";
+import { resolvePersistantQueryParams } from "../../../../helpers/querryHelper";
 
 export const UserCommitAction: FC = () => {
     const { source_network, destination_network, amount, address, source_asset, destination_asset, onCommit, commitId, setSourceDetails, setError } = useAtomicState();
@@ -257,10 +258,7 @@ export const UserRefundAction: FC = () => {
             })
 
             if (res) {
-                router.replace({
-                    pathname: router.pathname,
-                    query: { ...router.query, refundTxId: res }
-                }, undefined, { shallow: true })
+                setRefundQuery(res, router)
             }
             setRequestedRefund(true)
         }
@@ -339,4 +337,18 @@ export const UserRefundAction: FC = () => {
                 </WalletActionButton>
         }
     </div>
+}
+
+const setRefundQuery = (refundTxId: string, router: NextRouter) => {
+    const basePath = router?.basePath || ""
+    var swapURL = window.location.protocol + "//"
+        + window.location.host + `${basePath}/atomic`;
+    const params = resolvePersistantQueryParams(router.query)
+    if (router.query && Object.keys(router.query).length) {
+        const search = new URLSearchParams(router.query as any);
+        if (search)
+            swapURL += `?${search}&refundTxId=${refundTxId}`;
+    }
+
+    window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
 }

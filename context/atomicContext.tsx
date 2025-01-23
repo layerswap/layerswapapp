@@ -40,7 +40,7 @@ type DataContextType = {
     commitFromApi?: CommitFromApi,
     lightClient: LightClient | undefined,
     commitStatus: CommitStatus,
-    refundTxId?: string | undefined,
+    refundTxId?: string | null,
     onCommit: (commitId: string, txId: string) => void;
     setDestinationDetails: (data: Commit & { fetchedByLightClient?: boolean }) => void;
     setSourceDetails: (data: Commit) => void;
@@ -78,7 +78,8 @@ export function AtomicProvider({ children }) {
     const destination_network = networks.find(n => n.name.toUpperCase() === (destination as string)?.toUpperCase())
     const source_token = source_network?.tokens.find(t => t.symbol === source_asset)
     const destination_token = destination_network?.tokens.find(t => t.symbol === destination_asset)
-    const refundTxId = router.query.refundTxId as string | undefined
+    const urlParams = !!(typeof window !== 'undefined') && new URLSearchParams(window.location.search);
+    const refundTxId = urlParams ? urlParams.get('refundTxId') : null;
 
     const fetcher = (args) => fetch(args).then(res => res.json())
     const url = process.env.NEXT_PUBLIC_LS_API
@@ -180,7 +181,7 @@ const statusResolver = ({ commitFromApi, sourceDetails, destinationDetails, dest
     const lpLockDetected = destinationDetails?.hashlock ? true : false;
     const assetsLocked = ((sourceDetails?.hashlock && destinationDetails?.hashlock) || !!userLockTransaction) ? true : false;
     const redeemCompleted = (destinationDetails?.claimed == 3 ? true : false) || lpRedeemTransaction?.hash;
-    // debugger
+
     if (timelockExpired) return CommitStatus.TimelockExpired
     else if (redeemCompleted) return CommitStatus.RedeemCompleted
     else if (assetsLocked && sourceDetails?.claimed == 3 && destinationDetails?.claimed != 3) return CommitStatus.ManualClaim
