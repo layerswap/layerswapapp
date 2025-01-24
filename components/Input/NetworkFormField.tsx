@@ -228,7 +228,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
                 !query.lockAsset && !query.lockFromAsset && !query.lockToAsset && !query.lockFrom && !query.lockTo && !query.lockNetwork && !query.lockExchange && r.tokens?.some(r => r.status !== 'inactive')
             );
 
-        const order = ResolveNetworkOrder(r, direction, isNewlyListed, isAvailable)
+        const order = ResolveNetworkOrder(r, direction, isNewlyListed)
         const routeNotFound = isAvailable && !r.tokens?.some(r => r.status === 'active');
 
         const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {
