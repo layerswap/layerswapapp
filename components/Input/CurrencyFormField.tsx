@@ -143,7 +143,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         const oppositeCurrency = direction === 'from' ? toCurrency : fromCurrency
         if (oppositeCurrency && !oppositeCurrency?.manuallySet) {
             const network = direction === 'to' ? from : to
-            const default_currency = network?.tokens?.find(t => t.symbol === item.baseObject.symbol)
+            const default_currency = network?.tokens?.find(t => t.symbol === item.baseObject.symbol) || network?.tokens?.find(t => t.symbol.includes(item.baseObject.symbol) || item.baseObject.symbol.includes(t.symbol))
             if (default_currency) {
                 await setFieldValue(direction === 'from' ? "validatingSource" : "validatingDestination", true, true)
                 await setFieldValue(`${direction == "from" ? "to" : "from"}Currency`, default_currency, true)
