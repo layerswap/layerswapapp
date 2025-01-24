@@ -20,7 +20,7 @@ import { useSwapDataState } from "../../context/swap";
 import useSWRBalance from "../../lib/balances/useSWRBalance";
 import { useSettingsState } from "../../context/settings";
 
-const CurrencyFormField: FC<{ direction: SwapDirection, currencyIsSetManually?: boolean, setCurrencyIsSetManually?: Dispatch<SetStateAction<boolean>> }> = ({ direction, currencyIsSetManually, setCurrencyIsSetManually }) => {
+const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
         values,
         setFieldValue,
