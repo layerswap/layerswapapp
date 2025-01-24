@@ -1,22 +1,43 @@
 import { Exchange, ExchangeToken } from "../Models/Exchange";
 import { RouteNetwork, RouteToken } from "../Models/Network";
 import { SwapDirection } from "../components/DTOs/SwapFormValues";
+import { SelectMenuItem } from "../components/Select/Shared/Props/selectMenuItem";
 import CurrencySettings from "./CurrencySettings";
 import ExchangeSettings from "./ExchangeSettings";
 import NetworkSettings from "./NetworkSettings";
 
 export const SortAscending = (x: { order: number }, y: { order: number }) => x.order - y.order;
 
-export function ResolveNetworkOrder(network: RouteNetwork, direction: SwapDirection, is_new: boolean) {
+export const SortNetworks = (
+    a: { order: number; name: string },
+    b: { order: number; name: string }
+) => {
+    if (a.order !== b.order) {
+        return b.order - a.order;
+    }
 
+    return a.name.localeCompare(b.name);
+};
 
-    let orderProp: keyof NetworkSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
-    const initial_order = resolveInitialWeightedOrder(NetworkSettings.KnownSettings[network.name]?.[orderProp], 1)
+export function ResolveNetworkOrder(
+    network: RouteNetwork,
+    direction: SwapDirection,
+    is_new: boolean
+) {
+    let orderProp: keyof NetworkSettings = direction === 'from' ? 'OrderInSource' : 'OrderInDestination';
+    const initial_order = resolveInitialWeightedOrder(NetworkSettings.KnownSettings[network.name]?.[orderProp], 1);
 
-    const is_active = network.tokens?.some(r => r.status === 'active')
-    const is_inactive = network.tokens?.every(r => r.status === 'inactive')
+    const is_inactive = network.tokens?.every(r => r.status === 'inactive');
 
-    return initial_order + resolveConditionWeight(!is_inactive, 4) + resolveConditionWeight(is_active, 3) + resolveConditionWeight(is_new, 2);
+    if (is_new) {
+        return 100 + initial_order;
+    }
+
+    if (is_inactive) {
+        return -1;
+    }
+
+    return initial_order;
 }
 export function ResolveExchangeOrder(exchange: Exchange, direction: SwapDirection) {
 

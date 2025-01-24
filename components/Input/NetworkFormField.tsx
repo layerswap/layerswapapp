@@ -1,10 +1,10 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useEffect, useState } from "react";
+import { Dispatch, forwardRef, SetStateAction, useCallback, useEffect, useState } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
-import { ResolveExchangeOrder, ResolveNetworkOrder, SortAscending } from "../../lib/sorting"
+import { ResolveExchangeOrder, ResolveNetworkOrder, SortAscending, SortNetworks } from "../../lib/sorting"
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
 import { useQueryState } from "../../context/query";
@@ -28,7 +28,9 @@ type Props = {
     direction: SwapDirection,
     label: string,
     className?: string,
-    partner?: Partner
+    partner?: Partner,
+    currencyIsSetManually?: boolean,
+    setCurrencyIsSetManually?: Dispatch<SetStateAction<boolean>>
 }
 const Address = dynamic(() => import("../Input/Address"), {
     loading: () => <></>,
@@ -123,9 +125,14 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             setFieldValue(`${name}Exchange`, null)
             setFieldValue(name, item.baseObject, true)
             const currency = name == "from" ? fromCurrency : toCurrency
-            const assetSubstitute = (item.baseObject as RouteNetwork)?.tokens?.find(a => a.symbol === currency?.symbol)
+            const revCurrency = name == "from" ? toCurrency : fromCurrency
+
+            const assetSubstitute = (item.baseObject as RouteNetwork)?.tokens?.find(a => a.symbol === currency?.symbol && a.status === 'active')
+            const manualSetCurrencySubstitute = (item.baseObject as RouteNetwork)?.tokens?.find(a => a.symbol === revCurrency?.symbol && a.status === 'active')
             if (assetSubstitute) {
                 setFieldValue(`${name}Currency`, assetSubstitute, true)
+            } else if (manualSetCurrencySubstitute) {
+                setFieldValue(`${name}Currency`, manualSetCurrencySubstitute, true)
             }
         }
     }, [name, value])
@@ -233,10 +240,10 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             group: getGroupName(r, 'network', isAvailable && !routeNotFound),
             isExchange: false,
             badge,
-            leftIcon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} type="network" />,
+            leftIcon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={false} type="network" />,
         }
         return res;
-    }).sort(SortAscending) || [];
+    }).sort(SortNetworks) || [];
 
     const mappedExchanges = exchanges?.map(e => {
         const res: SelectMenuItem<Exchange> & { isExchange: boolean } = {
