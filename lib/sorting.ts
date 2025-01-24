@@ -8,29 +8,36 @@ import NetworkSettings from "./NetworkSettings";
 
 export const SortAscending = (x: { order: number }, y: { order: number }) => x.order - y.order;
 
-export const SortNetworks = (a: SelectMenuItem<RouteNetwork> & { order?: number }, b: SelectMenuItem<RouteNetwork> & { order?: number }) => {
-    if (a.order === 0 && b.order === 0) {
-        return a.name.localeCompare(b.name);
+export const SortNetworks = (
+    a: { order: number; name: string },
+    b: { order: number; name: string }
+) => {
+    if (a.order !== b.order) {
+        return b.order - a.order;
     }
 
-    if (a.order === 0) return -1;
-
-    if (b.order === 0) return 1;
-
-    return a.order - b.order;
+    return a.name.localeCompare(b.name);
 };
-export function ResolveNetworkOrder(network: RouteNetwork, direction: SwapDirection, is_new: boolean) {
+
+export function ResolveNetworkOrder(
+    network: RouteNetwork,
+    direction: SwapDirection,
+    is_new: boolean
+) {
     let orderProp: keyof NetworkSettings = direction === 'from' ? 'OrderInSource' : 'OrderInDestination';
     const initial_order = resolveInitialWeightedOrder(NetworkSettings.KnownSettings[network.name]?.[orderProp], 1);
 
-    const is_active = network.tokens?.some(r => r.status === 'active');
     const is_inactive = network.tokens?.every(r => r.status === 'inactive');
 
-    if (is_inactive) {
-        return initial_order + resolveConditionWeight(!is_inactive, 4) + resolveConditionWeight(is_active, 3) + resolveConditionWeight(is_new, 2);
+    if (is_new) {
+        return 100 + initial_order;
     }
 
-    return 0;  
+    if (is_inactive) {
+        return -1;
+    }
+
+    return initial_order;
 }
 export function ResolveExchangeOrder(exchange: Exchange, direction: SwapDirection) {
 
