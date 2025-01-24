@@ -119,15 +119,8 @@ const CurrencyFormField: FC<{ direction: SwapDirection, currencyIsSetManually?: 
             (async () => {
                 const value = routes.data?.find(r => r.name === to?.name)?.tokens?.find(r => r.symbol === toCurrency?.symbol)
                 if (!value || value === toCurrency) return
-
-                if (value?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) {
-                    const default_currency = currencyMenuItems?.find(c => c.baseObject?.status === "active")
-                    if (default_currency) {
-                        await setFieldValue(name, default_currency.baseObject, true)
-                    }
-                } else {
-                    await setFieldValue(name, value, true)
-                }
+                (value as any).manuallySet = toCurrency.manuallySet
+                await setFieldValue(name, value)
                 await setFieldValue("validatingDestination", isLoading, true)
             })()
         }
@@ -139,15 +132,8 @@ const CurrencyFormField: FC<{ direction: SwapDirection, currencyIsSetManually?: 
             (async () => {
                 const value = routes.data?.find(r => r.name === from?.name)?.tokens?.find(r => r.symbol === fromCurrency?.symbol)
                 if (!value || value === fromCurrency) return
-
-                if (value?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) {
-                    const default_currency = currencyMenuItems?.find(c => c.baseObject?.status === "active")
-                    if (default_currency) {
-                        await setFieldValue(name, default_currency.baseObject, true)
-                    }
-                } else {
-                    await setFieldValue(name, value)
-                }
+                (value as any).manuallySet = fromCurrency.manuallySet
+                await setFieldValue(name, value)
                 await setFieldValue("validatingSource", isLoading, true)
             })()
         }
@@ -163,7 +149,8 @@ const CurrencyFormField: FC<{ direction: SwapDirection, currencyIsSetManually?: 
                 await setFieldValue(`${direction == "from" ? "to" : "from"}Currency`, default_currency, true)
             }
         }
-        await setFieldValue(name, { ...item.baseObject, manuallySet: true }, true)
+        (item.baseObject as any).manuallySet = true
+        await setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to, values])
 
     const isLocked = direction === 'from' ? query?.lockFromAsset
