@@ -58,8 +58,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
 
     const { validationMessage } = useValidationContext();
 
-    const [currencyIsSetManually, setCurrencyIsSetManually] = useState<boolean>(false)
-
     const query = useQueryState();
     let valuesSwapperDisabled = false;
 
@@ -107,8 +105,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
     }
 
     const valuesSwapper = useCallback(() => {
-        setCurrencyIsSetManually(false)
-
         let newFromExchange: Exchange | undefined
         let newToExchange: Exchange | undefined
         let newFromExchangeToken: ExchangeToken | undefined
@@ -189,7 +185,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
             <Widget.Content>
                 <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4 bg-secondary-700 rounded-xl'>
                     {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
-                        <NetworkFormField direction="from" label="From" className="rounded-t-lg pt-2.5" partner={partner} currencyIsSetManually={currencyIsSetManually} setCurrencyIsSetManually={setCurrencyIsSetManually} />
+                        <NetworkFormField direction="from" label="From" className="rounded-t-lg pt-2.5" partner={partner} />
                     </div>}
                     {!query?.hideFrom && !query?.hideTo &&
                         <button
@@ -207,7 +203,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                             </motion.div>
                         </button>}
                     {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
-                        <NetworkFormField direction="to" label="To" className="rounded-b-lg" partner={partner} currencyIsSetManually={currencyIsSetManually} setCurrencyIsSetManually={setCurrencyIsSetManually} />
+                        <NetworkFormField direction="to" label="To" className="rounded-b-lg" partner={partner} />
                     </div>}
                 </div>
                 {

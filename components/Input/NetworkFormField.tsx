@@ -29,7 +29,7 @@ type Props = {
     label: string,
     className?: string,
     partner?: Partner,
-    currencyIsSetManually?: boolean, 
+    currencyIsSetManually?: boolean,
     setCurrencyIsSetManually?: Dispatch<SetStateAction<boolean>>
 }
 const Address = dynamic(() => import("../Input/Address"), {
@@ -53,7 +53,7 @@ const getGroupName = (value: RouteNetwork | Exchange, type: 'cex' | 'network', c
     }
 }
 
-const NetworkFormField = forwardRef(function NetworkFormField({ direction, label, className, partner, currencyIsSetManually, setCurrencyIsSetManually }: Props, ref: any) {
+const NetworkFormField = forwardRef(function NetworkFormField({ direction, label, className, partner }: Props, ref: any) {
     const {
         values,
         setFieldValue,
@@ -115,7 +115,6 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         x.id == (direction === 'from' ? fromExchange : toExchange)?.name);
 
     const handleSelect = useCallback((item: SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean }) => {
-        setCurrencyIsSetManually && setCurrencyIsSetManually(false)
         if (item.baseObject.name === value?.baseObject.name)
             return
         if (item.isExchange) {
@@ -136,7 +135,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                 setFieldValue(`${name}Currency`, manualSetCurrencySubstitute, true)
             }
         }
-    }, [name, value, setCurrencyIsSetManually])
+    }, [name, value])
 
     const isLocked = direction === 'from' ? !!lockFrom : !!lockTo
 
