@@ -26,10 +26,11 @@ export function ResolveNetworkOrder(network: RouteNetwork, direction: SwapDirect
     const is_active = network.tokens?.some(r => r.status === 'active');
     const is_inactive = network.tokens?.every(r => r.status === 'inactive');
 
-    if (is_inactive)
-        initial_order + resolveConditionWeight(!is_inactive, 4) + resolveConditionWeight(is_active, 3) + resolveConditionWeight(is_new, 2) + 1;
+    if (is_inactive) {
+        return initial_order + resolveConditionWeight(!is_inactive, 4) + resolveConditionWeight(is_active, 3) + resolveConditionWeight(is_new, 2);
+    }
 
-    return 0;
+    return 0;  
 }
 export function ResolveExchangeOrder(exchange: Exchange, direction: SwapDirection) {
 
