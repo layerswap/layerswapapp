@@ -294,11 +294,11 @@ export class BakoSafeConnector extends FuelConnector {
       `/connections/${this.sessionId}/currentNetwork`,
     );
 
-    const provider = await Provider.create(data);
+    const provider = new Provider(data);
 
     return {
       url: provider.url,
-      chainId: provider.getChainId(),
+      chainId: await provider.getChainId(),
     };
   }
 
