@@ -27,12 +27,11 @@ const ValidationContext = createContext<ValidationContextType>(defaultContextVal
 export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
 
     const {
-        values,
+        values
     } = useFormikContext<SwapFormValues>();
     const { destinationRoutes: allDestinations, sourceRoutes: allSources } = useSettingsState()
-    const debouncedValues = useDebounce(values, 1500)
 
-    const { to, from, fromCurrency, toCurrency, toExchange, fromExchange, currencyGroup } = debouncedValues;
+    const { to, from, fromCurrency, toCurrency, toExchange, fromExchange, currencyGroup, validatingSource, validatingDestination } = values;
     const query = useQueryState();
     const fromDisplayName = fromExchange ? fromExchange.display_name : from?.display_name;
     const toDisplayName = toExchange ? toExchange.display_name : to?.display_name;
@@ -87,8 +86,7 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
             validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info stroke='#f8974b' className='w-4 h-4 ' /> };
         }
     }
-    else if (currencyGroup?.status === 'not_found' || toCurrency?.status === 'not_found' || fromCurrency?.status === 'not_found') {
-
+    else if (!validatingSource && !validatingDestination && (currencyGroup?.status === 'not_found' || toCurrency?.status === 'not_found' || fromCurrency?.status === 'not_found')) {
         validationMessage = 'Please change one of the selected tokens';
         validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
     }
@@ -102,20 +100,5 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     );
 };
 
-function useDebounce<T>(value: T, delay: number): T {
-    const [debouncedValue, setDebouncedValue] = useState(value);
-
-    useEffect(() => {
-        const handler = setTimeout(() => {
-            setDebouncedValue(value);
-        }, delay);
-
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [value, delay]);
-
-    return debouncedValue;
-}
 
 export const useValidationContext = () => React.useContext(ValidationContext);

@@ -177,7 +177,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     value?.isExchange ?
                         <CurrencyGroupFormField direction={name} />
                         :
-                        <CurrencyFormField direction={name} currencyIsSetManually={currencyIsSetManually} setCurrencyIsSetManually={setCurrencyIsSetManually} />
+                        <CurrencyFormField direction={name} />
                 }
             </div>
             {

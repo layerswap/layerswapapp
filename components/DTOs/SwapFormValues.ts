@@ -4,8 +4,9 @@ import { Exchange, ExchangeToken } from "../../Models/Exchange";
 export type SwapFormValues = {
   amount?: string;
   destination_address?: string;
-  fromCurrency?: RouteToken;
-  toCurrency?: RouteToken;
+  //TODO: refactor
+  fromCurrency?: RouteToken & { manuallySet?: boolean };
+  toCurrency?: RouteToken & { manuallySet?: boolean };
   refuel?: boolean;
   from?: RouteNetwork;
   to?: RouteNetwork;
@@ -13,6 +14,8 @@ export type SwapFormValues = {
   toExchange?: Exchange,
   currencyGroup?: ExchangeToken
   depositMethod?: 'wallet' | 'deposit_address',
+  validatingSource?: boolean;
+  validatingDestination?: boolean;
 }
 
 
