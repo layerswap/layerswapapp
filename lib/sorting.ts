@@ -23,12 +23,13 @@ export function ResolveNetworkOrder(
     is_new: boolean
 ) {
     const is_inactive = network.tokens?.every(r => r.status === 'inactive');
-    if (is_new) {
-        return 100;
-    }
 
     if (is_inactive) {
         return -1;
+    }
+
+    if (is_new) {
+        return 100;
     }
 
     return 50;
