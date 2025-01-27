@@ -83,6 +83,20 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         }
         else if (default_currency) {
             setFieldValue(name, default_currency.baseObject, true)
+
+            const resetFromCurrency = fromCurrency && !fromCurrency?.manuallySet && !query?.lockFromAsset
+                && (fromCurrency?.symbol !== default_currency.baseObject.symbol
+                    || fromCurrency?.symbol.includes(default_currency.baseObject.symbol)
+                    || default_currency.baseObject.symbol.includes(fromCurrency?.symbol)
+                )
+            if (resetFromCurrency) {
+                const newFromCurrency = from?.tokens.find(t => t.symbol === default_currency.baseObject.symbol)
+                    || from?.tokens.find(t => t.symbol.includes(default_currency.baseObject.symbol) || default_currency.baseObject.symbol.includes(t.symbol))
+                if (newFromCurrency) {
+                    setFieldValue("validatingSource", true, true)
+                    setFieldValue("fromCurrency", newFromCurrency, true)
+                }
+            }
         }
     }, [to, query, routes])
 
@@ -111,6 +125,21 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         }
         else if (default_currency) {
             setFieldValue(name, default_currency.baseObject, true)
+
+            const resetToCurrency = toCurrency && !toCurrency?.manuallySet && !query?.lockFromAsset
+                && (toCurrency?.symbol !== default_currency.baseObject.symbol
+                    || toCurrency?.symbol.includes(default_currency.baseObject.symbol)
+                    || default_currency.baseObject.symbol.includes(toCurrency?.symbol)
+                )
+            if (resetToCurrency) {
+                const newToCurrency = to?.tokens.find(t => t.symbol === default_currency.baseObject.symbol)
+                    || to?.tokens.find(t => t.symbol.includes(default_currency.baseObject.symbol) || default_currency.baseObject.symbol.includes(t.symbol))
+                if (newToCurrency) {
+                    setFieldValue("validatingDestination", true, true)
+                    setFieldValue("toCurrency", newToCurrency, true)
+                }
+            }
+
         }
     }, [from, query, routes])
 
