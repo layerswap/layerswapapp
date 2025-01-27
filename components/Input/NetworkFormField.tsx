@@ -212,7 +212,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
         }))
         .slice(0, 5)
         .map(r => r.name);
-console.log(routes)
+
     const mappedLayers = routes?.map(r => {
         const isNewlyListed = r?.tokens?.every(t => new Date(t?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK);
         const badge = isNewlyListed ? (
