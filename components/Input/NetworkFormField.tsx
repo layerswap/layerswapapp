@@ -210,6 +210,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             ...r,
             totalValue: r.tokens?.reduce((sum, t) => sum + ((direction === "from" ? t?.source_rank : t?.destination_rank) || 0), 0) || 0
         }))
+        .sort((a, b) => b.totalValue - a.totalValue)
         .slice(0, 5)
         .map(r => r.name);
 
