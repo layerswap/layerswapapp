@@ -23,6 +23,7 @@ import DestinationWalletPicker from "./DestinationWalletPicker";
 import dynamic from "next/dynamic";
 import { Partner } from "../../Models/Partner";
 import { PlusIcon } from "lucide-react";
+import useWallet from "../../hooks/useWallet";
 
 type Props = {
     direction: SwapDirection,
@@ -64,6 +65,11 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const query = useQueryState()
     const { lockFrom, lockTo } = query
 
+    const walletNetwork = fromExchange ? undefined : values.from
+    const { provider } = useWallet(walletNetwork, 'withdrawal')
+    const availableWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
+console.log(availableWallets,"availableWallets")
+console.log(walletNetwork,"walletNetwork")
     const { sourceExchanges, destinationExchanges, destinationRoutes, sourceRoutes } = useSettingsState();
     let placeholder = "";
     let searchHint = "";
@@ -170,10 +176,10 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                 }
             </div>
             {
-                direction === "to" && !destination_address && !toExchange && to &&
+                direction === "to" && !destination_address && !toExchange && to && (from?.type !== to?.type) && availableWallets.length ?
                 <div className="flex items-center col-span-6">
                     <Address partner={partner} >{SecondDestinationWalletPicker}</Address>
-                </div>
+                </div> : null
             }
         </div>
     </div >)
