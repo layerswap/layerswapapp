@@ -38,8 +38,8 @@ const Address = dynamic(() => import("../Input/Address"), {
 
 const GROUP_ORDERS = { "Popular": 1, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
 export const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
-const getGroupName = (value: RouteNetwork | Exchange, type: 'cex' | 'network', canShowInPopular?: boolean) => {
-    if (NetworkSettings.KnownSettings[value.name]?.isFeatured && canShowInPopular) {
+const getGroupName = (value: RouteNetwork | Exchange, type: 'cex' | 'network', canShowInPopular?: boolean, popularNetworks?: string[]) => {
+    if (type === 'network' && popularNetworks?.includes(value.name) && canShowInPopular) {
         return "Popular";
     }
     else if (type === 'network') {
@@ -205,6 +205,14 @@ function groupByType(values: ISelectMenuItem[]) {
 }
 
 function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchange[], direction: SwapDirection, lock: boolean, query: QueryParams): (SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean })[] {
+    const popularNetworks = routes
+        ?.map(r => ({
+            ...r,
+            totalValue: r.tokens?.reduce((sum, t) => sum + ((direction === "from" ? t?.source_rank : t?.destination_rank) || 0), 0) || 0
+        }))
+        .slice(0, 5)
+        .map(r => r.name);
+console.log(routes)
     const mappedLayers = routes?.map(r => {
         const isNewlyListed = r?.tokens?.every(t => new Date(t?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK);
         const badge = isNewlyListed ? (
@@ -227,7 +235,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             order,
             imgSrc: r.logo,
             isAvailable: isAvailable,
-            group: getGroupName(r, 'network', isAvailable && !routeNotFound),
+            group: getGroupName(r, 'network', isAvailable && !routeNotFound, popularNetworks),
             isExchange: false,
             badge,
             leftIcon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={false} type="network" />,

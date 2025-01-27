@@ -43,6 +43,8 @@ export class Token {
     precision: number;
     listing_date: string;
     status?: 'active' | 'inactive' | 'not_found';
+    source_rank?: number | undefined;
+    destination_rank?: number | undefined;
 }
 
 export class RouteToken extends Token {
