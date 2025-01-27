@@ -1,7 +1,6 @@
 import { Exchange, ExchangeToken } from "../Models/Exchange";
 import { RouteNetwork, RouteToken } from "../Models/Network";
 import { SwapDirection } from "../components/DTOs/SwapFormValues";
-import { SelectMenuItem } from "../components/Select/Shared/Props/selectMenuItem";
 import CurrencySettings from "./CurrencySettings";
 import ExchangeSettings from "./ExchangeSettings";
 import NetworkSettings from "./NetworkSettings";
@@ -21,24 +20,20 @@ export const SortNetworks = (
 
 export function ResolveNetworkOrder(
     network: RouteNetwork,
-    direction: SwapDirection,
     is_new: boolean
 ) {
-    let orderProp: keyof NetworkSettings = direction === 'from' ? 'OrderInSource' : 'OrderInDestination';
-    const initial_order = resolveInitialWeightedOrder(NetworkSettings.KnownSettings[network.name]?.[orderProp], 1);
-
     const is_inactive = network.tokens?.every(r => r.status === 'inactive');
-
     if (is_new) {
-        return 100 + initial_order;
+        return 100;
     }
 
     if (is_inactive) {
         return -1;
     }
 
-    return initial_order;
+    return 50;
 }
+
 export function ResolveExchangeOrder(exchange: Exchange, direction: SwapDirection) {
 
     let orderProp: keyof NetworkSettings = direction == 'from' ? 'OrderInSource' : 'OrderInDestination';
