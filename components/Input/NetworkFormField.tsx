@@ -68,8 +68,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const walletNetwork = fromExchange ? undefined : values.from
     const { provider } = useWallet(walletNetwork, 'withdrawal')
     const availableWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
-console.log(availableWallets,"availableWallets")
-console.log(walletNetwork,"walletNetwork")
+
     const { sourceExchanges, destinationExchanges, destinationRoutes, sourceRoutes } = useSettingsState();
     let placeholder = "";
     let searchHint = "";
