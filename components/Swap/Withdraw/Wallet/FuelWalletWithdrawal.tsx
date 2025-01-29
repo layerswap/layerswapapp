@@ -31,7 +31,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
     const { selectedSourceAccount } = useSwapDataState()
     const { fuel } = useFuel()
 
-    const activeChainId = fuelNetwork?.chainId || fuelNetwork?.url.includes('testnet') ? 0 : 9889
+    const activeChainId = fuelNetwork?.chainId || (fuelNetwork?.url.includes('testnet') ? 0 : 9889)
 
     useEffect(() => {
         if (provider?.activeWallet && selectedSourceAccount) {
