@@ -22,7 +22,7 @@ const RequestStep: FC = () => {
     const commited = (sourceDetails || lpLockTx) ? true : false;
 
     const title = commited ? "Requested" : "Request"
-    const description = commitTxId ? <p><span>Transaction ID:</span> <a target="_blank" className="underline hover:no-underline" href={source_network?.transaction_explorer_template.replace('{0}', commitTxId)}>{shortenAddress(commitTxId)}</a></p> : <>Initiates a swap process with the solver</>
+    const description = (commitTxId && source_network) ? <p><span>Transaction ID:</span> <Link target="_blank" className="underline hover:no-underline" href={source_network?.transaction_explorer_template.replace('{0}', commitTxId)}>{shortenAddress(commitTxId)}</Link></p> : <>Initiates a swap process with the solver</>
     return <Step
         step={1}
         title={title}
@@ -226,7 +226,6 @@ type StepProps = {
 }
 const Step: FC<StepProps> = ({ step, title, description, active, children, completed, loading }) => {
     return <div className={`flex flex-col w-full bg-secondary-600 rounded-componentRoundness p-2 ${!active ? 'opacity-40' : ''}`}>
-        {/* TODO: text colors for none active steps */}
         <div className="flex items-center gap-3">
             <div className="w-10 h-9 text-center content-center bg-secondary-400 rounded-md grow">{step}</div>
             <div className="inline-flex items-center justify-between w-full">
