@@ -65,9 +65,13 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const query = useQueryState()
     const { lockFrom, lockTo } = query
 
-    const walletNetwork = fromExchange ? undefined : values.from
-    const { provider } = useWallet(walletNetwork, 'withdrawal')
-    const availableWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
+    const sourceWalletNetwork = fromExchange ? undefined : values.from
+    const destinationWalletNetwork = toExchange ? undefined : values.to
+
+    const { provider: withdrawalProvider } = useWallet(sourceWalletNetwork, 'withdrawal')
+    const { provider: autofilProvider } = useWallet(destinationWalletNetwork, 'autofil')
+
+    const availableWallets = withdrawalProvider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
 
     const { sourceExchanges, destinationExchanges, destinationRoutes, sourceRoutes } = useSettingsState();
     let placeholder = "";
@@ -134,6 +138,8 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
 
     const isLocked = direction === 'from' ? !!lockFrom : !!lockTo
 
+    const showAddDestinationAddress = direction === "to" && !destination_address && !toExchange && to && ((from && autofilProvider?.id !== withdrawalProvider?.id) || values.depositMethod === 'deposit_address')
+
     return (<div className={`${className}`}>
         <div className="flex justify-between items-center px-3 pt-2">
             <label htmlFor={name} className="block font-medium text-secondary-text text-sm pl-1 py-1">
@@ -175,10 +181,10 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                 }
             </div>
             {
-                direction === "to" && !destination_address && !toExchange && to && (from?.type !== to?.type) && availableWallets.length ?
+                showAddDestinationAddress &&
                 <div className="flex items-center col-span-6">
                     <Address partner={partner} >{SecondDestinationWalletPicker}</Address>
-                </div> : null
+                </div>
             }
         </div>
     </div >)
