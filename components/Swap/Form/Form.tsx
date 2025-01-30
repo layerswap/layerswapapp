@@ -6,7 +6,7 @@ import NetworkFormField from "../../Input/NetworkFormField";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
 import { motion, useCycle } from "framer-motion";
-import { ArrowUpDown } from 'lucide-react'
+import { ArrowUpDown, PlusIcon } from 'lucide-react'
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
 import { useQueryState } from "../../../context/query";
@@ -30,6 +30,10 @@ type Props = {
 }
 
 const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
+    loading: () => <></>,
+});
+
+const Address = dynamic(() => import("../../Input/Address"), {
     loading: () => <></>,
 });
 
@@ -231,22 +235,43 @@ const SwapForm: FC<Props> = ({ partner }) => {
                 </div>
             </Widget.Content>
             <Widget.Footer>
-                {
-                    shouldConnectWallet ?
-                        <FormSourceWalletButton />
-                        :
-                        <SwapButton
-                            className="plausible-event-name=Swap+initiated"
-                            type='submit'
-                            isDisabled={!isValid}
-                            isSubmitting={isSubmitting}>
-                            {ActionText(errors, actionDisplayName)}
-                        </SwapButton>
-                }
+                {resolveButton(shouldConnectWallet, values, isValid, errors, isSubmitting, actionDisplayName, partner)}
             </Widget.Footer>
         </Form>
     </Widget>
 }
+
+const resolveButton = (shouldConnectWallet: boolean, values: SwapFormValues, isValid: boolean, errors: FormikErrors<SwapFormValues>, isSubmitting: boolean, actionDisplayName: string, partner: Partner | undefined) => {
+    if (shouldConnectWallet) {
+        return <FormSourceWalletButton />;
+    }
+
+    if (values?.to && !values?.destination_address) {
+        return (
+            <button className="border border-primary disabled:border-primary-900 items-center space-x-1 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md transform hover:brightness-125 transition duration-200 ease-in-out bg-primary text-primary-actionButtonText py-3 px-2 md:px-3 plausible-event-name=Swap+initiated">
+                <Address partner={partner}>
+                    {
+                        () => <div className="flex justify-center space-x-2">
+                            <span className="order-first absolute left-0 inset-y-0 flex items-center pl-3"><PlusIcon className="stroke-1" /></span>
+                            <span className="grow text-center">Enter destination address</span>
+                        </div>
+                    }
+                </Address>
+            </button>
+        );
+    }
+
+    return (
+        <SwapButton
+            className="plausible-event-name=Swap+initiated"
+            type='submit'
+            isDisabled={!isValid}
+            isSubmitting={isSubmitting}
+        >
+            {ActionText(errors, actionDisplayName)}
+        </SwapButton>
+    );
+};
 
 function ActionText(errors: FormikErrors<SwapFormValues>, actionDisplayName: string): string {
     return errors.from?.toString()
@@ -255,7 +280,6 @@ function ActionText(errors: FormikErrors<SwapFormValues>, actionDisplayName: str
         || errors.toCurrency
         || errors.currencyGroup
         || errors.amount
-        || errors.destination_address
         || (actionDisplayName)
 }
 
