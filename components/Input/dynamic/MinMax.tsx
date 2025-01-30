@@ -42,7 +42,7 @@ const MinMax = () => {
         catch { }
     } else if (walletBalance && (walletBalance.amount >= Number(minAllowedAmount) && walletBalance.amount <= Number(maxAmountFromApi))) {
         if (((native_currency?.symbol === fromCurrency?.symbol) || !native_currency) && ((walletBalance.amount - gasAmount) >= Number(minAllowedAmount) && (walletBalance.amount - gasAmount) <= Number(maxAmountFromApi))) {
-            maxAllowedAmount = walletBalance.amount - gasAmount
+            maxAllowedAmount = Number((walletBalance.amount - gasAmount).toFixed(fromCurrency?.decimals))
         }
         else maxAllowedAmount = walletBalance.amount
     }
