@@ -12,7 +12,7 @@ import CurrencyFormField from "./CurrencyFormField";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import { RouteNetwork } from "../../Models/Network";
+import { RouteNetwork, RouteToken } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
 import { QueryParams } from "../../Models/QueryParams";
@@ -122,16 +122,24 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const value = menuItems.find(x => !x.isExchange ?
         x.id == (direction === "from" ? from : to)?.name :
         x.id == (direction === 'from' ? fromExchange : toExchange)?.name);
+    const reversedCurrency = direction === 'from' ? toCurrency : fromCurrency
 
     const handleSelect = useCallback((item: SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean }) => {
         if (item.baseObject.name === value?.baseObject.name)
             return
+
+        let defaultCurrency;
+        if (!item.isExchange && 'tokens' in item.baseObject) {
+            defaultCurrency = item.baseObject.tokens?.find(t => t.symbol === reversedCurrency?.symbol)
+        }
+
         if (item.isExchange) {
             setFieldValue(name, null)
             setFieldValue(`${name}Currency`, null)
             setFieldValue(`${name}Exchange`, item.baseObject, true)
         } else {
             setFieldValue(`${name}Exchange`, null)
+            setFieldValue(`${name}Currency`, defaultCurrency, true)
             setFieldValue(name, item.baseObject, true)
         }
     }, [name, value])
