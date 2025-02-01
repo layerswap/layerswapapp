@@ -135,13 +135,15 @@ export default function useParadex({ network }: Props): WalletProvider {
     }, [evmProvider, starknetProvider])
 
     const switchAccount = async (wallet: Wallet, address: string) => {
+        const evmWallet = evmProvider?.connectedWallets?.find(w => w.id === wallet.id)
+        const starknetWallet = starknetProvider?.connectedWallets?.find(w => w.id === wallet.id)
 
-        if (evmProvider.connectedWallets?.some(w => w.address.toLowerCase() === address.toLowerCase()) && evmProvider.switchAccount) {
-            evmProvider.switchAccount(wallet, address)
+        if (evmWallet && evmProvider.switchAccount && wallet.metadata?.l1Address) {
+            evmProvider.switchAccount(evmWallet, wallet.metadata?.l1Address)
             selectProvider(evmProvider.name)
         }
-        else if (starknetProvider.connectedWallets?.some(w => w.address.toLowerCase() === address.toLowerCase()) && starknetProvider.switchAccount) {
-            starknetProvider.switchAccount(wallet, address)
+        else if (starknetWallet && starknetProvider.switchAccount && wallet.metadata?.l1Address) {
+            starknetProvider.switchAccount(starknetWallet, wallet.metadata.l1Address)
             selectProvider(starknetProvider.name)
         }
     }
@@ -183,6 +185,10 @@ const resolveSingleWallet = (wallet: Wallet, name: string, accounts: { [key: str
     const displayName = `${wallet.id} (${shortenAddress(wallet.address)})`
     return {
         ...wallet,
+        metadata: {
+            ...wallet.metadata,
+            l1Address: wallet.address
+        },
         providerName: name,
         displayName,
         address: paradexAddress,
