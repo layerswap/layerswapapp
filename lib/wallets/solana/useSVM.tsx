@@ -1,37 +1,31 @@
 import KnownInternalNames from "../../knownIds"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon"
-import { Network } from "../../../Models/Network"
+import { Network, NetworkType } from "../../../Models/Network"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useMemo } from "react"
 import { useConnectModal } from "../../../components/WalletModal"
 import { useSettingsState } from "../../../context/settings"
+import { Adapter } from "@solana/wallet-adapter-base"
 
 const solanaNames = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet, KnownInternalNames.Networks.SolanaTestnet]
 
-export default function useSolana({ network }: { network: Network | undefined }): WalletProvider {
+export default function useSVM({ network }: { network: Network | undefined }): WalletProvider {
+    const { networks } = useSettingsState()
 
     const commonSupportedNetworks = [
-        KnownInternalNames.Networks.SolanaMainnet,
-        KnownInternalNames.Networks.SolanaDevnet,
-        KnownInternalNames.Networks.EclipseTestnet,
-        KnownInternalNames.Networks.EclipseMainnet
+        ...networks.filter(network => network.type === NetworkType.Solana).map(l => l.name)
     ]
 
     const name = 'Solana'
     const id = 'solana'
-    const { disconnect, wallet: solanaWallet, select, wallets } = useWallet();
-    const { networks } = useSettingsState()
+    const { disconnect, select, wallets } = useWallet();
 
     const connectedWallet = wallets.find(w => w.adapter.connected === true)
     const connectedAddress = connectedWallet?.adapter.publicKey?.toBase58()
     const connectedAdapterName = connectedWallet?.adapter.name
 
     const connectedWallets = useMemo(() => {
-
-        if (network?.name.toLowerCase().startsWith('eclipse') && !(connectedAdapterName?.toLowerCase() === "backpack" || connectedAdapterName?.toLowerCase() === "nightly")) {
-            return undefined
-        }
 
         const wallet: Wallet | undefined = (connectedAddress && connectedAdapterName) ? {
             id: connectedAdapterName,
@@ -43,9 +37,10 @@ export default function useSolana({ network }: { network: Network | undefined })
             connect: () => connectWallet(),
             isActive: true,
             addresses: [connectedAddress],
-            withdrawalSupportedNetworks: commonSupportedNetworks,
-            asSourceSupportedNetworks: commonSupportedNetworks,
-            autofillSupportedNetworks: commonSupportedNetworks,
+            isNotAvailable: isNotAvailable(connectedWallet?.adapter, network),
+            asSourceSupportedNetworks: resolveSupportedNetworks(commonSupportedNetworks, connectedAdapterName),
+            autofillSupportedNetworks: resolveSupportedNetworks(commonSupportedNetworks, connectedAdapterName),
+            withdrawalSupportedNetworks: resolveSupportedNetworks(commonSupportedNetworks, connectedAdapterName),
             networkIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo
         } : undefined
 
@@ -84,9 +79,10 @@ export default function useSolana({ network }: { network: Network | undefined })
             connect: () => connectWallet(),
             isActive: true,
             addresses: [connectedAddress],
-            withdrawalSupportedNetworks: commonSupportedNetworks,
-            asSourceSupportedNetworks: commonSupportedNetworks,
-            autofillSupportedNetworks: commonSupportedNetworks,
+            isNotAvailable: isNotAvailable(solanaConnector.adapter, network),
+            asSourceSupportedNetworks: resolveSupportedNetworks(commonSupportedNetworks, connector.id),
+            autofillSupportedNetworks: resolveSupportedNetworks(commonSupportedNetworks, connector.id),
+            withdrawalSupportedNetworks: resolveSupportedNetworks(commonSupportedNetworks, connector.id),
             networkIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo
         } : undefined
 
@@ -102,11 +98,13 @@ export default function useSolana({ network }: { network: Network | undefined })
         }
     }
 
+    const filterConnectors = wallet => !isNotAvailable(wallet.adapter, network)
+    const filteredWallets = wallets.filter(filterConnectors)
+
     const availableWalletsForConnect = useMemo(() => {
         const connectors: InternalConnector[] = [];
-        const solNetwork = network?.name?.toLowerCase().includes('eclipse') ? 'eclipse' : 'solana'
 
-        for (const wallet of wallets) {
+        for (const wallet of filteredWallets) {
 
             const internalConnector: InternalConnector = {
                 name: wallet.adapter.name,
@@ -115,19 +113,11 @@ export default function useSolana({ network }: { network: Network | undefined })
                 type: wallet.readyState === 'Installed' ? 'injected' : 'other'
             }
 
-            if (solNetwork === 'eclipse') {
-                if (!(wallet.adapter.name.toLowerCase() === "backpack" || wallet.adapter.name.toLowerCase() === "nightly")) {
-                    continue
-                } else {
-                    connectors.push(internalConnector)
-                }
-            } else {
-                connectors.push(internalConnector)
-            }
+            connectors.push(internalConnector)
         }
 
         return connectors;
-    }, [wallets]);
+    }, [filteredWallets]);
 
     const provider = {
         connectedWallets: connectedWallets,
@@ -144,4 +134,30 @@ export default function useSolana({ network }: { network: Network | undefined })
     }
 
     return provider
+}
+
+const isNotAvailable = (connector: Adapter | undefined, network: Network | undefined) => {
+    if (!network) return false
+    if (!connector) return true
+    return resolveSupportedNetworks([network.name], connector.name).length === 0
+}
+
+const networkSupport = {
+    soon: ["okx wallet", "tokenpocket"],
+    eclipse: ["nightly", "backpack"],
+};
+
+function resolveSupportedNetworks(supportedNetworks: string[], connectorId: string): string[] {
+    const supportedNetworksForWallet: string[] = [];
+
+    supportedNetworks.forEach((network) => {
+        const networkName = network.split("_")[0].toLowerCase();
+        if (networkName === "solana") {
+            supportedNetworksForWallet.push(networkName);
+        } else if (networkSupport[networkName] && networkSupport[networkName].includes(connectorId?.toLowerCase())) {
+            supportedNetworksForWallet.push(networkName);
+        }
+    });
+
+    return supportedNetworksForWallet;
 }
