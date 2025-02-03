@@ -143,7 +143,7 @@ const isNotAvailable = (connector: Adapter | undefined, network: Network | undef
 }
 
 const networkSupport = {
-    soon: ["okx wallet", "tokenpocket"],
+    soon: ["okx wallet", "tokenpocket", "nightly"],
     eclipse: ["nightly", "backpack"],
 };
 
