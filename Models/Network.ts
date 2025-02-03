@@ -23,6 +23,8 @@ export class Network {
     metadata: Metadata;
     deposit_methods: string[]
     token?: Token
+    source_rank?: number | undefined;
+    destination_rank?: number | undefined;
 }
 
 export class NetworkWithTokens extends Network {

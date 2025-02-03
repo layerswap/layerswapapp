@@ -206,11 +206,11 @@ function groupByType(values: ISelectMenuItem[]) {
 
 function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchange[], direction: SwapDirection, lock: boolean, query: QueryParams): (SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean })[] {
     const popularNetworks = routes
-        ?.map(r => ({
-            ...r,
-            totalValue: r.tokens?.reduce((sum, t) => sum + ((direction === "from" ? t?.source_rank : t?.destination_rank) || 0), 0) || 0
-        }))
-        .sort((a, b) => b.totalValue - a.totalValue)
+        ?.sort((a, b) =>
+        (direction === "from"
+            ? (a.source_rank ?? 0) - (b.source_rank ?? 0)
+            : (a.destination_rank ?? 0) - (b.destination_rank ?? 0))
+        )
         .slice(0, 5)
         .map(r => r.name);
 
