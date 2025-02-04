@@ -64,13 +64,14 @@ export default function useTron(): WalletProvider {
 
             const connectedWallet = wallets.find(w => w.adapter.connected === true)
             const connectedAddress = connectedWallet?.adapter.address
+
             const wallet: Wallet | undefined = connectedAddress ? {
                 address: connectedAddress,
                 providerName: name,
                 id: connectedWallet?.adapter.name,
                 displayName: `${connectedWallet.adapter.name} - Tron`,
                 networkIcon: network?.logo,
-                icon: resolveWalletConnectorIcon({ connector: String(connectedWallet?.adapter.name), address: connectedAddress }),
+                icon: resolveWalletConnectorIcon({ connector: String(connectedWallet?.adapter.name), address: connectedAddress, iconUrl: connectedWallet?.adapter.icon }),
                 disconnect,
                 connect: () => connectWallet(),
                 isActive: true,
