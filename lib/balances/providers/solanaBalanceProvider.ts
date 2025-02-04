@@ -1,18 +1,10 @@
 import { Balance } from "../../../Models/Balance";
-import { NetworkWithTokens } from "../../../Models/Network";
+import { NetworkType, NetworkWithTokens } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
-import KnownInternalNames from "../../knownIds";
 
 export class SolanaBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
-        return (
-            KnownInternalNames.Networks.SolanaMainnet.includes(network.name)
-            || KnownInternalNames.Networks.SolanaDevnet.includes(network.name)
-            || KnownInternalNames.Networks.SoonMainnet.includes(network.name)
-            || KnownInternalNames.Networks.SoonTestnet.includes(network.name)
-            || KnownInternalNames.Networks.EclipseMainnet.includes(network.name)
-            || KnownInternalNames.Networks.EclipseTestnet.includes(network.name)
-        )
+        return network.type === NetworkType.Solana
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
