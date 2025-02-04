@@ -21,7 +21,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ source_token, destination
 
     return <div className="w-full h-full">
         <div className="flex items-center justify-between w-full">
-            <span className="md:font-semibold text-sm md:text-base text-primary-buttonTextColor leading-8 md:leading-8 flex-1">
+            <span className="md:font-semibold text-sm text-primary-buttonTextColor leading-8 md:leading-8 flex-1">
                 You will receive
             </span>
             {isFeeLoading ? (
