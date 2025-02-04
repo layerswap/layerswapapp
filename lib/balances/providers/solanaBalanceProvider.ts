@@ -1,10 +1,18 @@
 import { Balance } from "../../../Models/Balance";
 import { NetworkWithTokens } from "../../../Models/Network";
+import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
 
 export class SolanaBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
-        return KnownInternalNames.Networks.SolanaMainnet.includes(network.name)
+        return (
+            KnownInternalNames.Networks.SolanaMainnet.includes(network.name)
+            || KnownInternalNames.Networks.SolanaDevnet.includes(network.name)
+            || KnownInternalNames.Networks.SoonMainnet.includes(network.name)
+            || KnownInternalNames.Networks.SoonTestnet.includes(network.name)
+            || KnownInternalNames.Networks.EclipseMainnet.includes(network.name)
+            || KnownInternalNames.Networks.EclipseTestnet.includes(network.name)
+        )
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
@@ -51,7 +59,8 @@ export class SolanaBalanceProvider {
                     if (!associatedTokenFrom) return
                     result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
                 } else {
-                    result = await connection.getBalance(walletPublicKey)
+                    const res = await connection.getBalance(walletPublicKey)
+                    result = res ? formatAmount(Number(res), asset.decimals) : 0
                 }
 
                 if (result != null && !isNaN(result)) {
