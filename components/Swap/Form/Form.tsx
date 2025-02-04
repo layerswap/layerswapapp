@@ -1,15 +1,12 @@
 import { Form, FormikErrors, useFormikContext } from "formik";
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import SwapButton from "../../buttons/swapButton";
 import React from "react";
 import NetworkFormField from "../../Input/NetworkFormField";
-import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
-import useSWR from "swr";
-import { ApiResponse } from "../../../Models/ApiResponse";
 import { motion, useCycle } from "framer-motion";
-import { ArrowUpDown, Loader2 } from 'lucide-react'
+import { ArrowUpDown } from 'lucide-react'
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
 import { useQueryState } from "../../../context/query";
@@ -20,11 +17,8 @@ import dynamic from "next/dynamic";
 import { Balance } from "../../../Models/Balance";
 import ResizablePanel from "../../ResizablePanel";
 import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
-import { RouteNetwork } from "../../../Models/Network";
-import { resolveExchangesURLForSelectedToken } from "../../../helpers/routes";
 import ValidationError from "../../validationError";
 import { Exchange, ExchangeToken } from "../../../Models/Exchange";
-import { resolveRoutesURLForSelectedToken } from "../../../helpers/routes";
 import { useValidationContext } from "../../../context/validationErrorContext";
 import { FormSourceWalletButton } from "../../Input/SourceWalletPicker";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
@@ -184,7 +178,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
     }, [values.amount])
 
     const sourceWalletNetwork = values.fromExchange ? undefined : values.from
-    const shoouldConnectWallet = (sourceWalletNetwork && values.from?.deposit_methods?.includes('wallet') && values.depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!values.from && !values.fromExchange && !wallets.length && values.depositMethod !== 'deposit_address')
+    const shouldConnectWallet = (sourceWalletNetwork && values.from?.deposit_methods?.includes('wallet') && values.depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!values.from && !values.fromExchange && !wallets.length && values.depositMethod !== 'deposit_address')
 
     return <Widget className="sm:min-h-[450px] h-full">
         <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
@@ -238,7 +232,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
             </Widget.Content>
             <Widget.Footer>
                 {
-                    shoouldConnectWallet ?
+                    shouldConnectWallet ?
                         <FormSourceWalletButton />
                         :
                         <SwapButton

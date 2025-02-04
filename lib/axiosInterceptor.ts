@@ -3,6 +3,7 @@ import { parseJwt } from "./jwtParser";
 import TokenService from "./TokenService";
 import { AuthRefreshFailedError } from './Errors/AuthRefreshFailedError';
 import LayerSwapApiClient from "./layerSwapApiClient";
+import { datadogRum } from "@datadog/browser-rum";
 
 type TokenStates = {
     AccessTokenExpires: number;
@@ -41,8 +42,12 @@ export const InitializeAuthInstance = (baseURL?: string) => {
             TokenService.setAuthData(res)
             return true
         }
-        catch {
+        catch (e) {
             TokenService.removeAuthData()
+            const apiError = new Error(`Could not refresh token`);
+            apiError.name = `Identity API Error`;
+            apiError.cause = e;
+            datadogRum.addError(apiError);
             return false
         }
         finally {

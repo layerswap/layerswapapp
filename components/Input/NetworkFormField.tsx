@@ -1,10 +1,10 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useEffect, useState } from "react";
+import { Dispatch, forwardRef, SetStateAction, useCallback, useEffect, useState } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
-import { ResolveExchangeOrder, ResolveNetworkOrder, SortAscending } from "../../lib/sorting"
+import { ResolveExchangeOrder, ResolveNetworkOrder, SortAscending, SortNetworks } from "../../lib/sorting"
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
 import { useQueryState } from "../../context/query";
@@ -23,12 +23,15 @@ import DestinationWalletPicker from "./DestinationWalletPicker";
 import dynamic from "next/dynamic";
 import { Partner } from "../../Models/Partner";
 import { PlusIcon } from "lucide-react";
+import useWallet from "../../hooks/useWallet";
 
 type Props = {
     direction: SwapDirection,
     label: string,
     className?: string,
-    partner?: Partner
+    partner?: Partner,
+    currencyIsSetManually?: boolean,
+    setCurrencyIsSetManually?: Dispatch<SetStateAction<boolean>>
 }
 const Address = dynamic(() => import("../Input/Address"), {
     loading: () => <></>,
@@ -61,6 +64,14 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, destination_address, currencyGroup } = values
     const query = useQueryState()
     const { lockFrom, lockTo } = query
+
+    const sourceWalletNetwork = fromExchange ? undefined : values.from
+    const destinationWalletNetwork = toExchange ? undefined : values.to
+
+    const { provider: withdrawalProvider } = useWallet(sourceWalletNetwork, 'withdrawal')
+    const { provider: autofilProvider } = useWallet(destinationWalletNetwork, 'autofil')
+
+    const availableWallets = withdrawalProvider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
 
     const { sourceExchanges, destinationExchanges, destinationRoutes, sourceRoutes } = useSettingsState();
     let placeholder = "";
@@ -122,15 +133,12 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         } else {
             setFieldValue(`${name}Exchange`, null)
             setFieldValue(name, item.baseObject, true)
-            const currency = name == "from" ? fromCurrency : toCurrency
-            const assetSubstitute = (item.baseObject as RouteNetwork)?.tokens?.find(a => a.symbol === currency?.symbol)
-            if (assetSubstitute) {
-                setFieldValue(`${name}Currency`, assetSubstitute, true)
-            }
         }
     }, [name, value])
 
     const isLocked = direction === 'from' ? !!lockFrom : !!lockTo
+
+    const showAddDestinationAddress = direction === "to" && !destination_address && !toExchange && to && ((from && autofilProvider?.id !== withdrawalProvider?.id) || values.depositMethod === 'deposit_address')
 
     return (<div className={`${className}`}>
         <div className="flex justify-between items-center px-3 pt-2">
@@ -173,7 +181,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                 }
             </div>
             {
-                direction === "to" && !destination_address && !toExchange && to &&
+                showAddDestinationAddress &&
                 <div className="flex items-center col-span-6">
                     <Address partner={partner} >{SecondDestinationWalletPicker}</Address>
                 </div>
@@ -220,7 +228,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
                 !query.lockAsset && !query.lockFromAsset && !query.lockToAsset && !query.lockFrom && !query.lockTo && !query.lockNetwork && !query.lockExchange && r.tokens?.some(r => r.status !== 'inactive')
             );
 
-        const order = ResolveNetworkOrder(r, direction, isNewlyListed)
+        const order = ResolveNetworkOrder(r, isNewlyListed)
         const routeNotFound = isAvailable && !r.tokens?.some(r => r.status === 'active');
 
         const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {
@@ -233,10 +241,10 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             group: getGroupName(r, 'network', isAvailable && !routeNotFound),
             isExchange: false,
             badge,
-            leftIcon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} type="network" />,
+            leftIcon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={false} type="network" />,
         }
         return res;
-    }).sort(SortAscending) || [];
+    }).sort(SortNetworks) || [];
 
     const mappedExchanges = exchanges?.map(e => {
         const res: SelectMenuItem<Exchange> & { isExchange: boolean } = {

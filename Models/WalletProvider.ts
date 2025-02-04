@@ -21,7 +21,8 @@ export type Wallet = {
     //TODO: this is name of the connector, should be changed to connectorId
     metadata?: {
         starknetAccount?: AccountInterface,
-        wallet?: StarknetWindowObject
+        wallet?: StarknetWindowObject,
+        l1Address?: string,
     }
     chainId?: string | number,
     isLoading?: boolean,
