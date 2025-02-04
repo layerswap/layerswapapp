@@ -6,7 +6,14 @@ import { Provider } from "./types";
 
 export class SolanaGasProvider implements Provider {
     supportsNetwork(network: Network): boolean {
-        return KnownInternalNames.Networks.SolanaMainnet.includes(network.name)
+        return (
+            KnownInternalNames.Networks.SolanaMainnet.includes(network.name)
+            || KnownInternalNames.Networks.SolanaDevnet.includes(network.name)
+            || KnownInternalNames.Networks.SoonMainnet.includes(network.name)
+            || KnownInternalNames.Networks.SoonTestnet.includes(network.name)
+            || KnownInternalNames.Networks.EclipseMainnet.includes(network.name)
+            || KnownInternalNames.Networks.EclipseTestnet.includes(network.name)
+        )
     }
 
     getGas = async ({ address, network, token }: GasProps) => {
