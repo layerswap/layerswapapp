@@ -23,7 +23,7 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
                         />
                     )}
                 </div>
-                <div className="flex justify-between w-full">
+                <div className="flex justify-between w-full items-center">
                     <span className="flex items-center pb-0.5">
                         {item.displayName ? item.displayName : item.name}
                     </span>
