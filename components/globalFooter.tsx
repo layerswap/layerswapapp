@@ -53,8 +53,8 @@ const GLobalFooter = () => {
     return (
         <>
             <footer className="z-0 hidden md:block fixed bottom-0 py-4 w-full px-6 lg:px-8 mt-auto">
-                <div className=" flex justify-between items-center w-full">
-                    <div>
+                <div className="flex justify-between items-center w-full px-6">
+                    <div className="px-6">
                         <div className="flex mt-3 md:mt-0 gap-6">
                             <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/privacy-policy/" className="text-xs leading-6 text-primary-text-muted underline hover:no-underline hover:text-opacity-70 duration-200 transition-all">
                                 Privacy Policy
@@ -67,7 +67,7 @@ const GLobalFooter = () => {
                             &copy; {new Date().getFullYear()} Layerswap Labs, Inc. All rights reserved.
                         </p>
                     </div>
-                    <div className="flex space-x-6">
+                    <div className="flex space-x-6 px-6">
                         {footerNavigation.social.map((item) => (
                             <Link target="_blank" key={item.name} href={item.href} className="text-gray-400 hover:text-gray-500">
                                 <span className="sr-only">{item.name}</span>
