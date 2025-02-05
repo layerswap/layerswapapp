@@ -15,7 +15,7 @@ type AddressButtonProps = {
     children: JSX.Element | JSX.Element[];
 }
 
-const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, addressItem, connectedWallet, partner, disabled, destination, children }) => {
+const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, disabled, children }) => {
     return <button type="button" className="w-full" disabled={disabled} onClick={openAddressModal} >
         {
             children

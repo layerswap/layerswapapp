@@ -23,6 +23,7 @@ import DestinationWalletPicker from "./DestinationWalletPicker";
 import dynamic from "next/dynamic";
 import { Partner } from "../../Models/Partner";
 import { PlusIcon } from "lucide-react";
+import RoutePicker from "./RoutePicker";
 
 type Props = {
     direction: SwapDirection,
@@ -168,7 +169,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                     value?.isExchange ?
                         <CurrencyGroupFormField direction={name} />
                         :
-                        <CurrencyFormField direction={name} />
+                        <RoutePicker direction={name} />
                 }
             </div>
             {
