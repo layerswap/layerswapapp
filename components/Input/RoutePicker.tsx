@@ -12,9 +12,10 @@ import { Selector, SelectorContent, SelectorTrigger } from "../Select/CommandNew
 import { ChevronDown } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
 import { CommandItem } from "../shadcn/command";
-import { SeelctItem } from "../Select/CommandNew/SelectItem/Index";
+import { SelectItem } from "../Select/CommandNew/SelectItem/Index";
 import useSWRBalance from "../../lib/balances/useSWRBalance";
 import useWallet from "../../hooks/useWallet";
+import { truncateDecimals } from "../utils/RoundDecimals";
 
 const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -59,18 +60,23 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                     {({ closeModal }) => {
                         return <>{
                             routes?.data?.map(route => {
-                                return <CommandItem value={route.display_name} key={route.name} >
+                                return <CommandItem value={route.display_name} key={route.name} className="!py-0 mb-1">
                                     <Accordion type="single" collapsible key={route.name} defaultValue="Selected Network">
                                         <AccordionItem value={route.name}>
                                             <AccordionTrigger className="flex mb-1 items-center w-full overflow-hidden rounded-md p-2 gap-2 hover:bg-secondary-500 data-[state=open]:bg-secondary">
                                                 <RouteSelectItemDisplay item={route} selected={false} direction={direction} />
                                             </AccordionTrigger>
-                                            <AccordionContent className="rounded-md">
-                                                {route?.tokens?.map(token => (
-                                                    <div onClick={() => { handleSelect(route, token); closeModal(); }}>
-                                                        <CurrencySelectItemDisplay key={token.symbol} item={token} selected={false} network={route} direction={direction} />
-                                                    </div>
-                                                ))}
+                                            <AccordionContent className="rounded-md px-6 bg-secondary-700 py-2">
+                                                <div className="space-y-3">
+                                                    {route?.tokens?.map(token => (
+                                                        <div
+                                                            key={token.symbol}
+                                                            onClick={() => { handleSelect(route, token); closeModal(); }}
+                                                        >
+                                                            <CurrencySelectItemDisplay item={token} selected={false} network={route} direction={direction} />
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </AccordionContent>
                                         </AccordionItem>
                                     </Accordion>
@@ -97,12 +103,31 @@ const CurrencySelectItemDisplay = (props: TokenItemProps) => {
     const activeAddress = provider?.activeWallet
     const { balance } = useSWRBalance(activeAddress?.address, network)
     const tokenbalance = balance?.find(b => b.token === item.symbol)
-    console.log(tokenbalance, item.symbol)
-    return <SeelctItem>
-        <SeelctItem.Logo imgSrc={item.logo} altText={`${item.symbol} logo`} />
-        <SeelctItem.Title title={item.symbol} />
-        <div>{tokenbalance?.amount}</div>
-    </SeelctItem>
+    const formatted_balance_amount = tokenbalance?.amount ? Number(truncateDecimals(tokenbalance?.amount, item.precision)) : ''
+    const balanceAmountInUsd = formatted_balance_amount ? (item?.price_in_usd * formatted_balance_amount).toFixed(2) : undefined
+
+    return <SelectItem>
+        <SelectItem.Logo
+            imgSrc={item.logo}
+            altText={`${item.symbol} logo`}
+            className="rounded-full"
+        />
+        <SelectItem.Title title={item.symbol} />
+        {activeAddress ? (
+            <p className="text-primary-text text-sm flex flex-col items-end">
+                {Number(formatted_balance_amount) ?
+                    <span>{Number(formatted_balance_amount).toFixed(2)}</span>
+                    :
+                    <span>0</span>
+                }
+                {balanceAmountInUsd ?
+                    <span className="text-secondary-text">${balanceAmountInUsd}</span>
+                    :
+                    <span>$0</span>
+                }
+            </p>) : <></>
+        }
+    </SelectItem>
 }
 
 
@@ -117,12 +142,20 @@ const RouteSelectItemDisplay = (props: RouteItemProps) => {
     const { provider } = useWallet(item, direction === "from" ? "withdrawal" : "autofil")
     const activeAddress = provider?.activeWallet
     const { balance } = useSWRBalance(activeAddress?.address, item)
+    
+    const networkBalanceInUsd = balance?.reduce((acc, b) => {
+        const token = item?.tokens?.find(t => t?.symbol === b?.token);
+        const tokenPriceInUsd = token?.price_in_usd || 0;
+        const tokenPrecision = token?.precision || 0;
+        const formattedBalance = Number(truncateDecimals(b?.amount, tokenPrecision));
+        return acc + (formattedBalance * tokenPriceInUsd);
+    }, 0).toFixed(2) || '0.00';
 
-    return <SeelctItem>
-        <SeelctItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} />
-        <SeelctItem.Title title={item.display_name} />
-        <div>_._</div>
-    </SeelctItem>
+    return <SelectItem>
+        <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} />
+        <SelectItem.Title title={item.display_name} />
+        <div>${networkBalanceInUsd}</div>
+    </SelectItem>
 }
 
 type SelectedCurrencyDisplayProps = {
@@ -146,7 +179,7 @@ const SelectedCurrencyDisplay = (props: SelectedCurrencyDisplayProps) => {
                         width="40"
                         loading="eager"
                         fetchPriority='high'
-                        className="rounded-md object-contain"
+                        className="rounded-full object-contain"
                     />
                 </div>
             </div>
