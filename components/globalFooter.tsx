@@ -17,8 +17,8 @@ const GLobalFooter = () => {
         ],
         social: [
             {
-                name: 'Twitter',
-                href: 'https://twitter.com/layerswap',
+                name: 'X',
+                href: 'https://x.com/layerswap',
                 icon: () => (
                     <TwitterLogo className="h-6 w-6" aria-hidden="true" />
                 ),
