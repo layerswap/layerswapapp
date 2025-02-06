@@ -1,8 +1,9 @@
 import { FormikErrors } from "formik";
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { isValidAddress } from "./address/validator";
+import KnownInternalNames from "./knownIds";
 
-export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount }: { minAllowedAmount: number | undefined, maxAllowedAmount: number | undefined }): ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {
+export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount, sourceAddress }: { minAllowedAmount: number | undefined, maxAllowedAmount: number | undefined, sourceAddress: string | undefined }): ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {
     return (values: SwapFormValues) => {
         let errors: FormikErrors<SwapFormValues> = {};
         let amount = values.amount ? Number(values.amount) : undefined;
@@ -62,6 +63,17 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount 
         if (values.fromCurrency?.status === 'inactive' || values.toCurrency?.status === 'inactive' || values.currencyGroup?.status === 'inactive') {
             errors.amount = `Route unavailable`;
         }
+        if ((values.from?.name === KnownInternalNames.Networks.SoneiumMainnet || values.to?.name === KnownInternalNames.Networks.SoneiumMainnet)
+            && (values.from?.name === KnownInternalNames.Networks.EthereumMainnet || values.to?.name === KnownInternalNames.Networks.EthereumMainnet)) {
+
+            if ((sourceAddress && values.destination_address && sourceAddress.toLowerCase() !== values.destination_address?.toLowerCase())) {
+                errors.destination_address = `Different accounts not supported`;
+            }
+            if (values.depositMethod === "deposit_address") {
+                errors.destination_address = 'Manual transfer not supported';
+            }
+
+        }
 
         if (Object.keys(errors).length === 0) return errors
 
@@ -70,3 +82,4 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount 
         return errors;
     };
 }
+

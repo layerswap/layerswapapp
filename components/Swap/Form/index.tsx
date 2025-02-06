@@ -1,5 +1,5 @@
 import { Formik, FormikProps } from "formik";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSettingsState } from "../../../context/settings";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
@@ -21,7 +21,6 @@ import { resolvePersistantQueryParams } from "../../../helpers/querryHelper";
 import { useQueryState } from "../../../context/query";
 import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/userAuthApiClient";
-import StatusIcon from "../../SwapHistory/StatusIcons";
 import Image from 'next/image';
 import { ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
@@ -75,7 +74,7 @@ export default function Form() {
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.appName && `/internal/apps?name=${query?.appName}`, layerswapApiClient.fetcher)
     const partner = query?.appName && partnerData?.data?.client_id?.toLowerCase() === (query?.appName as string)?.toLowerCase() ? partnerData?.data : undefined
 
-    const { swapResponse } = useSwapDataState()
+    const { swapResponse, selectedSourceAccount } = useSwapDataState()
     const { swap } = swapResponse || {}
     const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useFee()
 
@@ -166,13 +165,15 @@ export default function Form() {
 
     useEffect(() => {
         formikRef.current?.validateForm();
-    }, [minAllowedAmount, maxAllowedAmount]);
+    }, [minAllowedAmount, maxAllowedAmount, selectedSourceAccount]);
 
     const handleShowSwapModal = useCallback((value: boolean) => {
         pollFee(!value)
         setShowSwapModal(value)
         value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
     }, [router, swap])
+
+    const validator = useMemo(() => MainStepValidation({ minAllowedAmount, maxAllowedAmount, sourceAddress: selectedSourceAccount?.address }), [minAllowedAmount, maxAllowedAmount, selectedSourceAccount])
 
     return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
@@ -209,7 +210,7 @@ export default function Form() {
             innerRef={formikRef}
             initialValues={initialValues}
             validateOnMount={true}
-            validate={MainStepValidation({ minAllowedAmount, maxAllowedAmount })}
+            validate={validator}
             onSubmit={handleSubmit}
         >
             <ValidationProvider>
