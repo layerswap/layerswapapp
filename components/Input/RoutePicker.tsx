@@ -142,7 +142,7 @@ const RouteSelectItemDisplay = (props: RouteItemProps) => {
     const { provider } = useWallet(item, direction === "from" ? "withdrawal" : "autofil")
     const activeAddress = provider?.activeWallet
     const { balance } = useSWRBalance(activeAddress?.address, item)
-    
+
     const networkBalanceInUsd = balance?.reduce((acc, b) => {
         const token = item?.tokens?.find(t => t?.symbol === b?.token);
         const tokenPriceInUsd = token?.price_in_usd || 0;
@@ -151,10 +151,33 @@ const RouteSelectItemDisplay = (props: RouteItemProps) => {
         return acc + (formattedBalance * tokenPriceInUsd);
     }, 0).toFixed(2) || '0.00';
 
+    const tokensWithBalance = item?.tokens?.filter((token) => {
+        const tokenBalance = balance?.find((b) => b.token === token.symbol);
+        return tokenBalance && Number(tokenBalance.amount) > 0;
+    });
+
     return <SelectItem>
         <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} />
         <SelectItem.Title title={item.display_name} />
-        <div>${networkBalanceInUsd}</div>
+        <div>
+            ${networkBalanceInUsd}
+            <div className="flex justify-end items-center w-full relative">
+                {tokensWithBalance?.map((token, index) => (
+                    <div
+                        key={token.symbol}
+                        className={`${index === 0 ? "" : "-ml-1"} w-4 h-4 rounded-full`}
+                    >
+                        <Image
+                            src={token.logo}
+                            alt={`${token.symbol} logo`}
+                            width={24}
+                            height={24}
+                            className="rounded-full"
+                        />
+                    </div>
+                ))}
+            </div>
+        </div>
     </SelectItem>
 }
 
