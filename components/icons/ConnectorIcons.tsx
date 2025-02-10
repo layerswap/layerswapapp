@@ -39,9 +39,9 @@ export const ResolveConnectorIcon = ({
         case KnownConnectors.Starknet:
             return (
                 <IconsWrapper className={className}>
-                    <Braavos className={iconClassName} />
-                    <Argent className={iconClassName} />
                     <ArgentX className={iconClassName} />
+                    <Argent className={iconClassName} />
+                    <Braavos className={iconClassName} />
                     <Mail className={`p-1.5 ${iconClassName}`} />
                 </IconsWrapper>
             );
