@@ -5,6 +5,8 @@ import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { useFormikContext } from 'formik';
 import { useQueryState } from './query';
 import { useSettingsState } from './settings';
+import { useSwapDataState } from './swap';
+import KnownInternalNames from '../lib/knownIds';
 
 interface ValidationDetails {
     title?: string;
@@ -30,8 +32,8 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         values
     } = useFormikContext<SwapFormValues>();
     const { destinationRoutes: allDestinations, sourceRoutes: allSources } = useSettingsState()
-
-    const { to, from, fromCurrency, toCurrency, toExchange, fromExchange, currencyGroup, validatingSource, validatingDestination } = values;
+    const { selectedSourceAccount } = useSwapDataState()
+    const { to, from, fromCurrency, toCurrency, toExchange, fromExchange, currencyGroup, validatingSource, validatingDestination, destination_address } = values;
     const query = useQueryState();
     const fromDisplayName = fromExchange ? fromExchange.display_name : from?.display_name;
     const toDisplayName = toExchange ? toExchange.display_name : to?.display_name;
@@ -91,6 +93,20 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
     }
 
+    if ((from?.name === KnownInternalNames.Networks.SoneiumMainnet || to?.name === KnownInternalNames.Networks.SoneiumMainnet)
+        && (from?.name === KnownInternalNames.Networks.EthereumMainnet || to?.name === KnownInternalNames.Networks.EthereumMainnet)) {
+
+        if ((selectedSourceAccount && destination_address && selectedSourceAccount?.address.toLowerCase() !== destination_address?.toLowerCase())) {
+            validationMessage = 'Transfers between Soneium and Ethereum networks is supported only for the same account';
+            validationDetails = { title: 'Address update required', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
+        }
+
+        if (values.depositMethod === "deposit_address") {
+            validationMessage = 'Manually transferring between Soneium and Ethereum networks is not supported.';
+            validationDetails = { title: 'Manual Transfer is not supported', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
+        }
+
+    }
     return (
         <ValidationContext.Provider
             value={{ validationMessage, validationDetails }}
