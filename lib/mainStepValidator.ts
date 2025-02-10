@@ -70,7 +70,7 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount,
                 errors.destination_address = `Address update required`;
             }
             if (values.depositMethod === "deposit_address") {
-                errors.destination_address = 'Manual transfer not supported';
+                errors.destination_address = 'Manual Transfer is not supported';
             }
 
         }
