@@ -67,7 +67,7 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount,
             && (values.from?.name === KnownInternalNames.Networks.EthereumMainnet || values.to?.name === KnownInternalNames.Networks.EthereumMainnet)) {
 
             if ((sourceAddress && values.destination_address && sourceAddress.toLowerCase() !== values.destination_address?.toLowerCase())) {
-                errors.destination_address = `Different accounts not supported`;
+                errors.destination_address = `Address update required`;
             }
             if (values.depositMethod === "deposit_address") {
                 errors.destination_address = 'Manual transfer not supported';
