@@ -98,12 +98,12 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
 
         if ((selectedSourceAccount && destination_address && selectedSourceAccount?.address.toLowerCase() !== destination_address?.toLowerCase())) {
             validationMessage = 'Transfers between Soneium and Ethereum networks is supported only for the same account';
-            validationDetails = { title: 'Different accounts not supported', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
+            validationDetails = { title: 'Address update required', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
         }
 
         if (values.depositMethod === "deposit_address") {
-            validationMessage = 'Manual transfers between Soneium and Ethereum networks is supported';
-            validationDetails = { title: 'Manual transfer not supported', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
+            validationMessage = 'Manually transferring between Soneium and Ethereum networks is not supported.';
+            validationDetails = { title: 'Manual Transfer is not supported', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
         }
 
     }

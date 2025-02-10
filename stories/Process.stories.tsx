@@ -45,7 +45,7 @@ const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme
                                         innerRef={formikRef}
                                         initialValues={initialValues!}
                                         validateOnMount={true}
-                                        validate={MainStepValidation({ minAllowedAmount: 8, maxAllowedAmount: 10 })}
+                                        validate={MainStepValidation({ minAllowedAmount: 8, maxAllowedAmount: 10, sourceAddress: undefined })}
                                         onSubmit={() => { }}
                                     >
                                         <FeeProvider>

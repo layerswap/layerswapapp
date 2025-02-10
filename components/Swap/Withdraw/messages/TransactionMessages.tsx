@@ -33,7 +33,7 @@ const TransactionRejectedMessage: FC = () => {
 const DifferentAccountsNotAllowedError: FC = () => {
     return <WalletMessage
         status="error"
-        header='Please change the account'
+        header='Address update required'
         details={`Transfers between Soneium and Ethereum networks is supported only for the same account`} />
 }
 
