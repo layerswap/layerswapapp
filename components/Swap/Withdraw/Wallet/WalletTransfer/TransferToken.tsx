@@ -21,6 +21,7 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     amount,
     savedTransactionHash,
     swapId,
+    chainId
 }) => {
     const [applyingTransaction, setApplyingTransaction] = useState<boolean>(!!savedTransactionHash)
     const [buttonClicked, setButtonClicked] = useState(false)
@@ -84,6 +85,7 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
             if (!selectedSourceAccount?.address)
                 throw new Error('No selected account')
             const tx = {
+                chainId,
                 to: depositAddress,
                 value: parseEther(amount?.toString()),
                 gas: estimatedGas,

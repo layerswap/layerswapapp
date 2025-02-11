@@ -67,6 +67,7 @@ const TransferFromWallet: FC<WithdrawPageProps> = ({
             swapId={swapId}
             sequenceNumber={sequence_number_even}
             amount={amount}
+            chainId={networkChainId}
             depositAddress={depositAddress as `0x${string}`}
             userDestinationAddress={userDestinationAddress as `0x${string}`}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
