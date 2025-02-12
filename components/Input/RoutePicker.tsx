@@ -66,12 +66,13 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                                             <AccordionTrigger className="flex items-center w-full overflow-hidden rounded-md p-2 gap-2 hover:bg-secondary-500 data-[state=open]:bg-secondary">
                                                 <RouteSelectItemDisplay item={route} selected={false} direction={direction} />
                                             </AccordionTrigger>
-                                            <AccordionContent className="rounded-md pl-5 pr-2 bg-secondary-700 py-2 mt-1">
+                                            <AccordionContent className="rounded-md bg-secondary-700 mt-1">
                                                 <div className="space-y-3">
                                                     {route?.tokens?.map(token => (
                                                         <div
                                                             key={token.symbol}
                                                             onClick={() => { handleSelect(route, token); closeModal(); }}
+                                                            className="pl-5 pr-2 py-2 hover:bg-secondary-600"
                                                         >
                                                             <CurrencySelectItemDisplay item={token} selected={false} network={route} direction={direction} />
                                                         </div>
