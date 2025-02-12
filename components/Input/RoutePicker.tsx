@@ -118,9 +118,8 @@ const CurrencySelectItemDisplay = (props: TokenItemProps) => {
                 height={24}
                 className="rounded"
             />
-            <span className="text-secondary-text text-xs whitespace-nowrap">{network.display_name}</span>
+            <span className="text-secondary-text text-xs whitespace-nowrap font-medium">{network.display_name}</span>
         </div>
-
     </div>
 
     return <SelectItem>
