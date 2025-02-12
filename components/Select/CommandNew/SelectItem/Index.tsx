@@ -15,25 +15,27 @@ type SeelctItemLogoProps = {
     altText: string;
     className?: string;
 }
-const Logo = ({ imgSrc, altText, className = 'rounded-md'}: SeelctItemLogoProps) => {
+const Logo = ({ imgSrc, altText, className = 'rounded-md' }: SeelctItemLogoProps) => {
     return <div className="flex-shrink-0 relative">
-        <Image
+        {imgSrc ? <Image
             src={imgSrc}
             alt={altText}
-            height="40"
-            width="40"
+            height="36"
+            width="36"
             loading="eager"
             className={`${className} object-contain`}
-        />
+        /> :
+            <div className={`${className} object-contain w-9 h-9 bg-gray-200`} ></div>
+        }
     </div>
 }
 
 type SeelctItemTitleProps = {
-    title: string;
+    title: React.ReactNode;
 }
 const Title = ({ title }: SeelctItemTitleProps) => {
     return <div className="flex justify-between w-full">
-        <span className="flex items-center pb-0.5">
+        <span className="flex items-center pb-0.5 font-normal">
             {title}
         </span>
     </div>

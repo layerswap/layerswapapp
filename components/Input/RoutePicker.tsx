@@ -53,7 +53,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 <SelectorTrigger disabled={false}>
                     <SelectedCurrencyDisplay value={selectedValue} placeholder="Asset" />
                     <span className="ml-3 right-0 flex items-center pr-2 pointer-events-none  text-primary-text">
-                        {<ChevronDown className="h-4 w-4" aria-hidden="true" />}
+                        {<ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />}
                     </span>
                 </SelectorTrigger>
                 <SelectorContent isLoading={isLoading} modalHeight="full" searchHint='Search'>
@@ -63,10 +63,10 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                                 return <CommandItem value={route.display_name} key={route.name} className="!py-0 mb-1">
                                     <Accordion type="single" collapsible key={route.name} defaultValue="Selected Network">
                                         <AccordionItem value={route.name}>
-                                            <AccordionTrigger className="flex mb-1 items-center w-full overflow-hidden rounded-md p-2 gap-2 hover:bg-secondary-500 data-[state=open]:bg-secondary">
+                                            <AccordionTrigger className="flex items-center w-full overflow-hidden rounded-md p-2 gap-2 hover:bg-secondary-500 data-[state=open]:bg-secondary">
                                                 <RouteSelectItemDisplay item={route} selected={false} direction={direction} />
                                             </AccordionTrigger>
-                                            <AccordionContent className="rounded-md px-6 bg-secondary-700 py-2">
+                                            <AccordionContent className="rounded-md pl-5 pr-2 bg-secondary-700 py-2 mt-1">
                                                 <div className="space-y-3">
                                                     {route?.tokens?.map(token => (
                                                         <div
@@ -106,13 +106,30 @@ const CurrencySelectItemDisplay = (props: TokenItemProps) => {
     const formatted_balance_amount = tokenbalance?.amount ? Number(truncateDecimals(tokenbalance?.amount, item.precision)) : ''
     const balanceAmountInUsd = formatted_balance_amount ? (item?.price_in_usd * formatted_balance_amount).toFixed(2) : undefined
 
+    const title = <div>
+        <span className="">{item.symbol}</span>
+        <div
+            className="w-4 h-4 flex items-center space-x-0.5"
+        >
+            <Image
+                src={network.logo}
+                alt={`${network.name} logo`}
+                width={24}
+                height={24}
+                className="rounded"
+            />
+            <span className="text-secondary-text text-xs whitespace-nowrap">{network.display_name}</span>
+        </div>
+
+    </div>
+
     return <SelectItem>
         <SelectItem.Logo
             imgSrc={item.logo}
             altText={`${item.symbol} logo`}
             className="rounded-full"
         />
-        <SelectItem.Title title={item.symbol} />
+        <SelectItem.Title title={title} />
         {activeAddress ? (
             <p className="text-primary-text text-sm flex flex-col items-end">
                 {Number(formatted_balance_amount) ?
@@ -123,7 +140,7 @@ const CurrencySelectItemDisplay = (props: TokenItemProps) => {
                 {balanceAmountInUsd ?
                     <span className="text-secondary-text">${balanceAmountInUsd}</span>
                     :
-                    <span>$0</span>
+                    <span className="text-secondary-text">$0</span>
                 }
             </p>) : <></>
         }
@@ -160,7 +177,7 @@ const RouteSelectItemDisplay = (props: RouteItemProps) => {
         <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} />
         <SelectItem.Title title={item.display_name} />
         <div>
-            ${networkBalanceInUsd}
+            <span className="text-secondary-text">${networkBalanceInUsd}</span>
             <div className="flex justify-end items-center w-full relative">
                 {tokensWithBalance?.map((token, index) => (
                     <div
