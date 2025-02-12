@@ -205,9 +205,9 @@ function groupByType(values: ISelectMenuItem[]) {
 }
 
 function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchange[], direction: SwapDirection, lock: boolean, query: QueryParams): (SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean })[] {
-    
+
     const popularNetworks = routes
-        ?.filter(r=>r.tokens?.some(r => r.status === 'active'))
+        ?.filter(r => r.tokens?.some(r => r.status === 'active'))
         ?.sort((a, b) =>
         (direction === "from"
             ? (a.source_rank ?? 0) - (b.source_rank ?? 0)
@@ -234,7 +234,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
         const res: SelectMenuItem<RouteNetwork> & { isExchange: boolean } = {
             baseObject: r,
             id: r.name,
-            name: `${r.display_name} (${direction === 'from' ? r.source_rank : r.destination_rank})`,
+            name: r.display_name,
             order,
             imgSrc: r.logo,
             isAvailable: isAvailable,
