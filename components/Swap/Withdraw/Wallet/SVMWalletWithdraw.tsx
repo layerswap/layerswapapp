@@ -37,7 +37,9 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
         setError(undefined)
         try {
 
-            if (!signTransaction || !callData || !swapId) throw new Error('Missing data')
+            if (!signTransaction) throw new Error('Missing signTransaction')
+            if (!callData) throw new Error('Missing callData')
+            if (!swapId) throw new Error('Missing swapId')
 
             const connection = new Connection(
                 `${solanaNode}`,
@@ -91,7 +93,7 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
 
     if (!wallet || !walletPublicKey) {
         return <ConnectWalletButton />
-    } 
+    }
 
     return (
         <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">

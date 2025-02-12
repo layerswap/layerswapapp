@@ -36,7 +36,13 @@ export default function useParadex({ network }: Props): WalletProvider {
         KnownInternalNames.Networks.ParadexMainnet,
         KnownInternalNames.Networks.ParadexTestnet,
     ]
-
+    const autofillSupportedNetworks = [
+        ...withdrawalSupportedNetworks
+    ]
+    const asSourceSupportedNetworks = [
+        ...withdrawalSupportedNetworks
+    ]
+    
     const { connect, setSelectedProvider } = useConnectModal()
     const evmProvider = useEVM({ network })
     const starknetProvider = useStarknet()
@@ -164,6 +170,8 @@ export default function useParadex({ network }: Props): WalletProvider {
         connectedWallets,
         activeWallet,
         withdrawalSupportedNetworks,
+        autofillSupportedNetworks,
+        asSourceSupportedNetworks,
         availableWalletsForConnect,
         name,
         id,
