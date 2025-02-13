@@ -97,6 +97,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                                                         closeModal();
                                                         setQuery(''); 
                                                     }}
+                                                    className="pl-5 pr-2 py-2 hover:bg-secondary-600 cursor-pointer"
                                                 >
                                                     <CurrencySelectItemDisplay
                                                         item={token}
