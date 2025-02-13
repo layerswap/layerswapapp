@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback } from "react";
+import { FC, useCallback, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { RouteNetwork, RouteToken } from "../../Models/Network";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
@@ -11,17 +11,20 @@ import Image from 'next/image'
 import { Selector, SelectorContent, SelectorTrigger } from "../Select/CommandNew/Index";
 import { ChevronDown } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
-import { CommandItem } from "../shadcn/command";
+import { CommandEmpty, CommandInput, CommandItem, CommandList, CommandWrapper } from "../shadcn/command";
 import { SelectItem } from "../Select/CommandNew/SelectItem/Index";
 import useSWRBalance from "../../lib/balances/useSWRBalance";
 import useWallet from "../../hooks/useWallet";
 import { truncateDecimals } from "../utils/RoundDecimals";
+import SpinIcon from "../icons/spinIcon";
+import useWindowDimensions from "../../hooks/useWindowDimensions";
 
 const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
+    const { isDesktop } = useWindowDimensions();
 
     const { from, to, fromCurrency, toCurrency, destination_address, currencyGroup } = values
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
@@ -46,45 +49,112 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     }, [name, direction])
 
+    const [query, setQuery] = useState('');
+
+    const tokensList =
+        routes?.data?.flatMap((route) =>
+            route.tokens.map((token) => ({ route, token }))
+        ) ?? [];
+
+    const filteredTokens = tokensList.filter(({ token }) => {
+        return (
+            token.symbol.toLowerCase().includes(query.toLowerCase())
+        );
+    });
 
     return (
         <div className="relative">
             <Selector>
                 <SelectorTrigger disabled={false}>
                     <SelectedCurrencyDisplay value={selectedValue} placeholder="Asset" />
-                    <span className="ml-3 right-0 flex items-center pr-2 pointer-events-none  text-primary-text">
-                        {<ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />}
+                    <span className="ml-3 right-0 flex items-center pr-2 pointer-events-none text-primary-text">
+                        <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
                     </span>
                 </SelectorTrigger>
-                <SelectorContent isLoading={isLoading} modalHeight="full" searchHint='Search'>
-                    {({ closeModal }) => {
-                        return <>{
-                            routes?.data?.map(route => {
-                                return <CommandItem value={route.display_name} key={route.name} className="!py-0 mb-1">
-                                    <Accordion type="single" collapsible key={route.name} defaultValue="Selected Network">
-                                        <AccordionItem value={route.name}>
-                                            <AccordionTrigger className="flex items-center w-full overflow-hidden rounded-md p-2 gap-2 hover:bg-secondary-500 data-[state=open]:bg-secondary">
-                                                <RouteSelectItemDisplay item={route} selected={false} direction={direction} />
-                                            </AccordionTrigger>
-                                            <AccordionContent className="rounded-md bg-secondary-700 mt-1">
-                                                <div className="space-y-3">
-                                                    {route?.tokens?.map(token => (
-                                                        <div
-                                                            key={token.symbol}
-                                                            onClick={() => { handleSelect(route, token); closeModal(); }}
-                                                            className="pl-5 pr-2 py-2 hover:bg-secondary-600"
-                                                        >
-                                                            <CurrencySelectItemDisplay item={token} selected={false} network={route} direction={direction} />
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </AccordionContent>
-                                        </AccordionItem>
-                                    </Accordion>
-                                </CommandItem>
-                            })
-                        }</>
-                    }}
+                <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search">
+                    {({ closeModal }) => (
+                        <CommandWrapper>
+                            <CommandInput
+                                autoFocus={isDesktop}
+                                placeholder="Search"
+                                value={query}
+                                onValueChange={setQuery}
+                            />
+                            {isLoading ? (
+                                <div className="flex justify-center h-full items-center">
+                                    <SpinIcon className="animate-spin h-5 w-5" />
+                                </div>
+                            ) : (
+                                <CommandList>
+                                    {query.trim() !== "" ? (
+                                        filteredTokens.length > 0 ? (
+                                            filteredTokens.map(({ route, token }) => (
+                                                <CommandItem
+                                                    key={`${route.name}-${token.symbol}`}
+                                                    value={token.symbol}
+                                                    onSelect={() => {
+                                                        handleSelect(route, token);
+                                                        closeModal();
+                                                        setQuery(''); 
+                                                    }}
+                                                >
+                                                    <CurrencySelectItemDisplay
+                                                        item={token}
+                                                        selected={false}
+                                                        network={route}
+                                                        direction={direction}
+                                                    />
+                                                </CommandItem>
+                                            ))
+                                        ) : (
+                                            <CommandEmpty>No results found.</CommandEmpty>
+                                        )
+                                    ) : (
+                                        routes?.data?.map((route) => (
+                                            <CommandItem
+                                                value={route.display_name}
+                                                key={route.name}
+                                                className="!py-0 mb-1"
+                                            >
+                                                <Accordion type="single" collapsible defaultValue="Selected Network">
+                                                    <AccordionItem value={route.name}>
+                                                        <AccordionTrigger className="flex items-center w-full overflow-hidden rounded-md p-2 gap-2 hover:bg-secondary-500 data-[state=open]:bg-secondary">
+                                                            <RouteSelectItemDisplay
+                                                                item={route}
+                                                                selected={false}
+                                                                direction={direction}
+                                                            />
+                                                        </AccordionTrigger>
+                                                        <AccordionContent className="rounded-md bg-secondary-700 mt-1">
+                                                            <div className="space-y-3">
+                                                                {route.tokens.map((token) => (
+                                                                    <div
+                                                                        key={token.symbol}
+                                                                        onClick={() => {
+                                                                            handleSelect(route, token);
+                                                                            closeModal();
+                                                                        }}
+                                                                        className="pl-5 pr-2 py-2 hover:bg-secondary-600 cursor-pointer"
+                                                                    >
+                                                                        <CurrencySelectItemDisplay
+                                                                            item={token}
+                                                                            selected={false}
+                                                                            network={route}
+                                                                            direction={direction}
+                                                                        />
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </AccordionContent>
+                                                    </AccordionItem>
+                                                </Accordion>
+                                            </CommandItem>
+                                        ))
+                                    )}
+                                </CommandList>
+                            )}
+                        </CommandWrapper>
+                    )}
                 </SelectorContent>
             </Selector>
         </div>

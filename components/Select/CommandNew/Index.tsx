@@ -45,20 +45,10 @@ export const SelectorContent = (props: SelectContentProps) => {
             <div>{header}</div>
         </div> : <></>}
         {isOpen ?
-            <CommandWrapper>
-                {searchHint && <CommandInput autoFocus={isDesktop} placeholder={searchHint} />}
+            <div className="p-4">
                 {modalContent}
-                {!isLoading ?
-                    <CommandList>
-                        <CommandEmpty>No results found.</CommandEmpty>
-                        {children({ closeModal })}
-                    </CommandList>
-                    :
-                    <div className='flex justify-center h-full items-center'>
-                        <SpinIcon className="animate-spin h-5 w-5" />
-                    </div>
-                }
-            </CommandWrapper>
+                <div>{children({ closeModal })}</div>
+            </div>
             : <></>
         }
     </Modal>
