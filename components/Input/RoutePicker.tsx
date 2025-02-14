@@ -51,7 +51,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     }, [name, direction])
 
     const [query, setQuery] = useState('');
-    const [activeTab, setActiveTab] = useState('account');
+    const [activeTab, setActiveTab] = useState('network');
 
     const tokensList =
         routes?.data?.flatMap((route) =>
@@ -87,22 +87,22 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                                     <SpinIcon className="animate-spin h-5 w-5" />
                                 </div>
                             ) : (
-                                <Tabs defaultValue="account" className="w-[400px]">
-                                    <TabsList className="grid w-full grid-cols-2">
+                                <Tabs defaultValue="network" value={activeTab} onValueChange={setActiveTab}>
+                                    <TabsList className="grid w-full grid-cols-2 bg-secondary-800">
                                         <TabsTrigger
-                                            value="account"
-                                            className={`p-2 transition-colors rounded-md ${activeTab === "account" ? "bg-secondary-700" : "hover:bg-secondary-600"}`}
+                                            value="network"
+                                            className={`font-normal px-2 transition-colors rounded-md ${activeTab === "network" ? "bg-secondary-500 text-primary-text" : "hover:bg-secondary-600 text-secondary-text"}`}
                                         >
-                                            Account
+                                            Network
                                         </TabsTrigger>
                                         <TabsTrigger
-                                            value="password"
-                                            className={`p-2 transition-colors rounded-md ${activeTab === "password" ? "bg-secondary-700" : "hover:bg-secondary-600"}`}
+                                            value="token"
+                                            className={`font-normal px-2 transition-colors rounded-md ${activeTab === "token" ? "bg-secondary-500 text-primary-text" : "hover:bg-secondary-600 text-secondary-text"}`}
                                         >
-                                            Password
+                                            Token
                                         </TabsTrigger>
                                     </TabsList>
-                                    <TabsContent value="account">
+                                    <TabsContent value="network">
                                         <CommandList>
                                             {query.trim() !== "" ? (
                                                 filteredTokens.length > 0 ? (
@@ -172,7 +172,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                                             )}
                                         </CommandList>
                                     </TabsContent>
-                                    <TabsContent value="password">
+                                    <TabsContent value="token">
                                         <CommandList>
                                             {filteredTokens.length > 0 ? (
                                                 filteredTokens.map(({ route, token }) => (
