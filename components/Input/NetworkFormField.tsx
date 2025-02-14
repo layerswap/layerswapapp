@@ -8,7 +8,6 @@ import { ResolveExchangeOrder, ResolveNetworkOrder, SortAscending } from "../../
 import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
 import { useQueryState } from "../../context/query";
-import CurrencyFormField from "./CurrencyFormField";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
@@ -145,7 +144,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
                             !value?.isExchange &&
                             <span><Address partner={partner} >{
                                 ({ destination, disabled, addressItem, connectedWallet, partner }) => <DestinationWalletPicker destination={destination} disabled={disabled} addressItem={addressItem} connectedWallet={connectedWallet} partner={partner} />
-                            }</Address></span> 
+                            }</Address></span>
                         }
                     </>
             }

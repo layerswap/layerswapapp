@@ -18,6 +18,7 @@ import useWallet from "../../hooks/useWallet";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import SpinIcon from "../icons/spinIcon";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../shadcn/tab"
 
 const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -50,6 +51,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     }, [name, direction])
 
     const [query, setQuery] = useState('');
+    const [activeTab, setActiveTab] = useState('account');
 
     const tokensList =
         routes?.data?.flatMap((route) =>
@@ -85,74 +87,120 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                                     <SpinIcon className="animate-spin h-5 w-5" />
                                 </div>
                             ) : (
-                                <CommandList>
-                                    {query.trim() !== "" ? (
-                                        filteredTokens.length > 0 ? (
-                                            filteredTokens.map(({ route, token }) => (
-                                                <CommandItem
-                                                    key={`${route.name}-${token.symbol}`}
-                                                    value={token.symbol}
-                                                    onSelect={() => {
-                                                        handleSelect(route, token);
-                                                        closeModal();
-                                                        setQuery(''); 
-                                                    }}
-                                                    className="pl-5 pr-2 py-2 hover:bg-secondary-600 cursor-pointer rounded-md"
-                                                >
-                                                    <CurrencySelectItemDisplay
-                                                        item={token}
-                                                        selected={false}
-                                                        network={route}
-                                                        direction={direction}
-                                                    />
-                                                </CommandItem>
-                                            ))
-                                        ) : (
-                                            <CommandEmpty>No results found.</CommandEmpty>
-                                        )
-                                    ) : (
-                                        routes?.data?.map((route) => (
-                                            <CommandItem
-                                                value={route.display_name}
-                                                key={route.name}
-                                                className="!py-0 mb-1"
-                                            >
-                                                <Accordion type="single" collapsible defaultValue="Selected Network">
-                                                    <AccordionItem value={route.name}>
-                                                        <AccordionTrigger className="flex items-center w-full overflow-hidden rounded-md p-2 gap-2 hover:bg-secondary-500 data-[state=open]:bg-secondary">
-                                                            <RouteSelectItemDisplay
-                                                                item={route}
+                                <Tabs defaultValue="account" className="w-[400px]">
+                                    <TabsList className="grid w-full grid-cols-2">
+                                        <TabsTrigger
+                                            value="account"
+                                            className={`p-2 transition-colors rounded-md ${activeTab === "account" ? "bg-secondary-700" : "hover:bg-secondary-600"}`}
+                                        >
+                                            Account
+                                        </TabsTrigger>
+                                        <TabsTrigger
+                                            value="password"
+                                            className={`p-2 transition-colors rounded-md ${activeTab === "password" ? "bg-secondary-700" : "hover:bg-secondary-600"}`}
+                                        >
+                                            Password
+                                        </TabsTrigger>
+                                    </TabsList>
+                                    <TabsContent value="account">
+                                        <CommandList>
+                                            {query.trim() !== "" ? (
+                                                filteredTokens.length > 0 ? (
+                                                    filteredTokens.map(({ route, token }) => (
+                                                        <CommandItem
+                                                            key={`${route.name}-${token.symbol}`}
+                                                            value={token.symbol}
+                                                            onSelect={() => {
+                                                                handleSelect(route, token);
+                                                                closeModal();
+                                                                setQuery('');
+                                                            }}
+                                                            className="pl-5 pr-2 py-2 hover:bg-secondary-600 cursor-pointer rounded-md"
+                                                        >
+                                                            <CurrencySelectItemDisplay
+                                                                item={token}
                                                                 selected={false}
+                                                                network={route}
                                                                 direction={direction}
                                                             />
-                                                        </AccordionTrigger>
-                                                        <AccordionContent className="rounded-md bg-secondary-700 mt-1">
-                                                            <div className="space-y-3">
-                                                                {route.tokens.map((token) => (
-                                                                    <div
-                                                                        key={token.symbol}
-                                                                        onClick={() => {
-                                                                            handleSelect(route, token);
-                                                                            closeModal();
-                                                                        }}
-                                                                        className="pl-5 pr-2 py-2 hover:bg-secondary-600 cursor-pointer"
-                                                                    >
-                                                                        <CurrencySelectItemDisplay
-                                                                            item={token}
-                                                                            selected={false}
-                                                                            network={route}
-                                                                            direction={direction}
-                                                                        />
+                                                        </CommandItem>
+                                                    ))
+                                                ) : (
+                                                    <CommandEmpty>No results found.</CommandEmpty>
+                                                )
+                                            ) : (
+                                                routes?.data?.map((route) => (
+                                                    <CommandItem
+                                                        value={route.display_name}
+                                                        key={route.name}
+                                                        className="!py-0 mb-1"
+                                                    >
+                                                        <Accordion type="single" collapsible defaultValue="Selected Network">
+                                                            <AccordionItem value={route.name}>
+                                                                <AccordionTrigger className="flex items-center w-full overflow-hidden rounded-md p-2 gap-2 hover:bg-secondary-500 data-[state=open]:bg-secondary">
+                                                                    <RouteSelectItemDisplay
+                                                                        item={route}
+                                                                        selected={false}
+                                                                        direction={direction}
+                                                                    />
+                                                                </AccordionTrigger>
+                                                                <AccordionContent className="rounded-md bg-secondary-700 mt-1">
+                                                                    <div className="space-y-3">
+                                                                        {route.tokens.map((token) => (
+                                                                            <div
+                                                                                key={token.symbol}
+                                                                                onClick={() => {
+                                                                                    handleSelect(route, token);
+                                                                                    closeModal();
+                                                                                }}
+                                                                                className="pl-5 pr-2 py-2 hover:bg-secondary-600 cursor-pointer"
+                                                                            >
+                                                                                <CurrencySelectItemDisplay
+                                                                                    item={token}
+                                                                                    selected={false}
+                                                                                    network={route}
+                                                                                    direction={direction}
+                                                                                />
+                                                                            </div>
+                                                                        ))}
                                                                     </div>
-                                                                ))}
-                                                            </div>
-                                                        </AccordionContent>
-                                                    </AccordionItem>
-                                                </Accordion>
-                                            </CommandItem>
-                                        ))
-                                    )}
-                                </CommandList>
+                                                                </AccordionContent>
+                                                            </AccordionItem>
+                                                        </Accordion>
+                                                    </CommandItem>
+                                                ))
+                                            )}
+                                        </CommandList>
+                                    </TabsContent>
+                                    <TabsContent value="password">
+                                        <CommandList>
+                                            {filteredTokens.length > 0 ? (
+                                                filteredTokens.map(({ route, token }) => (
+                                                    <CommandItem
+                                                        key={`${route.name}-${token.symbol}`}
+                                                        value={token.symbol}
+                                                        onSelect={() => {
+                                                            handleSelect(route, token);
+                                                            closeModal();
+                                                            setQuery('');
+                                                        }}
+                                                        className="pl-5 pr-2 py-2 hover:bg-secondary-600 cursor-pointer rounded-md"
+                                                    >
+                                                        <CurrencySelectItemDisplay
+                                                            item={token}
+                                                            selected={false}
+                                                            network={route}
+                                                            direction={direction}
+                                                        />
+                                                    </CommandItem>
+                                                ))
+                                            ) : (
+                                                <CommandEmpty>No results found.</CommandEmpty>
+                                            )}
+                                        </CommandList>
+                                    </TabsContent>
+                                </Tabs>
+
                             )}
                         </CommandWrapper>
                     )}
