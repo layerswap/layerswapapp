@@ -62,9 +62,21 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
         setFieldValue(name, value)
     }, [fromCurrency, toCurrency, availableAssetGroups])
 
-    const handleSelect = useCallback((item: SelectMenuItem<ExchangeToken>) => {
-        setFieldValue(name, item.baseObject, true)
-    }, [name, direction, toCurrency, fromCurrency, from, to])
+    const handleSelect = useCallback(async (item: SelectMenuItem<ExchangeToken>) => {
+        debugger
+        const oppositeCurrency = direction === 'from' ? toCurrency : fromCurrency
+        if (oppositeCurrency && !oppositeCurrency?.manuallySet) {
+            const network = direction === 'to' ? from : to
+            const default_currency = network?.tokens?.find(t => t.symbol === item.baseObject.symbol) || network?.tokens?.find(t => t.symbol.includes(item.baseObject.symbol) || item.baseObject.symbol.includes(t.symbol))
+            if (default_currency) {
+                await setFieldValue("validatingDestination", true, true)
+                await setFieldValue("validatingSource", true, true)
+                await setFieldValue(`${direction == "from" ? "to" : "from"}Currency`, default_currency, true)
+            }
+        }
+        (item.baseObject as any).manuallySet = true
+        await setFieldValue(name, item.baseObject, true)
+    }, [name, direction, toCurrency, fromCurrency, from, to, values])
 
     return <PopoverSelectWrapper
         placeholder="Asset"
