@@ -28,6 +28,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, destination_address, currencyGroup } = values
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
+    const exchangeName = direction === 'from' ? 'fromExchange' : 'toExchange';
     const query = useQueryState()
     const { selectedSourceAccount } = useSwapDataState()
     const { destinationRoutes, sourceRoutes } = useSettingsState();
@@ -172,8 +173,10 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     const handleSelect = useCallback(async (item: SelectMenuItem<RouteToken>) => {
         const oppositeCurrency = direction === 'from' ? toCurrency : fromCurrency
+
         if (oppositeCurrency && !oppositeCurrency?.manuallySet) {
             const network = direction === 'to' ? from : to
+
             const default_currency = network?.tokens?.find(t => t.symbol === item.baseObject.symbol) || network?.tokens?.find(t => t.symbol.includes(item.baseObject.symbol) || item.baseObject.symbol.includes(t.symbol))
             if (default_currency) {
                 await setFieldValue("validatingDestination", true, true)
