@@ -40,14 +40,16 @@ const TransferFromWallet: FC<WithdrawPageProps> = ({
             console.error(e.message)
         }
     }, [swapId])
-    
     if (!swapId || !sequenceNumber) return
 
     const hexed_sequence_number = sequenceNumber?.toString(16)
     const sequence_number_even = (hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number)
 
+
     if ((source_network?.name === KnownInternalNames.Networks.SoneiumMainnet || destination_network?.name === KnownInternalNames.Networks.SoneiumMainnet)
+        && (source_network?.name === KnownInternalNames.Networks.EthereumMainnet || destination_network?.name === KnownInternalNames.Networks.EthereumMainnet)
         && (selectedSourceAccount?.address && destination_address && selectedSourceAccount?.address.toLowerCase() !== destination_address?.toLowerCase())) {
+
         return <TransactionMessages.DifferentAccountsNotAllowedError />
     }
 
