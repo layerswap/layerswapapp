@@ -63,7 +63,9 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount,
         if (values.fromCurrency?.status === 'inactive' || values.toCurrency?.status === 'inactive' || values.currencyGroup?.status === 'inactive') {
             errors.amount = `Route unavailable`;
         }
-        if ((values.from?.name === KnownInternalNames.Networks.SoneiumMainnet || values.to?.name === KnownInternalNames.Networks.SoneiumMainnet)) {
+        if ((values.from?.name === KnownInternalNames.Networks.SoneiumMainnet || values.to?.name === KnownInternalNames.Networks.SoneiumMainnet)
+            && (values.from?.name === KnownInternalNames.Networks.EthereumMainnet || values.to?.name === KnownInternalNames.Networks.EthereumMainnet)) {
+
             if ((sourceAddress && values.destination_address && sourceAddress.toLowerCase() !== values.destination_address?.toLowerCase())) {
                 errors.destination_address = `Address update required`;
             }
@@ -80,4 +82,3 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount,
         return errors;
     };
 }
-
