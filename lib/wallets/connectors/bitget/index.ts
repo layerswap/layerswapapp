@@ -112,7 +112,8 @@ export function bitget(parameters: WalletConnectParameters) {
             id: 'bitget',
             name: 'BitGet',
             rdns: 'com.bitget.web3',
-            getUri: (uri: string) => {
+            deepLink: 'bitkeep://bkconnect',
+            resolveURI: (uri: string) => {
                 return isAndroid()
                     ? uri
                     : `bitkeep://wc?uri=${encodeURIComponent(uri)}`;

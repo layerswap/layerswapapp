@@ -112,6 +112,7 @@ export function argent(parameters: WalletConnectParameters) {
     return ({
       id: 'argent',
       name: 'Argent',
+      deepLink: 'argent://wc',
       resolveURI: (uri: string) => {
         return (isAndroid() || !isMobile())
           ? uri

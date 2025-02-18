@@ -56,12 +56,12 @@ const TransferFromWallet: FC<WithdrawPageProps> = ({
     if (!isConnected || !wallet) {
         return <ConnectWalletButton />
     }
-    else if (activeChain?.id !== networkChainId && network) {
-        return <ChangeNetworkButton
-            chainId={networkChainId}
-            network={network.display_name}
-        />
-    }
+    // else if (activeChain?.id !== networkChainId && network) {
+    //     return <ChangeNetworkButton
+    //         chainId={networkChainId}
+    //         network={network.display_name}
+    //     />
+    // }
     else {
         return <TransferTokenButton
             swapId={swapId}
