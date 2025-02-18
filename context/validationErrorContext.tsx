@@ -93,8 +93,7 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
     }
 
-    if ((from?.name === KnownInternalNames.Networks.SoneiumMainnet || to?.name === KnownInternalNames.Networks.SoneiumMainnet)
-        && (from?.name === KnownInternalNames.Networks.EthereumMainnet || to?.name === KnownInternalNames.Networks.EthereumMainnet)) {
+    if ((from?.name === KnownInternalNames.Networks.SoneiumMainnet || to?.name === KnownInternalNames.Networks.SoneiumMainnet)) {
 
         if ((selectedSourceAccount && destination_address && selectedSourceAccount?.address.toLowerCase() !== destination_address?.toLowerCase())) {
             validationMessage = 'Transfers between Soneium and Ethereum networks is supported only for the same account';
