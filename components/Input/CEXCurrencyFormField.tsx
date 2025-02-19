@@ -59,7 +59,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
 
     useEffect(() => {
         const currency = direction === 'from' ? toCurrency : fromCurrency
-        const value = availableAssetGroups?.find(r => r.symbol === currency?.symbol && r.status === 'active' )
+        const value = availableAssetGroups?.find(r => r.symbol === currency?.symbol && r.status === 'active')
         if (!value) return
         (async () => {
             setFieldValue(name, value)
@@ -79,7 +79,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
                 await setFieldValue(`${direction == "from" ? "to" : "from"}Currency`, default_currency, true)
             }
         }
-        
+
         (currencyGroup as any).manuallySet = true
         await setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to, values])
