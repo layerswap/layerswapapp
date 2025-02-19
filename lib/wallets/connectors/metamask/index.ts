@@ -119,8 +119,7 @@ export function walletConnect(parameters: WalletConnectParameters) {
   let disconnect: WalletConnectConnector['onDisconnect'] | undefined
 
   return createConnector<Provider, Properties, StorageItem>((config) => ({
-    //wltcnnct
-    id: 'metaMask',
+    id: 'io.metamask',
     name: 'MetaMask',
     rdns: 'io.metamask',
     type: walletConnect.type,
