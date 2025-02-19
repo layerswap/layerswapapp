@@ -23,7 +23,7 @@ type Props = {
 }
 
 export default function useParadex({ network }: Props): WalletProvider {
-    const name = 'paradex'
+    const name = 'Paradex'
     const id = 'prdx'
     const { networks } = useSettingsState()
     const selectedProvider = useWalletStore((state) => state.selectedProveder)
@@ -175,6 +175,7 @@ export default function useParadex({ network }: Props): WalletProvider {
         availableWalletsForConnect,
         name,
         id,
+        hideFromList: true
     }
 
     return provider

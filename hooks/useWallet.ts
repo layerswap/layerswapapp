@@ -27,7 +27,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
 
     const wallets = useMemo(() => {
         let connectedWallets: Wallet[] = [];
-        walletProviders.filter(p => !p.isWrapper).forEach((wallet) => {
+        walletProviders.forEach((wallet) => {
             const w = wallet.connectedWallets;
             connectedWallets = w ? [...connectedWallets, ...w] : [...connectedWallets];
         });
