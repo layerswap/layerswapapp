@@ -173,19 +173,17 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     const handleSelect = useCallback(async (item: SelectMenuItem<RouteToken>) => {
         const oppositeCurrency = direction === 'from' ? toCurrency : fromCurrency
-        const oppositeExchange = direction === 'from' ? toExchange : fromExchange
-        debugger
-        if (oppositeExchange /*&& !oppositeExchange?.manuallySet*/) {
-
-            const default_currency = oppositeExchange?.token_groups?.find(t => t.symbol === item.baseObject.symbol) || oppositeExchange?.token_groups?.find(t => t.symbol.includes(item.baseObject.symbol) || item.baseObject.symbol.includes(t.symbol))
+        const exchange = direction === 'from' ? toExchange : fromExchange 
+        
+        if (currencyGroup && !currencyGroup?.manuallySet) {
+            const default_currency = exchange?.token_groups?.find(t => t.symbol === item.baseObject.symbol) || exchange?.token_groups?.find(t => t.symbol.includes(item.baseObject.symbol) || item.baseObject.symbol.includes(t.symbol))
             if (default_currency) {
-                //await setFieldValue("validatingDestination", true, true)
-                //await setFieldValue("validatingSource", true, true)
+                await setFieldValue("validatingDestination", true, true)
+                await setFieldValue("validatingSource", true, true)
                 await setFieldValue("currencyGroup", default_currency, true)
             }
         }
-        //(oppositeExchange as any).manuallySet = true
-
+        
         if (oppositeCurrency && !oppositeCurrency?.manuallySet) {
             const network = direction === 'to' ? from : to
 

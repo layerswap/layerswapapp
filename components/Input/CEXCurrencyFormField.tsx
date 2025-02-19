@@ -78,7 +78,8 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
                 await setFieldValue(`${direction == "from" ? "to" : "from"}Currency`, default_currency, true)
             }
         }
-        (item.baseObject as any).manuallySet = true
+        
+        (currencyGroup as any).manuallySet = true
         await setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to, values])
 
