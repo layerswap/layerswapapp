@@ -12,7 +12,7 @@ import {
 } from '@fuels/react';
 import { useSwapDataState } from '../../../../context/swap';
 import { datadogRum } from '@datadog/browser-rum';
-import { Address, AssetId, Contract, Provider } from 'fuels';
+import { Address, AssetId, Contract, Provider, ScriptTransactionRequest } from 'fuels';
 import WatchdogAbi from '../../../../lib/abis/FUELWATCHDOG.json';
 import TransactionMessages from '../messages/TransactionMessages';
 
@@ -26,7 +26,6 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
     const { provider } = useWallet(network, 'withdrawal');
 
     const { network: fuelNetwork, refetch: refetchNetwork } = useNetwork()
-    const wallet = provider?.activeWallet
     const networkChainId = Number(network?.chain_id)
     const { selectedSourceAccount } = useSwapDataState()
     const { fuel } = useFuel()
@@ -53,41 +52,15 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
             if (!token) throw Error("Token not found")
             if (!selectedSourceAccount?.address) throw Error("No selected account")
 
-            const fuelWallet = await fuel.getWallet(selectedSourceAccount.address);
+            const fuelProvider = new Provider(network.node_url);
+            const fuelWallet = await fuel.getWallet(selectedSourceAccount.address, fuelProvider);
 
             if (!fuelWallet) throw Error("Fuel wallet not found")
 
-            const provider = new Provider(network?.node_url);
-            const contract = new Contract(network.metadata.watchdog_contract, WatchdogAbi, fuelWallet);
-
-            const asset_id = await provider.getBaseAssetId();
-
-            const address: Address = Address.fromB256(token.contract || asset_id);
-            const assetId: AssetId = address.toAssetId();
-
-            const parsedAmount = amount * Math.pow(10, token?.decimals)
-            const receiver = { bits: Address.fromDynamicInput(depositAddress).toB256() };
-
-            const scope = contract.functions
-                .watch(sequenceNumber, receiver)
-                .txParams({
-                    variableOutputs: 1,
-                })
-                .callParams({
-                    forward: [parsedAmount, assetId.bits],
-                })
-
-            const transactionRequest = await scope.getTransactionRequest();
-
-            const txCost = await scope.getTransactionCost();
-
-            transactionRequest.gasLimit = txCost.gasUsed;
-            transactionRequest.maxFee = txCost.maxFee;
-            datadogRum.addAction('fuelTransfer', transactionRequest);
-
-            await fuelWallet.fund(transactionRequest, txCost);
-
-            await provider.simulate(transactionRequest);
+            const transactionRequestData = JSON.parse(callData!);
+            var transactionRequest = new ScriptTransactionRequest(transactionRequestData);
+            await transactionRequest.estimateAndFund(fuelWallet);
+            await fuelProvider.simulate(transactionRequest);
 
             const transactionResponse = await fuelWallet.sendTransaction(transactionRequest);
 
@@ -111,7 +84,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
         }
     }, [swapId, amount, depositAddress, network, selectedSourceAccount, token, sequenceNumber, fuel])
 
-    if (!wallet) {
+    if (!provider?.activeWallet) {
         return <ConnectWalletButton />
     }
     else if (network && activeChainId !== undefined && networkChainId !== activeChainId) {
