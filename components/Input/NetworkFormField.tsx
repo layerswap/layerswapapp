@@ -106,7 +106,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         if (!isLoading && routes?.data) setRoutesData(routes.data)
     }, [routes])
 
-    const disableExchanges = process.env.NEXT_PUBLIC_DISABLE_EXCHANGES === 'true'
+    const disableExchanges = process.env.NEXT_PUBLIC_DISABLE_EXCHANGES === 'true' || (direction === 'to' ? from?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase() : to?.name?.toLowerCase() === query.sameAccountNetwork?.toLowerCase())
     const popularRoutes = useMemo(() => routesData
         ?.filter(r => r.tokens?.some(r => r.status === 'active'))
         ?.sort((a, b) =>
