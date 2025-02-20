@@ -153,11 +153,10 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 if (!value || value === toCurrency) return
                 (value as any).manuallySet = toCurrency.manuallySet
                 await setFieldValue(name, value)
-                await setFieldValue("validatingDestination", isLoading, true)
+                await setFieldValue("validatingDestination", false, true)
             })()
         }
     }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading])
-
 
     useEffect(() => {
         if (name === "fromCurrency" && fromCurrency && !isLoading && routes) {
@@ -166,24 +165,24 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 if (!value || value === fromCurrency) return
                 (value as any).manuallySet = fromCurrency.manuallySet
                 await setFieldValue(name, value)
-                await setFieldValue("validatingSource", isLoading, true)
+                await setFieldValue("validatingSource", false, true)
             })()
         }
     }, [toCurrency, currencyGroup, name, from, routes, error, isLoading])
 
     const handleSelect = useCallback(async (item: SelectMenuItem<RouteToken>) => {
         const oppositeCurrency = direction === 'from' ? toCurrency : fromCurrency
-        const exchange = direction === 'from' ? toExchange : fromExchange 
-        
+        const exchange = direction === 'from' ? toExchange : fromExchange
+
         if (currencyGroup && !currencyGroup?.manuallySet) {
             const default_currency = exchange?.token_groups?.find(t => t.symbol === item.baseObject.symbol) || exchange?.token_groups?.find(t => t.symbol.includes(item.baseObject.symbol) || item.baseObject.symbol.includes(t.symbol))
             if (default_currency) {
-                await setFieldValue("validatingDestination", true, true)
-                await setFieldValue("validatingSource", true, true)
+                await setFieldValue("validatingCurrencyGroup", true, true)
+                await setFieldValue(direction == "from" ? "validatingSource" : "validatingDestination", true, true)
                 await setFieldValue("currencyGroup", default_currency, true)
             }
         }
-        
+
         if (oppositeCurrency && !oppositeCurrency?.manuallySet) {
             const network = direction === 'to' ? from : to
 

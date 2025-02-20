@@ -61,16 +61,15 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
     useEffect(() => {
         const currency = direction === 'from' ? toCurrency : fromCurrency
         const value = availableAssetGroups?.find(r => r.symbol === currency?.symbol && r.status === 'active')
-        console.log("currencyGroup", currencyGroup)
+        
         if (!value || currencyGroup?.manuallySet)
             return
 
         (async () => {
             setFieldValue(name, value)
-            await setFieldValue("validatingDestination", isLoading, true)
-            await setFieldValue("validatingSource", isLoading, true)
+            await setFieldValue(direction == "from" ? "validatingSource" : "validatingDestination", true, true)
+            await setFieldValue("validatingCurrencyGroup", false, true)
         })();
-
     }, [fromCurrency, toCurrency, availableAssetGroups])
 
     const handleSelect = useCallback(async (item: SelectMenuItem<ExchangeToken>) => {

@@ -16,6 +16,7 @@ export type SwapFormValues = {
   depositMethod?: 'wallet' | 'deposit_address',
   validatingSource?: boolean;
   validatingDestination?: boolean;
+  validatingCurrencyGroup?: boolean;
 }
 
 
