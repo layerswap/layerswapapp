@@ -96,12 +96,12 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     if ((from?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase() || to?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase())) {
 
         if ((selectedSourceAccount && destination_address && selectedSourceAccount?.address.toLowerCase() !== destination_address?.toLowerCase())) {
-            validationMessage = `Transfers between ${from?.name} and ${to?.name} networks is supported only for the same account`;
+            validationMessage = `Transfers between ${from?.display_name} and ${to?.display_name} networks is supported only for the same account`;
             validationDetails = { title: 'Address update required', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
         }
 
         if (values.depositMethod === "deposit_address") {
-            validationMessage = `Manually transferring between ${from?.name} and ${to?.name} networks is not supported.`;
+            validationMessage = `Manually transferring between ${from?.display_name} and ${to?.display_name} networks is not supported.`;
             validationDetails = { title: 'Manual Transfer is not supported', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
         }
 
