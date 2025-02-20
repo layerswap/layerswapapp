@@ -79,7 +79,9 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     let menuItems: (SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean })[];
 
     const shouldFilter = direction === 'from' ? ((to && toCurrency) || (toExchange && currencyGroup)) : ((from && fromCurrency) || (fromExchange && currencyGroup))
-    const networkRoutesURL = shouldFilter ? resolveNetworkRoutesURL(direction, values) : null
+    const sameAccountNetwork = resolveSameAccountNetwork({ direction, networkname: query.sameAccountNetwork, from, to })
+    const networkTypes = sameAccountNetwork ? [sameAccountNetwork.type] : undefined
+    const networkRoutesURL = shouldFilter ? resolveNetworkRoutesURL(direction, values, networkTypes) : null
 
     const apiClient = new LayerSwapApiClient()
     const {
@@ -106,7 +108,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         if (!isLoading && routes?.data) setRoutesData(routes.data)
     }, [routes])
 
-    const disableExchanges = process.env.NEXT_PUBLIC_DISABLE_EXCHANGES === 'true' || (direction === 'to' ? from?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase() : to?.name?.toLowerCase() === query.sameAccountNetwork?.toLowerCase())
+    const disableExchanges = process.env.NEXT_PUBLIC_DISABLE_EXCHANGES === 'true' || sameAccountNetwork
     const popularRoutes = useMemo(() => routesData
         ?.filter(r => r.tokens?.some(r => r.status === 'active'))
         ?.sort((a, b) =>
@@ -294,6 +296,21 @@ function GenerateMenuItems(props: GenerateMenuItemsProps): (SelectMenuItem<Route
 
     const items = [...mappedExchanges, ...mappedLayers]
     return items
+}
+type SameAccountNetworkResolverProps = {
+    direction: SwapDirection,
+    networkname: string | undefined,
+    from: RouteNetwork | undefined,
+    to: RouteNetwork | undefined
+}
+const resolveSameAccountNetwork = (props: SameAccountNetworkResolverProps): RouteNetwork | undefined => {
+    const { direction, networkname, from, to } = props
+    if (direction === 'from') {
+        return to?.name.toLowerCase() === networkname?.toLowerCase() ? to : undefined
+    }
+    else {
+        return from?.name.toLowerCase() === networkname?.toLowerCase() ? from : undefined
+    }
 }
 
 export default NetworkFormField
