@@ -93,16 +93,15 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
     }
 
-    if ((from?.name === KnownInternalNames.Networks.SoneiumMainnet || to?.name === KnownInternalNames.Networks.SoneiumMainnet)
-        && (from?.name === KnownInternalNames.Networks.EthereumMainnet || to?.name === KnownInternalNames.Networks.EthereumMainnet)) {
+    if ((from?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase() || to?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase())) {
 
         if ((selectedSourceAccount && destination_address && selectedSourceAccount?.address.toLowerCase() !== destination_address?.toLowerCase())) {
-            validationMessage = 'Transfers between Soneium and Ethereum networks is supported only for the same account';
+            validationMessage = `Transfers between ${from?.display_name} and ${to?.display_name} networks is supported only for the same account`;
             validationDetails = { title: 'Address update required', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
         }
 
         if (values.depositMethod === "deposit_address") {
-            validationMessage = 'Manually transferring between Soneium and Ethereum networks is not supported.';
+            validationMessage = `Manually transferring between ${from?.display_name} and ${to?.display_name} networks is not supported.`;
             validationDetails = { title: 'Manual Transfer is not supported', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
         }
 

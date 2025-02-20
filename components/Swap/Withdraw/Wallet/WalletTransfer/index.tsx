@@ -8,6 +8,7 @@ import useWallet from "../../../../../hooks/useWallet";
 import { useSwapDataState } from "../../../../../context/swap";
 import KnownInternalNames from "../../../../../lib/knownIds";
 import TransactionMessages from "../../messages/TransactionMessages";
+import { useQueryState } from "../../../../../context/query";
 
 const TransferFromWallet: FC<WithdrawPageProps> = ({
     network,
@@ -21,7 +22,7 @@ const TransferFromWallet: FC<WithdrawPageProps> = ({
     const { source_network, destination_network, destination_address } = swapResponse?.swap || {}
     const { isConnected, chain: activeChain } = useAccount();
     const { provider } = useWallet(network, 'withdrawal')
-
+    const { sameAccountNetwork } = useQueryState()
     const wallet = provider?.activeWallet
 
     const networkChainId = Number(network?.chain_id) ?? undefined
@@ -46,8 +47,7 @@ const TransferFromWallet: FC<WithdrawPageProps> = ({
     const sequence_number_even = (hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number)
 
 
-    if ((source_network?.name === KnownInternalNames.Networks.SoneiumMainnet || destination_network?.name === KnownInternalNames.Networks.SoneiumMainnet)
-        && (source_network?.name === KnownInternalNames.Networks.EthereumMainnet || destination_network?.name === KnownInternalNames.Networks.EthereumMainnet)
+    if ((source_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() || destination_network?.name.toLowerCase === sameAccountNetwork?.toLowerCase())
         && (selectedSourceAccount?.address && destination_address && selectedSourceAccount?.address.toLowerCase() !== destination_address?.toLowerCase())) {
 
         return <TransactionMessages.DifferentAccountsNotAllowedError />
