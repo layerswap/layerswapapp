@@ -127,7 +127,7 @@ const DepositMethod: FC<DespositMethodItemProps> = ({
 }) => {
     const selected = selectedValue === value
     return (
-        <div className={`p-3 ${selected ? 'bg-secondary-500 text-primary-text' : 'text-secondary-text hover:bg-secondary-700'} flex rounded-lg cursor-pointer`} onClick={() => onselect(value)}>
+        <div className={`p-3 ${selected ? 'text-primary-text' : 'text-secondary-text'} flex rounded-lg cursor-pointer hover:bg-secondary-700`} onClick={() => onselect(value)}>
             <div className="grid grid-cols-9 gap-2 md:gap-0 w-full">
                 <div>
                     {icon}
