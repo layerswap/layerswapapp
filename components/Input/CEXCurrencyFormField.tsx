@@ -109,8 +109,6 @@ export function GenerateCurrencyMenuItems(
 
         const isAvailable = (lockedCurrency || (c?.status !== "active" && c.status !== "not_found")) ? false : true;
 
-        const routeNotFound = c.status === "not_found"
-
         const res: SelectMenuItem<ExchangeToken> = {
             baseObject: c,
             id: c.symbol,
@@ -118,7 +116,7 @@ export function GenerateCurrencyMenuItems(
             order: ResolveCEXCurrencyOrder(c),
             imgSrc: c.logo,
             isAvailable: isAvailable,
-            leftIcon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} type="token" />
+            leftIcon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={false} type="token" />
         };
         return res
     });
