@@ -51,6 +51,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
     const value = currencyMenuItems?.find(x => x.id == currencyGroup?.symbol);
 
     useEffect(() => {
+        console.log("effected")
         if (value) return
         if (currencyMenuItems?.[0])
             setFieldValue(name, currencyMenuItems?.[0]?.baseObject)
@@ -60,12 +61,16 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
     useEffect(() => {
         const currency = direction === 'from' ? toCurrency : fromCurrency
         const value = availableAssetGroups?.find(r => r.symbol === currency?.symbol && r.status === 'active')
-        if (!value) return
+        console.log("currencyGroup", currencyGroup)
+        if (!value || currencyGroup?.manuallySet)
+            return
+
         (async () => {
             setFieldValue(name, value)
             await setFieldValue("validatingDestination", isLoading, true)
             await setFieldValue("validatingSource", isLoading, true)
-        })()
+        })();
+
     }, [fromCurrency, toCurrency, availableAssetGroups])
 
     const handleSelect = useCallback(async (item: SelectMenuItem<ExchangeToken>) => {
@@ -80,7 +85,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
             }
         }
 
-        (currencyGroup as any).manuallySet = true
+        (item.baseObject as any).manuallySet = true
         await setFieldValue(name, item.baseObject, true)
     }, [name, direction, toCurrency, fromCurrency, from, to, values])
 
