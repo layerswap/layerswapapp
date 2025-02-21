@@ -37,7 +37,6 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     const { depositActionsResponse } = useSwapDataState()
 
     const callData = depositActionsResponse?.find(da => true)?.call_data as `0x${string}` | undefined
-    const config = useConfig()
     const transaction = useSendTransaction()
 
     useEffect(() => {
