@@ -1,6 +1,7 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import {
     useAccount,
+    useConfig,
     useSendTransaction
 } from "wagmi";
 import { parseEther } from 'viem'
@@ -15,6 +16,7 @@ import { ButtonWrapper } from "./buttons";
 import { useSwapTransactionStore } from "../../../../../stores/swapTransactionStore";
 import { useSwapDataState } from "../../../../../context/swap";
 import { datadogRum } from "@datadog/browser-rum";
+import { isMobile } from "../../../../../lib/openLink";
 
 const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     depositAddress,
@@ -35,7 +37,6 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     const { depositActionsResponse } = useSwapDataState()
 
     const callData = depositActionsResponse?.find(da => true)?.call_data as `0x${string}` | undefined
-
     const transaction = useSendTransaction()
 
     useEffect(() => {
@@ -72,7 +73,8 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
             console.error(e.message)
         }
     }, [transaction?.data, swapId])
-
+    const [clientChain, setClientChain] = useState<number | undefined>()
+    const [connection, setConnection] = useState<any>()
     const clickHandler = useCallback(async () => {
         setButtonClicked(true)
         try {
@@ -90,16 +92,20 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
                 value: parseEther(amount?.toString()),
                 gas: estimatedGas,
                 data: callData,
-                account: selectedSourceAccount.address
+                account: selectedSourceAccount.address as `0x${string}`
             }
-            transaction?.sendTransaction(tx as any)
+            if (isMobile() && selectedSourceAccount.wallet.metadata?.deepLink) {
+                window.location.href = selectedSourceAccount.wallet.metadata?.deepLink
+                await new Promise(resolve => setTimeout(resolve, 100))
+            }
+            transaction?.sendTransaction(tx)
         } catch (e) {
             const error = new Error(e)
             error.name = "TransferTokenError"
             error.cause = e
             datadogRum.addError(error);
         }
-    }, [transaction, estimatedGas, depositAddress, amount, callData])
+    }, [transaction, estimatedGas, depositAddress, amount, callData, chainId])
 
     const isError = transaction.isError
     return <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
