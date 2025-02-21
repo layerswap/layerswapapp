@@ -10,12 +10,13 @@ export type SwapFormValues = {
   refuel?: boolean;
   from?: RouteNetwork;
   to?: RouteNetwork;
-  fromExchange?: Exchange,
-  toExchange?: Exchange,
-  currencyGroup?: ExchangeToken
+  fromExchange?: Exchange;
+  toExchange?: Exchange;
+  currencyGroup?: ExchangeToken & { manuallySet?: boolean };
   depositMethod?: 'wallet' | 'deposit_address',
   validatingSource?: boolean;
   validatingDestination?: boolean;
+  validatingCurrencyGroup?: boolean;
 }
 
 
