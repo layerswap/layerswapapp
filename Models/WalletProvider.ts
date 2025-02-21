@@ -23,6 +23,7 @@ export type Wallet = {
         starknetAccount?: AccountInterface,
         wallet?: StarknetWindowObject,
         l1Address?: string,
+        deepLink?: string
     }
     chainId?: string | number,
     isLoading?: boolean,

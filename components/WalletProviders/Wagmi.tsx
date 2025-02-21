@@ -12,7 +12,8 @@ import { Chain, http } from 'viem';
 import { WalletModalProvider } from '../WalletModal';
 import { argent } from '../../lib/wallets/connectors/argent';
 import { rainbow } from '../../lib/wallets/connectors/rainbow';
-import { coinbaseWallet, metaMask, walletConnect } from '@wagmi/connectors'
+import { metaMask } from '../../lib/wallets/connectors/metamask';
+import { coinbaseWallet, walletConnect } from '@wagmi/connectors'
 import { hasInjectedProvider } from '../../lib/wallets/connectors/getInjectedConnector';
 import { bitget } from '../../lib/wallets/connectors/bitget';
 import { isMobile } from '../../lib/isMobile';
@@ -56,7 +57,7 @@ function WagmiComponent({ children }: Props) {
             }),
             walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' }),
             argent({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'argent' }),
-            ...(!isMetaMaskInjected ? [metaMask()] : []),
+            ...(!isMetaMaskInjected ? [metaMask({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'metamask' })] : []),
             ...(!isRainbowInjected ? [rainbow({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'rainbow' })] : []),
             ...(!isBitKeepInjected ? [bitget({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'bitget' })] : []),
             browserInjected()
