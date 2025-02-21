@@ -12,8 +12,7 @@ import {
 } from '@fuels/react';
 import { useSwapDataState } from '../../../../context/swap';
 import { datadogRum } from '@datadog/browser-rum';
-import { Address, AssetId, Contract, Provider, ScriptTransactionRequest } from 'fuels';
-import WatchdogAbi from '../../../../lib/abis/FUELWATCHDOG.json';
+import { coinQuantityfy, CoinQuantityLike, Provider, ScriptTransactionRequest } from 'fuels';
 import TransactionMessages from '../messages/TransactionMessages';
 
 const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, amount, depositAddress, sequenceNumber, token }) => {
@@ -50,6 +49,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
             if (!network.metadata.watchdog_contract) throw Error("Watchdog contract not found")
             if (!amount) throw Error("Amount not found")
             if (!token) throw Error("Token not found")
+            if (!callData) throw Error("Call data not found")
             if (!selectedSourceAccount?.address) throw Error("No selected account")
 
             const fuelProvider = new Provider(network.node_url);
@@ -57,12 +57,21 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
 
             if (!fuelWallet) throw Error("Fuel wallet not found")
 
-            const transactionRequestData = JSON.parse(callData!);
-            var transactionRequest = new ScriptTransactionRequest(transactionRequestData);
-            await transactionRequest.estimateAndFund(fuelWallet);
-            await fuelProvider.simulate(transactionRequest);
+            type FuelPrepareData = {
+                script: ScriptTransactionRequest,
+                quantities: CoinQuantityLike[]
+            }
+            var parsedCallData: FuelPrepareData = JSON.parse(callData);
+            var scriptTransaction = ScriptTransactionRequest.from(parsedCallData.script);
+            var quantitiesParsed = parsedCallData.quantities.map(q => coinQuantityfy(q));
 
-            const transactionResponse = await fuelWallet.sendTransaction(transactionRequest);
+            await scriptTransaction.estimateAndFund(fuelWallet, {
+                quantities: quantitiesParsed
+            });
+
+            await fuelProvider.simulate(scriptTransaction);
+
+            const transactionResponse = await fuelWallet.sendTransaction(scriptTransaction);
 
             if (swapId && transactionResponse) setSwapTransaction(swapId, BackendTransactionStatus.Completed, transactionResponse.id)
 
@@ -152,7 +161,9 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
     if (isLoading) {
         return <TransactionMessages.ConfirmTransactionMessage />
     }
-    else if (error === "The account(s) sending the transaction don't have enough funds to cover the transaction.") {
+    else if (error === "The account(s) sending the transaction don't have enough funds to cover the transaction." 
+        || error === "the target cannot be met due to no coins available or exceeding the 255 coin limit."
+    ) {
         return <TransactionMessages.InsufficientFundsMessage />
     }
     else if (error === "Request cancelled without user response!" || error === "User rejected the transaction!" || error === "User canceled sending transaction") {
