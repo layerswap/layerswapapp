@@ -51,7 +51,6 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
     const value = currencyMenuItems?.find(x => x.id == currencyGroup?.symbol);
 
     useEffect(() => {
-        console.log("effected")
         if (value) return
         if (currencyMenuItems?.[0])
             setFieldValue(name, currencyMenuItems?.[0]?.baseObject)
