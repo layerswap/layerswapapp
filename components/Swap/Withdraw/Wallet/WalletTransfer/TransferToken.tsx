@@ -105,7 +105,7 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
             error.cause = e
             datadogRum.addError(error);
         }
-    }, [transaction, estimatedGas, depositAddress, amount, callData, config, chainId])
+    }, [transaction, estimatedGas, depositAddress, amount, callData, chainId])
 
     const isError = transaction.isError
     return <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
