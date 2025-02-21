@@ -28,6 +28,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
     const apiClient = new LayerSwapApiClient()
     const {
         data: exchanges,
+        isLoading,
         error
     } = useSWR<ApiResponse<Exchange[]>>(`${exchangeRoutesURL}`, apiClient.fetcher, { keepPreviousData: true, fallbackData: { data: direction === 'from' ? sourceExchanges : destinationExchanges }, dedupingInterval: 10000 })
 
@@ -57,14 +58,34 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
     }, [])
 
     useEffect(() => {
-        const value = availableAssetGroups?.find(r => r.symbol === currencyGroup?.symbol)
-        if (!value) return
-        setFieldValue(name, value)
+        const currency = direction === 'from' ? toCurrency : fromCurrency
+        const value = availableAssetGroups?.find(r => r.symbol === currency?.symbol && r.status === 'active')
+        
+        if (!value || currencyGroup?.manuallySet)
+            return
+
+        (async () => {
+            setFieldValue(name, value)
+            await setFieldValue(direction == "from" ? "validatingSource" : "validatingDestination", true, true)
+            await setFieldValue("validatingCurrencyGroup", false, true)
+        })();
     }, [fromCurrency, toCurrency, availableAssetGroups])
 
-    const handleSelect = useCallback((item: SelectMenuItem<ExchangeToken>) => {
-        setFieldValue(name, item.baseObject, true)
-    }, [name, direction, toCurrency, fromCurrency, from, to])
+    const handleSelect = useCallback(async (item: SelectMenuItem<ExchangeToken>) => {
+        const oppositeCurrency = direction === 'from' ? toCurrency : fromCurrency
+        if (oppositeCurrency && !oppositeCurrency?.manuallySet) {
+            const network = direction === 'to' ? from : to
+            const default_currency = network?.tokens?.find(t => t.symbol === item.baseObject.symbol) || network?.tokens?.find(t => t.symbol.includes(item.baseObject.symbol) || item.baseObject.symbol.includes(t.symbol))
+            if (default_currency) {
+                await setFieldValue("validatingDestination", true, true)
+                await setFieldValue("validatingSource", true, true)
+                await setFieldValue(`${direction == "from" ? "to" : "from"}Currency`, default_currency, true)
+            }
+        }
+
+        (item.baseObject as any).manuallySet = true
+        await setFieldValue(name, item.baseObject, true)
+    }, [name, direction, toCurrency, fromCurrency, from, to, values])
 
     return <PopoverSelectWrapper
         placeholder="Asset"
@@ -87,8 +108,6 @@ export function GenerateCurrencyMenuItems(
 
         const isAvailable = (lockedCurrency || (c?.status !== "active" && c.status !== "not_found")) ? false : true;
 
-        const routeNotFound = c.status === "not_found"
-
         const res: SelectMenuItem<ExchangeToken> = {
             baseObject: c,
             id: c.symbol,
@@ -96,7 +115,7 @@ export function GenerateCurrencyMenuItems(
             order: ResolveCEXCurrencyOrder(c),
             imgSrc: c.logo,
             isAvailable: isAvailable,
-            leftIcon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={routeNotFound} type="token" />
+            leftIcon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={false} type="token" />
         };
         return res
     });

@@ -33,7 +33,7 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     } = useFormikContext<SwapFormValues>();
     const { destinationRoutes: allDestinations, sourceRoutes: allSources } = useSettingsState()
     const { selectedSourceAccount } = useSwapDataState()
-    const { to, from, fromCurrency, toCurrency, toExchange, fromExchange, currencyGroup, validatingSource, validatingDestination, destination_address } = values;
+    const { to, from, fromCurrency, toCurrency, toExchange, fromExchange, currencyGroup, validatingSource, validatingDestination, validatingCurrencyGroup, destination_address } = values;
     const query = useQueryState();
     const fromDisplayName = fromExchange ? fromExchange.display_name : from?.display_name;
     const toDisplayName = toExchange ? toExchange.display_name : to?.display_name;
@@ -88,7 +88,7 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
             validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info stroke='#f8974b' className='w-4 h-4 ' /> };
         }
     }
-    else if (!validatingSource && !validatingDestination && (currencyGroup?.status === 'not_found' || toCurrency?.status === 'not_found' || fromCurrency?.status === 'not_found')) {
+    else if (!validatingSource && !validatingDestination && !validatingCurrencyGroup && (currencyGroup?.status === 'not_found' || toCurrency?.status === 'not_found' || fromCurrency?.status === 'not_found')) {
         validationMessage = 'Please change one of the selected tokens';
         validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
     }
