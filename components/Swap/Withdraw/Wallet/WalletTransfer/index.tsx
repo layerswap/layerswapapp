@@ -47,7 +47,7 @@ const TransferFromWallet: FC<WithdrawPageProps> = ({
     const sequence_number_even = (hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number)
 
 
-    if ((source_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() || destination_network?.name.toLowerCase === sameAccountNetwork?.toLowerCase())
+    if ((source_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() || destination_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase())
         && (selectedSourceAccount?.address && destination_address && selectedSourceAccount?.address.toLowerCase() !== destination_address?.toLowerCase())) {
 
         return <TransactionMessages.DifferentAccountsNotAllowedError />
