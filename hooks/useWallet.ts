@@ -1,7 +1,7 @@
 import { Network } from "../Models/Network"
 import useEVM from "../lib/wallets/evm/useEVM";
 import useImtblX from "../lib/wallets/imtblX/useImtblX";
-import useSolana from "../lib/wallets/solana/useSolana";
+import useSVM from "../lib/wallets/solana/useSVM";
 import useStarknet from "../lib/wallets/starknet/useStarknet";
 import useTON from "../lib/wallets/ton/useTON";
 import useFuel from "../lib/wallets/fuel/useFuel"
@@ -18,7 +18,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
         useEVM({ network }),
         useStarknet(),
         useImtblX(),
-        useSolana({ network }),
+        useSVM({ network }),
         useTON(),
         useFuel(),
         useTron(),
@@ -29,7 +29,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
 
     const wallets = useMemo(() => {
         let connectedWallets: Wallet[] = [];
-        walletProviders.filter(p => !p.isWrapper).forEach((wallet) => {
+        walletProviders.forEach((wallet) => {
             const w = wallet.connectedWallets;
             connectedWallets = w ? [...connectedWallets, ...w] : [...connectedWallets];
         });

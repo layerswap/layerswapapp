@@ -274,13 +274,12 @@ const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
     const connector = connection?.connector
     if (!connector)
         return undefined
-
     const address = accountIsActive ? activeAddress : addresses?.[0]
     if (!address) return undefined
 
     const walletname = `${connector?.name} ${connector.id === "com.immutable.passport" ? "" : " - EVM"}`
 
-    const wallet = {
+    const wallet: Wallet = {
         id: connector.name,
         isActive: accountIsActive,
         address,
@@ -293,7 +292,10 @@ const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
         asSourceSupportedNetworks: resolveSupportedNetworks(supportedNetworks.asSource, connector.id),
         autofillSupportedNetworks: resolveSupportedNetworks(supportedNetworks.autofill, connector.id),
         withdrawalSupportedNetworks: resolveSupportedNetworks(supportedNetworks.withdrawal, connector.id),
-        networkIcon: networks.find(n => connector?.id === "com.immutable.passport" ? immutableZKEvm.some(name => name === n.name) : ethereumNames.some(name => name === n.name))?.logo
+        networkIcon: networks.find(n => connector?.id === "com.immutable.passport" ? immutableZKEvm.some(name => name === n.name) : ethereumNames.some(name => name === n.name))?.logo,
+        metadata: {
+            deepLink: (connector as LSConnector).deepLink
+        }
     }
 
     return wallet

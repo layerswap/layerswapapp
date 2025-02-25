@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { Dispatch, forwardRef, SetStateAction, useCallback, useEffect, useState } from "react";
+import { Dispatch, forwardRef, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
@@ -39,8 +39,8 @@ const Address = dynamic(() => import("../Input/Address"), {
 
 const GROUP_ORDERS = { "Popular": 1, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
 export const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
-const getGroupName = (value: RouteNetwork | Exchange, type: 'cex' | 'network', canShowInPopular?: boolean) => {
-    if (NetworkSettings.KnownSettings[value.name]?.isFeatured && canShowInPopular) {
+const getGroupName = (value: RouteNetwork | Exchange, type: 'cex' | 'network', canShowInPopular?: boolean, popularNetworks?: string[]) => {
+    if (type === 'network' && popularNetworks?.includes(value.name) && canShowInPopular) {
         return "Popular";
     }
     else if (type === 'network') {
@@ -79,7 +79,9 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     let menuItems: (SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean })[];
 
     const shouldFilter = direction === 'from' ? ((to && toCurrency) || (toExchange && currencyGroup)) : ((from && fromCurrency) || (fromExchange && currencyGroup))
-    const networkRoutesURL = shouldFilter ? resolveNetworkRoutesURL(direction, values) : null
+    const sameAccountNetwork = resolveSameAccountNetwork({ direction, networkname: query.sameAccountNetwork, from, to })
+    const networkTypes = sameAccountNetwork ? [sameAccountNetwork.type] : undefined
+    const networkRoutesURL = shouldFilter ? resolveNetworkRoutesURL(direction, values, networkTypes) : null
 
     const apiClient = new LayerSwapApiClient()
     const {
@@ -106,17 +108,38 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         if (!isLoading && routes?.data) setRoutesData(routes.data)
     }, [routes])
 
-    const disableExchanges = process.env.NEXT_PUBLIC_DISABLE_EXCHANGES === 'true'
+    const disableExchanges = process.env.NEXT_PUBLIC_DISABLE_EXCHANGES === 'true' || sameAccountNetwork
+    const popularRoutes = useMemo(() => routesData
+        ?.filter(r => r.tokens?.some(r => r.status === 'active'))
+        ?.sort((a, b) =>
+        (direction === "from"
+            ? (a.source_rank ?? 0) - (b.source_rank ?? 0)
+            : (a.destination_rank ?? 0) - (b.destination_rank ?? 0))
+        )
+        .slice(0, 5)
+        .map(r => r.name) || [], [routesData])
 
     if (direction === "from") {
         placeholder = "Source";
         searchHint = "Swap from";
-        menuItems = GenerateMenuItems(routesData, toExchange || disableExchanges ? [] : exchangesData, direction, !!(from && lockFrom), query);
+        menuItems = GenerateMenuItems({
+            routesData,
+            exchanges: (toExchange || disableExchanges ? [] : exchangesData),
+            direction,
+            lock: !!(from && lockFrom),
+            query, popularRoutes
+        });
     }
     else {
         placeholder = "Destination";
         searchHint = "Swap to";
-        menuItems = GenerateMenuItems(routesData, fromExchange || disableExchanges ? [] : exchangesData, direction, !!(to && lockTo), query);
+        menuItems = GenerateMenuItems({
+            routesData,
+            exchanges: (fromExchange || disableExchanges ? [] : exchangesData),
+            direction,
+            lock: !!(to && lockTo),
+            query, popularRoutes
+        });
     }
 
     const value = menuItems.find(x => !x.isExchange ?
@@ -215,7 +238,18 @@ function groupByType(values: ISelectMenuItem[]) {
     return groups;
 }
 
-function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchange[], direction: SwapDirection, lock: boolean, query: QueryParams): (SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean })[] {
+type GenerateMenuItemsProps = {
+    popularRoutes: string[] | undefined,
+    routesData: RouteNetwork[] | undefined,
+    exchanges: Exchange[],
+    direction: SwapDirection,
+    lock: boolean,
+    query: QueryParams
+}
+
+function GenerateMenuItems(props: GenerateMenuItemsProps): (SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean })[] {
+    const { direction, exchanges, lock, popularRoutes, query, routesData: routes } = props
+
     const mappedLayers = routes?.map(r => {
         const isNewlyListed = r?.tokens?.every(t => new Date(t?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK);
         const badge = isNewlyListed ? (
@@ -238,7 +272,7 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
             order,
             imgSrc: r.logo,
             isAvailable: isAvailable,
-            group: getGroupName(r, 'network', isAvailable && !routeNotFound),
+            group: getGroupName(r, 'network', isAvailable && !routeNotFound, popularRoutes),
             isExchange: false,
             badge,
             leftIcon: <RouteIcon direction={direction} isAvailable={isAvailable} routeNotFound={false} type="network" />,
@@ -262,6 +296,21 @@ function GenerateMenuItems(routes: RouteNetwork[] | undefined, exchanges: Exchan
 
     const items = [...mappedExchanges, ...mappedLayers]
     return items
+}
+type SameAccountNetworkResolverProps = {
+    direction: SwapDirection,
+    networkname: string | undefined,
+    from: RouteNetwork | undefined,
+    to: RouteNetwork | undefined
+}
+const resolveSameAccountNetwork = (props: SameAccountNetworkResolverProps): RouteNetwork | undefined => {
+    const { direction, networkname, from, to } = props
+    if (direction === 'from') {
+        return to?.name.toLowerCase() === networkname?.toLowerCase() ? to : undefined
+    }
+    else {
+        return from?.name.toLowerCase() === networkname?.toLowerCase() ? from : undefined
+    }
 }
 
 export default NetworkFormField

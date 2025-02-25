@@ -2,7 +2,7 @@ import { FormikErrors } from "formik";
 import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { isValidAddress } from "./address/validator";
 
-export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount }: { minAllowedAmount: number | undefined, maxAllowedAmount: number | undefined }): ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {
+export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount, sourceAddress, sameAccountNetwork }: { minAllowedAmount: number | undefined, maxAllowedAmount: number | undefined, sourceAddress: string | undefined, sameAccountNetwork?: string | undefined }): ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {
     return (values: SwapFormValues) => {
         let errors: FormikErrors<SwapFormValues> = {};
         let amount = values.amount ? Number(values.amount) : undefined;
@@ -62,10 +62,16 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount 
         if (values.fromCurrency?.status === 'inactive' || values.toCurrency?.status === 'inactive' || values.currencyGroup?.status === 'inactive') {
             errors.amount = `Route unavailable`;
         }
+        if ((values.from?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() || values.to?.name.toLowerCase() === sameAccountNetwork?.toLowerCase())) {
 
-        if (Object.keys(errors).length === 0) return errors
+            if ((sourceAddress && values.destination_address && sourceAddress.toLowerCase() !== values.destination_address?.toLowerCase())) {
+                errors.destination_address = `Address update required`;
+            }
+            if (values.depositMethod === "deposit_address") {
+                errors.destination_address = 'Manual Transfer is not supported';
+            }
 
-        if (Object.keys(errors).length === 0) return errors
+        }
 
         return errors;
     };

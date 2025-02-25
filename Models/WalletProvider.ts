@@ -23,6 +23,7 @@ export type Wallet = {
         starknetAccount?: AccountInterface,
         wallet?: StarknetWindowObject,
         l1Address?: string,
+        deepLink?: string
     }
     chainId?: string | number,
     isLoading?: boolean,
@@ -38,7 +39,7 @@ export type Wallet = {
 
 
 export type WalletProvider = {
-    isWrapper?: boolean,
+    hideFromList?: boolean,
     connectWallet: () => Promise<Wallet | undefined>,
     connectConnector?: (props?: { connector: InternalConnector }) => Promise<Wallet | undefined> | undefined
     switchAccount?: (connector: Wallet, address: string) => Promise<void>

@@ -30,6 +30,13 @@ const TransactionRejectedMessage: FC = () => {
         details={`You've rejected the transaction in your wallet. Click “Try again” to open the prompt again.`} />
 }
 
+const DifferentAccountsNotAllowedError: FC = () => {
+    return <WalletMessage
+        status="error"
+        header='Address update required'
+        details={`Transfers between selected networks is supported only for the same account`} />
+}
+
 const TransactionFailedMessage: FC = () => {
     return <WalletMessage
         status="error"
@@ -59,7 +66,8 @@ const TransactionMessages = {
     TransactionRejectedMessage,
     WaletMismatchMessage,
     TransactionFailedMessage,
-    UexpectedErrorMessage
+    UexpectedErrorMessage,
+    DifferentAccountsNotAllowedError
 }
 
 export default TransactionMessages
