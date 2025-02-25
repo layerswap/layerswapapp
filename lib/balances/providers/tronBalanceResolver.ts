@@ -4,6 +4,7 @@ import { Network, NetworkWithTokens, Token } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
 import { TronWeb } from 'tronweb'
+import { insertIfNotExists } from "./helpers";
 
 export class TronBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
@@ -13,11 +14,10 @@ export class TronBalanceProvider {
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
         let balances: Balance[] = []
         const provider = new TronWeb({ fullNode: network.node_url, solidityNode: network.node_url, privateKey: '01' });
+        const tokens = insertIfNotExists(network.tokens, network.token)
 
-        for (let i = 0; i < network.tokens.length; i++) {
+        for (const token of tokens) {
             try {
-
-                const token = network.tokens[i]
                 const balance = await resolveBalance({ network, address, token, provider })
 
                 if (!balance) return
@@ -67,7 +67,7 @@ const getNativeAssetBalance = async ({ network, token, address, provider }: GetB
             amount: formatAmount(balance.toString(), Number(token?.decimals)),
             request_time: new Date().toJSON(),
             decimals: Number(token?.decimals),
-            isNativeCurrency: false,
+            isNativeCurrency: true,
         })
     }
     catch (e) {

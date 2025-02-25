@@ -3,6 +3,7 @@ import { NetworkWithTokens } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import Erc20Abi from '../../abis/ERC20.json'
 import KnownInternalNames from "../../knownIds";
+import { insertIfNotExists } from "./helpers";
 
 export class StarknetBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
@@ -25,9 +26,10 @@ export class StarknetBalanceProvider {
             nodeUrl: network.node_url,
         });
 
-        for (let i = 0; i < network.tokens.length; i++) {
+        const tokens = insertIfNotExists(network.tokens || [], network.token)
+
+        for (const token of tokens) {
             try {
-                const token = network.tokens[i]
 
                 const erc20 = new Contract(Erc20Abi, token.contract!, provider);
                 const balanceResult = await erc20.balanceOf(address);
@@ -45,6 +47,7 @@ export class StarknetBalanceProvider {
                     ...balances,
                     balance
                 ]
+                
             }
             catch (e) {
                 console.log(e)

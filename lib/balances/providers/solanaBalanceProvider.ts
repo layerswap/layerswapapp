@@ -1,6 +1,7 @@
 import { Balance } from "../../../Models/Balance";
 import { NetworkType, NetworkWithTokens } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
+import { insertIfNotExists } from "./helpers";
 
 export class SolanaBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
@@ -10,6 +11,7 @@ export class SolanaBalanceProvider {
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
         if (!address) return
 
+        const tokens = insertIfNotExists(network.tokens || [], network.token)
         const SolanaWeb3 = await import("@solana/web3.js");
         const { PublicKey, Connection } = SolanaWeb3
         class SolanaConnection extends Connection { }
@@ -36,14 +38,11 @@ export class SolanaBalanceProvider {
             }
         }
 
-        for (let i = 0; i < network.tokens.length; i++) {
+        for (const token of tokens) {
             try {
-                const asset = network.tokens[i]
-
                 let result: number | null = null
-
-                if (asset.contract) {
-                    const sourceToken = new PublicKey(asset?.contract!);
+                if (token.contract) {
+                    const sourceToken = new PublicKey(token?.contract!);
                     const associatedTokenFrom = await getAssociatedTokenAddress(
                         sourceToken,
                         walletPublicKey
@@ -52,16 +51,16 @@ export class SolanaBalanceProvider {
                     result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
                 } else {
                     const res = await connection.getBalance(walletPublicKey)
-                    result = res ? formatAmount(Number(res), asset.decimals) : 0
+                    result = res ? formatAmount(Number(res), token.decimals) : 0
                 }
 
                 if (result != null && !isNaN(result)) {
                     const balance = {
                         network: network.name,
-                        token: asset.symbol,
+                        token: token.symbol,
                         amount: result,
                         request_time: new Date().toJSON(),
-                        decimals: Number(asset?.decimals),
+                        decimals: Number(token?.decimals),
                         isNativeCurrency: false
                     }
 
@@ -70,6 +69,7 @@ export class SolanaBalanceProvider {
                         balance
                     ]
                 }
+
             }
             catch (e) {
                 console.log(e)
