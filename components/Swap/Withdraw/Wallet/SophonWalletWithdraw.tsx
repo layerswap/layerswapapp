@@ -11,6 +11,8 @@ import { sophon, sophonTestnet } from 'viem/chains';
 import { createWalletClient, custom, JsonRpcAccount } from 'viem';
 import { eip712WalletActions, getGeneralPaymasterInput } from 'viem/zksync';
 import KnownInternalNames from '../../../../lib/knownIds';
+import { Web3Provider, Provider, utils } from "zksync-ethers"
+
 
 const SophonWalletWithdraw: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {
     const [loading, setLoading] = useState(false);
@@ -33,28 +35,37 @@ const SophonWalletWithdraw: FC<WithdrawPageProps> = ({ amount, depositAddress, n
 
             if (!walletProvider) throw new Error('Could not get provider')
 
-            const account = {
-                address: wallet?.address,
-                type: 'json-rpc'
-            } as JsonRpcAccount
+            const zksyncWeb3Provider = new Web3Provider(walletProvider as any)
+            const signer = zksyncWeb3Provider.getSigner()
 
-            const walletClient = createWalletClient({
-                chain: network.name === KnownInternalNames.Networks.SophonSepolia ? sophonTestnet : sophon,
-                transport: custom(walletProvider),
-                account: account
-            }).extend(eip712WalletActions());
+            const provider = new Provider(rpcUrl)
+            const nonce = await provider.getTransactionCount(userAddress, "pending");
 
-            const request = await walletClient.prepareTransactionRequest({
+             const txRequest = {
+                from: userAddress,
                 to: depositAddress,
                 data: callData as `0x${string}`,
-                paymaster: network?.metadata.zks_paymaster_contract,
-                paymasterInput: getGeneralPaymasterInput({ innerInput: "0x" }),
-            })
+                value,
+                customData: {
+                    factoryDeps: [],
+                    gasPerPubdata: 50000,
+                    paymasterParams: utils.getPaymasterParams(token.paymaster, {
+                        type: "General",
+                        innerInput: new Uint8Array(),
+                      }),
+                },
+                chainId,
+                type: 113,
+                nonce,
+                // gasPrice: BigInt(2232563311324),
+                // gasLimit: BigInt(1000000)
+            }
 
-            const signature = await walletClient.signTransaction(request as any)
-            const hash = await walletClient.sendRawTransaction({
-                serializedTransaction: signature
-            })
+            const response = await signer.sendTransaction(txRequest)
+
+            const tx = provider._wrapTransaction(response);
+
+            const hash = tx.hash
 
             if (hash) {
                 setSwapTransaction(swapId, BackendTransactionStatus.Pending, hash);
