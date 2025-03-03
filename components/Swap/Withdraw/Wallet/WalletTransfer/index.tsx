@@ -49,8 +49,8 @@ const TransferFromWallet: FC<WithdrawPageProps> = ({
 
     if ((source_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() || destination_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase())
         && (selectedSourceAccount?.address && destination_address && selectedSourceAccount?.address.toLowerCase() !== destination_address?.toLowerCase())) {
-
-        return <TransactionMessages.DifferentAccountsNotAllowedError />
+        const network = source_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() ? source_network : destination_network
+        return <TransactionMessages.DifferentAccountsNotAllowedError network={network?.display_name!} />
     }
 
     if (!isConnected || !wallet) {
