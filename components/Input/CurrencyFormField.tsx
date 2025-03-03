@@ -85,7 +85,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         }
         else if (default_currency) {
             (async () => {
-                const resetFromCurrency = fromCurrency && !fromCurrency?.manuallySet && !query?.lockFromAsset
+                const resetFromCurrency = fromCurrency && !fromCurrency?.manuallySet && !query?.lockFromAsset && fromCurrency.symbol !== default_currency.baseObject.symbol
                     && (fromCurrency?.symbol !== default_currency.baseObject.symbol
                         || fromCurrency?.symbol.includes(default_currency.baseObject.symbol)
                         || default_currency.baseObject.symbol.includes(fromCurrency?.symbol)
@@ -134,7 +134,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                         || default_currency.baseObject.symbol.includes(toCurrency?.symbol)
                     )
                 if (resetToCurrency) {
-                    const newToCurrency = to?.tokens.find(t => t.symbol === default_currency.baseObject.symbol)
+                    const newToCurrency = to?.tokens.find(t => t.symbol === default_currency.baseObject.symbol) && toCurrency?.symbol !== default_currency.baseObject.symbol
                         || to?.tokens.find(t => t.symbol.includes(default_currency.baseObject.symbol) || default_currency.baseObject.symbol.includes(t.symbol))
                     if (newToCurrency) {
                         await setFieldValue("validatingSource", true, true)
@@ -183,7 +183,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             }
         }
 
-        if (oppositeCurrency && !oppositeCurrency?.manuallySet) {
+        if (oppositeCurrency && !oppositeCurrency?.manuallySet && oppositeCurrency.symbol !== item.baseObject.symbol) {
             const network = direction === 'to' ? from : to
 
             const default_currency = network?.tokens?.find(t => t.symbol === item.baseObject.symbol) || network?.tokens?.find(t => t.symbol.includes(item.baseObject.symbol) || item.baseObject.symbol.includes(t.symbol))
