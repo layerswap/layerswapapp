@@ -94,10 +94,10 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     }
 
     if ((from?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase() || to?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase())) {
-
+        const network = from?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase() ? from : to;
         if ((selectedSourceAccount && destination_address && selectedSourceAccount?.address.toLowerCase() !== destination_address?.toLowerCase())) {
-            validationMessage = `Transfers between ${from?.display_name} and ${to?.display_name} networks is supported only for the same account`;
-            validationDetails = { title: 'Address update required', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
+            validationMessage = `Transfers between ${network?.display_name} and other chains are only allowed within the same account. Please make sure you're using the same address on both source and destination.`;
+            validationDetails = { title: 'Action Needed', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
         }
 
         if (values.depositMethod === "deposit_address") {
