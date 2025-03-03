@@ -16,6 +16,12 @@ export class TronGasProvider {
         if (!token.contract) throw new Error('Not implemented for native asset');
         if (!network.token) throw new Error('Network token not found');
         try {
+            const params = await tronWeb.trx.getChainParameters();
+            const energyPriceParam = params.find(p => p.key === "getEnergyFee");
+            const energyPrice = energyPriceParam?.value
+
+            if (!energyPrice) throw new Error('Failed to estimate energy price');
+
             const transaction = await tronWeb.transactionBuilder.triggerConstantContract(
                 token.contract,
                 'transfer(address,uint256)',
@@ -26,12 +32,11 @@ export class TronGasProvider {
                 ],
                 address,
             );
-
             const energyUsage = transaction.energy_used;
 
             if (!energyUsage) throw new Error('Failed to estimate energy usage');
 
-            return formatAmount(energyUsage, network.token?.decimals);
+            return formatAmount(energyUsage * energyPrice, network.token?.decimals);
         } catch (e) {
             console.log(e)
             throw new Error(e.message)
