@@ -1,5 +1,6 @@
 import { NetworkWithTokens } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
+import { insertIfNotExists } from "./helpers";
 
 export class QueryBalanceProvider {
     private query: {
@@ -40,8 +41,9 @@ export class QueryBalanceProvider {
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
         if (!network) return null;
+        const tokens = insertIfNotExists(network.tokens || [], network.token)
 
-        const asset = network.tokens?.find(a => a.symbol === this.query.fromAsset);
+        const asset = tokens?.find(a => a.symbol === this.query.fromAsset);
         const balancesFromQueries = this.query.balances ? JSON.parse(this.query.balances) : null;
 
         if (!balancesFromQueries || !asset) return null;

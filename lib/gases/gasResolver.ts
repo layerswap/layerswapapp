@@ -7,6 +7,7 @@ import { LoopringGasProvider } from "./providers/loopringGasProvider";
 import { SolanaGasProvider } from "./providers/solanaGasProvider";
 import { StarknetGasProvider } from "./providers/starknetGasProvider";
 import { TonGasProvider } from "./providers/tonGasProvider";
+import { TronGasProvider } from "./providers/tronGasProvider";
 import { ZkSyncGasProvider } from "./providers/zkSyncGasProvider";
 
 export class GasResolver {
@@ -16,10 +17,11 @@ export class GasResolver {
         new FuelGasProvider(),
         new LoopringGasProvider(),
         new SolanaGasProvider(),
-        new ZkSyncGasProvider()
+        new ZkSyncGasProvider(),
+        new TronGasProvider()
     ];
 
-    getGas({address, network, token, recipientAddress}: GasProps) {
+    getGas({ address, network, token, recipientAddress }: GasProps) {
         const provider = this.providers.find(p => p.supportsNetwork(network));
         if (!provider) return;
 

@@ -2,6 +2,7 @@ import { Balance } from "../../../Models/Balance";
 import { NetworkWithTokens } from "../../../Models/Network";
 import KnownInternalNames from "../../knownIds";
 import * as Paradex from "../../wallets/paradex/lib";
+import { insertIfNotExists } from "./helpers";
 
 export class ParadexBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
@@ -13,12 +14,13 @@ export class ParadexBalanceProvider {
         try {
             const environment = process.env.NEXT_PUBLIC_API_VERSION === 'sandbox' ? 'testnet' : 'prod'
             const config = await Paradex.Config.fetchConfig(environment);
+            const tokens = insertIfNotExists(network.tokens || [], network.token)
 
             const paraclearProvider = new Paradex.ParaclearProvider.DefaultProvider(config);
 
             const result: Balance[] = []
 
-            for (const token of network.tokens) {
+            for (const token of tokens) {
 
                 const getBalanceResult = await Paradex.Paraclear.getTokenBalance({
                     provider: paraclearProvider, //account can be passed as the provider
@@ -26,6 +28,7 @@ export class ParadexBalanceProvider {
                     account: { address },
                     token: token.symbol,
                 });
+                
                 const balance = {
                     network: network.name,
                     token: token.symbol,
