@@ -57,7 +57,6 @@ const TronWalletWithdraw: FC<WithdrawPageProps> = ({ network, callData, swapId, 
             }
         }
         catch (e) {
-            debugger
             if (e?.message) {
                 if (e?.logs?.some(m => m?.includes('insufficient funds')) || e.message.includes('Attempt to debit an account')) setError('insufficientFunds')
                 else setError(e.message)
