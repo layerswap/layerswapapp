@@ -12,6 +12,7 @@ import TonWalletWithdrawStep from "./TonWalletWithdraw";
 import ParadexWalletWithdrawStep from "./paradex/index";
 import FuelWalletWithdrawStep from "./FuelWalletWithdrawal";
 import SophonWalletWithdraw from "./SophonWalletWithdraw";
+import TronWalletWithdraw from "./TronWalletWithdraw";
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 export const WalletTransferContent: FC = () => {
@@ -46,6 +47,8 @@ export const WalletTransferContent: FC = () => {
         || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.FuelTestnet?.toUpperCase();
     const sourceIsSophon = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SophonMainnet?.toUpperCase()
         || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SophonSepolia?.toUpperCase();
+
+    const sourceIsTron = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.TronMainnet?.toUpperCase()
 
     const depositAddress = depositActionsResponse?.find(da => true)?.to_address;
     const amount = depositActionsResponse?.find(da => true)?.amount || 0;
@@ -129,6 +132,15 @@ export const WalletTransferContent: FC = () => {
             swapId={swap?.id}
             callData={callData}
         />;
+    else if (sourceIsTron)
+        return <TronWalletWithdraw
+            amount={amount}
+            depositAddress={depositAddress}
+            network={swap?.source_network}
+            token={swap?.source_token}
+            swapId={swap?.id}
+            callData={callData}
+        />;
     else
         return <>
             {
@@ -148,7 +160,7 @@ export const WalletTransferContent: FC = () => {
 
 
 export type WithdrawPageProps = {
-    depositAddress?: `0x${string}`
+    depositAddress?: string
     amount?: number
     swapId?: string
     userDestinationAddress?: string

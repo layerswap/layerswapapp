@@ -45,7 +45,7 @@ const SophonWalletWithdraw: FC<WithdrawPageProps> = ({ amount, depositAddress, n
             }).extend(eip712WalletActions());
 
             const request = await walletClient.prepareTransactionRequest({
-                to: depositAddress,
+                to: depositAddress as `0x${string}`,
                 data: callData as `0x${string}`,
                 paymaster: network?.metadata.zks_paymaster_contract,
                 paymasterInput: getGeneralPaymasterInput({ innerInput: "0x" }),
