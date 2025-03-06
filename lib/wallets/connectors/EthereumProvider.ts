@@ -672,6 +672,7 @@ export type LSConnector = Connector & {
     resolveURI?: (uri: string) => string
     order?: number,
     isAvailable?: boolean,
+    deepLink?: string,
 }
 
 export interface ProviderRpcError extends Error {

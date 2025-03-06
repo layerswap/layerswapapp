@@ -28,6 +28,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, destination_address, currencyGroup } = values
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
+    const exchangeName = direction === 'from' ? 'fromExchange' : 'toExchange';
     const query = useQueryState()
     const { selectedSourceAccount } = useSwapDataState()
     const { destinationRoutes, sourceRoutes } = useSettingsState();
@@ -84,7 +85,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         }
         else if (default_currency) {
             (async () => {
-                const resetFromCurrency = fromCurrency && !fromCurrency?.manuallySet && !query?.lockFromAsset
+                const resetFromCurrency = fromCurrency && !fromCurrency?.manuallySet && !query?.lockFromAsset && fromCurrency.symbol !== default_currency.baseObject.symbol
                     && (fromCurrency?.symbol !== default_currency.baseObject.symbol
                         || fromCurrency?.symbol.includes(default_currency.baseObject.symbol)
                         || default_currency.baseObject.symbol.includes(fromCurrency?.symbol)
@@ -133,7 +134,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                         || default_currency.baseObject.symbol.includes(toCurrency?.symbol)
                     )
                 if (resetToCurrency) {
-                    const newToCurrency = to?.tokens.find(t => t.symbol === default_currency.baseObject.symbol)
+                    const newToCurrency = to?.tokens.find(t => t.symbol === default_currency.baseObject.symbol) && toCurrency?.symbol !== default_currency.baseObject.symbol
                         || to?.tokens.find(t => t.symbol.includes(default_currency.baseObject.symbol) || default_currency.baseObject.symbol.includes(t.symbol))
                     if (newToCurrency) {
                         await setFieldValue("validatingSource", true, true)
@@ -152,11 +153,10 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 if (!value || value === toCurrency) return
                 (value as any).manuallySet = toCurrency.manuallySet
                 await setFieldValue(name, value)
-                await setFieldValue("validatingDestination", isLoading, true)
+                await setFieldValue("validatingDestination", false, true)
             })()
         }
     }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading])
-
 
     useEffect(() => {
         if (name === "fromCurrency" && fromCurrency && !isLoading && routes) {
@@ -165,15 +165,27 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 if (!value || value === fromCurrency) return
                 (value as any).manuallySet = fromCurrency.manuallySet
                 await setFieldValue(name, value)
-                await setFieldValue("validatingSource", isLoading, true)
+                await setFieldValue("validatingSource", false, true)
             })()
         }
     }, [toCurrency, currencyGroup, name, from, routes, error, isLoading])
 
     const handleSelect = useCallback(async (item: SelectMenuItem<RouteToken>) => {
         const oppositeCurrency = direction === 'from' ? toCurrency : fromCurrency
-        if (oppositeCurrency && !oppositeCurrency?.manuallySet) {
+        const exchange = direction === 'from' ? toExchange : fromExchange
+
+        if (currencyGroup && !currencyGroup?.manuallySet) {
+            const default_currency = exchange?.token_groups?.find(t => t.symbol === item.baseObject.symbol) || exchange?.token_groups?.find(t => t.symbol.includes(item.baseObject.symbol) || item.baseObject.symbol.includes(t.symbol))
+            if (default_currency) {
+                await setFieldValue("validatingCurrencyGroup", true, true)
+                await setFieldValue(direction == "from" ? "validatingSource" : "validatingDestination", true, true)
+                await setFieldValue("currencyGroup", default_currency, true)
+            }
+        }
+
+        if (oppositeCurrency && !oppositeCurrency?.manuallySet && oppositeCurrency.symbol !== item.baseObject.symbol) {
             const network = direction === 'to' ? from : to
+
             const default_currency = network?.tokens?.find(t => t.symbol === item.baseObject.symbol) || network?.tokens?.find(t => t.symbol.includes(item.baseObject.symbol) || item.baseObject.symbol.includes(t.symbol))
             if (default_currency) {
                 await setFieldValue("validatingDestination", true, true)

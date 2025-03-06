@@ -119,6 +119,7 @@ export function walletConnect(parameters: WalletConnectParameters) {
       id: 'rainbow',
       name: 'Rainbow',
       rdns: 'rainbow',
+      deepLink: 'rainbow://wc',
       resolveURI: (uri: string) => {
         return isAndroid()
           ? uri

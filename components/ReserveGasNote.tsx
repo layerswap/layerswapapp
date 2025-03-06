@@ -12,7 +12,7 @@ const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: Balance, netwo
     const {
         values,
     } = useFormikContext<SwapFormValues>();
-    const { minAllowedAmount } = useFee()
+    const { minAllowedAmount, maxAllowedAmount } = useFee()
     const { selectedSourceAccount } = useSwapDataState()
 
     const { balance } = useSWRBalance(selectedSourceAccount?.address, values.from)
@@ -24,6 +24,7 @@ const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: Balance, netwo
         + networkGas) > walletBalance.amount
         && minAllowedAmount
         && walletBalance.amount > minAllowedAmount
+        && !(maxAllowedAmount && (walletBalance.amount > (maxAllowedAmount + networkGas)))
     )
     const gasToReserveFormatted = mightBeOutOfGas ? truncateDecimals(networkGas, values?.fromCurrency?.precision) : 0
 

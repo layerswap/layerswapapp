@@ -1,20 +1,22 @@
 import { NetworkWithTokens } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
+import { insertIfNotExists } from "./helpers";
 
 export class ImmutableXBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
-        return (KnownInternalNames.Networks.ImmutableXMainnet.includes(network.name) || KnownInternalNames.Networks.ImmutableXGoerli.includes(network.name))  
+        return (KnownInternalNames.Networks.ImmutableXMainnet.includes(network.name) || KnownInternalNames.Networks.ImmutableXGoerli.includes(network.name))
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
         const axios = (await import("axios")).default
 
-        if (!network?.tokens) return
+        if (!network?.tokens && !network.token) return
 
         const res: BalancesResponse = await axios.get(`${network?.node_url}/v2/balances/${address}`).then(r => r.data)
+        const tokens = insertIfNotExists(network.tokens || [], network.token)
 
-        const balances = network?.tokens?.map(asset => {
+        const balances = tokens?.map(asset => {
             const balance = res.result.find(r => r.symbol === asset.symbol)
 
             return {

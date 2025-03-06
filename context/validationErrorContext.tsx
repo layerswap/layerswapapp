@@ -5,6 +5,8 @@ import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { useFormikContext } from 'formik';
 import { useQueryState } from './query';
 import { useSettingsState } from './settings';
+import { useSwapDataState } from './swap';
+import KnownInternalNames from '../lib/knownIds';
 
 interface ValidationDetails {
     title?: string;
@@ -30,8 +32,8 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         values
     } = useFormikContext<SwapFormValues>();
     const { destinationRoutes: allDestinations, sourceRoutes: allSources } = useSettingsState()
-
-    const { to, from, fromCurrency, toCurrency, toExchange, fromExchange, currencyGroup, validatingSource, validatingDestination } = values;
+    const { selectedSourceAccount } = useSwapDataState()
+    const { to, from, fromCurrency, toCurrency, toExchange, fromExchange, currencyGroup, validatingSource, validatingDestination, validatingCurrencyGroup, destination_address } = values;
     const query = useQueryState();
     const fromDisplayName = fromExchange ? fromExchange.display_name : from?.display_name;
     const toDisplayName = toExchange ? toExchange.display_name : to?.display_name;
@@ -86,11 +88,24 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
             validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info stroke='#f8974b' className='w-4 h-4 ' /> };
         }
     }
-    else if (!validatingSource && !validatingDestination && (currencyGroup?.status === 'not_found' || toCurrency?.status === 'not_found' || fromCurrency?.status === 'not_found')) {
+    else if (!validatingSource && !validatingDestination && !validatingCurrencyGroup && (currencyGroup?.status === 'not_found' || toCurrency?.status === 'not_found' || fromCurrency?.status === 'not_found')) {
         validationMessage = 'Please change one of the selected tokens';
         validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
     }
 
+    if ((from?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase() || to?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase())) {
+        const network = from?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase() ? from : to;
+        if ((selectedSourceAccount && destination_address && selectedSourceAccount?.address.toLowerCase() !== destination_address?.toLowerCase())) {
+            validationMessage = `Transfers between ${network?.display_name} and other chains are only allowed within the same account. Please make sure you're using the same address on both source and destination.`;
+            validationDetails = { title: 'Action Needed', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
+        }
+
+        if (values.depositMethod === "deposit_address") {
+            validationMessage = `Manually transferring between ${from?.display_name} and ${to?.display_name} networks is not supported.`;
+            validationDetails = { title: 'Manual Transfer is not supported', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
+        }
+
+    }
     return (
         <ValidationContext.Provider
             value={{ validationMessage, validationDetails }}

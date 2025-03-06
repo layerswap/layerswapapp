@@ -5,13 +5,14 @@ import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep";
 import StarknetWalletWithdrawStep from "./StarknetWalletWithdraw";
 import TransferFromWallet from "./WalletTransfer";
 import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw";
-import SolanaWalletWithdrawStep from "./SolanaWalletWithdraw";
+import SVMWalletWithdrawStep from "./SVMWalletWithdraw";
 import LoopringWalletWithdraw from "./Loopring";
-import { Network, Token } from "../../../../Models/Network";
+import { Network, NetworkType, Token } from "../../../../Models/Network";
 import TonWalletWithdrawStep from "./TonWalletWithdraw";
 import ParadexWalletWithdrawStep from "./paradex/index";
 import FuelWalletWithdrawStep from "./FuelWalletWithdrawal";
 import SophonWalletWithdraw from "./SophonWalletWithdraw";
+import TronWalletWithdraw from "./TronWalletWithdraw";
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 export const WalletTransferContent: FC = () => {
@@ -35,10 +36,7 @@ export const WalletTransferContent: FC = () => {
         || swap?.source_network?.name?.toUpperCase() === KnownInternalNames.Networks.LoopringGoerli?.toUpperCase()
         || swap?.source_network?.name?.toUpperCase() === KnownInternalNames.Networks.LoopringSepolia?.toUpperCase();
 
-    const sourceIsSolana = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaMainnet?.toUpperCase()
-        || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SolanaDevnet?.toUpperCase();
-    const sourceIsEclipse = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.EclipseTestnet?.toUpperCase()
-        || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.EclipseMainnet?.toUpperCase();
+    const sourceIsSVM = source_network?.type === NetworkType.Solana
 
     const sourceIsTon = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.TONMainnet?.toUpperCase()
 
@@ -49,6 +47,8 @@ export const WalletTransferContent: FC = () => {
         || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.FuelTestnet?.toUpperCase();
     const sourceIsSophon = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SophonMainnet?.toUpperCase()
         || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SophonSepolia?.toUpperCase();
+
+    const sourceIsTron = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.TronMainnet?.toUpperCase()
 
     const depositAddress = depositActionsResponse?.find(da => true)?.to_address;
     const amount = depositActionsResponse?.find(da => true)?.amount || 0;
@@ -86,8 +86,8 @@ export const WalletTransferContent: FC = () => {
             swapId={swap?.id}
             callData={callData}
         />;
-    else if (sourceIsSolana || sourceIsEclipse)
-        return <SolanaWalletWithdrawStep
+    else if (sourceIsSVM)
+        return <SVMWalletWithdrawStep
             amount={amount}
             depositAddress={depositAddress}
             network={swap?.source_network}
@@ -132,6 +132,15 @@ export const WalletTransferContent: FC = () => {
             swapId={swap?.id}
             callData={callData}
         />;
+    else if (sourceIsTron)
+        return <TronWalletWithdraw
+            amount={amount}
+            depositAddress={depositAddress}
+            network={swap?.source_network}
+            token={swap?.source_token}
+            swapId={swap?.id}
+            callData={callData}
+        />;
     else
         return <>
             {
@@ -151,7 +160,7 @@ export const WalletTransferContent: FC = () => {
 
 
 export type WithdrawPageProps = {
-    depositAddress?: `0x${string}`
+    depositAddress?: string
     amount?: number
     swapId?: string
     userDestinationAddress?: string

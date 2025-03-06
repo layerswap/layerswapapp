@@ -5,6 +5,7 @@ import KnownInternalNames from "../../knownIds";
 import { LOOPRING_URLs } from "../../loopring/defs";
 import { LoopringAPI } from "../../loopring/LoopringAPI";
 import { Balance } from "../../../Models/Balance";
+import { insertIfNotExists } from "./helpers";
 
 export class LoopringBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
@@ -16,15 +17,16 @@ export class LoopringBalanceProvider {
         let balances: Balance[] = [];
 
         if (!network?.tokens) return
-        
+
         try {
 
             const account: { data: AccountInfo } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.ACCOUNT_ACTION}?owner=${address}`)
             const accInfo = account.data
-            const tokens = network?.tokens?.map(obj => obj.contract).join(',');
-            const result: { data: LpBalance[] } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.GET_USER_EXCHANGE_BALANCES}?accountId=${accInfo.accountId}&tokens=${tokens}`)
-
-            const loopringBalances = network?.tokens?.map(asset => {
+            const tokens = insertIfNotExists(network.tokens || [], network.token)
+            const tokensString = tokens?.map(obj => obj.contract).join(',');
+            const result: { data: LpBalance[] } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.GET_USER_EXCHANGE_BALANCES}?accountId=${accInfo.accountId}&tokens=${tokensString}`)
+            
+            const loopringBalances = tokens?.map(asset => {
                 const amount = result.data.find(d => d.tokenId == Number(asset.contract))?.total;
                 return ({
                     network: network.name,

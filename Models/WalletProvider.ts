@@ -21,7 +21,9 @@ export type Wallet = {
     //TODO: this is name of the connector, should be changed to connectorId
     metadata?: {
         starknetAccount?: AccountInterface,
-        wallet?: StarknetWindowObject
+        wallet?: StarknetWindowObject,
+        l1Address?: string,
+        deepLink?: string
     }
     chainId?: string | number,
     isLoading?: boolean,
@@ -37,7 +39,7 @@ export type Wallet = {
 
 
 export type WalletProvider = {
-    isWrapper?: boolean,
+    hideFromList?: boolean,
     connectWallet: () => Promise<Wallet | undefined>,
     connectConnector?: (props?: { connector: InternalConnector }) => Promise<Wallet | undefined> | undefined
     switchAccount?: (connector: Wallet, address: string) => Promise<void>

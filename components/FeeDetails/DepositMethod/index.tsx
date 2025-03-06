@@ -84,7 +84,7 @@ const DepositMethodComponent: FC = () => {
                         <ChevronDown className=" w-4 h-4 " />
                     </motion.div>
                 </PopoverTrigger>
-                <PopoverContent className=' ml-2 mt-1 text-sm p-2 max-w border-none rounded-xl bg-secondary-800 max-w-72 md:max-w-96' align="start">
+                <PopoverContent className='ml-2 mt-1 space-y-1 text-sm p-2 max-w border-none rounded-xl bg-secondary-800 max-w-72 md:max-w-96' align="start">
                     <DepositMethod
                         onselect={handleSelect}
                         value="wallet"
@@ -127,7 +127,7 @@ const DepositMethod: FC<DespositMethodItemProps> = ({
 }) => {
     const selected = selectedValue === value
     return (
-        <div className={`p-3 ${selected ? 'bg-secondary-500 text-primary-text' : 'text-secondary-text'} flex rounded-lg cursor-pointer`} onClick={() => onselect(value)}>
+        <div className={`p-3 ${selected ? 'text-primary-text bg-secondary-600' : 'text-secondary-text'} flex rounded-lg cursor-pointer hover:bg-secondary-500`} onClick={() => onselect(value)}>
             <div className="grid grid-cols-9 gap-2 md:gap-0 w-full">
                 <div>
                     {icon}
