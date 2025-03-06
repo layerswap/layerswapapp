@@ -1,17 +1,16 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
-import { SwapFormValues } from "../DTOs/SwapFormValues";
-import NumericInput from "./NumericInput";
-import { useFee } from "../../context/feeContext";
+import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import NumericInput from "../NumericInput";
+import { useFee } from "../../../context/feeContext";
 import dynamic from "next/dynamic";
-import { useQueryState } from "../../context/query";
-import useSWRGas from "../../lib/gases/useSWRGas";
-import useSWRBalance from "../../lib/balances/useSWRBalance";
-import { useSwapDataState } from "../../context/swap";
+import { useQueryState } from "../../../context/query";
+import useSWRGas from "../../../lib/gases/useSWRGas";
+import useSWRBalance from "../../../lib/balances/useSWRBalance";
+import { useSwapDataState } from "../../../context/swap";
+import MinMax from "./MinMax";
+import { resolveMacAllowedAmount } from "./helpers";
 
-const MinMax = dynamic(() => import("./dynamic/MinMax"), {
-    loading: () => <></>,
-});
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 
@@ -27,32 +26,13 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { gas, isGasLoading } = useSWRGas(sourceAddress, from, fromCurrency)
     const gasAmount = gas || 0;
     const native_currency = from?.token
-    const query = useQueryState()
 
     const name = "amount"
     const walletBalance = balance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
-    let maxAllowedAmount: number | null = maxAmountFromApi || 0
-    
-    if (query.balances && fromCurrency) {
-        try {
-            const balancesFromQueries = new URL(window.location.href.replaceAll('&quot;', '"')).searchParams.get('balances');
-            const parsedBalances = balancesFromQueries && JSON.parse(balancesFromQueries)
-            let balancesTyped = parsedBalances
-            if (balancesTyped && balancesTyped[fromCurrency.symbol] && balancesTyped[fromCurrency.symbol] > Number(minAllowedAmount)) {
-                maxAllowedAmount = Math.min(maxAllowedAmount, balancesTyped[fromCurrency.symbol]);
-            }
-        }
-        // in case the query parameter had bad formatting just ignoe
-        catch { }
-    } else if (walletBalance && (walletBalance.amount >= Number(minAllowedAmount) && walletBalance.amount <= Number(maxAmountFromApi))) {
-        if (((native_currency?.symbol === fromCurrency?.symbol) || !native_currency) && ((walletBalance.amount - gasAmount) >= Number(minAllowedAmount) && (walletBalance.amount - gasAmount) <= Number(maxAmountFromApi))) {
-            maxAllowedAmount = walletBalance.amount - gasAmount
-        }
-        else maxAllowedAmount = walletBalance.amount
-    }
-    else {
-        maxAllowedAmount = Number(maxAmountFromApi) || 0
-    }
+    let maxAllowedAmount: number = useMemo(() => {
+        if (!fromCurrency || !minAllowedAmount || !maxAmountFromApi) return 0
+        return resolveMacAllowedAmount({ fromCurrency, limitsMinAmount: minAllowedAmount, limitsMaxAmount: maxAmountFromApi, walletBalance, gasAmount, native_currency })
+    }, [fromCurrency, minAllowedAmount, maxAmountFromApi, walletBalance, gasAmount, native_currency])
 
     const placeholder = (fromCurrency && toCurrency && from && to && minAllowedAmount && !isBalanceLoading && !isGasLoading) ? `${minAllowedAmount} - ${maxAmountFromApi}` : '0.0'
     const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
@@ -102,8 +82,8 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                 </NumericInput>
             </div>
             {
-                from && to && fromCurrency &&
-                <MinMax />
+                from && to && fromCurrency && minAllowedAmount && maxAmountFromApi &&
+                <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />
             }
         </div >
     </>)

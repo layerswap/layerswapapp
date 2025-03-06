@@ -21164,7 +21164,7 @@ starknet@^5.24.3:
     pako "^2.0.4"
     url-join "^4.0.1"
 
-starknet@^6.11.0:
+starknet@^6.23.1:
   version "6.23.1"
   resolved "https://registry.yarnpkg.com/starknet/-/starknet-6.23.1.tgz#c7096b202eafa2d09b748fc1a11751d050c20555"
   integrity sha512-vQV9luXpmwZZs9RVZaRwm2iD8T0PYx1AzgZeQsCvD89tR0HwUF0paty27ZzuJrdPe0CmAs/ipAYFCE55jbj0RQ==

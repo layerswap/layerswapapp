@@ -72,7 +72,6 @@ const SophonWalletWithdraw: FC<WithdrawPageProps> = ({ amount, depositAddress, n
             }
         }
         catch (e) {
-            debugger
             if (e?.message) {
                 setError(e.message)
                 return

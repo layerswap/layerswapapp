@@ -133,7 +133,6 @@ export class TronLinkAdapter extends Adapter {
             this._updateWallet();
         } else {
             this._checkWallet().then(() => {
-                // debugger
                 if (this.connected) {
                     this.emit('connect', this.address || '');
                 }
