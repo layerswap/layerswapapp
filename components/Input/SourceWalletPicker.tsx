@@ -4,7 +4,7 @@ import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
 import useWallet from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
 import { ChevronDown, CircleHelp } from "lucide-react";
-import Balance from "./dynamic/Balance";
+import Balance from "./Amount/Balance";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
 import VaulDrawer, { WalletFooterPortal } from "../modal/vaulModal";
 import { Wallet } from "../../Models/WalletProvider";
