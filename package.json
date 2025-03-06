@@ -87,7 +87,7 @@
     "react-hot-toast": "^2.2.0",
     "react-swipeable": "^7.0.0",
     "react-use-intercom": "^2.0.0",
-    "starknet": "^6.11.0",
+    "starknet": "^6.23.1",
     "starknetkit": "^2.3.3",
     "swr": "^2.2.5",
     "tailwindcss-animate": "^1.0.5",
