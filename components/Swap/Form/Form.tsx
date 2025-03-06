@@ -1,6 +1,5 @@
-import { Form, FormikErrors, useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useState } from "react";
-import SwapButton from "../../buttons/swapButton";
+import { Form, useFormikContext } from "formik";
+import { FC, useCallback, useEffect } from "react";
 import React from "react";
 import NetworkFormField from "../../Input/NetworkFormField";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
@@ -20,7 +19,6 @@ import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import ValidationError from "../../validationError";
 import { Exchange, ExchangeToken } from "../../../Models/Exchange";
 import { useValidationContext } from "../../../context/validationErrorContext";
-import { FormSourceWalletButton } from "../../Input/SourceWalletPicker";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import useWallet from "../../../hooks/useWallet";
 import { useSettingsState } from "../../../context/settings";
