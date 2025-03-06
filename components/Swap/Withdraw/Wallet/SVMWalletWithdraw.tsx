@@ -14,7 +14,7 @@ import WalletMessage from '../messages/Message';
 import TransactionMessages from '../messages/TransactionMessages';
 import { datadogRum } from '@datadog/browser-rum';
 
-const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, token, amount }) => {
+const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, token, amount }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | undefined>()
     const [insufficientTokens, setInsufficientTokens] = useState<string[]>([])
@@ -52,7 +52,6 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
             const feeInLamports = await transaction.getEstimatedFee(connection)
             const feeInSol = feeInLamports / LAMPORTS_PER_SOL
 
-
             const nativeTokenBalance = balance?.find(b => b.token == network?.token?.symbol)
             const tokenbalanceData = balance?.find(b => b.token == token?.symbol)
             const tokenBalanceAmount = tokenbalanceData?.amount
@@ -67,7 +66,6 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
                 insufficientTokensArr.push(token?.symbol);
             }
             setInsufficientTokens(insufficientTokensArr)
-            
             const signature = await configureAndSendCurrentTransaction(
                 transaction,
                 connection,
@@ -104,7 +102,7 @@ const SolanaWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, sw
             />
             {
                 wallet && !loading &&
-                <ButtonWrapper isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
+                <ButtonWrapper isDisabled={!!loading || !callData} isSubmitting={!!loading || !callData} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
                     {error ? 'Try again' : 'Send from wallet'}
                 </ButtonWrapper>
             }
@@ -136,13 +134,14 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined, in
     else return <></>
 }
 
-export default SolanaWalletWithdrawStep;
+export default SVMWalletWithdrawStep;
 
 export const configureAndSendCurrentTransaction = async (
     transaction: Transaction,
     connection: Connection,
     signTransaction: SignerWalletAdapterProps['signTransaction']
 ) => {
+
     const blockHash = await connection.getLatestBlockhash();
     transaction.recentBlockhash = blockHash.blockhash;
     transaction.lastValidBlockHeight = blockHash.lastValidBlockHeight;
