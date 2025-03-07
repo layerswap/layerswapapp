@@ -8,5 +8,5 @@ export interface NftBalanceProps {
 
 export interface Provider {
     supportsNetwork(network: Network): boolean;
-    getBalance(props: NftBalanceProps): Promise<string>;
+    getBalance(props: NftBalanceProps): Promise<number>;
 } 
