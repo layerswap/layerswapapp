@@ -202,7 +202,9 @@ export type QuoteReward = {
     amount: number,
     amount_in_usd: number,
     token: Token,
-    network: Network
+    network: Network,
+    campaign_type: "for_nft_holders" | "default";
+    nft_contract_address?: string;
 }
 
 export type GetQuoteParams = {
