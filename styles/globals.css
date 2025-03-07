@@ -20,6 +20,9 @@
     @apply scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-secondary-500  scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300  scrollbar-thumb:!bg-slate-500/50 ;
   }
   
+  .rdxCommandList {
+    max-height: var(--radix-popper-available-height);
+  }
 }
 
 @layer base {
