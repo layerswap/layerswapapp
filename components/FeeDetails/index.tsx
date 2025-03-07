@@ -1,4 +1,3 @@
-
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import { ReceiveAmounts } from './ReceiveAmounts';
 import DetailedEstimates from './DetailedEstimates';
@@ -20,7 +19,7 @@ const RefuelToggle = dynamic(() => import("./Refuel"), {
 });
 
 export default function FeeDetailsComponent({ values }: { values: SwapFormValues }) {
-    const { toCurrency, to, refuel, toExchange, from, fromCurrency, amount } = values || {};
+    const { toCurrency, to, refuel, toExchange, from, fromCurrency, amount, destination_address } = values || {};
     const { fee, isFeeLoading } = useFee()
     const query = useQueryState();
     const [openRefuelModal, setOpenRefuelModal] = useState<boolean>(false)
@@ -48,9 +47,11 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                     {
                         values.to &&
                         values.toCurrency &&
+                        destination_address &&
                         <Campaign
                             destination={values.to}
                             reward={fee?.reward}
+                            destinationAddress={destination_address}
                         />
                     }
 
