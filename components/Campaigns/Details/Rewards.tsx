@@ -1,4 +1,3 @@
-
 import { FC } from "react"
 import Image from 'next/image'
 import BackgroundField from "../../backgroundField";
@@ -56,14 +55,15 @@ const Rewards: FC<Props> = ({ campaign }) => {
         <div className="space-y-4">
             <div className="text-secondary-text">
                 <span>
-                    <span>Onboarding incentives that are earned by transferring to&nbsp;</span>{network?.display_name}<span>.&nbsp;</span>
-                    {/* <a
-                        target='_blank'
-                        href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards"
-                        className="text-primary-text underline hover:no-underline decoration-wh<Pite cursor-pointer"
-                    >
-                        Learn more
-                    </a> */}
+                    {campaign.description ? 
+                        <span>{campaign.description}</span>
+                        :
+                        <>
+                            <span>Onboarding incentives that are earned by transferring to&nbsp;</span>
+                            {network?.display_name}
+                            <span>.&nbsp;</span>
+                        </>
+                    }
                 </span>
             </div>
             <div className="bg-secondary-700 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
@@ -73,7 +73,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
                             <div className="flex items-center space-x-1">
                                 <div className="h-5 w-5 relative">
                                     <Image
-                                        src={network?.logo || ''}
+                                        src={campaign.token?.logo || ''}
                                         alt="Project Logo"
                                         height="40"
                                         width="40"
@@ -93,12 +93,12 @@ const Rewards: FC<Props> = ({ campaign }) => {
                         </div>
                     </BackgroundField>
                 }
-                <BackgroundField header={<span className="flex justify-between"><span className="flex items-center"><span>Total Earnings&nbsp;</span><ClickTooltip text={`${campaign.token.symbol} tokens that you’ve earned so far (including Pending Earnings).`} /></span><span>Current Value</span></span>} withoutBorder>
+                <BackgroundField header={<span className="flex justify-between"><span className="flex items-center"><span>Total Earnings&nbsp;</span><ClickTooltip text={`${campaign.token.symbol} tokens that you've earned so far (including Pending Earnings).`} /></span><span>Current Value</span></span>} withoutBorder>
                     <div className="flex justify-between w-full text-slate-300 text-2xl">
                         <div className="flex items-center space-x-1">
                             <div className="h-5 w-5 relative">
                                 <Image
-                                    src={network?.logo || ''}
+                                    src={campaign.token?.logo || ''}
                                     alt="Project Logo"
                                     height="40"
                                     width="40"

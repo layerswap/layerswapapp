@@ -85,13 +85,13 @@ const CampaignItem: FC<CampaignProps> = ({ campaign }) => {
         className="flex justify-between items-center">
         <span className="flex items-center gap-1 hover:opacity-70 active:scale-90 duration-200 transition-all">
             <span className="h-5 w-5 relative">
-                <Image
-                    src={campaign.network.logo}
+                {(campaign.logo_url || campaign.network.logo) && <Image
+                    src={(campaign.logo_url || campaign.network.logo) as string}
                     alt="Project Logo"
                     height="40"
                     width="40"
                     loading="eager"
-                    className="rounded-md object-contain" />
+                    className="rounded-md object-contain" />}
             </span>
             <span className="font-semibold text-base text-left flex items-center">{campaign?.display_name} </span>
         </span>

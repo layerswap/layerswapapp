@@ -330,6 +330,8 @@ export type Campaign = {
     id: number,
     name: string,
     display_name: string,
+    description: string | null,
+    logo_url: string | null,
     token: Token,
     network: Network,
     percentage: number,
