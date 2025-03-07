@@ -46,8 +46,8 @@ function CampaignDetails() {
                 <div className="space-y-5">
                     <div className="flex items-center gap-1">
                         <div className="h-7 w-7 relative">
-                            {network && <Image
-                                src={network.logo}
+                            {(campaign.logo_url || network?.logo) && <Image
+                                src={(campaign.logo_url || network?.logo) as string}
                                 alt="Project Logo"
                                 height="40"
                                 width="40"
@@ -55,7 +55,7 @@ function CampaignDetails() {
                                 className="rounded-md object-contain" />}
                         </div>
                         <p className="font-bold text-xl text-left flex items-center text-primary-text">
-                            {network?.display_name} Rewards
+                            {campaign.display_name}
                         </p>
                     </div>
                     {
@@ -86,17 +86,19 @@ type BriefInformationProps = {
 }
 const BriefInformation: FC<BriefInformationProps> = ({ campaign }) =>
     <p className="text-secondary-text text-base">
-        <span>You can earn $</span>
-        <span>{campaign?.token.symbol}</span>
-        <span>&nbsp;tokens by transferring assets to&nbsp;</span>
-        <span>{campaign.network.display_name}.</span>
-        <span> For each transaction, you&#39;ll receive&nbsp;</span>
-        <span>{campaign?.percentage}</span>
-        <span>% of paid fees back.&nbsp;</span>
-        {/* <Link target='_blank' href="https://docs.layerswap.io/user-docs/layerswap-campaigns/usdop-rewards"
-            className="text-primary underline hover:no-underline decoration-primary cursor-pointer">
-            Learn more
-        </Link> */}
+        {campaign.description ? 
+            campaign.description
+            : 
+            <>
+                <span>You can earn $</span>
+                <span>{campaign?.token.symbol}</span>
+                <span>&nbsp;tokens by transferring assets to&nbsp;</span>
+                <span>{campaign.network.display_name}.</span>
+                <span> For each transaction, you&#39;ll receive&nbsp;</span>
+                <span>{campaign?.percentage}</span>
+                <span>% of paid fees back.&nbsp;</span>
+            </>
+        }
     </p>
 
 const Loading = () => <Widget className="min-h-[500px]">
