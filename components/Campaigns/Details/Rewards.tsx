@@ -33,7 +33,6 @@ const Rewards: FC<Props> = ({ campaign }) => {
     }
 
     const payouts = payoutsData?.data || []
-    const totalBudget = campaign.total_budget
 
     const rewards = rewardsData?.data
     const campaignEndDate = new Date(campaign.end_date)
@@ -49,13 +48,12 @@ const Rewards: FC<Props> = ({ campaign }) => {
 
     const campaignIsEnded = (campaignEndDate.getTime() - now.getTime()) < 0
 
-    const DistributedAmount = ((campaign.distributed_amount / campaign.total_budget) * 100)
 
     return <>
         <div className="space-y-4">
             <div className="text-secondary-text">
                 <span>
-                    {campaign.description ? 
+                    {campaign.description ?
                         <span>{campaign.description}</span>
                         :
                         <>
@@ -116,23 +114,10 @@ const Rewards: FC<Props> = ({ campaign }) => {
                 </BackgroundField>
             </div>
         </div>
-        <div className="bg-secondary-700 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
-            <BackgroundField header={
-                <>
-                    <div className="flex items-center">
-                        <span>{campaign.token.symbol} pool</span>
-                        <ClickTooltip text={`The amount of ${campaign.token.symbol} to be distributed during this round of the campaign.`} />
-                    </div>
-                </>
-            } withoutBorder>
-                <div className="flex flex-col w-full gap-2">
-                    <Progress value={DistributedAmount === Infinity ? 0 : DistributedAmount} />
-                    <div className="flex justify-between w-full font-semibold text-sm ">
-                        <div className="text-primary"><span className="text-primary-text">{campaign?.distributed_amount.toFixed(0)}</span> <span>/</span> {totalBudget} {campaign.token.symbol}</div>
-                    </div>
-                </div>
-            </BackgroundField>
-        </div>
+        <ProgressComponent
+            campaign={campaign}
+            rewardsData={rewardsData?.data}
+        />
         {
             payouts.length > 0 &&
             <div className="space-y-1">
@@ -172,6 +157,55 @@ const Rewards: FC<Props> = ({ campaign }) => {
             </div>
         }
     </>
+}
+
+const ProgressComponent: FC<{ campaign: Campaign, rewardsData: Reward | undefined }> = ({ campaign, rewardsData }) => {
+
+    if (campaign.max_payout_amount) {
+
+        const weeklyEarned = rewardsData?.user_reward.period_pending_amount || 0
+
+        return <div className="bg-secondary-700 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
+            <BackgroundField header={
+                <p>
+                    Weekly reward earned
+                </p>
+            } withoutBorder>
+                <div className="flex flex-col w-full gap-2">
+                    <Progress value={weeklyEarned === Infinity ? 0 : weeklyEarned} />
+                    <div className="flex justify-between w-full font-semibold text-sm ">
+                        <div className="text-primary"><span className="text-primary-text">{weeklyEarned.toFixed(0)}</span> <span>/</span> {campaign.max_payout_amount} {campaign.token.symbol}</div>
+                        <div>
+                            Refreshes every 7 days
+                        </div>
+                    </div>
+                </div>
+            </BackgroundField>
+        </div>
+    }
+
+    const DistributedAmount = ((campaign.distributed_amount / campaign.total_budget) * 100)
+    const totalBudget = campaign.total_budget
+
+    return (
+        <div className="bg-secondary-700 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
+            <BackgroundField header={
+                <>
+                    <div className="flex items-center">
+                        <span>{campaign.token.symbol} pool</span>
+                        <ClickTooltip text={`The amount of ${campaign.token.symbol} to be distributed during this round of the campaign.`} />
+                    </div>
+                </>
+            } withoutBorder>
+                <div className="flex flex-col w-full gap-2">
+                    <Progress value={DistributedAmount === Infinity ? 0 : DistributedAmount} />
+                    <div className="flex justify-between w-full font-semibold text-sm ">
+                        <div className="text-primary"><span className="text-primary-text">{campaign?.distributed_amount.toFixed(0)}</span> <span>/</span> {totalBudget} {campaign.token.symbol}</div>
+                    </div>
+                </div>
+            </BackgroundField>
+        </div>
+    )
 }
 
 export default Rewards

@@ -340,6 +340,7 @@ export type Campaign = {
     start_date: string,
     end_date: string,
     min_payout_amount: number,
+    max_payout_amount: number,
     total_budget: number,
     distributed_amount: number,
     reward_limit_period: number,
