@@ -1,12 +1,11 @@
-import { Form, FormikErrors, useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useState } from "react";
-import SwapButton from "../../buttons/swapButton";
+import { Form, useFormikContext } from "formik";
+import { FC, useCallback, useEffect } from "react";
 import React from "react";
 import NetworkFormField from "../../Input/NetworkFormField";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
 import { motion, useCycle } from "framer-motion";
-import { ArrowUpDown } from 'lucide-react'
+import { ArrowUpDown, PlusIcon } from 'lucide-react'
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
 import { useQueryState } from "../../../context/query";
@@ -20,16 +19,20 @@ import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import ValidationError from "../../validationError";
 import { Exchange, ExchangeToken } from "../../../Models/Exchange";
 import { useValidationContext } from "../../../context/validationErrorContext";
-import { FormSourceWalletButton } from "../../Input/SourceWalletPicker";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import useWallet from "../../../hooks/useWallet";
 import { useSettingsState } from "../../../context/settings";
+import FormButton from "../FormButton";
 
 type Props = {
     partner?: Partner,
 }
 
 const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
+    loading: () => <></>,
+});
+
+const Address = dynamic(() => import("../../Input/Address"), {
     loading: () => <></>,
 });
 
@@ -231,32 +234,18 @@ const SwapForm: FC<Props> = ({ partner }) => {
                 </div>
             </Widget.Content>
             <Widget.Footer>
-                {
-                    shouldConnectWallet ?
-                        <FormSourceWalletButton />
-                        :
-                        <SwapButton
-                            className="plausible-event-name=Swap+initiated"
-                            type='submit'
-                            isDisabled={!isValid}
-                            isSubmitting={isSubmitting}>
-                            {ActionText(errors, actionDisplayName)}
-                        </SwapButton>
-                }
+                <FormButton
+                    shouldConnectWallet={shouldConnectWallet}
+                    values={values}
+                    isValid={isValid}
+                    errors={errors}
+                    isSubmitting={isSubmitting}
+                    actionDisplayName={actionDisplayName}
+                    partner={partner}
+                />
             </Widget.Footer>
         </Form>
     </Widget>
-}
-
-function ActionText(errors: FormikErrors<SwapFormValues>, actionDisplayName: string): string {
-    return errors.from?.toString()
-        || errors.to?.toString()
-        || errors.fromCurrency
-        || errors.toCurrency
-        || errors.currencyGroup
-        || errors.amount
-        || errors.destination_address
-        || (actionDisplayName)
 }
 
 export default SwapForm
