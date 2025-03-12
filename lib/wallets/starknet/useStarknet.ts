@@ -74,8 +74,7 @@ export default function useStarknet(): WalletProvider {
             if (result?.account && wrongChanin) {
                 disconnectWallets()
                 const errorMessage = `Please switch the network in your wallet to ${isMainnet ? 'Mainnet' : 'Sepolia'} and click connect again`
-                toast.error(errorMessage)
-                // throw new Error(errorMessage)
+                throw new Error(errorMessage)
             }
 
             if (result?.account && starknetConnector) {
