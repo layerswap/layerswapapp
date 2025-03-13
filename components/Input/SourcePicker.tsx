@@ -27,12 +27,11 @@ import Image from 'next/image'
 import CurrencySettings from "../../lib/CurrencySettings";
 
 type Props = {
-    direction: SwapDirection,
     label: string,
     className?: string,
     partner?: Partner
 }
-const Address = dynamic(() => import("../Input/Address"), {
+const Address = dynamic(() => import("./Address"), {
     loading: () => <></>,
 });
 

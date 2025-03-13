@@ -33,13 +33,12 @@ const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
 >(({ className, ...props }, ref) => (
-  <div className="relative z-0 flex items-center mt-1 mb-2 pl-2 border-b border-secondary-500" cmdk-input-wrapper="">
+  <div className="relative z-0 flex items-center mt-1 mb-2 pl-3" cmdk-input-wrapper="">
     <CommandPrimitive.Input placeholder=" " ref={ref} id="floating_standard"
       {...props} className={classNames(
-        "peer/draft placeholder:text-transparent border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-11 bg-transparent text-lg outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
+        " border-b border-secondary-500 peer/draft placeholder:text-transparent border-0 focus:border-secondary-300 appearance-none block py-2.5 px-0 w-full h-11 bg-transparent text-lg outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
         className
       )} />
-    <span className="absolute left-1 font-thin animate-none peer-placeholder-shown/draft:animate-blinking text-lg peer-focus/draft:invisible invisible peer-placeholder-shown/draft:visible">|</span>
     <label htmlFor={props.id} className="absolute text-lg text-secondary-text duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-placeholder-shown/draft:scale-100 peer-placeholder-shown/draft:translate-y-0 peer-placeholder-shown/draft:text-secondary-text-muted">
       {props.placeholder}
     </label>
@@ -54,7 +53,7 @@ const CommandList = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.List
     ref={ref}
-    className={classNames("overflow-y-auto styled-scroll  overflow-x-hidden", className)}
+    className={classNames("overflow-y-auto styled-scroll-no-bg rdxCommandList overflow-x-hidden pl-1.5", className)}
     {...props}
   />
 ))
@@ -85,7 +84,7 @@ const CommandGroup = React.forwardRef<
       className
     )}
     {...props}
-  />
+  ><div className="bg-secondary-800 rounded-md overflow-hidden">{props.children}</div></CommandPrimitive.Group>
 ))
 
 CommandGroup.displayName = CommandPrimitive.Group.displayName
@@ -109,13 +108,14 @@ const CommandItem = React.forwardRef<
   <CommandPrimitive.Item
     ref={ref}
     className={classNames(
-      "",
+      "!p-0 outline-none",
       className,
       props.disabled && "cursor-not-allowed",
     )}
     {...props}
   />
 ))
+
 
 CommandItem.displayName = CommandPrimitive.Item.displayName
 

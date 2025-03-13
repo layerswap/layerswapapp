@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { RouteNetwork, RouteToken } from "../../Models/Network";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
@@ -11,14 +11,60 @@ import Image from 'next/image'
 import { Selector, SelectorContent, SelectorTrigger } from "../Select/CommandNew/Index";
 import { ChevronDown } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
-import { CommandEmpty, CommandInput, CommandItem, CommandList, CommandWrapper } from "../shadcn/command";
+import { CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandWrapper } from "../shadcn/command";
 import { SelectItem } from "../Select/CommandNew/SelectItem/Index";
 import useSWRBalance from "../../lib/balances/useSWRBalance";
 import useWallet from "../../hooks/useWallet";
-import { truncateDecimals } from "../utils/RoundDecimals";
 import SpinIcon from "../icons/spinIcon";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../shadcn/tab"
+import { CurrencySelectItemDisplay, RouteSelectItemDisplay, SelectedCurrencyDisplay } from "../Select/Shared/Routes";
+import { Exchange } from "../../Models/Exchange";
+
+type Route = { cex: true } & Exchange | { cex?: false } & RouteNetwork
+
+type ResolveGroupNameProps = {
+    route: Route;
+    popularRoutes?: string[]
+}
+export class RoutesGroup {
+    name: string;
+    routes: Route[];
+}
+
+const GROUP_ORDERS = { "Popular": 1, "All Networks": 2, "Exchanges": 3 }
+
+const resolveGroupName = ({ route, popularRoutes }: ResolveGroupNameProps) => {
+    if (route.cex)
+        return "Exchanges"
+
+    if (!route.cex && route.tokens.some(t => t.status === "active") && popularRoutes?.includes(route.name))
+        return "Popular";
+
+    return "All Networks"
+}
+
+function groupRoutes(routes: Route[], popularRoutes?: string[]): RoutesGroup[] {
+    let groups: RoutesGroup[] = [];
+    routes.forEach((route) => {
+        const routeGroupName = resolveGroupName({ route, popularRoutes })
+        const existingGroup = groups.find(g => g.name === routeGroupName)
+        if (existingGroup) {
+            existingGroup.routes.push(route);
+        }
+        else {
+            const group = { name: routeGroupName, routes: [route] };
+            groups.push(group);
+        }
+    });
+
+    groups.sort((a, b) => {
+        // Sort put networks first then exchanges
+        return (GROUP_ORDERS[a.name]) - (GROUP_ORDERS[b.name]);
+    });
+
+    return groups;
+}
+
 
 const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -40,30 +86,29 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
         error
     } = useSWR<ApiResponse<RouteNetwork[]>>(networkRoutesURL, apiClient.fetcher, { keepPreviousData: true, dedupingInterval: 10000, fallbackData: { data: direction === 'from' ? sourceRoutes : destinationRoutes }, })
 
+    const [routesData, setRoutesData] = useState<RouteNetwork[] | undefined>(direction === 'from' ? sourceRoutes : destinationRoutes)
+    useEffect(() => {
+        if (!isLoading && routes?.data) setRoutesData(routes.data)
+    }, [routes])
+
     const selectedValue = direction === 'from' ? fromCurrency : toCurrency;
 
+    const popularRoutes = useMemo(() => routesData
+        ?.filter(r => r.tokens?.some(r => r.status === 'active'))
+        ?.sort((a, b) =>
+        (direction === "from"
+            ? (a.source_rank ?? 0) - (b.source_rank ?? 0)
+            : (a.destination_rank ?? 0) - (b.destination_rank ?? 0))
+        )
+        .slice(0, 5)
+        .map(r => r.name) || [], [routesData])
 
     const handleSelect = useCallback((network: RouteNetwork, token: RouteToken) => {
-
         setFieldValue(name, token, true)
         setFieldValue(direction, network, true)
-
     }, [name, direction])
 
-    const [query, setQuery] = useState('');
-    const [activeTab, setActiveTab] = useState('network');
-
-    const tokensList =
-        routes?.data?.flatMap((route) =>
-            route.tokens.map((token) => ({ route, token }))
-        ) ?? [];
-
-    const filteredTokens = tokensList.filter(({ token }) => {
-        return (
-            token.symbol.toLowerCase().includes(query.toLowerCase())
-        );
-    });
-
+    const groups = useMemo(() => groupRoutes(routesData || [], popularRoutes), [routesData, popularRoutes])
     return (
         <div className="relative">
             <Selector>
@@ -76,283 +121,108 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search">
                     {({ closeModal }) => (
                         <CommandWrapper>
-                            <CommandInput
-                                autoFocus={isDesktop}
-                                placeholder="Search"
-                                value={query}
-                                onValueChange={setQuery}
-                            />
+                            <CommandInput autoFocus={isDesktop} placeholder="Search" />
                             {isLoading ? (
                                 <div className="flex justify-center h-full items-center">
                                     <SpinIcon className="animate-spin h-5 w-5" />
                                 </div>
                             ) : (
-                                <Tabs defaultValue="network" value={activeTab} onValueChange={setActiveTab}>
-                                    <TabsList className="grid w-full grid-cols-2 bg-secondary-800">
-                                        <TabsTrigger
-                                            value="network"
-                                            className={`font-normal px-2 transition-colors rounded-md ${activeTab === "network" ? "bg-secondary-500 text-primary-text" : "hover:bg-secondary-600 text-secondary-text"}`}
-                                        >
-                                            Network
-                                        </TabsTrigger>
-                                        <TabsTrigger
-                                            value="token"
-                                            className={`font-normal px-2 transition-colors rounded-md ${activeTab === "token" ? "bg-secondary-500 text-primary-text" : "hover:bg-secondary-600 text-secondary-text"}`}
-                                        >
-                                            Token
-                                        </TabsTrigger>
-                                    </TabsList>
-                                    <TabsContent value="network">
-                                        <CommandList>
-                                            {query.trim() !== "" ? (
-                                                filteredTokens.length > 0 ? (
-                                                    filteredTokens.map(({ route, token }) => (
-                                                        <CommandItem
-                                                            key={`${route.name}-${token.symbol}`}
-                                                            value={token.symbol}
-                                                            onSelect={() => {
-                                                                handleSelect(route, token);
-                                                                closeModal();
-                                                                setQuery('');
-                                                            }}
-                                                            className="pl-5 pr-2 py-2 hover:bg-secondary-500 cursor-pointer rounded-md"
-                                                        >
-                                                            <CurrencySelectItemDisplay
-                                                                item={token}
-                                                                selected={false}
-                                                                network={route}
-                                                                direction={direction}
-                                                            />
-                                                        </CommandItem>
-                                                    ))
-                                                ) : (
-                                                    <CommandEmpty>No results found.</CommandEmpty>
-                                                )
-                                            ) : (
-                                                routes?.data?.map((route) => (
-                                                    <CommandItem
-                                                        value={route.display_name}
-                                                        key={route.name}
-                                                        className="!py-0 mb-1"
-                                                    >
-                                                        <Accordion type="single" collapsible defaultValue="Selected Network">
-                                                            <AccordionItem value={route.name}>
-                                                                <AccordionTrigger className="flex items-center w-full overflow-hidden rounded-md p-2 gap-2 hover:bg-secondary-500 data-[state=open]:bg-secondary">
-                                                                    <RouteSelectItemDisplay
-                                                                        item={route}
-                                                                        selected={false}
-                                                                        direction={direction}
-                                                                    />
-                                                                </AccordionTrigger>
-                                                                <AccordionContent className="rounded-md bg-secondary-700 mt-1">
-                                                                    <div className="space-y-3">
-                                                                        {route.tokens.map((token) => (
-                                                                            <div
-                                                                                key={token.symbol}
-                                                                                onClick={() => {
-                                                                                    handleSelect(route, token);
-                                                                                    closeModal();
-                                                                                }}
-                                                                                className="pl-5 pr-2 py-2 hover:bg-secondary-500 cursor-pointer"
-                                                                            >
-                                                                                <CurrencySelectItemDisplay
-                                                                                    item={token}
-                                                                                    selected={false}
-                                                                                    network={route}
-                                                                                    direction={direction}
-                                                                                />
-                                                                            </div>
-                                                                        ))}
-                                                                    </div>
-                                                                </AccordionContent>
-                                                            </AccordionItem>
-                                                        </Accordion>
-                                                    </CommandItem>
-                                                ))
-                                            )}
-                                        </CommandList>
-                                    </TabsContent>
-                                    <TabsContent value="token">
-                                        <CommandList>
-                                            {filteredTokens.length > 0 ? (
-                                                filteredTokens.map(({ route, token }) => (
-                                                    <CommandItem
-                                                        key={`${route.name}-${token.symbol}`}
-                                                        value={token.symbol}
-                                                        onSelect={() => {
-                                                            handleSelect(route, token);
-                                                            closeModal();
-                                                            setQuery('');
-                                                        }}
-                                                        className="pl-5 pr-2 py-2 hover:bg-secondary-500 cursor-pointer rounded-md"
-                                                    >
-                                                        <CurrencySelectItemDisplay
-                                                            item={token}
-                                                            selected={false}
-                                                            network={route}
-                                                            direction={direction}
-                                                        />
-                                                    </CommandItem>
-                                                ))
-                                            ) : (
-                                                <CommandEmpty>No results found.</CommandEmpty>
-                                            )}
-                                        </CommandList>
-                                    </TabsContent>
-                                </Tabs>
+                                <CommandList>
+                                    <CommandEmpty>No results found.</CommandEmpty>
+                                    {groups.filter(g => g.routes?.length > 0).map((group) => {
 
+                                        return (<Group group={group} key={group.name} direction={direction} onSelect={(n, t) => { handleSelect(n, t); closeModal() }} />)
+                                    })}
+                                </CommandList>
                             )}
                         </CommandWrapper>
                     )}
+
                 </SelectorContent>
             </Selector>
         </div>
     )
 };
 
-type TokenItemProps = {
-    network: RouteNetwork;
-    item: RouteToken;
-    selected: boolean;
+type GroupProps = {
+    group: RoutesGroup;
     direction: SwapDirection;
+    onSelect: (network: RouteNetwork, token: RouteToken) => void;
+}
+const Group = ({ group, direction, onSelect }: GroupProps) => {
+    const [openValues, setOpenValues] = useState<string[]>([])
+    const toggleAccordionItem = (value: string) => {
+        setOpenValues((prev) =>
+            prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+        );
+    };
+    return <CommandGroup heading={<span className='text-secondary-text pl-2'>{group.name.toUpperCase()}</span>}>
+        <Accordion type="multiple" value={openValues}>
+            {group.routes.map((route, index) => {
+                return (<GroupItem route={route} underline={index > 0} toggleContent={toggleAccordionItem} onSelect={onSelect} direction={direction} />)
+            })}
+        </Accordion>
+    </CommandGroup>
 }
 
-const CurrencySelectItemDisplay = (props: TokenItemProps) => {
-    const { item, network, direction } = props
-    const { provider } = useWallet(network, direction === "from" ? "withdrawal" : "autofil")
-    const activeAddress = provider?.activeWallet
-    const { balance } = useSWRBalance(activeAddress?.address, network)
-    const tokenbalance = balance?.find(b => b.token === item.symbol)
-    const formatted_balance_amount = tokenbalance?.amount ? Number(truncateDecimals(tokenbalance?.amount, item.precision)) : ''
-    const balanceAmountInUsd = formatted_balance_amount ? (item?.price_in_usd * formatted_balance_amount).toFixed(2) : undefined
-
-    const title = <div>
-        <span className="">{item.symbol}</span>
-        <div
-            className="w-4 h-4 flex items-center space-x-0.5"
-        >
-            <Image
-                src={network.logo}
-                alt={`${network.name} logo`}
-                width={24}
-                height={24}
-                className="rounded"
-            />
-            <span className="text-secondary-text text-xs whitespace-nowrap font-medium pl-0.5">{network.display_name}</span>
-        </div>
-    </div>
-
-    return <SelectItem>
-        <SelectItem.Logo
-            imgSrc={item.logo}
-            altText={`${item.symbol} logo`}
-            className="rounded-full"
-        />
-        <SelectItem.Title title={title} />
-        {activeAddress ? (
-            <p className="text-primary-text text-sm flex flex-col items-end">
-                {Number(formatted_balance_amount) ?
-                    <span>{Number(formatted_balance_amount).toFixed(2)}</span>
-                    :
-                    <span>0</span>
-                }
-                {balanceAmountInUsd ?
-                    <span className="text-secondary-text">${balanceAmountInUsd}</span>
-                    :
-                    <span className="text-secondary-text">$0</span>
-                }
-            </p>) : <></>
-        }
-    </SelectItem>
-}
-
-
-type RouteItemProps = {
-    item: RouteNetwork;
-    selected: boolean;
+type GroupItemProps = {
+    route: Route,
+    underline: boolean,
+    toggleContent: (itemName: string) => void;
     direction: SwapDirection;
+    onSelect: (network: RouteNetwork, token: RouteToken) => void;
 }
+const GroupItem = ({ route, underline, toggleContent, direction, onSelect }: GroupItemProps) => {
 
-const RouteSelectItemDisplay = (props: RouteItemProps) => {
-    const { item, direction } = props
-    const { provider } = useWallet(item, direction === "from" ? "withdrawal" : "autofil")
-    const activeAddress = provider?.activeWallet
-    const { balance } = useSWRBalance(activeAddress?.address, item)
+    if (route.cex)
+        return <></>
 
-    const networkBalanceInUsd = balance?.reduce((acc, b) => {
-        const token = item?.tokens?.find(t => t?.symbol === b?.token);
-        const tokenPriceInUsd = token?.price_in_usd || 0;
-        const tokenPrecision = token?.precision || 0;
-        const formattedBalance = Number(truncateDecimals(b?.amount, tokenPrecision));
-        return acc + (formattedBalance * tokenPriceInUsd);
-    }, 0).toFixed(2) || '0.00';
-
-    const tokensWithBalance = item?.tokens?.filter((token) => {
-        const tokenBalance = balance?.find((b) => b.token === token.symbol);
-        return tokenBalance && Number(tokenBalance.amount) > 0;
-    });
-
-    return <SelectItem>
-        <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} />
-        <SelectItem.Title title={item.display_name} />
-        <div>
-            <span className="text-secondary-text">${networkBalanceInUsd}</span>
-            <div className="flex justify-end items-center w-full relative">
-                {tokensWithBalance?.map((token, index) => (
-                    <div
-                        key={token.symbol}
-                        className={`${index === 0 ? "" : "-ml-1"} w-4 h-4 rounded-full`}
-                    >
-                        <Image
-                            src={token.logo}
-                            alt={`${token.symbol} logo`}
-                            width={24}
-                            height={24}
-                            className="rounded-full"
+    const filterValue = `${route.display_name} ${route.tokens?.map(si => si.symbol).join(" ")}`
+    return (
+        //// Wrap accordion with disabled command itme to filter out in search (when accordion is oppen it will ocupy some space)
+        <CommandItem
+            disabled={true}
+            value={filterValue} >
+            <AccordionItem value={route.name}>
+                <CommandItem
+                    className="aria-selected:bg-secondary-700 aria-selected:text-primary-text hover:bg-secondary-700"
+                    value={filterValue}
+                    key={route.name}
+                    onSelect={() => { toggleContent(route.name) }}>
+                    <AccordionTrigger>
+                        <RouteSelectItemDisplay
+                            item={route}
+                            selected={false}
+                            direction={direction}
+                            divider={underline}
                         />
+                    </AccordionTrigger>
+                </CommandItem >
+                <AccordionContent className="rounded-md AccordionContent">
+                    <div className='ml-8 pb-2'>
+                        {
+                            route.tokens?.map((token, index) =>
+                                <CommandItem
+                                    className="border-l border-secondary-500 aria-selected:bg-secondary-700 aria-selected:text-primary-text hover:bg-secondary-700"
+                                    value={`${route.display_name} ${token.symbol}`}
+                                    key={token.symbol}
+                                    onSelect={() => { onSelect(route, token) }}>
+                                    <CurrencySelectItemDisplay
+                                        item={token}
+                                        selected={false}
+                                        network={route}
+                                        direction={direction}
+                                        divider={index + 1 < route.tokens.length}
+                                    />
+                                </CommandItem>
+                            )
+                        }
                     </div>
-                ))}
-            </div>
-        </div>
-    </SelectItem>
+                </AccordionContent>
+            </AccordionItem >
+        </CommandItem >
+    )
 }
 
-type SelectedCurrencyDisplayProps = {
-    value: {
-        logo: string
-        symbol: string
-    } | undefined;
-    placeholder: string;
-}
-
-const SelectedCurrencyDisplay = (props: SelectedCurrencyDisplayProps) => {
-    const { value, placeholder } = props
-    return <span className='flex grow text-left items-center text-xs md:text-base'>
-        {
-            value?.logo && <div className="flex items-center">
-                <div className="flex-shrink-0 h-6 w-6 relative">
-                    <Image
-                        src={value.logo}
-                        alt="Project Logo"
-                        height="40"
-                        width="40"
-                        loading="eager"
-                        fetchPriority='high'
-                        className="rounded-full object-contain"
-                    />
-                </div>
-            </div>
-        }
-        {value ?
-            <span className="ml-3 flex font-medium flex-auto space-x-1 text-primary-buttonTextColor items-center">
-                {value.symbol}
-            </span>
-            :
-            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
-                {placeholder}
-            </span>
-        }
-    </span>
-}
 
 export default RoutePicker

@@ -14,7 +14,6 @@ import { SelectProps } from '../Shared/Props/SelectProps'
 import Modal from '../../modal/modal';
 import SpinIcon from '../../icons/spinIcon';
 import { LeafletHeight } from '../../modal/leaflet';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../shadcn/accordion';
 
 export interface CommandSelectProps extends SelectProps {
     show: boolean;
@@ -59,7 +58,18 @@ export default function CommandSelect({ values, setValue, show, setShow, searchH
                             <CommandEmpty>No results found.</CommandEmpty>
                             {groups.filter(g => g.items?.length > 0).map((group) => {
                                 return (
-                                    <Group group={group} key={group.name} />)
+                                    <CommandGroup key={group.name} heading={<span className='text-secondary-text pl-2'>{group.name.toUpperCase()}</span>}>
+                                        {group.items.map(item => {
+                                            return (
+                                                <div>
+                                                    <CommandItem value={item.name} key={item.id} onSelect={() => handleSelectValue(item)}>
+                                                        <SelectItem item={item} />
+                                                    </CommandItem>
+                                                </div>
+                                            )
+                                        })
+                                        }
+                                    </CommandGroup>)
                             })}
                         </CommandList>
                         :
@@ -71,62 +81,5 @@ export default function CommandSelect({ values, setValue, show, setShow, searchH
                 : <></>
             }
         </Modal>
-    )
-}
-
-type GroupProps = {
-    group: SelectMenuItemGroup;
-}
-const Group = ({ group }: GroupProps) => {
-    const [openValues, setOpenValues] = React.useState<string[]>([])
-    const toggleAccordionItem = (value: string) => {
-        setOpenValues((prev) =>
-            prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
-        );
-    };
-    return <CommandGroup heading={<span className='text-secondary-text pl-2'>{group.name.toUpperCase()}</span>}>
-        <Accordion type="multiple" value={openValues} onSelectCapture={() => {
-            console.log('acc selected')
-        }}>
-            {group.items.map((item, index) => {
-                return (<GroupItem item={item} underline={index + 1 < group.items.length} onTriggerSelect={toggleAccordionItem} />)
-            })}
-        </Accordion>
-    </CommandGroup>
-}
-
-type GroupItemProps = {
-    item: ISelectMenuItem,
-    underline: boolean,
-    onTriggerSelect: (itemName: string) => void;
-}
-const GroupItem = ({ item, underline, onTriggerSelect }: GroupItemProps) => {
-    return (
-        <AccordionItem value={item.name}>
-            <CommandItem
-                value={`${item.name} ${item.subItems?.map(si => si.name).join(" ")}`}
-                key={item.id}
-                onSelectCapture={() => {
-                    console.log('cmd selected')
-                }}
-                onSelect={() => {
-                    onTriggerSelect(item.name)
-                }}>
-                <AccordionTrigger>
-                    <SelectItem item={item} underline={underline} />
-                </AccordionTrigger>
-            </CommandItem>
-            <AccordionContent className="rounded-md">
-                <div className='ml-8 border-l border-secondary-500 my-2'>
-                    {
-                        item.subItems?.map((subItem, index) =>
-                            <CommandItem value={`${item.name} ${subItem.name}`} key={subItem.id} onSelect={() => { }}>
-                                <SelectItem item={subItem} key={index} />
-                            </CommandItem>
-                        )
-                    }
-                </div>
-            </AccordionContent>
-        </AccordionItem>
     )
 }

@@ -19,7 +19,9 @@
   .styled-scroll {
     @apply scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-secondary-500  scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300  scrollbar-thumb:!bg-slate-500/50 ;
   }
-  
+  .styled-scroll-no-bg {
+    @apply scrollbar:!w-1.5 scrollbar:!h-1.5  scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300  scrollbar-thumb:!bg-slate-500/50 ;
+  }
 }
 
 @layer base {
@@ -316,4 +318,32 @@ textarea:disabled::placeholder {
 
 .space-y-reverse {
   --space-y-reverse: 1
+}
+/* styles.css */
+.AccordionContent {
+	overflow: hidden;
+}
+.AccordionContent[data-state="open"] {
+	animation: slideDown 300ms ease-out;
+}
+.AccordionContent[data-state="closed"] {
+	animation: slideUp 300ms ease-out;
+}
+
+@keyframes slideDown {
+	from {
+		height: 0;
+	}
+	to {
+		height: var(--radix-accordion-content-height);
+	}
+}
+
+@keyframes slideUp {
+	from {
+		height: var(--radix-accordion-content-height);
+	}
+	to {
+		height: 0;
+	}
 }
