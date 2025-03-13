@@ -133,3 +133,46 @@ export const SelectedCurrencyDisplay = (props: SelectedCurrencyDisplayProps) => 
     </span>
 }
 
+
+type SelectedRouteDisplayProps = {
+    route?: RouteNetwork;
+    token?: RouteToken;
+    placeholder: string;
+}
+
+export const SelectedRouteDisplay = (props: SelectedRouteDisplayProps) => {
+    const { route, token, placeholder } = props
+    return <span className='flex grow text-left items-center text-xs md:text-base'>
+        {
+            route?.logo && <div className="flex items-center">
+                <div className="flex-shrink-0 h-6 w-6 relative">
+                    <Image
+                        src={route.logo}
+                        alt="Project Logo"
+                        height="40"
+                        width="40"
+                        loading="eager"
+                        fetchPriority='high'
+                        className="rounded-full object-contain"
+                    />
+                </div>
+            </div>
+        }
+        {route ?
+            <span className="ml-3 flex font-medium flex-auto space-x-1 text-primary-buttonTextColor items-center">
+                {route.display_name}
+            </span>
+            :
+            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
+                {placeholder}
+            </span>
+        }
+        {
+            token &&
+            <span className="ml-3 flex font-medium flex-auto space-x-1 text-primary-buttonTextColor items-center">
+                {token.symbol}
+            </span>
+        }
+    </span>
+}
+

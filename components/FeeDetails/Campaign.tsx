@@ -6,14 +6,18 @@ import ClickTooltip from "../Tooltips/ClickTooltip"
 import Image from 'next/image';
 import { Network } from "../../Models/Network"
 import FeeDetails from "./FeeDetailsComponent"
+import useSWRNftBalance from "../../lib/nft/useSWRNftBalance";
 
 type CampaignProps = {
     destination: Network,
     reward: QuoteReward | undefined,
+    destinationAddress?: string
 }
+
 const Comp: FC<CampaignProps> = ({
     destination,
     reward,
+    destinationAddress
 }) => {
     const apiClient = new LayerSwapApiClient()
     const { data: campaignsData } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
@@ -26,27 +30,48 @@ const Comp: FC<CampaignProps> = ({
             c?.network.name === destination?.name
             && new Date(c?.end_date).getTime() - now > 0)
 
-    if (!campaign || !reward)
+    if (!campaign || !reward || !destinationAddress)
         return <></>
 
     return <CampaignDisplay
         campaign={campaign}
         reward={reward}
+        destinationAddress={destinationAddress}
+        destination={destination}
     />
 }
+
 type CampaignDisplayProps = {
     campaign: Campaign,
     reward: QuoteReward,
+    destinationAddress: string,
+    destination: Network
 }
-const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, reward }) => {
 
+const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, reward, destinationAddress, destination }) => {
     const token = campaign.token
+
+    const shouldCheckNFT = reward.campaign_type === "for_nft_holders" && reward.nft_contract_address;
+
+    const { balance: nftBalance, isLoading, error } = useSWRNftBalance(
+        destinationAddress,
+        destination,
+        reward.nft_contract_address || ''
+    );
+
+    if (shouldCheckNFT && (isLoading || error || nftBalance <= 0)) {
+        return null;
+    }
 
     return <FeeDetails.Item>
         <div className='w-full flex items-center justify-between rounded-b-lg bg-secondary-700 relative text-right'>
             <div className='flex items-center text-primary-buttonTextColor'>
                 <p>{token?.symbol} reward</p>
-                <ClickTooltip text={<span className="!text-start">The amount of onboarding reward that you’ll earn.</span>} />
+                <ClickTooltip text={<span className="!text-start">
+                    {reward.campaign_type === "for_nft_holders" 
+                        ? "The amount of reward that you'll earn as an NFT holder." 
+                        : "The amount of reward that you'll earn."}
+                </span>} />
             </div>
             <div className="flex items-center space-x-1 text-secondary-text">
                 <p>{reward.amount}</p>

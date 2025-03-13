@@ -45,8 +45,11 @@ const WalletsHeaderWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
 }
 
 const WalletsIcons = ({ wallets }: { wallets: Wallet[] }) => {
-    const firstWallet = wallets[0]
-    const secondWallet = wallets[1]
+
+    const uniqueWallets = wallets.filter((wallet, index, self) => index === self.findIndex((t) => t.id === wallet.id))
+
+    const firstWallet = uniqueWallets[0]
+    const secondWallet = uniqueWallets[1]
 
     return (
         <div className="-space-x-2 flex">
@@ -59,9 +62,9 @@ const WalletsIcons = ({ wallets }: { wallets: Wallet[] }) => {
                 <secondWallet.icon className="rounded-full border-2 border-secondary-600 bg-secondary-700 flex-shrink-0 h-6 w-6" />
             }
             {
-                wallets.length > 2 &&
+                uniqueWallets.length > 2 &&
                 <div className="h-6 w-6 flex-shrink-0 rounded-full justify-center p-1 bg-secondary-600 text-primary-text overlfow-hidden text-xs">
-                    <span><span>+</span>{wallets.length - 2}</span>
+                    <span><span>+</span>{uniqueWallets.length - 2}</span>
                 </div>
             }
         </div>

@@ -6,6 +6,7 @@ import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
 import retryWithExponentialBackoff from "../../retryWithExponentialBackoff";
 import tonClient from "../../wallets/ton/client";
+import { insertIfNotExists } from "./helpers";
 
 export class TonBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
@@ -14,10 +15,10 @@ export class TonBalanceProvider {
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
         let balances: Balance[] = []
+        const tokens = insertIfNotExists(network.tokens || [], network.token)
 
-        for (let i = 0; i < network.tokens.length; i++) {
+        for (const token of tokens) {
             try {
-                const token = network.tokens[i]
                 const balance = await resolveBalance({ network, address, token })
 
                 if (!balance) return

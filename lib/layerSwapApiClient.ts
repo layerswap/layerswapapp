@@ -202,7 +202,9 @@ export type QuoteReward = {
     amount: number,
     amount_in_usd: number,
     token: Token,
-    network: Network
+    network: Network,
+    campaign_type: "for_nft_holders" | "default";
+    nft_contract_address?: string;
 }
 
 export type GetQuoteParams = {
@@ -330,12 +332,15 @@ export type Campaign = {
     id: number,
     name: string,
     display_name: string,
+    description: string | null,
+    logo_url: string | null,
     token: Token,
     network: Network,
     percentage: number,
     start_date: string,
     end_date: string,
     min_payout_amount: number,
+    max_payout_amount: number,
     total_budget: number,
     distributed_amount: number,
     reward_limit_period: number,

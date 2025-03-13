@@ -22,16 +22,12 @@ export const Selector = ({ children }) => {
     );
 };
 
-type ContentChildProps = {
-    closeModal: () => void;
-}
-
 type SelectContentProps = {
     header?: string;
     searchHint?: string;
     modalHeight?: LeafletHeight;
     modalContent?: React.ReactNode;
-    children: ((props: ContentChildProps) => JSX.Element);
+    children: JSX.Element;
     isLoading: boolean;
 }
 
@@ -46,7 +42,7 @@ export const SelectorContent = (props: SelectContentProps) => {
         {isOpen ?
             <div>
                 {modalContent}
-                <div>{children({ closeModal })}</div>
+                <div>{children}</div>
             </div>
             : <></>
         }

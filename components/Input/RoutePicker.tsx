@@ -119,25 +119,22 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                     </span>
                 </SelectorTrigger>
                 <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search">
-                    {({ closeModal }) => (
-                        <CommandWrapper>
-                            <CommandInput autoFocus={isDesktop} placeholder="Search" />
-                            {isLoading ? (
-                                <div className="flex justify-center h-full items-center">
-                                    <SpinIcon className="animate-spin h-5 w-5" />
-                                </div>
-                            ) : (
-                                <CommandList>
-                                    <CommandEmpty>No results found.</CommandEmpty>
-                                    {groups.filter(g => g.routes?.length > 0).map((group) => {
-
-                                        return (<Group group={group} key={group.name} direction={direction} onSelect={(n, t) => { handleSelect(n, t); closeModal() }} />)
-                                    })}
-                                </CommandList>
-                            )}
-                        </CommandWrapper>
-                    )}
-
+                    <CommandWrapper>
+                        <CommandInput autoFocus={isDesktop} placeholder="Search" />
+                        {isLoading ? (
+                            <div className="flex justify-center h-full items-center">
+                                <SpinIcon className="animate-spin h-5 w-5" />
+                            </div>
+                        ) : (
+                            <CommandList>
+                                <CommandEmpty>No results found.</CommandEmpty>
+                                {groups.filter(g => g.routes?.length > 0).map((group) => {
+                                    return (
+                                        <Group group={group} key={group.name} direction={direction} onSelect={handleSelect} />)
+                                })}
+                            </CommandList>
+                        )}
+                    </CommandWrapper>
                 </SelectorContent>
             </Selector>
         </div>

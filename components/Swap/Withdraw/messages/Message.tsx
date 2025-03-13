@@ -13,7 +13,7 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status, showIn
     const [showErrorModal, setShowErrorModal] = useState(false);
 
     return <div className="flex text-center space-x-2">
-        <div className='relative'>
+        <div className='relative -mt-0.5'>
             {
                 status === "error" ?
                     <FailIcon className="relative top-0 left-0 w-6 h-6 md:w-7 md:h-7" />

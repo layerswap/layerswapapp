@@ -1,5 +1,9 @@
-import * as Starknet from 'starknet';
-
+import {
+  ETHEREUM_MAINNET_CHAIN_ID,
+  ETHEREUM_TESTNET_CHAIN_ID,
+  STARKNET_MAINNET_CHAIN_ID,
+  STARKNET_TESTNET_CHAIN_ID,
+} from './constants';
 import type { Hex } from './types';
 
 interface RawBridgedTokenConfig {
@@ -39,11 +43,11 @@ interface BridgedTokenConfig {
 }
 
 export interface ParadexConfig {
-  readonly starknetFullNodeRpcUrl: string;
+  readonly paradexFullNodeRpcUrl: string;
+  readonly paradexChainId: string;
+  readonly ethereumChainId: string;
+  /** Derived from `ethereumChainId` */
   readonly starknetChainId: string;
-  readonly l1ChainId: string;
-  /** Derived from `l1ChainId` */
-  readonly l2ChainId: string;
   readonly paraclearAccountHash: Hex;
   readonly paraclearAccountProxyHash: Hex;
   readonly paraclearAddress: Hex;
@@ -105,12 +109,10 @@ export function buildConfig(rawConfig: RawParadexConfig): ParadexConfig {
   );
 
   return {
-    starknetFullNodeRpcUrl: rawConfig.starknet_fullnode_rpc_url,
-    starknetChainId: Starknet.shortString.encodeShortString(
-      rawConfig.starknet_chain_id,
-    ),
-    l1ChainId: rawConfig.l1_chain_id,
-    l2ChainId: getL2ChainId(rawConfig),
+    paradexFullNodeRpcUrl: rawConfig.starknet_fullnode_rpc_url,
+    paradexChainId: rawConfig.starknet_chain_id,
+    ethereumChainId: rawConfig.l1_chain_id,
+    starknetChainId: getStarknetChainId(rawConfig),
     paraclearAccountHash: rawConfig.paraclear_account_hash,
     paraclearAccountProxyHash: rawConfig.paraclear_account_proxy_hash,
     paraclearAddress: rawConfig.paraclear_address,
@@ -119,12 +121,12 @@ export function buildConfig(rawConfig: RawParadexConfig): ParadexConfig {
   };
 }
 
-function getL2ChainId(rawConfig: RawParadexConfig): string {
+function getStarknetChainId(rawConfig: RawParadexConfig): string {
   switch (rawConfig.l1_chain_id) {
-    case '1':
-      return 'SN_MAIN';
-    case '11155111':
+    case ETHEREUM_MAINNET_CHAIN_ID:
+      return STARKNET_MAINNET_CHAIN_ID;
+    case ETHEREUM_TESTNET_CHAIN_ID:
     default:
-      return 'SN_SEPOLIA';
+      return STARKNET_TESTNET_CHAIN_ID;
   }
 }

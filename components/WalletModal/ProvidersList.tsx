@@ -6,7 +6,7 @@ import { Wallet, WalletProvider } from "../../Models/WalletProvider";
 
 const ProvidersList: FC<{ onFinish: (result: Wallet) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();
-    const filteredProviders = providers.filter(p => !!p.autofillSupportedNetworks)
+    const filteredProviders = providers.filter(p => !!p.autofillSupportedNetworks && !p.hideFromList)
     const { setSelectedProvider } = useConnectModal()
 
     const connect = async (provider: WalletProvider) => {

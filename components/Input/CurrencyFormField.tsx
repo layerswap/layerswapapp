@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect } from "react";
+import { Dispatch, FC, SetStateAction, useCallback, useEffect, useRef } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import { ResolveCurrencyOrder, SortAscending } from "../../lib/sorting";
@@ -58,8 +58,9 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
 
-    const { from, to, fromCurrency, toCurrency, destination_address, currencyGroup } = values
+    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, destination_address, currencyGroup } = values
     const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
+    const exchangeName = direction === 'from' ? 'fromExchange' : 'toExchange';
     const query = useQueryState()
     const { wallets } = useWallet()
     const { selectedSourceAccount } = useSwapDataState()
@@ -69,21 +70,24 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     const { balance } = useSWRBalance(address, direction === 'from' ? from : to)
 
-    const networkRoutesURL = resolveNetworkRoutesURL(direction, values)
+    const shouldFilter = direction === 'from' ? ((to && toCurrency) || (toExchange && currencyGroup)) : ((from && fromCurrency) || (fromExchange && currencyGroup))
+    const networkRoutesURL = shouldFilter ? resolveNetworkRoutesURL(direction, values) : null
 
     const apiClient = new LayerSwapApiClient()
     const {
-        data: routes,
+        data: routesFromQuery,
         isLoading,
         error
-    } = useSWR<ApiResponse<RouteNetwork[]>>(networkRoutesURL, apiClient.fetcher, { keepPreviousData: true, dedupingInterval: 10000, fallbackData: { data: direction === 'from' ? sourceRoutes : destinationRoutes }, })
+    } = useSWR<ApiResponse<RouteNetwork[]>>(networkRoutesURL, apiClient.fetcher, { keepPreviousData: true, fallbackData: { data: direction === 'from' ? sourceRoutes : destinationRoutes }, dedupingInterval: 10000 })
 
     const allCurrencies: ((RouteToken & { network_name: string, network_display_name: string, network_logo: string })[] | undefined) = routes?.data?.map(route =>
         route.tokens.map(asset => ({ ...asset, network_display_name: route.display_name, network_name: route.name, network_logo: route.logo }))).flat()
 
     const currencies = direction === 'from' ? routes?.data?.find(r => r.name === from?.name)?.tokens : routes?.data?.find(r => r.name === to?.name)?.tokens;
+
     const currencyMenuItems = GenerateCurrencyMenuItems(
-        allCurrencies!,
+        currencies,
+        routes,
         values,
         routes?.data,
         direction,
@@ -113,9 +117,13 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
         if (currencyIsAvailable) return
 
-        const default_currency = currencyMenuItems?.find(c =>
-            c.baseObject?.symbol?.toUpperCase() === (query?.toAsset)?.toUpperCase() && c.baseObject.status === "active" && c.baseObject.network_name === to?.name)
-            || currencyMenuItems?.find(c => c.baseObject.status === "active" && c.baseObject.network_name === to?.name)
+
+        const assetFromQuery = currencyMenuItems?.find(c =>
+            c.baseObject?.symbol?.toUpperCase() === (query?.toAsset)?.toUpperCase())
+
+        const isLocked = query?.lockToAsset
+
+        const default_currency = assetFromQuery || (!isLocked && currencyMenuItems?.[0])
 
         const selected_currency = currencyMenuItems?.find(c =>
             c.baseObject?.symbol?.toUpperCase() === fromCurrency?.symbol?.toUpperCase() && c.baseObject.status === "active" && c.baseObject.network_name === to?.name)
@@ -124,10 +132,24 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             setFieldValue(name, selected_currency.baseObject, true)
         }
         else if (default_currency) {
-            setFieldValue(name, default_currency.baseObject, true)
+            (async () => {
+                const resetFromCurrency = fromCurrency && !fromCurrency?.manuallySet && !query?.lockFromAsset && fromCurrency.symbol !== default_currency.baseObject.symbol
+                    && (fromCurrency?.symbol !== default_currency.baseObject.symbol
+                        || fromCurrency?.symbol.includes(default_currency.baseObject.symbol)
+                        || default_currency.baseObject.symbol.includes(fromCurrency?.symbol)
+                    )
+                if (resetFromCurrency) {
+                    const newFromCurrency = from?.tokens.find(t => t.symbol === default_currency.baseObject.symbol)
+                        || from?.tokens.find(t => t.symbol.includes(default_currency.baseObject.symbol) || default_currency.baseObject.symbol.includes(t.symbol))
+                    if (newFromCurrency) {
+                        await setFieldValue("validatingDestination", true, true)
+                        await setFieldValue("fromCurrency", newFromCurrency, true)
+                    }
+                }
+                await setFieldValue(name, default_currency.baseObject, true)
+            })()
         }
     }, [to, query, routes])
-
 
     useEffect(() => {
         if (direction !== "from") return
@@ -150,25 +172,46 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             setFieldValue(name, selected_currency.baseObject, true)
         }
         else if (default_currency) {
-            setFieldValue(name, default_currency.baseObject, true)
+            (async () => {
+                const resetToCurrency = toCurrency && !toCurrency?.manuallySet && !query?.lockFromAsset
+                    && (toCurrency?.symbol !== default_currency.baseObject.symbol
+                        || toCurrency?.symbol.includes(default_currency.baseObject.symbol)
+                        || default_currency.baseObject.symbol.includes(toCurrency?.symbol)
+                    )
+                if (resetToCurrency) {
+                    const newToCurrency = to?.tokens.find(t => t.symbol === default_currency.baseObject.symbol) && toCurrency?.symbol !== default_currency.baseObject.symbol
+                        || to?.tokens.find(t => t.symbol.includes(default_currency.baseObject.symbol) || default_currency.baseObject.symbol.includes(t.symbol))
+                    if (newToCurrency) {
+                        await setFieldValue("validatingSource", true, true)
+                        await setFieldValue("toCurrency", newToCurrency, true)
+                    }
+                }
+                await setFieldValue(name, default_currency.baseObject, true)
+            })()
         }
     }, [from, query, routes])
 
     useEffect(() => {
         if (name === "toCurrency" && toCurrency && !isLoading && routes) {
-            const value = routes.data?.find(r => r.name === to?.name)?.tokens?.find(r => r.symbol === toCurrency?.symbol)
-            if (!value) return
-
-            setFieldValue(name, value)
+            (async () => {
+                const value = routes.data?.find(r => r.name === to?.name)?.tokens?.find(r => r.symbol === toCurrency?.symbol)
+                if (!value || value === toCurrency) return
+                (value as any).manuallySet = toCurrency.manuallySet
+                await setFieldValue(name, value)
+                await setFieldValue("validatingDestination", false, true)
+            })()
         }
     }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading])
 
     useEffect(() => {
         if (name === "fromCurrency" && fromCurrency && !isLoading && routes) {
-            const value = routes.data?.find(r => r.name === from?.name)?.tokens?.find(r => r.symbol === fromCurrency?.symbol)
-            if (!value) return
-
-            setFieldValue(name, value)
+            (async () => {
+                const value = routes.data?.find(r => r.name === from?.name)?.tokens?.find(r => r.symbol === fromCurrency?.symbol)
+                if (!value || value === fromCurrency) return
+                (value as any).manuallySet = fromCurrency.manuallySet
+                await setFieldValue(name, value)
+                await setFieldValue("validatingSource", false, true)
+            })()
         }
     }, [toCurrency, currencyGroup, name, from, routes, error, isLoading])
 
@@ -223,7 +266,8 @@ function groupByType(values: ISelectMenuItem[]) {
 }
 
 function GenerateCurrencyMenuItems(
-    currencies: (RouteToken & { network_name: string, network_display_name: string, network_logo: string })[],
+    currencies: RouteToken[] | undefined,
+    routes: ApiResponse<RouteNetwork[]> | undefined,
     values: SwapFormValues,
     routes: RouteNetwork[] | undefined,
     direction: string,
@@ -267,8 +311,6 @@ function GenerateCurrencyMenuItems(
         const currencyIsAvailable = (currency?.status === "active" && error?.code !== LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) ||
             !((direction === 'from' ? query?.lockFromAsset : query?.lockToAsset) || query?.lockAsset || currency.status === 'inactive')
 
-        const routeNotFound = (currency?.status !== "active" || error?.code === LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR);
-
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
         ) : undefined;
@@ -303,11 +345,11 @@ function GenerateCurrencyMenuItems(
             extendedAddress,
             badge,
             details,
-            leftIcon: <RouteIcon direction={direction} isAvailable={currencyIsAvailable} routeNotFound={!!routeNotFound} type="token" />
+            leftIcon: <RouteIcon direction={direction} isAvailable={currencyIsAvailable} routeNotFound={false} type="token" />
         };
 
         return res
-    }).sort(SortAscending);
+    }).sort(SortAscending) || [];
 }
 
 function GenerateGroupedCurrencyMenuItems(

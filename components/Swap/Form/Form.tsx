@@ -24,6 +24,7 @@ import { FormSourceWalletButton } from "../../Input/SourceWalletPicker";
 import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import useWallet from "../../../hooks/useWallet";
 import { useSettingsState } from "../../../context/settings";
+import SourcePicker from "../../Input/SourcePicker";
 
 type Props = {
     partner?: Partner,
@@ -185,7 +186,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
             <Widget.Content>
                 <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4 bg-secondary-700 rounded-xl'>
                     {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
-                        <NetworkFormField direction="from" label="From" className="rounded-t-lg pt-2.5" partner={partner} />
+                        <SourcePicker />
                     </div>}
                     {!query?.hideFrom && !query?.hideTo &&
                         <button

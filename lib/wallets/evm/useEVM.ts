@@ -113,10 +113,10 @@ export default function useEVM({ network }: Props): WalletProvider {
             }
 
             await connectAsync({
-                connector: connector,
+                connector: connector
             });
 
-            const activeAccount = getAccount(config)
+            const activeAccount = await attemptGetAccount(config)
             const connections = getConnections(config)
             const connection = connections.find(c => c.connector.id === activeAccount.connector?.id)
 
@@ -274,13 +274,12 @@ const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
     const connector = connection?.connector
     if (!connector)
         return undefined
-
     const address = accountIsActive ? activeAddress : addresses?.[0]
     if (!address) return undefined
 
     const walletname = `${connector?.name} ${connector.id === "com.immutable.passport" ? "" : " - EVM"}`
 
-    const wallet = {
+    const wallet: Wallet = {
         id: connector.name,
         isActive: accountIsActive,
         address,
@@ -293,7 +292,10 @@ const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
         asSourceSupportedNetworks: resolveSupportedNetworks(supportedNetworks.asSource, connector.id),
         autofillSupportedNetworks: resolveSupportedNetworks(supportedNetworks.autofill, connector.id),
         withdrawalSupportedNetworks: resolveSupportedNetworks(supportedNetworks.withdrawal, connector.id),
-        networkIcon: networks.find(n => connector?.id === "com.immutable.passport" ? immutableZKEvm.some(name => name === n.name) : ethereumNames.some(name => name === n.name))?.logo
+        networkIcon: networks.find(n => connector?.id === "com.immutable.passport" ? immutableZKEvm.some(name => name === n.name) : ethereumNames.some(name => name === n.name))?.logo,
+        metadata: {
+            deepLink: (connector as LSConnector).deepLink
+        }
     }
 
     return wallet
@@ -332,4 +334,20 @@ const resolveSupportedNetworks = (supportedNetworks: string[], connectorId: stri
 
     return supportedNetworks
 
+}
+
+async function attemptGetAccount(config, maxAttempts = 5) {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        const account = await getAccount(config);
+
+        if (account.address) {
+            return account;
+        }
+        await sleep(500);
+    }
+
+    return await getAccount(config);
+}
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }

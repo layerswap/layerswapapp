@@ -2,14 +2,39 @@ import { keyDerivation } from '@starkware-industries/starkware-crypto-utils';
 import * as Starknet from 'starknet';
 
 import type { ParadexConfig } from './config';
+import * as ethereumSigner from './ethereum-signer';
 import * as starknetSigner from './starknet-signer';
 import type { Hex } from './types';
 
-export interface Account extends Starknet.Account { }
+export interface Account extends Starknet.Account {}
 
 interface FromEthSignerParams {
   readonly provider: Starknet.ProviderOptions | Starknet.ProviderInterface;
   readonly config: ParadexConfig;
+  readonly signer: ethereumSigner.EthereumSigner;
+}
+
+/**
+ * Generates a Paradex account from an Ethereum wallet.
+ * @returns The generated Paradex account.
+ */
+export async function fromEthSigner({
+  provider,
+  config,
+  signer,
+}: FromEthSignerParams): Promise<Account> {
+  const starkKeyTypedData = ethereumSigner.buildEthereumStarkKeyTypedData(
+    config.ethereumChainId,
+  );
+  const seed = await signer.signTypedData(starkKeyTypedData);
+  const privateKey = keyDerivation.getPrivateKeyFromEthSignature(seed);
+  const publicKey = keyDerivation.privateToStarkKey(privateKey);
+  const address = generateAccountAddress({
+    publicKey: `0x${publicKey}`,
+    accountClassHash: config.paraclearAccountHash,
+    accountProxyClassHash: config.paraclearAccountProxyHash,
+  });
+  return new Starknet.Account(provider, address, `0x${privateKey}`);
 }
 
 interface FromStarknetAccountParams {
@@ -31,13 +56,13 @@ export async function fromStarknetAccount({
   starknetProvider,
 }: FromStarknetAccountParams): Promise<Account> {
   const starkKeyTypedData = starknetSigner.buildStarknetStarkKeyTypedData(
-    config.l2ChainId,
+    config.starknetChainId,
   );
 
   const accountSupport = await starknetSigner.getAccountSupport(
     account,
     starknetProvider ??
-    starknetSigner.getPublicProvider(config.l2ChainId),
+      starknetSigner.getPublicProvider(config.starknetChainId),
   );
   const signature = await account.signMessage(starkKeyTypedData);
   const seed = accountSupport.getSeedFromSignature(signature);

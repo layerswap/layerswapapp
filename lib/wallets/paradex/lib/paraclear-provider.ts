@@ -5,8 +5,10 @@ import type { ParadexConfig } from './config';
 export class DefaultProvider extends Starknet.RpcProvider {
   constructor(config: ParadexConfig) {
     super({
-      nodeUrl: config.starknetFullNodeRpcUrl,
-      chainId: config.starknetChainId as Starknet.RpcProviderOptions['chainId'],
+      nodeUrl: config.paradexFullNodeRpcUrl,
+      chainId: Starknet.shortString.encodeShortString(
+        config.paradexChainId,
+      ) as Starknet.RpcProviderOptions['chainId'],
     });
   }
 }

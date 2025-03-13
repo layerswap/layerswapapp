@@ -1,15 +1,17 @@
 import { Balance } from "../../../Models/Balance";
-import { NetworkWithTokens } from "../../../Models/Network";
-import KnownInternalNames from "../../knownIds";
+import { NetworkType, NetworkWithTokens } from "../../../Models/Network";
+import formatAmount from "../../formatAmount";
+import { insertIfNotExists } from "./helpers";
 
 export class SolanaBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
-        return KnownInternalNames.Networks.SolanaMainnet.includes(network.name)
+        return network.type === NetworkType.Solana
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
         if (!address) return
 
+        const tokens = insertIfNotExists(network.tokens || [], network.token)
         const SolanaWeb3 = await import("@solana/web3.js");
         const { PublicKey, Connection } = SolanaWeb3
         class SolanaConnection extends Connection { }
@@ -25,18 +27,22 @@ export class SolanaBalanceProvider {
         );
 
         async function getTokenBalanceWeb3(connection: SolanaConnection, tokenAccount) {
-            const info = await connection.getTokenAccountBalance(tokenAccount);
-            return info?.value?.uiAmount;
+            try {
+                const info = await connection.getTokenAccountBalance(tokenAccount);
+                return info?.value?.uiAmount;
+            } catch (error) {
+                if (error.message && error.message.includes("could not find account")) {
+                    return 0;
+                }
+                throw error;
+            }
         }
 
-        for (let i = 0; i < network.tokens.length; i++) {
+        for (const token of tokens) {
             try {
-                const asset = network.tokens[i]
-
                 let result: number | null = null
-
-                if (asset.contract) {
-                    const sourceToken = new PublicKey(asset?.contract!);
+                if (token.contract) {
+                    const sourceToken = new PublicKey(token?.contract!);
                     const associatedTokenFrom = await getAssociatedTokenAddress(
                         sourceToken,
                         walletPublicKey
@@ -44,16 +50,17 @@ export class SolanaBalanceProvider {
                     if (!associatedTokenFrom) return
                     result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
                 } else {
-                    result = await connection.getBalance(walletPublicKey)
+                    const res = await connection.getBalance(walletPublicKey)
+                    result = res ? formatAmount(Number(res), token.decimals) : 0
                 }
 
                 if (result != null && !isNaN(result)) {
                     const balance = {
                         network: network.name,
-                        token: asset.symbol,
+                        token: token.symbol,
                         amount: result,
                         request_time: new Date().toJSON(),
-                        decimals: Number(asset?.decimals),
+                        decimals: Number(token?.decimals),
                         isNativeCurrency: false
                     }
 
@@ -62,6 +69,7 @@ export class SolanaBalanceProvider {
                         balance
                     ]
                 }
+
             }
             catch (e) {
                 console.log(e)

@@ -672,6 +672,7 @@ export type LSConnector = Connector & {
     resolveURI?: (uri: string) => string
     order?: number,
     isAvailable?: boolean,
+    deepLink?: string,
 }
 
 export interface ProviderRpcError extends Error {
@@ -905,7 +906,7 @@ export type QrModalOptions = Pick<
 >;
 
 import type { Connector, CreateConnectorFn } from 'wagmi';
-import type { WalletConnectParameters } from 'wagmi/connectors';
+import type { WalletConnectParameters } from '@wagmi/connectors';
 export type InstructionStepName =
     | 'install'
     | 'create'

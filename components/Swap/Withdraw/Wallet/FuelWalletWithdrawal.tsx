@@ -6,14 +6,13 @@ import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
 import { ButtonWrapper, ChangeNetworkMessage, ConnectWalletButton } from './WalletTransfer/buttons';
 import {
-    useWallet as useFuelWallet,
-    useChain,
     useSelectNetwork,
+    useFuel,
+    useNetwork,
 } from '@fuels/react';
 import { useSwapDataState } from '../../../../context/swap';
 import { datadogRum } from '@datadog/browser-rum';
-import { bn, Contract, Provider } from 'fuels';
-import WatchdogAbi from '../../../../lib/abis/FUELWATCHDOG.json';
+import { coinQuantityfy, CoinQuantityLike, Provider, ScriptTransactionRequest } from 'fuels';
 import TransactionMessages from '../messages/TransactionMessages';
 
 const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, amount, depositAddress, sequenceNumber, token }) => {
@@ -24,18 +23,20 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
     const { setSwapTransaction } = useSwapTransactionStore()
 
     const { provider } = useWallet(network, 'withdrawal');
-    const { wallet: fuelWallet } = useFuelWallet()
-    const { chain, refetch } = useChain()
-    const wallet = provider?.activeWallet
+
+    const { network: fuelNetwork, refetch: refetchNetwork } = useNetwork()
     const networkChainId = Number(network?.chain_id)
-    const activeChainId = Number(chain?.consensusParameters.chainId)
     const { selectedSourceAccount } = useSwapDataState()
+    const { fuel } = useFuel()
+
+    const activeChainId = fuelNetwork?.chainId || (fuelNetwork?.url.includes('testnet') ? 0 : 9889)
 
     useEffect(() => {
-        if (provider?.activeWallet && !fuelWallet && selectedSourceAccount) {
+        if (provider?.activeWallet && selectedSourceAccount) {
             provider?.switchAccount && provider?.switchAccount(selectedSourceAccount?.wallet, selectedSourceAccount?.address)
+            refetchNetwork()
         }
-    }, [selectedSourceAccount, provider?.activeWallet, fuelWallet])
+    }, [selectedSourceAccount, provider?.activeWallet])
 
     const handleTransfer = useCallback(async () => {
         setButtonClicked(true)
@@ -43,35 +44,34 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
         try {
             setLoading(true)
 
-            if (!fuelWallet) throw Error("Fuel wallet not connected")
-            if (!callData) throw Error("Call data not found")
             if (!network) throw Error("Network not found")
             if (!depositAddress) throw Error("Deposit address not found")
             if (!network.metadata.watchdog_contract) throw Error("Watchdog contract not found")
             if (!amount) throw Error("Amount not found")
+            if (!token) throw Error("Token not found")
+            if (!callData) throw Error("Call data not found")
+            if (!selectedSourceAccount?.address) throw Error("No selected account")
 
-            const provider = await Provider.create(network?.node_url);
-            const contract = new Contract(network.metadata?.watchdog_contract, WatchdogAbi, provider);
+            const fuelProvider = new Provider(network.node_url);
+            const fuelWallet = await fuel.getWallet(selectedSourceAccount.address, fuelProvider);
 
-            const scope = contract.functions
-                .watch(sequenceNumber)
-                .addTransfer({
-                    destination: depositAddress as string,
-                    amount: bn.parseUnits(amount.toString(), token?.decimals),
-                    assetId: token?.contract!,
-                })
+            if (!fuelWallet) throw Error("Fuel wallet not found")
 
-            const transactionRequest = await scope.getTransactionRequest();
+            type FuelPrepareData = {
+                script: ScriptTransactionRequest,
+                quantities: CoinQuantityLike[]
+            }
+            var parsedCallData: FuelPrepareData = JSON.parse(callData);
+            var scriptTransaction = ScriptTransactionRequest.from(parsedCallData.script);
+            var quantitiesParsed = parsedCallData.quantities.map(q => coinQuantityfy(q));
 
-            const txCost = await fuelWallet.getTransactionCost(transactionRequest);
+            await scriptTransaction.estimateAndFund(fuelWallet, {
+                quantities: quantitiesParsed
+            });
 
-            transactionRequest.gasLimit = txCost.gasUsed;
-            transactionRequest.maxFee = txCost.maxFee;
-            datadogRum.addAction('fuelTransfer', transactionRequest);
+            await fuelProvider.simulate(scriptTransaction);
 
-            await fuelWallet.fund(transactionRequest, txCost);
-
-            const transactionResponse = await fuelWallet.sendTransaction(transactionRequest);
+            const transactionResponse = await fuelWallet.sendTransaction(scriptTransaction);
 
             if (swapId && transactionResponse) setSwapTransaction(swapId, BackendTransactionStatus.Completed, transactionResponse.id)
 
@@ -91,14 +91,14 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
         finally {
             setLoading(false)
         }
-    }, [swapId, callData, fuelWallet])
+    }, [swapId, amount, depositAddress, network, selectedSourceAccount, token, sequenceNumber, fuel])
 
-    if (!wallet) {
+    if (!provider?.activeWallet) {
         return <ConnectWalletButton />
     }
     else if (network && activeChainId !== undefined && networkChainId !== activeChainId) {
         return <ChangeNetworkButton
-            onChange={refetch}
+            onChange={refetchNetwork}
             chainId={networkChainId}
             network={network.display_name}
         />
@@ -114,7 +114,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
             }
             {
                 !loading &&
-                <ButtonWrapper isDisabled={!!loading || !fuelWallet} isSubmitting={!!loading || !fuelWallet} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
+                <ButtonWrapper isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
                     Send from wallet
                 </ButtonWrapper>
             }
@@ -130,7 +130,8 @@ const ChangeNetworkButton: FC<{ chainId: number, network: string, onChange: () =
         onChange();
     }, [selectNetworkAsync, chainId])
 
-    return <>
+    return <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
+
         {
             <ChangeNetworkMessage
                 data={{
@@ -153,14 +154,16 @@ const ChangeNetworkButton: FC<{ chainId: number, network: string, onChange: () =
                 }
             </ButtonWrapper>
         }
-    </>
+    </div>
 }
 
 const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> = ({ isLoading, error }) => {
     if (isLoading) {
         return <TransactionMessages.ConfirmTransactionMessage />
     }
-    else if (error === "The account(s) sending the transaction don't have enough funds to cover the transaction.") {
+    else if (error === "The account(s) sending the transaction don't have enough funds to cover the transaction." 
+        || error === "the target cannot be met due to no coins available or exceeding the 255 coin limit."
+    ) {
         return <TransactionMessages.InsufficientFundsMessage />
     }
     else if (error === "Request cancelled without user response!" || error === "User rejected the transaction!" || error === "User canceled sending transaction") {
