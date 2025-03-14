@@ -89,7 +89,7 @@ const Group = ({ group }: GroupProps) => {
             console.log('acc selected')
         }}>
             {group.items.map((item, index) => {
-                return (<GroupItem item={item} underline={index + 1 < group.items.length} onTriggerSelect={toggleAccordionItem} />)
+                return (<GroupItem key={item.id} item={item} underline={index + 1 < group.items.length} onTriggerSelect={toggleAccordionItem} />)
             })}
         </Accordion>
     </CommandGroup>

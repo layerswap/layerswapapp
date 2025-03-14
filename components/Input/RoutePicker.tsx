@@ -160,7 +160,7 @@ const Group = ({ group, direction, onSelect }: GroupProps) => {
     return <CommandGroup heading={<span className='text-secondary-text pl-2'>{group.name.toUpperCase()}</span>}>
         <Accordion type="multiple" value={openValues}>
             {group.routes.map((route, index) => {
-                return (<GroupItem route={route} underline={index > 0} toggleContent={toggleAccordionItem} onSelect={onSelect} direction={direction} />)
+                return (<GroupItem route={route} underline={index > 0} toggleContent={toggleAccordionItem} onSelect={onSelect} direction={direction} key={route.name} />)
             })}
         </Accordion>
     </CommandGroup>

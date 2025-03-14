@@ -61,7 +61,7 @@ export default function CommandSelect({ values, setValue, show, setShow, searchH
                                     <CommandGroup key={group.name} heading={<span className='text-secondary-text pl-2'>{group.name.toUpperCase()}</span>}>
                                         {group.items.map(item => {
                                             return (
-                                                <div>
+                                                <div key={item.id}>
                                                     <CommandItem value={item.name} key={item.id} onSelect={() => handleSelectValue(item)}>
                                                         <SelectItem item={item} />
                                                     </CommandItem>

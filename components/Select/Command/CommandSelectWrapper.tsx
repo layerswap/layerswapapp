@@ -98,12 +98,10 @@ export default function CommandSelectWrapper<T>({
                 value={value}
                 searchHint={searchHint}
                 valueGrouper={valueGrouper}
-                groupedCurrencies={groupedCurrencies}
                 values={values}
                 isLoading={isLoading}
                 modalHeight={modalHeight}
                 modalContent={modalContent}
-                walletComp={walletComp}
             />
         </>
     )

@@ -36,7 +36,7 @@ export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
                 Number(formatted_balance_amount) > 0 &&
                 <span className="text-xs text-secondary-text text-right">
                     <div className="text-primary-text">{Number(formatted_balance_amount).toFixed(2)}</div>
-                    ${balanceAmountInUsd}
+                    <div>${balanceAmountInUsd}</div>
                 </span>
             }
         </div>
