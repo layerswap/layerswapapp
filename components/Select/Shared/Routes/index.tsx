@@ -145,7 +145,7 @@ export const SelectedRouteDisplay = (props: SelectedRouteDisplayProps) => {
     return <span className='flex grow text-left items-center text-xs md:text-base'>
         {
             route?.logo && <div className="flex items-center">
-                <div className="flex-shrink-0 h-6 w-6 relative">
+                <div className="flex-shrink-0 h-8 w-8 relative">
                     <Image
                         src={route.logo}
                         alt="Project Logo"
@@ -153,7 +153,7 @@ export const SelectedRouteDisplay = (props: SelectedRouteDisplayProps) => {
                         width="40"
                         loading="eager"
                         fetchPriority='high'
-                        className="rounded-full object-contain"
+                        className="rounded-md object-contain"
                     />
                 </div>
             </div>

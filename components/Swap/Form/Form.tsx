@@ -25,6 +25,7 @@ import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import useWallet from "../../../hooks/useWallet";
 import { useSettingsState } from "../../../context/settings";
 import SourcePicker from "../../Input/SourcePicker";
+import DestinationPicker from "../../Input/DestinationPicker";
 
 type Props = {
     partner?: Partner,
@@ -204,7 +205,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                             </motion.div>
                         </button>}
                     {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
-                        <NetworkFormField direction="to" label="To" className="rounded-b-lg" partner={partner} />
+                        <DestinationPicker partner={partner} />
                     </div>}
                 </div>
                 {

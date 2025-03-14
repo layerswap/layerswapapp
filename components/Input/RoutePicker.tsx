@@ -17,7 +17,7 @@ import useSWRBalance from "../../lib/balances/useSWRBalance";
 import useWallet from "../../hooks/useWallet";
 import SpinIcon from "../icons/spinIcon";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
-import { CurrencySelectItemDisplay, RouteSelectItemDisplay, SelectedCurrencyDisplay } from "../Select/Shared/Routes";
+import { CurrencySelectItemDisplay, RouteSelectItemDisplay, SelectedCurrencyDisplay, SelectedRouteDisplay } from "../Select/Shared/Routes";
 import { Exchange } from "../../Models/Exchange";
 
 type Route = { cex: true } & Exchange | { cex?: false } & RouteNetwork
@@ -87,11 +87,13 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     } = useSWR<ApiResponse<RouteNetwork[]>>(networkRoutesURL, apiClient.fetcher, { keepPreviousData: true, dedupingInterval: 10000, fallbackData: { data: direction === 'from' ? sourceRoutes : destinationRoutes }, })
 
     const [routesData, setRoutesData] = useState<RouteNetwork[] | undefined>(direction === 'from' ? sourceRoutes : destinationRoutes)
+
     useEffect(() => {
         if (!isLoading && routes?.data) setRoutesData(routes.data)
     }, [routes])
 
-    const selectedValue = direction === 'from' ? fromCurrency : toCurrency;
+    const selectedRoute = direction === 'from' ? from : to;
+    const selectedToken = direction === 'from' ? fromCurrency : toCurrency;
 
     const popularRoutes = useMemo(() => routesData
         ?.filter(r => r.tokens?.some(r => r.status === 'active'))
@@ -113,28 +115,30 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
         <div className="relative">
             <Selector>
                 <SelectorTrigger disabled={false}>
-                    <SelectedCurrencyDisplay value={selectedValue} placeholder="Asset" />
+                    <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Source" />
                     <span className="ml-3 right-0 flex items-center pr-2 pointer-events-none text-primary-text">
                         <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
                     </span>
                 </SelectorTrigger>
                 <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search">
-                    <CommandWrapper>
-                        <CommandInput autoFocus={isDesktop} placeholder="Search" />
-                        {isLoading ? (
-                            <div className="flex justify-center h-full items-center">
-                                <SpinIcon className="animate-spin h-5 w-5" />
-                            </div>
-                        ) : (
-                            <CommandList>
-                                <CommandEmpty>No results found.</CommandEmpty>
-                                {groups.filter(g => g.routes?.length > 0).map((group) => {
-                                    return (
-                                        <Group group={group} key={group.name} direction={direction} onSelect={handleSelect} />)
-                                })}
-                            </CommandList>
-                        )}
-                    </CommandWrapper>
+                    {({ closeModal }) => (
+                        <CommandWrapper>
+                            <CommandInput autoFocus={isDesktop} placeholder="Search" />
+                            {isLoading ? (
+                                <div className="flex justify-center h-full items-center">
+                                    <SpinIcon className="animate-spin h-5 w-5" />
+                                </div>
+                            ) : (
+                                <CommandList>
+                                    <CommandEmpty>No results found.</CommandEmpty>
+                                    {groups.filter(g => g.routes?.length > 0).map((group) => {
+
+                                        return (<Group group={group} key={group.name} direction={direction} onSelect={(n, t) => { handleSelect(n, t); closeModal() }} />)
+                                    })}
+                                </CommandList>
+                            )}
+                        </CommandWrapper>
+                    )}
                 </SelectorContent>
             </Selector>
         </div>
@@ -179,7 +183,7 @@ const GroupItem = ({ route, underline, toggleContent, direction, onSelect }: Gro
         //// Wrap accordion with disabled command itme to filter out in search (when accordion is oppen it will ocupy some space)
         <CommandItem
             disabled={true}
-            value={filterValue} >
+            value={`${filterValue} **`} >
             <AccordionItem value={route.name}>
                 <CommandItem
                     className="aria-selected:bg-secondary-700 aria-selected:text-primary-text hover:bg-secondary-700"
