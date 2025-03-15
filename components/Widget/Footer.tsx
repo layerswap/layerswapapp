@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { useEffect, useRef, useState } from "react"
 import GoHomeButton from "../utils/GoHome";
 import { useMeasure } from "@uidotdev/usehooks";
 
