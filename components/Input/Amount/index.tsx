@@ -10,12 +10,13 @@ import useSWRBalance from "../../../lib/balances/useSWRBalance";
 import { useSwapDataState } from "../../../context/swap";
 import MinMax from "./MinMax";
 import { resolveMacAllowedAmount } from "./helpers";
+import amountToUsd from "../../utils/formatToUSD";
 
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const { values, handleChange } = useFormikContext<SwapFormValues>();
-    const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
+    const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<number>();
     const { fromCurrency, from, to, amount, toCurrency, fromExchange, toExchange } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fee, isFeeLoading } = useFee()
     const [isFocused, setIsFocused] = useState(false);
@@ -42,7 +43,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const updateRequestedAmountInUsd = useCallback((requestedAmount: number, fee) => {
         if (fee?.quote.source_token?.price_in_usd && !isNaN(requestedAmount)) {
-            setRequestedAmountInUsd((fee?.quote.source_token?.price_in_usd * requestedAmount).toFixed(2));
+            setRequestedAmountInUsd(fee?.quote.source_token?.price_in_usd * requestedAmount);
         } else {
             setRequestedAmountInUsd(undefined);
         }
@@ -76,7 +77,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                 >
                     {requestedAmountInUsd && Number(requestedAmountInUsd) > 0 && !isFocused ? (
                         <span className="absolute text-xs right-1 bottom-[16px]">
-                            (${requestedAmountInUsd})
+                            (${amountToUsd(requestedAmountInUsd)})
                         </span>
                     ) : null}
                 </NumericInput>

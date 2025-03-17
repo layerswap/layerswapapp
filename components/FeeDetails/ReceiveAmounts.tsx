@@ -3,6 +3,7 @@ import { Token } from "../../Models/Network";
 import { ArrowRight, Fuel } from "lucide-react";
 import { Quote } from "../../lib/layerSwapApiClient";
 import { roundDecimals } from "../utils/RoundDecimals";
+import amountToUsd from "../utils/formatToUSD";
 
 type WillReceiveProps = {
     destination_token: Token | undefined;
@@ -17,7 +18,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ source_token, destination
     const receive_amount = fee?.quote.receive_amount
     const parsedReceiveAmount = parseFloat(receive_amount?.toFixed(destination_token?.precision) || "")
 
-    const receiveAmountInUsd = receive_amount && destination_token && fee.quote?.destination_token?.price_in_usd ? (receive_amount * fee.quote.destination_token.price_in_usd).toFixed(2) : undefined
+    const receiveAmountInUsd = receive_amount && destination_token && fee.quote?.destination_token?.price_in_usd ? (receive_amount * fee.quote.destination_token.price_in_usd) : undefined
 
     return <div className="w-full h-full">
         <div className="flex items-center justify-between w-full">
@@ -41,7 +42,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ source_token, destination
                                         {
                                             receiveAmountInUsd !== undefined && Number(receiveAmountInUsd) > 0 &&
                                             <span className="text-secondary-text text-xs font-medium ml-1 block md:inline-block">
-                                                (${receiveAmountInUsd})
+                                                (${amountToUsd(receiveAmountInUsd)})
                                             </span>
                                         }
                                     </p>
