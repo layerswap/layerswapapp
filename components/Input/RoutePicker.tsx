@@ -78,6 +78,8 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const { destinationRoutes, sourceRoutes } = useSettingsState();
 
     const networkRoutesURL = resolveNetworkRoutesURL(direction, values)
+    const oppositeDirection = direction === 'from' ? 'to' : 'from'
+    const oppositeNetworkRoutesURL = resolveNetworkRoutesURL(oppositeDirection, values)
 
     const apiClient = new LayerSwapApiClient()
     const {
@@ -86,6 +88,8 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
         error
     } = useSWR<ApiResponse<RouteNetwork[]>>(networkRoutesURL, apiClient.fetcher, { keepPreviousData: true, dedupingInterval: 10000, fallbackData: { data: direction === 'from' ? sourceRoutes : destinationRoutes }, })
 
+
+    
     const [routesData, setRoutesData] = useState<RouteNetwork[] | undefined>(direction === 'from' ? sourceRoutes : destinationRoutes)
 
     useEffect(() => {
@@ -106,8 +110,10 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
         .map(r => r.name) || [], [routesData])
 
     const handleSelect = useCallback((network: RouteNetwork, token: RouteToken) => {
+
         setFieldValue(name, token, true)
         setFieldValue(direction, network, true)
+
     }, [name, direction])
 
     const groups = useMemo(() => groupRoutes(routesData || [], popularRoutes), [routesData, popularRoutes])
@@ -132,7 +138,6 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                                 <CommandList>
                                     <CommandEmpty>No results found.</CommandEmpty>
                                     {groups.filter(g => g.routes?.length > 0).map((group) => {
-
                                         return (<Group group={group} key={group.name} direction={direction} onSelect={(n, t) => { handleSelect(n, t); closeModal() }} />)
                                     })}
                                 </CommandList>
@@ -205,7 +210,7 @@ const GroupItem = ({ route, underline, toggleContent, direction, onSelect }: Gro
                             route.tokens?.map((token, index) =>
                                 <CommandItem
                                     className="border-l border-secondary-500 aria-selected:bg-secondary-700 aria-selected:text-primary-text hover:bg-secondary-700"
-                                    value={`${route.display_name} ${token.symbol}`}
+                                    value={`${route.display_name} ${token.symbol} ##`}
                                     key={token.symbol}
                                     onSelect={() => { onSelect(route, token) }}>
                                     <CurrencySelectItemDisplay
