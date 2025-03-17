@@ -32,7 +32,6 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
         const velocity = info.velocity.y;
         const height = mobileModalRef.current?.getBoundingClientRect().height || 0;
         if (offset > height / 2 || velocity > 800) {
-            await controls.start({ y: "100%", transition: transitionProps, });
             setShow(false);
             onClose && onClose();
         } else {
@@ -42,10 +41,12 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
 
     useEffect(() => {
         if (isMobile && show) {
-            window.document.body.classList.add('overflow-hidden')
+            window.document.body.style.overflow = 'hidden'
+            window.document.body.style.position = 'fixed'
         }
         return () => {
-            window.document.body.classList.remove('overflow-hidden')
+            window.document.body.style.position = ''
+            window.document.body.style.overflow = ''
         }
     }, [isMobile, show])
 
