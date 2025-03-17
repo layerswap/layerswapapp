@@ -42,11 +42,11 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
     useEffect(() => {
         if (isMobile && show) {
             window.document.body.style.overflow = 'hidden'
-            window.document.body.style.position = 'fixed'
+            window.document.body.style.position = 'relative'
         }
         return () => {
-            window.document.body.style.position = ''
             window.document.body.style.overflow = ''
+            window.document.body.style.position = ''
         }
     }, [isMobile, show])
 
