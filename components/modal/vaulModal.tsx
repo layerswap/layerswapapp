@@ -16,11 +16,10 @@ type VaulDrawerProps = {
     header: ReactNode;
     description?: ReactNode;
     modalId: string;
-    modalConstantHeight?: boolean;
     onClose?: () => void;
 }
 
-const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, modalConstantHeight, onClose }) => {
+const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose }) => {
     const { isMobile } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
@@ -88,17 +87,18 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                 if (e.movementY < 0 && !expandRef.current?.classList.contains('hidden')) expandRef.current?.classList.add('hidden')
             }}
             modal={isMobile ? true : false}
+            repositionInputs={false}
         >
             <Drawer.Portal >
                 <Drawer.Close asChild>
                     {
                         isMobile
                             ? <Drawer.Overlay
-                                className='fixed sm:absolute inset-0 z-50 bg-black/50 block'
+                                className='fixed inset-0 z-50 bg-black/50 block'
                             />
                             : <motion.div
                                 key="backdrop"
-                                className={`fixed sm:absolute inset-0 z-50 bg-black/50 block`}
+                                className='absolute inset-0 z-50 bg-black/50 block'
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
@@ -143,7 +143,6 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         className={clsx('flex flex-col w-full h-fit max-h-[90dvh] px-6 styled-scroll overflow-x-hidden relative', {
                             'overflow-y-auto': snap === 1,
                             'overflow-hidden': snap !== 1,
-                            'h-full': modalConstantHeight
                         })}
                         id="virtualListContainer"
                     >
@@ -157,7 +156,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                                     exit={{ opacity: 0 }}
                                     transition={{ duration: 0.15 }}
                                     ref={expandRef}
-                                    style={{ top: `${Number(snapElement.height?.toString().replace('px', '')) - 88}px` }} className={`w-full fixed left-0 z-50`}>
+                                    style={{ top: `${Number(snapElement.height?.toString().replace('px', '')) - 88}px` }} className='w-full fixed left-0 z-50'>
                                     <button type='button' onClick={goToNextSnap} className="w-full px-6 pt-10 pb-6 justify-center from-secondary-900 bg-gradient-to-t items-center gap-2 inline-flex text-secondary-text">
                                         <ChevronUp className="w-6 h-6 relative" />
                                         <div className="text-sm font-medium">Expand</div>
@@ -189,12 +188,12 @@ const VaulFooter: FC<{ snapElement: SnapElement | null }> = ({ snapElement }) =>
                 top: snapElement?.height !== 1 ? `${Number(snapElement?.height?.toString().replace('px', '')) - 50}px` : undefined,
                 bottom: snapElement?.height === 1 ? '12px' : undefined
             }}
-            className={`w-full fixed left-0 z-50`}
+            className='w-full fixed left-0 z-50'
         />
     )
 }
 
-const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement> & { id: string }> = (props) => {
+const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement> & { id: `item-${number}` }> = (props) => {
 
     let [ref, { height }] = useMeasure();
     const { setSnapElemenetsHeight } = useSnapPoints()
@@ -204,7 +203,6 @@ const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement> & { id: string }> 
 
         setSnapElemenetsHeight((prev) => {
             const id = Number(props.id?.replace('item-', ''));
-
             return [{ id, height: height }, ...prev.filter((item) => item.id !== id)]
         })
 
