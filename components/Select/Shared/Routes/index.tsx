@@ -21,8 +21,8 @@ export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
     const activeAddress = provider?.activeWallet
     const { balance } = useSWRBalance(activeAddress?.address, network)
     const tokenbalance = balance?.find(b => b.token === item.symbol)
-    const formatted_balance_amount = tokenbalance?.amount ? Number(truncateDecimals(tokenbalance?.amount, item.precision)) : ''
-    const balanceAmountInUsd = formatted_balance_amount ? (item?.price_in_usd * formatted_balance_amount).toFixed(2) : undefined
+    const formatted_balance_amount = tokenbalance?.amount ? Number(truncateDecimals(tokenbalance?.amount, item.precision)) : 0
+    const balanceAmountInUsd = (item?.price_in_usd * formatted_balance_amount).toFixed(2)
 
     const title = useMemo(() => {
         return <div className="flex justify-between w-full">
@@ -33,10 +33,10 @@ export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
                 </div>
             </div>
             {
-                Number(formatted_balance_amount) > 0 &&
-                <span className="text-xs text-secondary-text text-right">
-                    <div className="text-primary-text">{Number(formatted_balance_amount).toFixed(2)}</div>
-                    <div>${balanceAmountInUsd}</div>
+                tokenbalance &&
+                <span className="text-xs text-secondary-text text-right my-auto">
+                    <div className="text-primary-text"> {formatted_balance_amount}</div>
+                    {Number(tokenbalance?.amount) > 0 && <div>${balanceAmountInUsd}</div>}
                 </span>
             }
         </div>
@@ -66,28 +66,25 @@ export const RouteSelectItemDisplay = (props: RouteItemProps) => {
     const activeAddress = provider?.activeWallet
     const { balance } = useSWRBalance(activeAddress?.address, item)
 
-    const networkBalanceInUsd = balance?.reduce((acc, b) => {
+    const networkBalanceInUsd = useMemo(() => balance?.reduce((acc, b) => {
         const token = item?.tokens?.find(t => t?.symbol === b?.token);
         const tokenPriceInUsd = token?.price_in_usd || 0;
         const tokenPrecision = token?.precision || 0;
         const formattedBalance = Number(truncateDecimals(b?.amount, tokenPrecision));
         return acc + (formattedBalance * tokenPriceInUsd);
-    }, 0)
-
-    const tokensWithBalance = item?.tokens?.filter((token) => {
-        const tokenBalance = balance?.find((b) => b.token === token.symbol);
-        return tokenBalance && Number(tokenBalance.amount) > 0;
-    });
+    }, 0), [balance, item])
 
     const title = useMemo(() => {
         return <div className="flex justify-between w-full">
             <span className="">{item.display_name}</span>
-            <div>
-                <span className="text-secondary-text font-light text-xs">{Number(networkBalanceInUsd) > 0 ? <span>${networkBalanceInUsd?.toFixed(2)}</span> : <></>}</span>
-            </div>
+            {
+                Number(balance?.length) > 0 &&
+                <div>
+                    <span className="text-secondary-text font-light text-xs">{<span>${networkBalanceInUsd?.toFixed(2)}</span>}</span>
+                </div>
+            }
         </div>
     }, [item, networkBalanceInUsd])
-
 
     return <SelectItem>
         <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} />
@@ -144,33 +141,36 @@ export const SelectedRouteDisplay = (props: SelectedRouteDisplayProps) => {
     const { route, token, placeholder } = props
     return <span className='flex grow text-left items-center text-xs md:text-base'>
         {
-            route?.logo && <div className="flex items-center">
-                <div className="flex-shrink-0 h-8 w-8 relative">
-                    <Image
-                        src={route.logo}
-                        alt="Project Logo"
-                        height="40"
-                        width="40"
-                        loading="eager"
-                        fetchPriority='high'
-                        className="rounded-md object-contain"
-                    />
-                </div>
+            token?.logo && route?.logo &&
+            <div className='inline-flex items-center relative'>
+                <Image
+                    src={token?.logo}
+                    alt="Token Logo"
+                    height="36"
+                    width="36"
+                    loading="eager"
+                    fetchPriority='high'
+                    className="rounded-full object-contain"
+                />
+                <Image
+                    src={route.logo}
+                    alt="Route Logo"
+                    height="20"
+                    width="20"
+                    loading="eager"
+                    fetchPriority='high'
+                    className='h-5 w-5 absolute -right-1.5 -bottom-1.5 object-contain rounded-md border-2 border-secondary-800'
+                />
             </div>
         }
-        {route ?
+
+        {token && route ?
             <span className="ml-3 flex font-medium flex-auto space-x-1 text-primary-buttonTextColor items-center">
-                {route.display_name}
+                <span>{token?.symbol}</span><span className="text-secondary-text font-light"> - {route?.display_name}</span>
             </span>
             :
             <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
                 {placeholder}
-            </span>
-        }
-        {
-            token &&
-            <span className="ml-3 flex font-medium flex-auto space-x-1 text-primary-buttonTextColor items-center">
-                {token.symbol}
             </span>
         }
     </span>
