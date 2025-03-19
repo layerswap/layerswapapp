@@ -178,10 +178,6 @@ export function Root({
         restorePositionSetting();
       }
 
-      setTimeout(() => {
-        onAnimationEnd?.(o);
-      }, TRANSITIONS.DURATION * 1000);
-
       if (o && !modal) {
         if (typeof window !== 'undefined') {
           window.requestAnimationFrame(() => {
@@ -473,6 +469,12 @@ export function Root({
       shouldAnimate.current = true;
     });
   }, []);
+
+  React.useEffect(() => {
+    setTimeout(() => {
+      onAnimationEnd?.(isOpen);
+    }, TRANSITIONS.DURATION * 1000);
+  }, [isOpen])
 
   React.useEffect(() => {
     function onVisualViewportChange() {
