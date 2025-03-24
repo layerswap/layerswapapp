@@ -69,7 +69,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
         useSWRInfinite<ApiResponse<Swap[]>>(
             getCompletedSSwapsKey,
             apiClient.fetcher,
-            { revalidateAll: true, revalidateFirstPage: false, dedupingInterval: 3000, refreshInterval: 60000 }
+            { revalidateAll: false, revalidateFirstPage: false, dedupingInterval: 3000 }
         )
 
     const handleSWapDetailsShow = (show: boolean) => {
