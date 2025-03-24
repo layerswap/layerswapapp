@@ -117,7 +117,7 @@
     "@storybook/theming": "^7.6.17",
     "@types/bn.js": "^5.1.0",
     "@types/crypto-js": "^4.1.1",
-    "@types/node": "^16.11.7",
+    "@types/node": "^22.13.13",
     "@types/react": "18.x",
     "@web3-react/types": "^6.0.7",
     "autoprefixer": "^10.4.5",
@@ -141,8 +141,5 @@
     "rpc-websockets": "7.11.0",
     "@solana/web3.js": "1.66.0",
     "@radix-ui/react-dismissable-layer": "1.1.1"
-  },
-  "engines": {
-    "node": ">=20.9.0"
   }
 }
