@@ -166,10 +166,8 @@ export default function useFuel(): WalletProvider {
 
     const availableWalletsForConnect: InternalConnector[] = connectors.map(c => {
 
-        const name = c.installed ? c.name : `Install ${c.name}`
-
         return {
-            name: name,
+            name: c.name,
             id: c.name,
             type: c.installed ? 'injected' : 'other',
         }

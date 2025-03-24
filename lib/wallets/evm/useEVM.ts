@@ -52,7 +52,7 @@ export default function useEVM({ network }: Props): WalletProvider {
     const config = useConfig()
     const { connectAsync } = useConnect();
 
-    const { connect, setSelectedProvider } = useConnectModal()
+    const { connect, setSelectedConnector } = useConnectModal()
 
     const connectWallet = async () => {
         try {
@@ -90,7 +90,7 @@ export default function useEVM({ network }: Props): WalletProvider {
     const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
         try {
 
-            setSelectedProvider({ ...provider, connector: { name: connector.name } })
+            setSelectedConnector({ name: connector.name })
             if (connector.id !== "coinbaseWalletSDK") {
                 await connector.disconnect()
                 await disconnectAsync({ connector })
@@ -108,7 +108,7 @@ export default function useEVM({ network }: Props): WalletProvider {
                     const Icon = resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
                     const base64Icon = convertSvgComponentToBase64(Icon)
 
-                    setSelectedProvider({ ...provider, connector: { name: connector.name, qr: uri, iconUrl: base64Icon } })
+                    setSelectedConnector({ name: connector.name, qr: uri, iconUrl: base64Icon })
                 })
             }
 

@@ -128,7 +128,7 @@ export default function useStarknet(): WalletProvider {
 
     const availableWalletsForConnect: InternalConnector[] = connectors.map(connector => {
 
-        const name = (!connectorsConfigs.some(c => c.id === connector.id) || connector?.["_wallet"]) ? connector.name : `Install ${connectorsConfigs.find(c => c.id === connector.id)?.name}`
+        const name = (!connectorsConfigs.some(c => c.id === connector.id) || connector?.["_wallet"]) ? connector.name : `${connectorsConfigs.find(c => c.id === connector.id)?.name}`
 
         return {
             name: name,
