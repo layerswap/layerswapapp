@@ -1,7 +1,7 @@
 import LayerSwapApiClient, { SwapResponse } from "../../lib/layerSwapApiClient"
 import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse"
 import { ChevronDown, Plus, RefreshCw } from 'lucide-react'
-import { FC, useCallback, useMemo, useState } from "react"
+import { FC, useCallback, useEffect, useMemo, useState } from "react"
 import HistorySummary from "./HistorySummary";
 import useSWRInfinite from 'swr/infinite'
 import useWallet from "../../hooks/useWallet"
@@ -22,6 +22,8 @@ import { useSettingsState } from "../../context/settings";
 import VaulDrawer from "../modal/vaulModal";
 
 const PAGE_SIZE = 20
+const REFRESH_PENDING_INTERVAL = 5000;
+
 type ListProps = {
     statuses?: string | number;
     refreshing?: boolean;
@@ -71,6 +73,36 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
             apiClient.fetcher,
             { revalidateAll: false, revalidateFirstPage: false, dedupingInterval: 3000 }
         )
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            try {
+                mutate(async (cachedData) => {
+                    const pendingWithdrawalSwaps = await apiClient.fetcher(getSwapsKey()(0, ["PendingWithdrawal"], addresses));
+
+                    if (!cachedData) return cachedData;
+                   
+                    return cachedData.map((page) => {
+                        return {
+                            ...page,
+                            data: page?.data?.map((swap) => {
+                                const newSwap = pendingWithdrawalSwaps.data.find(
+                                    (pendingSwap) => pendingSwap.id === swap?.swap?.id
+                                );
+
+                                return newSwap ? newSwap : swap;
+                            }),
+                        };
+                    });
+
+                }, false);
+            } catch (error) {
+                console.error("Error refreshing PendingWithdrawal swaps:", error);
+            }
+        }, REFRESH_PENDING_INTERVAL);
+
+        return () => clearInterval(interval);
+    }, [mutate, addresses]);
 
     const handleSWapDetailsShow = (show: boolean) => {
         setOpenSwapDetailsModal(show)
