@@ -6,8 +6,8 @@ import { ChevronUp, X } from 'lucide-react';
 import { useMeasure } from '@uidotdev/usehooks';
 import { SnapElement, SnapPointsProvider, useSnapPoints } from '../../context/snapPointsContext';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Drawer } from './vaul';
 import { createPortal } from 'react-dom';
+import { Drawer } from './vaul';
 
 type VaulDrawerProps = {
     children: ReactNode;
@@ -17,9 +17,10 @@ type VaulDrawerProps = {
     description?: ReactNode;
     modalId: string;
     onClose?: () => void;
+    onAnimationEnd?: (open: boolean) => void;
 }
 
-const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose }) => {
+const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd }) => {
     const { isMobile } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
@@ -88,6 +89,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             }}
             modal={isMobile ? true : false}
             repositionInputs={false}
+            onAnimationEnd={onAnimationEnd}
         >
             <Drawer.Portal >
                 <Drawer.Close asChild>
@@ -140,7 +142,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         }
                     </div>
                     <div
-                        className={clsx('flex flex-col w-full h-fit max-h-[90dvh] px-6 styled-scroll overflow-x-hidden relative', {
+                        className={clsx('flex flex-col w-full h-fit max-h-[90dvh] px-6 styled-scroll overflow-x-hidden relative ', {
                             'overflow-y-auto': snap === 1,
                             'overflow-hidden': snap !== 1,
                         })}
@@ -193,7 +195,7 @@ const VaulFooter: FC<{ snapElement: SnapElement | null }> = ({ snapElement }) =>
     )
 }
 
-const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement> & { id: `item-${number}` }> = (props) => {
+const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement> & { id: `item-${number}`, constantHeight?: boolean }> = (props) => {
 
     let [ref, { height }] = useMeasure();
     const { setSnapElemenetsHeight } = useSnapPoints()
@@ -203,7 +205,7 @@ const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement> & { id: `item-${nu
 
         setSnapElemenetsHeight((prev) => {
             const id = Number(props.id?.replace('item-', ''));
-            return [{ id, height: height }, ...prev.filter((item) => item.id !== id)]
+            return [{ id, height: height as number, constantHeight: props.constantHeight }, ...prev.filter((item) => item.id !== id)]
         })
 
     }, [height])
