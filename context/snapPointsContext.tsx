@@ -3,6 +3,7 @@ import { Context, Dispatch, FC, ReactNode, SetStateAction, createContext, useCon
 export type SnapElement = {
     id: number;
     height: number | string;
+    constantHeight?: boolean;
 }
 
 type SnapPointsState = {
@@ -62,8 +63,8 @@ const resolveSnapPoints = ({ isMobile, snapPointsCount, childrenHeights, headerH
 
         const result = sumBeforeIndex(childrenHeights.map(h => h.height), i);
 
-        //TODO: test
-        if (typeof window === 'undefined') return [{ id: i + 1, height: 1 }];
+
+        if (typeof window === 'undefined' || childrenHeights.some(ch => ch.constantHeight)) return [{ id: i + 1, height: 1 }];
 
         const pointHeight = childrenHeights?.[i]?.height + result + headerHeight + footerHeight;
         const viewportHeight = isMobile ? window.innerHeight : document.getElementById('widget')?.offsetHeight;
