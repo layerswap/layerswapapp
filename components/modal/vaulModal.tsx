@@ -203,12 +203,9 @@ const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement> & { id: `item-${nu
     useEffect(() => {
         if (!height) return;
 
-        if (props.constantHeight) {
-            height = 999999
-        }
         setSnapElemenetsHeight((prev) => {
             const id = Number(props.id?.replace('item-', ''));
-            return [{ id, height: height as number }, ...prev.filter((item) => item.id !== id)]
+            return [{ id, height: height as number, constantHeight: props.constantHeight }, ...prev.filter((item) => item.id !== id)]
         })
 
     }, [height])
