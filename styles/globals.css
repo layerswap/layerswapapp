@@ -15,12 +15,12 @@
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--color-gray-200, currentColor);
+    border-color: transparent;
   }
 }
 
 @theme static {
-  --color-primary-DEFAULT: rgb(var(--ls-colors-primary, 228, 37, 117));
+  --color-primary: rgb(var(--ls-colors-primary, 228, 37, 117));
   --color-primary-50: rgb(var(--ls-colors-primary-50, 248, 200, 220));
   --color-primary-100: rgb(var(--ls-colors-primary-100, 246, 182, 209));
   --color-primary-200: rgb(var(--ls-colors-primary-200, 241, 146, 186));
@@ -40,7 +40,7 @@
   --color-primary-actionButtonText: rgb(var(--ls-colors-actionButtonText, 255, 255, 255));
   --color-primary-logoColor: rgb(var(--ls-colors-logo, 255, 0, 147));
 
-  --color-secondary-DEFAULT: rgb(var(--ls-colors-secondary, 17, 29, 54));
+  --color-secondary: rgb(var(--ls-colors-secondary, 17, 29, 54));
   --color-secondary-50: rgb(var(--ls-colors-secondary-50, 49, 60, 155));
   --color-secondary-100: rgb(var(--ls-colors-secondary-100, 46, 59, 147));
   --color-secondary-200: rgb(var(--ls-colors-secondary-200, 35, 42, 112));
