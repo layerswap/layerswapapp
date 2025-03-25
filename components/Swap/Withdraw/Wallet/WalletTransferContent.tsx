@@ -5,7 +5,6 @@ import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep";
 import StarknetWalletWithdrawStep from "./StarknetWalletWithdraw";
 import TransferFromWallet from "./WalletTransfer";
 import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw";
-import SVMWalletWithdrawStep from "./SVMWalletWithdraw";
 import LoopringWalletWithdraw from "./Loopring";
 import { Network, NetworkType, Token } from "../../../../Models/Network";
 import TonWalletWithdrawStep from "./TonWalletWithdraw";
@@ -13,6 +12,7 @@ import ParadexWalletWithdrawStep from "./paradex/index";
 import FuelWalletWithdrawStep from "./FuelWalletWithdrawal";
 import SophonWalletWithdraw from "./SophonWalletWithdraw";
 import TronWalletWithdraw from "./TronWalletWithdraw";
+import SVMWalletWithdrawStep from "./SVMWalletWithdraw";
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 export const WalletTransferContent: FC = () => {
