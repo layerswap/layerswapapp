@@ -150,7 +150,7 @@ const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
                                 name="alreadyFamiliar"
                                 id='alreadyFamiliar'
                                 type="checkbox"
-                                className="h-4 w-4 bg-secondary-600 cursor-pointer rounded border-secondary-400 text-priamry"
+                                className="h-4 w-4 bg-secondary-600 cursor-pointer rounded-sm border-secondary-400 text-priamry"
                                 onChange={handleToggleChange}
                                 checked={alreadyFamiliar}
                             />

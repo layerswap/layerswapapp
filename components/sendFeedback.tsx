@@ -76,7 +76,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
                                 show();
                                 updateWithProps()
                             }}
-                            className="text-center disabled:text-primary-800 text-primary border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-200 ease-in-out"
+                            className="text-center disabled:text-primary-800 text-primary border-0 font-semibold rounded-md focus:outline-hidden transform hover:-translate-y-0.5 transition duration-200 ease-in-out"
                         >
                             Need help?
                         </button>

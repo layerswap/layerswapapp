@@ -238,7 +238,7 @@ function GenerateMenuItems(props: GenerateMenuItemsProps): (SelectMenuItem<Route
     const mappedLayers = routes?.map(r => {
         const isNewlyListed = r?.tokens?.every(t => new Date(t?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK);
         const badge = isNewlyListed ? (
-            <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
+            <span className="bg-secondary-50 px-1 rounded-sm text-xs flex items-center">New</span>
         ) : undefined;
 
         const isAvailable = !lock &&

@@ -124,7 +124,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
                 <p className="font-bold text-lg text-left">Payouts</p>
                 <div className=" bg-secondary-700 divide-y divide-secondary-300 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
                     <div className="inline-block min-w-full align-middle">
-                        <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                        <div className="overflow-hidden shadow-sm ring-1 ring-black ring-opacity-5 sm:rounded-lg">
                             <table className="min-w-full divide-y divide-secondary-500">
                                 <thead className="bg-secondary-800/70">
                                     <tr>

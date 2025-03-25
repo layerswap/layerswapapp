@@ -119,8 +119,8 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                             </div>
                             :
                             <div className="flex flex-col justify-end">
-                                <div className="h-[10px] my-[5px] w-20 animate-pulse rounded bg-gray-500" />
-                                <div className="h-[10px] my-[5px] w-10 animate-pulse rounded bg-gray-500 ml-auto" />
+                                <div className="h-[10px] my-[5px] w-20 animate-pulse rounded-sm bg-gray-500" />
+                                <div className="h-[10px] my-[5px] w-10 animate-pulse rounded-sm bg-gray-500 ml-auto" />
                             </div>
                     }
                 </div>

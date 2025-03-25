@@ -34,7 +34,7 @@ const OptionToggle: FC<NavRadioProps> = ({ value, items, setSelected, label, dis
                         value={option}
                         className={({ checked }) =>
                             classNames(
-                                option.isEnabled ? 'cursor-pointer focus:outline-none' : 'opacity-25 cursor-not-allowed',
+                                option.isEnabled ? 'cursor-pointer focus:outline-hidden' : 'opacity-25 cursor-not-allowed',
                                 checked
                                     ? 'bg-secondary-500 border-transparent text-primary-text'
                                     : 'bg-transparent border-transparent text-gray-400 hover:text-gray-200',
@@ -60,7 +60,7 @@ const OptionToggle: FC<NavRadioProps> = ({ value, items, setSelected, label, dis
                                 <span className="flex items-center space-x-1 md:p-0 p-1.5 text-xs md:text-base">
                                     Cross-Chain
                                 </span>
-                                <span className="absolute ml-1 -top-1 -right-2 shadow-sm rounded bg-primary px-2 text-[10px] leading-4 font-semibold text-primary-text"> New </span>
+                                <span className="absolute ml-1 -top-1 -right-2 shadow-xs rounded-sm bg-primary px-2 text-[10px] leading-4 font-semibold text-primary-text"> New </span>
                             </div>
 
                         }

@@ -235,7 +235,7 @@ function GenerateCurrencyMenuItems(
             !((direction === 'from' ? query?.lockFromAsset : query?.lockToAsset) || query?.lockAsset || currency.status === 'inactive')
 
         const badge = isNewlyListed ? (
-            <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
+            <span className="bg-secondary-50 px-1 rounded-sm text-xs flex items-center">New</span>
         ) : undefined;
 
         const details = <p className="text-primary-text-muted">

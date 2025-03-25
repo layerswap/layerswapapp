@@ -94,7 +94,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                                     <div className="space-x-1 flex">
                                         {notCompatibleWallets?.map((wallet) => (
                                             <div key={wallet.address} className="inline-flex items-center relative">
-                                                <wallet.icon className="w-4 h-4 rounded-sm bg-secondary-800" />
+                                                <wallet.icon className="w-4 h-4 rounded-xs bg-secondary-800" />
                                             </div>
                                         ))}
                                         <ChevronDown
@@ -106,7 +106,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                         </button>
                         {showIncompatibleWallets &&
                             notCompatibleWallets.map((wallet, index) => (
-                                <div key={`${index}${wallet.address}`} className="group/addressItem w-full rounded-md hover:!bg-secondary-700 transition duration-200 opacity-50 cursor-not-allowed">
+                                <div key={`${index}${wallet.address}`} className="group/addressItem w-full rounded-md hover:bg-secondary-700! transition duration-200 opacity-50 cursor-not-allowed">
                                     <WalletItem
                                         wallet={wallet}
                                         selectable={true}

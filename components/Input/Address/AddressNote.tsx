@@ -32,7 +32,7 @@ const AddressNote: FC<AddressNoteModalProps> = ({ partner, values }) => {
             </div>
 
             <div className="w-full rounded-lg bg-secondary-700 overflow-hidden px-4 py-3 space-y-2">
-                <div className="gap-4 flex relative items-center outline-none w-full text-primary-text">
+                <div className="gap-4 flex relative items-center outline-hidden w-full text-primary-text">
                     <div className="flex items-center justify-between w-full">
                         <div className="text-secondary-text">
                             <span>{destination?.display_name}</span> <span>address</span>
@@ -46,7 +46,7 @@ const AddressNote: FC<AddressNoteModalProps> = ({ partner, values }) => {
                     </div>
                 </div>
                 <div className='flex gap-3 text-sm items-center'>
-                    <div className='flex flex-shrink-0 bg-secondary-400 text-primary-text items-center justify-center rounded-md h-9 overflow-hidden w-9'>
+                    <div className='flex shrink-0 bg-secondary-400 text-primary-text items-center justify-center rounded-md h-9 overflow-hidden w-9'>
                         <AddressIcon className="scale-150 h-9 w-9" address={destination_address} size={36} />
                     </div>
                     <p className="break-all text-sm">

@@ -134,7 +134,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             (source_exchange || destination_exchange) &&
                             <div className='flex flex-row space-x-2'>
                                 <div className='flex flex-col gap-1 justify-start items-center w-fit ml-2.5'>
-                                    <div className="w-0.5 h-2.5 bg-[#d9d9d9] rounded-sm" />
+                                    <div className="w-0.5 h-2.5 bg-[#d9d9d9] rounded-xs" />
                                     <Image
                                         src={source_exchange ? source_network?.logo : destination_network?.logo}
                                         alt={source_exchange ? source_network?.display_name : destination_network?.display_name}
@@ -142,7 +142,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                         height={24}
                                         className="rounded-md w-6 h-6"
                                     />
-                                    <div className="w-0.5 h-2.5 bg-[#d9d9d9] rounded-sm" />
+                                    <div className="w-0.5 h-2.5 bg-[#d9d9d9] rounded-xs" />
                                 </div>
                                 <span className='text-secondary-text text-sm self-center'>{source_exchange ? source_network?.display_name : destination_network?.display_name}</span>
                             </div>

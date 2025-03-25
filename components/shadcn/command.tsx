@@ -36,7 +36,7 @@ const CommandInput = React.forwardRef<
   <div className="relative z-0 flex items-center mt-1 mb-2 pl-2 border-b border-secondary-500" cmdk-input-wrapper="">
     <CommandPrimitive.Input placeholder=" " ref={ref} id="floating_standard"
       {...props} className={classNames(
-        "peer/draft placeholder:text-transparent border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-11 bg-transparent text-lg outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
+        "peer/draft placeholder:text-transparent border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-11 bg-transparent text-lg outline-hidden focus:outline-hidden focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
         className
       )} />
     <span className="absolute left-1 font-thin animate-none peer-placeholder-shown/draft:animate-blinking text-lg peer-focus/draft:invisible invisible peer-placeholder-shown/draft:visible">|</span>
@@ -109,7 +109,7 @@ const CommandItem = React.forwardRef<
   <CommandPrimitive.Item
     ref={ref}
     className={classNames(
-      "relative cursor-pointer flex select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none aria-selected:bg-secondary-700 aria-selected:text-primary-text",
+      "relative cursor-pointer flex select-none items-center rounded-xs px-2 py-1.5 text-sm outline-hidden aria-selected:bg-secondary-700 aria-selected:text-primary-text",
       className,
       props.disabled && "cursor-not-allowed",
     )}

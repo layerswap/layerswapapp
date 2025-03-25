@@ -76,14 +76,14 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
                 }
             </div>
 
-            <div className="flex flex-col items-start flex-grow min-w-0 ml-3 text-sm">
+            <div className="flex flex-col items-start grow min-w-0 ml-3 text-sm">
                 <div className="flex w-full min-w-0">
                     <ExtendedAddress address={addressItem.address} network={network} addressClassNames="font-normal" />
                 </div>
                 <div className="text-secondary-text w-full min-w-0">
                     <div className="flex items-center gap-1 text-xs">
                         {itemDescription?.icon && (
-                            <itemDescription.icon className="rounded flex-shrink-0 h-3.5 w-3.5" />
+                            <itemDescription.icon className="rounded-sm shrink-0 h-3.5 w-3.5" />
                         )}
                         {itemDescription?.text}
                     </div>
@@ -91,13 +91,13 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
             </div>
 
             {balance && (
-                <div className="flex-shrink-0 text-sm text-secondary-text text-right ml-3">
+                <div className="shrink-0 text-sm text-secondary-text text-right ml-3">
                     {
                         balance.amount != undefined && !isNaN(balance.amount) ?
                             <div className="text-right text-secondary-text font-normal text-sm">
                                 {
                                     balance.isLoading ?
-                                        <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+                                        <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-xs animate-pulse' />
                                         :
                                         <>
                                             <span>{balance.amount}</span> <span>{balance.symbol}</span>
@@ -157,7 +157,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, ad
                     </div>
                 </PopoverTrigger>
                 <PopoverContent className="w-full p-2 flex flex-col gap-1 items-stretch" side="top">
-                    <div onClick={(e) => { e.stopPropagation(), setCopied(address) }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
+                    <div onClick={(e) => { e.stopPropagation(), setCopied(address) }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded-sm transition-all duartion-200 flex items-center justify-between gap-5 w-full">
                         <p>
                             Copy address
                         </p>
@@ -169,7 +169,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, ad
                     </div>
                     {
                         network &&
-                        <Link href={network?.account_explorer_template?.replace('{0}', address)} target="_blank" className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
+                        <Link href={network?.account_explorer_template?.replace('{0}', address)} target="_blank" className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded-sm transition-all duartion-200 flex items-center justify-between gap-5 w-full">
                             <p>
                                 Open in explorer
                             </p>
@@ -178,7 +178,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, ad
                     }
                     {
                         onDisconnect &&
-                        <div onClick={(e) => { e.stopPropagation(), onDisconnect() }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
+                        <div onClick={(e) => { e.stopPropagation(), onDisconnect() }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded-sm transition-all duartion-200 flex items-center justify-between gap-5 w-full">
                             <p>
                                 Disconnect
                             </p>
