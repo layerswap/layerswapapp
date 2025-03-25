@@ -13,7 +13,7 @@ type VaulDrawerProps = {
     children: ReactNode;
     show: boolean;
     setShow: Dispatch<SetStateAction<boolean>>;
-    header: ReactNode;
+    header?: ReactNode;
     description?: ReactNode;
     modalId: string;
     onClose?: () => void;

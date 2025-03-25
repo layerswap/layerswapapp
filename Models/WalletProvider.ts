@@ -6,7 +6,9 @@ export type InternalConnector = {
     id: string,
     icon?: string | undefined,
     order?: number,
-    type?: 'injected' | 'other'
+    type?: 'injected' | 'other',
+    isMultiChain?: boolean,
+    providerName?: string,
 }
 
 export type Wallet = {

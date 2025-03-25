@@ -9,6 +9,7 @@ export type WalletModalConnector = {
     name: string;
     qr?: string;
     iconUrl?: string;
+    isMultiChain?: boolean;
 }
 
 type SharedType = { provider?: WalletProvider, connectCallback: (value: Wallet | undefined) => void }
@@ -60,7 +61,7 @@ export function WalletModalProvider({ children }) {
     }
 
     const goBack = useCallback(() => {
-        if (selectedConnector?.qr) {
+        if (selectedConnector) {
             setSelectedConnector(undefined)
             return;
         }
@@ -98,7 +99,6 @@ export function WalletModalProvider({ children }) {
                 }>
                 <VaulDrawer.Snap
                     id='item-1'
-                    fullHeight
                 >
                     <ConnectorsList
                         onFinish={onFinish}

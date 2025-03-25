@@ -58,6 +58,7 @@ export default function useSVM({ network }: { network: Network | undefined }): W
         }
         catch (e) {
             console.log(e)
+            throw new Error(e)
         }
     }
 
