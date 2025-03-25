@@ -125,7 +125,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                             </Drawer.Title>
                             <Drawer.Close asChild>
                                 <div className='-mr-2'>
-                                    <IconButton icon={
+                                    <IconButton className='inline-flex' icon={
                                         <X strokeWidth={3} />
                                     }>
                                     </IconButton>

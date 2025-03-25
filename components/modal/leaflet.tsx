@@ -111,7 +111,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                             <div>{title}</div>
                         </div>
                         <div className='-mr-2'>
-                            <IconButton onClick={handleCloseModal} icon={
+                            <IconButton className='inline-flex' onClick={handleCloseModal} icon={
                                 <X strokeWidth={3} />
                             }>
                             </IconButton>
