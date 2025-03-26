@@ -3,7 +3,7 @@ import useWallet from "../../hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
 import { InternalConnector, Wallet, WalletProvider } from "../../Models/WalletProvider";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
-import { ChevronDown, CircleX, LoaderCircle, RotateCw, Search } from "lucide-react";
+import { ChevronDown, CircleX, LoaderCircle, RotateCw, Search, XCircle } from "lucide-react";
 import { resolveWalletConnectorIcon } from "../../lib/wallets/utils/resolveWalletIcon";
 import { QRCodeSVG } from "qrcode.react";
 import CopyButton from "../buttons/copyButton";
@@ -12,6 +12,7 @@ import useWindowDimensions from "../../hooks/useWindowDimensions";
 import Connector from "./Connector";
 import { removeDuplicatesWithKey } from "./utils";
 import VaulDrawer from "../modal/vaulModal";
+import Image from "next/image";
 
 const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { isMobile } = useWindowDimensions()
@@ -33,7 +34,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
 
         scrollTimeout.current = setTimeout(() => {
             setIsScrolling(false);
-        }, 1000); // scrollbar disappears after 1 sec of inactivity
+        }, 1000);
     };
 
     useEffect(() => {
@@ -49,12 +50,11 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             const result = provider?.connectConnector && await provider.connectConnector({ connector })
 
             if (result) {
-                setSelectedConnector(undefined)
                 onFinish(result)
             }
+            setSelectedConnector(undefined)
         } catch (e) {
             console.log(e)
-            // setSelectedConnector(undefined)
             setConnectionError(e.message)
         }
     }
@@ -91,10 +91,11 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
 
     if (selectedConnector) {
         const Icon = resolveWalletConnectorIcon({ connector: selectedConnector.name, iconUrl: selectedConnector.iconUrl })
-
+        const connector = allConnectors.find(c => c?.name === selectedConnector.name)
+        const provider = filteredProviders.find(p => p.name === connector?.providerName)
         return <>
             <LoadingConnect
-                onRetry={() => { }}
+                onRetry={() => { connect(connector!, provider!) }}
                 selectedConnector={selectedConnector}
                 connectionError={connectionError}
             />
@@ -124,9 +125,21 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                                                 setShowEcosystemSelection(false);
                                                 await connect(connector!, provider!)
                                             }}
-                                            className="w-full h-fit flex items-center justify-between bg-secondary-700 hover:bg-secondary-500 transition-colors duration-200 rounded-xl p-3"
+                                            className="w-full h-fit flex items-center gap-3 bg-secondary-700 hover:bg-secondary-500 transition-colors duration-200 rounded-xl p-3"
                                         >
-                                            {connector?.providerName}
+                                            {
+                                                provider?.providerIcon &&
+                                                <Image
+                                                    className="w-8 h-8 rounded-md"
+                                                    width={30}
+                                                    height={30}
+                                                    src={provider.providerIcon}
+                                                    alt={provider.name}
+                                                />
+                                            }
+                                            <p>
+                                                {connector?.providerName}
+                                            </p>
                                         </button>
                                     )
                                 })
@@ -149,6 +162,12 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                     autoComplete="off"
                     className="placeholder:text-primary-text-placeholder border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-10 bg-transparent text-base outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
                 />
+                {
+                    searchValue &&
+                    <button type="button" onClick={() => setSearchValue('')} className="mr-3">
+                        <XCircle className="w-4 h-4 text-primary-text-placeholder" />
+                    </button>
+                }
                 <ProviderPicker
                     providers={filteredProviders}
                     selectedProviderName={selectedProvider?.name || 'All'}
@@ -184,7 +203,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
 }
 
 const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalConnector, connectionError: string | undefined }> = ({ onRetry, selectedConnector, connectionError }) => {
-    const ProviderIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.iconUrl });
+    const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.iconUrl });
 
     return (
         <div className="w-full h-full flex flex-col flex-1 gap-3 justify-center items-center font-semibold">
@@ -192,7 +211,7 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
                 selectedConnector &&
                 <div className="flex flex-col gap-1 items-center">
                     <div className="flex-col flex items-center">
-                        <ProviderIcon className="w-11 h-auto p-0.5 rounded-md bg-secondary-800" />
+                        <ConnectorIcon className="w-11 h-auto p-0.5 rounded-md bg-secondary-800" />
                         {
                             !connectionError &&
                             <p className='text-xs font-light'>
@@ -252,7 +271,7 @@ const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: st
         <Popover open={open} onOpenChange={() => setOpen(!open)}>
             <PopoverTrigger>
                 <div className="flex items-center gap-1 text-primary-text-placeholder">
-                    <p>
+                    <p className="text-sm">
                         {selectedProviderName}
                     </p>
                     <ChevronDown className="h-4 w-4" />

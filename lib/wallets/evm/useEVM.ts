@@ -212,6 +212,7 @@ export default function useEVM({ network }: Props): WalletProvider {
         availableWalletsForConnect: availableWalletsForConnect as any,
         name,
         id,
+        providerIcon: networks.find(n => ethereumNames.some(name => name === n.name))?.logo
     }
 
     return provider

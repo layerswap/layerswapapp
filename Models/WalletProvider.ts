@@ -53,4 +53,5 @@ export type WalletProvider = {
     asSourceSupportedNetworks?: string[],
     name: string,
     id: string,
+    providerIcon?: string,
 }

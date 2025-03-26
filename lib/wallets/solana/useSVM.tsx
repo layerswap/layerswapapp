@@ -133,6 +133,7 @@ export default function useSVM({ network }: { network: Network | undefined }): W
         asSourceSupportedNetworks: commonSupportedNetworks,
         name,
         id,
+        providerIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo
     }
 
     return provider

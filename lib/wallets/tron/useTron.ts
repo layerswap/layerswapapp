@@ -118,6 +118,7 @@ export default function useTron(): WalletProvider {
         asSourceSupportedNetworks: commonSupportedNetworks,
         name,
         id,
+        providerIcon: network?.logo
     }
 
     return provider

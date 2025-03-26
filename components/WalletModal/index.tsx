@@ -97,12 +97,8 @@ export function WalletModalProvider({ children }) {
                         <p>Connect wallet</p>
                     </div>
                 }>
-                <VaulDrawer.Snap
-                    id='item-1'
-                >
-                    <ConnectorsList
-                        onFinish={onFinish}
-                    />
+                <VaulDrawer.Snap id='item-1'>
+                    <ConnectorsList onFinish={onFinish} />
                 </VaulDrawer.Snap>
             </VaulDrawer>
         </ConnectModalContext.Provider>
