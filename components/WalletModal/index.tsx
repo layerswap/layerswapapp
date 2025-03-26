@@ -3,7 +3,7 @@ import { ChevronLeft } from 'lucide-react';
 import IconButton from '../buttons/iconButton';
 import VaulDrawer from '../modal/vaulModal';
 import { Wallet, WalletProvider } from '../../Models/WalletProvider';
-import ConnectorsList from './ProvidersList';
+import ConnectorsList from './ConnectorsList';
 
 export type WalletModalConnector = {
     name: string;

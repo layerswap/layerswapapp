@@ -155,11 +155,14 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                     setSelectedProviderName={(v) => setSelectedProvider(filteredProviders.find(p => p.name === v))}
                 />
             </div>
-            <div onScroll={handleScroll} className={clsx('overflow-y-scroll -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar-thumb:bg-transparent', {
-                'h-[55vh]': isMobile,
-                'h-[315px]': !isMobile,
-                'styled-scroll': isScrolling
-            })}>
+            <div
+                onScroll={handleScroll}
+                className={clsx('overflow-y-scroll -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar-thumb:bg-transparent', {
+                    'h-[55vh]': isMobile,
+                    'h-[315px]': !isMobile,
+                    'styled-scroll': isScrolling
+                })}
+            >
                 <div className='grid grid-cols-2 gap-2'>
                     {
                         resolvedConnectors?.map(item => {
