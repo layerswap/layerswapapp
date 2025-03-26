@@ -1,9 +1,9 @@
-import { Dispatch, FC, SetStateAction, useMemo, useState } from "react";
+import { Dispatch, FC, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import useWallet from "../../hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
 import { InternalConnector, Wallet, WalletProvider } from "../../Models/WalletProvider";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
-import { ChevronDown, CircleX, LoaderCircle, RotateCw } from "lucide-react";
+import { ChevronDown, CircleX, LoaderCircle, RotateCw, Search } from "lucide-react";
 import { resolveWalletConnectorIcon } from "../../lib/wallets/utils/resolveWalletIcon";
 import { QRCodeSVG } from "qrcode.react";
 import CopyButton from "../buttons/copyButton";
@@ -23,6 +23,23 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const [searchValue, setSearchValue] = useState<string>('')
     const [showEcosystemSeletion, setShowEcosystemSelection] = useState(false)
 
+    const [isScrolling, setIsScrolling] = useState(false);
+    const scrollTimeout = useRef<any>(null);
+
+    const handleScroll = () => {
+        setIsScrolling(true);
+
+        if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+
+        scrollTimeout.current = setTimeout(() => {
+            setIsScrolling(false);
+        }, 1000); // scrollbar disappears after 1 sec of inactivity
+    };
+
+    useEffect(() => {
+        return () => clearTimeout(scrollTimeout.current as any);
+    }, []);
+
     const connect = async (connector: InternalConnector, provider: WalletProvider) => {
         try {
             setConnectionError(undefined)
@@ -31,8 +48,10 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
 
             const result = provider?.connectConnector && await provider.connectConnector({ connector })
 
-            setSelectedConnector(undefined)
-            onFinish(result)
+            if (result) {
+                setSelectedConnector(undefined)
+                onFinish(result)
+            }
         } catch (e) {
             console.log(e)
             // setSelectedConnector(undefined)
@@ -120,29 +139,26 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     }
 
     return (
-        <div className="text-primary-text">
-            <div className="relative z-0 flex items-center mt-1 mb-2 pl-2 border-b border-secondary-500">
+        <div className="text-primary-text space-y-3">
+            <div className="relative z-0 flex items-center px-3 rounded-lg bg-secondary-700 border border-secondary-500">
+                <Search className="w-6 h-6 mr-2 text-primary-text-placeholder" />
                 <input
                     value={searchValue}
                     onChange={(e) => setSearchValue(e.target.value)}
-                    placeholder=" "
+                    placeholder="Search wallet"
                     autoComplete="off"
-                    id="floating_standard"
-                    className="peer/draft placeholder:text-transparent border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-11 bg-transparent text-lg outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="placeholder:text-primary-text-placeholder border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-10 bg-transparent text-base outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
                 />
-                <span className="absolute left-1 font-thin animate-none peer-placeholder-shown/draft:animate-blinking text-lg peer-focus/draft:invisible invisible peer-placeholder-shown/draft:visible">|</span>
-                <label htmlFor='floating_standard' className="absolute text-lg text-secondary-text duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-placeholder-shown/draft:scale-100 peer-placeholder-shown/draft:translate-y-0 peer-placeholder-shown/draft:text-secondary-text-muted">
-                    Search wallet
-                </label>
                 <ProviderPicker
                     providers={filteredProviders}
                     selectedProviderName={selectedProvider?.name || 'All'}
                     setSelectedProviderName={(v) => setSelectedProvider(filteredProviders.find(p => p.name === v))}
                 />
             </div>
-            <div className={clsx('overflow-y-auto styled-scroll', {
+            <div onScroll={handleScroll} className={clsx('overflow-y-scroll -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar-thumb:bg-transparent', {
                 'h-[55vh]': isMobile,
-                'h-[300px]': !isMobile,
+                'h-[315px]': !isMobile,
+                'styled-scroll': isScrolling
             })}>
                 <div className='grid grid-cols-2 gap-2'>
                     {
@@ -197,7 +213,7 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
             {
                 connectionError &&
                 <div className={`bg-secondary-700 rounded-lg flex flex-col gap-1.5 items-center p-3 w-full`}>
-                    <p className="flex gap-1 text-sm text-secondary-text">
+                    <p className="flex w-full gap-1 text-sm text-secondary-text justify-start">
                         <CircleX className="w-5 h-5 stroke-primary-500 mr-1 mt-0.5 flex-shrink-0" />
                         <div className='flex flex-col gap-1'>
                             <p className='text-base text-white'>Request rejected</p>
@@ -231,8 +247,8 @@ const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: st
 
     return (
         <Popover open={open} onOpenChange={() => setOpen(!open)}>
-            <PopoverTrigger asChild>
-                <div className="flex items-center gap-1">
+            <PopoverTrigger>
+                <div className="flex items-center gap-1 text-primary-text-placeholder">
                     <p>
                         {selectedProviderName}
                     </p>
