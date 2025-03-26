@@ -94,7 +94,6 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     }
 
     if (((from?.name && from?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase()) || (to?.name && to?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase()))) {
-        console.log(query.sameAccountNetwork)
         const network = from?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase() ? from : to;
         if ((selectedSourceAccount && destination_address && selectedSourceAccount?.address.toLowerCase() !== destination_address?.toLowerCase())) {
             validationMessage = `Transfers between ${network?.display_name} and other chains are only allowed within the same account. Please make sure you're using the same address on both source and destination.`;
