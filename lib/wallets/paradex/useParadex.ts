@@ -42,7 +42,6 @@ export default function useParadex({ network }: Props): WalletProvider {
     const asSourceSupportedNetworks = [
         ...withdrawalSupportedNetworks
     ]
-    
     const { connect, setSelectedProvider } = useConnectModal()
     const evmProvider = useEVM({ network })
     const starknetProvider = useStarknet()
@@ -73,7 +72,8 @@ export default function useParadex({ network }: Props): WalletProvider {
                     if (!Number(l1ChainId)) {
                         throw Error("Could not find ethereum network")
                     }
-                    const chainId = await getChainId(config)
+                    let client = await getWalletClient(config)
+                    const chainId = await client.getChainId()
                     if (l1ChainId !== chainId) {
                         try {
                             await sleep(1000)
@@ -89,9 +89,9 @@ export default function useParadex({ network }: Props): WalletProvider {
                             }
                         }
                         await sleep(1000)
+                        client = await getWalletClient(config)
                     }
                     await sleep(1000)
-                    const client = await getWalletClient(config)
                     const ethersSigner = walletClientToSigner(client)
                     if (!ethersSigner) {
                         throw Error("Could not initialize ethers signer")

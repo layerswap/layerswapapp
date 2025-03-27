@@ -64,17 +64,18 @@ export default function useSVM({ network }: { network: Network | undefined }): W
     const connectConnector = async ({ connector }: { connector: InternalConnector }) => {
         const solanaConnector = wallets.find(w => w.adapter.name === connector.name)
         if (!solanaConnector) throw new Error('Connector not found')
+        if (connectedWallet) await solanaConnector.adapter.disconnect()
         select(solanaConnector.adapter.name)
         await solanaConnector.adapter.connect()
 
-        const connectedWallet = wallets.find(w => w.adapter.connected === true)
-        const connectedAddress = connectedWallet?.adapter.publicKey?.toBase58()
-        const wallet: Wallet | undefined = connectedAddress && connectedWallet ? {
-            id: connectedWallet.adapter.name,
+        const newConnectedWallet = wallets.find(w => w.adapter.connected === true)
+        const connectedAddress = newConnectedWallet?.adapter.publicKey?.toBase58()
+        const wallet: Wallet | undefined = connectedAddress && newConnectedWallet ? {
+            id: newConnectedWallet.adapter.name,
             address: connectedAddress,
-            displayName: `${connectedWallet?.adapter.name} - Solana`,
+            displayName: `${newConnectedWallet?.adapter.name} - Solana`,
             providerName: name,
-            icon: resolveWalletConnectorIcon({ connector: String(connectedWallet?.adapter.name), address: connectedAddress, iconUrl: connectedWallet?.adapter.icon }),
+            icon: resolveWalletConnectorIcon({ connector: String(newConnectedWallet?.adapter.name), address: connectedAddress, iconUrl: newConnectedWallet?.adapter.icon }),
             disconnect,
             connect: () => connectWallet(),
             isActive: true,

@@ -118,7 +118,7 @@ export default function useEVM({ network }: Props): WalletProvider {
 
             const activeAccount = await attemptGetAccount(config)
             const connections = getConnections(config)
-            const connection = connections.find(c => c.connector.id === activeAccount.connector?.id)
+            const connection = connections.find(c => c.connector.id === connector?.id)
 
             const wallet = ResolveWallet({
                 activeConnection: (activeAccount.connector && activeAccount.address) ? {
