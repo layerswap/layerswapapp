@@ -1,4 +1,5 @@
 import { Refuel } from "../lib/layerSwapApiClient";
+import { ExchangeToken } from "./Exchange";
 
 export enum NetworkType {
     EVM = "evm",
@@ -31,8 +32,8 @@ export class NetworkWithTokens extends Network {
     tokens: Token[];
 }
 
-export class RouteNetwork extends Network {
-    tokens: RouteToken[]
+export class NetworkRoute extends Network {
+    tokens: NetworkRouteToken[]
 }
 
 export class Token {
@@ -49,7 +50,7 @@ export class Token {
     destination_rank?: number | undefined;
 }
 
-export class RouteToken extends Token {
+export class NetworkRouteToken extends Token {
     refuel?: Refuel
 }
 

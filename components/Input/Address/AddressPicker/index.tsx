@@ -10,7 +10,7 @@ import ManualAddressInput from "./ManualAddressInput";
 import Modal from "../../../modal/modal";
 import ConnectWalletButton from "./ConnectedWallets/ConnectWalletButton";
 import ExchangeNote from "./ExchangeNote";
-import { Network, NetworkType, RouteNetwork } from "../../../../Models/Network";
+import { Network, NetworkType, NetworkRoute } from "../../../../Models/Network";
 import { Exchange } from "../../../../Models/Exchange";
 import AddressBook from "./AddressBook";
 import AddressButton from "./AddressButton";
@@ -243,7 +243,7 @@ const resolveAddressGroups = ({
     addressFromQuery,
 }: {
     address_book: AddressBookItem[] | undefined,
-    destination: RouteNetwork | undefined,
+    destination: NetworkRoute | undefined,
     destinationExchange: Exchange | undefined,
     wallets: Wallet[] | undefined,
     newAddress: { address: string, networkType: NetworkType | string } | undefined,

@@ -4,13 +4,13 @@ import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import useSWRBalance from "../../../lib/balances/useSWRBalance";
 import useSWRGas from "../../../lib/gases/useSWRGas";
 import { useSwapDataState } from "../../../context/swap";
-import { RouteNetwork, RouteToken, Token } from "../../../Models/Network";
+import { NetworkRoute, NetworkRouteToken, Token } from "../../../Models/Network";
 import { useMemo } from "react";
 import { resolveMacAllowedAmount } from "./helpers";
 
 type MinMaxProps = {
-    fromCurrency: RouteToken,
-    from: RouteNetwork,
+    fromCurrency: NetworkRouteToken,
+    from: NetworkRoute,
     limitsMaxAmount: number,
     limitsMinAmount: number
 }

@@ -1,15 +1,16 @@
-import { RouteNetwork, RouteToken } from "../../Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "../../Models/Network";
 import { Exchange, ExchangeToken } from "../../Models/Exchange";
+import { Route, RouteToken } from "../../Models/Route";
 
 export type SwapFormValues = {
   amount?: string;
   destination_address?: string;
   //TODO: refactor
-  fromCurrency?: RouteToken & { manuallySet?: boolean };
-  toCurrency?: RouteToken & { manuallySet?: boolean };
+  fromCurrency?: NetworkRouteToken & { manuallySet?: boolean };
+  toCurrency?: NetworkRouteToken & { manuallySet?: boolean };
   refuel?: boolean;
-  from?: RouteNetwork;
-  to?: RouteNetwork;
+  from?: NetworkRoute;
+  to?: NetworkRoute;
   fromExchange?: Exchange;
   toExchange?: Exchange;
   currencyGroup?: ExchangeToken & { manuallySet?: boolean };

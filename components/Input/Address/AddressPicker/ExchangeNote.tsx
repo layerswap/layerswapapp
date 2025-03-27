@@ -1,10 +1,10 @@
 import { Info } from "lucide-react";
-import { RouteNetwork, Token } from "../../../../Models/Network";
+import { NetworkRoute, Token } from "../../../../Models/Network";
 import Image from "next/image";
 import { Exchange } from "../../../../Models/Exchange";
 
 
-const ExchangeNote = ({ destinationAsset, destinationExchange, destination }: { destinationAsset: Token | undefined, destinationExchange: Exchange, destination: RouteNetwork | undefined }) => {
+const ExchangeNote = ({ destinationAsset, destinationExchange, destination }: { destinationAsset: Token | undefined, destinationExchange: Exchange, destination: NetworkRoute | undefined }) => {
 
     if (!destinationAsset || !destinationExchange || !destination) return
 

@@ -1,8 +1,7 @@
 import { Form, FormikErrors, useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect } from "react";
 import SwapButton from "../../buttons/swapButton";
 import React from "react";
-import NetworkFormField from "../../Input/NetworkFormField";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
 import { motion, useCycle } from "framer-motion";
@@ -16,7 +15,6 @@ import AmountField from "../../Input/Amount"
 import dynamic from "next/dynamic";
 import { Balance } from "../../../Models/Balance";
 import ResizablePanel from "../../ResizablePanel";
-import CEXNetworkFormField from "../../Input/CEXNetworkFormField";
 import ValidationError from "../../validationError";
 import { Exchange, ExchangeToken } from "../../../Models/Exchange";
 import { useValidationContext } from "../../../context/validationErrorContext";
@@ -26,6 +24,7 @@ import useWallet from "../../../hooks/useWallet";
 import { useSettingsState } from "../../../context/settings";
 import SourcePicker from "../../Input/SourcePicker";
 import DestinationPicker from "../../Input/DestinationPicker";
+import CexNetworkPicker from "../../Input/CexNetworkPicker";
 
 type Props = {
     partner?: Partner,
@@ -212,7 +211,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                     (((fromExchange && destination) || (toExchange && source)) && currencyGroup) ?
                         <div className="mb-6 leading-4">
                             <ResizablePanel>
-                                <CEXNetworkFormField direction={fromExchange ? 'from' : 'to'} partner={partner} />
+                                <CexNetworkPicker direction={fromExchange ? 'from' : 'to'} partner={partner} />
                             </ResizablePanel>
                         </div>
                         : <></>

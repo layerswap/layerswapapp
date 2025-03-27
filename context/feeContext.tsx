@@ -26,6 +26,7 @@ export function FeeProvider({ children }) {
     const [poll, updatePolling] = useState(true)
 
     const valuesChanger = (values: SwapFormValues) => {
+        console.log("aaaa_values", values)
         setValues(values)
     }
 
@@ -43,18 +44,22 @@ export function FeeProvider({ children }) {
 
     const use_deposit_address = depositMethod === 'wallet' ? false : true
 
+    const limitsURL = (from && fromCurrency?.status === "active" && to && toCurrency?.status === "active" && depositMethod) ?
+        `/limits?source_network=${from?.name}&source_token=${fromCurrency?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}&use_deposit_address=${use_deposit_address}&refuel=${!!refuel}` : null
+
     const { data: amountRange, mutate: mutateLimits } = useSWR<ApiResponse<{
         min_amount: number
         min_amount_in_usd: number
         max_amount: number
         max_amount_in_usd: number
-    }>>((from && fromCurrency?.status === "active" && to && toCurrency?.status === "active" && depositMethod) ?
-        `/limits?source_network=${from?.name}&source_token=${fromCurrency?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}&use_deposit_address=${use_deposit_address}&refuel=${!!refuel}` : null, apiClient.fetcher, {
+    }>>(limitsURL, apiClient.fetcher, {
         refreshInterval: poll ? 20000 : 0,
     })
 
-    const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading } = useSWR<ApiResponse<Quote>>((from && fromCurrency?.status === "active" && to && toCurrency?.status === "active" && debouncedAmount && depositMethod) ?
-        `/quote?source_network=${from?.name}&source_token=${fromCurrency?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}&amount=${debouncedAmount}&refuel=${!!refuel}&use_deposit_address=${use_deposit_address}` : null, apiClient.fetcher, {
+    const quoteURL = (from && fromCurrency?.status === "active" && to && toCurrency?.status === "active" && debouncedAmount && depositMethod) ?
+        `/quote?source_network=${from?.name}&source_token=${fromCurrency?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}&amount=${debouncedAmount}&refuel=${!!refuel}&use_deposit_address=${use_deposit_address}` : null
+
+    const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading } = useSWR<ApiResponse<Quote>>(quoteURL, apiClient.fetcher, {
         refreshInterval: poll ? 42000 : 0,
         fallbackData: { data: cachedRateData }
     })

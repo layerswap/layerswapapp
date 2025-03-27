@@ -1,9 +1,11 @@
 import { Exchange, ExchangeToken } from "../Models/Exchange";
-import { RouteNetwork, RouteToken } from "../Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "../Models/Network";
 import { SwapDirection } from "../components/DTOs/SwapFormValues";
 import CurrencySettings from "./CurrencySettings";
 import ExchangeSettings from "./ExchangeSettings";
 import NetworkSettings from "./NetworkSettings";
+
+export const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
 
 export const SortAscending = (x: { order: number }, y: { order: number }) => x.order - y.order;
 
@@ -18,8 +20,25 @@ export const SortNetworks = (
     return a.name.localeCompare(b.name);
 };
 
+export const SortNetworkRoutes = (
+    a: NetworkRoute,
+    b: NetworkRoute
+) => {
+    const aIsNew = a?.tokens?.every(t => new Date(t?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK);
+    const bIsNew = b?.tokens?.every(t => new Date(t?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK);
+
+    const a_order = ResolveNetworkOrder(a, aIsNew);
+    const b_order = ResolveNetworkOrder(b, bIsNew);
+
+    if (a_order !== b_order) {
+        return b_order - a_order;
+    }
+
+    return a.name.localeCompare(b.name);
+};
+
 export function ResolveNetworkOrder(
-    network: RouteNetwork,
+    network: NetworkRoute,
     is_new: boolean
 ) {
     const is_inactive = network.tokens?.every(r => r.status === 'inactive');
@@ -48,7 +67,7 @@ export function ResolveCEXCurrencyOrder(token: ExchangeToken) {
 
     return initial_order;
 }
-export function ResolveCurrencyOrder(currency: RouteToken, is_new: boolean) {
+export function ResolveCurrencyOrder(currency: NetworkRouteToken) {
 
     const initial_order = resolveInitialWeightedOrder(CurrencySettings.KnownSettings[currency.symbol]?.Order, 1)
     const is_active = currency.status === 'active'

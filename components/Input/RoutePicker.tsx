@@ -1,67 +1,33 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
-import { RouteNetwork, RouteToken } from "../../Models/Network";
-import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import useSWR, { useSWRConfig } from "swr";
-import { ApiResponse } from "../../Models/ApiResponse";
-import { resolveNetworkRoutesURL } from "../../helpers/routes";
-import { useSettingsState } from "../../context/settings";
+import { NetworkRoute, NetworkRouteToken } from "../../Models/Network";
 import { Selector, SelectorContent, SelectorTrigger } from "../Select/CommandNew/Index";
 import { ChevronDown, Check } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
 import { CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandWrapper } from "../shadcn/command";
 import SpinIcon from "../icons/spinIcon";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
-import { CurrencySelectItemDisplay, RouteSelectItemDisplay, SelectedCurrencyDisplay, SelectedRouteDisplay } from "../Select/Shared/Routes";
-import { Exchange } from "../../Models/Exchange";
+import { CurrencySelectItemDisplay, RouteSelectItemDisplay, SelectedRouteDisplay } from "../Select/Shared/Routes";
+import { Exchange, ExchangeToken } from "../../Models/Exchange";
 import React from "react";
+import { ResolveCEXCurrencyOrder, ResolveCurrencyOrder, SortNetworkRoutes } from "../../lib/sorting";
+import useFormRoutes from "../../hooks/useFormRoutes";
+import { Route, RouteToken, RoutesGroup } from "../../Models/Route";
 
-type Route = { cex: true } & Exchange | { cex?: false } & RouteNetwork
-
-type ResolveGroupNameProps = {
-    route: Route;
-    popularRoutes?: string[]
+function resolveSelectedRoute(values: SwapFormValues, direction: SwapDirection): NetworkRoute | Exchange | undefined {
+    const { from, to, fromExchange, toExchange } = values
+    return direction === 'from' ? fromExchange || from : toExchange || to;
 }
-export class RoutesGroup {
-    name: string;
-    routes: Route[];
+function resolveSelectedToken(values: SwapFormValues, direction: SwapDirection) {
+    const { fromCurrency, toCurrency, fromExchange, toExchange } = values
+    //TODO: might need model refactoring as for now we just assume if exchange is selected then token is curencyGroup
+    if ((direction === 'from' && fromExchange) || (direction === 'to' && toExchange)) {
+        return values.currencyGroup
+    }
+    else
+        return direction === 'from' ? fromCurrency : toCurrency;
 }
-
-const GROUP_ORDERS = { "Popular": 1, "All Networks": 2, "Exchanges": 3 }
-
-const resolveGroupName = ({ route, popularRoutes }: ResolveGroupNameProps) => {
-    if (route.cex)
-        return "Exchanges"
-
-    if (!route.cex && route.tokens.some(t => t.status === "active") && popularRoutes?.includes(route.name))
-        return "Popular";
-
-    return "All Networks"
-}
-
-function groupRoutes(routes: Route[], popularRoutes?: string[]): RoutesGroup[] {
-    let groups: RoutesGroup[] = [];
-    routes.forEach((route) => {
-        const routeGroupName = resolveGroupName({ route, popularRoutes })
-        const existingGroup = groups.find(g => g.name === routeGroupName)
-        if (existingGroup) {
-            existingGroup.routes.push(route);
-        }
-        else {
-            const group = { name: routeGroupName, routes: [route] };
-            groups.push(group);
-        }
-    });
-
-    groups.sort((a, b) => {
-        // Sort put networks first then exchanges
-        return (GROUP_ORDERS[a.name]) - (GROUP_ORDERS[b.name]);
-    });
-
-    return groups;
-}
-
 
 const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -70,86 +36,53 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     } = useFormikContext<SwapFormValues>();
     const { isDesktop } = useWindowDimensions();
 
-    const { from, to, fromCurrency, toCurrency, destination_address, currencyGroup } = values
-    const name = direction === 'from' ? 'fromCurrency' : 'toCurrency';
-    const { destinationRoutes, sourceRoutes } = useSettingsState();
-    const { mutate, cache } = useSWRConfig();
+    const { allRoutes, isLoading, groupedRoutes } = useFormRoutes({ direction, values })
 
-    const networkRoutesURL = resolveNetworkRoutesURL(direction, values)
+    const currencyFieldName = direction === 'from' ? 'fromCurrency' : 'toCurrency';
 
-    const delayedFetcher = async (key: string) => {
-        const cachedData = cache.get(key);
-        if (cachedData) return cachedData;
-        const data = await apiClient.fetcher(key);
-
-        mutate(key, data, false); // Update cache without revalidation
-
-        return data;
-    }
-
-
-    const apiClient = new LayerSwapApiClient()
-    const {
-        data: routes,
-        isLoading,
-        error
-    } = useSWR<ApiResponse<RouteNetwork[]>>(networkRoutesURL, apiClient.fetcher,
-        {
-            keepPreviousData: true,
-            dedupingInterval: 10000,
-            revalidateIfStale: false,
-            fallbackData:
-                { data: direction === 'from' ? sourceRoutes : destinationRoutes },
-        })
-
-    const [routesData, setRoutesData] = useState<RouteNetwork[] | undefined>(direction === 'from' ? sourceRoutes : destinationRoutes)
-
+    const selectedRoute = resolveSelectedRoute(values, direction)
+    const selectedToken = resolveSelectedToken(values, direction)
     useEffect(() => {
-        if (!isLoading && routes?.data) setRoutesData(routes.data)
-    }, [routes])
 
-    const selectedRoute = direction === 'from' ? from : to;
-    const selectedToken = direction === 'from' ? fromCurrency : toCurrency;
+        if (!selectedRoute || !selectedToken || !allRoutes) return
 
-    const popularRoutes = useMemo(() => routesData
-        ?.filter(r => r.tokens?.some(r => r.status === 'active'))
-        ?.sort((a, b) =>
-        (direction === "from"
-            ? (a.source_rank ?? 0) - (b.source_rank ?? 0)
-            : (a.destination_rank ?? 0) - (b.destination_rank ?? 0))
-        )
-        .slice(0, 5)
-        .map(r => r.name) || [], [routesData])
+        const updatedRoute = allRoutes.find(r => r.name === selectedRoute.name)
 
+        //TODO: handle cex
+        if (updatedRoute?.cex) {
+            const updatedToken = updatedRoute?.token_groups?.find(t => t.symbol === selectedToken.symbol)
+            if (updatedToken === selectedToken) return
+            setFieldValue("currencyGroup", updatedToken, true)
+            return;
+        }
 
-    useEffect(() => {
-        if (!selectedRoute || !selectedToken || !routesData) return
-
-        const updatedRoute = routesData.find(r => r.name === selectedRoute.name)
         const updatedToken = updatedRoute?.tokens?.find(t => t.symbol === selectedToken.symbol)
 
         if (updatedToken === selectedToken) return
 
         if (updatedRoute && updatedToken) {
-            setFieldValue(name, updatedToken, true)
+            setFieldValue(currencyFieldName, updatedToken, true)
             setFieldValue(direction, updatedRoute, true)
         }
 
-    }, [selectedRoute, selectedToken, routesData])
+    }, [selectedRoute, selectedToken, allRoutes])
 
-    const handleSelect = useCallback(async (network: RouteNetwork, token: RouteToken) => {
+    const handleSelect = useCallback(async (route: Route, token: RouteToken) => {
+        if (route.cex) {
+            setFieldValue(currencyFieldName, null)
+            setFieldValue(direction, null)
 
-        const oppositeDirection = direction === 'from' ? 'to' : 'from'
-        const oppositeNetworkRoutesURL = resolveNetworkRoutesURL(oppositeDirection, { ...values, [name]: token, [direction]: network })
+            setFieldValue('currencyGroup', token, true)
+            setFieldValue(`${direction}Exchange`, route, true)
+        }
+        else {
+            setFieldValue(`${direction}Exchange`, null)
 
-        mutate<ApiResponse<RouteNetwork[]>>(oppositeNetworkRoutesURL, () => apiClient.fetcher(oppositeNetworkRoutesURL), false)
+            setFieldValue(currencyFieldName, token, true)
+            setFieldValue(direction, route, true)
+        }
+    }, [currencyFieldName, direction, values])
 
-        setFieldValue(name, token, true)
-        setFieldValue(direction, network, true)
-
-    }, [name, direction, mutate, apiClient, values])
-
-    const groups = useMemo(() => groupRoutes(routesData || [], popularRoutes), [routesData, popularRoutes])
     return (
         <div className="relative">
             <Selector>
@@ -170,12 +103,12 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                             ) : (
                                 <CommandList>
                                     <CommandEmpty>No results found.</CommandEmpty>
-                                    {groups.filter(g => g.routes?.length > 0).map((group) => {
+                                    {groupedRoutes.filter(g => g.routes?.length > 0).map((group) => {
                                         return <Group
                                             group={group}
                                             key={group.name}
                                             direction={direction}
-                                            onSelect={async (n, t) => { handleSelect(n, t); closeModal() }}
+                                            onSelect={(n, t) => { handleSelect(n, t); closeModal() }}
                                             selectedRoute={selectedRoute?.name}
                                             selectedToken={selectedToken?.symbol}
                                         />
@@ -193,7 +126,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
 type GroupProps = {
     group: RoutesGroup;
     direction: SwapDirection;
-    onSelect: (network: RouteNetwork, token: RouteToken) => void;
+    onSelect: (route: Route, token: RouteToken) => void;
     selectedRoute: string | undefined;
     selectedToken: string | undefined;
 }
@@ -206,7 +139,7 @@ const Group = ({ group, direction, onSelect, selectedRoute, selectedToken }: Gro
     }
     return <CommandGroup heading={<span className='text-secondary-text pl-2'>{group.name.toUpperCase()}</span>}>
         <Accordion type="multiple" value={openValues} defaultValue={selectedRoute ? [selectedRoute] : []} >
-            {group.routes.map((route, index) => {
+            {group.routes.sort(SortNetworkRoutes).map((route, index) => {
                 return <GroupItem
                     route={route}
                     underline={index > 0}
@@ -227,22 +160,28 @@ type GroupItemProps = {
     underline: boolean,
     toggleContent: (itemName: string) => void;
     direction: SwapDirection;
-    onSelect: (network: RouteNetwork, token: RouteToken) => void;
+    onSelect: (route: Route, token: RouteToken) => void;
     selectedRoute: string | undefined;
     selectedToken: string | undefined;
+}
+
+function getSortedRouteTokens(route: Route) {
+    if (route.cex) {
+        return route.token_groups?.sort((a, b) => ResolveCEXCurrencyOrder(a) - ResolveCEXCurrencyOrder(b))
+    }
+    return route.tokens?.sort((a, b) => ResolveCurrencyOrder(a) - ResolveCurrencyOrder(b))
 }
 
 const GroupItem = ({ route, underline, toggleContent, direction, onSelect, selectedRoute, selectedToken }: GroupItemProps) => {
 
     const itemRef = React.useRef<HTMLDivElement>(null);
 
+    const sortedTokens = getSortedRouteTokens(route)
 
-    if (route.cex)
-        return <></>
+    const filterValue = `${route.display_name} ${sortedTokens?.map(si => si.symbol).join(" ")}`;
 
-    const filterValue = `${route.display_name} ${route.tokens?.map(si => si.symbol).join(" ")}`
     return (
-        //// Wrap accordion with disabled command itme to filter out in search (when accordion is oppen it will ocupy some space)
+        //// Wrap accordion with disabled command itme to filter out in search. (when accordion is oppen it will ocupy some space)
         <CommandItem
             ref={itemRef}
             disabled={true}
@@ -265,12 +204,13 @@ const GroupItem = ({ route, underline, toggleContent, direction, onSelect, selec
                 <AccordionContent className="rounded-md AccordionContent">
                     <div className='ml-8 pb-2'>
                         {
-                            route.tokens?.map((token, index) => {
+                            sortedTokens?.map((token: ExchangeToken | NetworkRouteToken, index) => {
                                 return <TokenCommandWrapper
+                                    key={`${route.name}-${token.symbol}`}
                                     token={token}
                                     route={route}
                                     direction={direction}
-                                    divider={index + 1 < route.tokens.length}
+                                    divider={index + 1 < sortedTokens.length}
                                     onSelect={onSelect}
                                     selectedRoute={selectedRoute}
                                     selectedToken={selectedToken}
@@ -289,7 +229,7 @@ type TokenCommandWrapperProps = {
     route: Route;
     direction: SwapDirection;
     divider: boolean;
-    onSelect: (network: RouteNetwork, token: RouteToken) => void;
+    onSelect: (route: Route, token: RouteToken) => void;
     selectedRoute: string | undefined;
     selectedToken: string | undefined;
 }
@@ -305,9 +245,6 @@ const TokenCommandWrapper = (props: TokenCommandWrapperProps) => {
             tokenItemRef.current.scrollIntoView({ behavior: "instant", block: "center" });
         }
     }, [isSelected])
-
-    if (route.cex)
-        return <></>
 
     return <CommandItem
         className="border-l border-secondary-500 aria-selected:bg-secondary-700 aria-selected:text-primary-text hover:bg-secondary-700 relative"
@@ -325,7 +262,7 @@ const TokenCommandWrapper = (props: TokenCommandWrapperProps) => {
         <CurrencySelectItemDisplay
             item={token}
             selected={false}
-            network={route}
+            route={route}
             direction={direction}
             divider={divider}
         />

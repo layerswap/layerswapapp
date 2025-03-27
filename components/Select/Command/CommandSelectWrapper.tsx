@@ -32,13 +32,10 @@ export default function CommandSelectWrapper<T>({
     searchHint,
     values,
     valueGrouper,
-    groupedCurrencies,
     isLoading,
     modalHeight,
     modalContent,
-    header,
     valueDetails,
-    walletComp
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 

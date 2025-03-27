@@ -1,4 +1,4 @@
-import { RouteNetwork, RouteToken } from "../../../../Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "../../../../Models/Network";
 import useWallet from "../../../../hooks/useWallet";
 import useSWRBalance from "../../../../lib/balances/useSWRBalance";
 import { SwapDirection } from "../../../DTOs/SwapFormValues";
@@ -6,9 +6,11 @@ import { truncateDecimals } from "../../../utils/RoundDecimals";
 import Image from 'next/image'
 import { SelectItem } from "../../CommandNew/SelectItem/Index";
 import { useMemo } from "react";
+import { Exchange } from "../../../../Models/Exchange";
+import { Route, RouteToken } from "../../../../Models/Route";
 
 type TokenItemProps = {
-    network: RouteNetwork;
+    route: Route;
     item: RouteToken;
     selected: boolean;
     direction: SwapDirection;
@@ -16,51 +18,71 @@ type TokenItemProps = {
 }
 
 export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
-    const { item, network, direction, divider } = props
-    const { provider } = useWallet(network, direction === "from" ? "withdrawal" : "autofil")
-    const activeAddress = provider?.activeWallet
-    const { balance } = useSWRBalance(activeAddress?.address, network)
-    const tokenbalance = balance?.find(b => b.token === item.symbol)
-    const formatted_balance_amount = tokenbalance?.amount ? Number(truncateDecimals(tokenbalance?.amount, item.precision)) : 0
-    const balanceAmountInUsd = (item?.price_in_usd * formatted_balance_amount).toFixed(2)
-
-    const title = useMemo(() => {
-        return <div className="flex justify-between w-full">
-            <div className="grid gap-0 leading-none align-middle">
-                <span className="align-middle">{item.symbol}</span>
-                <div className="flex items-center space-x-0.5  align-middle" >
-                    <span className="text-secondary-text text-xs font-light whitespace-nowrap">{network.display_name}</span>
-                </div>
-            </div>
-            {
-                tokenbalance &&
-                <span className="text-xs text-secondary-text text-right my-auto">
-                    <div className="text-primary-text"> {formatted_balance_amount}</div>
-                    {Number(tokenbalance?.amount) > 0 && <div>${balanceAmountInUsd}</div>}
-                </span>
-            }
-        </div>
-    }, [item, network])
+    const { item, route, direction, divider } = props
 
     return <SelectItem>
         <SelectItem.Logo
             imgSrc={item.logo}
-            secondaryLogoSrc={network.logo}
+            secondaryLogoSrc={route.logo}
             altText={`${item.symbol} logo`}
             className="rounded-full"
         />
-        <SelectItem.Title title={title} className={`py-2 ${divider ? 'border-b border-secondary-700' : ''}`} />
+        {
+            route.cex ?
+                <SelectItem.DetailedTitle title={item.symbol} secondary={route.display_name} />
+                :
+                <NetworkTokenTitle item={item as NetworkRouteToken} route={route} direction={direction} />
+        }
     </SelectItem>
 }
+type NetworkTokenItemProps = {
+    route: NetworkRoute;
+    item: NetworkRouteToken;
+    direction: SwapDirection;
+}
+export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
+    const { item, route, direction } = props
+    const { provider } = useWallet(route, direction === "from" ? "withdrawal" : "autofil")
+    const activeAddress = provider?.activeWallet
+    const { balance } = useSWRBalance(activeAddress?.address, route)
+    const tokenbalance = balance?.find(b => b.token === item.symbol)
+    const formatted_balance_amount = tokenbalance?.amount ? Number(truncateDecimals(tokenbalance?.amount, item.precision)) : 0
+    const balanceAmountInUsd = (item?.price_in_usd * formatted_balance_amount).toFixed(2)
+
+    return <SelectItem.DetailedTitle title={item.symbol} secondary={route.display_name}>
+        {
+            tokenbalance &&
+            <span className="text-xs text-secondary-text text-right my-auto">
+                <div className="text-primary-text"> {formatted_balance_amount}</div>
+                {Number(tokenbalance?.amount) > 0 && <div>${balanceAmountInUsd}</div>}
+            </span>
+        }
+    </SelectItem.DetailedTitle>
+}
+
 
 type RouteItemProps = {
-    item: RouteNetwork;
+    item: Route;
     selected: boolean;
     direction: SwapDirection;
     divider: boolean;
 }
 
 export const RouteSelectItemDisplay = (props: RouteItemProps) => {
+    const { item, selected, divider, direction } = props
+
+    return item.cex ? <ExchangeRouteSelectItemDisplay item={item} divider={divider} selected={selected} />
+        : <NetworkRouteSelectItemDisplay item={item} divider={divider} selected={selected} direction={direction} />
+}
+
+type NetworkRouteItemProps = {
+    item: NetworkRoute;
+    selected: boolean;
+    direction: SwapDirection;
+    divider: boolean;
+}
+
+const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const { item, direction, divider } = props
     const { provider } = useWallet(item, direction === "from" ? "withdrawal" : "autofil")
     const activeAddress = provider?.activeWallet
@@ -74,21 +96,35 @@ export const RouteSelectItemDisplay = (props: RouteItemProps) => {
         return acc + (formattedBalance * tokenPriceInUsd);
     }, 0), [balance, item])
 
-    const title = useMemo(() => {
-        return <div className="flex justify-between w-full">
-            <span className="">{item.display_name}</span>
-            {
-                Number(balance?.length) > 0 &&
-                <div>
-                    <span className="text-secondary-text font-light text-xs">{<span>${networkBalanceInUsd?.toFixed(2)}</span>}</span>
-                </div>
-            }
-        </div>
-    }, [item, networkBalanceInUsd])
+    return <SelectItem>
+        <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} />
+        <SelectItem.Title className={`py-3 ${divider ? 'border-t border-secondary-700' : ''}`} >
+            <>
+                <span>{item.display_name}</span>
+                {
+                    Number(balance?.length) > 0 &&
+                    <div>
+                        <span className="text-secondary-text font-light text-xs">{<span>${networkBalanceInUsd?.toFixed(2)}</span>}</span>
+                    </div>
+                }
+            </>
+        </SelectItem.Title>
+    </SelectItem>
+}
+type ExchangeRouteItemProps = {
+    item: Exchange;
+    selected: boolean;
+    divider: boolean;
+}
+
+const ExchangeRouteSelectItemDisplay = (props: ExchangeRouteItemProps) => {
+    const { item, divider } = props
 
     return <SelectItem>
         <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} />
-        <SelectItem.Title title={title} className={`py-3 ${divider ? 'border-t border-secondary-700' : ''}`} />
+        <SelectItem.Title className={`py-3 ${divider ? 'border-t border-secondary-700' : ''}`} >
+            {item.display_name}
+        </SelectItem.Title>
     </SelectItem>
 }
 
@@ -132,7 +168,7 @@ export const SelectedCurrencyDisplay = (props: SelectedCurrencyDisplayProps) => 
 
 
 type SelectedRouteDisplayProps = {
-    route?: RouteNetwork;
+    route?: NetworkRoute | Exchange;
     token?: RouteToken;
     placeholder: string;
 }

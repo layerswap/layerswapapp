@@ -1,5 +1,5 @@
 import useSWR from "swr"
-import { NetworkWithTokens, RouteNetwork } from "../../Models/Network"
+import { NetworkWithTokens, NetworkRoute } from "../../Models/Network"
 import { BalanceResolver } from "./balanceResolver"
 
 const useSWRBalance = (address: string | undefined, network: NetworkWithTokens | undefined) => {
