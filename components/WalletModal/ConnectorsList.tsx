@@ -95,6 +95,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         const provider = filteredProviders.find(p => p.name === connector?.providerName)
         return <>
             <LoadingConnect
+                isMobile={isMobile}
                 onRetry={() => { connect(connector!, provider!) }}
                 selectedConnector={selectedConnector}
                 connectionError={connectionError}
@@ -204,11 +205,16 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     )
 }
 
-const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalConnector, connectionError: string | undefined }> = ({ onRetry, selectedConnector, connectionError }) => {
+const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalConnector, connectionError: string | undefined, isMobile: boolean }> = ({ onRetry, selectedConnector, connectionError, isMobile }) => {
     const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.iconUrl });
 
     return (
-        <div className="w-full h-full flex flex-col flex-1 gap-3 justify-center items-center font-semibold">
+        <div
+            className={clsx('w-full h-full flex flex-col flex-1 gap-3 justify-center items-center font-semibold', {
+                'min-h-[55vh]': isMobile,
+                'min-h-[265px]': !isMobile,
+            })}
+        >
             {
                 selectedConnector &&
                 <div className="flex flex-col gap-1 items-center">
