@@ -65,12 +65,15 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const resolvedConnectors: InternalConnector[] = useMemo(() => removeDuplicatesWithKey(allConnectors, 'name'), [allConnectors])
 
     if (selectedConnector?.qr) return <div className="flex flex-col justify-start space-y-2">
-        <div className='w-full flex flex-col justify-center items-center pt-2'>
+        <p className="text-secondary-text">
+            Scan the QR code with your phone
+        </p>
+        <div className='flex flex-col justify-center items-center pt-2 w-fit mx-auto'>
             <QRCodeSVG
                 className="rounded-lg"
                 value={selectedConnector?.qr}
                 includeMargin={true}
-                size={350}
+                size={264}
                 level={"H"}
                 imageSettings={
                     selectedConnector.iconUrl
@@ -83,7 +86,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                         : undefined
                 }
             />
-            <div className='bg-secondary text-secondary-text px-14 py-1.5 rounded-md mt-3 flex items-center'>
+            <div className='bg-secondary text-secondary-text w-full px-2 py-1.5 rounded-md mt-3 flex justify-center items-center'>
                 <CopyButton toCopy={selectedConnector?.qr}>Copy QR URL</CopyButton>
             </div>
         </div>
@@ -211,8 +214,8 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
     return (
         <div
             className={clsx('w-full h-full flex flex-col flex-1 gap-3 justify-center items-center font-semibold', {
-                'min-h-[55vh]': isMobile,
-                'min-h-[265px]': !isMobile,
+                'min-h-[60vh]': isMobile,
+                'min-h-[330px]': !isMobile,
             })}
         >
             {
