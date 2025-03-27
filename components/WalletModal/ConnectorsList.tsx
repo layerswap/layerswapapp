@@ -213,9 +213,10 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
 
     return (
         <div
-            className={clsx('w-full h-full grid grid-rows-4 gap-3 justify-center items-center font-semibold relative', {
+            className={clsx('w-full flex flex-col justify-center items-center font-semibold relative', {
                 'h-[60vh]': isMobile,
-                'h-[330px]': !isMobile,
+                'h-[360px]': !isMobile,
+                'pb-20': connectionError
             })}
         >
             {
@@ -278,7 +279,7 @@ const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: st
     }
 
     return (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 overflow-x-auto scrollbar:hidden">
             {
                 values.sort().map((item, index) => {
                     const isSelected = selectedProviderName?.toLowerCase() == item.toLowerCase()
