@@ -213,14 +213,14 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
 
     return (
         <div
-            className={clsx('w-full h-full flex flex-col flex-1 gap-3 justify-center items-center font-semibold', {
-                'min-h-[60vh]': isMobile,
-                'min-h-[330px]': !isMobile,
+            className={clsx('w-full h-full grid grid-rows-4 gap-3 justify-center items-center font-semibold relative', {
+                'h-[60vh]': isMobile,
+                'h-[330px]': !isMobile,
             })}
         >
             {
                 selectedConnector &&
-                <div className="flex flex-col gap-1 items-center">
+                <div className="flex flex-col gap-1 items-center justify-end row-start-2 row-span-1">
                     <div className="flex-col flex items-center">
                         <ConnectorIcon className="w-11 h-auto p-0.5 rounded-md bg-secondary-800" />
                         {
@@ -245,12 +245,12 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
             }
             {
                 connectionError &&
-                <div className={`bg-secondary-700 rounded-lg flex flex-col gap-1.5 items-center p-3 w-full`}>
+                <div className={`bg-secondary-700 rounded-lg flex flex-col gap-1.5 items-center p-3 w-full absolute bottom-0`}>
                     <p className="flex w-full gap-1 text-sm text-secondary-text justify-start">
                         <CircleX className="w-5 h-5 stroke-primary-500 mr-1 mt-0.5 flex-shrink-0" />
                         <div className='flex flex-col gap-1'>
                             <p className='text-base text-white'>Request rejected</p>
-                            <p>
+                            <p className="text-sm font-normal">
                                 {connectionError}
                             </p>
                         </div>

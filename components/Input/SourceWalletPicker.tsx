@@ -28,6 +28,7 @@ const Component: FC = () => {
     const source_token = values.fromCurrency
     const destination_address = values.destination_address
     const { provider } = useWallet(walletNetwork, 'withdrawal')
+    const { selectedConnector } = useConnectModal()
     const availableWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
 
     const selectedWallet = selectedSourceAccount?.wallet
@@ -124,7 +125,7 @@ const Component: FC = () => {
                     selectable
                 />
                 {
-                    values.from?.deposit_methods?.includes('deposit_address') &&
+                    values.from?.deposit_methods?.includes('deposit_address') && !selectedConnector &&
                     <ContinueWithoutWallet onClick={handleSelectWallet} />
                 }
             </VaulDrawer.Snap >
@@ -146,7 +147,7 @@ export const FormSourceWalletButton: FC = () => {
     const walletNetwork = values.fromExchange ? undefined : values.from
 
     const { provider } = useWallet(walletNetwork, 'withdrawal')
-    const { isWalletModalOpen, cancel } = useConnectModal()
+    const { isWalletModalOpen, cancel, selectedConnector } = useConnectModal()
 
     const handleWalletChange = () => {
         setOpenModal(true)
@@ -182,7 +183,7 @@ export const FormSourceWalletButton: FC = () => {
         return <>
             <Connect connectFn={connect} />
             {
-                mountWalletPortal && values.from?.deposit_methods?.includes('deposit_address') && values.depositMethod !== 'deposit_address' &&
+                mountWalletPortal && values.from?.deposit_methods?.includes('deposit_address') && values.depositMethod !== 'deposit_address' && !selectedConnector &&
                 <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
                     <ContinueWithoutWallet onClick={handleSelectWallet} />
                 </WalletFooterPortal>
@@ -213,7 +214,7 @@ export const FormSourceWalletButton: FC = () => {
                 </VaulDrawer.Snap>
             </VaulDrawer >
             {
-                mountWalletPortal && values.from?.deposit_methods?.includes('deposit_address') && values.depositMethod !== 'deposit_address' &&
+                mountWalletPortal && values.from?.deposit_methods?.includes('deposit_address') && values.depositMethod !== 'deposit_address' && !selectedConnector &&
                 <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
                     <ContinueWithoutWallet onClick={handleSelectWallet} />
                 </WalletFooterPortal>
@@ -223,7 +224,7 @@ export const FormSourceWalletButton: FC = () => {
     return <>
         <Connect setMountWalletPortal={setMounWalletPortal} />
         {
-            mountWalletPortal &&
+            mountWalletPortal && !selectedConnector &&
             <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
                 <ContinueWithoutWallet onClick={handleSelectWallet} />
             </WalletFooterPortal>
