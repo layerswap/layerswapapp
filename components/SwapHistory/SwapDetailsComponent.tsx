@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import { FC, useState, Fragment } from 'react'
 import LayerSwapApiClient, { SwapResponse, TransactionType } from '../../lib/layerSwapApiClient';
 import Image from 'next/image'
 import shortenAddress, { shortenEmail } from '../utils/ShortenAddress';
@@ -22,13 +22,17 @@ import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
 import VaulDrawer from '../modal/vaulModal';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../shadcn/tooltip';
+import { Popover, PopoverContent, PopoverTrigger, PopoverPortal } from '../shadcn/popover';
+import useWindowDimensions from '../../hooks/useWindowDimensions';
 
 type Props = {
     swapResponse: SwapResponse
 }
 
 const SwapDetails: FC<Props> = ({ swapResponse }) => {
+    const [open, setOpen] = useState(false)
+    const { isDesktop } = useWindowDimensions()
+
     const { swap, refuel, quote } = swapResponse
     const { source_token, destination_token, destination_address, source_network, destination_network, source_exchange, destination_exchange, requested_amount } = swap
 
@@ -81,6 +85,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     else if (source_exchange) {
         sourceAccountAddress = "Exchange"
     }
+    const Wrapper = isDesktop ? PopoverPortal : Fragment;
 
     return (
         <>
@@ -134,7 +139,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             (source_exchange || destination_exchange) &&
                             <div className='flex flex-row space-x-2'>
                                 <div className='flex flex-col gap-1 justify-start items-center w-fit ml-2.5'>
-                                    <div className="w-0.5 h-2.5 bg-[#d9d9d9] rounded-sm" />
+                                    <div className="w-0.5 h-2.5 bg-[#d9d9d9] rounded-xs" />
                                     <Image
                                         src={source_exchange ? source_network?.logo : destination_network?.logo}
                                         alt={source_exchange ? source_network?.display_name : destination_network?.display_name}
@@ -142,7 +147,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                         height={24}
                                         className="rounded-md w-6 h-6"
                                     />
-                                    <div className="w-0.5 h-2.5 bg-[#d9d9d9] rounded-sm" />
+                                    <div className="w-0.5 h-2.5 bg-[#d9d9d9] rounded-xs" />
                                 </div>
                                 <span className='text-secondary-text text-sm self-center'>{source_exchange ? source_network?.display_name : destination_network?.display_name}</span>
                             </div>
@@ -190,25 +195,41 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                         <Fuel className='h-4 w-4' />
                                         <p className="text-left">Refuel</p>
                                     </div>
-                                    <Tooltip delayDuration={100}>
-                                        <TooltipTrigger className='flex flex-col items-end'>
-                                            <div className="flex items-center gap-1 text-primary-buttonTextColor">
-                                                <Info className='h-3.5 w-3.5' />
-                                                <p className="text-primary-text text-sm font-normal">{truncatedRefuelAmount} {nativeCurrency?.symbol}</p>
-                                            </div>
-                                            {/* <p className="text-secondary-text text-sm font-normal">${refuelAmountInUsd}</p> */}
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <div className='flex flex-col gap-2 justify-start text-sm font-normal'>
-                                                <p className='text-secondary-text'>Conversion rate</p>
-                                                <div className="inline-flex gap-2 items-center text-primary-text">
-                                                    <p>{quote.refuel_in_source} {source_token.symbol}</p>
-                                                    <ArrowRight className='h-4 w-4' />
-                                                    <p>{refuel.amount} {refuel.token.symbol}</p>
+                                    <Popover open={open} onOpenChange={setOpen}>
+                                        <PopoverTrigger
+                                            asChild
+                                            onMouseEnter={() => setOpen(true)}
+                                            onMouseLeave={() => setOpen(false)}
+                                            onClick={() => setOpen(!open)}
+                                        >
+                                            <div className="flex flex-col items-end cursor-pointer">
+                                                <div className="flex items-center gap-1 text-primary-buttonTextColor">
+                                                    <Info className="h-3.5 w-3.5" />
+                                                    <p className="text-primary-text text-sm font-normal">
+                                                        {truncatedRefuelAmount} {nativeCurrency?.symbol}
+                                                    </p>
                                                 </div>
+                                                {/* <p className="text-secondary-text text-sm font-normal">${refuelAmountInUsd}</p> */}
                                             </div>
-                                        </TooltipContent>
-                                    </Tooltip>
+                                        </PopoverTrigger>
+                                        <Wrapper>
+                                            <PopoverContent
+                                                onMouseEnter={() => setOpen(true)}
+                                                onMouseLeave={() => setOpen(false)}
+                                                side="top"
+                                                className="w-auto"
+                                            >
+                                                <div className="flex flex-col gap-2 justify-start text-sm font-normal">
+                                                    <p className="text-secondary-text">Conversion rate</p>
+                                                    <div className="inline-flex gap-2 items-center text-primary-text">
+                                                        <p>{quote.refuel_in_source} {source_token.symbol}</p>
+                                                        <ArrowRight className="h-4 w-4" />
+                                                        <p>{refuel.amount} {refuel.token.symbol}</p>
+                                                    </div>
+                                                </div>
+                                            </PopoverContent>
+                                        </Wrapper>
+                                    </Popover>
                                 </div>
                             </div>
                         }
@@ -292,7 +313,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                 </div>
 
 
-            </VaulDrawer.Snap>
+            </VaulDrawer.Snap >
 
             <VaulDrawer.Snap className='pb-3' id='item-2'>
                 <div className='flex flex-col justify-between w-full h-full gap-3'>
