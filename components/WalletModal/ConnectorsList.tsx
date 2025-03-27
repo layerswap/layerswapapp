@@ -2,8 +2,7 @@ import { Dispatch, FC, SetStateAction, useEffect, useMemo, useRef, useState } fr
 import useWallet from "../../hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
 import { InternalConnector, Wallet, WalletProvider } from "../../Models/WalletProvider";
-import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
-import { ChevronDown, CircleX, LoaderCircle, RotateCw, Search, XCircle } from "lucide-react";
+import { CircleX, LoaderCircle, RotateCw, Search, XCircle } from "lucide-react";
 import { resolveWalletConnectorIcon } from "../../lib/wallets/utils/resolveWalletIcon";
 import { QRCodeSVG } from "qrcode.react";
 import CopyButton from "../buttons/copyButton";
@@ -21,7 +20,8 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const { setSelectedConnector, selectedProvider, setSelectedProvider, selectedConnector } = useConnectModal()
 
     const [connectionError, setConnectionError] = useState<string | undefined>(undefined);
-    const [searchValue, setSearchValue] = useState<string>('')
+    const [searchValue, setSearchValue] = useState<string | undefined>(undefined)
+    const [isFocused, setIsFocused] = useState(false)
     const [showEcosystemSeletion, setShowEcosystemSelection] = useState(false)
 
     const [isScrolling, setIsScrolling] = useState(false);
@@ -60,7 +60,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     }
 
     const allConnectors = filteredProviders.filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0 && (selectedProvider ? g.name == selectedProvider.name : true)).map((provider) =>
-        provider.availableWalletsForConnect?.filter(v => v.name.toLowerCase().includes(searchValue.toLowerCase())).map((connector) => ({ ...connector, providerName: provider.name }))).flat()
+        provider.availableWalletsForConnect?.filter(v => isFocused ? (searchValue ? v.name.toLowerCase().includes(searchValue?.toLowerCase()) : false) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat()
 
     const resolvedConnectors: InternalConnector[] = useMemo(() => removeDuplicatesWithKey(allConnectors, 'name'), [allConnectors])
 
@@ -158,27 +158,29 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 <input
                     value={searchValue}
                     onChange={(e) => setSearchValue(e.target.value)}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
                     placeholder="Search wallet"
                     autoComplete="off"
                     className="placeholder:text-primary-text-placeholder border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-10 bg-transparent text-base outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
                 />
                 {
                     searchValue &&
-                    <button type="button" onClick={() => setSearchValue('')} className="mr-3">
+                    <button type="button" onClick={() => setSearchValue('')} className="absolute right-3">
                         <XCircle className="w-4 h-4 text-primary-text-placeholder" />
                     </button>
                 }
-                <ProviderPicker
-                    providers={filteredProviders}
-                    selectedProviderName={selectedProvider?.name || 'All'}
-                    setSelectedProviderName={(v) => setSelectedProvider(filteredProviders.find(p => p.name === v))}
-                />
             </div>
+            <ProviderPicker
+                providers={filteredProviders}
+                selectedProviderName={selectedProvider?.name}
+                setSelectedProviderName={(v) => setSelectedProvider(filteredProviders.find(p => p.name === v))}
+            />
             <div
                 onScroll={handleScroll}
                 className={clsx('overflow-y-scroll -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar-thumb:bg-transparent', {
                     'h-[55vh]': isMobile,
-                    'h-[315px]': !isMobile,
+                    'h-[265px]': !isMobile,
                     'styled-scroll': isScrolling
                 })}
             >
@@ -258,37 +260,34 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
     )
 }
 
-const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: string, setSelectedProviderName: Dispatch<SetStateAction<string>> }> = ({ providers, selectedProviderName, setSelectedProviderName }) => {
-    const values = [...providers.map(p => p.name), 'All']
-    const [open, setOpen] = useState(false)
+const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: string | undefined, setSelectedProviderName: Dispatch<SetStateAction<string | undefined>> }> = ({ providers, selectedProviderName, setSelectedProviderName }) => {
+    const values = providers.map(p => p.name)
 
     const onSelect = (item: string) => {
+        if (selectedProviderName === item) return setSelectedProviderName(undefined)
         setSelectedProviderName(item)
-        setOpen(false)
     }
 
     return (
-        <Popover open={open} onOpenChange={() => setOpen(!open)}>
-            <PopoverTrigger>
-                <div className="flex items-center gap-1 text-primary-text-placeholder">
-                    <p className="text-sm">
-                        {selectedProviderName}
-                    </p>
-                    <ChevronDown className="h-4 w-4" />
-                </div>
-            </PopoverTrigger>
-            <PopoverContent align="end" className="min-w-32 !text-primary-text p-2 space-y-1 !bg-secondary-600 !rounded-xl">
-                {
-                    values.sort().map((item, index) => (
-                        <div key={index} className="">
-                            <button onClick={() => onSelect(item)} className="px-3 py-1 w-full text-left hover:bg-secondary-800 rounded-lg transition-colors duration-200">
+        <div className="flex items-center gap-2">
+            {
+                values.sort().map((item, index) => {
+                    const isSelected = selectedProviderName?.toLowerCase() == item.toLowerCase()
+                    return (
+                        <div key={index}>
+                            <button onClick={() => onSelect(item)}
+                                className={clsx('px-2 py-0.5 w-full text-left bg-secondary-600 hover:brightness-125 text-sm rounded-md transition-all duration-200', {
+                                    'brightness-150': isSelected
+                                })}
+                            >
                                 {item}
                             </button>
                         </div>
-                    ))
+                    )
                 }
-            </PopoverContent>
-        </Popover>
+                )
+            }
+        </div>
     )
 }
 
