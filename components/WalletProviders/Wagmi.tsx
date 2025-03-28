@@ -65,6 +65,7 @@ function WagmiComponent({ children }: Props) {
         chains: settingsChains as [Chain, ...Chain[]],
         transports: transports,
     });
+    
     return (
         <WagmiProvider config={config} >
             <QueryClientProvider client={queryClient}>

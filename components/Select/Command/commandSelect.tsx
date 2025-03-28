@@ -54,9 +54,10 @@ export default function CommandSelect({ values, setValue, show, setShow, searchH
             modalId='comandSelect'
             onAnimationEnd={() => { isDesktop && show && inputRef.current?.focus() }}
         >
-            <VaulDrawer.Snap id='item-1'
+            <VaulDrawer.Snap
+                id='item-1'
                 style={{ height: isMobile && windowSize.height ? `${(windowSize.height * 0.8).toFixed()}px` : '' }}
-                constantHeight={isDesktop}
+                fullHeight={isDesktop}
             >
                 <CommandWrapper>
                     {

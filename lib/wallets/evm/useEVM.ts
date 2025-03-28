@@ -5,7 +5,7 @@ import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useMemo } from "react"
-import { getAccount, getConnections } from '@wagmi/core'
+import { ConnectorAlreadyConnectedError, getAccount, getConnections } from '@wagmi/core'
 import toast from "react-hot-toast"
 import { isMobile } from "../../isMobile"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
@@ -13,7 +13,6 @@ import { LSConnector } from "../connectors/EthereumProvider"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useConnectModal } from "../../../components/WalletModal"
 import { explicitInjectedproviderDetected } from "../connectors/getInjectedConnector"
-import { type ConnectorAlreadyConnectedError } from '@wagmi/core'
 
 type Props = {
     network: Network | undefined,
@@ -52,7 +51,7 @@ export default function useEVM({ network }: Props): WalletProvider {
     const config = useConfig()
     const { connectAsync } = useConnect();
 
-    const { connect, setSelectedProvider } = useConnectModal()
+    const { connect, setSelectedConnector } = useConnectModal()
 
     const connectWallet = async () => {
         try {
@@ -90,7 +89,7 @@ export default function useEVM({ network }: Props): WalletProvider {
     const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
         try {
 
-            setSelectedProvider({ ...provider, connector: { name: connector.name } })
+            setSelectedConnector({ name: connector.name })
             if (connector.id !== "coinbaseWalletSDK") {
                 await connector.disconnect()
                 await disconnectAsync({ connector })
@@ -108,7 +107,7 @@ export default function useEVM({ network }: Props): WalletProvider {
                     const Icon = resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
                     const base64Icon = convertSvgComponentToBase64(Icon)
 
-                    setSelectedProvider({ ...provider, connector: { name: connector.name, qr: uri, iconUrl: base64Icon } })
+                    setSelectedConnector({ name: connector.name, qr: uri, iconUrl: base64Icon })
                 })
             }
 
@@ -141,14 +140,13 @@ export default function useEVM({ network }: Props): WalletProvider {
 
         } catch (e) {
             //TODO: handle error like in transfer
+            //toast.error('Error connecting wallet')
             const error = e as ConnectorAlreadyConnectedError
             if (error.name == 'ConnectorAlreadyConnectedError') {
-                toast.error('Wallet is already connected.')
+                throw new Error("Wallet is already connected");
+            } else {
+                throw new Error(e);
             }
-            else {
-                toast.error('Error connecting wallet')
-            }
-            throw new Error(e)
         }
     }
 
@@ -214,6 +212,7 @@ export default function useEVM({ network }: Props): WalletProvider {
         availableWalletsForConnect: availableWalletsForConnect as any,
         name,
         id,
+        providerIcon: networks.find(n => ethereumNames.some(name => name === n.name))?.logo
     }
 
     return provider
