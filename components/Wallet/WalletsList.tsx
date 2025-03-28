@@ -57,19 +57,22 @@ const WalletsList: FC<Props> = (props) => {
                     </span>
                 </div>
             </button>
-            <div className="flex flex-col justify-start space-y-3">
-                {
-                    wallets.map((wallet, index) => <WalletItem
-                        key={`${index}${wallet.providerName}`}
-                        wallet={wallet}
-                        selectable={selectable}
-                        token={token}
-                        network={network}
-                        onWalletSelect={onSelect}
-                        selectedAddress={selectedSourceAccount?.address}
-                    />)
-                }
-            </div>
+            {
+                wallets.length > 0 &&
+                <div className="flex flex-col justify-start space-y-3">
+                    {
+                        wallets.map((wallet, index) => <WalletItem
+                            key={`${index}${wallet.providerName}`}
+                            wallet={wallet}
+                            selectable={selectable}
+                            token={token}
+                            network={network}
+                            onWalletSelect={onSelect}
+                            selectedAddress={selectedSourceAccount?.address}
+                        />)
+                    }
+                </div>
+            }
         </div >
     )
 }
