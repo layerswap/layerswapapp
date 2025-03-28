@@ -14,21 +14,14 @@ import { useSettingsState } from "../../context/settings";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
 import Image from 'next/image'
 
-type Props = ({
-    selectable?: false;
+type Props = {
+    selectable?: boolean;
     wallets: Wallet[];
     token?: Token;
     network?: Network;
     provider?: WalletProvider | undefined;
     onSelect?: (wallet: Wallet, address: string) => void;
-} | {
-    selectable?: true;
-    wallets: Wallet[];
-    token: Token;
-    network: Network;
-    provider: WalletProvider | undefined;
-    onSelect: (wallet: Wallet, address: string) => void;
-})
+}
 
 const WalletsList: FC<Props> = (props) => {
 

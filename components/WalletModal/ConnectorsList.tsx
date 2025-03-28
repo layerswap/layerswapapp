@@ -23,6 +23,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const [searchValue, setSearchValue] = useState<string | undefined>(undefined)
     const [isFocused, setIsFocused] = useState(false)
     const [showEcosystemSeletion, setShowEcosystemSelection] = useState(false)
+    const [selectedMultiChainConnector, setSelectedMultiChainConnector] = useState<InternalConnector | undefined>(undefined)
 
     const [isScrolling, setIsScrolling] = useState(false);
     const scrollTimeout = useRef<any>(null);
@@ -44,8 +45,11 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const connect = async (connector: InternalConnector, provider: WalletProvider) => {
         try {
             setConnectionError(undefined)
+            if (connector.isMultiChain) {
+                setSelectedMultiChainConnector(connector)
+                return setShowEcosystemSelection(true)
+            }
             setSelectedConnector({ name: connector.name, iconUrl: connector.icon, isMultiChain: connector.isMultiChain })
-            if (connector.isMultiChain) return setShowEcosystemSelection(true)
 
             const result = provider?.connectConnector && await provider.connectConnector({ connector })
 
@@ -93,7 +97,6 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     </div>
 
     if (selectedConnector) {
-        const Icon = resolveWalletConnectorIcon({ connector: selectedConnector.name, iconUrl: selectedConnector.iconUrl })
         const connector = allConnectors.find(c => c?.name === selectedConnector.name)
         const provider = filteredProviders.find(p => p.name === connector?.providerName)
         return <>
@@ -103,108 +106,72 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 selectedConnector={selectedConnector}
                 connectionError={connectionError}
             />
-            {
-                selectedConnector.isMultiChain &&
-                <VaulDrawer
-                    show={showEcosystemSeletion}
-                    setShow={setShowEcosystemSelection}
-                    modalId={"selectEcosystem"}
-                    header='Select ecosystem'
-                >
-                    <VaulDrawer.Snap id="item-1" className="flex flex-col items-center gap-4 pb-6">
-                        <div className="flex flex-col items-center gap-1">
-                            <Icon className="w-16 h-auto p-0.5 rounded-[10px] bg-secondary-800" />
-                            <p className="text-base text-center">
-                                <span>{selectedConnector.name}</span> <span>supports multiple ecosystems, please select which one you like to connect.</span>
-                            </p>
-                        </div>
-                        <div className="flex flex-col gap-2 w-full">
-                            {
-                                allConnectors.filter(c => c?.name === selectedConnector.name)?.map((connector, index) => {
-                                    const provider = filteredProviders.find(p => p.name === connector?.providerName)
-                                    return (
-                                        <button
-                                            key={index}
-                                            onClick={async () => {
-                                                setShowEcosystemSelection(false);
-                                                await connect(connector!, provider!)
-                                            }}
-                                            className="w-full h-fit flex items-center gap-3 bg-secondary-700 hover:bg-secondary-500 transition-colors duration-200 rounded-xl p-3"
-                                        >
-                                            {
-                                                provider?.providerIcon &&
-                                                <Image
-                                                    className="w-8 h-8 rounded-md"
-                                                    width={30}
-                                                    height={30}
-                                                    src={provider.providerIcon}
-                                                    alt={provider.name}
-                                                />
-                                            }
-                                            <p>
-                                                {connector?.providerName}
-                                            </p>
-                                        </button>
-                                    )
-                                })
-                            }
-                        </div>
-                    </VaulDrawer.Snap>
-                </VaulDrawer>
-            }
         </>
     }
 
     return (
-        <div className="text-primary-text space-y-3">
-            <div className="relative z-0 flex items-center px-3 rounded-lg bg-secondary-700 border border-secondary-500">
-                <Search className="w-6 h-6 mr-2 text-primary-text-placeholder" />
-                <input
-                    value={searchValue}
-                    onChange={(e) => setSearchValue(e.target.value)}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    placeholder="Search wallet"
-                    autoComplete="off"
-                    className="placeholder:text-primary-text-placeholder border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-10 bg-transparent text-base outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
-                />
-                {
-                    searchValue &&
-                    <button type="button" onClick={() => setSearchValue('')} className="absolute right-3">
-                        <XCircle className="w-4 h-4 text-primary-text-placeholder" />
-                    </button>
-                }
-            </div>
-            <ProviderPicker
-                providers={filteredProviders}
-                selectedProviderName={selectedProvider?.name}
-                setSelectedProviderName={(v) => setSelectedProvider(filteredProviders.find(p => p.name === v))}
-            />
-            <div
-                onScroll={handleScroll}
-                className={clsx('overflow-y-scroll -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar-thumb:bg-transparent', {
-                    'h-[55vh]': isMobile,
-                    'h-[265px]': !isMobile,
-                    'styled-scroll': isScrolling
-                })}
-            >
-                <div className='grid grid-cols-2 gap-2'>
+        <>
+            <div className="text-primary-text space-y-3">
+                <div className="relative z-0 flex items-center px-3 rounded-lg bg-secondary-700 border border-secondary-500">
+                    <Search className="w-6 h-6 mr-2 text-primary-text-placeholder" />
+                    <input
+                        value={searchValue}
+                        onChange={(e) => setSearchValue(e.target.value)}
+                        onFocus={() => setIsFocused(true)}
+                        onBlur={() => setIsFocused(false)}
+                        placeholder="Search wallet"
+                        autoComplete="off"
+                        className="placeholder:text-primary-text-placeholder border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-10 bg-transparent text-base outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
+                    />
                     {
-                        resolvedConnectors?.map(item => {
-                            const provider = filteredProviders.find(p => p.name === item.providerName)
-                            return (
-                                <Connector
-                                    key={item.id}
-                                    connector={item}
-                                    onClick={() => connect(item, provider!)}
-                                    connectingConnector={selectedConnector}
-                                />
-                            )
-                        })
+                        searchValue &&
+                        <button type="button" onClick={() => setSearchValue('')} className="absolute right-3">
+                            <XCircle className="w-4 h-4 text-primary-text-placeholder" />
+                        </button>
                     }
                 </div>
+                <ProviderPicker
+                    providers={filteredProviders}
+                    selectedProviderName={selectedProvider?.name}
+                    setSelectedProviderName={(v) => setSelectedProvider(filteredProviders.find(p => p.name === v))}
+                />
+                <div
+                    onScroll={handleScroll}
+                    className={clsx('overflow-y-scroll -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar-thumb:bg-transparent', {
+                        'h-[55vh]': isMobile,
+                        'h-[265px]': !isMobile,
+                        'styled-scroll': isScrolling
+                    })}
+                >
+                    <div className='grid grid-cols-2 gap-2'>
+                        {
+                            resolvedConnectors?.map(item => {
+                                const provider = filteredProviders.find(p => p.name === item.providerName)
+                                return (
+                                    <Connector
+                                        key={item.id}
+                                        connector={item}
+                                        onClick={() => connect(item, provider!)}
+                                        connectingConnector={selectedConnector}
+                                    />
+                                )
+                            })
+                        }
+                    </div>
+                </div>
             </div>
-        </div>
+            {
+                selectedMultiChainConnector &&
+                <MultichainConnectorModal
+                    selectedConnector={selectedMultiChainConnector}
+                    allConnectors={allConnectors as InternalConnector[]}
+                    providers={filteredProviders}
+                    showEcosystemSelection={showEcosystemSeletion}
+                    setShowEcosystemSelection={setShowEcosystemSelection}
+                    connect={connect}
+                />
+            }
+        </>
     )
 }
 
@@ -301,4 +268,65 @@ const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: st
     )
 }
 
+
+type MultichainConnectorModalProps = {
+    selectedConnector: WalletModalConnector,
+    allConnectors: InternalConnector[],
+    providers: WalletProvider[],
+    showEcosystemSelection: boolean,
+    setShowEcosystemSelection: Dispatch<SetStateAction<boolean>>
+    connect: (connector: InternalConnector, provider: WalletProvider) => Promise<void>
+}
+
+const MultichainConnectorModal: FC<MultichainConnectorModalProps> = ({ selectedConnector, allConnectors, providers, setShowEcosystemSelection, showEcosystemSelection, connect }) => {
+    const Icon = resolveWalletConnectorIcon({ connector: selectedConnector.name, iconUrl: selectedConnector.iconUrl })
+    return (
+        <VaulDrawer
+            show={showEcosystemSelection}
+            setShow={setShowEcosystemSelection}
+            modalId={"selectEcosystem"}
+            header='Select ecosystem'
+        >
+            <VaulDrawer.Snap id="item-1" className="flex flex-col items-center gap-4 pb-6">
+                <div className="flex flex-col items-center gap-1">
+                    <Icon className="w-16 h-auto p-0.5 rounded-[10px] bg-secondary-800" />
+                    <p className="text-base text-center">
+                        <span>{selectedConnector.name}</span> <span>supports multiple ecosystems, please select which one you like to connect.</span>
+                    </p>
+                </div>
+                <div className="flex flex-col gap-2 w-full">
+                    {
+                        allConnectors.filter(c => c?.name === selectedConnector.name)?.map((connector, index) => {
+                            const provider = providers.find(p => p.name === connector?.providerName)
+                            return (
+                                <button
+                                    key={index}
+                                    onClick={async () => {
+                                        setShowEcosystemSelection(false);
+                                        await connect(connector!, provider!)
+                                    }}
+                                    className="w-full h-fit flex items-center gap-3 bg-secondary-700 hover:bg-secondary-500 transition-colors duration-200 rounded-xl p-3"
+                                >
+                                    {
+                                        provider?.providerIcon &&
+                                        <Image
+                                            className="w-8 h-8 rounded-md"
+                                            width={30}
+                                            height={30}
+                                            src={provider.providerIcon}
+                                            alt={provider.name}
+                                        />
+                                    }
+                                    <p>
+                                        {connector?.providerName}
+                                    </p>
+                                </button>
+                            )
+                        })
+                    }
+                </div>
+            </VaulDrawer.Snap>
+        </VaulDrawer>
+    )
+}
 export default ConnectorsLsit

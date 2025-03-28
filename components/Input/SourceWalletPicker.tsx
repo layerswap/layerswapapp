@@ -123,9 +123,15 @@ const Component: FC = () => {
             >
                 <div
                     className={clsx('w-full order-1', {
-                        'order-3': values.depositMethod == 'deposit_address',
+                        'order-3 space-y-2': values.depositMethod == 'deposit_address',
                     })}
                 >
+                    {
+                        values.depositMethod == 'deposit_address' &&
+                        <p className="text-primary-text">
+                            Send from wallet
+                        </p>
+                    }
                     <WalletsList
                         provider={provider}
                         wallets={availableWallets}
