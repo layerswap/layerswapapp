@@ -8,7 +8,7 @@ import useSWRBalance from "../../../lib/balances/useSWRBalance";
 import { useSwapDataState } from "../../../context/swap";
 import MinMax from "./MinMax";
 import { resolveMacAllowedAmount } from "./helpers";
-
+import { useAmountFocus } from "../../../context/amountFocusContext";
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 
@@ -16,7 +16,9 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
     const { fromCurrency, from, to, amount, toCurrency, fromExchange, toExchange } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fee, isFeeLoading } = useFee()
-    const [isFocused, setIsFocused] = useState(false);
+
+    const { isAmountFocused, setIsAmountFocused } = useAmountFocus()
+
     const { selectedSourceAccount } = useSwapDataState()
     const sourceAddress = selectedSourceAccount?.address
 
@@ -67,13 +69,13 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     name={name}
                     ref={amountRef}
                     precision={fromCurrency?.precision}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    className="text-primary-text px-2 w-full text-[28px] leading-normal focus:outline-none focus:border-none focus:ring-0"
-                    onChange={e => {
-                        /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
-                        updateRequestedAmountInUsd(parseFloat(e.target.value), fee);
-                    }}
+                    onFocus={() => setIsAmountFocused(true)}
+                    onBlur={() => setIsAmountFocused(false)}
+                    className={`${isAmountFocused ? "text-[48px]" : "text-[28px]"} text-primary-text px-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0`}
+                onChange={e => {
+                    /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
+                    updateRequestedAmountInUsd(parseFloat(e.target.value), fee);
+                }}
                 />
                 <span className="text-base leading-5 font-medium px-2 text-secondary-text">
                     ${requestedAmountInUsd || 0}

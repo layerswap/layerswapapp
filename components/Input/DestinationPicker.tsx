@@ -37,7 +37,7 @@ const DestinationPicker = (props: Props) => {
                 }</Address></span>
             }
         </div>
-        <div className="p-3 pb-4 rounded-xl items-center space-y-2">
+        <div className="p-3 pb-4 pr-4 rounded-xl items-center space-y-2">
             <div className="flex">
                 <ReceiveAmount
                     source_token={fromCurrency}

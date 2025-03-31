@@ -14,7 +14,7 @@ const Component = (props: AddressTriggerProps) => {
             addressItem &&
             <div className="flex items-center space-x-2 text-sm leading-4">
                 {<>
-                    <div className="rounded-lg bg-secondary-500 flex space-x-1 items-center py-0.5 pl-2 pr-1 cursor-pointer">
+                    <div className="rounded-lg flex space-x-1 items-center py-0.5 pl-2 cursor-pointer">
                         <div className="inline-flex items-center relative p-0.5">
                             <ResolvedIcon addressItem={addressItem} partner={partner} wallet={connectedWallet} />
                         </div>

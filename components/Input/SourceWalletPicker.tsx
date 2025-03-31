@@ -4,7 +4,6 @@ import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
 import useWallet from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
 import { ChevronDown, CircleHelp } from "lucide-react";
-import Balance from "./Amount/Balance";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
 import VaulDrawer, { WalletFooterPortal } from "../modal/vaulModal";
 import { Wallet } from "../../Models/WalletProvider";
@@ -89,11 +88,10 @@ const Component: FC = () => {
                     </div>
                 </div>
                 :
-                <div className="rounded-lg bg-secondary-800 pl-2 flex items-center space-x-2 text-sm leading-4">
+                <div className="rounded-lg pl-2 flex items-center space-x-2 text-sm leading-4">
                     {
                         selectedWallet && selectedSourceAccount?.address && <>
-                            <div><Balance values={values} direction="from" /></div>
-                            <div onClick={handleWalletChange} className="rounded-lg bg-secondary-500 flex space-x-1 items-center py-0.5 pl-2 pr-1 cursor-pointer">
+                            <div onClick={handleWalletChange} className="rounded-lg flex space-x-1 items-center py-0.5 pl-2 cursor-pointer">
                                 <div className="inline-flex items-center relative p-0.5">
                                     <selectedWallet.icon className="w-5 h-5" />
                                 </div>

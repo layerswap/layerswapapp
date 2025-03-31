@@ -9,6 +9,7 @@ import { useMemo } from "react";
 import { Exchange } from "../../../../Models/Exchange";
 import { Route, RouteToken } from "../../../../Models/Route";
 import { ChevronDown } from "lucide-react";
+import RoutePickerIcon from "../../../icons/RoutePickerPlaceholder";
 
 type TokenItemProps = {
     route: Route;
@@ -103,11 +104,6 @@ const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
         tokensWithBalance?.includes(token.symbol)
     );
 
-    if (item.display_name.toLowerCase() === "arbitrum one") {
-        console.log(item, 'item')
-        console.log(balance, 'balance')
-    }
-
     return (
         <SelectItem className="bg-secondary-700 group rounded-xl hover:bg-secondary-600 group/item relative">
             <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} />
@@ -115,7 +111,7 @@ const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                 <>
                     <span>{item.display_name}</span>
                     {
-                        Number(balance?.length) > 0 && 
+                        Number(balance?.length) > 0 &&
                         <div className={`${filteredNetworkTokens?.length > 0 ? "flex flex-col space-y-0.5" : ""}`}>
                             <span className="text-secondary-text text-sm leading-4 font-medium">{<span>${networkBalanceInUsd?.toFixed(2)}</span>}</span>
                             {filteredNetworkTokens?.length > 0
@@ -180,7 +176,7 @@ type SelectedCurrencyDisplayProps = {
 
 export const SelectedCurrencyDisplay = (props: SelectedCurrencyDisplayProps) => {
     const { value, placeholder } = props
-    return <span className='flex grow text-left items-center text-xs md:text-base'>
+    return <span className='flex flex-col text-left items-center text-xs md:text-base'>
         {
             value?.logo && <div className="flex items-center">
                 <div className="flex-shrink-0 h-6 w-6 relative">
@@ -212,45 +208,49 @@ export const SelectedCurrencyDisplay = (props: SelectedCurrencyDisplayProps) => 
 type SelectedRouteDisplayProps = {
     route?: NetworkRoute | Exchange;
     token?: RouteToken;
+    isAmountFocused?: boolean;
     placeholder: string;
 }
 
 export const SelectedRouteDisplay = (props: SelectedRouteDisplayProps) => {
-    const { route, token, placeholder } = props
-    return <span className='flex grow text-left items-center text-xs md:text-base'>
-        {
-            token?.logo && route?.logo &&
-            <div className='inline-flex items-center relative'>
-                <Image
-                    src={token?.logo}
-                    alt="Token Logo"
-                    height="36"
-                    width="36"
-                    loading="eager"
-                    fetchPriority='high'
-                    className="rounded-full object-contain"
-                />
-                <Image
-                    src={route.logo}
-                    alt="Route Logo"
-                    height="20"
-                    width="20"
-                    loading="eager"
-                    fetchPriority='high'
-                    className='h-5 w-5 absolute -right-1.5 -bottom-1.5 object-contain rounded-md border-2 border-secondary-800'
-                />
-            </div>
-        }
+    const { route, token, placeholder, isAmountFocused } = props
+    return (
+        <span className="flex grow text-left items-center text-xs md:text-base">
+            {token?.logo && route?.logo && (
+                <div className="inline-flex items-center relative shrink-0">
+                    <Image
+                        src={token.logo}
+                        alt="Token Logo"
+                        height="28"
+                        width="28"
+                        loading="eager"
+                        fetchPriority="high"
+                        className="rounded-full object-contain"
+                    />
+                    <Image
+                        src={route.logo}
+                        alt="Route Logo"
+                        height="20"
+                        width="20"
+                        loading="eager"
+                        fetchPriority="high"
+                        className="h-5 w-5 absolute -right-1.5 -bottom-1.5 object-contain rounded-md border-2 border-secondary-800"
+                    />
+                </div>
+            )}
 
-        {token && route ?
-            <span className="ml-3 flex font-medium flex-auto space-x-1 text-primary-buttonTextColor items-center">
-                <span>{token?.symbol}</span><span className="text-secondary-text font-light"> - {route?.display_name}</span>
-            </span>
-            :
-            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
-                {placeholder}
-            </span>
-        }
-    </span>
+            {token && route ? (
+                <span className="ml-2 flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0">
+                    <span className="leading-5">{token.symbol}</span>
+                    <span className="text-secondary-text text-sm leading-4 truncate whitespace-nowrap">{route.display_name}</span>
+                </span>
+            ) : (
+                <span className="flex text-secondary-text text-base leading-5 flex-auto items-center">
+                    <RoutePickerIcon className="w-10 h-10" />
+                    <span className="ml-2">{placeholder}</span>
+                </span>
+            )}
+        </span>
+    )
 }
 

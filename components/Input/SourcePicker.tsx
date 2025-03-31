@@ -11,7 +11,7 @@ const SourcePicker = () => {
             </label>
             <SourceWalletPicker />
         </div>
-        <div className="p-3 pb-4 rounded-xl items-center space-y-2">
+        <div className="p-3 pb-4 pr-4 rounded-xl items-center space-y-2">
             <div className="flex">
                 <AmountField />
                 <RoutePicker direction="from" />

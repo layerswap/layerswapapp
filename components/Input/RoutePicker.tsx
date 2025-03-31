@@ -14,6 +14,8 @@ import React from "react";
 import { ResolveCEXCurrencyOrder, ResolveCurrencyOrder, SortNetworkRoutes } from "../../lib/sorting";
 import useFormRoutes from "../../hooks/useFormRoutes";
 import { Route, RouteToken, RoutesGroup } from "../../Models/Route";
+import Balance from "./Amount/Balance";
+import { useAmountFocus } from "../../context/amountFocusContext";
 
 function resolveSelectedRoute(values: SwapFormValues, direction: SwapDirection): NetworkRoute | Exchange | undefined {
     const { from, to, fromExchange, toExchange } = values
@@ -35,6 +37,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const { isDesktop } = useWindowDimensions();
+    const { isAmountFocused } = useAmountFocus()
 
     const { allRoutes, isLoading, groupedRoutes } = useFormRoutes({ direction, values })
 
@@ -84,11 +87,11 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     }, [currencyFieldName, direction, values])
 
     return (
-        <div className="relative">
+        <div className="relative self-end ml-auto">
             <Selector>
                 <SelectorTrigger disabled={false}>
-                    <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Source" />
-                    <span className="ml-3 right-0 flex items-center pr-2 pointer-events-none text-primary-text">
+                    <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select Token" isAmountFocused={isAmountFocused} />
+                    <span className="right-0 flex items-center pr-2 pointer-events-none text-primary-text">
                         <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
                     </span>
                 </SelectorTrigger>
@@ -119,6 +122,11 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                     )}
                 </SelectorContent>
             </Selector>
+            {direction === 'from' &&
+                <div className="bg-secondary-500 rounded-b-lg w-4/5 m-auto -mt-0.5 py-0.5 text-xs text-primary-text-placeholder text-center">
+                    <Balance values={values} direction="from" />
+                </div>
+            }
         </div>
     )
 };
