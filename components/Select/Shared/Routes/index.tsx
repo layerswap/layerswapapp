@@ -8,6 +8,7 @@ import { SelectItem } from "../../CommandNew/SelectItem/Index";
 import { useMemo } from "react";
 import { Exchange } from "../../../../Models/Exchange";
 import { Route, RouteToken } from "../../../../Models/Route";
+import { ChevronDown } from "lucide-react";
 
 type TokenItemProps = {
     route: Route;
@@ -23,7 +24,6 @@ export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
     return <SelectItem>
         <SelectItem.Logo
             imgSrc={item.logo}
-            secondaryLogoSrc={route.logo}
             altText={`${item.symbol} logo`}
             className="rounded-full"
         />
@@ -49,14 +49,14 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const formatted_balance_amount = tokenbalance?.amount ? Number(truncateDecimals(tokenbalance?.amount, item.precision)) : 0
     const balanceAmountInUsd = (item?.price_in_usd * formatted_balance_amount).toFixed(2)
 
-    return <SelectItem.DetailedTitle title={item.symbol} secondary={route.display_name}>
+    return <SelectItem.DetailedTitle title={item.symbol} secondary={route.display_name} secondaryLogoSrc={route.logo}>
         {
-            tokenbalance &&
-            <span className="text-xs text-secondary-text text-right my-auto">
-                <div className="text-primary-text"> {formatted_balance_amount}</div>
-                {Number(tokenbalance?.amount) > 0 && <div>${balanceAmountInUsd}</div>}
-            </span>
-        }
+            (tokenbalance && Number(formatted_balance_amount) > 0) ? (
+                <span className="text-sm text-secondary-text text-right my-auto leading-4 font-medium">
+                    <div className="text-primary-text"> {formatted_balance_amount}</div>
+                    {Number(tokenbalance?.amount) > 0 && <div>${balanceAmountInUsd}</div>}
+                </span>
+            ) : <></>}
     </SelectItem.DetailedTitle>
 }
 
@@ -83,7 +83,7 @@ type NetworkRouteItemProps = {
 }
 
 const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
-    const { item, direction, divider } = props
+    const { item, direction, divider, selected } = props
     const { provider } = useWallet(item, direction === "from" ? "withdrawal" : "autofil")
     const activeAddress = provider?.activeWallet
     const { balance } = useSWRBalance(activeAddress?.address, item)
@@ -96,20 +96,62 @@ const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
         return acc + (formattedBalance * tokenPriceInUsd);
     }, 0), [balance, item])
 
-    return <SelectItem>
-        <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} />
-        <SelectItem.Title className={`py-3 ${divider ? 'border-t border-secondary-700' : ''}`} >
-            <>
-                <span>{item.display_name}</span>
-                {
-                    Number(balance?.length) > 0 &&
-                    <div>
-                        <span className="text-secondary-text font-light text-xs">{<span>${networkBalanceInUsd?.toFixed(2)}</span>}</span>
-                    </div>
-                }
-            </>
-        </SelectItem.Title>
-    </SelectItem>
+    const tokensWithBalance = balance?.filter(b => b.amount > 0)
+        ?.map(b => b.token);
+
+    const filteredNetworkTokens = item?.tokens?.filter(token =>
+        tokensWithBalance?.includes(token.symbol)
+    );
+
+    if (item.display_name.toLowerCase() === "arbitrum one") {
+        console.log(item, 'item')
+        console.log(balance, 'balance')
+    }
+
+    return (
+        <SelectItem className="bg-secondary-700 group rounded-xl hover:bg-secondary-600 group/item relative">
+            <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} />
+            <SelectItem.Title className={`py-3 ${divider ? 'border-t border-secondary-700' : ''}`} >
+                <>
+                    <span>{item.display_name}</span>
+                    {
+                        Number(balance?.length) > 0 && 
+                        <div className={`${filteredNetworkTokens?.length > 0 ? "flex flex-col space-y-0.5" : ""}`}>
+                            <span className="text-secondary-text text-sm leading-4 font-medium">{<span>${networkBalanceInUsd?.toFixed(2)}</span>}</span>
+                            {filteredNetworkTokens?.length > 0
+                                ? (
+                                    <div className="flex justify-end items-stretch w-full relative">
+                                        {filteredNetworkTokens?.map(
+                                            (t, index) => (
+                                                <div
+                                                    key={t.symbol}
+                                                    className="w-3.5 absolute"
+                                                    style={{ right: `${index * 20}%` }}
+                                                >
+                                                    <Image
+                                                        src={t.logo}
+                                                        alt={`${t.symbol} logo`}
+                                                        height="16"
+                                                        width="16"
+                                                        loading="eager"
+                                                        fetchPriority='high'
+                                                        className="rounded-full object-contain"
+                                                    />
+                                                </div>
+                                            )
+                                        )}
+                                    </div>
+                                ) : null}
+                        </div>
+                    }
+                    <ChevronDown
+                        className="!w-3.5 !h-3.5 absolute right-2 bottom-4 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
+                        aria-hidden="true"
+                    />
+                </>
+            </SelectItem.Title>
+        </SelectItem>
+    )
 }
 type ExchangeRouteItemProps = {
     item: Exchange;

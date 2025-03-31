@@ -137,21 +137,23 @@ const Group = ({ group, direction, onSelect, selectedRoute, selectedToken }: Gro
             prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
         )
     }
-    return <CommandGroup heading={<span className='text-secondary-text pl-2'>{group.name.toUpperCase()}</span>}>
-        <Accordion type="multiple" value={openValues} defaultValue={selectedRoute ? [selectedRoute] : []} >
-            {group.routes.sort(SortNetworkRoutes).map((route, index) => {
-                return <GroupItem
-                    route={route}
-                    underline={index > 0}
-                    toggleContent={toggleAccordionItem}
-                    onSelect={onSelect}
-                    direction={direction}
-                    key={route.name}
-                    selectedRoute={selectedRoute}
-                    selectedToken={selectedToken}
-                />
-            })}
-        </Accordion>
+    return <CommandGroup heading={<span className='text-primary-text-placeholder text-base'>{group.name}</span>}>
+        <div className="bg-secondary-900">
+            <Accordion type="multiple" value={openValues} defaultValue={selectedRoute ? [selectedRoute] : []} className="space-y-2">
+                {group.routes.sort(SortNetworkRoutes).map((route, index) => {
+                    return <GroupItem
+                        route={route}
+                        underline={index > 0}
+                        toggleContent={toggleAccordionItem}
+                        onSelect={onSelect}
+                        direction={direction}
+                        key={route.name}
+                        selectedRoute={selectedRoute}
+                        selectedToken={selectedToken}
+                    />
+                })}
+            </Accordion>
+        </div>
     </CommandGroup>
 }
 
@@ -185,13 +187,12 @@ const GroupItem = ({ route, underline, toggleContent, direction, onSelect, selec
         <CommandItem
             ref={itemRef}
             disabled={true}
-            value={`${filterValue} **`} >
+            value={`${filterValue} **`}>
             <AccordionItem value={route.name}>
                 <CommandItem
-                    className="aria-selected:bg-secondary-700 aria-selected:text-primary-text hover:bg-secondary-700"
                     value={filterValue}
                     key={route.name}
-                    onSelect={() => { toggleContent(route.name) }}>
+                    onSelect={() => { toggleContent(route.name) }} className="bg-secondary-900">
                     <AccordionTrigger>
                         <RouteSelectItemDisplay
                             item={route}
@@ -201,8 +202,8 @@ const GroupItem = ({ route, underline, toggleContent, direction, onSelect, selec
                         />
                     </AccordionTrigger>
                 </CommandItem >
-                <AccordionContent className="rounded-md AccordionContent">
-                    <div className='ml-8 pb-2'>
+                <AccordionContent className="rounded-xl AccordionContent">
+                    <div className='pb-2 mt-1 bg-secondary-800'>
                         {
                             sortedTokens?.map((token: ExchangeToken | NetworkRouteToken, index) => {
                                 return <TokenCommandWrapper
@@ -246,28 +247,23 @@ const TokenCommandWrapper = (props: TokenCommandWrapperProps) => {
         }
     }, [isSelected])
 
-    return <CommandItem
-        className="border-l border-secondary-500 aria-selected:bg-secondary-700 aria-selected:text-primary-text hover:bg-secondary-700 relative"
-        value={`${route.display_name} ${token.symbol} ##`}
-        key={token.symbol}
-        onSelect={() => { onSelect(route, token) }}
-        ref={tokenItemRef}
-    >
-        {
-            isSelected &&
-            <span className="absolute -left-4 -translate-x-1/2 -translate-y-1/2 top-1/2">
-                <Check className='!h-4 !w-4 text-secondary-200' aria-hidden="true" />
-            </span>
-        }
-        <CurrencySelectItemDisplay
-            item={token}
-            selected={false}
-            route={route}
-            direction={direction}
-            divider={divider}
-        />
-    </CommandItem>
-
+    return <div className={`${isSelected ? "bg-secondary-700" : ""} pl-5 hover:bg-secondary-700 aria-selected:bg-secondary-700`}>
+        <CommandItem
+            className="aria-selected:text-primary-text relative"
+            value={`${route.display_name} ${token.symbol} ##`}
+            key={token.symbol}
+            onSelect={() => { onSelect(route, token) }}
+            ref={tokenItemRef}
+        >
+            <CurrencySelectItemDisplay
+                item={token}
+                selected={false}
+                route={route}
+                direction={direction}
+                divider={divider}
+            />
+        </CommandItem>
+    </div>
 }
 
 

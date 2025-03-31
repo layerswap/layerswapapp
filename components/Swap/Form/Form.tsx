@@ -10,7 +10,6 @@ import { classNames } from "../../utils/classNames";
 import { useQueryState } from "../../../context/query";
 import FeeDetailsComponent from "../../FeeDetails";
 import { useFee } from "../../../context/feeContext";
-import AmountField from "../../Input/Amount"
 import dynamic from "next/dynamic";
 import { Balance } from "../../../Models/Balance";
 import ResizablePanel from "../../ResizablePanel";
@@ -187,8 +186,8 @@ const SwapForm: FC<Props> = ({ partner }) => {
     return <Widget className="sm:min-h-[450px] h-full">
         <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
             <Widget.Content>
-                <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4 bg-secondary-700 rounded-xl'>
-                    {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
+                <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
+                    {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full bg-secondary-700 rounded-2xl">
                         <SourcePicker />
                     </div>}
                     {!query?.hideFrom && !query?.hideTo &&
@@ -197,7 +196,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                             aria-label="Reverse the source and destination"
                             disabled={valuesSwapperDisabled}
                             onClick={valuesSwapper}
-                            className={`hover:text-primary absolute right-[calc(50%-16px)] top-[122px] z-10 border-2 border-secondary-700 bg-secondary-600 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
+                            className={`hover:text-primary absolute right-[calc(50%-16px)] top-[128px] z-10 border-2 border-secondary-700 bg-secondary-600 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
                             <motion.div
                                 animate={animate}
                                 transition={{ duration: 0.3 }}
@@ -206,7 +205,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                 <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-500 rounded-lg disabled:opacity-30")} />
                             </motion.div>
                         </button>}
-                    {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
+                    {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full bg-secondary-700 rounded-xl">
                         <DestinationPicker partner={partner} />
                     </div>}
                 </div>
@@ -219,9 +218,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
                         </div>
                         : <></>
                 }
-                <div className="mb-6 leading-4">
-                    <AmountField />
-                </div>
                 <div className="w-full">
                     {validationMessage ?
                         <ValidationError />

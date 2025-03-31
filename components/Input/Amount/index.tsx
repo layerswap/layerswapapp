@@ -3,8 +3,6 @@ import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "r
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import NumericInput from "../NumericInput";
 import { useFee } from "../../../context/feeContext";
-import dynamic from "next/dynamic";
-import { useQueryState } from "../../../context/query";
 import useSWRGas from "../../../lib/gases/useSWRGas";
 import useSWRBalance from "../../../lib/balances/useSWRBalance";
 import { useSwapDataState } from "../../../context/swap";
@@ -34,7 +32,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         return resolveMacAllowedAmount({ fromCurrency, limitsMinAmount: minAllowedAmount, limitsMaxAmount: maxAmountFromApi, walletBalance, gasAmount, native_currency })
     }, [fromCurrency, minAllowedAmount, maxAmountFromApi, walletBalance, gasAmount, native_currency])
 
-    const placeholder = (fromCurrency && toCurrency && from && to && minAllowedAmount && !isBalanceLoading && !isGasLoading) ? `${minAllowedAmount} - ${maxAmountFromApi}` : '0.0'
+    const placeholder = (fromCurrency && toCurrency && from && to && minAllowedAmount && !isBalanceLoading && !isGasLoading) ? `${minAllowedAmount} - ${maxAmountFromApi}` : '0'
     const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
     const amountRef = useRef(ref)
 
@@ -54,8 +52,11 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     }, [amount, fromCurrency, fee, isFeeLoading])
 
     return (<>
-        <p className="block font-semibold text-secondary-text text-xs mb-1 p-2">Amount</p>
-        <div className="flex w-full justify-between bg-secondary-700 rounded-lg">
+        <div className="flex flex-col w-full bg-secondary-700 rounded-lg">
+            {
+                from && to && fromCurrency && minAllowedAmount && maxAmountFromApi &&
+                <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />
+            }
             <div className="relative w-full">
                 <NumericInput
                     disabled={diasbled}
@@ -68,23 +69,16 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     precision={fromCurrency?.precision}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
-                    className="text-primary-text pr-0 w-full"
+                    className="text-primary-text px-2 w-full text-[28px] leading-normal focus:outline-none focus:border-none focus:ring-0"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value), fee);
                     }}
-                >
-                    {requestedAmountInUsd && Number(requestedAmountInUsd) > 0 && !isFocused ? (
-                        <span className="absolute text-xs right-1 bottom-[16px]">
-                            (${requestedAmountInUsd})
-                        </span>
-                    ) : null}
-                </NumericInput>
+                />
+                <span className="text-base leading-5 font-medium px-2 text-secondary-text">
+                    ${requestedAmountInUsd || 0}
+                </span>
             </div>
-            {
-                from && to && fromCurrency && minAllowedAmount && maxAmountFromApi &&
-                <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />
-            }
         </div >
     </>)
 });

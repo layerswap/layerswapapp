@@ -1,17 +1,21 @@
 import SourceWalletPicker from "./SourceWalletPicker";
 import { PlusIcon } from "lucide-react";
 import RoutePicker from "./RoutePicker";
+import AmountField from "./Amount";
 
 const SourcePicker = () => {
-    return (<div className={`rounded-t-lg pt-2.5`}>
-        <div className="flex justify-between items-center px-3 pt-2">
+    return (<div className={`rounded-lg pt-2.5`}>
+        <div className="flex justify-between items-center px-4 pt-2">
             <label htmlFor="From" className="block font-medium text-secondary-text text-sm pl-1 py-1">
-                From
+                Send from
             </label>
             <SourceWalletPicker />
         </div>
-        <div className="p-3 rounded-xl items-center space-y-2">
-            <RoutePicker direction="from" />
+        <div className="p-3 pb-4 rounded-xl items-center space-y-2">
+            <div className="flex">
+                <AmountField />
+                <RoutePicker direction="from" />
+            </div>
         </div>
     </div >)
 };
