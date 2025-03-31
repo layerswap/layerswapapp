@@ -154,12 +154,6 @@ export const configureAndSendCurrentTransaction = async (
         serializedTransaction: signed.serialize(),
         blockhashWithExpiryBlockHeight: blockHash,
     });
-    // const signature = await connection.sendRawTransaction(signed.serialize());
-    // const res = await connection.confirmTransaction({
-    //     blockhash: transaction.recentBlockhash,
-    //     lastValidBlockHeight: transaction.lastValidBlockHeight,
-    //     signature
-    // });
 
     if (res?.meta?.err) {
         throw new Error(res.meta.err.toString())
