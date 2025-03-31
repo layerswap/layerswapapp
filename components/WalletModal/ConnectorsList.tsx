@@ -214,7 +214,7 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
             {
                 connectionError &&
                 <div className={`bg-secondary-700 rounded-lg flex flex-col gap-1.5 items-center p-3 w-full absolute bottom-0`}>
-                    <p className="flex w-full gap-1 text-sm text-secondary-text justify-start">
+                    <div className="flex w-full gap-1 text-sm text-secondary-text justify-start">
                         <CircleX className="w-5 h-5 stroke-primary-500 mr-1 mt-0.5 flex-shrink-0" />
                         <div className='flex flex-col gap-1'>
                             <p className='text-base text-white'>Request rejected</p>
@@ -222,7 +222,7 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
                                 {connectionError}
                             </p>
                         </div>
-                    </p>
+                    </div>
                     <button
                         type="button"
                         className="flex gap-1.5 items-center justify-center bg-secondary-500 w-full text-primary-text p-4 border-none rounded-lg cursor-pointer text-sm font-medium leading-4"

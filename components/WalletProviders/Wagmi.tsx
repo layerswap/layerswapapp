@@ -19,6 +19,7 @@ import { bitget } from '../../lib/wallets/connectors/bitget';
 import { isMobile } from '../../lib/isMobile';
 import FuelProviderWrapper from "./FuelProvider";
 import { browserInjected } from "../../lib/wallets/connectors/browserInjected";
+import { useSyncProviders } from "../../lib/wallets/connectors/useSyncProviders";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -38,11 +39,12 @@ function WagmiComponent({ children }: Props) {
         .map(resolveChain).filter(isChain) as Chain[]
 
     const transports = {}
+    const providers = useSyncProviders();
 
     settingsChains.forEach(chain => {
         transports[chain.id] = chain.rpcUrls.default.http[0] ? http(chain.rpcUrls.default.http[0]) : http()
     })
-    const isMetaMaskInjected = hasInjectedProvider({ flag: 'isMetaMask' });
+    const isMetaMaskInjected = providers?.some(provider => provider.info.name.toLowerCase() === 'metamask');
     const isRainbowInjected = hasInjectedProvider({ flag: 'isRainbow' });
     const isBitKeepInjected = hasInjectedProvider({
         namespace: 'bitkeep.ethereum',
@@ -57,7 +59,7 @@ function WagmiComponent({ children }: Props) {
             }),
             walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' }),
             argent({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'argent' }),
-            ...(!isMetaMaskInjected ? [metaMask({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'metamask' })] : []),
+            ...(!isMetaMaskInjected ? [metaMask({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'metamask', providers })] : []),
             ...(!isRainbowInjected ? [rainbow({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'rainbow' })] : []),
             ...(!isBitKeepInjected ? [bitget({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'bitget' })] : []),
             browserInjected()
@@ -65,7 +67,7 @@ function WagmiComponent({ children }: Props) {
         chains: settingsChains as [Chain, ...Chain[]],
         transports: transports,
     });
-    
+
     return (
         <WagmiProvider config={config} >
             <QueryClientProvider client={queryClient}>
