@@ -140,8 +140,7 @@ export default function useEVM({ network }: Props): WalletProvider {
 
         } catch (e) {
             //TODO: handle error like in transfer
-            //toast.error('Error connecting wallet')
-            const error = e as ConnectorAlreadyConnectedError
+            const error = e
             if (error.name == 'ConnectorAlreadyConnectedError') {
                 throw new Error("Wallet is already connected");
             } else {
@@ -196,7 +195,7 @@ export default function useEVM({ network }: Props): WalletProvider {
         .map(w => ({
             ...w,
             order: resolveWalletConnectorIndex(w.id),
-            type: (!network?.name.toLowerCase().includes("immutable") && w.id === "com.immutable.passport") ? "other" : w.type
+            type: w.type == 'injected' ? w.type : "other"
         }))
 
     const provider = {
@@ -209,7 +208,7 @@ export default function useEVM({ network }: Props): WalletProvider {
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks,
-        availableWalletsForConnect: availableWalletsForConnect as any,
+        availableWalletsForConnect: availableWalletsForConnect as InternalConnector[],
         name,
         id,
         providerIcon: networks.find(n => ethereumNames.some(name => name === n.name))?.logo

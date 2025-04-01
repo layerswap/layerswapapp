@@ -59,7 +59,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             setSelectedConnector(undefined)
         } catch (e) {
             console.log(e)
-            setConnectionError(e.message)
+            setConnectionError(e.message || e.details)
         }
     }
 
@@ -145,7 +145,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 >
                     <div className='grid grid-cols-2 gap-2'>
                         {
-                            resolvedConnectors?.map(item => {
+                            resolvedConnectors.sort((a, b) => a.type && b.type ? a.type.localeCompare(b.type) : 0)?.map(item => {
                                 const provider = filteredProviders.find(p => p.name === item.providerName)
                                 return (
                                     <Connector
