@@ -22,8 +22,7 @@ import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
 import VaulDrawer from '../modal/vaulModal';
-import { Popover, PopoverContent, PopoverTrigger, PopoverPortal } from '../shadcn/popover';
-import useWindowDimensions from '../../hooks/useWindowDimensions';
+import { Popover, PopoverContent, PopoverTrigger } from '../shadcn/popover';
 
 type Props = {
     swapResponse: SwapResponse
@@ -31,7 +30,6 @@ type Props = {
 
 const SwapDetails: FC<Props> = ({ swapResponse }) => {
     const [open, setOpen] = useState(false)
-    const { isDesktop } = useWindowDimensions()
 
     const { swap, refuel, quote } = swapResponse
     const { source_token, destination_token, destination_address, source_network, destination_network, source_exchange, destination_exchange, requested_amount } = swap
@@ -84,7 +82,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     else if (source_exchange) {
         sourceAccountAddress = "Exchange"
     }
-    const Wrapper = isDesktop ? PopoverPortal : Fragment;
 
     return (
         <>
@@ -210,23 +207,23 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                 </div>
                                             </div>
                                         </PopoverTrigger>
-                                        <Wrapper>
-                                            <PopoverContent
-                                                onMouseEnter={() => setOpen(true)}
-                                                onMouseLeave={() => setOpen(false)}
-                                                side="top"
-                                                className="w-auto"
-                                            >
-                                                <div className="flex flex-col gap-2 justify-start text-sm font-normal">
-                                                    <p className="text-secondary-text">Conversion rate</p>
-                                                    <div className="inline-flex gap-2 items-center text-primary-text">
-                                                        <p>{quote.refuel_in_source} {source_token.symbol}</p>
-                                                        <ArrowRight className="h-4 w-4" />
-                                                        <p>{refuel.amount} {refuel.token.symbol}</p>
-                                                    </div>
+                                        <PopoverContent
+                                            onMouseEnter={() => setOpen(true)}
+                                            onMouseLeave={() => setOpen(false)}
+                                            side="top"
+                                            className="w-auto"
+                                            align='end'
+                                            alignOffset={-20}
+                                        >
+                                            <div className="flex flex-col gap-2 justify-start text-sm font-normal">
+                                                <p className="text-secondary-text">Conversion rate</p>
+                                                <div className="inline-flex gap-2 items-center text-primary-text">
+                                                    <p>{quote.refuel_in_source} {source_token.symbol}</p>
+                                                    <ArrowRight className="h-4 w-4" />
+                                                    <p>{refuel.amount} {refuel.token.symbol}</p>
                                                 </div>
-                                            </PopoverContent>
-                                        </Wrapper>
+                                            </div>
+                                        </PopoverContent>
                                     </Popover>
                                 </div>
                             </div>
