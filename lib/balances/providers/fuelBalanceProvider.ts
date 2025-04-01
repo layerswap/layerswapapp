@@ -2,7 +2,7 @@ import { Balance } from "../../../Models/Balance";
 import { NetworkWithTokens } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
-import retryWithExponentialBackoff from "../../retryWithExponentialBackoff";
+import retryWithExponentialBackoff from "../../retry";
 
 export class FuelBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
