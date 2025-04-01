@@ -70,7 +70,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     const nativeCurrency = refuel?.token
     const truncatedRefuelAmount = nativeCurrency && !!refuel ?
         truncateDecimals(refuel.amount, nativeCurrency?.precision) : null
-    const refuelAmountInUsd = nativeCurrency && ((nativeCurrency?.price_in_usd || 1) * (truncatedRefuelAmount || 0)).toFixed(2)
 
     let sourceAccountAddress: string | undefined = undefined
     if (hideFrom && account) {
@@ -209,7 +208,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                         {truncatedRefuelAmount} {nativeCurrency?.symbol}
                                                     </p>
                                                 </div>
-                                                {/* <p className="text-secondary-text text-sm font-normal">${refuelAmountInUsd}</p> */}
                                             </div>
                                         </PopoverTrigger>
                                         <Wrapper>
