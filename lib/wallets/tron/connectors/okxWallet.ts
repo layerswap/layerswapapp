@@ -9,7 +9,7 @@ import {
     WalletConnectionError,
     WalletSignTransactionError,
     WalletGetNetworkError,
-    isInMobileBrowser,
+    isInMobileBrowser
 } from '@tronweb3/tronwallet-abstract-adapter';
 import type {
     Transaction,
@@ -25,14 +25,18 @@ import type {
 } from '@tronweb3/tronwallet-adapter-tronlink';
 import { getNetworkInfoByTronWeb } from '@tronweb3/tronwallet-adapter-tronlink';
 
-export function supportOkxWallet() {
+function supportOkxWallet() {
     return !!(window.okxwallet && window.okxwallet.tronLink);
 }
 
-export const isOKApp = ()=>/OKApp/i.test(navigator.userAgent);
-
-export function openOkxWallet() {
-    if (!isOKApp() && isInMobileBrowser()) {
+function isInOKApp() {
+    if (typeof window !== 'undefined' && typeof window.navigator !== 'undefined') {
+        return /OKApp/i.test(window.navigator.userAgent);
+    }
+    return false;
+}
+function openOkxWallet() {
+    if (!isInOKApp() && isInMobileBrowser()) {
         window.location.href = 'okx://wallet/dapp/url?dappUrl=' + encodeURIComponent(window.location.href);
         return true;
     }
@@ -365,6 +369,7 @@ export class OkxWalletAdapter extends Adapter {
         let state = this.state;
         let address = this.address;
         if (supportOkxWallet()) {
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             this._wallet = window.okxwallet!.tronLink;
             this._listenEvent();
             if (state === AdapterState.Connected) {
