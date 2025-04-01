@@ -1,18 +1,19 @@
 import { FC, useCallback, useState } from 'react'
-import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
 import { Transaction, Connection, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import useWallet from '../../../../hooks/useWallet';
+import useWallet from '../../../../../hooks/useWallet';
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
-import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import WalletIcon from '../../../icons/WalletIcon';
-import { WithdrawPageProps } from './WalletTransferContent';
-import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
-import useSWRBalance from '../../../../lib/balances/useSWRBalance';
-import { useSettingsState } from '../../../../context/settings';
-import WalletMessage from '../messages/Message';
-import TransactionMessages from '../messages/TransactionMessages';
+import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
+import WalletIcon from '../../../../icons/WalletIcon';
+import { WithdrawPageProps } from '../WalletTransferContent';
+import { ButtonWrapper, ConnectWalletButton } from '../WalletTransfer/buttons';
+import useSWRBalance from '../../../../../lib/balances/useSWRBalance';
+import { useSettingsState } from '../../../../../context/settings';
+import WalletMessage from '../../messages/Message';
+import TransactionMessages from '../../messages/TransactionMessages';
 import { datadogRum } from '@datadog/browser-rum';
+import { transactionSenderAndConfirmationWaiter } from './transactionSender';
 
 const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, token, amount }) => {
     const [loading, setLoading] = useState(false);
@@ -147,16 +148,16 @@ export const configureAndSendCurrentTransaction = async (
     transaction.lastValidBlockHeight = blockHash.lastValidBlockHeight;
 
     const signed = await signTransaction(transaction);
-    const signature = await connection.sendRawTransaction(signed.serialize());
-    const res = await connection.confirmTransaction({
-        blockhash: transaction.recentBlockhash,
-        lastValidBlockHeight: transaction.lastValidBlockHeight,
-        signature
+
+    const res = await transactionSenderAndConfirmationWaiter({
+        connection,
+        serializedTransaction: signed.serialize(),
+        blockhashWithExpiryBlockHeight: blockHash,
     });
 
-    if (res.value.err) {
-        throw new Error(res.value.err.toString())
+    if (res?.meta?.err) {
+        throw new Error(res.meta.err.toString())
     }
 
-    return signature;
+    return res?.transaction.signatures[0];
 };
