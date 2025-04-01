@@ -369,7 +369,6 @@ export class OkxWalletAdapter extends Adapter {
         let state = this.state;
         let address = this.address;
         if (supportOkxWallet()) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
             this._wallet = window.okxwallet!.tronLink;
             this._listenEvent();
             if (state === AdapterState.Connected) {
