@@ -25,7 +25,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ source_token, destination
                 You will receive
             </span>
             {isFeeLoading ? (
-                <div className='h-[10px] w-16 inline-flex bg-gray-500 rounded-sm animate-pulse self-center' />
+                <div className='h-[10px] w-16 inline-flex bg-gray-500 rounded-xs animate-pulse self-center' />
             ) :
                 <div className="text-sm md:text-base flex flex-col items-end">
                     {

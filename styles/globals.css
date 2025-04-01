@@ -1,6 +1,77 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@config '../tailwind.config.js';
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: transparent;
+  }
+}
+
+@theme static {
+  --color-primary: rgb(var(--ls-colors-primary, 228, 37, 117));
+  --color-primary-50: rgb(var(--ls-colors-primary-50, 248, 200, 220));
+  --color-primary-100: rgb(var(--ls-colors-primary-100, 246, 182, 209));
+  --color-primary-200: rgb(var(--ls-colors-primary-200, 241, 146, 186));
+  --color-primary-300: rgb(var(--ls-colors-primary-300, 237, 110, 163));
+  --color-primary-400: rgb(var(--ls-colors-primary-400, 232, 73, 140));
+  --color-primary-500: rgb(var(--ls-colors-primary-500, 228, 37, 117));
+  --color-primary-600: rgb(var(--ls-colors-primary-600, 166, 51, 94));
+  --color-primary-700: rgb(var(--ls-colors-primary-700, 136, 17, 67));
+  --color-primary-800: rgb(var(--ls-colors-primary-800, 147, 8, 99));
+  --color-primary-900: rgb(var(--ls-colors-primary-900, 110, 0, 64));
+  --color-primary-background: rgb(var(--ls-colors-backdrop, 62, 18, 64));
+  --color-primary-text: rgb(var(--ls-colors-primary-text, 255, 255, 255));
+  --color-primary-text-muted: rgb(var(--ls-colors-primary-text-muted, 86, 97, 123));
+  --color-primary-text-placeholder: rgb(var(--ls-colors-text-placeholder, 140, 152, 192));
+  --color-primary-actionButtonText: rgb(var(--ls-colors-actionButtonText, 255, 255, 255));
+  --color-primary-buttonTextColor: rgb(var(--ls-colors-buttonTextColor, 228, 229, 240));
+  --color-primary-actionButtonText: rgb(var(--ls-colors-actionButtonText, 255, 255, 255));
+  --color-primary-logoColor: rgb(var(--ls-colors-logo, 255, 0, 147));
+
+  --color-secondary: rgb(var(--ls-colors-secondary, 17, 29, 54));
+  --color-secondary-50: rgb(var(--ls-colors-secondary-50, 49, 60, 155));
+  --color-secondary-100: rgb(var(--ls-colors-secondary-100, 46, 59, 147));
+  --color-secondary-200: rgb(var(--ls-colors-secondary-200, 35, 42, 112));
+  --color-secondary-300: rgb(var(--ls-colors-secondary-300, 32, 41, 101));
+  --color-secondary-400: rgb(var(--ls-colors-secondary-400, 28, 39, 89));
+  --color-secondary-500: rgb(var(--ls-colors-secondary-500, 22, 37, 70));
+  --color-secondary-600: rgb(var(--ls-colors-secondary-600, 20, 33, 62));
+  --color-secondary-700: rgb(var(--ls-colors-secondary-700, 17, 29, 54));
+  --color-secondary-800: rgb(var(--ls-colors-secondary-800, 15, 25, 47));
+  --color-secondary-900: rgb(var(--ls-colors-secondary-900, 12, 21, 39));
+  --color-secondary-950: rgb(var(--ls-colors-secondary-900, 11, 17, 35));
+  --color-secondary-text: rgb(var(--ls-colors-secondary-text, 171, 181, 209));
+
+  --color-coinbase-primary: rgb(74, 108, 238);
+  --color-coinbase-diabled: rgb(25, 26, 69);
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@utility styled-scroll {
+  @apply scrollbar:w-1.5! scrollbar:h-1.5! scrollbar:bg-secondary-500  scrollbar-thumb:rounded-sm! scrollbar-thumb:bg-slate-500/50!;
+}
+
+@utility rdxCommandList {
+  max-height: var(--radix-popper-available-height);
+}
 
 @layer utilities {
 
@@ -14,16 +85,7 @@
   /* Firefox */
   input[type="number"] {
     -moz-appearance: textfield;
-  }
-  
-  .styled-scroll {
-    @apply scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-secondary-500  scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300  scrollbar-thumb:!bg-slate-500/50 ;
-  }
-  .styled-scroll-no-bg {
-    @apply scrollbar:!w-1.5 scrollbar:!h-1.5  scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-300  scrollbar-thumb:!bg-slate-500/50 ;
-  
-  .rdxCommandList {
-    max-height: var(--radix-popper-available-height);
+    appearance: textfield;
   }
 }
 
@@ -59,7 +121,7 @@ iframe body {
   border-radius: 50%;
   z-index: -1;
   opacity: 80%;
-  background: theme('colors.primary.background');
+  background: theme(--color-primary-background);
 }
 
 
@@ -103,7 +165,7 @@ hr.horizontal-gradient {
 
 .strong-highlight::after {
   /* Highlight color */
-  background-color: theme('colors.secondary.500');
+  background-color: theme(--color-secondary-500);
   content: "";
   position: absolute;
   width: calc(100% + 10px);
@@ -309,7 +371,7 @@ input:disabled,
 textarea:disabled,
 input:disabled::placeholder,
 textarea:disabled::placeholder {
-  -webkit-text-fill-color: theme('colors.primary.text-placeholder');
+  -webkit-text-fill-color: theme(--color-primary-text-placeholder);
   /* 1. sets text fill to 'primary-text': '#a4afc8' */
   opacity: 1;
   /* 2. correct opacity on iOS */

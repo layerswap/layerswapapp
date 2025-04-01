@@ -89,7 +89,7 @@ export function WalletModalProvider({ children }) {
                         {
                             selectedProvider && !isPorivderProvidedInitally &&
                             <div className='-ml-2 mt-0.5'>
-                                <IconButton onClick={goBack} icon={
+                                <IconButton className="inline-flex" onClick={goBack} icon={
                                     <ChevronLeft className="h-6 w-6" />
                                 }>
                                 </IconButton>

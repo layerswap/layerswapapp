@@ -31,7 +31,7 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, destination }) =>
                 />
                 <div className="h-full space-y-2">
                     <p className="text-sm font-medium text-secondary-text text-start">Connect your wallet to browse and select from your addresses</p>
-                    <div className="bg-primary-700/30 border-none !text-primary py-2 rounded-lg text-base font-semibold">
+                    <div className="bg-primary-700/30 border-none text-primary! py-2 rounded-lg text-base font-semibold">
                         {
                             isLoading ?
                                 <div className="flex items-center gap-1 justify-center">

@@ -59,7 +59,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
                     <div className="flex flex-col divide-y-2 divide-secondary-900 w-full rounded-lg bg-secondary-700 overflow-hidden">
                         {
                             destNativeTokenBalance &&
-                            <div className="gap-4 flex relative items-center outline-none w-full text-primary-text px-4 py-3">
+                            <div className="gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3">
                                 <div className="flex items-center justify-between w-full">
                                     <div className="text-secondary-text">
                                         <span>Your current balance</span>
@@ -72,7 +72,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
                         }
                         {
                             toCurrency?.refuel && nativeAsset &&
-                            <div className="gap-4 flex relative items-center outline-none w-full text-primary-text px-4 py-3">
+                            <div className="gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3">
                                 <div className="flex items-center justify-between w-full">
                                     <div className="text-secondary-text">
                                         You will receive

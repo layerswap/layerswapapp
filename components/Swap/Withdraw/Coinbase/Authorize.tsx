@@ -150,7 +150,7 @@ const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
                                 name="alreadyFamiliar"
                                 id='alreadyFamiliar'
                                 type="checkbox"
-                                className="h-4 w-4 bg-secondary-600 cursor-pointer rounded border-secondary-400 text-priamry"
+                                className="h-4 w-4 bg-secondary-600 cursor-pointer rounded-sm border-secondary-400 text-priamry"
                                 onChange={handleToggleChange}
                                 checked={alreadyFamiliar}
                             />
@@ -167,7 +167,7 @@ const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
                                     animate={{ opacity: 1, scale: 1 }}
                                     transition={{ duration: 0.5 }}
                                 >
-                                    <IconButton onClick={handlePrev} className='mr-4 py-3 px-3' icon={<ArrowLeft strokeWidth="3" />} />
+                                    <IconButton onClick={handlePrev} className='mr-4 py-3 px-3 inline-flex' icon={<ArrowLeft strokeWidth="3" />} />
                                 </motion.div>
                             }
                             <SubmitButton isDisabled={false} isSubmitting={false} onClick={handleConnect}>

@@ -126,7 +126,7 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
     if (wallet && wallet?.id?.toLowerCase() === 'argent') return (
         <div className="rounded-md bg-secondary-800 p-4">
             <div className="flex">
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                     <Info className="h-5 w-5 text-primary-400" aria-hidden="true" />
                 </div>
                 <div className="ml-3">

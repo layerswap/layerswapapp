@@ -34,7 +34,7 @@ export default function StatusIcon({ swap, withBg, short }: { swap: SwapItem, wi
 
 const IconComponentWrapper = ({ children, withBg, classNames }: { children: React.ReactNode, withBg?: boolean, classNames?: string }) => {
   return (
-    <div className={`inline-flex items-center gap-2 font-bold ${classNames} ${withBg ? 'py-1 w-full justify-center rounded-lg' : '!bg-transparent'}`}>
+    <div className={`inline-flex items-center gap-2 font-bold ${classNames} ${withBg ? 'py-1 w-full justify-center rounded-lg' : 'bg-transparent!'}`}>
       {children}
     </div>
   )

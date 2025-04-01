@@ -74,7 +74,7 @@ const TransferInvoice: FC<{ deposit_address?: string }> = ({ deposit_address }) 
     // }, [])
 
     return <div className='divide-y divide-secondary-500 text-primary-text h-full'>
-        {source_exchange && <div className={`w-full relative rounded-md px-3 py-3 shadow-sm border-secondary-700 border bg-secondary-700 flex flex-col items-center justify-center gap-2`}>
+        {source_exchange && <div className={`w-full relative rounded-md px-3 py-3 shadow-xs border-secondary-700 border bg-secondary-700 flex flex-col items-center justify-center gap-2`}>
             <ExchangeNetworkPicker />
         </div>
         }
@@ -91,7 +91,7 @@ const TransferInvoice: FC<{ deposit_address?: string }> = ({ deposit_address }) 
                     }
                     {
                         (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
-                        <div className='flex text-xs items-center py-1 mt-1 border-2 border-secondary-300 rounded border-dashed text-secondary-text'>
+                        <div className='flex text-xs items-center py-1 mt-1 border-2 border-secondary-300 rounded-sm border-dashed text-secondary-text'>
                             <p>
                                 This address might not be activated. You can ignore it.
                             </p>
@@ -129,7 +129,7 @@ const TransferInvoice: FC<{ deposit_address?: string }> = ({ deposit_address }) 
             </BackgroundField>
             <BackgroundField header={'Asset'} withoutBorder Explorable={source_token?.contract != null && isValidAddress(source_token?.contract, source_network)} toExplore={source_token?.contract != null ? source_network?.account_explorer_template?.replace("{0}", source_token?.contract) : undefined}>
                 <div className="flex items-center gap-2">
-                    <div className="flex-shrink-0 h-7 w-7 relative">
+                    <div className="shrink-0 h-7 w-7 relative">
                         {
                             source_token &&
                             <Image
@@ -180,7 +180,7 @@ const ExchangeNetworkPicker: FC<{ onChange?: (exchnage: Exchange) => void }> = (
         </div>
         {/* :
             <Select onValueChange={handleChangeSelectedNetwork} defaultValue={defaultSourceNetwork?.network_internal_name}>
-                <SelectTrigger className="w-fit border-none !text-primary-text !font-semibold !h-fit !p-0">
+                <SelectTrigger className="w-fit border-none text-primary-text! font-semibold! h-fit! p-0!">
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -189,7 +189,7 @@ const ExchangeNetworkPicker: FC<{ onChange?: (exchnage: Exchange) => void }> = (
                         {exchangeAssets?.map(sn => (
                             <SelectItem key={sn.network_internal_name} value={sn.network_internal_name}>
                                 <div className="flex items-center">
-                                    <div className="flex-shrink-0 h-5 w-5 relative">
+                                    <div className="shrink-0 h-5 w-5 relative">
                                         {
                                             sn.network &&
                                             <Image

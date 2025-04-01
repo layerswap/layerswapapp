@@ -42,7 +42,7 @@ const DetailedEstimates: FC = () => {
                 </label>
                 <div className="text-right text-secondary-text ">
                     {isFeeLoading ? (
-                        <div className='h-[10px] w-16 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+                        <div className='h-[10px] w-16 inline-flex bg-gray-500 rounded-xs animate-pulse' />
                     ) : (
                         <div>
                             <span>{displayFee || '-'} </span>

@@ -162,7 +162,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
                                     Please enter the 2 step verification code of your Coinbase account.
                                 </p>
                             </div>
-                            <div className="relative rounded-md shadow-sm mt-2 md:mt-5">
+                            <div className="relative rounded-md shadow-xs mt-2 md:mt-5">
                                 <NumericInput
                                     pattern='^[0-9]*$'
                                     placeholder="XXXXXXX"

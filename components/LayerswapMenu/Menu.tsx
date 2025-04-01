@@ -26,7 +26,7 @@ const Item = (function Item({ children, pathname, onClick, icon, target = '_self
         <>
             {
                 pathname ?
-                    <LinkWrapper href={pathname} target={target} className="gap-4 flex relative cursor-pointer hover:bg-secondary-600 select-none w-full items-center px-4 py-3 outline-none text-primary-text">
+                    <LinkWrapper href={pathname} target={target} className="gap-4 flex relative cursor-pointer hover:bg-secondary-600 select-none w-full items-center px-4 py-3 outline-hidden text-primary-text">
                         <div>
                             {icon}
                         </div>
@@ -42,7 +42,7 @@ const Item = (function Item({ children, pathname, onClick, icon, target = '_self
                     <button
                         type="button"
                         onClick={onClick}
-                        className={`gap-4 flex relative cursor-pointer hover:bg-secondary-600 select-none items-center px-4 py-3 outline-none w-full text-primary-text`}
+                        className={`gap-4 flex relative cursor-pointer hover:bg-secondary-600 select-none items-center px-4 py-3 outline-hidden w-full text-primary-text`}
                     >
                         <div>
                             {icon}

@@ -1,7 +1,7 @@
 import { DetailedHTMLProps, HTMLAttributes } from "react"
 
 const Snippet = () => {
-    return <div className="text-sm py-3 space-y-4 font-medium focus:outline-none overflow-hidden">
+    return <div className="text-sm py-3 space-y-4 font-medium focus:outline-hidden overflow-hidden">
         {[...Array(5)]?.map((item, index) => (
             <HistoryItemSceleton className="animate-pulse" key={index} />
         ))}
@@ -19,13 +19,13 @@ export const HistoryItemSceleton = (props: DetailedHTMLProps<HTMLAttributes<HTML
                     <div className="flex col-span-5 items-center gap-3 grow ">
                         <div className="w-11 h-11 rounded-md border border-secondary-400 bg-secondary-500"></div>
                         <div className="flex flex-col items-start gap-2">
-                            <p className="w-32 sm:w-40 h-3 border border-secondary-400 bg-secondary-500 rounded"></p>
-                            <p className="w-28 sm:w-32 h-3 border border-secondary-400 bg-secondary-500 rounded"></p>
+                            <p className="w-32 sm:w-40 h-3 border border-secondary-400 bg-secondary-500 rounded-sm"></p>
+                            <p className="w-28 sm:w-32 h-3 border border-secondary-400 bg-secondary-500 rounded-sm"></p>
                         </div>
                     </div>
                     <div className="flex flex-col items-end gap-2">
-                        <p className="w-14 h-3 border border-secondary-400 bg-secondary-500 rounded"></p>
-                        <p className="w-20 sm:w-28 h-3 border border-secondary-400 bg-secondary-500 rounded"></p>
+                        <p className="w-14 h-3 border border-secondary-400 bg-secondary-500 rounded-sm"></p>
+                        <p className="w-20 sm:w-28 h-3 border border-secondary-400 bg-secondary-500 rounded-sm"></p>
                     </div>
                 </div>
             </div>

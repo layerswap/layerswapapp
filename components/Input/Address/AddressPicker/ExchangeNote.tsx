@@ -24,7 +24,7 @@ const ExchangeNote = ({ destinationAsset, destinationExchange, destination }: { 
                                 alt="Project Logo"
                                 height="15"
                                 width="15"
-                                className='rounded-sm'
+                                className='rounded-xs'
                             />
                             <span className="text-primary-text">{destinationAsset.symbol}</span>
                         </span>
@@ -39,7 +39,7 @@ const ExchangeNote = ({ destinationAsset, destinationExchange, destination }: { 
                                 alt="Project Logo"
                                 height="15"
                                 width="15"
-                                className='rounded-sm'
+                                className='rounded-xs'
                             />
                             <span className="text-primary-text">{destination?.display_name}</span>
                         </span>
