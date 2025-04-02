@@ -25,12 +25,12 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ source_token, destinatio
                             <p>
                                 <>{parsedReceiveAmount}</>
                             </p>
-                        </div> : 0
+                        </div> : <span>0</span>
                     }
                 </span>
             }
             <span className="text-base leading-5 font-medium px-2 text-secondary-text">
-                ${receiveAmountInUsd || 0}
+                ${receiveAmountInUsd ?? 0}
             </span>
         </div>
     </>)

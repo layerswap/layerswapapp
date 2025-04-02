@@ -88,7 +88,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     }}
                 />
                 <span className="text-base leading-5 font-medium px-2 text-secondary-text">
-                    ${requestedAmountInUsd || 0}
+                    ${requestedAmountInUsd ?? 0}
                 </span>
             </div>
         </div >
