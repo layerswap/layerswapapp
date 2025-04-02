@@ -4,7 +4,7 @@ import { Network, NetworkWithTokens, Token } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 
 import KnownInternalNames from "../../knownIds";
-import retryWithExponentialBackoff from "../../retryWithExponentialBackoff";
+import retryWithExponentialBackoff from "../../retry";
 import tonClient from "../../wallets/ton/client";
 import { insertIfNotExists } from "./helpers";
 
