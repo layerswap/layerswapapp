@@ -128,7 +128,7 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                         inset-x-0
                         bottom-0 
                         z-30
-                        bg-secondary-900 
+                        bg-secondary-700 
                         shadow-widget-footer 
                         p-4 
                         px-6 

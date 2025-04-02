@@ -174,7 +174,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                     !selectable &&
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <button type="button" onClick={wallet.disconnect} className="text-xs text-secondary-text hover:text-primary-text rounded-full p-1.5 bg-secondary-900 hover:bg-secondary-950 transition-colors duration-200 ">
+                            <button type="button" onClick={wallet.disconnect} className="text-xs text-secondary-text hover:text-primary-text rounded-full p-1.5 bg-secondary-700 hover:bg-secondary-950 transition-colors duration-200 ">
                                 <Power className="h-3.5 w-3.5" />
                             </button>
                         </TooltipTrigger>

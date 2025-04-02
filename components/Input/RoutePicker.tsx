@@ -149,7 +149,7 @@ const Group = ({ group, direction, onSelect, selectedRoute, selectedToken }: Gro
         )
     }
     return <CommandGroup heading={<span className='text-primary-text-placeholder text-base'>{group.name}</span>}>
-        <div className="bg-secondary-900">
+        <div className="bg-secondary-700">
             <Accordion type="multiple" value={openValues} defaultValue={selectedRoute ? [selectedRoute] : []} className="space-y-2">
                 {group.routes.sort(SortNetworkRoutes).map((route, index) => {
                     return <GroupItem
@@ -203,7 +203,7 @@ const GroupItem = ({ route, underline, toggleContent, direction, onSelect, selec
                 <CommandItem
                     value={filterValue}
                     key={route.name}
-                    onSelect={() => { toggleContent(route.name) }} className="bg-secondary-900">
+                    onSelect={() => { toggleContent(route.name) }} className="bg-secondary-700">
                     <AccordionTrigger>
                         <RouteSelectItemDisplay
                             item={route}
@@ -214,7 +214,7 @@ const GroupItem = ({ route, underline, toggleContent, direction, onSelect, selec
                     </AccordionTrigger>
                 </CommandItem >
                 <AccordionContent className="rounded-xl AccordionContent">
-                    <div className='pb-2 mt-1 bg-secondary-800'>
+                    <div className='pb-2 mt-1 bg-secondary-400'>
                         {
                             sortedTokens?.map((token: ExchangeToken | NetworkRouteToken, index) => {
                                 return <TokenCommandWrapper
@@ -258,7 +258,7 @@ const TokenCommandWrapper = (props: TokenCommandWrapperProps) => {
         }
     }, [isSelected])
 
-    return <div className={`${isSelected ? "bg-secondary-700" : ""} pl-5 hover:bg-secondary-700 aria-selected:bg-secondary-700`}>
+    return <div className={`${isSelected ? "bg-secondary-300" : ""} pl-5 hover:bg-secondary-300 aria-selected:bg-secondary-300`}>
         <CommandItem
             className="aria-selected:text-primary-text relative"
             value={`${route.display_name} ${token.symbol} ##`}

@@ -193,7 +193,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                             <SourcePicker />
                         </div>}
                         {!(query?.hideTo && values?.to) && (
-                            <div className="flex flex-col w-full bg-secondary-700 rounded-xl relative">
+                            <div className="flex flex-col w-full bg-secondary-500 rounded-xl relative">
                                 {!query?.hideFrom && !query?.hideTo && (
                                     <button
                                         type="button"
@@ -201,7 +201,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                         disabled={valuesSwapperDisabled}
                                         onClick={valuesSwapper}
                                         className={classNames(
-                                            "hover:text-primary absolute right-[calc(50%-16px)] -top-4 z-10 border-2 border-secondary-700 bg-secondary-600 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none"
+                                            "hover:text-primary absolute right-[calc(50%-16px)] -top-4 z-10 border-2 border-secondary-300 bg-secondary-300 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none"
                                         )}
                                     >
                                         <motion.div
@@ -209,7 +209,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                                             transition={{ duration: 0.3 }}
                                             onTap={() => !valuesSwapperDisabled && cycle()}
                                         >
-                                            <ArrowUpDown className={classNames(valuesSwapperDisabled && "opacity-50", "w-7 h-auto p-1 bg-secondary-500 rounded-lg disabled:opacity-30")} />
+                                            <ArrowUpDown className={classNames(valuesSwapperDisabled && "bg-secondary-300/50", "w-7 h-auto p-1 bg-secondary-300 rounded-lg disabled:bg-secondary-300/30")} />
                                         </motion.div>
                                     </button>
                                 )}

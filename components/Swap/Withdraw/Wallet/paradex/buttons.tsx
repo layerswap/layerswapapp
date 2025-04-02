@@ -38,7 +38,7 @@ export const ConnectWalletButton: FC<ConnectProps> = ({ network, text, icon, onC
     }, [provider, onClick])
 
     return <div
-        className={`${secondary ? 'bg-secondary-900 border-secondary-700' : 'bg-secondary-700 border-secondary-500'} flex items-center gap-2 rounded-md outline-hidden text-secondary-text p-3 font-normal text-sm border cursor-pointer hover:text-primary-text hover:border-secondary-500`}
+        className={`${secondary ? 'bg-secondary-700 border-secondary-700' : 'bg-secondary-700 border-secondary-500'} flex items-center gap-2 rounded-md outline-hidden text-secondary-text p-3 font-normal text-sm border cursor-pointer hover:text-primary-text hover:border-secondary-500`}
         onClick={clickHandler}
     >
         {icon}

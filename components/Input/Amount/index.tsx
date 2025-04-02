@@ -59,7 +59,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     }, [amount, fromCurrency, fee, isFeeLoading])
 
     return (<>
-        <div className="flex flex-col w-full bg-secondary-700 rounded-lg">
+        <div className="flex flex-col w-full bg-secondary-500 rounded-lg">
             {
                 from && to && fromCurrency && minAllowedAmount && maxAmountFromApi &&
                 <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />
@@ -81,7 +81,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                             setIsAmountFocused(false);
                         }
                     }}
-                    className={`${isAmountFocused ? "text-[48px]" : "text-[28px]"} text-primary-text px-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out`}
+                    className={`${isAmountFocused ? "text-[48px]" : "text-[28px]"} text-primary-text px-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500`}
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value), fee);

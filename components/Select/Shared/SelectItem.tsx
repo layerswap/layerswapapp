@@ -5,10 +5,10 @@ export default function SelectItem({ item, underline }: { item: ISelectMenuItem,
     return (
         <div className={`flex items-center justify-between gap-3 w-full overflow-hidden`}>
             <div className={`gap-4 relative flex items-center w-full`}>
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                     <div>{item.leftIcon}</div>
                 </div>
-                <div className={`h-8 w-8 flex-shrink-0 relative`}>
+                <div className={`h-8 w-8 shrink-0 relative`}>
                     {item.imgSrc && (
                         <Image
                             src={item.imgSrc}

@@ -106,7 +106,7 @@ const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     );
 
     return (
-        <SelectItem className="bg-secondary-700 group rounded-xl hover:bg-secondary-600 group/item relative">
+        <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative">
             <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} />
             <SelectItem.Title className={`py-3 ${divider ? 'border-t border-secondary-700' : ''}`} >
                 <>
@@ -180,7 +180,7 @@ export const SelectedCurrencyDisplay = (props: SelectedCurrencyDisplayProps) => 
     return <span className='flex flex-col text-left items-center text-xs md:text-base'>
         {
             value?.logo && <div className="flex items-center">
-                <div className="flex-shrink-0 h-6 w-6 relative">
+                <div className="shrink-0 h-6 w-6 relative">
                     <Image
                         src={value.logo}
                         alt="Project Logo"

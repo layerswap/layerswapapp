@@ -120,7 +120,7 @@ iframe body {
   border-radius: 50%;
   z-index: -1;
   opacity: 80%;
-  background: theme(--color-primary-background);
+  background: var(--color-primary-background);
 }
 
 
@@ -164,7 +164,7 @@ hr.horizontal-gradient {
 
 .strong-highlight::after {
   /* Highlight color */
-  background-color: theme(--color-secondary-500);
+  background-color: var(--color-secondary-500);
   content: "";
   position: absolute;
   width: calc(100% + 10px);
@@ -370,7 +370,7 @@ input:disabled,
 textarea:disabled,
 input:disabled::placeholder,
 textarea:disabled::placeholder {
-  -webkit-text-fill-color: theme(--color-primary-text-placeholder);
+  -webkit-text-fill-color: var(--color-primary-text-placeholder);
   /* 1. sets text fill to 'primary-text': '#a4afc8' */
   opacity: 1;
   /* 2. correct opacity on iOS */

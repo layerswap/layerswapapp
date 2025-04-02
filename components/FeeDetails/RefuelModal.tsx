@@ -56,7 +56,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
                 </div>
                 {
                     (values.refuel || destNativeTokenBalance) &&
-                    <div className="flex flex-col divide-y-2 divide-secondary-900 w-full rounded-lg bg-secondary-700 overflow-hidden">
+                    <div className="flex flex-col divide-y-2 divide-secondary-700 w-full rounded-lg bg-secondary-700 overflow-hidden">
                         {
                             destNativeTokenBalance &&
                             <div className="gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3">
