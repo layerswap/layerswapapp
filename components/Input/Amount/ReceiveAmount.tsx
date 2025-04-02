@@ -30,7 +30,7 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ source_token, destinatio
                 </span>
             }
             <span className="text-base leading-5 font-medium px-2 text-secondary-text">
-                ${receiveAmountInUsd ?? 0}
+                {`$${receiveAmountInUsd ?? 0}`}
             </span>
         </div>
     </>)
