@@ -38,6 +38,11 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
     const amountRef = useRef(ref)
 
+    useEffect(() => {
+        if (amountRef?.current?.value)
+            setIsAmountFocused(true)
+    }, [amountRef])
+
     const diasbled = Boolean((fromExchange && !toCurrency) || (toExchange && !fromCurrency))
 
     const updateRequestedAmountInUsd = useCallback((requestedAmount: number, fee) => {
@@ -70,12 +75,17 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     ref={amountRef}
                     precision={fromCurrency?.precision}
                     onFocus={() => setIsAmountFocused(true)}
-                    onBlur={() => setIsAmountFocused(false)}
-                    className={`${isAmountFocused ? "text-[48px]" : "text-[28px]"} text-primary-text px-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0`}
-                onChange={e => {
-                    /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
-                    updateRequestedAmountInUsd(parseFloat(e.target.value), fee);
-                }}
+                    onBlur={() => {
+                        const value = amountRef?.current?.value;
+                        if (!value) {
+                            setIsAmountFocused(false);
+                        }
+                    }}
+                    className={`${isAmountFocused ? "text-[48px]" : "text-[28px]"} text-primary-text px-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out`}
+                    onChange={e => {
+                        /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
+                        updateRequestedAmountInUsd(parseFloat(e.target.value), fee);
+                    }}
                 />
                 <span className="text-base leading-5 font-medium px-2 text-secondary-text">
                     ${requestedAmountInUsd || 0}

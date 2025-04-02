@@ -38,14 +38,18 @@ const DestinationPicker = (props: Props) => {
             }
         </div>
         <div className="p-3 pb-4 pr-4 rounded-xl items-center space-y-2">
-            <div className="flex">
-                <ReceiveAmount
-                    source_token={fromCurrency}
-                    destination_token={toCurrency}
-                    fee={fee}
-                    isFeeLoading={isFeeLoading}
-                />
-                <RoutePicker direction="to" />
+            <div className="grid grid-cols-8 gap-2">
+                <div className="col-span-5">
+                    <ReceiveAmount
+                        source_token={fromCurrency}
+                        destination_token={toCurrency}
+                        fee={fee}
+                        isFeeLoading={isFeeLoading}
+                    />
+                </div>
+                <div className="col-span-3 flex items-center">
+                    <RoutePicker direction="to" />
+                </div>
             </div>
             {
                 showAddDestinationAddress &&

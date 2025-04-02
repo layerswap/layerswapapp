@@ -216,7 +216,7 @@ export const SelectedRouteDisplay = (props: SelectedRouteDisplayProps) => {
     const { route, token, placeholder, isAmountFocused } = props
     return (
         <span className="flex grow text-left items-center text-xs md:text-base">
-            {token?.logo && route?.logo && (
+            {token?.logo && route?.logo ? (
                 <div className="inline-flex items-center relative shrink-0">
                     <Image
                         src={token.logo}
@@ -237,20 +237,18 @@ export const SelectedRouteDisplay = (props: SelectedRouteDisplayProps) => {
                         className="h-5 w-5 absolute -right-1.5 -bottom-1.5 object-contain rounded-md border-2 border-secondary-800"
                     />
                 </div>
-            )}
+            ) : <RoutePickerIcon className="w-7 h-7" />}
 
-            {token && route ? (
+            {!isAmountFocused && token && route ? (
                 <span className="ml-2 flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0">
                     <span className="leading-5">{token.symbol}</span>
                     <span className="text-secondary-text text-sm leading-4 truncate whitespace-nowrap">{route.display_name}</span>
                 </span>
-            ) : (
+            ) : !isAmountFocused && (
                 <span className="flex text-secondary-text text-base leading-5 flex-auto items-center">
-                    <RoutePickerIcon className="w-10 h-10" />
                     <span className="ml-2">{placeholder}</span>
                 </span>
             )}
         </span>
     )
 }
-

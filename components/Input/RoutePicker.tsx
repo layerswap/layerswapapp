@@ -3,7 +3,7 @@ import { FC, useCallback, useEffect, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { NetworkRoute, NetworkRouteToken } from "../../Models/Network";
 import { Selector, SelectorContent, SelectorTrigger } from "../Select/CommandNew/Index";
-import { ChevronDown, Check } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
 import { CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandWrapper } from "../shadcn/command";
 import SpinIcon from "../icons/spinIcon";
@@ -91,7 +91,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
             <Selector>
                 <SelectorTrigger disabled={false}>
                     <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select Token" isAmountFocused={isAmountFocused} />
-                    <span className="right-0 flex items-center pr-2 pointer-events-none text-primary-text">
+                    <span className="right-0 flex items-center px-2 pointer-events-none text-primary-text">
                         <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
                     </span>
                 </SelectorTrigger>
@@ -123,9 +123,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 </SelectorContent>
             </Selector>
             {direction === 'from' &&
-                <div className="bg-secondary-500 rounded-b-lg w-4/5 m-auto -mt-0.5 py-0.5 text-xs text-primary-text-placeholder text-center">
-                    <Balance values={values} direction="from" />
-                </div>
+                <Balance values={values} direction="from" isAmountFocused={isAmountFocused} />
             }
         </div>
     )

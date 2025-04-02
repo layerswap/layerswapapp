@@ -12,9 +12,13 @@ const SourcePicker = () => {
             <SourceWalletPicker />
         </div>
         <div className="p-3 pb-4 pr-4 rounded-xl items-center space-y-2">
-            <div className="flex">
-                <AmountField />
-                <RoutePicker direction="from" />
+            <div className="grid grid-cols-8 gap-2">
+                <div className="col-span-5">
+                    <AmountField />
+                </div>
+                <div className="col-span-3 flex items-center">
+                    <RoutePicker direction="from" />
+                </div>
             </div>
         </div>
     </div >)

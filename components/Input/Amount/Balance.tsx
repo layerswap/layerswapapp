@@ -4,7 +4,7 @@ import { truncateDecimals } from "../../utils/RoundDecimals";
 import { useSwapDataState } from "../../../context/swap";
 import useSWRBalance from "../../../lib/balances/useSWRBalance";
 
-const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
+const Balance = ({ values, direction, isAmountFocused }: { values: SwapFormValues, direction: string, isAmountFocused?: boolean }) => {
 
     const { to, fromCurrency, toCurrency, from, destination_address } = values
     const { selectedSourceAccount } = useSwapDataState()
@@ -36,7 +36,9 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
                 (network && token && network) &&
 
                 (truncatedBalance !== undefined && !isNaN(truncatedBalance)) &&
-                <span>{truncatedBalance > 0 ? truncatedBalance.toFixed(token?.precision) : truncatedBalance}</span>
+                <div className={`${isAmountFocused ? "rounded-lg mt-1 px-1.5 w-full" : "w-4/5 -mt-0.5 rounded-b-lg text-center"} bg-secondary-500 m-auto py-0.5 text-xs text-primary-text-placeholder `}>
+                    <span>{truncatedBalance > 0 ? truncatedBalance.toFixed(token?.precision) : truncatedBalance}</span>
+                </div>
             }
         </>
     )
