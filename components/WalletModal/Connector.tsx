@@ -7,10 +7,11 @@ import { resolveWalletConnectorIcon } from "../../lib/wallets/utils/resolveWalle
 type Connector = DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
     connector: InternalConnector,
     connectingConnector?: WalletModalConnector
+    isRecent?: boolean
     onClick: () => void
 }
 
-const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, ...props }) => {
+const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isRecent, ...props }) => {
     const connectorName = connector?.name
     const connectorId = connector?.id
 
@@ -29,11 +30,15 @@ const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, ...
                 <div className="grid grid-cols-3 gap-3 items-center font-medium w-full">
                     <Icon className="w-9 sm:w-11 h-auto p-0.5 rounded-[10px] bg-secondary-800" />
                     <div className='flex flex-col items-start col-start-2 col-span-3'>
-                        
+
                         <p className='text-base text-left truncate w-full'>{connectorName}</p>
                         {
-                            connector.type === 'injected' &&
+                            connector.type === 'injected' && !isRecent &&
                             <p className='text-xs text-secondary-text font-medium'>Installed</p>
+                        }
+                        {
+                            isRecent &&
+                            <p className='text-xs text-primary-text font-semibold bg-primary-700 px-1 py-0.5 rounded-md'>Recent</p>
                         }
                     </div>
                     {

@@ -12,13 +12,14 @@ import Connector from "./Connector";
 import { removeDuplicatesWithKey } from "./utils";
 import VaulDrawer from "../modal/vaulModal";
 import Image from "next/image";
+import { usePersistedState } from "../../hooks/usePersistedState";
 
 const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { isMobile } = useWindowDimensions()
     const { providers } = useWallet();
     const filteredProviders = providers.filter(p => !!p.autofillSupportedNetworks && !p.hideFromList)
     const { setSelectedConnector, selectedProvider, setSelectedProvider, selectedConnector } = useConnectModal()
-
+    let [recentConnectors, setRecentConnectors] = usePersistedState<({ providerName?: string, connectorName?: string }[] | undefined)>([], 'recentConnectors', 'localStorage');
     const [connectionError, setConnectionError] = useState<string | undefined>(undefined);
     const [searchValue, setSearchValue] = useState<string | undefined>(undefined)
     const [isFocused, setIsFocused] = useState(false)
@@ -54,6 +55,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             const result = provider?.connectConnector && await provider.connectConnector({ connector })
 
             if (result) {
+                setRecentConnectors((prev) => [...(prev?.filter(v => v.providerName !== provider.name) || []), { providerName: provider.name, connectorName: connector.name }])
                 onFinish(result)
             }
             setSelectedConnector(undefined)
@@ -147,12 +149,14 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                         {
                             resolvedConnectors.sort((a, b) => a.type && b.type ? a.type.localeCompare(b.type) : 0)?.map(item => {
                                 const provider = filteredProviders.find(p => p.name === item.providerName)
+                                const isRecent = recentConnectors?.some(v => v.connectorName === item.name)
                                 return (
                                     <Connector
                                         key={item.id}
                                         connector={item}
                                         onClick={() => connect(item, provider!)}
                                         connectingConnector={selectedConnector}
+                                        isRecent={isRecent}
                                     />
                                 )
                             })
