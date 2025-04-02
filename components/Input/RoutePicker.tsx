@@ -16,6 +16,7 @@ import useFormRoutes from "../../hooks/useFormRoutes";
 import { Route, RouteToken, RoutesGroup } from "../../Models/Route";
 import Balance from "./Amount/Balance";
 import { useAmountFocus } from "../../context/amountFocusContext";
+import { motion } from "framer-motion";
 
 function resolveSelectedRoute(values: SwapFormValues, direction: SwapDirection): NetworkRoute | Exchange | undefined {
     const { from, to, fromExchange, toExchange } = values
@@ -87,10 +88,14 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     }, [currencyFieldName, direction, values])
 
     return (
-        <div className="relative self-end ml-auto">
+        <motion.div
+            layout
+            transition={{ duration: 0.25 }}
+            className="relative self-end ml-auto"
+        >
             <Selector>
                 <SelectorTrigger disabled={false}>
-                    <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select Token" isAmountFocused={isAmountFocused} />
+                    <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select Token" isAmountFocused={isAmountFocused} direction={direction} />
                     <span className="right-0 flex items-center px-2 pointer-events-none text-primary-text">
                         <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
                     </span>
@@ -125,7 +130,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
             {direction === 'from' &&
                 <Balance values={values} direction="from" isAmountFocused={isAmountFocused} />
             }
-        </div>
+        </motion.div>
     )
 };
 

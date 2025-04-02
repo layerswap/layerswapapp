@@ -10,6 +10,7 @@ import { Exchange } from "../../../../Models/Exchange";
 import { Route, RouteToken } from "../../../../Models/Route";
 import { ChevronDown } from "lucide-react";
 import RoutePickerIcon from "../../../icons/RoutePickerPlaceholder";
+import { motion } from "framer-motion";
 
 type TokenItemProps = {
     route: Route;
@@ -209,11 +210,12 @@ type SelectedRouteDisplayProps = {
     route?: NetworkRoute | Exchange;
     token?: RouteToken;
     isAmountFocused?: boolean;
+    direction?: string;
     placeholder: string;
 }
 
 export const SelectedRouteDisplay = (props: SelectedRouteDisplayProps) => {
-    const { route, token, placeholder, isAmountFocused } = props
+    const { route, token, placeholder, isAmountFocused, direction } = props
     return (
         <span className="flex grow text-left items-center text-xs md:text-base">
             {token?.logo && route?.logo ? (
@@ -239,16 +241,24 @@ export const SelectedRouteDisplay = (props: SelectedRouteDisplayProps) => {
                 </div>
             ) : <RoutePickerIcon className="w-7 h-7" />}
 
-            {!isAmountFocused && token && route ? (
-                <span className="ml-2 flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0">
-                    <span className="leading-5">{token.symbol}</span>
-                    <span className="text-secondary-text text-sm leading-4 truncate whitespace-nowrap">{route.display_name}</span>
-                </span>
-            ) : !isAmountFocused && (
-                <span className="flex text-secondary-text text-base leading-5 flex-auto items-center">
-                    <span className="ml-2">{placeholder}</span>
-                </span>
-            )}
+            <motion.div
+                layout
+                transition={{ duration: 0.25 }}
+                className="flex items-center overflow-hidden min-w-0"
+            >
+                {(direction === 'from' ? !isAmountFocused : true) && token && route ? (
+                    <span className="ml-2 flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0">
+                        <span className="leading-5">{token.symbol}</span>
+                        <span className="text-secondary-text text-sm leading-4 truncate whitespace-nowrap">
+                            {route.display_name}
+                        </span>
+                    </span>
+                ) : (direction === 'from' ? !isAmountFocused : true) && (
+                    <span className="flex text-secondary-text text-base leading-5 flex-auto items-center">
+                        <span className="ml-2">{placeholder}</span>
+                    </span>
+                )}
+            </motion.div>
         </span>
     )
 }

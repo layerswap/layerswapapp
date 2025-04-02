@@ -20,7 +20,7 @@
 }
 
 @theme static {
-  --color-primary: rgb(var(--ls-colors-primary, 225, 227, 230));
+  --color-primary: rgb(var(--ls-colors-primary, 228, 37, 117));
   /* --color-primary-50: rgb(var(--ls-colors-primary-50, 248, 200, 220)); */
   --color-primary-100: rgb(var(--ls-colors-primary-100, 255, 158, 187));
   --color-primary-200: rgb(var(--ls-colors-primary-200, 245, 108, 149));

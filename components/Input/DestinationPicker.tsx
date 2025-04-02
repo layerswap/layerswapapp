@@ -47,7 +47,7 @@ const DestinationPicker = (props: Props) => {
                         isFeeLoading={isFeeLoading}
                     />
                 </div>
-                <div className="col-span-3 flex items-center">
+                <div className="col-span-3 flex items-center self-start">
                     <RoutePicker direction="to" />
                 </div>
             </div>

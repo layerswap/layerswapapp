@@ -16,7 +16,7 @@ const SourcePicker = () => {
                 <div className="col-span-5">
                     <AmountField />
                 </div>
-                <div className="col-span-3 flex items-center">
+                <div className="col-span-3 flex items-center self-start">
                     <RoutePicker direction="from" />
                 </div>
             </div>
