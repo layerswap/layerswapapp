@@ -66,7 +66,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     }
 
     const allConnectors = filteredProviders.filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0 && (selectedProvider ? g.name == selectedProvider.name : true)).map((provider) =>
-        provider.availableWalletsForConnect?.filter(v => isFocused ? (searchValue ? v.name.toLowerCase().includes(searchValue?.toLowerCase()) : false) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat()
+        provider.availableWalletsForConnect?.filter(v => (isFocused || searchValue) ? (searchValue ? v.name.toLowerCase().includes(searchValue?.toLowerCase()) : false) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat()
 
     const resolvedConnectors: InternalConnector[] = useMemo(() => removeDuplicatesWithKey(allConnectors, 'name'), [allConnectors])
 

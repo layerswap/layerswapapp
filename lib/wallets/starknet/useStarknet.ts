@@ -1,7 +1,6 @@
 import { useWalletStore } from "../../../stores/walletStore"
 import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
-import toast from "react-hot-toast";
 import { useSettingsState } from "../../../context/settings";
 import { useConnect, useDisconnect } from "@starknet-react/core";
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
@@ -53,8 +52,6 @@ export default function useStarknet(): WalletProvider {
     }
 
     const connectConnector = async ({ connector }) => {
-        toast.dismiss('connect-wallet')
-        
         try {
             const starknetConnector = connectors.find(c => c.id === connector.id)
 
@@ -79,9 +76,13 @@ export default function useStarknet(): WalletProvider {
 
             if (result?.account && starknetConnector) {
                 const starkent = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetSepolia)
-                const WalletAccount = (await import('starknet')).WalletAccount
+                const { RpcProvider, WalletAccount } = await import('starknet')
 
-                const starknetWalletAccount = new WalletAccount({ nodeUrl: starkent?.node_url }, (starknetConnector as any).wallet);
+                const rpcProvider = new RpcProvider({
+                    nodeUrl: starkent?.node_url,
+                })
+
+                const starknetWalletAccount = await WalletAccount.connectSilent(rpcProvider, (starknetConnector as any).wallet);
 
                 const wallet: Wallet = {
                     id: connector.name,
