@@ -5,8 +5,7 @@ import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useMemo } from "react"
-import { ConnectorAlreadyConnectedError, getAccount, getConnections } from '@wagmi/core'
-import toast from "react-hot-toast"
+import { getAccount, getConnections } from '@wagmi/core'
 import { isMobile } from "../../isMobile"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
 import { LSConnector } from "../connectors/EthereumProvider"
@@ -89,7 +88,7 @@ export default function useEVM({ network }: Props): WalletProvider {
     const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
         try {
 
-            setSelectedConnector({ name: connector.name })
+            setSelectedConnector(connector)
             if (connector.id !== "coinbaseWalletSDK") {
                 await connector.disconnect()
                 await disconnectAsync({ connector })
@@ -107,13 +106,11 @@ export default function useEVM({ network }: Props): WalletProvider {
                     const Icon = resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
                     const base64Icon = convertSvgComponentToBase64(Icon)
 
-                    setSelectedConnector({ name: connector.name, qr: uri, iconUrl: base64Icon })
+                    setSelectedConnector({ ...connector, icon: base64Icon, qr: uri })
                 })
             }
 
-            await connectAsync({
-                connector: connector
-            });
+            await connectAsync({ connector });
 
             const activeAccount = await attemptGetAccount(config)
             const connections = getConnections(config)

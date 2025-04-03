@@ -50,7 +50,8 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 setSelectedMultiChainConnector(connector)
                 return setShowEcosystemSelection(true)
             }
-            setSelectedConnector({ name: connector.name, iconUrl: connector.icon, isMultiChain: connector.isMultiChain })
+            setSelectedConnector(connector)
+            if (connector.installUrl) return
 
             const result = provider?.connectConnector && await provider.connectConnector({ connector })
 
@@ -82,9 +83,9 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 size={264}
                 level={"H"}
                 imageSettings={
-                    selectedConnector.iconUrl
+                    selectedConnector.icon
                         ? {
-                            src: selectedConnector.iconUrl,
+                            src: selectedConnector.icon,
                             height: 50,
                             width: 50,
                             excavate: true,
@@ -101,14 +102,12 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     if (selectedConnector) {
         const connector = allConnectors.find(c => c?.name === selectedConnector.name)
         const provider = filteredProviders.find(p => p.name === connector?.providerName)
-        return <>
-            <LoadingConnect
-                isMobile={isMobile}
-                onRetry={() => { connect(connector!, provider!) }}
-                selectedConnector={selectedConnector}
-                connectionError={connectionError}
-            />
-        </>
+        return <LoadingConnect
+            isMobile={isMobile}
+            onRetry={() => { connect(connector!, provider!) }}
+            selectedConnector={selectedConnector}
+            connectionError={connectionError}
+        />
     }
 
     return (
@@ -180,7 +179,31 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
 }
 
 const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalConnector, connectionError: string | undefined, isMobile: boolean }> = ({ onRetry, selectedConnector, connectionError, isMobile }) => {
-    const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.iconUrl });
+    const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
+
+    if (selectedConnector.installUrl) {
+        return <div
+            className={clsx('w-full flex flex-col justify-center items-center font-semibold relative', {
+                'h-[60vh]': isMobile,
+                'h-[360px]': !isMobile,
+            })}
+        >
+            <div className="flex flex-col gap-4 items-center justify-end row-start-2 row-span-1">
+                <div className="flex-col flex items-center gap-1">
+                    <ConnectorIcon className="w-11 h-auto p-0.5 rounded-md bg-secondary-800" />
+                    <p className='text-base font-semibold'>
+                        <span>{selectedConnector?.name}</span> <span>is not installed</span>
+                    </p>
+                </div>
+                <button
+                    onClick={() => window.open(selectedConnector.installUrl, '_blank')}
+                    className="px-3 py-1 rounded-full bg-secondary-600 text-primary-500 font-semibold text-base hover:brightness-125 transition-all duration-200"
+                >
+                    INSTALL
+                </button>
+            </div>
+        </div>
+    }
 
     return (
         <div
@@ -283,7 +306,7 @@ type MultichainConnectorModalProps = {
 }
 
 const MultichainConnectorModal: FC<MultichainConnectorModalProps> = ({ selectedConnector, allConnectors, providers, setShowEcosystemSelection, showEcosystemSelection, connect }) => {
-    const Icon = resolveWalletConnectorIcon({ connector: selectedConnector.name, iconUrl: selectedConnector.iconUrl })
+    const Icon = resolveWalletConnectorIcon({ connector: selectedConnector.name, iconUrl: selectedConnector.icon })
     return (
         <VaulDrawer
             show={showEcosystemSelection}

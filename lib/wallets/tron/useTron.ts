@@ -101,7 +101,8 @@ export default function useTron(): WalletProvider {
             id: wallet.adapter.name,
             name: wallet.adapter.name,
             icon: wallet.adapter.icon,
-            type: wallet.state !== 'NotFound' ? 'injected' : 'other'
+            type: wallet.state !== 'NotFound' ? 'injected' : 'other',
+            installUrl: wallet.state !== 'NotFound' ? undefined : wallet.adapter?.url,
         }
     })
 

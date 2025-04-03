@@ -9,6 +9,7 @@ export type InternalConnector = {
     type?: 'injected' | 'other',
     isMultiChain?: boolean,
     providerName?: string,
+    installUrl?: string,
 }
 
 export type Wallet = {

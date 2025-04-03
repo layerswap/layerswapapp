@@ -112,7 +112,8 @@ export default function useSVM({ network }: { network: Network | undefined }): W
                 name: wallet.adapter.name,
                 id: wallet.adapter.name,
                 icon: wallet.adapter.icon,
-                type: wallet.readyState === 'Installed' ? 'injected' : 'other'
+                type: wallet.readyState === 'Installed' ? 'injected' : 'other',
+                installUrl: (wallet.readyState === 'Installed' || wallet.readyState === 'Loadable') ? undefined : wallet.adapter?.url,
             }
 
             connectors.push(internalConnector)

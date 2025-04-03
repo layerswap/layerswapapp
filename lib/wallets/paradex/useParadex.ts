@@ -61,7 +61,7 @@ export default function useParadex({ network }: Props): WalletProvider {
     const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
 
         try {
-            setSelectedConnector({ name: connector.name })
+            setSelectedConnector(connector)
             const isEvm = evmProvider.availableWalletsForConnect?.find(w => w.id === connector.id)
             const isStarknet = starknetProvider.availableWalletsForConnect?.find(w => w.id === connector.id)
             if (isEvm) {

@@ -2,14 +2,11 @@ import { Context, createContext, useCallback, useContext, useEffect, useState } 
 import { ChevronLeft } from 'lucide-react';
 import IconButton from '../buttons/iconButton';
 import VaulDrawer from '../modal/vaulModal';
-import { Wallet, WalletProvider } from '../../Models/WalletProvider';
+import { InternalConnector, Wallet, WalletProvider } from '../../Models/WalletProvider';
 import ConnectorsList from './ConnectorsList';
 
-export type WalletModalConnector = {
-    name: string;
+export type WalletModalConnector = InternalConnector & {
     qr?: string;
-    iconUrl?: string;
-    isMultiChain?: boolean;
 }
 
 type SharedType = { provider?: WalletProvider, connectCallback: (value: Wallet | undefined) => void }
