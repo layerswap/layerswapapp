@@ -75,26 +75,28 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         <p className="text-secondary-text">
             Scan the QR code with your phone
         </p>
-        <div className='flex flex-col justify-center items-center pt-2 w-fit mx-auto'>
-            <QRCodeSVG
-                className="rounded-lg"
-                value={selectedConnector?.qr}
-                includeMargin={true}
-                size={264}
-                level={"H"}
-                imageSettings={
-                    selectedConnector.icon
-                        ? {
-                            src: selectedConnector.icon,
-                            height: 50,
-                            width: 50,
-                            excavate: true,
-                        }
-                        : undefined
-                }
-            />
-            <div className='bg-secondary text-secondary-text w-full px-2 py-1.5 rounded-md mt-3 flex justify-center items-center'>
-                <CopyButton toCopy={selectedConnector?.qr}>Copy QR URL</CopyButton>
+        <div className="w-full h-full bg-secondary-700 pb-3 pt-5 rounded-lg">
+            <div className='flex flex-col justify-center items-center pt-2 w-fit mx-auto'>
+                <QRCodeSVG
+                    className="rounded-lg"
+                    value={selectedConnector?.qr}
+                    includeMargin={true}
+                    size={264}
+                    level={"H"}
+                    imageSettings={
+                        selectedConnector.icon
+                            ? {
+                                src: selectedConnector.icon,
+                                height: 50,
+                                width: 50,
+                                excavate: true,
+                            }
+                            : undefined
+                    }
+                />
+                <div className='bg-secondary-500 text-secondary-text w-full px-2 py-1.5 rounded-md mt-3 flex justify-center items-center'>
+                    <CopyButton toCopy={selectedConnector?.qr}>Copy QR URL</CopyButton>
+                </div>
             </div>
         </div>
     </div>

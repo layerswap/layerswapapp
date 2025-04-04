@@ -144,6 +144,7 @@ export default function useStarknet(): WalletProvider {
         availableWalletsForConnect,
         name,
         id,
+        providerIcon: networks.find(n => starknetNames.some(name => name === n.name))?.logo
     }
 
     return provider
