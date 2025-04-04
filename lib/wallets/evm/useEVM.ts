@@ -87,8 +87,9 @@ export default function useEVM({ network }: Props): WalletProvider {
 
     const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
         try {
-
-            setSelectedConnector(connector)
+            const Icon = resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
+            const base64Icon = convertSvgComponentToBase64(Icon)
+            setSelectedConnector({ ...connector, icon: base64Icon })
             if (connector.id !== "coinbaseWalletSDK") {
                 await connector.disconnect()
                 await disconnectAsync({ connector })
@@ -101,12 +102,10 @@ export default function useEVM({ network }: Props): WalletProvider {
                     })
                 }
             }
-            else {
+            else if (connector.type !== 'injected' && connector.id !== "coinbaseWalletSDK") {
+                setSelectedConnector({ ...connector, qr: { state: 'loading', value: undefined } })
                 getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
-                    const Icon = resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
-                    const base64Icon = convertSvgComponentToBase64(Icon)
-
-                    setSelectedConnector({ ...connector, icon: base64Icon, qr: uri })
+                    setSelectedConnector({ ...connector, icon: base64Icon, qr: { state: 'fetched', value: uri } })
                 })
             }
 
@@ -141,7 +140,7 @@ export default function useEVM({ network }: Props): WalletProvider {
             if (error.name == 'ConnectorAlreadyConnectedError') {
                 throw new Error("Wallet is already connected");
             } else {
-                throw new Error(e);
+                throw new Error(e.message || e);
             }
         }
     }

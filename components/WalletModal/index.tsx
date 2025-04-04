@@ -6,7 +6,13 @@ import { InternalConnector, Wallet, WalletProvider } from '../../Models/WalletPr
 import ConnectorsList from './ConnectorsList';
 
 export type WalletModalConnector = InternalConnector & {
-    qr?: string;
+    qr?: ({
+        state: 'loading',
+        value: undefined
+    } | {
+        state: 'fetched',
+        value: string
+    });
 }
 
 type SharedType = { provider?: WalletProvider, connectCallback: (value: Wallet | undefined) => void }

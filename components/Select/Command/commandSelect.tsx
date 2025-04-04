@@ -57,7 +57,7 @@ export default function CommandSelect({ values, setValue, show, setShow, searchH
             <VaulDrawer.Snap
                 id='item-1'
                 style={{ height: isMobile && windowSize.height ? `${(windowSize.height * 0.8).toFixed()}px` : '' }}
-                fullHeight={isDesktop}
+                fullheight={isDesktop}
             >
                 <CommandWrapper>
                     {

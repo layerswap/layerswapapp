@@ -195,7 +195,7 @@ const VaulFooter: FC<{ snapElement: SnapElement | null }> = ({ snapElement }) =>
     )
 }
 
-const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement> & { id: `item-${number}`, fullHeight?: boolean }> = (props) => {
+const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement> & { id: `item-${number}`, fullheight?: boolean }> = (props) => {
 
     let [ref, { height }] = useMeasure();
     const { setSnapElemenetsHeight } = useSnapPoints()
@@ -205,7 +205,7 @@ const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement> & { id: `item-${nu
 
         setSnapElemenetsHeight((prev) => {
             const id = Number(props.id?.replace('item-', ''));
-            return [{ id, height: height as number, fullHeight: props.fullHeight }, ...prev.filter((item) => item.id !== id)]
+            return [{ id, height: height as number, fullHeight: props.fullheight }, ...prev.filter((item) => item.id !== id)]
         })
 
     }, [height])
