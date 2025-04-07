@@ -104,7 +104,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                             setIsAmountFocused(false);
                         }
                     }}
-                    className={`${isAmountFocused ? focusedFontSize : "text-[28px]"} text-primary-text px-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500`}
+                    className={`${isAmountFocused ? `${focusedFontSize} input-wide` : "text-[28px]"} peer text-primary-text px-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500`}
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value), fee);

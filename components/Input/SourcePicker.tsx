@@ -5,7 +5,6 @@ import AmountField from "./Amount";
 import { useAmountFocus } from "../../context/amountFocusContext";
 
 const SourcePicker = () => {
-    const { isAmountFocused } = useAmountFocus()
 
     return (<div className={`rounded-lg pt-2.5`}>
         <div className="flex justify-between items-center px-4 pt-2">
@@ -16,10 +15,10 @@ const SourcePicker = () => {
         </div>
         <div className="p-3 pb-4 pr-4 rounded-xl items-center space-y-2">
             <div className="grid grid-cols-8 gap-2">
-                <div className={`${!isAmountFocused ? "col-span-5" : "col-span-6"}` }>
+                <div className={`col-span-5 peer in-has-[.input-wide]:col-span-6`}>
                     <AmountField />
                 </div>
-                <div className={`${!isAmountFocused ? "col-span-3" : "col-span-2"} flex items-center self-start justify-end`}>
+                <div className={`col-span-3 in-has-[.input-wide]:col-span-2 flex items-center self-start justify-end`}>
                     <RoutePicker direction="from" />
                 </div>
             </div>
