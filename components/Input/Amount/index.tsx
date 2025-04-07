@@ -6,7 +6,6 @@ import { useFee } from "../../../context/feeContext";
 import useSWRGas from "../../../lib/gases/useSWRGas";
 import useSWRBalance from "../../../lib/balances/useSWRBalance";
 import { useSwapDataState } from "../../../context/swap";
-import MinMax from "./MinMax";
 import { resolveMacAllowedAmount } from "./helpers";
 import { useAmountFocus } from "../../../context/amountFocusContext";
 import useWindowDimensions from "../../../hooks/useWindowDimensions";
@@ -83,10 +82,6 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     return (<>
         <div className="flex flex-col w-full bg-secondary-500 rounded-lg">
-            {
-                from && to && fromCurrency && minAllowedAmount && maxAmountFromApi &&
-                <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />
-            }
             <div className="relative w-full">
                 <NumericInput
                     disabled={diasbled}

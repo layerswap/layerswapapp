@@ -50,8 +50,6 @@ const Component: FC = () => {
         }
     }, [values.depositMethod, defaultWallet?.address, availableWallets.length])
 
-
-
     const handleWalletChange = () => {
         setOpenModal(true)
     }

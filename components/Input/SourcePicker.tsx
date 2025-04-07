@@ -3,9 +3,18 @@ import { PlusIcon } from "lucide-react";
 import RoutePicker from "./RoutePicker";
 import AmountField from "./Amount";
 import { useAmountFocus } from "../../context/amountFocusContext";
+import { useFormikContext } from "formik";
+import { SwapFormValues } from "../DTOs/SwapFormValues";
+import { useFee } from "../../context/feeContext";
+import MinMax from "./Amount/MinMax";
 
 const SourcePicker = () => {
+    const { values, handleChange } = useFormikContext<SwapFormValues>();
 
+    const { isAmountFocused } = useAmountFocus()
+    const { fromCurrency, from, to } = values || {};
+    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useFee()
+    
     return (<div className={`rounded-lg pt-2.5`}>
         <div className="flex justify-between items-center px-4 pt-2">
             <label htmlFor="From" className="block font-medium text-secondary-text text-sm pl-1 py-1">
@@ -13,9 +22,15 @@ const SourcePicker = () => {
             </label>
             <SourceWalletPicker />
         </div>
-        <div className="p-3 pb-4 pr-4 rounded-xl items-center space-y-2">
+        <div className="p-3 pb-4 pr-4 rounded-xl items-center space-y-2 relative">
+            {
+                from && to && fromCurrency && minAllowedAmount && maxAmountFromApi &&
+                <div className="absolute z-10 top-0 left-4">
+                    <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />
+                </div>
+            }
             <div className="grid grid-cols-8 gap-2">
-                <div className={`col-span-5 peer in-has-[.input-wide]:col-span-6`}>
+                <div className={`${!isAmountFocused ? "col-span-5" : "col-span-6"}`}>
                     <AmountField />
                 </div>
                 <div className={`col-span-3 in-has-[.input-wide]:col-span-2 flex items-center self-start justify-end`}>

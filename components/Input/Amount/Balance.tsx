@@ -36,7 +36,7 @@ const Balance = ({ values, direction, isAmountFocused }: { values: SwapFormValue
                 (network && token && network) &&
 
                 (truncatedBalance !== undefined && !isNaN(truncatedBalance)) &&
-                <div className={`${isAmountFocused ? "rounded-lg mt-1 px-1.5 w-full" : "w-4/5 -mt-0.5 rounded-b-lg text-center"} bg-secondary-400 m-auto py-0.5 text-xs text-primary-text-placeholder `}>
+                <div className={`${isAmountFocused ? "absolute rounded-lg mt-1 px-1.5 w-full" : "w-4/5 -mt-0.5 rounded-b-lg text-center"} bg-secondary-400 m-auto py-0.5 text-xs text-primary-text-placeholder `}>
                     <span>{truncatedBalance > 0 ? truncatedBalance.toFixed(token?.precision) : truncatedBalance}</span>
                 </div>
             }
