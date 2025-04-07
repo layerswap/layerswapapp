@@ -209,13 +209,12 @@ export const SelectedCurrencyDisplay = (props: SelectedCurrencyDisplayProps) => 
 type SelectedRouteDisplayProps = {
     route?: NetworkRoute | Exchange;
     token?: RouteToken;
-    isAmountFocused?: boolean;
     direction?: string;
     placeholder: string;
 }
 
 export const SelectedRouteDisplay = (props: SelectedRouteDisplayProps) => {
-    const { route, token, placeholder, isAmountFocused, direction } = props
+    const { route, token, placeholder, direction } = props
     return (
         <span className="flex grow text-left items-center text-xs md:text-base">
             {token?.logo && route?.logo ? (
@@ -239,26 +238,24 @@ export const SelectedRouteDisplay = (props: SelectedRouteDisplayProps) => {
                         className="h-5 w-5 absolute -right-1.5 -bottom-1.5 object-contain rounded-md border-2 border-secondary-800"
                     />
                 </div>
-            ) : <RoutePickerIcon className="w-7 h-7" />}
+            ) : (
+                <div className="inline-flex items-center relative shrink-0">
+                    <RoutePickerIcon className="w-7 h-7" />
+                </div>)
+            }
 
-            <motion.div
-                layout
-                transition={{ duration: 0.25 }}
-                className="flex items-center overflow-hidden min-w-0"
-            >
-                {(direction === 'from' ? !isAmountFocused : true) && token && route ? (
-                    <span className="ml-2 flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0">
-                        <span className="leading-5">{token.symbol}</span>
-                        <span className="text-secondary-text text-sm leading-4 truncate whitespace-nowrap">
-                            {route.display_name}
-                        </span>
+            {token && route ?
+                <span className={`${direction === 'from' ? "in-has-[.input-wide]:hidden" : ""} ml-2 flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0`}>
+                    <span className="leading-5">{token.symbol}</span>
+                    <span className="text-secondary-text text-sm leading-4 truncate whitespace-nowrap">
+                        {route.display_name}
                     </span>
-                ) : (direction === 'from' ? !isAmountFocused : true) && (
-                    <span className="flex text-secondary-text text-base leading-5 flex-auto items-center">
-                        <span className="ml-2">{placeholder}</span>
-                    </span>
-                )}
-            </motion.div>
+                </span>
+                :
+                <span className={`${direction === 'from' ? "in-has-[.input-wide]:hidden" : ""} flex text-secondary-text text-base font-normal leading-5 flex-auto items-center`}>
+                    <span className="ml-2">{placeholder}</span>
+                </span>
+            }
         </span>
     )
 }

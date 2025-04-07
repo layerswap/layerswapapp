@@ -52,16 +52,17 @@ export const SelectorContent = (props: SelectContentProps) => {
 
 type SelectTriggerProps = {
     disabled: boolean;
-    children: React.ReactNode | React.ReactNode[]
+    children: React.ReactNode | React.ReactNode[];
+    direction?: string;
 }
 
 export const SelectorTrigger = (props: SelectTriggerProps) => {
-    const { disabled, children } = props
+    const { disabled, children, direction } = props
     const { setIsOpen } = useContext(SelectorContext);
     function openModal() {
         setIsOpen(true)
     }
-    return <div className="flex items-center relative w-full">
+    return <div className={`${direction === "from" ? "in-has-[.input-wide]:w-fit" : ""} shadow-sm/30 rounded-lg flex items-center relative w-full z-10`}>
         <button
             type="button"
             onClick={openModal}

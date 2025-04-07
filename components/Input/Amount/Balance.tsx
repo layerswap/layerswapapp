@@ -4,7 +4,7 @@ import { truncateDecimals } from "../../utils/RoundDecimals";
 import { useSwapDataState } from "../../../context/swap";
 import useSWRBalance from "../../../lib/balances/useSWRBalance";
 
-const Balance = ({ values, direction, isAmountFocused }: { values: SwapFormValues, direction: string, isAmountFocused?: boolean }) => {
+const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
     const { to, fromCurrency, toCurrency, from, destination_address } = values
     const { selectedSourceAccount } = useSwapDataState()
@@ -36,7 +36,9 @@ const Balance = ({ values, direction, isAmountFocused }: { values: SwapFormValue
                 (network && token && network) &&
 
                 (truncatedBalance !== undefined && !isNaN(truncatedBalance)) &&
-                <div className={`${isAmountFocused ? "absolute rounded-lg mt-1 px-1.5 w-full" : "w-4/5 -mt-0.5 rounded-b-lg text-center"} bg-secondary-400 m-auto py-0.5 text-xs text-primary-text-placeholder `}>
+                <div className="in-has-[.input-wide]:absolute in-has-[.input-wide]:rounded-lg in-has-[.input-wide]:mt-1 in-has-[.input-wide]:px-1.5 in-has-[.input-wide]:w-full 
+                  in-has-[.input-wide]:py-0.5 in-has-[.input-wide]:m-auto in-has-[.input-wide]:text-xs in-has-[.input-wide]:text-primary-text-placeholder in-has-[.input-wide]:-bottom-6
+                  w-4/5 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs text-primary-text-placeholder">
                     <span>{truncatedBalance > 0 ? truncatedBalance.toFixed(token?.precision) : truncatedBalance}</span>
                 </div>
             }
