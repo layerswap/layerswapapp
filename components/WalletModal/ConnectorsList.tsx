@@ -2,7 +2,7 @@ import { Dispatch, FC, SetStateAction, useEffect, useMemo, useRef, useState } fr
 import useWallet from "../../hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
 import { InternalConnector, Wallet, WalletProvider } from "../../Models/WalletProvider";
-import { CircleX, LoaderCircle, RotateCw, Search, XCircle } from "lucide-react";
+import { Check, CircleX, LoaderCircle, RotateCw, Search, SlidersHorizontal, XCircle } from "lucide-react";
 import { resolveWalletConnectorIcon } from "../../lib/wallets/utils/resolveWalletIcon";
 import { QRCodeSVG } from "qrcode.react";
 import CopyButton from "../buttons/copyButton";
@@ -13,6 +13,7 @@ import { removeDuplicatesWithKey } from "./utils";
 import VaulDrawer from "../modal/vaulModal";
 import Image from "next/image";
 import { usePersistedState } from "../../hooks/usePersistedState";
+import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 
 const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { isMobile } = useWindowDimensions()
@@ -127,29 +128,31 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     return (
         <>
             <div className="text-primary-text space-y-3">
-                <div className="relative z-0 flex items-center px-3 rounded-lg bg-secondary-700 border border-secondary-500">
-                    <Search className="w-6 h-6 mr-2 text-primary-text-placeholder" />
-                    <input
-                        value={searchValue}
-                        onChange={(e) => setSearchValue(e.target.value)}
-                        onFocus={() => setIsFocused(true)}
-                        onBlur={() => setIsFocused(false)}
-                        placeholder="Search wallet"
-                        autoComplete="off"
-                        className="placeholder:text-primary-text-placeholder border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-10 bg-transparent text-base outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
+                <div className="flex items-center gap-3">
+                    <div className="relative z-0 flex items-center px-3 rounded-lg bg-secondary-700 border border-secondary-500 w-full">
+                        <Search className="w-6 h-6 mr-2 text-primary-text-placeholder" />
+                        <input
+                            value={searchValue}
+                            onChange={(e) => setSearchValue(e.target.value)}
+                            onFocus={() => setIsFocused(true)}
+                            onBlur={() => setIsFocused(false)}
+                            placeholder="Search wallet"
+                            autoComplete="off"
+                            className="placeholder:text-primary-text-placeholder border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-10 bg-transparent text-base outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
+                        />
+                        {
+                            searchValue &&
+                            <button type="button" onClick={() => setSearchValue('')} className="absolute right-3">
+                                <XCircle className="w-4 h-4 text-primary-text-placeholder" />
+                            </button>
+                        }
+                    </div>
+                    <ProviderPicker
+                        providers={filteredProviders}
+                        selectedProviderName={selectedProvider?.name}
+                        setSelectedProviderName={(v) => setSelectedProvider(filteredProviders.find(p => p.name === v))}
                     />
-                    {
-                        searchValue &&
-                        <button type="button" onClick={() => setSearchValue('')} className="absolute right-3">
-                            <XCircle className="w-4 h-4 text-primary-text-placeholder" />
-                        </button>
-                    }
                 </div>
-                <ProviderPicker
-                    providers={filteredProviders}
-                    selectedProviderName={selectedProvider?.name}
-                    setSelectedProviderName={(v) => setSelectedProvider(filteredProviders.find(p => p.name === v))}
-                />
                 <div
                     onScroll={handleScroll}
                     className={clsx('overflow-y-scroll -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar-thumb:bg-transparent', {
@@ -282,30 +285,32 @@ const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: st
     const values = providers.map(p => p.name)
 
     const onSelect = (item: string) => {
+        setOpen(false)
         if (selectedProviderName === item) return setSelectedProviderName(undefined)
         setSelectedProviderName(item)
     }
 
+    const [open, setOpen] = useState(false)
+
     return (
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar:hidden">
-            {
-                values.sort().map((item, index) => {
-                    const isSelected = selectedProviderName?.toLowerCase() == item.toLowerCase()
-                    return (
-                        <div key={index}>
-                            <button onClick={() => onSelect(item)}
-                                className={clsx('px-2 py-0.5 w-full text-left bg-secondary-600 hover:brightness-125 text-sm rounded-md transition-all duration-200', {
-                                    'brightness-150': isSelected
-                                })}
-                            >
-                                {item}
-                            </button>
-                        </div>
-                    )
+        <Popover open={open} onOpenChange={() => setOpen(!open)}>
+            <PopoverTrigger className="p-3 border border-secondary-500 rounded-lg bg-secondary-700 hover:brightness-125">
+                <SlidersHorizontal className="h-4 w-4 text-secondary-text" />
+            </PopoverTrigger>
+            <PopoverContent align="end" className="min-w-32 !text-primary-text p-2 space-y-1 !bg-secondary-600 !rounded-xl">
+                {
+                    values.sort().map((item, index) => (
+                        <button key={index} onClick={() => onSelect(item)} className="px-3 py-1 text-left flex items-center justify-between w-full gap-3 hover:bg-secondary-800 rounded-lg transition-colors duration-200">
+                            {item}
+                            {
+                                selectedProviderName === item &&
+                                <Check className="w-4 h-4 text-primary-text" />
+                            }
+                        </button>
+                    ))
                 }
-                )
-            }
-        </div>
+            </PopoverContent>
+        </Popover>
     )
 }
 
