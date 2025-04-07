@@ -49,9 +49,9 @@ const WalletTransferContent: FC = () => {
         }
     }, [activeWallet?.address, setSelectedSourceAccount, provider, selectedSourceAccount?.address])
 
-    const { balance, isBalanceLoading } = useSWRBalance(selectedSourceAccount?.address, source_network)
+    const { balances, isBalanceLoading } = useSWRBalance(selectedSourceAccount?.address, source_network)
 
-    const walletBalance = source_network && balance?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
+    const walletBalance = source_network && balances?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
 
     let accountAddress: string | undefined = ""

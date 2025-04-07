@@ -86,9 +86,9 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
     const { networks } = useSettingsState()
     const networkWithTokens = networks.find(n => n.name === network?.name)
 
-    const { balance, isBalanceLoading } = useSWRBalance(wallet.address, networkWithTokens)
+    const { balances, isBalanceLoading } = useSWRBalance(wallet.address, networkWithTokens)
 
-    const walletBalance = balance?.find(b => b?.token === token?.symbol)
+    const walletBalance = balances?.find(b => b?.token === token?.symbol)
 
     const isSelected = selectable && (wallet.addresses.length == 1 && wallet.address == selectedAddress)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, token?.precision)
@@ -224,10 +224,10 @@ type NestedWalletAddressProps = {
 const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddressProps> = ({ selectable, address, network, onWalletSelect, token, wallet, selectedAddress, ...props }) => {
     const { networks } = useSettingsState()
     const networkWithTokens = networks.find(n => n.name === network?.name)
-    const { balance, isBalanceLoading } = useSWRBalance(address, networkWithTokens)
+    const { balances, isBalanceLoading } = useSWRBalance(address, networkWithTokens)
 
     const isNestedSelected = selectable && address == selectedAddress
-    const nestedWalletBalance = balance?.find(b => b?.token === token?.symbol)
+    const nestedWalletBalance = balances?.find(b => b?.token === token?.symbol)
     const nestedWalletBalanceAmount = nestedWalletBalance?.amount && truncateDecimals(nestedWalletBalance?.amount, token?.precision)
 
     return (

@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { NetworkRoute, NetworkRouteToken } from "../../Models/Network";
 import { Selector, SelectorContent, SelectorTrigger } from "../Select/CommandNew/Index";
@@ -11,9 +11,14 @@ import useWindowDimensions from "../../hooks/useWindowDimensions";
 import { CurrencySelectItemDisplay, RouteSelectItemDisplay, SelectedRouteDisplay } from "../Select/Shared/Routes";
 import { Exchange, ExchangeToken } from "../../Models/Exchange";
 import React from "react";
-import { ResolveCEXCurrencyOrder, ResolveCurrencyOrder, SortNetworkRoutes } from "../../lib/sorting";
+import { ResolveCEXCurrencyOrder, ResolveCurrencyOrder, SortNetworkRoutes, SortNetworkRoutesWithBalances } from "../../lib/sorting";
 import useFormRoutes from "../../hooks/useFormRoutes";
 import { Route, RouteToken, RoutesGroup } from "../../Models/Route";
+import useAllBalances from "../../hooks/useAllBalances";
+import useWallet from "../../hooks/useWallet";
+import { AnimatePresence, LayoutGroup, motion } from 'framer-motion';
+import { Wallet } from "../../Models/WalletProvider";
+import { useNetworksBalanceStore } from "../../stores/networksBalanceStore";
 
 function resolveSelectedRoute(values: SwapFormValues, direction: SwapDirection): NetworkRoute | Exchange | undefined {
     const { from, to, fromExchange, toExchange } = values
@@ -35,13 +40,20 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const { isDesktop } = useWindowDimensions();
+    // const { loading } = useAllBalances()
 
     const { allRoutes, isLoading, groupedRoutes } = useFormRoutes({ direction, values })
+    const allNetworkRouteNames = useMemo(() => allRoutes.filter(r => !r.cex).map(r => r.name), [allRoutes])
+
+    const allBalancesFetched = useNetworksBalanceStore((state) =>
+        state.areAllBalancesFetched(allNetworkRouteNames)
+    )
 
     const currencyFieldName = direction === 'from' ? 'fromCurrency' : 'toCurrency';
 
     const selectedRoute = resolveSelectedRoute(values, direction)
     const selectedToken = resolveSelectedToken(values, direction)
+
     useEffect(() => {
 
         if (!selectedRoute || !selectedToken || !allRoutes) return
@@ -83,6 +95,8 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
         }
     }, [currencyFieldName, direction, values])
 
+    const [sort, srtSort] = useState(false)
+    const handleSwitch = useCallback(() => { srtSort(!sort) }, [sort])
     return (
         <div className="relative">
             <Selector>
@@ -95,6 +109,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search">
                     {({ closeModal }) => (
                         <CommandWrapper>
+                            <div onClick={handleSwitch}>switch</div>
                             <CommandInput autoFocus={isDesktop} placeholder="Search" />
                             {isLoading ? (
                                 <div className="flex justify-center h-full items-center">
@@ -111,6 +126,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                                             onSelect={(n, t) => { handleSelect(n, t); closeModal() }}
                                             selectedRoute={selectedRoute?.name}
                                             selectedToken={selectedToken?.symbol}
+                                            loadingBalances={!allBalancesFetched}
                                         />
                                     })}
                                 </CommandList>
@@ -124,38 +140,115 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
 };
 
 type GroupProps = {
+    loadingBalances: boolean;
     group: RoutesGroup;
     direction: SwapDirection;
     onSelect: (route: Route, token: RouteToken) => void;
     selectedRoute: string | undefined;
     selectedToken: string | undefined;
 }
-const Group = ({ group, direction, onSelect, selectedRoute, selectedToken }: GroupProps) => {
+const Group = ({ group, direction, onSelect, selectedRoute, selectedToken, loadingBalances }: GroupProps) => {
     const [openValues, setOpenValues] = useState<string[]>(selectedRoute ? [selectedRoute] : [])
+
+    const { wallets } = useWallet()
+
     const toggleAccordionItem = (value: string) => {
         setOpenValues((prev) =>
             prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
         )
     }
-    return <CommandGroup heading={<span className='text-secondary-text pl-2'>{group.name.toUpperCase()}</span>}>
-        <Accordion type="multiple" value={openValues} defaultValue={selectedRoute ? [selectedRoute] : []} >
-            {group.routes.sort(SortNetworkRoutes).map((route, index) => {
-                return <GroupItem
-                    route={route}
-                    underline={index > 0}
-                    toggleContent={toggleAccordionItem}
-                    onSelect={onSelect}
-                    direction={direction}
-                    key={route.name}
-                    selectedRoute={selectedRoute}
-                    selectedToken={selectedToken}
-                />
-            })}
-        </Accordion>
-    </CommandGroup>
+
+    const allNetworkRouteNames = useMemo(() => group.routes.filter(r => !r.cex).map(r => r.name), [group.routes])
+
+    const allBalancesFetched = useNetworksBalanceStore((state) =>
+        state.areAllBalancesFetched(allNetworkRouteNames)
+    )
+
+    const freezedRoutes = useRef<Route[]>([])
+    const ordered = useRef<Route[]>()
+    const hoveredRouteNamesRef = useRef<Set<string>>(new Set());
+    const hoverLeaveTimeoutsRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
+    const handleMouseEnter = (routeName: string) => {
+        // Cancel any pending timeout for this route
+        const timeout = hoverLeaveTimeoutsRef.current.get(routeName);
+        if (timeout) {
+            clearTimeout(timeout);
+            hoverLeaveTimeoutsRef.current.delete(routeName);
+        }
+
+        hoveredRouteNamesRef.current.add(routeName);
+    };
+
+    const handleMouseLeave = (routeName: string) => {
+        const timeout = setTimeout(() => {
+            hoveredRouteNamesRef.current.delete(routeName);
+            hoverLeaveTimeoutsRef.current.delete(routeName);
+        }, 100); // Delay in ms
+
+        hoverLeaveTimeoutsRef.current.set(routeName, timeout);
+    };
+    const sorted = useMemo(() => {
+
+        const sorting = allBalancesFetched ? SortNetworkRoutesWithBalances : SortNetworkRoutes
+        const routes = ordered.current || group.routes
+        const hovered = Array.from(hoveredRouteNamesRef.current);
+
+        const freezedNames = [...openValues, ...hovered];
+
+        freezedRoutes.current = [
+            ...freezedRoutes.current,
+            ...routes.filter(r => freezedNames.includes(r.name))
+        ];
+
+        const isFreezed = (name: string) =>
+            freezedRoutes.current.some(fr => fr.name === name);
+
+        const sortable = routes.filter(r => !isFreezed(r.name));
+        const sortedNonFixed = [...sortable].sort(sorting);
+
+        const finalSorted = routes.map((item) =>
+            isFreezed(item.name) ? item : sortedNonFixed.shift()!
+        );
+
+        ordered.current = finalSorted;
+        return finalSorted;
+
+    }, [group.routes, allBalancesFetched])
+
+    useEffect(() => {
+        return () => {
+            hoverLeaveTimeoutsRef.current.forEach(clearTimeout);
+        };
+    }, []);
+
+    return <LayoutGroup>
+        <motion.div layout="position">
+            <CommandGroup heading={<span className='text-secondary-text pl-2'>{group.name.toUpperCase()}</span>}>
+                <Accordion type="multiple" value={openValues} defaultValue={selectedRoute ? [selectedRoute] : []} >
+                    {sorted.map((route, index) => {
+                        return <RouteItem
+                            onMouseEnter={() => handleMouseEnter(route.name)}
+                            onMouseLeave={() => handleMouseLeave(route.name)}
+                            wallets={wallets}
+                            route={route}
+                            underline={index > 0}
+                            toggleContent={toggleAccordionItem}
+                            onSelect={onSelect}
+                            direction={direction}
+                            key={route.name}
+                            selectedRoute={selectedRoute}
+                            selectedToken={selectedToken}
+                        />
+                    })}
+                </Accordion>
+            </CommandGroup >
+        </motion.div>
+    </LayoutGroup>
 }
 
-type GroupItemProps = {
+type RouteItemProps = {
+    wallets?: Wallet[],
     route: Route,
     underline: boolean,
     toggleContent: (itemName: string) => void;
@@ -163,6 +256,8 @@ type GroupItemProps = {
     onSelect: (route: Route, token: RouteToken) => void;
     selectedRoute: string | undefined;
     selectedToken: string | undefined;
+    onMouseEnter: () => void;
+    onMouseLeave: () => void;
 }
 
 function getSortedRouteTokens(route: Route) {
@@ -172,55 +267,63 @@ function getSortedRouteTokens(route: Route) {
     return route.tokens?.sort((a, b) => ResolveCurrencyOrder(a) - ResolveCurrencyOrder(b))
 }
 
-const GroupItem = ({ route, underline, toggleContent, direction, onSelect, selectedRoute, selectedToken }: GroupItemProps) => {
+const RouteItem = ({ route, underline, toggleContent, direction, onSelect, selectedRoute, selectedToken, wallets, onMouseEnter, onMouseLeave }: RouteItemProps) => {
 
     const itemRef = React.useRef<HTMLDivElement>(null);
 
     const sortedTokens = getSortedRouteTokens(route)
 
     const filterValue = `${route.display_name} ${sortedTokens?.map(si => si.symbol).join(" ")}`;
+    const [isAnimating, setIsAnimating] = useState(false);
 
     return (
         //// Wrap accordion with disabled command itme to filter out in search. (when accordion is oppen it will ocupy some space)
-        <CommandItem
-            ref={itemRef}
-            disabled={true}
-            value={`${filterValue} **`} >
-            <AccordionItem value={route.name}>
-                <CommandItem
-                    className="aria-selected:bg-secondary-700 aria-selected:text-primary-text hover:bg-secondary-700"
-                    value={filterValue}
-                    key={route.name}
-                    onSelect={() => { toggleContent(route.name) }}>
-                    <AccordionTrigger>
-                        <RouteSelectItemDisplay
-                            item={route}
-                            selected={false}
-                            direction={direction}
-                            divider={underline}
-                        />
-                    </AccordionTrigger>
-                </CommandItem >
-                <AccordionContent className="rounded-md AccordionContent">
-                    <div className='ml-8 pb-2'>
-                        {
-                            sortedTokens?.map((token: ExchangeToken | NetworkRouteToken, index) => {
-                                return <TokenCommandWrapper
-                                    key={`${route.name}-${token.symbol}`}
-                                    token={token}
-                                    route={route}
-                                    direction={direction}
-                                    divider={index + 1 < sortedTokens.length}
-                                    onSelect={onSelect}
-                                    selectedRoute={selectedRoute}
-                                    selectedToken={selectedToken}
-                                />
-                            })
-                        }
-                    </div>
-                </AccordionContent>
-            </AccordionItem >
-        </CommandItem >
+        <motion.div
+            onMouseEnter={onMouseEnter}
+            onMouseLeave={onMouseLeave}
+            layout="position"
+        >
+            <CommandItem
+                ref={itemRef}
+                disabled={true}
+                value={`${filterValue} **`} >
+                <AccordionItem value={route.name}>
+                    <CommandItem
+                        className="aria-selected:bg-secondary-700 aria-selected:text-primary-text hover:bg-secondary-700"
+                        value={filterValue}
+                        key={route.name}
+                        onSelect={() => { toggleContent(route.name) }}>
+                        <AccordionTrigger>
+                            <RouteSelectItemDisplay
+                                wallets={wallets}
+                                item={route}
+                                selected={false}
+                                direction={direction}
+                                divider={underline}
+                            />
+                        </AccordionTrigger>
+                    </CommandItem >
+                    <AccordionContent className={`rounded-md AccordionContent`}>
+                        <div className='ml-8 pb-2'>
+                            {
+                                sortedTokens?.map((token: ExchangeToken | NetworkRouteToken, index) => {
+                                    return <TokenCommandWrapper
+                                        key={`${route.name}-${token.symbol}`}
+                                        token={token}
+                                        route={route}
+                                        direction={direction}
+                                        divider={index + 1 < sortedTokens.length}
+                                        onSelect={onSelect}
+                                        selectedRoute={selectedRoute}
+                                        selectedToken={selectedToken}
+                                    />
+                                })
+                            }
+                        </div>
+                    </AccordionContent>
+                </AccordionItem >
+            </CommandItem >
+        </motion.div>
     )
 }
 
@@ -237,21 +340,21 @@ type TokenCommandWrapperProps = {
 
 const TokenCommandWrapper = (props: TokenCommandWrapperProps) => {
     const { route, token, direction, onSelect, divider, selectedRoute, selectedToken } = props
-    const tokenItemRef = React.useRef<HTMLDivElement>(null);
+    // const tokenItemRef = React.useRef<HTMLDivElement>(null);
     const isSelected = selectedRoute === route.name && selectedToken === token.symbol
 
-    useEffect(() => {
-        if (isSelected && tokenItemRef.current) {
-            tokenItemRef.current.scrollIntoView({ behavior: "instant", block: "center" });
-        }
-    }, [isSelected])
+    // useEffect(() => {
+    //     if (isSelected && tokenItemRef.current) {
+    //         tokenItemRef.current.scrollIntoView({ behavior: "instant", block: "center" });
+    //     }
+    // }, [isSelected])
 
     return <CommandItem
         className="border-l border-secondary-500 aria-selected:bg-secondary-700 aria-selected:text-primary-text hover:bg-secondary-700 relative"
         value={`${route.display_name} ${token.symbol} ##`}
         key={token.symbol}
         onSelect={() => { onSelect(route, token) }}
-        ref={tokenItemRef}
+    // ref={tokenItemRef}
     >
         {
             isSelected &&

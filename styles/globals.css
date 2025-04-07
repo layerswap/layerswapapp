@@ -326,11 +326,18 @@ textarea:disabled::placeholder {
 .AccordionContent {
 	overflow: hidden;
 }
+.layout-animating .AccordionContent[data-state="open"],
+.layout-animating .AccordionContent[data-state="closed"] {
+  animation: none !important;
+}
 .AccordionContent[data-state="open"] {
 	animation: slideDown 300ms ease-out;
 }
 .AccordionContent[data-state="closed"] {
 	animation: slideUp 300ms ease-out;
+}
+.AccordionContent.NoAnimation {
+  animation-play-state: paused !important;
 }
 
 @keyframes slideDown {

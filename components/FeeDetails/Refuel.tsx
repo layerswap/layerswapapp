@@ -19,9 +19,9 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick }) => {
     } = useFormikContext<SwapFormValues>();
     const { toCurrency, to, destination_address, refuel } = values
 
-    const { balance } = useSWRBalance(destination_address, to)
+    const { balances } = useSWRBalance(destination_address, to)
 
-    const destinationNativeBalance = destination_address && balance?.find(b => (b.token === to?.token?.symbol) && (b.network === to.name))
+    const destinationNativeBalance = destination_address && balances?.find(b => (b.token === to?.token?.symbol) && (b.network === to.name))
     const needRefuel = toCurrency && toCurrency.refuel && to && to.token && isValidAddress(destination_address, to) && destinationNativeBalance && destinationNativeBalance?.amount == 0 && !refuel
     const previouslySelectedDestination = useRef(to)
 

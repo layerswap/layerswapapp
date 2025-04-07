@@ -26,7 +26,6 @@ export function FeeProvider({ children }) {
     const [poll, updatePolling] = useState(true)
 
     const valuesChanger = (values: SwapFormValues) => {
-        console.log("aaaa_values", values)
         setValues(values)
     }
 

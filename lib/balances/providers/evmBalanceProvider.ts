@@ -1,6 +1,6 @@
 
 import { PublicClient } from "viem"
-import { Balance } from "../../../Models/Balance"
+import { TokenBalance } from "../../../Models/Balance"
 import { Network, NetworkType, NetworkWithTokens, Token } from "../../../Models/Network"
 import formatAmount from "../../formatAmount"
 import { http, createConfig } from '@wagmi/core'
@@ -12,7 +12,7 @@ import { datadogRum } from "@datadog/browser-rum"
 
 export class EVMBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
-        return network.type === NetworkType.EVM  && !!network.token
+        return network.type === NetworkType.EVM && !!network.token
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
@@ -30,7 +30,7 @@ export class EVMBalanceProvider {
                 transport: http()
             })
 
-            let erc20Balances: Balance[] = []
+            let erc20Balances: TokenBalance[] = []
 
             try {
                 const erc20BalancesContractRes = await getErc20Balances({
@@ -53,8 +53,7 @@ export class EVMBalanceProvider {
             const nativeToken = network.token
             const nativeBalanceData = await getTokenBalance(address as `0x${string}`, network)
             const nativeBalance = (nativeToken && nativeBalanceData) && await resolveBalance(network, nativeToken, nativeBalanceData)
-
-            let res: Balance[] = []
+            let res: TokenBalance[] = []
             return res.concat(erc20Balances, nativeBalance ? [nativeBalance] : [])
         }
         catch (e) {
@@ -208,7 +207,7 @@ export const resolveBalance = async (
     balanceData: GetBalanceReturnType
 ) => {
 
-    const nativeBalance: Balance = {
+    const nativeBalance: TokenBalance = {
         network: network.name,
         token: token.symbol,
         amount: formatAmount(balanceData?.value, token.decimals),
@@ -226,7 +225,7 @@ export const resolveERC20Balance = async (
     balanceData: GetBalanceReturnType
 ) => {
 
-    const nativeBalance: Balance = {
+    const nativeBalance: TokenBalance = {
         network: network.name,
         token: token.symbol,
         amount: formatAmount(balanceData?.value, token.decimals),

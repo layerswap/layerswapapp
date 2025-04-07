@@ -12,7 +12,7 @@ import FeeDetailsComponent from "../../FeeDetails";
 import { useFee } from "../../../context/feeContext";
 import AmountField from "../../Input/Amount"
 import dynamic from "next/dynamic";
-import { Balance } from "../../../Models/Balance";
+import { TokenBalance } from "../../../Models/Balance";
 import ResizablePanel from "../../ResizablePanel";
 import ValidationError from "../../validationError";
 import { Exchange, ExchangeToken } from "../../../Models/Exchange";
@@ -176,14 +176,13 @@ const SwapForm: FC<Props> = ({ partner }) => {
         }
     }, [values, sourceRoutes, destinationRoutes, sourceCanBeSwapped, destinationExchanges, selectedSourceAccount])
 
-    const handleReserveGas = useCallback((walletBalance: Balance, networkGas: number) => {
+    const handleReserveGas = useCallback((walletBalance: TokenBalance, networkGas: number) => {
         if (walletBalance && networkGas)
             setFieldValue('amount', walletBalance?.amount - networkGas)
     }, [values.amount])
 
     const sourceWalletNetwork = values.fromExchange ? undefined : values.from
     const shouldConnectWallet = (sourceWalletNetwork && values.from?.deposit_methods?.includes('wallet') && values.depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!values.from && !values.fromExchange && !wallets.length && values.depositMethod !== 'deposit_address')
-
     return <Widget className="sm:min-h-[450px] h-full">
         <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
             <Widget.Content>
