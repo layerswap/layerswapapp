@@ -62,8 +62,8 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
             {
                 thresholdElapsed && swap.status !== SwapStatus.UserTransferPending ? (
                     <div>
-                        <span>Transaction is taking longer than expected</span>
-                        <a className='underline hover:cursor-pointer' onClick={() => startIntercom()}> please contact our support.</a>
+                        <span>Transaction is taking longer than expected </span>
+                        <a className='underline hover:cursor-pointer' onClick={() => startIntercom()}>please contact our support.</a>
                     </div>
                 ) : countdown === 0 && swap.status !== SwapStatus.Completed ? (
                     <div>
