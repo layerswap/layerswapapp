@@ -9,6 +9,7 @@ import { useSwapDataState } from "../../../context/swap";
 import MinMax from "./MinMax";
 import { resolveMacAllowedAmount } from "./helpers";
 import { useAmountFocus } from "../../../context/amountFocusContext";
+import useWindowDimensions from "../../../hooks/useWindowDimensions";
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 
@@ -16,8 +17,10 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
     const { fromCurrency, from, to, amount, toCurrency, fromExchange, toExchange } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fee, isFeeLoading } = useFee()
+    const { isDesktop } = useWindowDimensions();
 
     const { isAmountFocused, setIsAmountFocused } = useAmountFocus()
+    const [focusedFontSize, setFocusedFontSize] = useState("text-[48px]");
 
     const { selectedSourceAccount } = useSwapDataState()
     const sourceAddress = selectedSourceAccount?.address
@@ -58,6 +61,26 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         else if (fee && amount) updateRequestedAmountInUsd(Number(amount), fee)
     }, [amount, fromCurrency, fee, isFeeLoading])
 
+    const updateFocusedFontSize = (value: string) => {
+        if (!isAmountFocused) return;
+
+        const length = value.replace(/[^0-9.]/g, "").length;
+        let size = "text-[48px]";
+
+        if (isDesktop) {
+            if (length >= 14) size = "text-[30px]";
+            else if (length >= 12) size = "text-[36px]";
+            else if (length >= 9) size = "text-[40px]";
+        } else {
+            if (length >= 14) size = "text-[26px]";
+            else if (length >= 12) size = "text-[30px]";
+            else if (length >= 10) size = "text-[36px]";
+            else if (length >= 8) size = "text-[40px]";
+        }
+
+        setFocusedFontSize(size);
+    };
+
     return (<>
         <div className="flex flex-col w-full bg-secondary-500 rounded-lg">
             {
@@ -81,10 +104,11 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                             setIsAmountFocused(false);
                         }
                     }}
-                    className={`${isAmountFocused ? "text-[48px]" : "text-[28px]"} text-primary-text px-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500`}
+                    className={`${isAmountFocused ? focusedFontSize : "text-[28px]"} text-primary-text px-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500`}
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value), fee);
+                        updateFocusedFontSize(e.target.value);
                     }}
                 />
                 <span className="text-base leading-5 font-medium px-2 text-secondary-text">

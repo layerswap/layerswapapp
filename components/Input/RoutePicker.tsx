@@ -91,7 +91,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
         <motion.div
             layout
             transition={{ duration: 0.25 }}
-            className="relative self-end ml-auto w-full"
+            className={`${isAmountFocused ? "" : "w-full"} relative self-end ml-auto`}
         >
             <Selector>
                 <SelectorTrigger disabled={false}>
