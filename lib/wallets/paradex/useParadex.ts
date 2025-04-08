@@ -123,6 +123,9 @@ export default function useParadex({ network }: Props): WalletProvider {
             if (error.name == 'ConnectorAlreadyConnectedError') {
                 toast.error('Wallet is already connected.')
             }
+            else if (error.message.includes("Cannot read properties of undefined (reading 'toLowerCase')")) {
+                toast.error('Please update your wallet to the latest version.')
+            }
             else {
                 toast.error(e.message)
             }
