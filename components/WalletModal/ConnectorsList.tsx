@@ -19,7 +19,6 @@ import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
 const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { isMobile } = useWindowDimensions()
     const { providers } = useWallet();
-    const filteredProviders = providers.filter(p => !!p.autofillSupportedNetworks && !p.hideFromList)
     const { setSelectedConnector, selectedProvider, setSelectedProvider, selectedConnector } = useConnectModal()
     let [recentConnectors, setRecentConnectors] = usePersistedState<({ providerName?: string, connectorName?: string }[] | undefined)>([], 'recentConnectors', 'localStorage');
     const [connectionError, setConnectionError] = useState<string | undefined>(undefined);
@@ -68,7 +67,9 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         }
     }
 
-    const allConnectors = filteredProviders.filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0 && (selectedProvider ? g.name == selectedProvider.name : true)).map((provider) =>
+    const filteredProviders = selectedProvider ? [selectedProvider] : providers.filter(p => !!p.autofillSupportedNetworks && !p.hideFromList)
+
+    const allConnectors = filteredProviders.filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0).map((provider) =>
         provider.availableWalletsForConnect?.filter(v => (isFocused || searchValue) ? (searchValue ? v.name.toLowerCase().includes(searchValue?.toLowerCase()) : false) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat()
 
     const resolvedConnectors: InternalConnector[] = useMemo(() => removeDuplicatesWithKey(allConnectors, 'name'), [allConnectors])
