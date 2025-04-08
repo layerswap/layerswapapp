@@ -6,7 +6,10 @@ export type InternalConnector = {
     id: string,
     icon?: string | undefined,
     order?: number,
-    type?: 'injected' | 'other'
+    type?: 'injected' | 'other',
+    isMultiChain?: boolean,
+    providerName?: string,
+    installUrl?: string,
 }
 
 export type Wallet = {
@@ -51,4 +54,5 @@ export type WalletProvider = {
     asSourceSupportedNetworks?: string[],
     name: string,
     id: string,
+    providerIcon?: string,
 }
