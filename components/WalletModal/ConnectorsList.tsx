@@ -2,7 +2,7 @@ import { Dispatch, FC, SetStateAction, useEffect, useMemo, useRef, useState } fr
 import useWallet from "../../hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
 import { InternalConnector, Wallet, WalletProvider } from "../../Models/WalletProvider";
-import { Check, CircleX, LoaderCircle, RotateCw, Search, SlidersHorizontal, XCircle } from "lucide-react";
+import { Check, CircleX, Link2Off, RotateCw, Search, SlidersHorizontal, XCircle } from "lucide-react";
 import { resolveWalletConnectorIcon } from "../../lib/wallets/utils/resolveWalletIcon";
 import { QRCodeSVG } from "qrcode.react";
 import CopyButton from "../buttons/copyButton";
@@ -14,6 +14,7 @@ import VaulDrawer from "../modal/vaulModal";
 import Image from "next/image";
 import { usePersistedState } from "../../hooks/usePersistedState";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
+import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
 
 const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { isMobile } = useWindowDimensions()
@@ -232,15 +233,25 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
         >
             {
                 selectedConnector &&
-                <div className="flex flex-col gap-1 items-center justify-end row-start-2 row-span-1">
+                <div className="flex flex-col gap-3 items-center justify-end row-start-2 row-span-1">
                     <div className="flex-col flex items-center">
-                        <ConnectorIcon className="w-11 h-auto p-0.5 rounded-md bg-secondary-800" />
                         {
-                            !connectionError &&
-                            <p className='text-xs font-light'>
-                                Opening {selectedConnector?.name}...
-                            </p>
+                            <div className="grid grid-cols-3 items-center gap-2">
+                                <div className="p-3 bg-secondary-700 rounded-lg z-10">
+                                    <LayerSwapLogoSmall className="w-11 h-auto" />
+                                </div>
+                                {
+                                    connectionError ?
+                                        <Link2Off className="w-auto h-auto place-self-center" />
+                                        :
+                                        <div className="loader !text-[3px] place-self-center" />
+                                }
+                                <div className="p-3 bg-secondary-700 rounded-lg z-10">
+                                    <ConnectorIcon className="w-11 h-auto" />
+                                </div>
+                            </div>
                         }
+
                     </div>
                     {
                         connectionError ?
@@ -248,10 +259,10 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
                                 Failed to connect
                             </p>
                             :
-                            <>
-                                <span className="text-base font-medium py-1">Confirm connection in the extension</span>
-                                <LoaderCircle className='h-5 w-auto animate-spin' />
-                            </>
+                            <div className="py-1 text-center">
+                                <p className="text-base font-medium">Click connect in your wallet popup</p>
+                                <p className="text-sm font-normal text-secondary-text">Don&apos;t see a pop up? Check your other browser windows</p>
+                            </div>
                     }
                 </div>
             }
