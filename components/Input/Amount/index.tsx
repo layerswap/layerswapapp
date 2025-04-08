@@ -63,15 +63,24 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const updateFocusedFontSize = (value: string) => {
         if (!isAmountFocused) return;
 
-        const length = value.replace(/[^0-9.]/g, "").length;
+        const cleanValue = value.replace(/[^0-9.]/g, "");
+        const length = cleanValue.length;
+
+        if (length === 0) {
+            setFocusedFontSize("text-[28px]");
+            return;
+        }
+
         let size = "text-[48px]";
 
         if (isDesktop) {
-            if (length >= 14) size = "text-[30px]";
+            if (length >= 16) size = "text-[28px]";
+            else if (length >= 14) size = "text-[30px]";
             else if (length >= 12) size = "text-[36px]";
             else if (length >= 9) size = "text-[40px]";
         } else {
-            if (length >= 14) size = "text-[26px]";
+            if (length >= 16) size = "text-[24px]";
+            else if (length >= 14) size = "text-[26px]";
             else if (length >= 12) size = "text-[30px]";
             else if (length >= 10) size = "text-[36px]";
             else if (length >= 8) size = "text-[40px]";
@@ -99,7 +108,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                             setIsAmountFocused(false);
                         }
                     }}
-                    className={`${isAmountFocused ? `${focusedFontSize} input-wide` : "text-[28px]"} peer text-primary-text px-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500`}
+                    className={`${isAmountFocused ? `${focusedFontSize} input-wide placeholder:text-[28px]` : "text-[28px]"} peer text-primary-text px-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500`}
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value), fee);
@@ -110,7 +119,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     {`$${requestedAmountInUsd ?? 0}`}
                 </span>
             </div>
-        </div >
+        </div>
     </>)
 });
 

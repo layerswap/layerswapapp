@@ -86,45 +86,46 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
         }
     }, [currencyFieldName, direction, values])
 
-    return (<div className="flex flex-col self-end w-full relative ml-auto items-center">
-        <Selector>
-            <SelectorTrigger disabled={false} direction={direction}>
-                <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select Token" direction={direction} />
-                <span className="right-0 flex items-center px-2 pointer-events-none text-primary-text">
-                    <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
-                </span>
-            </SelectorTrigger>
-            <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search">
-                {({ closeModal }) => (
-                    <CommandWrapper>
-                        <CommandInput autoFocus={isDesktop} placeholder="Search" />
-                        {isLoading ? (
-                            <div className="flex justify-center h-full items-center">
-                                <SpinIcon className="animate-spin h-5 w-5" />
-                            </div>
-                        ) : (
-                            <CommandList>
-                                <CommandEmpty>No results found.</CommandEmpty>
-                                {groupedRoutes.filter(g => g.routes?.length > 0).map((group) => {
-                                    return <Group
-                                        group={group}
-                                        key={group.name}
-                                        direction={direction}
-                                        onSelect={(n, t) => { handleSelect(n, t); closeModal() }}
-                                        selectedRoute={selectedRoute?.name}
-                                        selectedToken={selectedToken?.symbol}
-                                    />
-                                })}
-                            </CommandList>
-                        )}
-                    </CommandWrapper>
-                )}
-            </SelectorContent>
-        </Selector>
-        {direction === 'from' &&
-            <Balance values={values} direction="from" />
-        }
-    </div>
+    return (
+        <div className="flex w-full flex-col self-end relative ml-auto items-center">
+            <Selector>
+                <SelectorTrigger disabled={false} direction={direction}>
+                    <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select Token" direction={direction} />
+                    <span className="right-0 flex items-center px-2 pointer-events-none text-primary-text">
+                        <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
+                    </span>
+                </SelectorTrigger>
+                <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search">
+                    {({ closeModal }) => (
+                        <CommandWrapper>
+                            <CommandInput autoFocus={isDesktop} placeholder="Search" />
+                            {isLoading ? (
+                                <div className="flex justify-center h-full items-center">
+                                    <SpinIcon className="animate-spin h-5 w-5" />
+                                </div>
+                            ) : (
+                                <CommandList>
+                                    <CommandEmpty>No results found.</CommandEmpty>
+                                    {groupedRoutes.filter(g => g.routes?.length > 0).map((group) => {
+                                        return <Group
+                                            group={group}
+                                            key={group.name}
+                                            direction={direction}
+                                            onSelect={(n, t) => { handleSelect(n, t); closeModal() }}
+                                            selectedRoute={selectedRoute?.name}
+                                            selectedToken={selectedToken?.symbol}
+                                        />
+                                    })}
+                                </CommandList>
+                            )}
+                        </CommandWrapper>
+                    )}
+                </SelectorContent>
+            </Selector>
+            {direction === 'from' &&
+                <Balance values={values} direction="from" />
+            }
+        </div>
     )
 };
 

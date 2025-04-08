@@ -2,11 +2,11 @@ import SourceWalletPicker from "./SourceWalletPicker";
 import { PlusIcon } from "lucide-react";
 import RoutePicker from "./RoutePicker";
 import AmountField from "./Amount";
+import { useAmountFocus } from "../../context/amountFocusContext";
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { useFee } from "../../context/feeContext";
 import MinMax from "./Amount/MinMax";
-import { motion } from "framer-motion";
 
 const SourcePicker = () => {
     const { values } = useFormikContext<SwapFormValues>();
@@ -28,21 +28,13 @@ const SourcePicker = () => {
                     <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />
                 </div>
             }
-            <div className="group grid grid-cols-8 gap-2">
-                <motion.div
-                    layout
-                    transition={{ duration: 0.3 }}
-                    className="col-span-5 in-has-[.input-wide]:col-span-6"
-                >
+            <div className="grid grid-cols-8 gap-2">
+                <div className="col-span-5 in-has-[.input-wide]:col-span-6">
                     <AmountField />
-                </motion.div>
-                <motion.div
-                    layout
-                    transition={{ duration: 0.3 }}
-                    className="col-span-3 in-has-[.input-wide]:col-span-2 flex items-center self-start justify-end"
-                >
+                </div>
+                <div className="col-span-3 in-has-[.input-wide]:col-span-2 flex items-center self-start justify-end">
                     <RoutePicker direction="from" />
-                </motion.div>
+                </div>
             </div>
         </div>
     </div >)

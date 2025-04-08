@@ -10,7 +10,6 @@ import { Exchange } from "../../../../Models/Exchange";
 import { Route, RouteToken } from "../../../../Models/Route";
 import { ChevronDown } from "lucide-react";
 import RoutePickerIcon from "../../../icons/RoutePickerPlaceholder";
-import { motion } from "framer-motion";
 
 type TokenItemProps = {
     route: Route;
@@ -215,6 +214,7 @@ type SelectedRouteDisplayProps = {
 
 export const SelectedRouteDisplay = (props: SelectedRouteDisplayProps) => {
     const { route, token, placeholder, direction } = props
+   
     return (
         <span className="flex grow text-left items-center text-xs md:text-base">
             {token?.logo && route?.logo ? (
