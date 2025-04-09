@@ -35,8 +35,6 @@ const useAllBalances = () => {
                 const key = `/balances/${address}/${network.name}`
                 try {
                     const data = await balanceResolver.getBalance(network, address)
-                    debugger
-                    console.log(data)
                     await mutate<NetworkBalance>(key, data)
                 }
                 catch (e) {

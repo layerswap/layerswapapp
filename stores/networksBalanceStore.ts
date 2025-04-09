@@ -49,8 +49,6 @@ export const useNetworksBalanceStore = create<BalanceStore>((set, get) => ({
     areAllBalancesFetched: (networks) => {
         const requested = get().requested
         const res = networks.every((n) => requested.has(n))
-        // console.log(requested, "fetched", balances)
-        console.log(networks.filter((n) => !requested.has(n)), "not fetched")
         return res
     },
 }))

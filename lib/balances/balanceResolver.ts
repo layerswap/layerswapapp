@@ -32,15 +32,10 @@ export class BalanceResolver {
 
     async getBalance(network: NetworkWithTokens, address?: string,): Promise<NetworkBalance> {
         try {
-            if(network.name === "STARKNET_MAINNET"){
-                debugger
-            }
             if (!address)
                 throw new Error(`No address provided for network ${network.name}`)
 
             const provider = this.providers.find(p => p.supportsNetwork(network))
-            if (provider)
-                console.log(network.type, "getting balance for ", address, network.display_name)
             //TODO: create interface for balance providers in case of empty state they shoudl throw error 
             //never return undefined as SWR does not set loading state if undefined is returned
             if (!provider) throw new Error(`No balance provider found for network ${network.name}`)
@@ -62,7 +57,6 @@ export class BalanceResolver {
             return { balances, totalInUSD };
         }
         catch (e) {
-            console.log(network.name, "balance failed")
             useNetworksBalanceStore.getState().setNetworkBalance(network.name, {
                 success: false
             })
