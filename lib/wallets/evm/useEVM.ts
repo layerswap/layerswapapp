@@ -87,8 +87,8 @@ export default function useEVM({ network }: Props): WalletProvider {
 
     const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
         try {
-            const Icon = resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
-            const base64Icon = convertSvgComponentToBase64(Icon)
+            const Icon = connector.icon || resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
+            const base64Icon = typeof Icon == 'string' ? Icon : convertSvgComponentToBase64(Icon)
             setSelectedConnector({ ...connector, icon: base64Icon })
             if (connector.id !== "coinbaseWalletSDK") {
                 await connector.disconnect()
