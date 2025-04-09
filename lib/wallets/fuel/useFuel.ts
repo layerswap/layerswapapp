@@ -2,7 +2,6 @@ import KnownInternalNames from "../../knownIds";
 import {
     useConnectors,
     useFuel as useGlobalFuel,
-    useAccounts
 } from '@fuels/react';
 import { Connector, useAccount } from "wagmi";
 import {
@@ -157,12 +156,12 @@ export default function useFuel(): WalletProvider {
     }, [connectedConnectors])
 
     const availableWalletsForConnect: InternalConnector[] = connectors.map(c => {
-
+        const isInstalled = c.installed && !c['dAppWindow']
         return {
             name: c.name,
             id: c.name,
-            type: c.installed ? 'injected' : 'other',
-            installUrl: c.installed ? undefined : c.metadata.install.link,
+            type: isInstalled ? 'injected' : 'other',
+            installUrl: isInstalled ? undefined : c.metadata.install.link,
         }
     })
 

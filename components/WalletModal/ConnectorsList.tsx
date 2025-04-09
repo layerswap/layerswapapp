@@ -15,6 +15,7 @@ import Image from "next/image";
 import { usePersistedState } from "../../hooks/usePersistedState";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
+import { Checkbox } from "../shadcn/checkbox";
 
 const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { isMobile } = useWindowDimensions()
@@ -63,13 +64,19 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             setSelectedConnector(undefined)
         } catch (e) {
             console.log(e)
-            setConnectionError(e.message || e.details)
+            if (e.message.toLowerCase().includes('rejected') || e.details.toLowerCase().includes('rejected')) {
+                setConnectionError('User rejected request')
+            }
+            else {
+                setConnectionError(e.message || e.details)
+            }
         }
     }
 
-    const filteredProviders = selectedProvider ? [selectedProvider] : providers.filter(p => !!p.autofillSupportedNetworks && !p.hideFromList)
+    const filteredProviders = providers.filter(p => !!p.autofillSupportedNetworks && !p.hideFromList)
+    const featuredProviders = selectedProvider ? [selectedProvider] : filteredProviders
 
-    const allConnectors = filteredProviders.filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0).map((provider) =>
+    const allConnectors = featuredProviders.filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0).map((provider) =>
         provider.availableWalletsForConnect?.filter(v => (isFocused || searchValue) ? (searchValue ? v.name.toLowerCase().includes(searchValue?.toLowerCase()) : false) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat()
 
     const resolvedConnectors: InternalConnector[] = useMemo(() => removeDuplicatesWithKey(allConnectors, 'name'), [allConnectors])
@@ -118,7 +125,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
 
     if (selectedConnector) {
         const connector = allConnectors.find(c => c?.name === selectedConnector.name)
-        const provider = filteredProviders.find(p => p.name === connector?.providerName)
+        const provider = featuredProviders.find(p => p.name === connector?.providerName)
         return <LoadingConnect
             isMobile={isMobile}
             onRetry={() => { connect(connector!, provider!) }}
@@ -166,7 +173,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                     <div className='grid grid-cols-2 gap-2'>
                         {
                             resolvedConnectors.sort((a, b) => a.type && b.type ? a.type.localeCompare(b.type) : 0)?.map(item => {
-                                const provider = filteredProviders.find(p => p.name === item.providerName)
+                                const provider = featuredProviders.find(p => p.name === item.providerName)
                                 const isRecent = recentConnectors?.some(v => v.connectorName === item.name)
                                 return (
                                     <Connector
@@ -187,7 +194,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 <MultichainConnectorModal
                     selectedConnector={selectedMultiChainConnector}
                     allConnectors={allConnectors as InternalConnector[]}
-                    providers={filteredProviders}
+                    providers={featuredProviders}
                     showEcosystemSelection={showEcosystemSeletion}
                     setShowEcosystemSelection={setShowEcosystemSelection}
                     connect={connect}
@@ -309,16 +316,16 @@ const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: st
             <PopoverTrigger className="p-3 border border-secondary-500 rounded-lg bg-secondary-700 hover:brightness-125">
                 <SlidersHorizontal className="h-4 w-4 text-secondary-text" />
             </PopoverTrigger>
-            <PopoverContent align="end" className="min-w-32 !text-primary-text p-2 space-y-1 !bg-secondary-600 !rounded-xl">
+            <PopoverContent align="end" className="min-w-40 !text-primary-text p-2 space-y-1 !bg-secondary-600 !rounded-xl">
                 {
                     values.sort().map((item, index) => (
-                        <button key={index} onClick={() => onSelect(item)} className="px-3 py-1 text-left flex items-center justify-between w-full gap-3 hover:bg-secondary-800 rounded-lg transition-colors duration-200">
+                        <div key={index} onClick={() => onSelect(item)} className="px-3 py-1 text-left flex items-center w-full gap-3 hover:bg-secondary-800 rounded-lg transition-colors duration-200 text-secondary-text cursor-pointer">
+                            <Checkbox
+                                id={item}
+                                checked={selectedProviderName === item}
+                            />
                             {item}
-                            {
-                                selectedProviderName === item &&
-                                <Check className="w-4 h-4 text-primary-text" />
-                            }
-                        </button>
+                        </div>
                     ))
                 }
             </PopoverContent>

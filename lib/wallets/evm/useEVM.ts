@@ -191,7 +191,7 @@ export default function useEVM({ network }: Props): WalletProvider {
         .map(w => ({
             ...w,
             order: resolveWalletConnectorIndex(w.id),
-            type: w.type == 'injected' ? w.type : "other"
+            type: (w.type == 'injected' && w.id !== 'com.immutable.passport') ? w.type : "other"
         }))
 
     const provider = {
