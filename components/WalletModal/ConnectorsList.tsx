@@ -64,7 +64,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             setSelectedConnector(undefined)
         } catch (e) {
             console.log(e)
-            if (e.message.toLowerCase().includes('rejected') || e.details.toLowerCase().includes('rejected')) {
+            if (e?.message?.toLowerCase().includes('rejected') || e?.details?.toLowerCase().includes('rejected')) {
                 setConnectionError('User rejected request')
             }
             else {
@@ -262,15 +262,11 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
 
                     </div>
                     {
-                        connectionError ?
-                            <p className="font-bold text-lg">
-                                Failed to connect
-                            </p>
-                            :
-                            <div className="py-1 text-center">
-                                <p className="text-base font-medium">Click connect in your wallet popup</p>
-                                <p className="text-sm font-normal text-secondary-text">Don&apos;t see a pop up? Check your other browser windows</p>
-                            </div>
+                        !connectionError &&
+                        <div className="py-1 text-center">
+                            <p className="text-base font-medium">Click connect in your wallet popup</p>
+                            <p className="text-sm font-normal text-secondary-text">Don&apos;t see a pop up? Check your other browser windows</p>
+                        </div>
                     }
                 </div>
             }
