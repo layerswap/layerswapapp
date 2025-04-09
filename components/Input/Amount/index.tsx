@@ -9,6 +9,7 @@ import { useSwapDataState } from "../../../context/swap";
 import { resolveMacAllowedAmount } from "./helpers";
 import { useAmountFocus } from "../../../context/amountFocusContext";
 import useWindowDimensions from "../../../hooks/useWindowDimensions";
+import { motion } from "framer-motion";
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 
@@ -88,9 +89,9 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
         setFocusedFontSize(size);
     };
-
     return (<>
-        <div className="flex flex-col w-full bg-secondary-500 rounded-lg">
+        <motion.div layout="preserve-aspect" className={`flex flex-col w-full bg-secondary-500 rounded-lg peer ${isAmountFocused ? "input-wide" : ""
+            }`}>
             <div className="relative w-full">
                 <NumericInput
                     disabled={diasbled}
@@ -108,7 +109,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                             setIsAmountFocused(false);
                         }
                     }}
-                    className={`${isAmountFocused ? `${focusedFontSize} input-wide placeholder:text-[28px]` : "text-[28px]"} peer text-primary-text px-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500`}
+                    className={`${isAmountFocused ? `${focusedFontSize} ` : "text-[28px]"} text-primary-text px-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500`}
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value), fee);
@@ -119,7 +120,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     {`$${requestedAmountInUsd ?? 0}`}
                 </span>
             </div>
-        </div>
+        </motion.div >
     </>)
 });
 

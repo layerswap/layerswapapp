@@ -7,6 +7,7 @@ import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { useFee } from "../../context/feeContext";
 import MinMax from "./Amount/MinMax";
+import { LayoutGroup, motion } from "framer-motion";
 
 const SourcePicker = () => {
     const { values } = useFormikContext<SwapFormValues>();
@@ -28,17 +29,19 @@ const SourcePicker = () => {
                     <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />
                 </div>
             }
-            <div className="grid grid-cols-8 gap-2">
-                <div className="col-span-5 in-has-[.input-wide]:col-span-6">
-                    <AmountField />
+            <LayoutGroup>
+                <div className="grid grid-cols-8 gap-2">
+                    <motion.div layout className="col-span-5 in-has-[.input-wide]:col-span-6">
+                        <AmountField />
+                    </motion.div>
+                    <motion.div layout className="col-span-3 in-has-[.input-wide]:col-span-2 flex items-center self-start justify-end">
+                        <RoutePicker direction="from" />
+                    </motion.div>
                 </div>
-                <div className="col-span-3 in-has-[.input-wide]:col-span-2 flex items-center self-start justify-end">
-                    <RoutePicker direction="from" />
-                </div>
-            </div>
+            </LayoutGroup>
         </div>
     </div >)
-};
+}
 
 export const SecondDestinationWalletPicker = () => {
     return <div className=" justify-center w-full pl-3 pr-2 py-2 bg-secondary-600 items-center flex font-light space-x-2 mx-auto rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 ">
