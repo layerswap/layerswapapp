@@ -208,54 +208,57 @@ export const SelectedCurrencyDisplay = (props: SelectedCurrencyDisplayProps) => 
 type SelectedRouteDisplayProps = {
     route?: NetworkRoute | Exchange;
     token?: RouteToken;
-    direction?: string;
     placeholder: string;
 }
 
-export const SelectedRouteDisplay = (props: SelectedRouteDisplayProps) => {
-    const { route, token, placeholder, direction } = props
-   
+export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRouteDisplayProps) => {
+    const showContent = token && route;
+
     return (
         <span className="flex grow text-left items-center text-xs md:text-base">
-            {token?.logo && route?.logo ? (
-                <div className="inline-flex items-center relative shrink-0">
-                    <Image
-                        src={token.logo}
-                        alt="Token Logo"
-                        height="28"
-                        width="28"
-                        loading="eager"
-                        fetchPriority="high"
-                        className="rounded-full object-contain"
-                    />
-                    <Image
-                        src={route.logo}
-                        alt="Route Logo"
-                        height="20"
-                        width="20"
-                        loading="eager"
-                        fetchPriority="high"
-                        className="h-5 w-5 absolute -right-1.5 -bottom-1.5 object-contain rounded-md border-2 border-secondary-800"
-                    />
-                </div>
-            ) : (
-                <div className="inline-flex items-center relative shrink-0">
-                    <RoutePickerIcon className="w-7 h-7" />
-                </div>)
-            }
-
-            {token && route ?
-                <span className={`${direction === 'from' ? "in-has-[.input-wide]:hidden" : ""} ml-2 flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0`}>
-                    <span className="leading-5">{token.symbol}</span>
-                    <span className="text-secondary-text text-sm leading-4 truncate whitespace-nowrap">
-                        {route.display_name}
+            {showContent ? (
+                <>
+                    <div className="inline-flex items-center relative shrink-0">
+                        <Image
+                            src={token.logo}
+                            alt="Token Logo"
+                            height="20"
+                            width="20"
+                            loading="eager"
+                            fetchPriority="high"
+                            className="rounded-full object-contain"
+                        />
+                        <Image
+                            src={route.logo}
+                            alt="Route Logo"
+                            height="14"
+                            width="14"
+                            loading="eager"
+                            fetchPriority="high"
+                            className="h-3.5 w-3.5 absolute -right-1.5 -bottom-1.5 object-contain rounded-md border-1 border-secondary-300"
+                        />
+                    </div>
+                    <span className="group-has-[.input-wide]:hidden ml-2 flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0">
+                        <span className="leading-5">{token.symbol}</span>
+                        <span className="text-secondary-text text-sm leading-4 truncate whitespace-nowrap">
+                            {route.display_name}
+                        </span>
                     </span>
-                </span>
-                :
-                <span className={`${direction === 'from' ? "in-has-[.input-wide]:hidden" : ""} flex text-secondary-text text-base font-normal leading-5 flex-auto items-center`}>
-                    <span className="ml-2">{placeholder}</span>
-                </span>
-            }
+                </>
+            ) : (
+                <SelectedRoutePlaceholder placeholder={placeholder} />
+            )}
         </span>
     )
 }
+
+const SelectedRoutePlaceholder = ({ placeholder }: { placeholder: string }) => (
+    <>
+        <div className="inline-flex items-center relative">
+            <RoutePickerIcon className="w-7 h-7" />
+        </div>
+        <span className="group-has-[.input-wide]:hidden flex text-secondary-text text-base font-normal leading-5 flex-auto items-center">
+            <span className="ml-2">{placeholder}</span>
+        </span>
+    </>
+)

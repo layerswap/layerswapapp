@@ -2,7 +2,6 @@ import SourceWalletPicker from "./SourceWalletPicker";
 import { PlusIcon } from "lucide-react";
 import RoutePicker from "./RoutePicker";
 import AmountField from "./Amount";
-import { useAmountFocus } from "../../context/amountFocusContext";
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { useFee } from "../../context/feeContext";
@@ -30,21 +29,21 @@ const SourcePicker = () => {
                 </div>
             }
             <LayoutGroup>
-                <div className="grid grid-cols-8 gap-2">
-                    <motion.div layout className="col-span-5 in-has-[.input-wide]:col-span-6">
+                <div className="grid grid-cols-8 gap-2 group">
+                    <motion.div layout className="col-span-5 group-has-[.input-wide]:col-span-6">
                         <AmountField />
                     </motion.div>
-                    <motion.div layout className="col-span-3 in-has-[.input-wide]:col-span-2 flex items-center self-start justify-end">
+                    <motion.div layout className="col-span-3 group-has-[.input-wide]:col-span-2 flex items-center self-start justify-end">
                         <RoutePicker direction="from" />
                     </motion.div>
                 </div>
             </LayoutGroup>
         </div>
-    </div >)
+    </div>)
 }
 
 export const SecondDestinationWalletPicker = () => {
-    return <div className=" justify-center w-full pl-3 pr-2 py-2 bg-secondary-600 items-center flex font-light space-x-2 mx-auto rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 ">
+    return <div className=" justify-center w-full pl-3 py-2 bg-secondary-600 items-center flex font-light space-x-2 mx-auto rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 ">
         <PlusIcon className="stroke-1" /> <span>Destination Address</span>
     </div>
 }
