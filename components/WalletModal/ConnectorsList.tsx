@@ -68,7 +68,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 setConnectionError('User rejected request')
             }
             else {
-                setConnectionError(e.message || e.details)
+                setConnectionError(e.message || e.details || 'Something went wrong')
             }
         }
     }
