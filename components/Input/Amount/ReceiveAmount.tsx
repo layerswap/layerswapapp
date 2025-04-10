@@ -15,7 +15,7 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ source_token, destinatio
     const receiveAmountInUsd = receive_amount && destination_token && fee.quote?.destination_token?.price_in_usd ? (receive_amount * fee.quote.destination_token.price_in_usd).toFixed(2) : undefined
 
     return (<>
-        <div className="flex flex-col min-w-0 rounded-lg font-semibold border-0 text-[28px] text-primary-text w-full">
+        <div className="flex flex-col min-w-0 rounded-lg font-normal border-0 text-[28px] text-primary-text w-full">
             {isFeeLoading ? (
                 <div className='h-[10px] w-16 inline-flex bg-gray-500 rounded-sm animate-pulse self-center' />
             ) :
