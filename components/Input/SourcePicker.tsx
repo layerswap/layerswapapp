@@ -29,7 +29,7 @@ const SourcePicker = () => {
                 </div>
             }
             <LayoutGroup>
-                <div className="grid grid-cols-8 gap-2 group">
+                <div className="grid grid-cols-8 gap-2 group mt-0.5">
                     <motion.div layout className="col-span-5 group-has-[.input-wide]:col-span-6">
                         <AmountField />
                     </motion.div>
@@ -43,7 +43,7 @@ const SourcePicker = () => {
 }
 
 export const SecondDestinationWalletPicker = () => {
-    return <div className=" justify-center w-full pl-3 py-2 bg-secondary-600 items-center flex font-light space-x-2 mx-auto rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 ">
+    return <div className=" justify-center w-full pl-3 py-2 bg-secondary-600 items-center flex font-light space-x-2 mx-auto rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12">
         <PlusIcon className="stroke-1" /> <span>Destination Address</span>
     </div>
 }
