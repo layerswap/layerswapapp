@@ -18,7 +18,7 @@ import {
   getAddress,
   numberToHex,
 } from 'viem'
-import { getInjectedConnector, hasInjectedProvider } from '../getInjectedConnector'
+import { getInjectedConnector } from '../getInjectedConnector'
 import { isAndroid, isIOS } from '../utils/isMobile'
 
 type WalletConnectConnector = Connector & {

@@ -74,5 +74,6 @@ export default function useImtblX(): WalletProvider {
         asSourceSupportedNetworks: withdrawalSupportedNetworks,
         name,
         id,
+        hideFromList: true,
     }
 }

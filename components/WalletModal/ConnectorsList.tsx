@@ -73,7 +73,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         }
     }
 
-    const filteredProviders = providers.filter(p => !!p.autofillSupportedNetworks && !p.hideFromList)
+    const filteredProviders = providers.filter(p => !p.hideFromList)
     const featuredProviders = selectedProvider ? [selectedProvider] : filteredProviders
 
     const allConnectors = featuredProviders.filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0).map((provider) =>

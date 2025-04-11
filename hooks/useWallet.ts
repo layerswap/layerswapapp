@@ -25,7 +25,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
         useFuel(),
         useTron(),
         useParadex({ network })
-    ].filter(provider => networks.some(obj => provider?.autofillSupportedNetworks?.includes(obj.name)))
+    ].filter(provider => networks.some(obj => provider?.autofillSupportedNetworks?.includes(obj.name) || provider?.withdrawalSupportedNetworks?.includes(obj.name) || provider?.asSourceSupportedNetworks?.includes(obj.name)))
 
     const provider = network && resolveProvider(network, walletProviders, purpose)
 
