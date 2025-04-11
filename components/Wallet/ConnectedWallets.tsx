@@ -97,7 +97,7 @@ const WalletsMenuWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
     const [openModal, setOpenModal] = useState<boolean>(false)
 
     return <>
-        <button onClick={() => setOpenModal(true)} type="button" className="py-3 px-4 bg-secondary-700 flex items-center w-full rounded-md space-x-1 disabled:text-secondary-text/40 disabled:bg-primary-900 disabled:cursor-not-allowed relative font-semibold transform border border-secondary-500 hover:bg-secondary-600 transition duration-200 ease-in-out">
+        <button onClick={() => setOpenModal(true)} type="button" className="py-3 px-4 bg-secondary-500 flex items-center w-full rounded-md space-x-1 disabled:text-secondary-text/40 disabled:bg-primary-900 disabled:cursor-not-allowed relative font-semibold transform border border-secondary-500 hover:bg-secondary-400 transition duration-200 ease-in-out">
             {
                 wallets.length === 1 ?
                     <div className="flex gap-4 items-start">

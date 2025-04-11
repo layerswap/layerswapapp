@@ -13,7 +13,7 @@ const Menu = ({ children }: { children: ReactNode }) => {
 const Group = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
     return (
         <div>
-            <div className="divide-y divide-secondary-500 rounded-md bg-secondary-700 overflow-hidden">
+            <div className="divide-y divide-secondary-300 rounded-md bg-secondary-500 overflow-hidden">
                 {children}
             </div>
         </div>
@@ -26,7 +26,7 @@ const Item = (function Item({ children, pathname, onClick, icon, target = '_self
         <>
             {
                 pathname ?
-                    <LinkWrapper href={pathname} target={target} className="gap-4 flex relative cursor-pointer hover:bg-secondary-600 select-none w-full items-center px-4 py-3 outline-hidden text-primary-text">
+                    <LinkWrapper href={pathname} target={target} className="gap-4 flex relative cursor-pointer hover:bg-secondary-400 select-none w-full items-center px-4 py-3 outline-hidden text-primary-text">
                         <div>
                             {icon}
                         </div>
@@ -42,7 +42,7 @@ const Item = (function Item({ children, pathname, onClick, icon, target = '_self
                     <button
                         type="button"
                         onClick={onClick}
-                        className={`gap-4 flex relative cursor-pointer hover:bg-secondary-600 select-none items-center px-4 py-3 outline-hidden w-full text-primary-text`}
+                        className={`gap-4 flex relative cursor-pointer hover:bg-secondary-400 select-none items-center px-4 py-3 outline-hidden w-full text-primary-text`}
                     >
                         <div>
                             {icon}
