@@ -3,7 +3,7 @@ import { FC, useCallback, useEffect, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { NetworkRoute, NetworkRouteToken } from "../../Models/Network";
 import { Selector, SelectorContent, SelectorTrigger } from "../Select/CommandNew/Index";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
 import { CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandWrapper } from "../shadcn/command";
 import SpinIcon from "../icons/spinIcon";
@@ -96,7 +96,11 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search">
                     {({ closeModal }) => (
                         <CommandWrapper>
-                            <CommandInput autoFocus={isDesktop} placeholder="Search" />
+                            <CommandInput autoFocus={isDesktop} placeholder="Search">
+                                <div className="pl-2">
+                                    <Search className="w-6 h-6 text-secondary-text" />
+                                </div>
+                            </CommandInput>
                             {isLoading ? (
                                 <div className="flex justify-center h-full items-center">
                                     <SpinIcon className="animate-spin h-5 w-5" />

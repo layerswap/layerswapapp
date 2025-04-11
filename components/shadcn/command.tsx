@@ -32,14 +32,15 @@ const CommandWrapper = React.forwardRef<
 const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
->(({ className, ...props }, ref) => (
+>(({ className, children, ...props }, ref) => (
   <div className="relative z-0 flex items-center mt-1 mb-2 pl-3" cmdk-input-wrapper="">
+    <div className="absolute">{children}</div>
     <CommandPrimitive.Input placeholder=" " ref={ref} id="floating_standard"
       {...props} className={classNames(
-        "peer/draft placeholder:text-transparent border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-11 bg-transparent text-lg outline-hidden focus:outline-hidden focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
+        "peer/draft text-base font-normal leading-5 placeholder:text-transparent bg-secondary-500 rounded-lg border-0 border-b-0 pl-8 border-primary-text focus:border-primary-text appearance-none block p-2 w-full h-11 outline-hidden focus:outline-hidden focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
         className
       )} />
-    <label htmlFor={props.id} className="absolute text-lg text-secondary-text duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-placeholder-shown/draft:scale-100 peer-placeholder-shown/draft:translate-y-0 peer-placeholder-shown/draft:text-secondary-text-muted">
+    <label htmlFor={props.id} className="absolute text-lg text-primary-text-placeholder duration-300 transform -translate-y-6 scale-75 top-3 pl-8 z-10 origin-[0] peer-placeholder-shown/draft:scale-100 peer-placeholder-shown/draft:translate-y-0 peer-placeholder-shown/draft:text-secondary-text-muted">
       {props.placeholder}
     </label>
   </div>

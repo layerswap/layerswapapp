@@ -3,7 +3,7 @@ import { FC, useCallback } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { Network } from "../../Models/Network";
 import { Selector, SelectorContent, SelectorTrigger } from "../Select/CommandNew/Index";
-import { ChevronDown, ChevronRight, PlusIcon } from "lucide-react";
+import { ChevronDown, ChevronRight, PlusIcon, Search } from "lucide-react";
 import { CommandEmpty, CommandInput, CommandItem, CommandList, CommandWrapper } from "../shadcn/command";
 import SpinIcon from "../icons/spinIcon";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
@@ -57,7 +57,11 @@ const CexNetworkPicker: FC<{ direction: SwapDirection, partner: Partner | undefi
                     <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search">
                         {({ closeModal }) => (
                             <CommandWrapper>
-                                <CommandInput autoFocus={isDesktop} placeholder="Search" />
+                                <CommandInput autoFocus={isDesktop} placeholder="Search">
+                                    <div className="pl-2">
+                                        <Search className="w-6 h-6 text-secondary-text" />
+                                    </div>
+                                </CommandInput>
                                 {isLoading ? (
                                     <div className="flex justify-center h-full items-center">
                                         <SpinIcon className="animate-spin h-5 w-5" />

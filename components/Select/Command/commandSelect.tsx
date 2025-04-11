@@ -15,6 +15,7 @@ import SpinIcon from '../../icons/spinIcon';
 import { LeafletHeight } from '../../modal/leaflet';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../shadcn/accordion';
 import VaulDrawer from '../../modal/vaulModal';
+import { Search } from 'lucide-react';
 
 export interface CommandSelectProps extends SelectProps {
     show: boolean;
@@ -60,7 +61,13 @@ export default function CommandSelect({ values, setValue, show, setShow, searchH
                 constantHeight={isDesktop}
             >
                 <CommandWrapper>
-                    {searchHint && <CommandInput autoFocus={isDesktop} placeholder="Search" />}
+                    {searchHint &&
+                        <CommandInput autoFocus={isDesktop} placeholder="Search">
+                            <div className="pl-2">
+                                <Search className="w-6 h-6 text-secondary-text" />
+                            </div>
+                        </CommandInput>
+                    }
                     {modalContent}
                     {!isLoading ?
                         <CommandList>
