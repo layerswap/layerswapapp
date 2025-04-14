@@ -29,7 +29,7 @@ const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isR
             >
                 <div className="grid grid-cols-3 gap-3 items-center font-medium w-full">
                     <Icon className="w-9 sm:w-11 h-auto p-0.5 rounded-[10px] bg-secondary-800" />
-                    <div className='flex flex-col items-start col-start-2 col-span-3'>
+                    <div className='flex flex-col items-start justify-center col-start-2 col-span-3 h-[40px]'>
 
                         <p className='text-base text-left truncate w-full'>{connectorName}</p>
                         {
