@@ -309,7 +309,11 @@ const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: st
 
     return (
         <Popover open={open} onOpenChange={() => setOpen(!open)}>
-            <PopoverTrigger className="p-3 border border-secondary-500 rounded-lg bg-secondary-700 hover:brightness-125">
+            <PopoverTrigger
+                className={clsx('p-3 border border-secondary-500 rounded-lg bg-secondary-700 hover:brightness-125', {
+                    '!bg-secondary-500 brightness-125': !!selectedProviderName,
+                })}
+            >
                 <SlidersHorizontal className="h-4 w-4 text-secondary-text" />
             </PopoverTrigger>
             <PopoverContent align="end" className="min-w-40 !text-primary-text p-2 space-y-1 !bg-secondary-600 !rounded-xl">
@@ -346,15 +350,19 @@ const MultichainConnectorModal: FC<MultichainConnectorModalProps> = ({ selectedC
             show={showEcosystemSelection}
             setShow={setShowEcosystemSelection}
             modalId={"selectEcosystem"}
-            header='Select ecosystem'
+            header={
+                <div>
+                    <div className="flex items-center gap-1">
+                        <Icon className="w-5 h-auto" />
+                        <p className="text-xl font-semibold"><span>Connect</span> <span>{selectedConnector.name}</span></p>
+                    </div>
+                </div>
+            }
         >
             <VaulDrawer.Snap id="item-1" className="flex flex-col items-center gap-4 pb-6">
-                <div className="flex flex-col items-center gap-1">
-                    <Icon className="w-16 h-auto p-0.5 rounded-[10px] bg-secondary-800" />
-                    <p className="text-base text-center">
-                        <span>{selectedConnector.name}</span> <span>supports multiple ecosystems, please select which one you like to connect.</span>
-                    </p>
-                </div>
+                <p className="text-base text-left text-secondary-text">
+                    <span>{selectedConnector.name}</span> <span>supports multiple network types. Please select the one you&apos;d like to use.</span>
+                </p>
                 <div className="flex flex-col gap-2 w-full">
                     {
                         allConnectors.filter(c => c?.name === selectedConnector.name)?.map((connector, index) => {
