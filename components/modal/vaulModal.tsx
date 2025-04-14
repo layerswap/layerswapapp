@@ -90,8 +90,9 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             modal={isMobile ? true : false}
             repositionInputs={false}
             onAnimationEnd={onAnimationEnd}
+            handleOnly
         >
-            <Drawer.Portal >
+            <Drawer.Portal>
                 <Drawer.Close asChild>
                     {
                         isMobile
@@ -119,8 +120,11 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         className='w-full relative'>
                         {
                             isMobile &&
-                            <div className="absolute w-12 h-1 flex-shrink-0 rounded-full bg-primary-text-muted top-2.5 left-[calc(50%-24px)]" />
+                            <div className="absolute top-2 left-[calc(50%-24px)]" >
+                                <Drawer.Handle className='!w-12 bg-primary-text-muted'/>
+                            </div>
                         }
+
                         <div className='flex items-center w-full text-left justify-between px-6 pt-3 pb-2'>
                             <Drawer.Title className="text-lg text-secondary-text font-semibold">
                                 {header}
