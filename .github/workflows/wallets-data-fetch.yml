@@ -6,7 +6,7 @@ on:
       - dev-walletConnectImprovs
 
 jobs:
-  check-wallets-update:
+  update-wallets-data:
     runs-on: ubuntu-latest
 
     steps:
@@ -15,54 +15,50 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Fetch and validate new wallets data
-        id: fetch
+      - name: Fetch new walletsData.json
+        id: fetch_wallets_data
         run: |
-          echo "📦 Fetching wallets data..."
+          echo "Fetching new walletsData.json..."
           curl --fail -s -o new_walletsData.json https://explorer-api.walletconnect.com/v3/wallets?projectId=4b988e37fe730153d49f1ecb64fbbaa7
 
           if [ ! -s new_walletsData.json ]; then
-            echo "❌ Downloaded file is empty!"
+            echo "❌ Downloaded walletsData.json is empty!"
             exit 1
           fi
 
           if ! jq empty new_walletsData.json > /dev/null 2>&1; then
-            echo "❌ Invalid JSON in downloaded file!"
+            echo "❌ Downloaded walletsData.json is not valid JSON!"
             cat new_walletsData.json
             exit 1
           fi
 
-      - name: Compare JSON content semantically
-        id: compare_wallets
+      - name: Compare with existing walletsData.json
+        id: compare_wallets_data
         run: |
-          echo "🔍 Comparing JSON content (semantic check)..."
+          echo "Comparing new walletsData.json with existing one..."
           jq --sort-keys . public/walletsData.json > old_normalized.json
           jq --sort-keys . new_walletsData.json > new_normalized.json
 
           if diff -q old_normalized.json new_normalized.json > /dev/null; then
-            echo "✅ No semantic changes in wallets data."
+            echo "No changes detected in walletsData.json."
             echo "changed=false" >> $GITHUB_OUTPUT
           else
-            echo "⚠️ Detected changes in wallets data."
-            mv new_walletsData.json public/walletsData.json
+            echo "Changes detected in walletsData.json."
+            jq --sort-keys . new_walletsData.json > public/walletsData.json
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Create or update pull request
-        if: steps.compare_wallets.outputs.changed == 'true'
+          # Clean up temporary files
+          rm -f old_normalized.json new_normalized.json new_walletsData.json
+
+      - name: Create Pull Request
+        if: steps.compare_wallets_data.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
           commit-message: "chore: update walletsData.json"
           title: "chore: update walletsData.json"
           body: |
-            This PR updates `public/walletsData.json` with actual content changes.
-
-            JSON is semantically compared (ignoring whitespace and key order).
+            This PR updates `public/walletsData.json` with the latest data.
           branch: update-wallets-data
           base: dev-walletConnectImprovs
           delete-branch: true
