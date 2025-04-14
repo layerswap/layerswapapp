@@ -67,7 +67,7 @@ export default function useParadex({ network }: Props): WalletProvider {
             if (isEvm) {
                 const connectionResult = evmProvider.connectConnector && await evmProvider.connectConnector({ connector })
                 if (!connectionResult) return
-                if (!paradexAccounts?.[connectionResult.address.toLowerCase()]) {
+                if (!paradexAccounts?.[connectionResult?.address?.toLowerCase()]) {
                     const l1Network = networks.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
                     const l1ChainId = Number(l1Network?.chain_id)
                     if (!Number(l1ChainId)) {
@@ -106,7 +106,7 @@ export default function useParadex({ network }: Props): WalletProvider {
             else if (isStarknet) {
                 const connectionResult = starknetProvider.connectConnector && await starknetProvider.connectConnector({ connector })
                 if (!connectionResult) return
-                if (!paradexAccounts?.[connectionResult.address.toLowerCase()]) {
+                if (!paradexAccounts?.[connectionResult?.address?.toLowerCase()]) {
                     const snAccount = connectionResult.metadata?.starknetAccount
                     if (!snAccount) {
                         throw Error("Starknet account not found")
@@ -123,7 +123,12 @@ export default function useParadex({ network }: Props): WalletProvider {
             if (error.name == 'ConnectorAlreadyConnectedError') {
                 throw new Error('Wallet is already connected.')
             }
-            throw new Error(e)
+            else if (error.message.includes("Cannot read properties of undefined (reading 'toLowerCase')")) {
+                throw new Error('Please update your wallet to the latest version.')
+            }
+            else {
+                throw new Error(e.message || e)
+            }
         }
     }
 
