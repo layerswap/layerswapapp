@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # Needed to create PRs
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -24,13 +24,12 @@ jobs:
         id: fetch
         run: |
           echo "Fetching wallets data..."
-          curl -s -w "%{http_code}" -o new_walletsData.json https://explorer-api.walletconnect.com/v3/wallets?projectId=4b988e37fe730153d49f1ecb64fbbaa7 > status_code.txt
-          code=$(cat status_code.txt)
-          echo "HTTP Status: $code"
+          status_code=$(curl -s -w "%{http_code}" -o new_walletsData.json https://example.com/walletsData.json)
+          echo "HTTP Status: $status_code"
 
-          if [ "$code" -ne 200 ]; then
-            echo "❌ Failed to fetch wallets data (HTTP $code)"
-            cat new_walletsData.json
+          if [ "$status_code" -ne 200 ]; then
+            echo "❌ Failed to fetch wallets data (HTTP $status_code)"
+            cat new_walletsData.json || echo "No data to display."
             exit 1
           fi
 
@@ -54,15 +53,16 @@ jobs:
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Create Pull Request with updated data
+      - name: Create or update pull request
         if: steps.compare_wallets.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
           commit-message: "chore: update walletsData.json"
           title: "chore: update walletsData.json"
           body: |
-            This pull request updates `public/walletsData.json` with the latest data fetched from the external source.
+            This PR updates `public/walletsData.json` with the latest fetched data.
 
-            Please review and merge if everything looks good.
+            Auto-updated by GitHub Actions. Replaces older PRs using the same branch.
           branch: update-wallets-data
           base: dev-walletConnectImprovs
+          delete-branch: true
