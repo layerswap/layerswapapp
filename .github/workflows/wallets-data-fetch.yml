@@ -19,7 +19,7 @@ jobs:
         id: fetch_wallets_data
         run: |
           echo "Fetching new walletsData.json..."
-          curl --fail -s -o new_walletsData.json https://example.com/walletsData.json
+          curl --fail -s -o new_walletsData.json https://explorer-api.walletconnect.com/v3/wallets?projectId=4b988e37fe730153d49f1ecb64fbbaa7
 
           if [ ! -s new_walletsData.json ]; then
             echo "❌ Downloaded walletsData.json is empty!"
