@@ -57,6 +57,7 @@ export default function useImtblX(): WalletProvider {
         }
         catch (e) {
             console.log(e)
+            throw new Error(e)
         }
     }
 
@@ -73,5 +74,6 @@ export default function useImtblX(): WalletProvider {
         asSourceSupportedNetworks: withdrawalSupportedNetworks,
         name,
         id,
+        hideFromList: true,
     }
 }

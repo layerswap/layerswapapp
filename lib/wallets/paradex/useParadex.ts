@@ -43,7 +43,7 @@ export default function useParadex({ network }: Props): WalletProvider {
         ...withdrawalSupportedNetworks
     ]
 
-    const { connect, setSelectedProvider } = useConnectModal()
+    const { connect, setSelectedConnector } = useConnectModal()
     const evmProvider = useEVM({ network })
     const starknetProvider = useStarknet()
 
@@ -61,7 +61,7 @@ export default function useParadex({ network }: Props): WalletProvider {
     const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
 
         try {
-            setSelectedProvider({ ...provider, connector: { name: connector.name } })
+            setSelectedConnector(connector)
             const isEvm = evmProvider.availableWalletsForConnect?.find(w => w.id === connector.id)
             const isStarknet = starknetProvider.availableWalletsForConnect?.find(w => w.id === connector.id)
             if (isEvm) {
@@ -121,15 +121,14 @@ export default function useParadex({ network }: Props): WalletProvider {
             //TODO: handle error like in transfer
             const error = e as ConnectorAlreadyConnectedError
             if (error.name == 'ConnectorAlreadyConnectedError') {
-                toast.error('Wallet is already connected.')
+                throw new Error('Wallet is already connected.')
             }
             else if (error.message.includes("Cannot read properties of undefined (reading 'toLowerCase')")) {
-                toast.error('Please update your wallet to the latest version.')
+                throw new Error('Please update your wallet to the latest version.')
             }
             else {
-                toast.error(e.message)
+                throw new Error(e.message || e)
             }
-            throw new Error(e)
         }
     }
 

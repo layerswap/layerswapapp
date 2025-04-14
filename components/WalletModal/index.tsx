@@ -1,17 +1,18 @@
 import { Context, createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { ChevronLeft } from 'lucide-react';
-import IconButton from '../Buttons/iconButton';
-import VaulDrawer from '../Modal/vaulModal';
-import { Wallet, WalletProvider } from '../../Models/WalletProvider';
+import { InternalConnector, Wallet, WalletProvider } from '../../Models/WalletProvider';
 import ConnectorsList from './ConnectorsList';
-import ProvidersList from './ProvidersList';
+import VaulDrawer from '../Modal/vaulModal';
+import IconButton from '../Buttons/iconButton';
 
-export type ModalWalletProvider = WalletProvider & {
-    connector?: {
-        name: string;
-        qr?: string;
-        iconUrl?: string;
-    }
+export type WalletModalConnector = InternalConnector & {
+    qr?: ({
+        state: 'loading',
+        value: undefined
+    } | {
+        state: 'fetched',
+        value: string
+    });
 }
 
 type SharedType = { provider?: WalletProvider, connectCallback: (value: Wallet | undefined) => void }
@@ -19,9 +20,11 @@ type SharedType = { provider?: WalletProvider, connectCallback: (value: Wallet |
 type ConnectModalContextType = {
     connect: ({ provider, connectCallback }: SharedType) => void;
     cancel: () => void;
-    selectedProvider: ModalWalletProvider | undefined;
-    setSelectedProvider: (value: ModalWalletProvider | undefined) => void;
+    selectedProvider: WalletProvider | undefined;
+    setSelectedProvider: (value: WalletProvider | undefined) => void;
     isWalletModalOpen?: boolean;
+    selectedConnector: WalletModalConnector | undefined;
+    setSelectedConnector: (value: WalletModalConnector | undefined) => void;
 };
 
 const ConnectModalContext = createContext<ConnectModalContextType | null>(null);
@@ -29,13 +32,12 @@ const ConnectModalContext = createContext<ConnectModalContextType | null>(null);
 export function WalletModalProvider({ children }) {
     const [connectConfig, setConnectConfig] = useState<SharedType | undefined>(undefined);
 
-    const [selectedProvider, setSelectedProvider] = useState<ModalWalletProvider | undefined>(undefined);
+    const [selectedProvider, setSelectedProvider] = useState<WalletProvider | undefined>(undefined);
+    const [selectedConnector, setSelectedConnector] = useState<WalletModalConnector | undefined>(undefined);
     const [open, setOpen] = useState(false);
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
-    const [isPorivderProvidedInitally, setIsPorivderProvidedInitally] = useState(false);
 
     const connect = async ({ provider, connectCallback }: SharedType) => {
-        setIsPorivderProvidedInitally(!!provider)
         if (!provider?.availableWalletsForConnect) {
             await provider?.connectWallet()
         }
@@ -62,22 +64,22 @@ export function WalletModalProvider({ children }) {
     }
 
     const goBack = useCallback(() => {
-        if (selectedProvider?.connector?.qr) {
-            setSelectedProvider({ ...selectedProvider, connector: undefined })
+        if (selectedConnector) {
+            setSelectedConnector(undefined)
             return;
         }
-        setSelectedProvider(undefined)
-    }, [setSelectedProvider, selectedProvider])
+    }, [setSelectedConnector, selectedConnector])
 
     useEffect(() => {
-        if (!open && selectedProvider) {
+        if (!open && selectedConnector) {
+            setSelectedConnector(undefined)
             setSelectedProvider(undefined)
         }
         setIsWalletModalOpen(open)
     }, [open])
 
     return (
-        <ConnectModalContext.Provider value={{ connect, cancel, selectedProvider, setSelectedProvider, isWalletModalOpen }}>
+        <ConnectModalContext.Provider value={{ connect, cancel, selectedProvider, setSelectedProvider, selectedConnector, setSelectedConnector, isWalletModalOpen }}>
             {children}
             <VaulDrawer
                 show={open}
@@ -87,8 +89,8 @@ export function WalletModalProvider({ children }) {
                 header={
                     <div className="flex items-center gap-1">
                         {
-                            selectedProvider && !isPorivderProvidedInitally &&
-                            <div className='-ml-2 mt-0.5'>
+                            selectedConnector &&
+                            <div className='-ml-2'>
                                 <IconButton onClick={goBack} icon={
                                     <ChevronLeft className="h-6 w-6" />
                                 }>
@@ -99,19 +101,7 @@ export function WalletModalProvider({ children }) {
                     </div>
                 }>
                 <VaulDrawer.Snap id='item-1'>
-                    {
-                        selectedProvider ?
-                            <ConnectorsList
-                                modalWalletProvider={selectedProvider}
-                                onFinish={onFinish}
-                                setSelectedProvider={setSelectedProvider}
-                                selectedProvider={selectedProvider}
-                            />
-                            :
-                            <ProvidersList
-                                onFinish={onFinish}
-                            />
-                    }
+                    <ConnectorsList onFinish={onFinish} />
                 </VaulDrawer.Snap>
             </VaulDrawer>
         </ConnectModalContext.Provider>
