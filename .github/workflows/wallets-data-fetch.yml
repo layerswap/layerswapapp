@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # Required for PR creation
+          fetch-depth: 0 # Needed to create PRs
 
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -21,29 +21,48 @@ jobs:
           node-version: '18'
 
       - name: Fetch new wallets data
+        id: fetch
         run: |
-          curl https://explorer-api.walletconnect.com/v3/wallets?projectId=4b988e37fe730153d49f1ecb64fbbaa7 -o new_walletsData.json
+          echo "Fetching wallets data..."
+          curl -s -w "%{http_code}" -o new_walletsData.json https://explorer-api.walletconnect.com/v3/wallets?projectId=4b988e37fe730153d49f1ecb64fbbaa7 > status_code.txt
+          code=$(cat status_code.txt)
+          echo "HTTP Status: $code"
+
+          if [ "$code" -ne 200 ]; then
+            echo "❌ Failed to fetch wallets data (HTTP $code)"
+            cat new_walletsData.json
+            exit 1
+          fi
+
+          # Validate JSON
+          if ! jq empty new_walletsData.json 2>/dev/null; then
+            echo "❌ Invalid JSON received!"
+            cat new_walletsData.json
+            exit 1
+          fi
 
       - name: Compare with current walletsData.json
         id: compare_wallets
         run: |
+          echo "Comparing new data with current..."
           if cmp -s "public/walletsData.json" "new_walletsData.json"; then
-            echo "No changes in wallets data."
+            echo "✅ No changes in wallets data."
             echo "changed=false" >> $GITHUB_OUTPUT
           else
-            echo "Wallets data has changed."
+            echo "⚠️ Wallets data has changed."
             mv new_walletsData.json public/walletsData.json
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Create Pull Request
+      - name: Create Pull Request with updated data
         if: steps.compare_wallets.outputs.changed == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
           commit-message: "chore: update walletsData.json"
           title: "chore: update walletsData.json"
           body: |
-            This pull request contains the latest wallets data fetched from the external source.
+            This pull request updates `public/walletsData.json` with the latest data fetched from the external source.
+
             Please review and merge if everything looks good.
           branch: update-wallets-data
           base: dev-walletConnectImprovs
