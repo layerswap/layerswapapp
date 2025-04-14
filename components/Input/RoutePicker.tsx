@@ -236,7 +236,6 @@ type TokenCommandWrapperProps = {
     token: RouteToken;
     route: Route;
     direction: SwapDirection;
-    divider: boolean;
     onSelect: (route: Route, token: RouteToken) => void;
     selectedRoute: string | undefined;
     selectedToken: string | undefined;
@@ -244,7 +243,7 @@ type TokenCommandWrapperProps = {
 
 
 const TokenCommandWrapper = (props: TokenCommandWrapperProps) => {
-    const { route, token, direction, onSelect, divider, selectedRoute, selectedToken } = props
+    const { route, token, direction, onSelect, selectedRoute, selectedToken } = props
     const tokenItemRef = React.useRef<HTMLDivElement>(null);
     const isSelected = selectedRoute === route.name && selectedToken === token.symbol
 
