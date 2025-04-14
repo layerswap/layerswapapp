@@ -1,0 +1,49 @@
+name: Fetch and Compare Wallets Data
+
+on:
+  push:
+    branches:
+      - dev-walletConnectImprovs
+
+jobs:
+  check-wallets-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Required for PR creation
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Fetch new wallets data
+        run: |
+          curl https://explorer-api.walletconnect.com/v3/wallets?projectId=4b988e37fe730153d49f1ecb64fbbaa7 -o new_walletsData.json
+
+      - name: Compare with current walletsData.json
+        id: compare_wallets
+        run: |
+          if cmp -s "public/walletsData.json" "new_walletsData.json"; then
+            echo "No changes in wallets data."
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "Wallets data has changed."
+            mv new_walletsData.json public/walletsData.json
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        if: steps.compare_wallets.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: "chore: update walletsData.json"
+          title: "chore: update walletsData.json"
+          body: |
+            This pull request contains the latest wallets data fetched from the external source.
+            Please review and merge if everything looks good.
+          branch: update-wallets-data
+          base: dev-walletConnectImprovs
