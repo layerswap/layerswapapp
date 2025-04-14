@@ -58,6 +58,7 @@ export default function useSVM({ network }: { network: Network | undefined }): W
         }
         catch (e) {
             console.log(e)
+            throw new Error(e)
         }
     }
 
@@ -111,7 +112,8 @@ export default function useSVM({ network }: { network: Network | undefined }): W
                 name: wallet.adapter.name,
                 id: wallet.adapter.name,
                 icon: wallet.adapter.icon,
-                type: wallet.readyState === 'Installed' ? 'injected' : 'other'
+                type: wallet.readyState === 'Installed' ? 'injected' : 'other',
+                installUrl: (wallet.readyState === 'Installed' || wallet.readyState === 'Loadable') ? undefined : wallet.adapter?.url,
             }
 
             connectors.push(internalConnector)
@@ -132,6 +134,7 @@ export default function useSVM({ network }: { network: Network | undefined }): W
         asSourceSupportedNetworks: commonSupportedNetworks,
         name,
         id,
+        providerIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo
     }
 
     return provider

@@ -62,7 +62,8 @@ const KnownEVMConnectors = [
     {
         id: 'com.immutable.passport',
         icon: ImtblPassportIcon
-    }, {
+    },
+    {
         id: 'injected',
         icon: BrowserWallet
     }
