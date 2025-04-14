@@ -17,7 +17,7 @@ import Address from "./Address";
 import { Partner } from "../../Models/Partner";
 import { ExtendedAddress } from "./Address/AddressPicker/AddressWithIcon";
 import { ChevronRight, PlusIcon } from "lucide-react";
-import AddressIcon from "../AddressIcon";
+import AddressIcon from "../Common/AddressIcon";
 
 type SwapDirection = "from" | "to";
 type Props = {

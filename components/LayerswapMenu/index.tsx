@@ -1,6 +1,6 @@
 import { MenuIcon, ChevronLeft } from "lucide-react";
 import { FC, useState } from "react";
-import IconButton from "../buttons/iconButton";
+import IconButton from "../Buttons/iconButton";
 import { FormWizardProvider, useFormWizardaUpdate, useFormWizardState } from "../../context/formWizardProvider";
 import { MenuStep } from "../../Models/Wizard";
 import MenuList from "./MenuList";
@@ -9,7 +9,7 @@ import WizardItem from "../Wizard/WizardItem";
 import { NextRouter, useRouter } from "next/router";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import HistoryList from "../SwapHistory/History";
-import Modal from "../modal/modal";
+import Modal from "../Modal/modal";
 
 const Comp = () => {
     const router = useRouter();

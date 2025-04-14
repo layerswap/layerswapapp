@@ -1,7 +1,7 @@
 import React, { Context, FC } from "react";
-import Modal, { ModalProps } from "../components/modal/modal";
-import SubmitButton from "../components/buttons/submitButton";
-import SecondaryButton from "../components/buttons/secondaryButton";
+import Modal, { ModalProps } from "../components/Modal/modal";
+import SubmitButton from "../components/Buttons/submitButton";
+import SecondaryButton from "../components/Buttons/secondaryButton";
 
 
 interface AsyncModalProps extends ModalProps {

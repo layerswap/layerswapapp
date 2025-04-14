@@ -1,6 +1,6 @@
 import Layout from '../components/layout'
 import { InferGetServerSidePropsType } from 'next'
-import Swap from '../components/swapComponent'
+import Swap from '../components/SwapPages/Form'
 import { getServerSideProps } from '../helpers/getSettings'
 import { SWRConfig, mutate } from 'swr'
 import { SwapStatus } from '../Models/SwapStatus'

@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { ChevronDown } from 'lucide-react'
 import { ISelectMenuItem, SelectMenuItem } from '../Shared/Props/selectMenuItem'
 import CommandSelect, { SelectMenuItemGroup } from './commandSelect'
-import { LeafletHeight } from '../../modal/leaflet'
+import { LeafletHeight } from '../../Modal/leaflet'
 
 type CommandSelectWrapperProps = {
     setValue: (value: ISelectMenuItem) => void;

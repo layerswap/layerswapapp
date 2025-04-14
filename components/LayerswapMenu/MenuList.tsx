@@ -4,21 +4,21 @@ import { FC, useCallback, useEffect, useState } from "react";
 import { useAuthDataUpdate, useAuthState, UserType } from "../../context/authContext";
 import TokenService from "../../lib/TokenService";
 import { useIntercom } from "react-use-intercom";
-import ChatIcon from "../icons/ChatIcon";
+import ChatIcon from "../Icons/ChatIcon";
 import inIframe from "../utils/inIframe";
-import DiscordLogo from "./../icons/DiscordLogo";
-import GitHubLogo from "./../icons/GitHubLogo";
-import SubstackLogo from "./../icons/SubstackLogo";
-import TwitterLogo from "./../icons/TwitterLogo";
+import DiscordLogo from "../Icons/DiscordLogo";
+import GitHubLogo from "../Icons/GitHubLogo";
+import SubstackLogo from "../Icons/SubstackLogo";
+import TwitterLogo from "../Icons/TwitterLogo";
 import Link from "next/link";
-import Popover from "../modal/popover";
-import SendFeedback from "../sendFeedback";
-import YoutubeLogo from "../icons/YoutubeLogo";
+import Popover from "../Modal/popover";
+import YoutubeLogo from "../Icons/YoutubeLogo";
 import { shortenEmail } from '../utils/ShortenAddress';
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import Menu from "./Menu";
 import dynamic from "next/dynamic";
 import { MenuStep } from "../../Models/Wizard";
+import SendFeedback from "./Feedback";
 
 const WalletsMenu = dynamic(() => import("../Wallet/ConnectedWallets").then((comp) => comp.WalletsMenu), {
     loading: () => <></>

@@ -11,9 +11,9 @@ import React, { useCallback } from "react";
 import useWindowDimensions from '../../../hooks/useWindowDimensions';
 import SelectItem from '../Shared/SelectItem';
 import { SelectProps } from '../Shared/Props/SelectProps'
-import SpinIcon from '../../icons/spinIcon';
-import { LeafletHeight } from '../../modal/leaflet';
-import VaulDrawer from '../../modal/vaulModal';
+import SpinIcon from '../../Icons/spinIcon';
+import { LeafletHeight } from '../../Modal/leaflet';
+import VaulDrawer from '../../Modal/vaulModal';
 
 export interface CommandSelectProps extends SelectProps {
     show: boolean;

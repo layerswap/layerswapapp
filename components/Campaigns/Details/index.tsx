@@ -1,22 +1,21 @@
-import { useRouter } from "next/router"
 import { FC, useCallback } from "react"
 import Image from 'next/image'
 import { Gift } from "lucide-react"
 import LayerSwapApiClient, { Campaign } from "../../../lib/layerSwapApiClient"
 import useSWR from "swr"
 import { ApiResponse } from "../../../Models/ApiResponse"
-import SubmitButton from "../../buttons/submitButton";
-import WalletIcon from "../../icons/WalletIcon";
-import LinkWrapper from "../../LinkWraapper";
+import SubmitButton from "../../Buttons/submitButton";
+import WalletIcon from "../../Icons/WalletIcon";
+import LinkWrapper from "../../Common/LinkWrapper";
 import { Widget } from "../../Widget/Index";
 import Leaderboard from "./Leaderboard"
 import Rewards from "./Rewards";
-import SpinIcon from "../../icons/spinIcon"
+import SpinIcon from "../../Icons/spinIcon"
 import useWallet from "../../../hooks/useWallet"
+import { useQueryState } from "../../../context/query"
 
 function CampaignDetails() {
-    const router = useRouter();
-    const camapaignName = router.query.campaign?.toString()
+    const { campaign: camapaignName } = useQueryState()
 
     const apiClient = new LayerSwapApiClient()
     const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
@@ -86,9 +85,9 @@ type BriefInformationProps = {
 }
 const BriefInformation: FC<BriefInformationProps> = ({ campaign }) =>
     <p className="text-secondary-text text-base">
-        {campaign.description ? 
+        {campaign.description ?
             campaign.description
-            : 
+            :
             <>
                 <span>You can earn $</span>
                 <span>{campaign?.token.symbol}</span>

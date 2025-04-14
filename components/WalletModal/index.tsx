@@ -1,7 +1,7 @@
 import { Context, createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { ChevronLeft } from 'lucide-react';
-import IconButton from '../buttons/iconButton';
-import VaulDrawer from '../modal/vaulModal';
+import IconButton from '../Buttons/iconButton';
+import VaulDrawer from '../Modal/vaulModal';
 import { Wallet, WalletProvider } from '../../Models/WalletProvider';
 import ConnectorsList from './ConnectorsList';
 import ProvidersList from './ProvidersList';

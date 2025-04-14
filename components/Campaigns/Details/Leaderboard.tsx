@@ -1,16 +1,16 @@
 import { FC, useState } from "react"
 import Image from 'next/image'
 import LayerSwapApiClient, { Campaign, Leaderboard, Reward } from "../../../lib/layerSwapApiClient"
-import { RewardsComponentLeaderboardSceleton } from "../../Sceletons"
 import useSWR from "swr"
 import { ApiResponse } from "../../../Models/ApiResponse"
 import ClickTooltip from "../../Tooltips/ClickTooltip"
 import shortenAddress from "../../utils/ShortenAddress"
 import { useAccount } from "wagmi"
 import { truncateDecimals } from "../../utils/RoundDecimals"
-import AddressIcon from "../../AddressIcon";
-import Modal from "../../modal/modal";
+import AddressIcon from "../../Common/AddressIcon";
+import Modal from "../../Modal/modal";
 import Link from "next/link";
+import { RewardsComponentLeaderboardSceleton } from "../../Common/Sceletons"
 
 type Props = {
     campaign: Campaign

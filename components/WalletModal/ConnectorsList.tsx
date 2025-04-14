@@ -4,7 +4,7 @@ import { resolveWalletConnectorIcon } from '../../lib/wallets/utils/resolveWalle
 import { Loader } from 'lucide-react';
 import { Wallet } from '../../Models/WalletProvider';
 import { ModalWalletProvider } from '.';
-import CopyButton from '../buttons/copyButton';
+import CopyButton from '../Buttons/copyButton';
 
 export type WalletsListProps = {
     modalWalletProvider: ModalWalletProvider;

@@ -9,17 +9,17 @@ import Link from "next/link"
 import Snippet, { HistoryItemSceleton } from "./Snippet"
 import { groupBy } from "../utils/groupBy"
 import { useAuthState, UserType } from "../../context/authContext"
-import ConnectButton from "../buttons/connectButton"
+import ConnectButton from "../Buttons/connectButton"
 import { FormWizardProvider } from "../../context/formWizardProvider"
 import { TimerProvider } from "../../context/timerContext"
-import GuestCard from "../guestCard"
+import GuestCard from "./Guest"
 import { AuthStep } from "../../Models/Wizard"
 import React from "react"
 import { useVirtualizer } from '@tanstack/react-virtual'
 import SwapDetails from "./SwapDetailsComponent"
 import { addressFormat } from "../../lib/address/formatter";
 import { useSettingsState } from "../../context/settings";
-import VaulDrawer from "../modal/vaulModal";
+import VaulDrawer from "../Modal/vaulModal";
 
 const PAGE_SIZE = 20
 type ListProps = {

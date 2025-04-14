@@ -5,7 +5,7 @@ import React from 'react';
 import { SwapDataProvider } from '../../context/swap';
 import { TimerProvider } from '../../context/timerContext';
 import { getThemeData } from '../../helpers/settingsHelper';
-import SwapWithdrawal from '../../components/SwapWithdrawal'
+import SwapWithdrawal from '../../components/SwapPages/Withdraw'
 import { DepositMethodProvider } from '../../context/depositMethodContext';
 
 const SwapDetails = ({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) => {

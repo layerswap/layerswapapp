@@ -12,7 +12,7 @@ import StatusIcon from "./StatusIcons"
 import { FC } from "react"
 import { findIndexOfFirstNonZeroAfterComma, truncateDecimalsToFloor } from "../utils/RoundDecimals";
 import useWallet from "../../hooks/useWallet";
-import AddressIcon from "../AddressIcon";
+import AddressIcon from "../Common/AddressIcon";
 import { addressFormat } from "../../lib/address/formatter";
 import { SwapStatus } from "../../Models/SwapStatus";
 import { Wallet } from "../../Models/WalletProvider";

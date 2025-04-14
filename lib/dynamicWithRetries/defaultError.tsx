@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import SubmitButton from "../../components/buttons/submitButton";
+import SubmitButton from "../../components/Buttons/submitButton";
 import { RefreshCcw } from "lucide-react";
 
 const DynamicDefaultError = () => {

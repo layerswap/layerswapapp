@@ -1,6 +1,6 @@
 import { FC } from "react";
 import useWallet from "../../hooks/useWallet";
-import { ResolveConnectorIcon } from "../icons/ConnectorIcons";
+import { ResolveConnectorIcon } from "../Icons/ConnectorIcons";
 import { useConnectModal } from ".";
 import { Wallet, WalletProvider } from "../../Models/WalletProvider";
 

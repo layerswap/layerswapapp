@@ -2,7 +2,7 @@ import { FC, useState, Fragment } from 'react'
 import LayerSwapApiClient, { SwapResponse, TransactionType } from '../../lib/layerSwapApiClient';
 import Image from 'next/image'
 import shortenAddress, { shortenEmail } from '../utils/ShortenAddress';
-import CopyButton from '../buttons/copyButton';
+import CopyButton from '../Buttons/copyButton';
 import StatusIcon from './StatusIcons';
 import { ArrowRight, ExternalLink, Fuel, Info, RefreshCw } from 'lucide-react';
 import isGuid from '../utils/isGuid';
@@ -21,7 +21,7 @@ import { SwapStatus } from '../../Models/SwapStatus';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
-import VaulDrawer from '../modal/vaulModal';
+import VaulDrawer from '../Modal/vaulModal';
 import { Popover, PopoverContent, PopoverTrigger } from '../shadcn/popover';
 
 type Props = {

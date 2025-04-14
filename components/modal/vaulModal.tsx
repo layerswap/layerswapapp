@@ -1,7 +1,7 @@
 import { clsx } from 'clsx';
 import { Dispatch, FC, ReactNode, SetStateAction, useEffect, useRef, useState } from 'react';
 import useWindowDimensions from '../../hooks/useWindowDimensions';
-import IconButton from '../buttons/iconButton';
+import IconButton from '../Buttons/iconButton';
 import { ChevronUp, X } from 'lucide-react';
 import { useMeasure } from '@uidotdev/usehooks';
 import { SnapElement, SnapPointsProvider, useSnapPoints } from '../../context/snapPointsContext';

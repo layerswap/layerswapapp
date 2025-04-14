@@ -1,8 +1,8 @@
 import Link from "next/link";
-import TwitterLogo from "./icons/TwitterLogo";
-import DiscordLogo from "./icons/DiscordLogo";
-import GitHubLogo from "./icons/GitHubLogo";
-import YoutubeLogo from "./icons/YoutubeLogo";
+import TwitterLogo from "./Icons/TwitterLogo";
+import DiscordLogo from "./Icons/DiscordLogo";
+import GitHubLogo from "./Icons/GitHubLogo";
+import YoutubeLogo from "./Icons/YoutubeLogo";
 
 const GLobalFooter = () => {
 

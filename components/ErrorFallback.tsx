@@ -1,15 +1,19 @@
 import { Home, RefreshCcw } from "lucide-react";
 import React from "react";
-import SubmitButton from "./buttons/submitButton"
-import ContactSupport from "./ContactSupport"
-import MessageComponent from "./MessageComponent"
-import Navbar from "./navbar"
+import SubmitButton from "./Buttons/submitButton"
+import MessageComponent from "./Common/MessageComponent"
+import Navbar from "./Common/navbar"
 import GoHomeButton from "./utils/GoHome"
 import { IsExtensionError } from "../helpers/errorHelper";
+import { useAuthState } from "../context/authContext";
+import { useIntercom } from "react-use-intercom";
 
 export default function ErrorFallback({ error, resetErrorBoundary }) {
 
     const extension_error = IsExtensionError(error)
+    const { email, userId } = useAuthState()
+    const { boot, show, update } = useIntercom()
+    const updateWithProps = () => update({ userId, customAttributes: { email: email, } })
 
     return (
         <div className="styled-scroll">
@@ -40,7 +44,16 @@ export default function ErrorFallback({ error, resetErrorBoundary }) {
                                                 <span>Please try again. If the issue keeps happening,&nbsp;</span>
                                         }
 
-                                        <span className="underline cursor-pointer text-primary "><ContactSupport>contact our support team.</ContactSupport></span>
+                                        <span
+                                            onClick={() => {
+                                                boot();
+                                                show();
+                                                updateWithProps()
+                                            }}
+                                            className="underline cursor-pointer text-primary"
+                                        >
+                                            contact our support team.
+                                        </span>
                                     </p>
                                 </MessageComponent.Description>
                             </MessageComponent.Content>
