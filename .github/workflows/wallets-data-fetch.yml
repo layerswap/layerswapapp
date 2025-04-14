@@ -24,7 +24,7 @@ jobs:
         id: fetch
         run: |
           echo "Fetching wallets data..."
-          status_code=$(curl -s -w "%{http_code}" -o new_walletsData.json https://example.com/walletsData.json)
+          status_code=$(curl -s -w "%{http_code}" -o new_walletsData.json https://explorer-api.walletconnect.com/v3/wallets?projectId=4b988e37fe730153d49f1ecb64fbbaa7)
           echo "HTTP Status: $status_code"
 
           if [ "$status_code" -ne 200 ]; then
