@@ -211,7 +211,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
     const showContent = token && route;
 
     return (
-        <span className="flex grow text-left items-center text-xs md:text-base">
+        <span className="flex grow text-left items-center text-xs md:text-base relative">
             {showContent ? (
                 <>
                     <div className="inline-flex items-center relative shrink-0">
@@ -234,7 +234,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                             className="h-3.5 w-3.5 absolute -right-1.5 -bottom-1.5 object-contain rounded-md border-1 border-secondary-300"
                         />
                     </div>
-                    <span className="group-has-[.input-wide]:hidden ml-2 flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0">
+                    <span className="group-has-[.input-wide]:hidden ml-2 flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0 max-w-3/5">
                         <span className="leading-5">{token.symbol}</span>
                         <span className="text-secondary-text text-sm leading-4 truncate whitespace-nowrap">
                             {route.display_name}
@@ -244,6 +244,9 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
             ) : (
                 <SelectedRoutePlaceholder placeholder={placeholder} />
             )}
+            <span className="group-has-[.input-wide]:static absolute right-0 pr-2 pl-1 pointer-events-none text-primary-text">
+                <ChevronDown className="h-3.5 w-3.5 text-secondary-text" aria-hidden="true" />
+            </span>
         </span>
     )
 }
@@ -253,7 +256,7 @@ const SelectedRoutePlaceholder = ({ placeholder }: { placeholder: string }) => (
         <div className="inline-flex items-center relative">
             <RoutePickerIcon className="w-7 h-7" />
         </div>
-        <span className="group-has-[.input-wide]:hidden flex text-secondary-text text-base font-normal leading-5 flex-auto items-center">
+        <span className="group-has-[.input-wide]:hidden flex text-secondary-text text-base font-normal leading-5 flex-auto items-center max-w-2/3">
             <span className="ml-2">{placeholder}</span>
         </span>
     </>

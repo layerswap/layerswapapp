@@ -89,9 +89,6 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
             <Selector>
                 <SelectorTrigger disabled={false}>
                     <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select Token" />
-                    <span className="right-0 flex items-center pr-2 pl-1 pointer-events-none text-primary-text">
-                        <ChevronDown className="h-3.5 w-3.5 text-secondary-text" aria-hidden="true" />
-                    </span>
                 </SelectorTrigger>
                 <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search">
                     {({ closeModal }) => (

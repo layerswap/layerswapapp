@@ -85,7 +85,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         setFocusedFontSize(size);
     };
     return (<>
-        <motion.div layout="preserve-aspect" className={`flex flex-col w-full bg-secondary-500 rounded-lg peer ${isAmountFocused ? "input-wide" : ""
+        <motion.div layout="size" className={`flex flex-col w-full bg-secondary-500 rounded-lg peer ${isAmountFocused ? "input-wide" : ""
             }`}>
             <div className="relative w-full">
                 <NumericInput
