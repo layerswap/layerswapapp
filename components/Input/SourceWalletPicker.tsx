@@ -13,8 +13,8 @@ import SubmitButton from "../Buttons/submitButton";
 import { useConnectModal } from "../WalletModal";
 import WalletsList from "../Wallet/WalletsList";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
-import FilledCheck from "../icons/FilledCheck";
 import clsx from "clsx";
+import FilledCheck from "../Icons/FilledCheck";
 
 const Component: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
