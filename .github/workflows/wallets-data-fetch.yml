@@ -1,4 +1,4 @@
-name: Update walletsData.json
+name: Auto-update walletsData.json
 
 on:
   push:
