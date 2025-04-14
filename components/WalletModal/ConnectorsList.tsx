@@ -309,7 +309,11 @@ const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: st
 
     return (
         <Popover open={open} onOpenChange={() => setOpen(!open)}>
-            <PopoverTrigger className="p-3 border border-secondary-500 rounded-lg bg-secondary-700 hover:brightness-125">
+            <PopoverTrigger
+                className={clsx('p-3 border border-secondary-500 rounded-lg bg-secondary-700 hover:brightness-125', {
+                    '!bg-secondary-500 brightness-125': !!selectedProviderName,
+                })}
+            >
                 <SlidersHorizontal className="h-4 w-4 text-secondary-text" />
             </PopoverTrigger>
             <PopoverContent align="end" className="min-w-40 !text-primary-text p-2 space-y-1 !bg-secondary-600 !rounded-xl">
