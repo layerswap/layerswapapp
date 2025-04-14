@@ -20,37 +20,35 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Fetch new wallets data (with error handling)
+      - name: Fetch and validate new wallets data
         id: fetch
         run: |
-          echo "Fetching wallets data..."
-          set -e
-
-          # Fetch with fail on error
+          echo "📦 Fetching wallets data..."
           curl --fail -s -o new_walletsData.json https://explorer-api.walletconnect.com/v3/wallets?projectId=4b988e37fe730153d49f1ecb64fbbaa7
 
-          # Check file is not empty
           if [ ! -s new_walletsData.json ]; then
             echo "❌ Downloaded file is empty!"
             exit 1
           fi
 
-          # Validate it's JSON
           if ! jq empty new_walletsData.json > /dev/null 2>&1; then
             echo "❌ Invalid JSON in downloaded file!"
             cat new_walletsData.json
             exit 1
           fi
 
-      - name: Compare with current walletsData.json
+      - name: Compare JSON content semantically
         id: compare_wallets
         run: |
-          echo "Comparing new data with current..."
-          if cmp -s "public/walletsData.json" "new_walletsData.json"; then
-            echo "✅ No changes in wallets data."
+          echo "🔍 Comparing JSON content (semantic check)..."
+          jq --sort-keys . public/walletsData.json > old_normalized.json
+          jq --sort-keys . new_walletsData.json > new_normalized.json
+
+          if diff -q old_normalized.json new_normalized.json > /dev/null; then
+            echo "✅ No semantic changes in wallets data."
             echo "changed=false" >> $GITHUB_OUTPUT
           else
-            echo "⚠️ Wallets data has changed."
+            echo "⚠️ Detected changes in wallets data."
             mv new_walletsData.json public/walletsData.json
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
@@ -62,9 +60,9 @@ jobs:
           commit-message: "chore: update walletsData.json"
           title: "chore: update walletsData.json"
           body: |
-            This PR updates `public/walletsData.json` with the latest fetched data.
+            This PR updates `public/walletsData.json` with actual content changes.
 
-            Auto-updated by GitHub Actions. It will only appear if real, valid changes are detected.
+            JSON is semantically compared (ignoring whitespace and key order).
           branch: update-wallets-data
           base: dev-walletConnectImprovs
           delete-branch: true
