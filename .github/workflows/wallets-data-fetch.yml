@@ -21,6 +21,12 @@ jobs:
           echo "📦 Fetching walletsData.json..."
           curl --fail -s -o new_walletsData.json https://explorer-api.walletconnect.com/v3/wallets?projectId=4b988e37fe730153d49f1ecb64fbbaa7
 
+          echo "📄 Fetched content:"
+          cat new_walletsData.json
+
+          echo "📏 File size:"
+          stat --format="%s bytes" new_walletsData.json
+
           if [ ! -s new_walletsData.json ]; then
             echo "❌ Downloaded file is empty!"
             exit 1
@@ -32,24 +38,27 @@ jobs:
             exit 1
           fi
 
-      - name: Compare using normalized copies (only)
+      - name: Compare downloaded vs current (semantic)
         id: compare_wallets
         run: |
-          echo "🔍 Comparing JSON semantically..."
+          echo "🔍 Comparing files..."
           jq --sort-keys . public/walletsData.json > current.json
           jq --sort-keys . new_walletsData.json > fetched.json
 
           if diff -q current.json fetched.json > /dev/null; then
-            echo "✅ No changes detected"
+            echo "✅ No semantic changes."
             echo "changed=false" >> $GITHUB_OUTPUT
           else
-            echo "🔁 Change detected. Will overwrite."
-            cp new_walletsData.json public/walletsData.json
+            echo "🔁 Data changed. Overwriting file..."
+            cat new_walletsData.json > public/walletsData.json
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
 
-          # Cleanup temp files
-          rm -f current.json fetched.json new_walletsData.json
+          # Remove temp comparisons, but not new_walletsData.json yet
+          rm -f current.json fetched.json
+
+      - name: Cleanup downloaded file
+        run: rm -f new_walletsData.json
 
       - name: Create or update pull request
         if: steps.compare_wallets.outputs.changed == 'true'
@@ -58,8 +67,8 @@ jobs:
           commit-message: "chore: update walletsData.json"
           title: "chore: update walletsData.json"
           body: |
-            This PR updates `public/walletsData.json` with real data changes.
-            Keys and order are preserved exactly as received.
+            Semantic changes detected in wallets data.
+            This PR preserves formatting from the source.
           branch: update-wallets-data
           base: dev-walletConnectImprovs
           delete-branch: true
