@@ -65,7 +65,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         } catch (e) {
             console.log(e)
             if (e?.message?.toLowerCase().includes('rejected') || e?.details?.toLowerCase().includes('rejected')) {
-                setConnectionError('User rejected request')
+                setConnectionError("You've declined the wallet connection request")
             }
             else {
                 setConnectionError(e.message || e.details || 'Something went wrong')
@@ -243,23 +243,20 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
                 selectedConnector &&
                 <div className="flex flex-col gap-3 items-center justify-end row-start-2 row-span-1">
                     <div className="flex-col flex items-center">
-                        {
-                            <div className="grid grid-cols-3 items-center gap-2">
-                                <div className="p-3 bg-secondary-700 rounded-lg z-10">
-                                    <LayerSwapLogoSmall className="w-11 h-auto" />
-                                </div>
-                                {
-                                    connectionError ?
-                                        <Link2Off className="w-auto h-auto place-self-center" />
-                                        :
-                                        <div className="loader !text-[3px] place-self-center" />
-                                }
-                                <div className="p-3 bg-secondary-700 rounded-lg z-10">
-                                    <ConnectorIcon className="w-11 h-auto" />
-                                </div>
+                        <div className="grid grid-cols-3 items-center gap-2">
+                            <div className="p-3 bg-secondary-700 rounded-lg z-10">
+                                <LayerSwapLogoSmall className="w-11 h-auto" />
                             </div>
-                        }
-
+                            {
+                                connectionError ?
+                                    <Link2Off className="w-auto h-auto place-self-center" />
+                                    :
+                                    <div className="loader !text-[3px] place-self-center" />
+                            }
+                            <div className="p-3 bg-secondary-700 rounded-lg z-10">
+                                <ConnectorIcon className="w-11 h-auto" />
+                            </div>
+                        </div>
                     </div>
                     {
                         !connectionError &&
@@ -276,7 +273,7 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
                     <div className="flex w-full gap-1 text-sm text-secondary-text justify-start">
                         <CircleX className="w-5 h-5 stroke-primary-500 mr-1 mt-0.5 flex-shrink-0" />
                         <div className='flex flex-col gap-1'>
-                            <p className='text-base text-white'>Request rejected</p>
+                            <p className='text-base text-white'>Failed to connect</p>
                             <p className="text-sm font-normal">
                                 {connectionError}
                             </p>
