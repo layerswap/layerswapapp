@@ -210,7 +210,7 @@ const GroupItem = ({ route, underline, toggleContent, direction, onSelect, selec
                     </AccordionTrigger>
                 </CommandItem >
                 <AccordionContent className="rounded-xl AccordionContent">
-                    <div className='pb-2 mt-1 bg-secondary-400'>
+                    <div className='has-[.token-item]:pb-2 has-[.token-item]:mt-1 bg-secondary-400'>
                         {
                             sortedTokens?.map((token: ExchangeToken | NetworkRouteToken, index) => {
                                 return <TokenCommandWrapper
@@ -256,7 +256,7 @@ const TokenCommandWrapper = (props: TokenCommandWrapperProps) => {
 
     return <div className={`${isSelected ? "bg-secondary-300" : ""} pl-5 hover:bg-secondary-300 aria-selected:bg-secondary-300`}>
         <CommandItem
-            className="aria-selected:text-primary-text relative"
+            className="aria-selected:text-primary-text relative token-item"
             value={`${route.display_name} ${token.symbol} ##`}
             key={token.symbol}
             onSelect={() => { onSelect(route, token) }}
