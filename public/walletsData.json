@@ -1,5 +1,74 @@
 {
     "listings": {
+        "c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96": {
+            "id": "c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96",
+            "name": "MetaMask",
+            "slug": "metamask",
+            "description": "Whether you are an experienced user or brand new to blockchain, MetaMask helps you connect to the decentralized web: a new internet.",
+            "homepage": "https://metamask.io/",
+            "chains": [
+                "eip155:1",
+                "eip155:10",
+                "eip155:42161",
+                "eip155:42170",
+                "eip155:7777777",
+                "eip155:80084",
+                "eip155:80085",
+                "eip155:8453"
+            ],
+            "versions": [
+                "1",
+                "2"
+            ],
+            "sdks": [
+                "sign_v1",
+                "sign_v2"
+            ],
+            "app_type": "wallet",
+            "category": "Mobile Wallets",
+            "image_id": "eebe4a7f-7166-402f-92e0-1f64ca2aa800",
+            "image_url": {
+                "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/eebe4a7f-7166-402f-92e0-1f64ca2aa800?projectId=4b988e37fe730153d49f1ecb64fbbaa7",
+                "md": "https://explorer-api.walletconnect.com/v3/logo/md/eebe4a7f-7166-402f-92e0-1f64ca2aa800?projectId=4b988e37fe730153d49f1ecb64fbbaa7",
+                "lg": "https://explorer-api.walletconnect.com/v3/logo/md/eebe4a7f-7166-402f-92e0-1f64ca2aa800?projectId=4b988e37fe730153d49f1ecb64fbbaa7"
+            },
+            "app": {
+                "browser": null,
+                "ios": "https://apps.apple.com/us/app/metamask/id1438144202",
+                "android": "https://play.google.com/store/apps/details?id=io.metamask",
+                "mac": null,
+                "windows": null,
+                "linux": null,
+                "chrome": "https://chrome.google.com/webstore/detail/metamask/nkbihfbeogaeaoehlefnkodbefgpgknn",
+                "firefox": "https://addons.mozilla.org/en-US/firefox/addon/ether-metamask/",
+                "safari": null,
+                "edge": "https://microsoftedge.microsoft.com/addons/detail/metamask/ejbalbakoplchlghecdalmeeeajnimhm?hl=en-US",
+                "opera": "https://addons.opera.com/en-gb/extensions/details/metamask-10/"
+            },
+            "injected": [
+                {
+                    "namespace": "eip155",
+                    "injected_id": "isMetaMask"
+                }
+            ],
+            "rdns": "io.metamask",
+            "mobile": {
+                "native": "metamask://",
+                "universal": "https://metamask.app.link"
+            },
+            "desktop": {
+                "native": "",
+                "universal": null
+            },
+            "metadata": {
+                "shortName": "MetaMask",
+                "colors": {
+                    "primary": "#ffffff",
+                    "secondary": null
+                }
+            },
+            "updatedAt": "2021-07-30T17:48:12.565532+00:00"
+        },
         "4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0": {
             "id": "4622a2b2d6af1c9844944291e5e7351a6aa24cd7b23099efac1b2fd875da31a0",
             "name": "Trust Wallet",
