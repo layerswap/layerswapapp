@@ -3,7 +3,7 @@ name: Update walletsData.json
 on:
   push:
     branches:
-      - dev-walletConnectImprovs
+      - dev
 
 jobs:
   update-wallets-data:
@@ -60,5 +60,5 @@ jobs:
           body: |
             This PR updates `public/walletsData.json` with the latest data.
           branch: update-wallets-data
-          base: dev-walletConnectImprovs
+          base: dev
           delete-branch: true

@@ -10,6 +10,7 @@ export type InternalConnector = {
     isMultiChain?: boolean,
     providerName?: string,
     installUrl?: string,
+    isMobileSupported?: boolean,
 }
 
 export type Wallet = {
