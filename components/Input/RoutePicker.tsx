@@ -218,7 +218,6 @@ const GroupItem = ({ route, underline, toggleContent, direction, onSelect, selec
                                     token={token}
                                     route={route}
                                     direction={direction}
-                                    divider={index + 1 < sortedTokens.length}
                                     onSelect={onSelect}
                                     selectedRoute={selectedRoute}
                                     selectedToken={selectedToken}
