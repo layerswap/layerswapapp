@@ -346,15 +346,19 @@ const MultichainConnectorModal: FC<MultichainConnectorModalProps> = ({ selectedC
             show={showEcosystemSelection}
             setShow={setShowEcosystemSelection}
             modalId={"selectEcosystem"}
-            header='Select ecosystem'
+            header={
+                <div>
+                    <div className="flex items-center gap-1">
+                        <Icon className="w-5 h-auto" />
+                        <p className="text-xl font-semibold"><span>Connect</span> <span>{selectedConnector.name}</span></p>
+                    </div>
+                </div>
+            }
         >
             <VaulDrawer.Snap id="item-1" className="flex flex-col items-center gap-4 pb-6">
-                <div className="flex flex-col items-center gap-1">
-                    <Icon className="w-16 h-auto p-0.5 rounded-[10px] bg-secondary-800" />
-                    <p className="text-base text-center">
-                        <span>{selectedConnector.name}</span> <span>supports multiple ecosystems, please select which one you like to connect.</span>
-                    </p>
-                </div>
+                <p className="text-base text-left text-secondary-text">
+                    <span>{selectedConnector.name}</span> <span>supports multiple network types. Please select the one you&apos;d like to use.</span>
+                </p>
                 <div className="flex flex-col gap-2 w-full">
                     {
                         allConnectors.filter(c => c?.name === selectedConnector.name)?.map((connector, index) => {
