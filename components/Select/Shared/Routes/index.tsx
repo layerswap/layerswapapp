@@ -16,11 +16,10 @@ type TokenItemProps = {
     item: RouteToken;
     selected: boolean;
     direction: SwapDirection;
-    divider: boolean;
 }
 
 export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
-    const { item, route, direction, divider } = props
+    const { item, route, direction } = props
 
     return <SelectItem>
         <SelectItem.Logo
@@ -66,25 +65,23 @@ type RouteItemProps = {
     item: Route;
     selected: boolean;
     direction: SwapDirection;
-    divider: boolean;
 }
 
 export const RouteSelectItemDisplay = (props: RouteItemProps) => {
-    const { item, selected, divider, direction } = props
+    const { item, selected, direction } = props
 
-    return item.cex ? <ExchangeRouteSelectItemDisplay item={item} divider={divider} selected={selected} />
-        : <NetworkRouteSelectItemDisplay item={item} divider={divider} selected={selected} direction={direction} />
+    return item.cex ? <ExchangeRouteSelectItemDisplay item={item} selected={selected} />
+        : <NetworkRouteSelectItemDisplay item={item} selected={selected} direction={direction} />
 }
 
 type NetworkRouteItemProps = {
     item: NetworkRoute;
     selected: boolean;
     direction: SwapDirection;
-    divider: boolean;
 }
 
 const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
-    const { item, direction, divider, selected } = props
+    const { item, direction } = props
     const { provider } = useWallet(item, direction === "from" ? "withdrawal" : "autofil")
     const activeAddress = provider?.activeWallet
     const { balance } = useSWRBalance(activeAddress?.address, item)
@@ -107,7 +104,7 @@ const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     return (
         <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative">
             <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} />
-            <SelectItem.Title className={`py-3 ${divider ? 'border-t border-secondary-700' : ''}`} >
+            <SelectItem.Title className="py-3" >
                 <>
                     <span>{item.display_name}</span>
                     {
@@ -152,15 +149,14 @@ const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
 type ExchangeRouteItemProps = {
     item: Exchange;
     selected: boolean;
-    divider: boolean;
 }
 
 const ExchangeRouteSelectItemDisplay = (props: ExchangeRouteItemProps) => {
-    const { item, divider } = props
+    const { item } = props
 
     return <SelectItem>
         <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} />
-        <SelectItem.Title className={`py-3 ${divider ? 'border-t border-secondary-700' : ''}`} >
+        <SelectItem.Title className="py-3" >
             {item.display_name}
         </SelectItem.Title>
     </SelectItem>

@@ -206,7 +206,6 @@ const GroupItem = ({ route, underline, toggleContent, direction, onSelect, selec
                             item={route}
                             selected={false}
                             direction={direction}
-                            divider={underline}
                         />
                     </AccordionTrigger>
                 </CommandItem >
@@ -268,7 +267,6 @@ const TokenCommandWrapper = (props: TokenCommandWrapperProps) => {
                 selected={false}
                 route={route}
                 direction={direction}
-                divider={divider}
             />
         </CommandItem>
     </div>
