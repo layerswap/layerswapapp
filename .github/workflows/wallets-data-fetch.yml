@@ -15,6 +15,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
       - name: Fetch new wallets data
         id: fetch
         run: |
@@ -23,9 +28,6 @@ jobs:
 
           echo "📄 Fetched content:"
           cat new_walletsData.json
-
-          echo "📏 File size:"
-          stat --format="%s bytes" new_walletsData.json
 
           if [ ! -s new_walletsData.json ]; then
             echo "❌ Downloaded file is empty!"
@@ -41,7 +43,7 @@ jobs:
       - name: Compare downloaded vs current (semantic)
         id: compare_wallets
         run: |
-          echo "🔍 Comparing files..."
+          echo "🔍 Comparing JSON semantically..."
           jq --sort-keys . public/walletsData.json > current.json
           jq --sort-keys . new_walletsData.json > fetched.json
 
@@ -49,15 +51,19 @@ jobs:
             echo "✅ No semantic changes."
             echo "changed=false" >> $GITHUB_OUTPUT
           else
-            echo "🔁 Data changed. Overwriting file..."
-            cat new_walletsData.json > public/walletsData.json
+            echo "🔁 Detected change in content."
             echo "changed=true" >> $GITHUB_OUTPUT
           fi
 
-          # Remove temp comparisons, but not new_walletsData.json yet
+          # Clean up normalized comparison files
           rm -f current.json fetched.json
 
-      - name: Cleanup downloaded file
+      - name: Overwrite public/walletsData.json using Node
+        if: steps.compare_wallets.outputs.changed == 'true'
+        run: |
+          node -e "require('fs').copyFileSync('new_walletsData.json', 'public/walletsData.json')"
+
+      - name: Clean up downloaded file
         run: rm -f new_walletsData.json
 
       - name: Create or update pull request
@@ -67,8 +73,9 @@ jobs:
           commit-message: "chore: update walletsData.json"
           title: "chore: update walletsData.json"
           body: |
-            Semantic changes detected in wallets data.
-            This PR preserves formatting from the source.
+            This PR updates `public/walletsData.json` with new content fetched from the source.
+
+            Changes are only committed when actual JSON structure or values change (ignoring formatting).
           branch: update-wallets-data
           base: dev-walletConnectImprovs
           delete-branch: true
