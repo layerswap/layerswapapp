@@ -192,30 +192,24 @@ const SwapForm: FC<Props> = ({ partner }) => {
                         {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full bg-secondary-500 rounded-2xl">
                             <SourcePicker />
                         </div>}
-                        {!(query?.hideTo && values?.to) && (
-                            <div className="flex flex-col w-full bg-secondary-500 rounded-xl relative">
-                                {!query?.hideFrom && !query?.hideTo && (
-                                    <button
-                                        type="button"
-                                        aria-label="Reverse the source and destination"
-                                        disabled={valuesSwapperDisabled}
-                                        onClick={valuesSwapper}
-                                        className={classNames(
-                                            "hover:text-primary absolute right-[calc(50%-16px)] -top-4 z-10 border-2 border-secondary-300 bg-secondary-300 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none"
-                                        )}
-                                    >
-                                        <motion.div
-                                            animate={animate}
-                                            transition={{ duration: 0.3 }}
-                                            onTap={() => !valuesSwapperDisabled && cycle()}
-                                        >
-                                            <ArrowUpDown className={classNames(valuesSwapperDisabled && "bg-secondary-300/50", "w-7 h-auto p-1 bg-secondary-300 rounded-lg disabled:bg-secondary-300/30")} />
-                                        </motion.div>
-                                    </button>
-                                )}
-                                <DestinationPicker partner={partner} />
-                            </div>
-                        )}
+                        {!query?.hideFrom && !query?.hideTo &&
+                            <button
+                                type="button"
+                                aria-label="Reverse the source and destination"
+                                disabled={valuesSwapperDisabled}
+                                onClick={valuesSwapper}
+                                className="hover:text-primary absolute right-[calc(50%-16px)] top-[132px] z-10 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none">
+                                <motion.div
+                                    animate={animate}
+                                    transition={{ duration: 0.3 }}
+                                    onTap={() => !valuesSwapperDisabled && cycle()}
+                                >
+                                    <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-300 rounded-lg disabled:opacity-30")} />
+                                </motion.div>
+                            </button>}
+                        {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full bg-secondary-500 rounded-xl">
+                            <DestinationPicker partner={partner} />
+                        </div>}
                     </div>
                     {
                         (((fromExchange && destination) || (toExchange && source)) && currencyGroup) ?
