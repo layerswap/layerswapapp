@@ -21,7 +21,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const { isMobile } = useWindowDimensions()
     const { providers } = useWallet();
     const { setSelectedConnector, selectedProvider, setSelectedProvider, selectedConnector } = useConnectModal()
-    let [recentConnectors, setRecentConnectors] = usePersistedState<({ providerName?: string, connectorName?: string }[] | undefined)>([], 'recentConnectors', 'localStorage');
+    let [recentConnectors, setRecentConnectors] = usePersistedState<({ providerName?: string, connectorName?: string }[])>([], 'recentConnectors', 'localStorage');
     const [connectionError, setConnectionError] = useState<string | undefined>(undefined);
     const [searchValue, setSearchValue] = useState<string | undefined>(undefined)
     const [isFocused, setIsFocused] = useState(false)
@@ -57,7 +57,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
 
             const result = provider?.connectConnector && await provider.connectConnector({ connector })
 
-            if (result) {
+            if (result && connector && provider) {
                 setRecentConnectors((prev) => [...(prev?.filter(v => v.providerName !== provider.name) || []), { providerName: provider.name, connectorName: connector.name }])
                 onFinish(result)
             }
