@@ -15,7 +15,7 @@ const ToggleButton: FC<ToggleButtonProps> = ({ onChange, value, disabled = false
             onChange={onChange}
             disabled={disabled}
             className={classNames(
-                value ? 'bg-primary' : 'bg-secondary-500',
+                value ? 'bg-primary' : 'bg-secondary-400',
                 'relative inline-flex shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-hidden'
             )}
         >
