@@ -55,17 +55,6 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                         />
                     }
 
-                    <FeeDetails.Item>
-                        <ReceiveAmounts
-                            source_token={fromCurrency}
-                            destination_token={toCurrency}
-                            refuel={!!refuel}
-                            fee={fee}
-                            onButtonClick={() => setOpenRefuelModal(true)}
-                            isFeeLoading={isFeeLoading}
-                        />
-                    </FeeDetails.Item>
-
                 </FeeDetails>
             </ResizablePanel>
 
