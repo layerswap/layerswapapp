@@ -36,9 +36,9 @@ export function useSnapPoints({
   const [windowDimensions, setWindowDimensions] = React.useState(
     typeof window !== 'undefined'
       ? {
-          innerWidth: window.innerWidth,
-          innerHeight: window.innerHeight,
-        }
+        innerWidth: window.innerWidth,
+        innerHeight: window.innerHeight,
+      }
       : undefined,
   );
 
@@ -76,8 +76,8 @@ export function useSnapPoints({
     const containerSize = container
       ? { width: container.getBoundingClientRect().width, height: container.getBoundingClientRect().height }
       : typeof window !== 'undefined'
-      ? { width: window.innerWidth, height: window.innerHeight }
-      : { width: 0, height: 0 };
+        ? { width: window.innerWidth, height: window.innerHeight }
+        : { width: 0, height: 0 };
 
     return (
       snapPoints?.map((snapPoint) => {
@@ -202,7 +202,7 @@ export function useSnapPoints({
     });
 
     const dim = isVertical(direction) ? window.innerHeight : window.innerWidth;
-    if (velocity > VELOCITY_THRESHOLD && Math.abs(draggedDistance) < dim * 0.4) {
+    if ((velocity > VELOCITY_THRESHOLD && Math.abs(draggedDistance) < dim * 0.4) || ((Math.abs(draggedDistance) / dim) > 0.5)) {
       const dragDirection = hasDraggedUp ? 1 : -1; // 1 = up, -1 = down
 
       // Don't do anything if we swipe upwards while being on the last snap point

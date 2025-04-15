@@ -90,7 +90,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             modal={isMobile ? true : false}
             repositionInputs={false}
             onAnimationEnd={onAnimationEnd}
-            handleOnly
+            handleOnly={isMobile}
         >
             <Drawer.Portal>
                 <Drawer.Close asChild>
