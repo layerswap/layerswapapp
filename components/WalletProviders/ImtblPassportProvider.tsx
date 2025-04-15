@@ -1,5 +1,5 @@
 import { useEffect } from "react"
-import { useRouter } from "next/router";
+import { useAppRouter } from "../../context/AppRouter/RouterProvider";
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY;
 const CLIENT_ID = process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID;
@@ -29,7 +29,7 @@ export const initilizePassport = async (basePath: string) => {
 export var passportInstance: any = undefined
 
 export function ImtblPassportProvider({ children }: { children: JSX.Element | JSX.Element[] }) {
-    const router = useRouter();
+    const router = useAppRouter();
 
     useEffect(() => {
         if (!passportInstance) {

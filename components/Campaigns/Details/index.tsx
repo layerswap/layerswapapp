@@ -1,4 +1,3 @@
-import { useRouter } from "next/router"
 import { FC, useCallback } from "react"
 import Image from 'next/image'
 import { Gift } from "lucide-react"
@@ -13,9 +12,10 @@ import Leaderboard from "./Leaderboard"
 import Rewards from "./Rewards";
 import SpinIcon from "../../icons/spinIcon"
 import useWallet from "../../../hooks/useWallet"
+import { useAppRouter } from "../../../context/AppRouter/RouterProvider"
 
 function CampaignDetails() {
-    const router = useRouter();
+    const router = useAppRouter();
     const camapaignName = router.query.campaign?.toString()
 
     const apiClient = new LayerSwapApiClient()

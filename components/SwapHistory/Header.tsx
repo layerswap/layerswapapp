@@ -1,12 +1,12 @@
-import { useRouter } from "next/router"
 import { useCallback, useEffect, useRef, useState } from "react"
 import HeaderWithMenu from "../HeaderWithMenu";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import { motion } from "framer-motion";
+import { useAppRouter } from "../../context/AppRouter/RouterProvider";
 
 const Header = () => {
 
-    const router = useRouter();
+    const router = useAppRouter();
 
     const goBack = useCallback(() => {
         window?.['navigation']?.['canGoBack'] ?

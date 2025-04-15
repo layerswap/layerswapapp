@@ -1,4 +1,4 @@
-import Layout from '../../components/layout'
+import Layout from '../../components/Layout'
 import { InferGetServerSidePropsType } from 'next'
 import Campaigns from '../../components/Campaigns'
 import { getServerSideProps } from '../../helpers/getSettings'

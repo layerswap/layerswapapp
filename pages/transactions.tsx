@@ -1,4 +1,4 @@
-import Layout from '../components/layout'
+import Layout from '../components/Layout'
 import { InferGetServerSidePropsType } from 'next'
 import { SwapDataProvider } from '../context/swap'
 import { getServerSideProps } from '../helpers/getSettings'

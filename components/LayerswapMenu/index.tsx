@@ -6,13 +6,14 @@ import { MenuStep } from "../../Models/Wizard";
 import MenuList from "./MenuList";
 import Wizard from "../Wizard/Wizard";
 import WizardItem from "../Wizard/WizardItem";
-import { NextRouter, useRouter } from "next/router";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import HistoryList from "../SwapHistory/History";
 import Modal from "../modal/modal";
+import { AppRouter } from "../../context/AppRouter/routerTypes";
+import { useAppRouter } from "../../context/AppRouter/RouterProvider";
 
 const Comp = () => {
-    const router = useRouter();
+    const router = useAppRouter();
 
     const { goBack, currentStepName } = useFormWizardState()
     const { goToStep } = useFormWizardaUpdate()
@@ -80,7 +81,7 @@ const LayerswapMenu: FC = () => {
 }
 
 //TODO: move URI handling to wizard provider
-export const setMenuPath = (path: string, router: NextRouter) => {
+export const setMenuPath = (path: string, router: AppRouter) => {
     const basePath = router?.basePath || ""
     var finalURI = window.location.protocol + "//"
         + window.location.host + `${basePath}${path}`;
@@ -93,7 +94,7 @@ export const setMenuPath = (path: string, router: NextRouter) => {
     window.history.pushState({ ...window.history.state, as: router.asPath, url: finalURI }, '', finalURI);
 }
 
-export const clearMenuPath = (router: NextRouter) => {
+export const clearMenuPath = (router: AppRouter) => {
     const basePath = router?.basePath || ""
     let finalURI = window.location.protocol + "//"
         + window.location.host + basePath + router.asPath;

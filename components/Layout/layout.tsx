@@ -1,23 +1,24 @@
 import React, { useEffect } from "react"
 import Head from "next/head"
 import { useRouter } from "next/router";
-import ThemeWrapper from "./themeWrapper";
+import ThemeWrapper from "../themeWrapper";
 import { ErrorBoundary } from "react-error-boundary";
-import MaintananceContent from "./maintanance/maintanance";
-import { AuthProvider } from "../context/authContext";
-import { SettingsProvider } from "../context/settings";
-import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
-import { LayerSwapSettings } from "../Models/LayerSwapSettings";
-import ErrorFallback from "./ErrorFallback";
-import { SendErrorMessage } from "../lib/telegram";
-import { QueryParams } from "../Models/QueryParams";
-import QueryProvider from "../context/query";
-import { THEME_COLORS, ThemeData } from "../Models/Theme";
-import { TooltipProvider } from "./shadcn/tooltip";
-import ColorSchema from "./ColorSchema";
-import { IsExtensionError } from "../helpers/errorHelper";
-import { AsyncModalProvider } from "../context/asyncModal";
-import WalletsProviders from "./WalletProviders";
+import MaintananceContent from "../maintanance/maintanance";
+import { AuthProvider } from "../../context/authContext";
+import { SettingsProvider } from "../../context/settings";
+import { LayerSwapAppSettings } from "../../Models/LayerSwapAppSettings";
+import { LayerSwapSettings } from "../../Models/LayerSwapSettings";
+import ErrorFallback from "../ErrorFallback";
+import { SendErrorMessage } from "../../lib/telegram";
+import { QueryParams } from "../../Models/QueryParams";
+import QueryProvider from "../../context/query";
+import { THEME_COLORS, ThemeData } from "../../Models/Theme";
+import { TooltipProvider } from "../shadcn/tooltip";
+import ColorSchema from "../ColorSchema";
+import { IsExtensionError } from "../../helpers/errorHelper";
+import { AsyncModalProvider } from "../../context/asyncModal";
+import WalletsProviders from "../WalletProviders";
+import { useAppRouter } from "../../context/AppRouter/RouterProvider";
 // import { datadogRum } from '@datadog/browser-rum';
 
 type Props = {
@@ -28,7 +29,7 @@ type Props = {
 };
 
 export default function Layout({ children, settings, themeData }: Props) {
-  const router = useRouter();
+  const router = useAppRouter();
 
   useEffect(() => {
     function prepareUrl(params) {

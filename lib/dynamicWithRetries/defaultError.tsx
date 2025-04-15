@@ -1,10 +1,10 @@
-import { useRouter } from "next/router";
 import SubmitButton from "../../components/buttons/submitButton";
 import { RefreshCcw } from "lucide-react";
+import { useAppRouter } from "../../context/AppRouter/RouterProvider";
 
 const DynamicDefaultError = () => {
 
-    const router = useRouter()
+    const router = useAppRouter()
 
     return (
         <div className="w-full h-full flex flex-col justify-center gap-3 p-3 items-center">

@@ -6,13 +6,13 @@ import { useAuthState } from "../../context/authContext";
 import { useIntercom } from "react-use-intercom";
 import { TrackEvent } from '../../pages/_document';
 import { Home, MessageSquare } from "lucide-react";
-import { useRouter } from "next/router";
+import { useAppRouter } from "../../context/AppRouter/RouterProvider";
 
 const NotFound: FC = () => {
 
     const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const { query } = useRouter()
+    const { query } = useAppRouter()
     const updateWithProps = () => update({ userId, customAttributes: { swapId: query?.swapId, email: email, } })
 
     useEffect(() => {

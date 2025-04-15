@@ -1,5 +1,5 @@
 import LayerSwapApiClient from '../../lib/layerSwapApiClient';
-import Layout from '../../components/layout';
+import Layout from '../../components/Layout';
 import { InferGetServerSidePropsType } from 'next';
 import React from 'react';
 import { SwapDataProvider } from '../../context/swap';

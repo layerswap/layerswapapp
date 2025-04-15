@@ -1,12 +1,12 @@
 import Link, { LinkProps } from "next/link";
-import { useRouter } from "next/router";
 import { FC } from "react";
 import { resolvePersistantQueryParams } from "../helpers/querryHelper";
+import { useAppRouter } from "../context/AppRouter/RouterProvider";
 
 const LinkWrapper: FC<Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, keyof LinkProps> & LinkProps & {
     children?: React.ReactNode;
 } & React.RefAttributes<HTMLAnchorElement>> = (props) => {
-    const router = useRouter();
+    const router = useAppRouter();
     const { children } = props
 
     const pathname = typeof props.href === 'object' ? props.href.pathname : props.href

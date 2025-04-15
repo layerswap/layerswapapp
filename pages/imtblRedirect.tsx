@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { passportInstance, initilizePassport } from "../components/WalletProviders/ImtblPassportProvider";
-import { useRouter } from "next/router";
+import { useAppRouter } from "../context/AppRouter/RouterProvider";
 
 const ImtblRedirect = () => {
-    const router = useRouter();
+    const router = useAppRouter();
 
     useEffect(() => {
         (async () => {

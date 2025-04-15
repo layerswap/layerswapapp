@@ -1,5 +1,4 @@
 import { BookOpen, Gift, Map, Home, LogIn, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus, UserCircle2 } from "lucide-react";
-import { useRouter } from "next/router";
 import { FC, useCallback, useEffect, useState } from "react";
 import { useAuthDataUpdate, useAuthState, UserType } from "../../context/authContext";
 import TokenService from "../../lib/TokenService";
@@ -19,6 +18,7 @@ import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import Menu from "./Menu";
 import dynamic from "next/dynamic";
 import { MenuStep } from "../../Models/Wizard";
+import { useAppRouter } from "../../context/AppRouter/RouterProvider";
 
 const WalletsMenu = dynamic(() => import("../Wallet/ConnectedWallets").then((comp) => comp.WalletsMenu), {
     loading: () => <></>
@@ -27,7 +27,7 @@ const WalletsMenu = dynamic(() => import("../Wallet/ConnectedWallets").then((com
 const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ goToStep }) => {
     const { email, userType, userId } = useAuthState()
     const { setUserType } = useAuthDataUpdate()
-    const router = useRouter();
+    const router = useAppRouter();
     const { boot, show, update } = useIntercom()
     const [embedded, setEmbedded] = useState<boolean>()
     const [openFeedbackModal, setOpenFeedbackModal] = useState(false);

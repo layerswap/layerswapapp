@@ -12,7 +12,6 @@ import LayerSwapApiClient from "../../../lib/layerSwapApiClient";
 import Modal from "../../modal/modal";
 import SwapForm from "./Form";
 import useSWR from "swr";
-import { NextRouter, useRouter } from "next/router";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
 import { UserType, useAuthDataUpdate } from "../../../context/authContext";
@@ -36,6 +35,8 @@ import { useAddressesStore } from "../../../stores/addressesStore";
 import { useAsyncModal } from "../../../context/asyncModal";
 import { ValidationProvider } from "../../../context/validationErrorContext";
 import { TrackEvent } from "../../../pages/_document";
+import { useAppRouter } from "../../../context/AppRouter/RouterProvider";
+import { AppRouter } from "../../../context/AppRouter/routerTypes";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -60,7 +61,7 @@ export default function Form() {
     const [showSwapModal, setShowSwapModal] = useState(false);
     const [isAddressFromQueryConfirmed, setIsAddressFromQueryConfirmed] = useState(false);
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
-    const router = useRouter();
+    const router = useAppRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
     const { getProvider } = useWallet()
     const addresses = useAddressesStore(state => state.addresses)
@@ -309,7 +310,7 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
     </motion.div>
 }
 
-const setSwapPath = (swapId: string, router: NextRouter) => {
+const setSwapPath = (swapId: string, router: AppRouter) => {
     //TODO: as path should be without basepath and host
     const basePath = router?.basePath || ""
     var swapURL = window.location.protocol + "//"
@@ -324,7 +325,7 @@ const setSwapPath = (swapId: string, router: NextRouter) => {
     window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
 }
 
-const removeSwapPath = (router: NextRouter) => {
+const removeSwapPath = (router: AppRouter) => {
     const basePath = router?.basePath || ""
     let homeURL = window.location.protocol + "//"
         + window.location.host + basePath

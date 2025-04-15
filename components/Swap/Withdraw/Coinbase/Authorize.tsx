@@ -14,8 +14,8 @@ import { ArrowLeft } from 'lucide-react';
 import IconButton from '../../../buttons/iconButton';
 import { motion } from 'framer-motion';
 import { useCoinbaseStore } from './CoinbaseStore';
-import { useRouter } from 'next/router';
 import { Widget } from '../../../Widget/Index';
+import { useAppRouter } from '../../../../context/AppRouter/RouterProvider';
 
 type Props = {
     onAuthorized: () => void,
@@ -28,7 +28,7 @@ const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
     const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
     const { source_exchange: exchange } = swap || {}
-    const router = useRouter()
+    const router = useAppRouter()
     let alreadyFamiliar = useCoinbaseStore((state) => state.alreadyFamiliar);
     let toggleAlreadyFamiliar = useCoinbaseStore((state) => state.toggleAlreadyFamiliar);
     const [carouselFinished, setCarouselFinished] = useState(alreadyFamiliar)

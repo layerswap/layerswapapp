@@ -1,4 +1,3 @@
-import { useRouter } from "next/router";
 import { FC, useCallback } from "react";
 import { useFormWizardaUpdate } from "../../context/formWizardProvider";
 import { TimerProvider } from "../../context/timerContext";
@@ -10,11 +9,12 @@ import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import { ParsedUrlQuery } from "querystring";
+import { useAppRouter } from "../../context/AppRouter/RouterProvider";
 
 
 const AuthWizard: FC = () => {
     const { goToStep } = useFormWizardaUpdate()
-    const router = useRouter();
+    const router = useAppRouter();
 
     const CodeOnNext = useCallback(async () => {
         await router.push({

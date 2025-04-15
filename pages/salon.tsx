@@ -1,14 +1,14 @@
-import Layout from '../components/layout'
+import Layout from '../components/Layout'
 import React, { useEffect } from 'react'
-import { useRouter } from 'next/router';
 import { clearTempData, getTempData } from '../lib/openLink';
 import { InferGetServerSidePropsType } from 'next';
 import { getServerSideProps } from '../helpers/getSettings';
 import LayerSwapApiClient from '../lib/layerSwapApiClient';
+import { useAppRouter } from '../context/AppRouter/RouterProvider';
 
 export default function Salon({ settings, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     LayerSwapApiClient.apiKey = apiKey
-    const router = useRouter();
+    const router = useAppRouter();
 
 
     useEffect(() => {

@@ -18,11 +18,11 @@ import { truncateDecimals } from '../utils/RoundDecimals';
 import Link from 'next/link';
 import calculateDatesDifference from '../../lib/calculateDatesDifference';
 import { SwapStatus } from '../../Models/SwapStatus';
-import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
 import VaulDrawer from '../modal/vaulModal';
 import { Popover, PopoverContent, PopoverTrigger } from '../shadcn/popover';
+import { useAppRouter } from '../../context/AppRouter/RouterProvider';
 
 type Props = {
     swapResponse: SwapResponse
@@ -34,7 +34,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     const { swap, refuel, quote } = swapResponse
     const { source_token, destination_token, destination_address, source_network, destination_network, source_exchange, destination_exchange, requested_amount } = swap
 
-    const router = useRouter()
+    const router = useAppRouter()
     const {
         hideFrom,
         hideTo,

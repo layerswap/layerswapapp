@@ -1,10 +1,10 @@
 import HeaderWithMenu from "../HeaderWithMenu"
-import { useRouter } from "next/router"
 import { default as Content } from './Content';
 import { default as Footer } from './Footer';
 import { useCallback, useRef } from "react";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import AppSettings from "../../lib/AppSettings";
+import { useAppRouter } from "../../context/AppRouter/RouterProvider";
 
 type Props = {
    children: JSX.Element | JSX.Element[];
@@ -13,7 +13,7 @@ type Props = {
 }
 
 const Widget = ({ children, className, hideMenu }: Props) => {
-   const router = useRouter()
+   const router = useAppRouter()
    const wrapper = useRef(null);
 
    const goBack = useCallback(() => {
