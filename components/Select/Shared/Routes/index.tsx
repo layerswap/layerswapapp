@@ -154,12 +154,20 @@ type ExchangeRouteItemProps = {
 const ExchangeRouteSelectItemDisplay = (props: ExchangeRouteItemProps) => {
     const { item } = props
 
-    return <SelectItem>
-        <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} />
-        <SelectItem.Title className="py-3" >
-            {item.display_name}
-        </SelectItem.Title>
-    </SelectItem>
+    return (
+        <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative">
+            <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} />
+            <SelectItem.Title className="py-3" >
+                <>
+                    <span>{item.display_name}</span>
+                    <ChevronDown
+                        className="!w-3.5 !h-3.5 absolute right-2 bottom-4 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
+                        aria-hidden="true"
+                    />
+                </>
+            </SelectItem.Title>
+        </SelectItem>
+    )
 }
 
 type SelectedCurrencyDisplayProps = {

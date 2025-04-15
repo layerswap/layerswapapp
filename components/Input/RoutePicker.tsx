@@ -43,6 +43,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     const selectedRoute = resolveSelectedRoute(values, direction)
     const selectedToken = resolveSelectedToken(values, direction)
+    
     useEffect(() => {
 
         if (!selectedRoute || !selectedToken || !allRoutes) return
