@@ -6306,7 +6306,7 @@
         "native": "",
         "universal": "https://portal.abs.xyz/profile"
       },
-      "homepage": "https://portal.abs.xyz",
+      "homepage": "https://abs.xyz",
       "id": "26d3d9e7224a1eb49089aa5f03fb9f3b883e04050404594d980d4e1e74e1dbea",
       "image_id": "1ed092f7-0a74-4856-bc0a-02660223f400",
       "image_url": {
@@ -6326,7 +6326,7 @@
         "native": "",
         "universal": null
       },
-      "name": "AGW",
+      "name": "Abstract",
       "rdns": null,
       "sdks": [
         "sign_v1",
@@ -15298,7 +15298,7 @@
       "description": "Find the Next Crypto Gem",
       "desktop": {
         "native": "",
-        "universal": "https://www.kucoin.com"
+        "universal": null
       },
       "homepage": "https://www.kucoin.com",
       "id": "67f1ec404dbf3bddc509b5fcf615850e05b28c287ccd7167b4fe81b4293ac9df",
