@@ -103,7 +103,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                                     <SpinIcon className="animate-spin h-5 w-5" />
                                 </div>
                             ) : (
-                                <CommandList>
+                                <CommandList className="overflow-y-auto h-[450px] styled-scroll hide-main-scrollbar">
                                     <CommandEmpty>No results found.</CommandEmpty>
                                     {groupedRoutes.filter(g => g.routes?.length > 0).map((group) => {
                                         return <Group
@@ -206,8 +206,8 @@ const GroupItem = ({ route, underline, toggleContent, direction, onSelect, selec
                         />
                     </AccordionTrigger>
                 </CommandItem >
-                <AccordionContent className="rounded-xl AccordionContent">
-                    <div className='has-[.token-item]:pb-2 has-[.token-item]:mt-1 bg-secondary-400'>
+                <AccordionContent className="AccordionContent">
+                    <div className='has-[.token-item]:mt-1 bg-secondary-400 rounded-xl overflow-hidden'>
                         {
                             sortedTokens?.map((token: ExchangeToken | NetworkRouteToken, index) => {
                                 return <TokenCommandWrapper

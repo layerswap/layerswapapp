@@ -66,7 +66,7 @@ export const SelectorTrigger = (props: SelectTriggerProps) => {
             type="button"
             onClick={openModal}
             disabled={disabled}
-            className="rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow group-has-[.input-wide]:h-10 h-12 flex items-center text-left justify-bottom w-full px-2 pr-0 pl-2 bg-secondary-300 font-semibold"
+            className="rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full px-2 pr-0 pl-2 bg-secondary-300 font-semibold"
         >
             {children}
         </button>

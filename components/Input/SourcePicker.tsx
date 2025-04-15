@@ -30,10 +30,18 @@ const SourcePicker = () => {
             }
             <LayoutGroup>
                 <div className="grid grid-cols-8 gap-2 group mt-0.5">
-                    <motion.div layout className="col-span-5 group-has-[.input-wide]:col-span-6">
+                    <motion.div
+                        layout
+                        transition={{ duration: 0.25, ease: 'easeInOut' }}
+                        className="col-span-5 group-has-[.input-wide]:col-span-6"
+                    >
                         <AmountField />
                     </motion.div>
-                    <motion.div layout className="col-span-3 group-has-[.input-wide]:col-span-2 flex items-center self-start justify-end">
+                    <motion.div
+                        layout
+                        transition={{ duration: 0.25, ease: 'easeInOut' }}
+                        className="col-span-3 group-has-[.input-wide]:col-span-2 flex items-center self-start justify-end"
+                    >
                         <RoutePicker direction="from" />
                     </motion.div>
                 </div>

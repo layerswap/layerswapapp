@@ -24,7 +24,9 @@ const CommandWrapper = React.forwardRef<
   React.ElementRef<typeof Command>,
   React.ComponentPropsWithoutRef<typeof Command>
 >(({ className, children, ...props }, ref) => (
-  <Command {...props} className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-secondary-text [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5">
+  <Command {...props} className={classNames("[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-secondary-text [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-3 [&_[cmdk-item]_svg]:h-5 [&_[cmdk-item]_svg]:w-5",
+    className
+  )}>
     {children}
   </Command>
 ))
@@ -37,12 +39,9 @@ const CommandInput = React.forwardRef<
     <div className="absolute">{children}</div>
     <CommandPrimitive.Input placeholder=" " ref={ref} id="floating_standard"
       {...props} className={classNames(
-        "peer/draft text-base font-normal leading-5 placeholder:text-transparent bg-secondary-500 rounded-lg border-0 border-b-0 pl-8 border-primary-text focus:border-primary-text appearance-none block p-2 w-full h-11 outline-hidden focus:outline-hidden focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
+        "peer/draft text-base font-normal leading-5 bg-secondary-500 rounded-lg border-0 border-b-0 pl-8 border-primary-text focus:border-primary-text appearance-none block p-2 w-full h-11 outline-hidden focus:outline-hidden focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
         className
       )} />
-    <label htmlFor={props.id} className="absolute text-lg text-primary-text-placeholder duration-300 transform -translate-y-6 scale-75 top-3 pl-8 z-10 origin-[0] peer-placeholder-shown/draft:scale-100 peer-placeholder-shown/draft:translate-y-0 peer-placeholder-shown/draft:text-secondary-text-muted">
-      {props.placeholder}
-    </label>
   </div>
 ))
 
