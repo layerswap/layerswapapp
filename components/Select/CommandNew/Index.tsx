@@ -41,10 +41,10 @@ export const SelectorContent = (props: SelectContentProps) => {
             <div>{header}</div>
         </div> : <></>}
         {isOpen ?
-            <div>
+            <>
                 {modalContent}
-                <div>{children({ closeModal })}</div>
-            </div>
+                {children({ closeModal })}
+            </>
             : <></>
         }
     </Modal>

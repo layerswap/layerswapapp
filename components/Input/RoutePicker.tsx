@@ -104,7 +104,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                                     <SpinIcon className="animate-spin h-5 w-5" />
                                 </div>
                             ) : (
-                                <CommandList className="overflow-y-auto h-[450px] styled-scroll hide-main-scrollbar">
+                                <CommandList className="overflow-y-auto styled-scroll hide-main-scrollbar">
                                     <CommandEmpty>No results found.</CommandEmpty>
                                     {groupedRoutes.filter(g => g.routes?.length > 0).map((group) => {
                                         return <Group
