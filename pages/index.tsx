@@ -28,7 +28,7 @@ export default function Home({ settings, themeData, apiKey }: InferGetServerSide
       }
     }}>
       <Layout settings={settings} themeData={themeData}>
-        <Swap />
+        <Swap apiKey={apiKey} settings={settings} themeData={themeData} />
       </Layout>
     </SWRConfig>
   )

@@ -1,15 +1,14 @@
 import Layout from '../components/Layout'
-import React, { useEffect } from 'react'
+import React, { FC, useEffect } from 'react'
 import { clearTempData, getTempData } from '../lib/openLink';
 import { InferGetServerSidePropsType } from 'next';
 import { getServerSideProps } from '../helpers/getSettings';
 import LayerSwapApiClient from '../lib/layerSwapApiClient';
 import { useAppRouter } from '../context/AppRouter/RouterProvider';
+import AppWrapper, { AppPageProps } from '../components/Layout/AppWrapper';
 
-export default function Salon({ settings, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-    LayerSwapApiClient.apiKey = apiKey
+const Comp: FC = () => {
     const router = useAppRouter();
-
 
     useEffect(() => {
         const temp_data = getTempData()
@@ -29,23 +28,39 @@ export default function Salon({ settings, apiKey }: InferGetServerSidePropsType<
             })
         }
     }, [router])
+    return (
+        <div className="h-full min-h-screen flex flex-col justify-center text-secondary-text text-md font-lighter leading-6">
+            <div className='flex place-content-center mb-4'>
+                <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 116 116" fill="none">
+                    <circle cx="58" cy="58" r="58" fill="#55B585" fillOpacity="0.1" />
+                    <circle cx="58" cy="58" r="45" fill="#55B585" fillOpacity="0.3" />
+                    <circle cx="58" cy="58" r="30" fill="#55B585" />
+                    <path d="M44.5781 57.245L53.7516 66.6843L70.6308 49.3159" stroke="white" strokeWidth="3.15789" strokeLinecap="round" />
+                </svg>
+            </div>
+            <div className="flex flex-col text-center place-content-center space-y-2">
+                <p className="block text-primary-text font-bold text-lg"> Exchange account successfully connected </p>
+                <p className="block"> You can close this window now</p>
+            </div>
+        </div>
+    )
+}
+
+const SalonApp: FC<AppPageProps> = (props) => {
+
 
     return (
-        <Layout hideFooter={true} settings={settings}>
-            <div className="h-full min-h-screen flex flex-col justify-center text-secondary-text text-md font-lighter leading-6">
-                <div className='flex place-content-center mb-4'>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 116 116" fill="none">
-                        <circle cx="58" cy="58" r="58" fill="#55B585" fillOpacity="0.1" />
-                        <circle cx="58" cy="58" r="45" fill="#55B585" fillOpacity="0.3" />
-                        <circle cx="58" cy="58" r="30" fill="#55B585" />
-                        <path d="M44.5781 57.245L53.7516 66.6843L70.6308 49.3159" stroke="white" strokeWidth="3.15789" strokeLinecap="round" />
-                    </svg>
-                </div>
-                <div className="flex flex-col text-center place-content-center space-y-2">
-                    <p className="block text-primary-text font-bold text-lg"> Exchange account successfully connected </p>
-                    <p className="block"> You can close this window now</p>
-                </div>
-            </div>
+        <AppWrapper {...props}>
+            <Comp />
+        </AppWrapper>
+    )
+}
+
+export default function Salon({ settings, apiKey, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+
+    return (
+        <Layout settings={settings}>
+            <SalonApp settings={settings} apiKey={apiKey} themeData={themeData} hideFooter />
         </Layout>
     )
 }

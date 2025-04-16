@@ -5,20 +5,23 @@ import SwapForm from "./Swap/Form"
 import { SWRConfig, mutate } from 'swr';
 import { SwapStatus } from '../Models/SwapStatus';
 import { FeeProvider } from '../context/feeContext';
+import AppWrapper, { AppPageProps } from './Layout/AppWrapper';
 
-const Swap: FC = () => {
+const Swap: FC<AppPageProps> = (props) => {
   return (
-    <div className="text-primary-text">
-      <SWRConfig value={{ use: [updatePendingCount] }}>
-        <SwapDataProvider >
-          <TimerProvider>
-            <FeeProvider>
-              <SwapForm />
-            </FeeProvider>
-          </TimerProvider>
-        </SwapDataProvider >
-      </SWRConfig>
-    </div >
+    <AppWrapper {...props}>
+      <div className="text-primary-text">
+        <SWRConfig value={{ use: [updatePendingCount] }}>
+          <SwapDataProvider >
+            <TimerProvider>
+              <FeeProvider>
+                <SwapForm />
+              </FeeProvider>
+            </TimerProvider>
+          </SwapDataProvider >
+        </SWRConfig>
+      </div >
+    </AppWrapper>
   )
 };
 const swapsStatuses: { [key: string]: SwapStatus } = {}

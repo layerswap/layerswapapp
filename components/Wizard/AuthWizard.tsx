@@ -1,5 +1,5 @@
 import { FC, useCallback } from "react";
-import { useFormWizardaUpdate } from "../../context/formWizardProvider";
+import { FormWizardProvider, useFormWizardaUpdate } from "../../context/formWizardProvider";
 import { TimerProvider } from "../../context/timerContext";
 import { AuthStep, SwapCreateStep } from "../../Models/Wizard";
 import { TrackEvent } from "../../pages/_document";
@@ -7,12 +7,11 @@ import CodeStep from "./Steps/CodeStep";
 import EmailStep from "./Steps/EmailStep";
 import Wizard from "./Wizard";
 import WizardItem from "./WizardItem";
-import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
-import { ParsedUrlQuery } from "querystring";
 import { useAppRouter } from "../../context/AppRouter/RouterProvider";
+import { SwapDataProvider } from "../../context/swap";
+import AppWrapper, { AppPageProps } from "../Layout/AppWrapper";
 
-
-const AuthWizard: FC = () => {
+const Comp: FC = () => {
     const { goToStep } = useFormWizardaUpdate()
     const router = useAppRouter();
 
@@ -45,23 +44,16 @@ const AuthWizard: FC = () => {
     )
 }
 
-function resolveRedirectUrl(pathname: string | undefined, query: ParsedUrlQuery) {
-
-    if (!pathname) return '/'
-
-    const pathnameArray = pathname && pathname.split('/') || []
-
-    if (pathname?.startsWith('swap'))
-        return {
-            pathname: '/swap/[swapId]',
-            query: { ...resolvePersistantQueryParams(query), swapId: encodeURIComponent(pathnameArray[1]) }
-        }
-    if (pathname?.startsWith('campaigns'))
-        return {
-            pathname: '/campaigns/[campaign]',
-            query: { ...resolvePersistantQueryParams(query), campaign: encodeURIComponent(pathnameArray[1]) }
-        }
-    else return { pathname: encodeURIComponent(pathname), query: { ...resolvePersistantQueryParams(query) } }
+const AuthWizard: FC<AppPageProps> = (props) => {
+    return (
+        <AppWrapper {...props}>
+            <SwapDataProvider>
+                <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false}>
+                    <Comp />
+                </FormWizardProvider>
+            </SwapDataProvider>
+        </AppWrapper>
+    )
 }
 
 export default AuthWizard;

@@ -7,9 +7,9 @@ import StarknetProvider from "./StarknetProvider";
 import { ImtblPassportProvider } from "./ImtblPassportProvider";
 import TronProvider from "./TronProvider";
 
-const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], basePath: string, themeData: ThemeData, appName: string | undefined }> = ({ children, basePath, themeData, appName }) => {
+const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], themeData: ThemeData, appName: string | undefined }> = ({ children, themeData, appName }) => {
     return (
-        <TonConnectProvider basePath={basePath} themeData={themeData} appName={appName}>
+        <TonConnectProvider themeData={themeData} appName={appName}>
             <SolanaProvider>
                 <TronProvider>
                     <StarknetProvider>
