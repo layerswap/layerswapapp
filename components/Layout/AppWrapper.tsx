@@ -21,7 +21,6 @@ import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 
 export type AppPageProps = {
     children?: JSX.Element | JSX.Element[];
-    hideFooter?: boolean;
     settings?: LayerSwapSettings;
     apiKey?: string;
     themeData?: ThemeData | null

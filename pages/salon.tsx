@@ -60,7 +60,7 @@ export default function Salon({ settings, apiKey, themeData }: InferGetServerSid
 
     return (
         <Layout settings={settings}>
-            <SalonApp settings={settings} apiKey={apiKey} themeData={themeData} hideFooter />
+            <SalonApp settings={settings} apiKey={apiKey} themeData={themeData} />
         </Layout>
     )
 }
