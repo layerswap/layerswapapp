@@ -208,7 +208,6 @@ export const SelectedCurrencyDisplay = (props: SelectedCurrencyDisplayProps) => 
     </span>
 }
 
-
 type SelectedRouteDisplayProps = {
     route?: NetworkRoute | Exchange;
     token?: RouteToken;

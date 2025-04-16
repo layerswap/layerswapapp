@@ -339,6 +339,7 @@ input::-webkit-input-placeholder {
 
 body {
   overflow: overlay;
+  background-color: rgb(var(--ls-colors-secondary-700));
 }
 
 body::-webkit-scrollbar {
