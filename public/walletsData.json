@@ -1,5 +1,5 @@
 {
-  "count": 523,
+  "count": 524,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -19854,7 +19854,7 @@
       "app": {
         "android": "https://www.binance.com/en/download",
         "browser": "https://www.binance.com/en/web3wallet",
-        "chrome": null,
+        "chrome": "https://www.binance.com/en/download",
         "edge": null,
         "firefox": null,
         "ios": "https://www.binance.com/en/download",
@@ -19869,14 +19869,23 @@
       "chains": [
         "eip155:1",
         "eip155:10",
+        "eip155:1329",
         "eip155:137",
+        "eip155:2020",
+        "eip155:204",
         "eip155:324",
+        "eip155:34443",
         "eip155:42161",
+        "eip155:43114",
+        "eip155:5000",
+        "eip155:534352",
         "eip155:56",
         "eip155:59144",
+        "eip155:6001",
         "eip155:80084",
         "eip155:80085",
-        "eip155:8453"
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
       "description": "Binance Wallet is a keyless, multi-chain and self-custody wallet.",
       "desktop": {
@@ -34063,6 +34072,64 @@
         "2"
       ]
     },
+    "f9b40e3615afddce7aea739d37d543b922e5f70a4f30b886b6b59062c43b2437": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.yowallet.app&hl=en",
+        "browser": "https://yowallet.io",
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "https://apps.apple.com/us/app/yowallet/id6474118944",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:56"
+      ],
+      "description": "Non-custodial EVM wallet for Bahamut Ecosystem ",
+      "desktop": {
+        "native": "",
+        "universal": null
+      },
+      "homepage": "https://yowallet.io",
+      "id": "f9b40e3615afddce7aea739d37d543b922e5f70a4f30b886b6b59062c43b2437",
+      "image_id": "750079a0-6372-4e32-d1af-fe8ec2bbe400",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/750079a0-6372-4e32-d1af-fe8ec2bbe400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/750079a0-6372-4e32-d1af-fe8ec2bbe400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/750079a0-6372-4e32-d1af-fe8ec2bbe400?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "yo-wallet://",
+        "universal": null
+      },
+      "name": "YoWallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "yowallet",
+      "updatedAt": "2025-04-16T17:14:47.849169+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "fa6a09c7efd73c6fe3bc5a68969d0def71b5d760b99a16985e3e8e79d84b0156": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.onechain.saas&hl=en-VN",
@@ -35214,5 +35281,5 @@
       ]
     }
   },
-  "total": 523
+  "total": 524
 }
