@@ -133,7 +133,6 @@ export default function useStarknet(): WalletProvider {
     })
 
     const provider: WalletProvider = {
-        switchAccount: async () => { },
         connectWallet,
         connectConnector,
         connectedWallets: getWallet(),

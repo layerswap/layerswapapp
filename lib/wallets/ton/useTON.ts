@@ -4,6 +4,7 @@ import KnownInternalNames from "../../knownIds";
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { useSettingsState } from "../../../context/settings";
+import { useConnectModal } from "../../../components/WalletModal";
 
 export default function useTON(): WalletProvider {
     const { networks } = useSettingsState()
@@ -18,6 +19,7 @@ export default function useTON(): WalletProvider {
 
     const tonWallet = useTonWallet();
     const [tonConnectUI] = useTonConnectUI();
+    const { connect } = useConnectModal()
 
     const address = tonWallet?.account && Address.parse(tonWallet.account.address).toString({ bounceable: false })
     const iconUrl = tonWallet?.["imageUrl"] as string
@@ -45,8 +47,16 @@ export default function useTON(): WalletProvider {
         return undefined
     }
 
-
     const connectWallet = async () => {
+        try {
+            return await connect(provider)
+        }
+        catch (e) {
+            console.log(e)
+        }
+    }
+
+    const connectConnector = async () => {
 
         if (tonWallet) {
             await disconnectWallets()
@@ -60,7 +70,7 @@ export default function useTON(): WalletProvider {
 
                     tonConnectUI.onModalStateChange((state) => {
                         if (state.status == 'closed' && state.closeReason == 'action-cancelled') {
-                            reject('User cancelled the connection');
+                            reject("You've declined the wallet connection request");
                         }
                     })
                     // Listen for the status change
@@ -124,7 +134,7 @@ export default function useTON(): WalletProvider {
     const provider = {
         connectWallet,
         disconnectWallets,
-        connectConnector: connectWallet,
+        connectConnector,
         availableWalletsForConnect,
         activeAccountAddress: wallet?.address,
         connectedWallets: getWallet(),
