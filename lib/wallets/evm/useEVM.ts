@@ -103,7 +103,7 @@ export default function useEVM({ network }: Props): WalletProvider {
                     })
                 }
             }
-            else if (connector.type !== 'injected' && connector.id !== "coinbaseWalletSDK") {
+            else if (connector.type !== 'injected' && connector.isMobileSupported && connector.id !== "coinbaseWalletSDK") {
                 setSelectedConnector({ ...connector, qr: { state: 'loading', value: undefined } })
                 getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
                     setSelectedConnector({ ...connector, icon: base64Icon, qr: { state: 'fetched', value: uri } })
@@ -192,12 +192,12 @@ export default function useEVM({ network }: Props): WalletProvider {
     {/* //TODO: refactor ordering */ }
     const availableWalletsForConnect = allConnectors.filter(filterConnectors)
         .map(w => {
-            const isMobileSupported = fetchedWallets.some(w2 => w2.name.toLowerCase() === w.name.toLowerCase() && w2.mobile.native)
+            const isWalletConnectSupported = fetchedWallets.some(w2 => w2.name.toLowerCase().includes(w.name.toLowerCase()) && (w2.mobile.universal || w2.mobile.native || w2.desktop.native || w2.desktop.universal)) || w.name === "WalletConnect"
             return {
                 ...w,
                 order: resolveWalletConnectorIndex(w.id),
                 type: (w.type == 'injected' && w.id !== 'com.immutable.passport') ? w.type : "other",
-                isMobileSupported
+                isMobileSupported: isWalletConnectSupported
             }
         })
 
