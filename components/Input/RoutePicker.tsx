@@ -15,6 +15,7 @@ import { ResolveCEXCurrencyOrder, ResolveCurrencyOrder, SortNetworkRoutes } from
 import useFormRoutes from "../../hooks/useFormRoutes";
 import { Route, RouteToken, RoutesGroup } from "../../Models/Route";
 import Balance from "./Amount/Balance";
+import PickerWalletConnect from "./RouterPickerWalletConnect";
 
 function resolveSelectedRoute(values: SwapFormValues, direction: SwapDirection): NetworkRoute | Exchange | undefined {
     const { from, to, fromExchange, toExchange } = values
@@ -91,7 +92,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 <SelectorTrigger disabled={false}>
                     <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select Token" />
                 </SelectorTrigger>
-                <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search">
+                <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search" header={<PickerWalletConnect/>}>
                     {({ closeModal }) => (
                         <CommandWrapper>
                             <CommandInput autoFocus={isDesktop} placeholder="Search">
@@ -104,7 +105,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                                     <SpinIcon className="animate-spin h-5 w-5" />
                                 </div>
                             ) : (
-                                <CommandList className="overflow-y-auto styled-scroll hide-main-scrollbar">
+                                <CommandList className="overflow-y-auto styled-scroll hide-main-scrollbar !px-0">
                                     <CommandEmpty>No results found.</CommandEmpty>
                                     {groupedRoutes.filter(g => g.routes?.length > 0).map((group) => {
                                         return <Group
