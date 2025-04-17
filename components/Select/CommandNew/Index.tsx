@@ -1,6 +1,7 @@
 import { createContext, useContext, useState } from "react";
 import { LeafletHeight } from "../../modal/leaflet";
 import Modal from "../../modal/modal";
+import { motion } from "framer-motion";
 
 type SelectorProps = {
     setIsOpen: (value: boolean) => void;
@@ -39,12 +40,12 @@ export const SelectorContent = (props: SelectContentProps) => {
     return <Modal height={modalHeight} show={isOpen} setShow={setIsOpen} modalId='comandSelect'>
         {header ? <div className="absolute top-4 left-8 text-lg text-secondary-text font-semibold">
             <div>{header}</div>
-        </div> : <></>}
+        </div> : <div></div>}
         {isOpen ?
-            <>
+            <div className="h-full">
                 {modalContent}
                 {children({ closeModal })}
-            </>
+            </div>
             : <></>
         }
     </Modal>
@@ -61,7 +62,7 @@ export const SelectorTrigger = (props: SelectTriggerProps) => {
     function openModal() {
         setIsOpen(true)
     }
-    return <div className="shadow-sm/30 rounded-lg flex items-center relative w-full group-has-[.input-wide]:w-fit z-10 self-end">
+    return <div className="shadow-sm/30 rounded-lg flex items-center relative w-full group-has-[.input-wide]:w-fit z-10 self-end ">
         <button
             type="button"
             onClick={openModal}
