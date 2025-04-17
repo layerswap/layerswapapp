@@ -6,10 +6,10 @@ import TokenService from "../../lib/TokenService";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../icons/ChatIcon";
 import inIframe from "../utils/inIframe";
-import DiscordLogo from "./../icons/DiscordLogo";
-import GitHubLogo from "./../icons/GitHubLogo";
-import SubstackLogo from "./../icons/SubstackLogo";
-import TwitterLogo from "./../icons/TwitterLogo";
+import DiscordLogo from "../icons/DiscordLogo";
+import GitHubLogo from "../icons/GitHubLogo";
+import SubstackLogo from "../icons/SubstackLogo";
+import TwitterLogo from "../icons/TwitterLogo";
 import Link from "next/link";
 import Popover from "../modal/popover";
 import SendFeedback from "../sendFeedback";
@@ -134,7 +134,7 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
 
             <div className="grid grid-cols-2 gap-2 justify-center">
                 {navigation.social.map((item, index) => (
-                    <Link key={index} target="_blank" href={item.href} className={`flex relative bg-secondary-700 hover:bg-secondary-600 rounded-md cursor-pointer select-none items-center outline-hidden text-primary-text ${item.className}`}>
+                    <Link key={index} target="_blank" href={item.href} className={`flex relative bg-secondary-500 hover:bg-secondary-400 rounded-md cursor-pointer select-none items-center outline-hidden text-primary-text ${item.className}`}>
                         <div className="p-2 w-full flex justify-center gap-1">
                             <item.icon className="h-5 w-5" aria-hidden="true" />
                             <p>{item.name}</p>

@@ -9,10 +9,12 @@ import { Wallet, WalletProvider } from "../Models/WalletProvider";
 import useTron from "../lib/wallets/tron/useTron";
 import { useMemo } from "react";
 import useParadex from "../lib/wallets/paradex/useParadex";
+import { useSettingsState } from "../context/settings";
 
 export type WalletPurpose = "autofil" | "withdrawal" | "asSource"
 
 export default function useWallet(network?: Network | undefined, purpose?: WalletPurpose) {
+    const { networks } = useSettingsState()
 
     const walletProviders: WalletProvider[] = [
         useEVM({ network }),
@@ -23,7 +25,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
         useFuel(),
         useTron(),
         useParadex({ network })
-    ]
+    ].filter(provider => networks.some(obj => provider?.autofillSupportedNetworks?.includes(obj.name) || provider?.withdrawalSupportedNetworks?.includes(obj.name) || provider?.asSourceSupportedNetworks?.includes(obj.name)))
 
     const provider = network && resolveProvider(network, walletProviders, purpose)
 

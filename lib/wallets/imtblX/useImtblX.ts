@@ -2,8 +2,9 @@ import { useWalletStore } from "../../../stores/walletStore"
 import ImtblClient from "../../imtbl"
 import KnownInternalNames from "../../knownIds"
 import IMX from "../../../components/icons/Wallets/IMX"
-import { Wallet, WalletProvider } from "../../../Models/WalletProvider"
+import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useSettingsState } from "../../../context/settings"
+import { useConnectModal } from "../../../components/WalletModal"
 
 export default function useImtblX(): WalletProvider {
     const withdrawalSupportedNetworks = [
@@ -20,6 +21,7 @@ export default function useImtblX(): WalletProvider {
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
     const wallet = wallets.find(wallet => wallet.providerName === id)
+    const { connect } = useConnectModal()
 
     const getWallet = () => {
         if (wallet) {
@@ -28,7 +30,7 @@ export default function useImtblX(): WalletProvider {
         return undefined
     }
 
-    const connectWallet = async () => {
+    const connectConnector = async () => {
         const isMainnet = networks?.some(network => network.name === KnownInternalNames.Networks.ImmutableXMainnet)
         const chain = (isMainnet ? KnownInternalNames.Networks.ImmutableXMainnet : KnownInternalNames.Networks.ImmutableXGoerli)
 
@@ -57,6 +59,16 @@ export default function useImtblX(): WalletProvider {
         }
         catch (e) {
             console.log(e)
+            throw new Error(e)
+        }
+    }
+
+    const connectWallet = async () => {
+        try {
+            return await connect(provider)
+        }
+        catch (e) {
+            console.log(e)
         }
     }
 
@@ -64,14 +76,26 @@ export default function useImtblX(): WalletProvider {
         return removeWallet(id)
     }
 
-    return {
-        switchAccount: async () => { },
+    const logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAGAAAABgCAMAAADVRocKAAAAOVBMVEUAAAAeHh7f39/Ly8v5+fkPDw9OTk7///8EBAT8/PyJiYmbm5tgYGDv7+9ycnIvLy89PT23t7erq6tpkv1uAAAACXBIWXMAAAsTAAALEwEAmpwYAAADCklEQVR4nO2Y2Y6kMAxFQwjYAQoI//+xI9vZoKhqthm1RrlPiMVOzPECShUVFRUVFRUV/TUha3v4ruzat9v+vZp+6fu+bxSqig6WQe0urunoYqcUqpmeWMajHkawYGGhww4sAOx7WOianWkdGsCCng7vYQRjDXRktgdjwJCVtVB1YIy1rULV1HTT67h9epj2MCpUuIC1oKu3W8Z4i3J0yK6Oi58BvzxroW429lu+oVOItEmwH8L4UWQWJDSVJg/L2v708ifDVjieZyRmdSXGthbkak2gDWDBQH/Wflhj3cRwcLjT/rz32bzt76iH1jKsGKOQ3uICBuCV4rd5Q0c9jGHzQhVxKB66DQFvjB310DEeHJoEax4xdHQ6Oj6vhU0NK1jZbwSUUDuXAN9hdfRGJrMC9GQCrFXpGAOhit/IADV6QFdwnRfmsM42psM4RUBPJ8DWQ2vIrMtXLBd8zO5YF0PDGlaKOR3vlqhrHrpVWbMUf6mGPpfve+gjLOiA2wSfu5UAaxcu4t7UCdC9NnRRTZ1gdaGC3kyAj7VbCaBXOsBnoc8BJ/Yn/UACbD04hpWDIgFbnh2zmjp1BBdz+zEhk0qAyuFDCZDZH8Mkxmnngaqmx+wPbD8CCjwCYf2qHrI/M5VZi+cK3cMTlUj5ih0aMjegF7mqqJs+glKjs5GCHQCVCDr9SLKhDJGcAdTvU7S4Fd3qZ6yeJwtaKaYJyY9j5OFeQUI/uQigXKelOzxUUgOgvsXLammUyZvCxakrb8jaAyr4+KoRnN1om2GkeKWhhVGi2u2TTeoeF9krEkvQrmdc5gdCudBgaSK4pCwWGFq8yobTAOvl3hPfpvIzaOBlA6u9BOuKx27zERbKd4L15BfgZpHDzgwqc3fIjNMTTPi80VVkddOC/Qv68qF7ElCHe4h9+dD9rhx1vfv0G6ynPgTp14CvlOhoHN1pwcKPSZWVW/ZB+1KhGdDlY0HbVtY42f+sqmWRzWZoh3aY9+9DutYO3PtnfkT91l9q6uB9v+efWlFRUVFRUdH/pz+L+y4G9IRLzwAAAABJRU5ErkJggg=='
+    const availableWalletsForConnect: InternalConnector[] = [{
+        id: id,
+        name: name,
+        icon: logo,
+    }]
+
+    const provider = {
         connectedWallets: getWallet(),
         activeWallet: wallet,
         connectWallet,
+        connectConnector,
+        disconnectWallets: disconnectWallet,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks: withdrawalSupportedNetworks,
         name,
         id,
+        hideFromList: true,
+        availableWalletsForConnect
     }
+
+    return provider
 }

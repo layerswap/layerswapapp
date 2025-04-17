@@ -18,7 +18,7 @@ import {
   getAddress,
   numberToHex,
 } from 'viem'
-import { getInjectedConnector, hasInjectedProvider } from '../getInjectedConnector'
+import { getInjectedConnector } from '../getInjectedConnector'
 import { isAndroid, isIOS } from '../utils/isMobile'
 
 type WalletConnectConnector = Connector & {
@@ -74,8 +74,8 @@ export type WalletConnectParameters = Compute<
   ExactPartial<Pick<EthereumProviderOptions, 'showQrModal'>>
 >
 
-export function metaMask(parameters: WalletConnectParameters) {
-  const isMetaMaskInjected = hasInjectedProvider({ flag: 'isMetaMask' });
+export function metaMask(parameters: WalletConnectParameters & { providers?: any[] }) {
+  const isMetaMaskInjected = parameters?.providers?.some((provider) => provider.info.name.toLowerCase() === 'metamask')
   const shouldUseWalletConnect = !isMetaMaskInjected;
   return shouldUseWalletConnect ? walletConnect(parameters) : getInjectedConnector({ flag: 'isMetaMask' })({ id: 'metaMaskSDK', name: 'My Metamask' });
 }

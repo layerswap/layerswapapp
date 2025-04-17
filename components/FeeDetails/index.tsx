@@ -36,14 +36,12 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                         toCurrency?.refuel && !query.hideRefuel && !toExchange &&
                         <RefuelToggle onButtonClick={() => setOpenRefuelModal(true)} />
                     }
-
                     {
-                        fee && fromCurrency && toCurrency &&
+                        (fee || isFeeLoading) && fromCurrency && toCurrency &&
                         <FeeDetails.Item>
                             <DetailedEstimates />
                         </FeeDetails.Item>
                     }
-
                     {
                         values.to &&
                         values.toCurrency &&

@@ -14,21 +14,14 @@ import { useSettingsState } from "../../context/settings";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
 import Image from 'next/image'
 
-type Props = ({
-    selectable?: false;
+type Props = {
+    selectable?: boolean;
     wallets: Wallet[];
     token?: Token;
     network?: Network;
     provider?: WalletProvider | undefined;
     onSelect?: (wallet: Wallet, address: string) => void;
-} | {
-    selectable?: true;
-    wallets: Wallet[];
-    token: Token;
-    network: Network;
-    provider: WalletProvider | undefined;
-    onSelect: (wallet: Wallet, address: string) => void;
-})
+}
 
 const WalletsList: FC<Props> = (props) => {
 
@@ -57,19 +50,22 @@ const WalletsList: FC<Props> = (props) => {
                     </span>
                 </div>
             </button>
-            <div className="flex flex-col justify-start space-y-3">
-                {
-                    wallets.map((wallet, index) => <WalletItem
-                        key={`${index}${wallet.providerName}`}
-                        wallet={wallet}
-                        selectable={selectable}
-                        token={token}
-                        network={network}
-                        onWalletSelect={onSelect}
-                        selectedAddress={selectedSourceAccount?.address}
-                    />)
-                }
-            </div>
+            {
+                wallets.length > 0 &&
+                <div className="flex flex-col justify-start space-y-3">
+                    {
+                        wallets.map((wallet, index) => <WalletItem
+                            key={`${index}${wallet.providerName}`}
+                            wallet={wallet}
+                            selectable={selectable}
+                            token={token}
+                            network={network}
+                            onWalletSelect={onSelect}
+                            selectedAddress={selectedSourceAccount?.address}
+                        />)
+                    }
+                </div>
+            }
         </div >
     )
 }

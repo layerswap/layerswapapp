@@ -1,10 +1,8 @@
-import { FC, useCallback, useState } from "react";
+import { FC, useCallback } from "react";
 import { useSwitchChain } from "wagmi";
 import WalletIcon from "../../../../icons/WalletIcon";
 import SubmitButton, { SubmitButtonProps } from "../../../../buttons/submitButton";
-import useWallet from "../../../../../hooks/useWallet";
 import { useSwapDataState } from "../../../../../context/swap";
-import toast from "react-hot-toast";
 import { ActionData } from "../WalletTransfer/sharedTypes";
 import ManualTransferNote from "../WalletTransfer/manualTransferNote";
 import { NetworkWithTokens } from "../../../../../Models/Network";
@@ -17,33 +15,6 @@ type ConnectProps = {
     onClick?: () => void,
     secondary: boolean,
     onConnect?: () => void
-}
-
-
-export const ConnectWalletButton: FC<ConnectProps> = ({ network, text, icon, onClick, secondary, onConnect }) => {
-    const { provider } = useWallet(network, 'withdrawal')
-
-    const clickHandler = useCallback(async () => {
-        try {
-            onClick && onClick()
-            if (!provider) throw new Error(`No provider from ${network?.name}`)
-
-            await provider.connectWallet()
-            onConnect && onConnect()
-        }
-        catch (e) {
-            toast.error(e.message)
-        }
-
-    }, [provider, onClick])
-
-    return <div
-        className={`${secondary ? 'bg-secondary-700 border-secondary-700' : 'bg-secondary-700 border-secondary-500'} flex items-center gap-2 rounded-md outline-hidden text-secondary-text p-3 font-normal text-sm border cursor-pointer hover:text-primary-text hover:border-secondary-500`}
-        onClick={clickHandler}
-    >
-        {icon}
-        {text}
-    </div>
 }
 
 export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = ({ data, network }) => {
