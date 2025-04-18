@@ -1,6 +1,6 @@
 import { SwapFormValues } from '../../../../DTOs/SwapFormValues';
 import { Dispatch, FC, SetStateAction } from 'react';
-import Modal from '../../../../Modal/modal';
+import Modal from '../../../../KModal/modal';
 import { Fuel } from 'lucide-react';
 import { roundDecimals, truncateDecimals } from '../../../../utils/RoundDecimals';
 import SubmitButton from '../../../../KButtons/submitButton';

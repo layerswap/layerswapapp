@@ -1,6 +1,6 @@
 import { FC, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import Modal from "../../../../Modal/modal";
+import Modal from "../../../../KModal/modal";
 import FailIcon from "../../../../Icons/FailIcon";
 
 export type WalletMessageProps = {

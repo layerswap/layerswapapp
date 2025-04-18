@@ -20,7 +20,7 @@ import calculateDatesDifference from '../../../lib/calculateDatesDifference';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import { resolvePersistantQueryParams } from '../../../helpers/querryHelper';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../shadcn/accordion';
-import VaulDrawer from '../../Modal/vaulModal';
+import VaulDrawer from '../../KModal/vaulModal';
 import { Popover, PopoverContent, PopoverTrigger } from '../../shadcn/popover';
 import { useAppRouter } from '../../../context/AppRouter/RouterProvider';
 

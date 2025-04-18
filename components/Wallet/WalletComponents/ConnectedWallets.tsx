@@ -4,7 +4,7 @@ import useWallet from "../../../hooks/useWallet"
 import ConnectButton from "../../KButtons/connectButton"
 import { useState } from "react"
 import WalletsList from "./WalletsList"
-import VaulDrawer from "../../Modal/vaulModal"
+import VaulDrawer from "../../KModal/vaulModal"
 import { Wallet } from "../../../Models/WalletProvider"
 
 export const WalletsHeader = () => {

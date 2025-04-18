@@ -8,7 +8,7 @@ import shortenAddress from "../../../utils/ShortenAddress"
 import { useAccount } from "wagmi"
 import { truncateDecimals } from "../../../utils/RoundDecimals"
 import AddressIcon from "../../../Common/AddressIcon";
-import Modal from "../../../Modal/modal";
+import Modal from "../../../KModal/modal";
 import Link from "next/link";
 import { RewardsComponentLeaderboardSceleton } from "../../../Common/Sceletons"
 

@@ -1,5 +1,5 @@
 import React, { Context, FC } from "react";
-import Modal, { ModalProps } from "../components/Modal/modal";
+import Modal, { ModalProps } from "../components/KModal/modal";
 import SubmitButton from "../components/KButtons/submitButton";
 import SecondaryButton from "../components/KButtons/secondaryButton";
 

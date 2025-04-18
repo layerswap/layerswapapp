@@ -10,7 +10,7 @@ import SubmitButton from '../../../../KButtons/submitButton';
 import SpinIcon from '../../../../Icons/spinIcon';
 import NumericInput from '../../../../Input/NumericInput';
 import MessageComponent from '../../../../Common/MessageComponent';
-import Modal from '../../../../Modal/modal';
+import Modal from '../../../../KModal/modal';
 import TimerWithContext from '../../../../Common/TimerComponent';
 import { Widget } from '../../../../Widget/Index';
 

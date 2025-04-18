@@ -10,7 +10,7 @@ import { AuthConnectResponse } from '../../../../../Models/LayerSwapAuth';
 import SubmitButton from '../../../../KButtons/submitButton';
 import { DocIframe } from '../../../../Common/docInIframe';
 import NumericInput from '../../../../Input/NumericInput';
-import Modal from '../../../../Modal/modal';
+import Modal from '../../../../KModal/modal';
 import TimerWithContext from '../../../../Common/TimerComponent';
 import { classNames } from '../../../../utils/classNames';
 import { Widget } from '../../../../Widget/Index';

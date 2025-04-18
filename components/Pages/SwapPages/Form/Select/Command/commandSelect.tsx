@@ -12,8 +12,8 @@ import useWindowDimensions from '../../../../../../hooks/useWindowDimensions';
 import SelectItem from '../Shared/SelectItem';
 import { SelectProps } from '../Shared/Props/SelectProps'
 import SpinIcon from '../../../../../Icons/spinIcon';
-import { LeafletHeight } from '../../../../../Modal/leaflet';
-import VaulDrawer from '../../../../../Modal/vaulModal';
+import { LeafletHeight } from '../../../../../KModal/leaflet';
+import VaulDrawer from '../../../../../KModal/vaulModal';
 
 export interface CommandSelectProps extends SelectProps {
     show: boolean;

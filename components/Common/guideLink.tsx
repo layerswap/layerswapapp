@@ -1,7 +1,7 @@
 import { ReactNode, useState } from "react";
 import SecondaryButton from "../KButtons/secondaryButton";
 import { DocIframe } from "./docInIframe";
-import Modal from "../Modal/modal";
+import Modal from "../KModal/modal";
 
 export default function GuideLink({ userGuideUrl, text, button, buttonClassNames }: { userGuideUrl: string, text?: string, button?: ReactNode, buttonClassNames?: string }) {
     const [showGuide, setShowGuide] = useState(false);

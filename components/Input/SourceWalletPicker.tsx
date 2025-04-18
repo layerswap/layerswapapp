@@ -6,7 +6,7 @@ import shortenAddress from "../utils/ShortenAddress";
 import { ChevronDown, CircleHelp, QrCode } from "lucide-react";
 import Balance from "./Amount/Balance";
 import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
-import VaulDrawer, { WalletFooterPortal } from "../Modal/vaulModal";
+import VaulDrawer, { WalletFooterPortal } from "../KModal/vaulModal";
 import { Wallet } from "../../Models/WalletProvider";
 import WalletIcon from "../Icons/WalletIcon";
 import SubmitButton from "../KButtons/submitButton";

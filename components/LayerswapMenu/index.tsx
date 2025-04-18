@@ -9,7 +9,7 @@ import WizardItem from "../Wizard/WizardItem";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import { AppRouter } from "../../context/AppRouter/routerTypes";
 import { useAppRouter } from "../../context/AppRouter/RouterProvider";
-import Modal from "../Modal/modal";
+import Modal from "../KModal/modal";
 import HistoryList from "../Pages/SwapHistory/History";
 
 const Comp = () => {

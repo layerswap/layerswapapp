@@ -13,7 +13,7 @@ import Image from "next/image";
 import { usePersistedState } from "../../../hooks/usePersistedState";
 import { Popover, PopoverContent, PopoverTrigger } from "../../shadcn/popover";
 import { Checkbox } from "../../shadcn/checkbox";
-import VaulDrawer from "../../Modal/vaulModal";
+import VaulDrawer from "../../KModal/vaulModal";
 import CopyButton from "../../KButtons/copyButton";
 import LayerSwapLogoSmall from "../../Icons/layerSwapLogoSmall";
 

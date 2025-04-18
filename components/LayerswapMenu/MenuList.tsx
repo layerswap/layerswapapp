@@ -10,7 +10,7 @@ import GitHubLogo from "../Icons/GitHubLogo";
 import SubstackLogo from "../Icons/SubstackLogo";
 import TwitterLogo from "../Icons/TwitterLogo";
 import Link from "next/link";
-import Popover from "../Modal/popover";
+import Popover from "../KModal/popover";
 import YoutubeLogo from "../Icons/YoutubeLogo";
 import { shortenEmail } from '../utils/ShortenAddress';
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
