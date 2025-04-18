@@ -5,12 +5,12 @@ import LayerSwapApiClient, { Campaign } from "../../../../lib/layerSwapApiClient
 import useSWR from "swr"
 import { ApiResponse } from "../../../../Models/ApiResponse"
 import SubmitButton from "../../../Buttons/submitButton";
-import WalletIcon from "../../../AllIcons/WalletIcon";
+import WalletIcon from "../../../Icons/WalletIcon";
 import LinkWrapper from "../../../Common/LinkWrapper";
 import { Widget } from "../../../Widget/Index";
 import Leaderboard from "./Leaderboard"
 import Rewards from "./Rewards";
-import SpinIcon from "../../../AllIcons/spinIcon"
+import SpinIcon from "../../../Icons/spinIcon"
 import useWallet from "../../../../hooks/useWallet"
 import { useAppRouter } from "../../../../context/AppRouter/RouterProvider"
 import AppWrapper, { AppPageProps } from "../../../Layout/AppWrapper"

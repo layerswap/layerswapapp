@@ -15,7 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../../shadcn/popover";
 import { Checkbox } from "../../shadcn/checkbox";
 import VaulDrawer from "../../Modal/vaulModal";
 import CopyButton from "../../Buttons/copyButton";
-import LayerSwapLogoSmall from "../../AllIcons/layerSwapLogoSmall";
+import LayerSwapLogoSmall from "../../Icons/layerSwapLogoSmall";
 
 const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { isMobile } = useWindowDimensions()

@@ -3,7 +3,7 @@ import React, { FC, useCallback, useEffect, useRef } from "react";
 import { SwapFormValues } from "../../../../../DTOs/SwapFormValues";
 import { Network } from "../../../../../../Models/Network";
 import { Popover, PopoverContent, PopoverTrigger } from "../../../../../shadcn/popover";
-import WalletIcon from "../../../../../AllIcons/WalletIcon";
+import WalletIcon from "../../../../../Icons/WalletIcon";
 import { AlignLeft, ChevronDown } from "lucide-react"
 import { motion } from "framer-motion";
 import { useDepositMethod } from "../../../../../../context/depositMethodContext";

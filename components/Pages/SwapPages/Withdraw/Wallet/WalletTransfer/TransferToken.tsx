@@ -7,7 +7,7 @@ import {
 import { parseEther } from 'viem'
 import SubmitButton from "../../../../../Buttons/submitButton";
 import { BackendTransactionStatus } from "../../../../../../lib/layerSwapApiClient";
-import WalletIcon from "../../../../../AllIcons/WalletIcon";
+import WalletIcon from "../../../../../Icons/WalletIcon";
 import Modal from '../../../../../Modal/modal';
 import MessageComponent from "../../../../../Common/MessageComponent";
 import { BaseTransferButtonProps } from "./sharedTypes";

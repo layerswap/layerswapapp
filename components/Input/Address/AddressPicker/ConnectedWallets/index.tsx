@@ -4,7 +4,7 @@ import { Network } from "../../../../../Models/Network";
 import { FC, useState } from "react";
 import ResizablePanel from "../../../../Common/ResizablePanel";
 import { Wallet, WalletProvider } from "../../../../../Models/WalletProvider";
-import WalletIcon from "../../../../AllIcons/WalletIcon";
+import WalletIcon from "../../../../Icons/WalletIcon";
 import { WalletItem } from "../../../../Wallet/WalletComponents/WalletsList";
 
 type Props = {

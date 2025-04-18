@@ -11,7 +11,7 @@ import { eip712WalletActions, getGeneralPaymasterInput } from 'viem/zksync';
 import KnownInternalNames from '../../../../../lib/knownIds';
 import TransactionMessages from '../Messages/TransactionMessages';
 import { datadogRum } from '@datadog/browser-rum';
-import WalletIcon from '../../../../AllIcons/WalletIcon';
+import WalletIcon from '../../../../Icons/WalletIcon';
 import { getTransactionCount } from '@wagmi/core'
 
 const SophonWalletWithdraw: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {

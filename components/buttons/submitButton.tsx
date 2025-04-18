@@ -1,5 +1,5 @@
 import { FC, MouseEventHandler } from "react";
-import SpinIcon from "../AllIcons/spinIcon";
+import SpinIcon from "../Icons/spinIcon";
 
 type buttonStyle = 'outline' | 'filled';
 type buttonSize = 'small' | 'medium' | 'large';

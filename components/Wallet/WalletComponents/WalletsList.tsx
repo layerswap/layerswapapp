@@ -7,7 +7,7 @@ import { clsx } from 'clsx';
 import { useConnectModal } from "../WalletModal";
 import { Network, Token } from "../../../Models/Network";
 import { useSwapDataState } from "../../../context/swap";
-import FilledCheck from "../../AllIcons/FilledCheck";
+import FilledCheck from "../../Icons/FilledCheck";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import useSWRBalance from "../../../lib/balances/useSWRBalance";
 import { useSettingsState } from "../../../context/settings";

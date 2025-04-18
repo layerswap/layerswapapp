@@ -2,8 +2,8 @@ import { useEffect } from "react";
 import { useIntercom } from "react-use-intercom";
 import { useAuthState } from "../../../context/authContext";
 import SubmitButton from "../../Buttons/submitButton";
-import LayerSwapLogo from "../../AllIcons/layerSwapLogo";
-import TwitterLogo from "../../AllIcons/TwitterLogo";
+import LayerSwapLogo from "../../Icons/layerSwapLogo";
+import TwitterLogo from "../../Icons/TwitterLogo";
 
 function MaintananceContent(props) {
     const { email, userId } = useAuthState()

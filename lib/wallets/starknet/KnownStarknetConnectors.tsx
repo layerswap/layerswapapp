@@ -1,7 +1,7 @@
-import Argent from "../../../components/AllIcons/Wallets/Argent"
-import ArgentX from "../../../components/AllIcons/Wallets/ArgentX"
-import Braavos from "../../../components/AllIcons/Wallets/Braavos"
-import Keplr from "../../../components/AllIcons/Wallets/Keplr"
+import Argent from "../../../components/Icons/Wallets/Argent"
+import ArgentX from "../../../components/Icons/Wallets/ArgentX"
+import Braavos from "../../../components/Icons/Wallets/Braavos"
+import Keplr from "../../../components/Icons/Wallets/Keplr"
 
 const KnownStarknetConnectors = [
     {

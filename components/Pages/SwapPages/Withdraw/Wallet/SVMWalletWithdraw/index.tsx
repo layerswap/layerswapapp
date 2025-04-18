@@ -5,7 +5,7 @@ import useWallet from '../../../../../../hooks/useWallet';
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
 import { useSwapTransactionStore } from '../../../../../../stores/swapTransactionStore';
-import WalletIcon from '../../../../../AllIcons/WalletIcon';
+import WalletIcon from '../../../../../Icons/WalletIcon';
 import { WithdrawPageProps } from '../WalletTransferContent';
 import { ButtonWrapper, ConnectWalletButton } from '../WalletTransfer/buttons';
 import useSWRBalance from '../../../../../../lib/balances/useSWRBalance';

@@ -1,7 +1,7 @@
-import CancelIcon from "../AllIcons/CancelIcon";
-import DelayIcon from "../AllIcons/DelayIcon";
-import FailIcon from "../AllIcons/FailIcon";
-import SuccessIcon from "../AllIcons/SuccessIcon";
+import CancelIcon from "../Icons/CancelIcon";
+import DelayIcon from "../Icons/DelayIcon";
+import FailIcon from "../Icons/FailIcon";
+import SuccessIcon from "../Icons/SuccessIcon";
 type iconStyle = 'red' | 'green' | 'yellow' | 'gray'
 
 class MessageComponentProps {
