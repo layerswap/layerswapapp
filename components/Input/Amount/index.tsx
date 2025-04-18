@@ -56,16 +56,11 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         else if (fee && amount) updateRequestedAmountInUsd(Number(amount), fee)
     }, [amount, fromCurrency, fee, isFeeLoading])
 
-    const updateFocusedFontSize = (value: string) => {
+    const updateFocusedFontSize = useCallback((value: string) => {
         if (!isAmountFocused) return;
 
         const cleanValue = value.replace(/[^0-9.]/g, "");
         const length = cleanValue.length;
-
-        if (length === 0) {
-            setFocusedFontSize("text-[28px]");
-            return;
-        }
 
         let size = "text-[48px]";
 
@@ -83,7 +78,8 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         }
 
         setFocusedFontSize(size);
-    };
+    }, [isAmountFocused, isDesktop, focusedFontSize]);
+
     return (<>
         <motion.div layout="size" className={`flex flex-col w-full bg-secondary-500 rounded-lg peer ${isAmountFocused ? "input-wide" : ""
             }`}>
@@ -99,7 +95,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     precision={fromCurrency?.precision}
                     onFocus={() => setIsAmountFocused(true)}
                     onBlur={() => { setIsAmountFocused(false) }}
-                    className={`${isAmountFocused ? `${focusedFontSize} ` : "text-[28px]"} text-primary-text px-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal`}
+                    className={`${isAmountFocused ? `${focusedFontSize}` : "text-[28px]"} text-primary-text px-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal`}
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value), fee);

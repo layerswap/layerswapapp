@@ -37,6 +37,7 @@ export const SelectorContent = (props: SelectContentProps) => {
     const { children, modalContent, header, modalHeight, searchHint, isLoading } = props
     const { isOpen, setIsOpen } = useContext(SelectorContext);
     const closeModal = () => setIsOpen(false)
+
     return <Modal height={modalHeight} show={isOpen} setShow={setIsOpen} modalId='comandSelect'>
         {header ? <div className="absolute top-4 left-8 text-lg text-secondary-text font-semibold">
             <div>{header}</div>
