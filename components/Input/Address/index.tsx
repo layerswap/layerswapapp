@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { SwapFormValues } from "../../DTOs/SwapFormValues"
+import { SwapFormValues } from "../../Pages/SwapPages/Form/SwapFormValues"
 import { useFormikContext } from "formik"
 import { Partner } from "../../../Models/Partner"
 import AddressPicker, { AddressTriggerProps } from "./AddressPicker"

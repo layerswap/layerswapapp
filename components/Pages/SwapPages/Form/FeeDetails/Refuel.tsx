@@ -1,6 +1,6 @@
 import ToggleButton from "../../../../Buttons/toggleButton"
 import { useFormikContext } from "formik";
-import { SwapFormValues } from "../../../../DTOs/SwapFormValues";
+import { SwapFormValues } from "../SwapFormValues";
 import { FC, useEffect, useRef } from "react";
 import { Info } from "lucide-react";
 import { isValidAddress } from "../../../../../lib/address/validator";

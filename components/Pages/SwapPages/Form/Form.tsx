@@ -2,7 +2,7 @@ import { Form, useFormikContext } from "formik";
 import { FC, useCallback, useEffect } from "react";
 import React from "react";
 import NetworkFormField from "../../../Input/NetworkFormField";
-import { SwapFormValues } from "../../../DTOs/SwapFormValues";
+import { SwapFormValues } from "./SwapFormValues";
 import { Partner } from "../../../../Models/Partner";
 import { motion, useCycle } from "framer-motion";
 import { ArrowUpDown } from 'lucide-react'

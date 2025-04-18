@@ -1,6 +1,6 @@
 import { useFormikContext } from "formik";
 import React, { FC, useCallback, useEffect, useRef } from "react";
-import { SwapFormValues } from "../../../../../DTOs/SwapFormValues";
+import { SwapFormValues } from "../../SwapFormValues";
 import { Network } from "../../../../../../Models/Network";
 import { Popover, PopoverContent, PopoverTrigger } from "../../../../../shadcn/popover";
 import WalletIcon from "../../../../../Icons/WalletIcon";

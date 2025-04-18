@@ -3,7 +3,7 @@ import { FormSourceWalletButton } from "../../../../Input/SourceWalletPicker";
 import { PlusIcon } from "lucide-react";
 import SwapButton from "../../../../Buttons/swapButton";
 import { FormikErrors } from "formik";
-import { SwapFormValues } from "../../../../DTOs/SwapFormValues";
+import { SwapFormValues } from "../SwapFormValues";
 
 const Address = dynamic(() => import("../../../../Input/Address"), {
     loading: () => <></>,

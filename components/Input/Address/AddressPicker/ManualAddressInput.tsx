@@ -1,5 +1,5 @@
 import { ChangeEvent, FC, useCallback, useState } from "react";
-import { SwapFormValues } from "../../../DTOs/SwapFormValues";
+import { SwapFormValues } from "../../../Pages/SwapPages/Form/SwapFormValues";
 import { Pencil } from "lucide-react";
 import { isValidAddress } from "../../../../lib/address/validator";
 import { Partner } from "../../../../Models/Partner";

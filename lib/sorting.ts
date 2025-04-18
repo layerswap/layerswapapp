@@ -1,6 +1,6 @@
 import { Exchange, ExchangeToken } from "../Models/Exchange";
 import { RouteNetwork, RouteToken } from "../Models/Network";
-import { SwapDirection } from "../components/DTOs/SwapFormValues";
+import { SwapDirection } from "../components/Pages/SwapPages/Form/SwapFormValues";
 import CurrencySettings from "./CurrencySettings";
 import ExchangeSettings from "./ExchangeSettings";
 import NetworkSettings from "./NetworkSettings";

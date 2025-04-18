@@ -3,7 +3,7 @@ import Image from 'next/image'
 import LayerSwapApiClient, { Campaign, Leaderboard, Reward } from "../../../../lib/layerSwapApiClient"
 import useSWR from "swr"
 import { ApiResponse } from "../../../../Models/ApiResponse"
-import ClickTooltip from "../../../Tooltips/ClickTooltip"
+import ClickTooltip from "../../../Common/ClickTooltip"
 import shortenAddress from "../../../utils/ShortenAddress"
 import { useAccount } from "wagmi"
 import { truncateDecimals } from "../../../utils/RoundDecimals"

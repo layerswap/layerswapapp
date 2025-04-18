@@ -1,5 +1,5 @@
 import { NetworkType } from "../../Models/Network";
-import { SwapFormValues } from "../../components/DTOs/SwapFormValues";
+import { SwapFormValues } from "../../components/Pages/SwapPages/Form/SwapFormValues";
 
 export const initialValues: SwapFormValues = {
     "amount": "0.001803",

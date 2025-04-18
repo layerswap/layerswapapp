@@ -1,4 +1,4 @@
-import { SwapFormValues } from '../../../../DTOs/SwapFormValues';
+import { SwapFormValues } from '../SwapFormValues';
 import { Dispatch, FC, SetStateAction } from 'react';
 import Modal from '../../../../Modal/modal';
 import { Fuel } from 'lucide-react';

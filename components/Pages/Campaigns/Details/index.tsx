@@ -13,7 +13,7 @@ import Rewards from "./Rewards";
 import SpinIcon from "../../../Icons/spinIcon"
 import useWallet from "../../../../hooks/useWallet"
 import { useAppRouter } from "../../../../context/AppRouter/RouterProvider"
-import AppWrapper, { AppPageProps } from "../../../Layout/AppWrapper"
+import AppWrapper, { AppPageProps } from "../../AppWrapper"
 
 function Comp() {
     const router = useAppRouter();

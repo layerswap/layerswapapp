@@ -5,7 +5,7 @@ import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import DepositMethod from './DepositMethod';
 import Campaign from './Campaign';
-import { SwapFormValues } from '../../../../DTOs/SwapFormValues';
+import { SwapFormValues } from '../SwapFormValues';
 import { useFee } from '../../../../../context/feeContext';
 import { useQueryState } from '../../../../../context/query';
 import ResizablePanel from '../../../../Common/ResizablePanel';

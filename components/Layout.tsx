@@ -1,8 +1,8 @@
-import { RouterProvider, useAppRouter } from "../../context/AppRouter/RouterProvider";
-import { LayerSwapSettings } from "../../Models/LayerSwapSettings";
-import { THEME_COLORS, ThemeData } from "../../Models/Theme";
+import { RouterProvider, useAppRouter } from "../context/AppRouter/RouterProvider";
+import { LayerSwapSettings } from "../Models/LayerSwapSettings";
+import { THEME_COLORS, ThemeData } from "../Models/Theme";
 import { useRouter } from 'next/router';
-import { NextAppRouter } from "../../context/AppRouter/Routers/NextAppRouter";
+import { NextAppRouter } from "../context/AppRouter/Routers/NextAppRouter";
 import Head from "next/head";
 
 type Props = {

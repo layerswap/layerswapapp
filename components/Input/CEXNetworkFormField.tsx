@@ -1,6 +1,6 @@
 import { useFormikContext } from "formik";
 import { forwardRef, useCallback, useEffect } from "react";
-import { SwapFormValues } from "../DTOs/SwapFormValues";
+import { SwapFormValues } from "../Pages/SwapPages/Form/SwapFormValues";
 import { SelectMenuItem } from "../Pages/SwapPages/Form/Select/Shared/Props/selectMenuItem";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";

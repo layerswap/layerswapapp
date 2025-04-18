@@ -1,5 +1,5 @@
 import { FormikErrors } from "formik";
-import { SwapFormValues } from "../components/DTOs/SwapFormValues";
+import { SwapFormValues } from "../components/Pages/SwapPages/Form/SwapFormValues";
 import { isValidAddress } from "./address/validator";
 
 export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount, sourceAddress, sameAccountNetwork }: { minAllowedAmount: number | undefined, maxAllowedAmount: number | undefined, sourceAddress: string | undefined, sameAccountNetwork?: string | undefined }): ((values: SwapFormValues) => FormikErrors<SwapFormValues>) {

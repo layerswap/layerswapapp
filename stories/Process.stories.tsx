@@ -16,7 +16,7 @@ import SwapDetails from '../components/Pages/SwapPages/Withdraw/SwapDetails';
 import SwapMockFunctions from './Mocks/context/SwapDataUpdate';
 import AuthMockFunctions from './Mocks/context/AuthDataUpdate';
 import { Formik, FormikProps } from 'formik';
-import { SwapFormValues } from '../components/DTOs/SwapFormValues';
+import { SwapFormValues } from '../components/Pages/SwapPages/Form/SwapFormValues';
 import MainStepValidation from '../lib/mainStepValidator';
 import { FeeProvider, useFee } from '../context/feeContext';
 import { useArgs } from '@storybook/preview-api';

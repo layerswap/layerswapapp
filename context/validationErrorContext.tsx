@@ -1,7 +1,7 @@
 import React, { createContext, useEffect, useState } from 'react';
 import { ReactNode } from 'react';
 import { Info, RouteOff } from 'lucide-react';
-import { SwapFormValues } from '../components/DTOs/SwapFormValues';
+import { SwapFormValues } from '../components/Pages/SwapPages/Form/SwapFormValues';
 import { useFormikContext } from 'formik';
 import { useQueryState } from './query';
 import { useSettingsState } from './settings';

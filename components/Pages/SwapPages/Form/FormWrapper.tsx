@@ -1,7 +1,7 @@
 import { Formik, FormikProps } from "formik";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSettingsState } from "../../../../context/settings";
-import { SwapFormValues } from "../../../DTOs/SwapFormValues";
+import { SwapFormValues } from "./SwapFormValues";
 import { useSwapDataState, useSwapDataUpdate } from "../../../../context/swap";
 import React from "react";
 import toast from "react-hot-toast";

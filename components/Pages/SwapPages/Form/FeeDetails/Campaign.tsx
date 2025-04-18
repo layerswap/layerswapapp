@@ -5,7 +5,7 @@ import FeeDetails from "./FeeDetailsComponent"
 import LayerSwapApiClient, { Campaign, QuoteReward } from "../../../../../lib/layerSwapApiClient";
 import useSWRNftBalance from "../../../../../lib/nft/useSWRNftBalance";
 import { Network } from "../../../../../Models/Network";
-import ClickTooltip from "../../../../Tooltips/ClickTooltip";
+import ClickTooltip from "../../../../Common/ClickTooltip";
 import { ApiResponse } from "../../../../../Models/ApiResponse";
 
 type CampaignProps = {

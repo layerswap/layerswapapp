@@ -1,6 +1,6 @@
 import { useFormikContext } from "formik";
 import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { SwapFormValues } from "../../Pages/SwapPages/Form/SwapFormValues";
 import NumericInput from "../NumericInput";
 import { useFee } from "../../../context/feeContext";
 import dynamic from "next/dynamic";

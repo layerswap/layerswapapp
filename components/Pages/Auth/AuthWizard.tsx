@@ -9,7 +9,7 @@ import Wizard from "../../Wizard/Wizard";
 import WizardItem from "../../Wizard/WizardItem";
 import { useAppRouter } from "../../../context/AppRouter/RouterProvider";
 import { SwapDataProvider } from "../../../context/swap";
-import AppWrapper, { AppPageProps } from "../../Layout/AppWrapper";
+import AppWrapper, { AppPageProps } from "../AppWrapper";
 
 const Comp: FC = () => {
     const { goToStep } = useFormWizardaUpdate()

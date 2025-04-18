@@ -3,7 +3,7 @@ import { ExternalLink } from "lucide-react"
 import CopyButton from "../../Buttons/copyButton"
 import Link from "next/link"
 import AddressIcon from "../../Common/AddressIcon"
-import { SwapFormValues } from "../../DTOs/SwapFormValues"
+import { SwapFormValues } from "../../Pages/SwapPages/Form/SwapFormValues"
 import { Partner } from "../../../Models/Partner"
 
 type AddressNoteModalProps = {

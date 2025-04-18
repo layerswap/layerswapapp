@@ -1,6 +1,6 @@
 import SecondaryButton from "../../Buttons/secondaryButton"
 import { useFormikContext } from "formik";
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { SwapFormValues } from "../../Pages/SwapPages/Form/SwapFormValues";
 import useSWRBalance from "../../../lib/balances/useSWRBalance";
 import useSWRGas from "../../../lib/gases/useSWRGas";
 import { useSwapDataState } from "../../../context/swap";

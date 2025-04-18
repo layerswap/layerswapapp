@@ -1,5 +1,5 @@
 import { Context, useCallback, useEffect, useState, createContext, useContext } from 'react'
-import { SwapFormValues } from '../components/DTOs/SwapFormValues';
+import { SwapFormValues } from '../components/Pages/SwapPages/Form/SwapFormValues';
 import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction } from '../lib/layerSwapApiClient';
 import { QueryParams } from '../Models/QueryParams';
 import useSWR, { KeyedMutator } from 'swr';

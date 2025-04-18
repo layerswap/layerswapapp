@@ -1,5 +1,5 @@
 import { ExchangeToken } from "../Models/Exchange"
-import { SwapDirection, SwapFormValues } from "../components/DTOs/SwapFormValues"
+import { SwapDirection, SwapFormValues } from "../components/Pages/SwapPages/Form/SwapFormValues"
 
 export const resolveExchangesURLForSelectedToken = (direction: SwapDirection, values: SwapFormValues) => {
 

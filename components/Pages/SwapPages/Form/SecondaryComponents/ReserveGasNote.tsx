@@ -1,6 +1,6 @@
 import WarningMessage from "../../../../Common/WarningMessage"
 import { useFormikContext } from "formik"
-import { SwapFormValues } from "../../../../DTOs/SwapFormValues"
+import { SwapFormValues } from "../SwapFormValues"
 import { truncateDecimals } from "../../../../utils/RoundDecimals"
 import { useFee } from "../../../../../context/feeContext"
 import { Balance } from "../../../../../Models/Balance"

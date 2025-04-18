@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { SwapFormValues } from "../DTOs/SwapFormValues";
+import { SwapFormValues } from "../Pages/SwapPages/Form/SwapFormValues";
 import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
 import useWallet from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";

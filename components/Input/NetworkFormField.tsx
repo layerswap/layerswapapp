@@ -1,7 +1,7 @@
 import { useFormikContext } from "formik";
 import { Dispatch, forwardRef, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
 import { useSettingsState } from "../../context/settings";
-import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
+import { SwapDirection, SwapFormValues } from "../Pages/SwapPages/Form/SwapFormValues";
 import { ISelectMenuItem, SelectMenuItem } from "../Pages/SwapPages/Form/Select/Shared/Props/selectMenuItem";
 import CommandSelectWrapper from "../Pages/SwapPages/Form/Select/Command/CommandSelectWrapper";
 import { ResolveExchangeOrder, ResolveNetworkOrder, SortAscending, SortNetworks } from "../../lib/sorting"
