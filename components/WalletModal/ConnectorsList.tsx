@@ -5,17 +5,17 @@ import { InternalConnector, Wallet, WalletProvider } from "../../Models/WalletPr
 import { Check, CircleX, Link2Off, RotateCw, Search, SlidersHorizontal, XCircle } from "lucide-react";
 import { resolveWalletConnectorIcon } from "../../lib/wallets/utils/resolveWalletIcon";
 import { QRCodeSVG } from "qrcode.react";
-import CopyButton from "../buttons/copyButton";
 import clsx from "clsx";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import Connector from "./Connector";
 import { removeDuplicatesWithKey } from "./utils";
-import VaulDrawer from "../modal/vaulModal";
 import Image from "next/image";
 import { usePersistedState } from "../../hooks/usePersistedState";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
-import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
 import { Checkbox } from "../shadcn/checkbox";
+import VaulDrawer from "../Modal/vaulModal";
+import CopyButton from "../Buttons/copyButton";
+import LayerSwapLogoSmall from "../Icons/layerSwapLogoSmall";
 
 const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { isMobile } = useWindowDimensions()

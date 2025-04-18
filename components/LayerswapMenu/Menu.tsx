@@ -1,5 +1,5 @@
 import { ChevronRight, ExternalLink } from "lucide-react"
-import LinkWrapper from "../LinkWraapper"
+import LinkWrapper from "../Common/LinkWrapper"
 import { ReactNode } from "react"
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react"

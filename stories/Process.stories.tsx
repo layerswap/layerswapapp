@@ -12,7 +12,7 @@ import { AuthDataUpdateContext, AuthStateContext, UserType } from '../context/au
 import { IntercomProvider } from 'react-use-intercom';
 import { THEME_COLORS } from '../Models/Theme';
 import Layout from '../components/Layout';
-import SwapDetails from '../components/Swap';
+import SwapDetails from '../components/Pages/SwapPages/Withdraw/SwapDetails';
 import SwapMockFunctions from './Mocks/context/SwapDataUpdate';
 import AuthMockFunctions from './Mocks/context/AuthDataUpdate';
 import { Formik, FormikProps } from 'formik';

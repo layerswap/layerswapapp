@@ -1,7 +1,7 @@
 import Layout from '../components/Layout'
 import { InferGetServerSidePropsType } from 'next'
 import { getServerSideProps } from '../helpers/getSettings'
-import TransactionsHistory from '../components/SwapHistory'
+import TransactionsHistory from '../components/Pages/SwapHistory';
 
 export default function Transactions({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   return (

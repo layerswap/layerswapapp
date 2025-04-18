@@ -1,4 +1,4 @@
-import SubmitButton from "../../components/buttons/submitButton";
+import SubmitButton from "../../components/Buttons/submitButton";
 import { RefreshCcw } from "lucide-react";
 import { useAppRouter } from "../../context/AppRouter/RouterProvider";
 

@@ -4,7 +4,7 @@ import DetailedEstimates from './DetailedEstimates';
 import { useFee } from '../../context/feeContext';
 import FeeDetails from './FeeDetailsComponent';
 import { useQueryState } from '../../context/query';
-import ResizablePanel from '../ResizablePanel';
+import ResizablePanel from '../Common/ResizablePanel';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import DepositMethod from './DepositMethod';

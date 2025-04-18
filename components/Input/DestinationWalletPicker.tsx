@@ -3,7 +3,7 @@ import Image from "next/image";
 import { ChevronDown } from "lucide-react";
 import { AddressGroup, AddressItem, AddressTriggerProps } from "./Address/AddressPicker";
 import { Partner } from "../../Models/Partner";
-import AddressIcon from "../AddressIcon";
+import AddressIcon from "../Common/AddressIcon";
 import { Wallet } from "../../Models/WalletProvider";
 
 

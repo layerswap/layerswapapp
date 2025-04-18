@@ -1,9 +1,9 @@
 import { useIntercom } from "react-use-intercom"
 import { useAuthState } from "../../context/authContext"
-import IconButton from "../buttons/iconButton"
+import IconButton from "../Buttons/iconButton"
 import GoHomeButton from "../utils/GoHome"
 import { ArrowLeft } from 'lucide-react'
-import ChatIcon from "../icons/ChatIcon"
+import ChatIcon from "../Icons/ChatIcon"
 import dynamic from "next/dynamic"
 import LayerswapMenu from "../LayerswapMenu"
 import { useQueryState } from "../../context/query"

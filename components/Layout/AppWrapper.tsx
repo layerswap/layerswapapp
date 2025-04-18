@@ -1,7 +1,6 @@
 import React, { FC, useEffect } from "react"
 import ThemeWrapper from "../themeWrapper";
 import { ErrorBoundary } from "react-error-boundary";
-import MaintananceContent from "../maintanance/maintanance";
 import { AuthProvider } from "../../context/authContext";
 import { SettingsProvider } from "../../context/settings";
 import { LayerSwapAppSettings } from "../../Models/LayerSwapAppSettings";
@@ -18,6 +17,7 @@ import { AsyncModalProvider } from "../../context/asyncModal";
 import WalletsProviders from "../WalletProviders";
 import { useAppRouter } from "../../context/AppRouter/RouterProvider";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
+import MaintananceContent from "../Pages/Maintanance";
 
 export type AppPageProps = {
     children?: JSX.Element | JSX.Element[];

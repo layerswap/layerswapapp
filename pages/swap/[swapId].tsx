@@ -3,7 +3,7 @@ import Layout from '../../components/Layout';
 import { InferGetServerSidePropsType } from 'next';
 import React from 'react';
 import { getThemeData } from '../../helpers/settingsHelper';
-import SwapWithdrawal from '../../components/SwapWithdrawal'
+import SwapWithdrawal from '../../components/Pages/SwapPages/Withdraw'
 
 const SwapDetails = ({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   return (<>
