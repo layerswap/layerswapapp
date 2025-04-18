@@ -1,8 +1,8 @@
 import { Home } from "lucide-react"
 import { useEffect } from "react"
-import SubmitButton from "../components/buttons/submitButton"
-import MessageComponent from "../components/MessageComponent"
-import Navbar from "../components/navbar"
+import SubmitButton from "../components/Buttons/submitButton"
+import MessageComponent from "../components/Common/MessageComponent"
+import Navbar from "../components/Common/navbar"
 import GoHomeButton from "../components/utils/GoHome"
 
 export default function Custom404() {

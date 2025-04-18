@@ -1,6 +1,6 @@
 import { CommandGroup, CommandList, CommandWrapper } from "../../../shadcn/command";
 import { addressFormat } from "../../../../lib/address/formatter";
-import FilledCheck from "../../../icons/FilledCheck";
+import FilledCheck from "../../../Icons/FilledCheck";
 import { AddressGroup, AddressItem } from ".";
 import { RouteNetwork } from "../../../../Models/Network";
 import { FC } from "react";

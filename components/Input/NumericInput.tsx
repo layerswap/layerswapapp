@@ -1,6 +1,6 @@
 import { useField, useFormikContext } from "formik";
 import { ChangeEvent, FC, forwardRef } from "react";
-import { SwapFormValues } from "../DTOs/SwapFormValues";
+import { SwapFormValues } from "../Pages/SwapPages/Form/SwapFormValues";
 import { classNames } from '../utils/classNames'
 
 type Input = {

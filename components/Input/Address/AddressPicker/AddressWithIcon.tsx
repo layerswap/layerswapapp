@@ -1,6 +1,6 @@
 import { FC, useState } from "react"
 import { AddressGroup, AddressItem } from ".";
-import AddressIcon from "../../../AddressIcon";
+import AddressIcon from "../../../Common/AddressIcon";
 import shortenAddress from "../../../utils/ShortenAddress";
 import { History, ExternalLink, Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, Power } from "lucide-react";
 import Image from "next/image";

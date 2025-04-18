@@ -1,11 +1,10 @@
 import { FC } from "react";
-import CopyButton from "../buttons/copyButton";
-import LayerSwapLogo from "../icons/layerSwapLogo";
+import CopyButton from "../Buttons/copyButton";
+import LayerSwapLogo from "../Icons/layerSwapLogo";
 import { Paperclip } from 'lucide-react'
 import { renderToString } from 'react-dom/server'
-import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
+import LayerSwapLogoSmall from "../Icons/layerSwapLogoSmall";
 import * as ContextMenuPrimitive from '@radix-ui/react-context-menu';
-import { useGoHome } from "../../hooks/useGoHome";
 
 interface Props {
     className?: string;
@@ -13,10 +12,9 @@ interface Props {
 }
 
 const GoHomeButton: FC<Props> = (({ className, children }) => {
-    const goHome = useGoHome()
 
     return (
-        <div onClick={goHome}>
+        <div >
             {
                 children ??
                 <>

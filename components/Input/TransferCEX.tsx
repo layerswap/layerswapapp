@@ -1,6 +1,6 @@
 import { FC } from "react";
 import Image from 'next/image'
-import { SwapFormValues } from "../DTOs/SwapFormValues";
+import { SwapFormValues } from "../Pages/SwapPages/Form/SwapFormValues";
 import { useFormikContext } from "formik";
 
 type Props = {

@@ -11,16 +11,16 @@ import { initialValues } from './Data/initialValues';
 import { AuthDataUpdateContext, AuthStateContext, UserType } from '../context/authContext';
 import { IntercomProvider } from 'react-use-intercom';
 import { THEME_COLORS } from '../Models/Theme';
-import Layout from '../components/layout';
-import SwapDetails from '../components/Swap';
+import Layout from '../components/Layout';
+import SwapDetails from '../components/Pages/SwapPages/Withdraw/SwapDetails';
 import SwapMockFunctions from './Mocks/context/SwapDataUpdate';
 import AuthMockFunctions from './Mocks/context/AuthDataUpdate';
 import { Formik, FormikProps } from 'formik';
-import { SwapFormValues } from '../components/DTOs/SwapFormValues';
+import { SwapFormValues } from '../components/Pages/SwapPages/Form/SwapFormValues';
 import MainStepValidation from '../lib/mainStepValidator';
 import { FeeProvider, useFee } from '../context/feeContext';
 import { useArgs } from '@storybook/preview-api';
-import WagmiComponent from '../components/WalletProviders/Wagmi';
+import WagmiComponent from '../components/Wallet/WalletProviders/Wagmi';
 
 window.plausible = () => { }
 const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues, timestamp?: string }> = ({ settings, swapData, theme, initialValues, timestamp }) => {

@@ -5,7 +5,6 @@ import KnownInternalNames from "../../knownIds";
 import InternalApiClient from "../../internalApiClient";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { EstimateFee } from "starknet";
-import { useRouter } from "next/router";
 import { Provider } from "./types";
 
 export class StarknetGasProvider implements Provider {
@@ -22,7 +21,6 @@ export class StarknetGasProvider implements Provider {
         const mainnetRecipient = '0x19252B1dEef483477C4D30cFcc3e5Ed9C82FAFEA44669c182A45A01b4FdB97a'
         const testnetRecipient = '0x065a93bf9a33c87346f534a3b6c825e5c9e86a8e612cba683d0271aae5062d21'
         const version = (network.name.split('_').pop() === 'SEPOLIA' || network.name.split('_').pop() === 'GOERLI') ? 'sandbox' : 'prod'
-        const router = useRouter()
 
         const recipient = version === 'prod' ? mainnetRecipient : testnetRecipient
         const watchdogContract = version === 'prod' ? mainnetWatchdog : testnetWatchdog
@@ -30,7 +28,7 @@ export class StarknetGasProvider implements Provider {
         if (!token || !network.token) return
 
         const client = new InternalApiClient()
-        const basePath = router.basePath ?? '/'
+        const basePath = window.location.pathname ? `/${window.location.pathname.split('/')[0]}`  : '/'
         const feeEstimateResponse: ApiResponse<EstimateFee> = await client.GetStarknetFee(`nodeUrl=${nodeUrl}&walletAddress=${address}&contractAddress=${contract_address}&recipient=${recipient}&watchDogContract=${watchdogContract}`, basePath)
 
         if (!feeEstimateResponse?.data?.suggestedMaxFee) {

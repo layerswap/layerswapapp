@@ -1,13 +1,13 @@
 import { useFormikContext } from "formik";
 import { forwardRef, useCallback, useEffect } from "react";
-import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
+import { SwapFormValues } from "../Pages/SwapPages/Form/SwapFormValues";
+import { SelectMenuItem } from "../Pages/SwapPages/Form/Select/Shared/Props/selectMenuItem";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import shortenAddress from "../utils/ShortenAddress";
 import Link from "next/link";
-import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
+import CommandSelectWrapper from "../Pages/SwapPages/Form/Select/Command/CommandSelectWrapper";
 import { NetworkWithTokens, RouteNetwork } from "../../Models/Network";
 import { ExchangeNetwork } from "../../Models/Exchange";
 import { isValidAddress } from "../../lib/address/validator";
@@ -17,7 +17,7 @@ import Address from "./Address";
 import { Partner } from "../../Models/Partner";
 import { ExtendedAddress } from "./Address/AddressPicker/AddressWithIcon";
 import { ChevronRight, PlusIcon } from "lucide-react";
-import AddressIcon from "../AddressIcon";
+import AddressIcon from "../Common/AddressIcon";
 
 type SwapDirection = "from" | "to";
 type Props = {

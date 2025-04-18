@@ -3,7 +3,7 @@ import { THEME_COLORS } from '../Models/Theme';
 import { FC } from 'react';
 import { Widget } from '../components/Widget/Index';
 import ColorSchema from '../components/ColorSchema';
-import WalletMessage, { WalletMessageProps } from '../components/Swap/Withdraw/messages/Message';
+import WalletMessage, { WalletMessageProps } from '../components/Pages/SwapPages/Withdraw/Messages/Message';
 
 window.plausible = () => { }
 const Comp: FC<{ theme?: "default" | "light", header: string, status: 'pending' | 'error', details: string, showInModal?: boolean }> = ({ theme, status, details, header, showInModal }) => {

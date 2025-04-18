@@ -14,7 +14,7 @@ import shortenAddress from "../../../components/utils/ShortenAddress";
 import { BAKO_STATE } from "./Basko";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
-import { useConnectModal } from "../../../components/WalletModal";
+import { useConnectModal } from "../../../components/Wallet/WalletModal";
 import { useEffect, useMemo } from "react";
 import { useWalletStore } from "../../../stores/walletStore";
 import { useSettingsState } from "../../../context/settings";

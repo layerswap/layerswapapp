@@ -1,4 +1,4 @@
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { SwapFormValues } from "../../Pages/SwapPages/Form/SwapFormValues";
 import { useEffect, useRef } from "react";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import { useSwapDataState } from "../../../context/swap";

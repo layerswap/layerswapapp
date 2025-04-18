@@ -1,4 +1,4 @@
-import { SwapFormValues } from "../components/DTOs/SwapFormValues";
+import { SwapFormValues } from "../components/Pages/SwapPages/Form/SwapFormValues";
 import { QueryParams } from "../Models/QueryParams";
 import { isValidAddress } from "./address/validator";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";

@@ -4,7 +4,7 @@ import { useMemo } from "react"
 import toast from "react-hot-toast"
 import { LSConnector } from "../connectors/EthereumProvider"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
-import { useConnectModal } from "../../../components/WalletModal"
+import { useConnectModal } from "../../../components/Wallet/WalletModal"
 import { type ConnectorAlreadyConnectedError } from '@wagmi/core'
 import useEVM from "../evm/useEVM"
 import useStarknet from "../starknet/useStarknet"

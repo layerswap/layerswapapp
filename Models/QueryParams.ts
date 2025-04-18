@@ -29,6 +29,7 @@ export class PersistantQueryParams {
     hideDepositMethod?: boolean = false;
     hideLogo?: boolean = false
     sameAccountNetwork?: string = "";
+    campaign?: string = "";
 
     // Obsolate
     sourceExchangeName?: string = "";

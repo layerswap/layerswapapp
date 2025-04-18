@@ -1,13 +1,13 @@
 import { useFormikContext } from "formik";
 import { FC, forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { AddressBookItem } from "../../../../lib/layerSwapApiClient";
-import { SwapFormValues } from "../../../DTOs/SwapFormValues";
+import { SwapFormValues } from "../../../Pages/SwapPages/Form/SwapFormValues";
 import { isValidAddress } from "../../../../lib/address/validator";
 import { Partner } from "../../../../Models/Partner";
 import useWallet from "../../../../hooks/useWallet";
 import { addressFormat } from "../../../../lib/address/formatter";
 import ManualAddressInput from "./ManualAddressInput";
-import Modal from "../../../modal/modal";
+import Modal from "../../../Modal/modal";
 import ConnectWalletButton from "./ConnectedWallets/ConnectWalletButton";
 import ExchangeNote from "./ExchangeNote";
 import { Network, NetworkType, RouteNetwork } from "../../../../Models/Network";

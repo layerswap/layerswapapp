@@ -4,7 +4,7 @@ import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon"
 import { Network, NetworkType } from "../../../Models/Network"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useMemo } from "react"
-import { useConnectModal } from "../../../components/WalletModal"
+import { useConnectModal } from "../../../components/Wallet/WalletModal"
 import { useSettingsState } from "../../../context/settings"
 import { Adapter } from "@solana/wallet-adapter-base"
 
