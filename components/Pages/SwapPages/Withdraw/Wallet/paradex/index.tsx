@@ -8,7 +8,7 @@ import Starknet from './Starknet';
 import { useWalletStore } from '../../../../../../stores/walletStore';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../../../context/swap';
 import { Wallet } from '../../../../../../Models/WalletProvider';
-import SubmitButton from '../../../../../Buttons/submitButton';
+import SubmitButton from '../../../../../KButtons/submitButton';
 import { WalletIcon } from 'lucide-react';
 
 const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ amount, token, callData, swapId }) => {

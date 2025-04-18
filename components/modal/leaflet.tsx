@@ -1,7 +1,7 @@
 import { Dispatch, PropsWithChildren, SetStateAction, useCallback, useEffect, useRef } from 'react'
 import { motion, useAnimation } from "framer-motion";
 import { forwardRef } from 'react';
-import IconButton from '../Buttons/iconButton';
+import IconButton from '../KButtons/iconButton';
 import { X } from 'lucide-react';
 import useWindowDimensions from '../../hooks/useWindowDimensions';
 

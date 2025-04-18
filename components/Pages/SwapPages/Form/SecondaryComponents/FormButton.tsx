@@ -1,7 +1,7 @@
 import dynamic from "next/dynamic";
 import { FormSourceWalletButton } from "../../../../Input/SourceWalletPicker";
 import { PlusIcon } from "lucide-react";
-import SwapButton from "../../../../Buttons/swapButton";
+import SwapButton from "../../../../KButtons/swapButton";
 import { FormikErrors } from "formik";
 import { SwapFormValues } from "../../../../DTOs/SwapFormValues";
 

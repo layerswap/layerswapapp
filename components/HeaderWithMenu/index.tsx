@@ -1,6 +1,6 @@
 import { useIntercom } from "react-use-intercom"
 import { useAuthState } from "../../context/authContext"
-import IconButton from "../Buttons/iconButton"
+import IconButton from "../KButtons/iconButton"
 import GoHomeButton from "../utils/GoHome"
 import { ArrowLeft } from 'lucide-react'
 import ChatIcon from "../Icons/ChatIcon"

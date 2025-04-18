@@ -7,7 +7,7 @@ import { useTimerState } from '../../../../../context/timerContext';
 import LayerSwapApiClient from '../../../../../lib/layerSwapApiClient';
 import LayerSwapAuthApiClient from '../../../../../lib/userAuthApiClient';
 import { AuthConnectResponse } from '../../../../../Models/LayerSwapAuth';
-import SubmitButton from '../../../../Buttons/submitButton';
+import SubmitButton from '../../../../KButtons/submitButton';
 import { DocIframe } from '../../../../Common/docInIframe';
 import NumericInput from '../../../../Input/NumericInput';
 import Modal from '../../../../Modal/modal';

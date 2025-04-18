@@ -3,7 +3,7 @@ import { ChevronLeft } from 'lucide-react';
 import { InternalConnector, Wallet, WalletProvider } from '../../../Models/WalletProvider';
 import ConnectorsList from './ConnectorsList';
 import VaulDrawer from '../../Modal/vaulModal';
-import IconButton from '../../Buttons/iconButton';
+import IconButton from '../../KButtons/iconButton';
 
 export type WalletModalConnector = InternalConnector & {
     qr?: ({

@@ -1,7 +1,7 @@
 import WalletIcon from "../../Icons/WalletIcon"
 import shortenAddress from "../../utils/ShortenAddress"
 import useWallet from "../../../hooks/useWallet"
-import ConnectButton from "../../Buttons/connectButton"
+import ConnectButton from "../../KButtons/connectButton"
 import { useState } from "react"
 import WalletsList from "./WalletsList"
 import VaulDrawer from "../../Modal/vaulModal"

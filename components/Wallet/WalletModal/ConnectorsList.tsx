@@ -14,7 +14,7 @@ import { usePersistedState } from "../../../hooks/usePersistedState";
 import { Popover, PopoverContent, PopoverTrigger } from "../../shadcn/popover";
 import { Checkbox } from "../../shadcn/checkbox";
 import VaulDrawer from "../../Modal/vaulModal";
-import CopyButton from "../../Buttons/copyButton";
+import CopyButton from "../../KButtons/copyButton";
 import LayerSwapLogoSmall from "../../Icons/layerSwapLogoSmall";
 
 const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {

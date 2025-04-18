@@ -1,6 +1,6 @@
 import { MenuIcon, ChevronLeft } from "lucide-react";
 import { FC, useState } from "react";
-import IconButton from "../Buttons/iconButton";
+import IconButton from "../KButtons/iconButton";
 import { FormWizardProvider, useFormWizardaUpdate, useFormWizardState } from "../../context/formWizardProvider";
 import { MenuStep } from "../../Models/Wizard";
 import MenuList from "./MenuList";

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useIntercom } from "react-use-intercom";
 import { useAuthState } from "../../../context/authContext";
-import SubmitButton from "../../Buttons/submitButton";
+import SubmitButton from "../../KButtons/submitButton";
 import LayerSwapLogo from "../../Icons/layerSwapLogo";
 import TwitterLogo from "../../Icons/TwitterLogo";
 

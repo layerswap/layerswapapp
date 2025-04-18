@@ -2,7 +2,7 @@ import { FC, useState, Fragment } from 'react'
 import LayerSwapApiClient, { SwapResponse, TransactionType } from '../../../lib/layerSwapApiClient';
 import Image from 'next/image'
 import shortenAddress, { shortenEmail } from '../../utils/ShortenAddress';
-import CopyButton from '../../Buttons/copyButton';
+import CopyButton from '../../KButtons/copyButton';
 import StatusIcon from './StatusIcons';
 import { ArrowRight, ExternalLink, Fuel, Info, RefreshCw } from 'lucide-react';
 import isGuid from '../../utils/isGuid';

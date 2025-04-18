@@ -4,7 +4,7 @@ import { Gift } from "lucide-react"
 import LayerSwapApiClient, { Campaign } from "../../../../lib/layerSwapApiClient"
 import useSWR from "swr"
 import { ApiResponse } from "../../../../Models/ApiResponse"
-import SubmitButton from "../../../Buttons/submitButton";
+import SubmitButton from "../../../KButtons/submitButton";
 import WalletIcon from "../../../Icons/WalletIcon";
 import LinkWrapper from "../../../Common/LinkWrapper";
 import { Widget } from "../../../Widget/Index";

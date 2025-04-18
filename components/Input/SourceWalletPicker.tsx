@@ -9,7 +9,7 @@ import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
 import VaulDrawer, { WalletFooterPortal } from "../Modal/vaulModal";
 import { Wallet } from "../../Models/WalletProvider";
 import WalletIcon from "../Icons/WalletIcon";
-import SubmitButton from "../Buttons/submitButton";
+import SubmitButton from "../KButtons/submitButton";
 import { useConnectModal } from "../Wallet/WalletModal";
 import WalletsList from "../Wallet/WalletComponents/WalletsList";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";

@@ -1,6 +1,6 @@
 import { Home, RefreshCcw } from "lucide-react";
 import React from "react";
-import SubmitButton from "./Buttons/submitButton"
+import SubmitButton from "./KButtons/submitButton"
 import MessageComponent from "./Common/MessageComponent"
 import Navbar from "./Common/navbar"
 import GoHomeButton from "./utils/GoHome"

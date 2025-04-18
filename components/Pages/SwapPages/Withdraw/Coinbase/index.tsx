@@ -1,5 +1,5 @@
 import { FC, useCallback, useState } from 'react'
-import SubmitButton from '../../../../Buttons/submitButton';
+import SubmitButton from '../../../../KButtons/submitButton';
 import Modal from '../../../../Modal/modal';
 import Authorize from './Authorize';
 import Coinbase2FA from './Coinbase2FA';

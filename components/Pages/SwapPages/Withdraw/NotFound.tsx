@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect } from "react";
 import MessageComponent from "../../../Common/MessageComponent";
-import SubmitButton, { DoubleLineText } from "../../../Buttons/submitButton";
+import SubmitButton, { DoubleLineText } from "../../../KButtons/submitButton";
 import GoHomeButton from "../../../utils/GoHome";
 import { useAuthState } from "../../../../context/authContext";
 import { useIntercom } from "react-use-intercom";

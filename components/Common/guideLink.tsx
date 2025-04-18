@@ -1,5 +1,5 @@
 import { ReactNode, useState } from "react";
-import SecondaryButton from "../Buttons/secondaryButton";
+import SecondaryButton from "../KButtons/secondaryButton";
 import { DocIframe } from "./docInIframe";
 import Modal from "../Modal/modal";
 

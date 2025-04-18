@@ -5,7 +5,7 @@ import {
     useSendTransaction
 } from "wagmi";
 import { parseEther } from 'viem'
-import SubmitButton from "../../../../../Buttons/submitButton";
+import SubmitButton from "../../../../../KButtons/submitButton";
 import { BackendTransactionStatus } from "../../../../../../lib/layerSwapApiClient";
 import WalletIcon from "../../../../../Icons/WalletIcon";
 import Modal from '../../../../../Modal/modal';

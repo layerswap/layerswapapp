@@ -1,5 +1,5 @@
 import { FC, useCallback, useState } from 'react'
-import SubmitButton from '../../../../Buttons/submitButton';
+import SubmitButton from '../../../../KButtons/submitButton';
 import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
 import { useAuthState } from '../../../../../context/authContext';
 import useWallet from '../../../../../hooks/useWallet';
