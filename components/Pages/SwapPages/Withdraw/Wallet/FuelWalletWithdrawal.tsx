@@ -2,7 +2,7 @@ import { FC, useCallback, useEffect, useState } from 'react'
 import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
 import useWallet from '../../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
-import WalletIcon from '../../../../Icons/WalletIcon';
+import WalletIcon from '../../../../AllIcons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
 import { ButtonWrapper, ChangeNetworkMessage, ConnectWalletButton } from './WalletTransfer/buttons';
 import {

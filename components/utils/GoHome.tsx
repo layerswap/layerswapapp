@@ -1,9 +1,9 @@
 import { FC } from "react";
 import CopyButton from "../Buttons/copyButton";
-import LayerSwapLogo from "../Icons/layerSwapLogo";
+import LayerSwapLogo from "../AllIcons/layerSwapLogo";
 import { Paperclip } from 'lucide-react'
 import { renderToString } from 'react-dom/server'
-import LayerSwapLogoSmall from "../Icons/layerSwapLogoSmall";
+import LayerSwapLogoSmall from "../AllIcons/layerSwapLogoSmall";
 import * as ContextMenuPrimitive from '@radix-ui/react-context-menu';
 
 interface Props {

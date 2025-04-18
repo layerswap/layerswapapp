@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { useAccount } from 'wagmi';
 import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from '../WalletTransfer/buttons';
 import { useSwapTransactionStore } from '../../../../../../stores/swapTransactionStore';
-import SignatureIcon from '../../../../../Icons/SignatureIcon';
+import SignatureIcon from '../../../../../AllIcons/SignatureIcon';
 import { ActivationTokenPicker } from './ActivationTokentPicker';
 import { useActivationData, useLoopringAccount, useLoopringTokens } from './hooks';
 import { LoopringAPI } from '../../../../../../lib/loopring/LoopringAPI';

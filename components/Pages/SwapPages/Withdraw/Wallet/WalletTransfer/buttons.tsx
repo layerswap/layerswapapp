@@ -1,6 +1,6 @@
 import { FC, useCallback, useState } from "react";
 import { useSwitchChain } from "wagmi";
-import WalletIcon from "../../../../../Icons/WalletIcon";
+import WalletIcon from "../../../../../AllIcons/WalletIcon";
 import { ActionData } from "./sharedTypes";
 import SubmitButton, { SubmitButtonProps } from "../../../../../Buttons/submitButton";
 import useWallet from "../../../../../../hooks/useWallet";

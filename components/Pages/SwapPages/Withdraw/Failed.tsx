@@ -5,7 +5,7 @@ import { useAuthState } from '../../../../context/authContext';
 import { SwapStatus } from '../../../../Models/SwapStatus';
 import { SwapItem } from '../../../../lib/layerSwapApiClient';
 import { TrackEvent } from '../../../../pages/_document';
-import QuestionIcon from '../../../Icons/Question';
+import QuestionIcon from '../../../AllIcons/Question';
 import Link from 'next/link';
 
 const Failed: FC = () => {

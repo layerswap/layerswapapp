@@ -7,7 +7,7 @@ import { useTimerState } from '../../../../../context/timerContext';
 import LayerSwapApiClient from '../../../../../lib/layerSwapApiClient';
 import { ApiError, LSAPIKnownErrorCode } from '../../../../../Models/ApiError';
 import SubmitButton from '../../../../Buttons/submitButton';
-import SpinIcon from '../../../../Icons/spinIcon';
+import SpinIcon from '../../../../AllIcons/spinIcon';
 import NumericInput from '../../../../Input/NumericInput';
 import MessageComponent from '../../../../Common/MessageComponent';
 import Modal from '../../../../Modal/modal';

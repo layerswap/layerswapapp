@@ -4,7 +4,7 @@ import { Pencil } from "lucide-react";
 import { isValidAddress } from "../../../../lib/address/validator";
 import { Partner } from "../../../../Models/Partner";
 import { NetworkType } from "../../../../Models/Network";
-import FilledX from "../../../Icons/FilledX";
+import FilledX from "../../../AllIcons/FilledX";
 import { AddressGroup, AddressItem } from ".";
 import { addressFormat } from "../../../../lib/address/formatter";
 import AddressWithIcon from "./AddressWithIcon";

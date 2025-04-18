@@ -1,7 +1,7 @@
-import CoinbaseIcon from "../../../components/Icons/Wallets/Coinbase"
-import Phantom from "../../../components/Icons/Wallets/Phantom"
-import Solflare from "../../../components/Icons/Wallets/Solflare"
-import WalletConnectIcon from "../../../components/Icons/Wallets/WalletConnect"
+import CoinbaseIcon from "../../../components/AllIcons/Wallets/Coinbase"
+import Phantom from "../../../components/AllIcons/Wallets/Phantom"
+import Solflare from "../../../components/AllIcons/Wallets/Solflare"
+import WalletConnectIcon from "../../../components/AllIcons/Wallets/WalletConnect"
 
 const KnownSolanaConnectors = [
     {

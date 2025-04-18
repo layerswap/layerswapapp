@@ -9,7 +9,7 @@ import { useSwapTransactionStore } from '../../../../../../stores/swapTransactio
 import { BackendTransactionStatus } from '../../../../../../lib/layerSwapApiClient';
 import { useEthersSigner } from '../../../../../../lib/ethersToViem/ethers';
 import toast from 'react-hot-toast';
-import WalletIcon from '../../../../../Icons/WalletIcon';
+import WalletIcon from '../../../../../AllIcons/WalletIcon';
 import AuhorizeEthereum from '../../../../../../lib/wallets/paradex/Authorize/Ethereum';
 
 const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, token, callData, swapId }) => {

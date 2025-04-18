@@ -1,4 +1,4 @@
-import WalletIcon from "../../Icons/WalletIcon"
+import WalletIcon from "../../AllIcons/WalletIcon"
 import shortenAddress from "../../utils/ShortenAddress"
 import useWallet from "../../../hooks/useWallet"
 import ConnectButton from "../../Buttons/connectButton"

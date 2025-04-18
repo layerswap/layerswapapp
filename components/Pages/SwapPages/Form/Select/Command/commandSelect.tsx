@@ -11,7 +11,7 @@ import React, { useCallback } from "react";
 import useWindowDimensions from '../../../../../../hooks/useWindowDimensions';
 import SelectItem from '../Shared/SelectItem';
 import { SelectProps } from '../Shared/Props/SelectProps'
-import SpinIcon from '../../../../../Icons/spinIcon';
+import SpinIcon from '../../../../../AllIcons/spinIcon';
 import { LeafletHeight } from '../../../../../Modal/leaflet';
 import VaulDrawer from '../../../../../Modal/vaulModal';
 

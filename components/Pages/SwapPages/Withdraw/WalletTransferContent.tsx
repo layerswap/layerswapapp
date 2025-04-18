@@ -1,6 +1,6 @@
 import { FC, useState, useEffect } from 'react'
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
-import WalletIcon from '../../../Icons/WalletIcon';
+import WalletIcon from '../../../AllIcons/WalletIcon';
 import useWallet from '../../../../hooks/useWallet';
 import AddressWithIcon from '../../../Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '../../../Input/Address/AddressPicker';

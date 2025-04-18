@@ -1,8 +1,8 @@
-import BakoSafe from "../../../components/Icons/Wallets/BakoSafe"
-import Ethereum from "../../../components/Icons/Wallets/Ethereum"
-import Fuel from "../../../components/Icons/Wallets/Fuel"
-import Fuelet from "../../../components/Icons/Wallets/Fuelet"
-import Solana from "../../../components/Icons/Wallets/Solana"
+import BakoSafe from "../../../components/AllIcons/Wallets/BakoSafe"
+import Ethereum from "../../../components/AllIcons/Wallets/Ethereum"
+import Fuel from "../../../components/AllIcons/Wallets/Fuel"
+import Fuelet from "../../../components/AllIcons/Wallets/Fuelet"
+import Solana from "../../../components/AllIcons/Wallets/Solana"
 
 const KnownFuelConnectors = [
     {

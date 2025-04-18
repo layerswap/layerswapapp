@@ -10,7 +10,7 @@ import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from './Walle
 import { useSettingsState } from '../../../../../context/settings';
 import { useAccount } from 'wagmi';
 import ClickTooltip from '../../../../Tooltips/ClickTooltip';
-import SignatureIcon from '../../../../Icons/SignatureIcon';
+import SignatureIcon from '../../../../AllIcons/SignatureIcon';
 import formatAmount from '../../../../../lib/formatAmount';
 import useWallet from '../../../../../hooks/useWallet';
 import Link from 'next/link';

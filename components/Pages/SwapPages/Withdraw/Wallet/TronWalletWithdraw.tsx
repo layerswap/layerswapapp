@@ -3,7 +3,7 @@ import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient'
 import useWallet from '../../../../../hooks/useWallet';
 import { useWallet as useTronWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
 import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
-import WalletIcon from '../../../../Icons/WalletIcon';
+import WalletIcon from '../../../../AllIcons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
 import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
 import { useSettingsState } from '../../../../../context/settings';

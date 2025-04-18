@@ -1,7 +1,7 @@
 import { useWalletStore } from "../../../stores/walletStore"
 import ImtblClient from "../../imtbl"
 import KnownInternalNames from "../../knownIds"
-import IMX from "../../../components/Icons/Wallets/IMX"
+import IMX from "../../../components/AllIcons/Wallets/IMX"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useSettingsState } from "../../../context/settings"
 import { useConnectModal } from "../../../components/Wallet/WalletModal"

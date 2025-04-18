@@ -3,7 +3,7 @@ import SubmitButton from '../../../../Buttons/submitButton';
 import toast from 'react-hot-toast';
 import useWallet from '../../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
-import WalletIcon from '../../../../Icons/WalletIcon';
+import WalletIcon from '../../../../AllIcons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
 import { useTonConnectUI } from '@tonconnect/ui-react';
 import { Address, JettonMaster, beginCell, toNano } from '@ton/ton'

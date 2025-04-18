@@ -4,7 +4,7 @@ import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient'
 import { useAuthState } from '../../../../../context/authContext';
 import useWallet from '../../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
-import WalletIcon from '../../../../Icons/WalletIcon';
+import WalletIcon from '../../../../AllIcons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
 import { ConnectWalletButton } from './WalletTransfer/buttons';
 import TransactionMessages from '../Messages/TransactionMessages';

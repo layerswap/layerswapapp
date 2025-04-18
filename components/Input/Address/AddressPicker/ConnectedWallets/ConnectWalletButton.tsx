@@ -1,5 +1,5 @@
 import { RefreshCw } from "lucide-react";
-import { ResolveConnectorIcon } from "../../../../Icons/ConnectorIcons";
+import { ResolveConnectorIcon } from "../../../../AllIcons/ConnectorIcons";
 import { Network } from "../../../../../Models/Network";
 import { FC, useState } from "react";
 import { Wallet, WalletProvider } from "../../../../../Models/WalletProvider";
