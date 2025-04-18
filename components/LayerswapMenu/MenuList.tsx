@@ -20,7 +20,7 @@ import { MenuStep } from "../../Models/Wizard";
 import { useAppRouter } from "../../context/AppRouter/RouterProvider";
 import SendFeedback from "./Feedback";
 
-const WalletsMenu = dynamic(() => import("../Wallet/ConnectedWallets").then((comp) => comp.WalletsMenu), {
+const WalletsMenu = dynamic(() => import("../Wallet/WalletComponents/ConnectedWallets").then((comp) => comp.WalletsMenu), {
     loading: () => <></>
 })
 

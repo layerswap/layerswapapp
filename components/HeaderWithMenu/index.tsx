@@ -8,7 +8,7 @@ import dynamic from "next/dynamic"
 import LayerswapMenu from "../LayerswapMenu"
 import { useQueryState } from "../../context/query"
 
-const WalletsHeader = dynamic(() => import("../Wallet/ConnectedWallets").then((comp) => comp.WalletsHeader), {
+const WalletsHeader = dynamic(() => import("../Wallet/WalletComponents/ConnectedWallets").then((comp) => comp.WalletsHeader), {
    loading: () => <></>
 })
 

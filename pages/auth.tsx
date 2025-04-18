@@ -1,5 +1,5 @@
 import Layout from '../components/Layout'
-import AuthWizard from '../components/Wizard/AuthWizard'
+import AuthWizard from '../components/Pages/Auth/AuthWizard'
 import { InferGetServerSidePropsType } from 'next'
 import { getServerSideProps } from '../helpers/getSettings'
 

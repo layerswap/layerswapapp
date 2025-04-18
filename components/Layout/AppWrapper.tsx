@@ -14,10 +14,10 @@ import { TooltipProvider } from "../shadcn/tooltip";
 import ColorSchema from "../ColorSchema";
 import { IsExtensionError } from "../../helpers/errorHelper";
 import { AsyncModalProvider } from "../../context/asyncModal";
-import WalletsProviders from "../WalletProviders";
 import { useAppRouter } from "../../context/AppRouter/RouterProvider";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import MaintananceContent from "../Pages/Maintanance";
+import WalletsProviders from "../Wallet/WalletProviders";
 
 export type AppPageProps = {
     children?: JSX.Element | JSX.Element[];

@@ -2,11 +2,11 @@ import { useFormikContext } from "formik";
 import { Dispatch, forwardRef, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
 import { useSettingsState } from "../../context/settings";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
-import { ISelectMenuItem, SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
-import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";
+import { ISelectMenuItem, SelectMenuItem } from "../Pages/SwapPages/Form/Select/Shared/Props/selectMenuItem";
+import CommandSelectWrapper from "../Pages/SwapPages/Form/Select/Command/CommandSelectWrapper";
 import { ResolveExchangeOrder, ResolveNetworkOrder, SortAscending, SortNetworks } from "../../lib/sorting"
 import NetworkSettings from "../../lib/NetworkSettings";
-import { SelectMenuItemGroup } from "../Select/Command/commandSelect";
+import { SelectMenuItemGroup } from "../Pages/SwapPages/Form/Select/Command/commandSelect";
 import { useQueryState } from "../../context/query";
 import CurrencyFormField from "./CurrencyFormField";
 import useSWR from 'swr'

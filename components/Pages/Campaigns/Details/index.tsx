@@ -13,8 +13,9 @@ import Rewards from "./Rewards";
 import SpinIcon from "../../../Icons/spinIcon"
 import useWallet from "../../../../hooks/useWallet"
 import { useAppRouter } from "../../../../context/AppRouter/RouterProvider"
+import AppWrapper, { AppPageProps } from "../../../Layout/AppWrapper"
 
-function CampaignDetails() {
+function Comp() {
     const router = useAppRouter();
     const camapaignName = router.query.campaign?.toString()
 
@@ -118,5 +119,14 @@ const NotFound = () => <Widget className="min-h-[500px]">
         </div>
     </Widget.Content>
 </Widget>
+
+
+const CampaignDetails: FC<AppPageProps> = (props) => {
+    return (
+        <AppWrapper {...props}>
+            <Comp />
+        </AppWrapper>
+    )
+}
 
 export default CampaignDetails;

@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import { passportInstance, initilizePassport } from "../components/WalletProviders/ImtblPassportProvider";
 import { RouterProvider, useAppRouter } from "../context/AppRouter/RouterProvider";
 import { NextAppRouter } from "../context/AppRouter/Routers/NextAppRouter";
 import { useRouter } from "next/router";
+import { initilizePassport, passportInstance } from "../components/Wallet/WalletProviders/ImtblPassportProvider";
 
 const Comp = () => {
     const router = useAppRouter();

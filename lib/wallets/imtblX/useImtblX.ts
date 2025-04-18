@@ -4,7 +4,7 @@ import KnownInternalNames from "../../knownIds"
 import IMX from "../../../components/Icons/Wallets/IMX"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useSettingsState } from "../../../context/settings"
-import { useConnectModal } from "../../../components/WalletModal"
+import { useConnectModal } from "../../../components/Wallet/WalletModal"
 
 export default function useImtblX(): WalletProvider {
     const withdrawalSupportedNetworks = [

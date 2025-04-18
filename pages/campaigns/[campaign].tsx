@@ -8,7 +8,7 @@ export default function RewardsPage({ settings, themeData, apiKey }: InferGetSer
     LayerSwapApiClient.apiKey = apiKey
     return (<>
         <Layout settings={settings} themeData={themeData}>
-            <CampaignDetails />
+            <CampaignDetails apiKey={apiKey} settings={settings} themeData={themeData} />
         </Layout>
     </>
     )

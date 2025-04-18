@@ -10,7 +10,7 @@ import VaulDrawer from '../../../Modal/vaulModal';
 import { Wallet } from '../../../../Models/WalletProvider';
 import useSWRBalance from '../../../../lib/balances/useSWRBalance';
 import { useSettingsState } from '../../../../context/settings';
-import WalletsList from '../../../Wallet/WalletsList';
+import WalletsList from '../../../Wallet/WalletComponents/WalletsList';
 
 const WalletTransferContent: FC = () => {
     const { networks } = useSettingsState()

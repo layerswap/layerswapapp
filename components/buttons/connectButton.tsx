@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import useWallet from "../../hooks/useWallet";
-import { useConnectModal } from "../WalletModal";
+import { useConnectModal } from "../Wallet/WalletModal";
 
 const ConnectButton = ({
     children,

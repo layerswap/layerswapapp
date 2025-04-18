@@ -10,7 +10,7 @@ import { isMobile } from "../../isMobile"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
 import { LSConnector } from "../connectors/EthereumProvider"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
-import { useConnectModal } from "../../../components/WalletModal"
+import { useConnectModal } from "../../../components/Wallet/WalletModal"
 import { explicitInjectedproviderDetected } from "../connectors/getInjectedConnector"
 import walletsData from "../../../public/walletsData.json"
 

@@ -1,8 +1,8 @@
 import { useFormikContext } from "formik";
 import { Dispatch, FC, SetStateAction, useCallback, useEffect, useRef } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
-import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
-import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
+import { SelectMenuItem } from "../Pages/SwapPages/Form/Select/Shared/Props/selectMenuItem";
+import PopoverSelectWrapper from "../Pages/SwapPages/Form/Select/Popover/PopoverSelectWrapper";
 import { ResolveCurrencyOrder, SortAscending } from "../../lib/sorting";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { useQueryState } from "../../context/query";

@@ -7,8 +7,9 @@ import useSWR from 'swr'
 import Image from "next/image";
 import LinkWrapper from "../../Common/LinkWrapper";
 import { Widget } from "../../Widget/Index";
+import AppWrapper, { AppPageProps } from "../../Layout/AppWrapper";
 
-const Rewards = () => {
+const Comp = () => {
 
     const apiClient = new LayerSwapApiClient()
     const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
@@ -107,6 +108,14 @@ const CampaignItem: FC<CampaignProps> = ({ campaign }) => {
 function IsCampaignActive(campaign: Campaign) {
     const now = new Date()
     return (new Date(campaign?.end_date).getTime() > now.getTime())
+}
+
+const Rewards: FC<AppPageProps> = (props) => {
+    return (
+        <AppWrapper {...props}>
+            <Comp />
+        </AppWrapper>
+    )
 }
 
 

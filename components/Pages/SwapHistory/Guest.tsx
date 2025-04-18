@@ -2,8 +2,8 @@ import { ArrowLeft } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { useFormWizardaUpdate, useFormWizardState } from '../../../context/formWizardProvider';
 import { AuthStep } from '../../../Models/Wizard';
-import CodeStep from '../../Wizard/Steps/CodeStep';
-import EmailStep from '../../Wizard/Steps/EmailStep';
+import CodeStep from '../Auth/Steps/CodeStep';
+import EmailStep from '../Auth/Steps/EmailStep';
 import Wizard from '../../Wizard/Wizard';
 import WizardItem from '../../Wizard/WizardItem';
 
