@@ -1,23 +1,23 @@
 import React, { FC, useEffect } from "react"
-import ThemeWrapper from "../themeWrapper";
+import ThemeWrapper from "./themeWrapper";
 import { ErrorBoundary } from "react-error-boundary";
-import { AuthProvider } from "../../context/authContext";
-import { SettingsProvider } from "../../context/settings";
-import { LayerSwapAppSettings } from "../../Models/LayerSwapAppSettings";
-import { LayerSwapSettings } from "../../Models/LayerSwapSettings";
-import ErrorFallback from "../ErrorFallback";
-import { SendErrorMessage } from "../../lib/telegram";
-import { QueryParams } from "../../Models/QueryParams";
-import QueryProvider from "../../context/query";
-import { THEME_COLORS, ThemeData } from "../../Models/Theme";
-import { TooltipProvider } from "../shadcn/tooltip";
-import ColorSchema from "../ColorSchema";
-import { IsExtensionError } from "../../helpers/errorHelper";
-import { AsyncModalProvider } from "../../context/asyncModal";
-import { useAppRouter } from "../../context/AppRouter/RouterProvider";
-import LayerSwapApiClient from "../../lib/layerSwapApiClient";
-import MaintananceContent from "./Maintanance";
-import WalletsProviders from "../Wallet/WalletProviders";
+import { AuthProvider } from "../context/authContext";
+import { SettingsProvider } from "../context/settings";
+import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
+import { LayerSwapSettings } from "../Models/LayerSwapSettings";
+import ErrorFallback from "./ErrorFallback";
+import { SendErrorMessage } from "../lib/telegram";
+import { QueryParams } from "../Models/QueryParams";
+import QueryProvider from "../context/query";
+import { THEME_COLORS, ThemeData } from "../Models/Theme";
+import { TooltipProvider } from "./shadcn/tooltip";
+import ColorSchema from "./ColorSchema";
+import { IsExtensionError } from "../helpers/errorHelper";
+import { AsyncModalProvider } from "../context/asyncModal";
+import { useAppRouter } from "../context/AppRouter/RouterProvider";
+import LayerSwapApiClient from "../lib/layerSwapApiClient";
+import MaintananceContent from "./Pages/Maintanance";
+import WalletsProviders from "./Wallet/WalletProviders";
 
 export type AppPageProps = {
     children?: JSX.Element | JSX.Element[];

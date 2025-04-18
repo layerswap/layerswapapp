@@ -5,7 +5,7 @@ import { InferGetServerSidePropsType } from 'next';
 import { getServerSideProps } from '../helpers/getSettings';
 import LayerSwapApiClient from '../lib/layerSwapApiClient';
 import { useAppRouter } from '../context/AppRouter/RouterProvider';
-import AppWrapper, { AppPageProps } from '../components/Pages/AppWrapper';
+import AppWrapper, { AppPageProps } from '../components/AppWrapper';
 
 const Comp: FC = () => {
     const router = useAppRouter();

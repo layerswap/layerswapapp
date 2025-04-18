@@ -7,7 +7,7 @@ import useSWR from 'swr'
 import Image from "next/image";
 import LinkWrapper from "../../Common/LinkWrapper";
 import { Widget } from "../../Widget/Index";
-import AppWrapper, { AppPageProps } from "../AppWrapper";
+import AppWrapper, { AppPageProps } from "../../AppWrapper";
 
 const Comp = () => {
 

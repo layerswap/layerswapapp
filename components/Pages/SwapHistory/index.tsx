@@ -1,6 +1,6 @@
 import Content from "./History"
 import Header from "./Header";
-import AppWrapper, { AppPageProps } from "../AppWrapper";
+import AppWrapper, { AppPageProps } from "../../AppWrapper";
 import { SwapDataProvider } from "../../../context/swap";
 import { FC } from "react";
 

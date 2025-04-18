@@ -5,7 +5,7 @@ import SwapForm from "./FormWrapper"
 import { SWRConfig, mutate } from 'swr';
 import { SwapStatus } from '../../../../Models/SwapStatus';
 import { FeeProvider } from '../../../../context/feeContext';
-import AppWrapper, { AppPageProps } from '../../AppWrapper';
+import AppWrapper, { AppPageProps } from '../../../AppWrapper';
 
 const Swap: FC<AppPageProps> = (props) => {
   return (
