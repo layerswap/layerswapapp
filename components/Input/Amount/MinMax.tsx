@@ -1,4 +1,4 @@
-import SecondaryButton from "../../KButtons/secondaryButton"
+import SecondaryButton from "../../Buttons/secondaryButton"
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import useSWRBalance from "../../../lib/balances/useSWRBalance";

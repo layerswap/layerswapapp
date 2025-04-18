@@ -2,7 +2,7 @@ import { FC, useCallback, useState } from "react";
 import { useSwitchChain } from "wagmi";
 import WalletIcon from "../../../../../Icons/WalletIcon";
 import { ActionData } from "./sharedTypes";
-import SubmitButton, { SubmitButtonProps } from "../../../../../KButtons/submitButton";
+import SubmitButton, { SubmitButtonProps } from "../../../../../Buttons/submitButton";
 import useWallet from "../../../../../../hooks/useWallet";
 import { useSwapDataState } from "../../../../../../context/swap";
 import ManualTransferNote from "./manualTransferNote";

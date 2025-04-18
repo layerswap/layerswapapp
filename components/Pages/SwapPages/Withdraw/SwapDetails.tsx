@@ -10,7 +10,7 @@ type Props = {
     type: "widget" | "contained",
 }
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import SubmitButton from '../../../KButtons/submitButton';
+import SubmitButton from '../../../Buttons/submitButton';
 
 const SwapDetails: FC<Props> = ({ type }) => {
     const { swapResponse } = useSwapDataState()

@@ -1,7 +1,7 @@
 import { FC } from "react";
-import CopyButton from "../KButtons/copyButton";
+import CopyButton from "../Buttons/copyButton";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
-import ExploreButton from "../KButtons/exploreButton";
+import ExploreButton from "../Buttons/exploreButton";
 import { QRCodeSVG } from "qrcode.react";
 import { classNames } from "../utils/classNames";
 import { QrCode } from "lucide-react";

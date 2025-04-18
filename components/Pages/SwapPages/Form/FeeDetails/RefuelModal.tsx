@@ -1,10 +1,10 @@
 import { SwapFormValues } from '../../../../DTOs/SwapFormValues';
 import { Dispatch, FC, SetStateAction } from 'react';
-import Modal from '../../../../KModal/modal';
+import Modal from '../../../../Modal/modal';
 import { Fuel } from 'lucide-react';
 import { roundDecimals, truncateDecimals } from '../../../../utils/RoundDecimals';
-import SubmitButton from '../../../../KButtons/submitButton';
-import SecondaryButton from '../../../../KButtons/secondaryButton';
+import SubmitButton from '../../../../Buttons/submitButton';
+import SecondaryButton from '../../../../Buttons/secondaryButton';
 import { useFormikContext } from 'formik';
 import { useFee } from '../../../../../context/feeContext';
 import useSWRBalance from '../../../../../lib/balances/useSWRBalance';

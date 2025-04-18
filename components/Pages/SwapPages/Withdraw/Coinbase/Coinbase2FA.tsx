@@ -6,11 +6,11 @@ import { useSwapDataState } from '../../../../../context/swap';
 import { useTimerState } from '../../../../../context/timerContext';
 import LayerSwapApiClient from '../../../../../lib/layerSwapApiClient';
 import { ApiError, LSAPIKnownErrorCode } from '../../../../../Models/ApiError';
-import SubmitButton from '../../../../KButtons/submitButton';
+import SubmitButton from '../../../../Buttons/submitButton';
 import SpinIcon from '../../../../Icons/spinIcon';
 import NumericInput from '../../../../Input/NumericInput';
 import MessageComponent from '../../../../Common/MessageComponent';
-import Modal from '../../../../KModal/modal';
+import Modal from '../../../../Modal/modal';
 import TimerWithContext from '../../../../Common/TimerComponent';
 import { Widget } from '../../../../Widget/Index';
 

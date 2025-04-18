@@ -1,8 +1,8 @@
 import { useState } from "react"
 import { useDepositMethod } from "../../../../../../context/depositMethodContext"
-import SubmitButton from "../../../../../KButtons/submitButton"
+import SubmitButton from "../../../../../Buttons/submitButton"
 import ManualTransferSVG from "../../../../../Icons/ManualTransferSVG"
-import Modal from "../../../../../KModal/modal"
+import Modal from "../../../../../Modal/modal"
 import { ArrowUpRight } from "lucide-react"
 
 const ManualTransferNote = () => {

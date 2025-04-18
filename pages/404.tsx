@@ -1,6 +1,6 @@
 import { Home } from "lucide-react"
 import { useEffect } from "react"
-import SubmitButton from "../components/KButtons/submitButton"
+import SubmitButton from "../components/Buttons/submitButton"
 import MessageComponent from "../components/Common/MessageComponent"
 import Navbar from "../components/Common/navbar"
 import GoHomeButton from "../components/utils/GoHome"

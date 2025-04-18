@@ -8,7 +8,7 @@ import KnownInternalNames from '../../../../../../lib/knownIds';
 import { useSwapTransactionStore } from '../../../../../../stores/swapTransactionStore';
 import { BackendTransactionStatus } from '../../../../../../lib/layerSwapApiClient';
 import toast from 'react-hot-toast';
-import SubmitButton from '../../../../../KButtons/submitButton';
+import SubmitButton from '../../../../../Buttons/submitButton';
 import { AuthorizeStarknet } from '../../../../../../lib/wallets/paradex/Authorize/Starknet';
 
 const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swapId }) => {

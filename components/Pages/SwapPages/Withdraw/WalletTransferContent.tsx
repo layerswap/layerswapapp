@@ -6,7 +6,7 @@ import AddressWithIcon from '../../../Input/Address/AddressPicker/AddressWithIco
 import { AddressGroup } from '../../../Input/Address/AddressPicker';
 import { ChevronRight } from 'lucide-react';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
-import VaulDrawer from '../../../KModal/vaulModal';
+import VaulDrawer from '../../../Modal/vaulModal';
 import { Wallet } from '../../../../Models/WalletProvider';
 import useSWRBalance from '../../../../lib/balances/useSWRBalance';
 import { useSettingsState } from '../../../../context/settings';

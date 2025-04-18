@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../context/authContext';
 import { SendFeedbackMessage } from '../../lib/telegram';
-import SubmitButton from '../KButtons/submitButton';
+import SubmitButton from '../Buttons/submitButton';
 
 interface SendFeedbackFormValues {
     Feedback: string;

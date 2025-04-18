@@ -1,6 +1,6 @@
 import { FC } from "react"
 import { ExternalLink } from "lucide-react"
-import CopyButton from "../../KButtons/copyButton"
+import CopyButton from "../../Buttons/copyButton"
 import Link from "next/link"
 import AddressIcon from "../../Common/AddressIcon"
 import { SwapFormValues } from "../../DTOs/SwapFormValues"

@@ -4,13 +4,13 @@ import Image from 'next/image';
 import { useSwapDataState } from "../../../../context/swap";
 import KnownInternalNames from "../../../../lib/knownIds";
 import BackgroundField from "../../../Common/backgroundField";
-import SubmitButton from "../../../KButtons/submitButton";
+import SubmitButton from "../../../Buttons/submitButton";
 import shortenAddress from "../../../utils/ShortenAddress";
 import { isValidAddress } from "../../../../lib/address/validator";
 import { useSwapDepositHintClicked } from "../../../../stores/swapTransactionStore";
 import { Exchange } from "../../../../Models/Exchange";
 import Link from "next/link";
-import CopyButton from "../../../KButtons/copyButton";
+import CopyButton from "../../../Buttons/copyButton";
 import useWindowDimensions from "../../../../hooks/useWindowDimensions";
 
 const ManualTransfer: FC = () => {

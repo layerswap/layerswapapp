@@ -1,6 +1,6 @@
 import { Link } from 'lucide-react';
 import { FC } from 'react';
-import SubmitButton from '../../../../KButtons/submitButton';
+import SubmitButton from '../../../../Buttons/submitButton';
 
 type Props = {
     NetworkDisplayName: string;

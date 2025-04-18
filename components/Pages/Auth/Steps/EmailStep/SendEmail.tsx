@@ -7,7 +7,7 @@ import { useAuthDataUpdate, useAuthState } from '../../../../../context/authCont
 import { useTimerState } from '../../../../../context/timerContext';
 import TokenService from '../../../../../lib/TokenService';
 import LayerSwapAuthApiClient from '../../../../../lib/userAuthApiClient';
-import SubmitButton from '../../../../KButtons/submitButton';
+import SubmitButton from '../../../../Buttons/submitButton';
 import { Widget } from '../../../../Widget/Index';
 
 type EmailFormValues = {

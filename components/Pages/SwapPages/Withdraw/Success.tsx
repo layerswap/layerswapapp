@@ -5,7 +5,7 @@ import { useSettingsState } from '../../../../context/settings';
 import { useSwapDataState } from '../../../../context/swap';
 import MessageComponent from '../../../Common/MessageComponent';
 import { Widget } from '../../../Widget/Index';
-import SubmitButton, { DoubleLineText } from '../../../KButtons/submitButton';
+import SubmitButton, { DoubleLineText } from '../../../Buttons/submitButton';
 import GoHomeButton from '../../../utils/GoHome';
 import { TransactionType } from '../../../../lib/layerSwapApiClient';
 import AppSettings from '../../../../lib/AppSettings';
