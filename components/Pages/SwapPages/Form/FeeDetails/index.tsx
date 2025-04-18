@@ -1,14 +1,14 @@
-import { SwapFormValues } from '../DTOs/SwapFormValues';
 import { ReceiveAmounts } from './ReceiveAmounts';
 import DetailedEstimates from './DetailedEstimates';
-import { useFee } from '../../context/feeContext';
 import FeeDetails from './FeeDetailsComponent';
-import { useQueryState } from '../../context/query';
-import ResizablePanel from '../Common/ResizablePanel';
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 import DepositMethod from './DepositMethod';
 import Campaign from './Campaign';
+import { SwapFormValues } from '../../../../DTOs/SwapFormValues';
+import { useFee } from '../../../../../context/feeContext';
+import { useQueryState } from '../../../../../context/query';
+import ResizablePanel from '../../../../Common/ResizablePanel';
 
 const RefuelModal = dynamic(() => import("./RefuelModal"), {
     loading: () => <></>,

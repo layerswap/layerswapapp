@@ -1,12 +1,12 @@
 import { FC } from "react"
-import LayerSwapApiClient, { Campaign, QuoteReward } from "../../lib/layerSwapApiClient"
 import useSWR from "swr"
-import { ApiResponse } from "../../Models/ApiResponse"
-import ClickTooltip from "../Tooltips/ClickTooltip"
 import Image from 'next/image';
-import { Network } from "../../Models/Network"
 import FeeDetails from "./FeeDetailsComponent"
-import useSWRNftBalance from "../../lib/nft/useSWRNftBalance";
+import LayerSwapApiClient, { Campaign, QuoteReward } from "../../../../../lib/layerSwapApiClient";
+import useSWRNftBalance from "../../../../../lib/nft/useSWRNftBalance";
+import { Network } from "../../../../../Models/Network";
+import ClickTooltip from "../../../../Tooltips/ClickTooltip";
+import { ApiResponse } from "../../../../../Models/ApiResponse";
 
 type CampaignProps = {
     destination: Network,

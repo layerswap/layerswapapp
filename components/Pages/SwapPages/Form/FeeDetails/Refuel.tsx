@@ -1,11 +1,11 @@
-import ToggleButton from "../Buttons/toggleButton"
+import ToggleButton from "../../../../Buttons/toggleButton"
 import { useFormikContext } from "formik";
-import { SwapFormValues } from "../DTOs/SwapFormValues";
+import { SwapFormValues } from "../../../../DTOs/SwapFormValues";
 import { FC, useEffect, useRef } from "react";
 import { Info } from "lucide-react";
-import { isValidAddress } from "../../lib/address/validator";
-import ResizablePanel from "../Common/ResizablePanel";
-import useSWRBalance from "../../lib/balances/useSWRBalance";
+import { isValidAddress } from "../../../../../lib/address/validator";
+import ResizablePanel from "../../../../Common/ResizablePanel";
+import useSWRBalance from "../../../../../lib/balances/useSWRBalance";
 
 type RefuelProps = {
     onButtonClick: () => void

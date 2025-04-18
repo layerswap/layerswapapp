@@ -1,8 +1,8 @@
 import { FC } from "react";
 import { useFormikContext } from "formik";
-import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { useFee } from "../../context/feeContext";
-import AverageCompletionTime from "../Common/AverageCompletionTime";
+import { SwapFormValues } from "../../../../DTOs/SwapFormValues";
+import { useFee } from "../../../../../context/feeContext";
+import AverageCompletionTime from "../../../../Common/AverageCompletionTime";
 
 const DetailedEstimates: FC = () => {
 

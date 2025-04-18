@@ -9,7 +9,7 @@ import { ArrowUpDown } from 'lucide-react'
 import { Widget } from "../../../Widget/Index";
 import { classNames } from "../../../utils/classNames";
 import { useQueryState } from "../../../../context/query";
-import FeeDetailsComponent from "../../../FeeDetails";
+import FeeDetailsComponent from "./FeeDetails";
 import { useFee } from "../../../../context/feeContext";
 import AmountField from "../../../Input/Amount"
 import dynamic from "next/dynamic";
