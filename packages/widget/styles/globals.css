@@ -1,0 +1,357 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+
+  /* Chrome, Safari, Edge, Opera */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+  
+  .styled-scroll {
+    @apply scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-secondary-500  scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-500/50 ;
+  }
+  
+  .rdxCommandList {
+    max-height: var(--radix-popper-available-height);
+  }
+}
+
+@layer base {
+
+  body {
+    @apply bg-secondary-900 sm:bg-secondary-950;
+  }
+
+  /* On iOS disabled inputs have default opacitiy */
+  .ntdi {
+    opacity: 1;
+    /* required on iOS */
+  }
+}
+
+iframe body {
+  display: none;
+}
+
+.light .top-backdrop {
+  display: none;
+}
+
+.top-backdrop {
+  width: 1325px;
+  height: 1164px;
+  position: absolute;
+  filter: blur(133px);
+  transform: translate(-50%, -50%) translate3d(0, 0, 0);
+  left: 50%;
+  top: -5%;
+  border-radius: 50%;
+  z-index: -1;
+  opacity: 80%;
+  background: theme('colors.primary.background');
+}
+
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  transition: all 5000s ease-in-out 0s;
+  transition-property: background-color, color;
+
+  /* border: 1px solid #1A2949; */
+  -webkit-text-fill-color: rgb(var(--ls-colors-primary-text));
+  caret-color: rgb(var(--ls-colors-primary-text));
+  -webkit-box-shadow: 0 0 0px 1000px rgb(var(--ls-colors-secondary-700)) inset;
+  box-shadow: 0 0 0px 1000px rgb(var(--ls-colors-secondary-700)) inset;
+
+}
+
+.shadowed-button {
+  transform: translate3d(0, 0, 0);
+}
+
+hr.horizontal-gradient {
+  border: 0;
+  height: 1px;
+  background-image: linear-gradient(to right, hsla(0, 0%, 100%, 0), #1A2949, hsla(0, 0%, 100%, 0));
+}
+
+.strong-highlight {
+  position: relative;
+  opacity: 1;
+  z-index: 1;
+  display: inline-block;
+  margin: 0 3px;
+}
+
+.strong-highlight::after {
+  /* Highlight color */
+  background-color: theme('colors.secondary.500');
+  content: "";
+  position: absolute;
+  width: calc(100% + 10px);
+  height: 110%;
+  border-radius: 5px;
+  left: -5px;
+  bottom: -5%;
+  z-index: -1;
+}
+
+.iphone-x {
+  position: relative;
+  margin: 40px auto;
+  width: 320px;
+  height: 780px;
+  background-color: #7371ee;
+  background-image: url(/cnbs1.png);
+  background-size: contain;
+  border-radius: 40px;
+  box-shadow: 0px 0px 0px 11px #1f1f1f, 0px 0px 0px 13px #191919, 0px 0px 0px 20px #111;
+}
+
+.iphone-x:before,
+.iphone-x:after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.iphone-x:after {
+  bottom: 7px;
+  width: 140px;
+  height: 4px;
+  background-color: #f2f2f2;
+  border-radius: 10px;
+}
+
+.iphone-x:before {
+  top: 0px;
+  width: 56%;
+  height: 30px;
+  background-color: #1f1f1f;
+  border-radius: 0px 0px 40px 40px;
+}
+
+.iphone-x i,
+.iphone-x b,
+.iphone-x s,
+.iphone-x span {
+  position: absolute;
+  display: block;
+  color: transparent;
+}
+
+.iphone-x i {
+  top: 0px;
+  left: 50%;
+  transform: translate(-50%, 6px);
+  height: 8px;
+  width: 15%;
+  background-color: #101010;
+  border-radius: 8px;
+  box-shadow: inset 0px -3px 3px 0px rgba(255, 255, 255, 0.2);
+}
+
+.iphone-x b {
+  left: 10%;
+  top: 0px;
+  transform: translate(180px, 4px);
+  width: 12px;
+  height: 12px;
+  background-color: #101010;
+  border-radius: 12px;
+  box-shadow: inset 0px -3px 2px 0px rgba(255, 255, 255, 0.2);
+}
+
+.iphone-x b:after {
+  content: "";
+  position: absolute;
+  background-color: #2d4d76;
+  width: 6px;
+  height: 6px;
+  top: 2px;
+  left: 2px;
+  top: 3px;
+  left: 3px;
+  display: block;
+  border-radius: 4px;
+  box-shadow: inset 0px -2px 2px rgba(0, 0, 0, 0.5);
+}
+
+.iphone-x s {
+  top: 50px;
+  color: #fff;
+  text-align: center;
+  text-decoration: none;
+  width: 100%;
+  font-size: 70px;
+  font-weight: 100;
+  padding-top: 60px;
+}
+
+.iphone-x span {
+  bottom: 50px;
+  width: 40px;
+  height: 40px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 50%;
+  left: 30px;
+}
+
+.iphone-x span+span {
+  left: auto;
+  right: 30px;
+}
+
+
+
+.carousel {
+  overflow: hidden;
+}
+
+.inner {
+  white-space: nowrap;
+  transition: transform 0.3s;
+}
+
+.carousel-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  background-color: green;
+  color: #fff;
+}
+
+.indicators {
+  display: flex;
+  justify-content: center;
+}
+
+.indicators>button {
+  margin: 5px;
+}
+
+.indicators>button.active {
+  background-color: green;
+  color: #fff;
+}
+
+.carousel {
+  display: inline-flex;
+  overflow-x: hidden;
+  /*  scroll snap is a great feature which will center the image on snap on touch screen devices  */
+  scroll-snap-type: x mandatory;
+  /* all below will hide the scrollbar on all browsers.    */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  /* For Firefox */
+  -ms-overflow-style: none;
+  /* For Internet Explorer and Edge */
+}
+
+tspan {
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+}
+
+input::-webkit-input-placeholder {
+  line-height: normal !important;
+}
+
+body {
+  overflow: overlay;
+}
+
+body::-webkit-scrollbar {
+  --tw-bg-opacity: 1;
+  background-color: rgb(var(--ls-colors-secondary-700));
+}
+
+body::-webkit-scrollbar {
+  width: 0.375rem !important;
+}
+
+body::-webkit-scrollbar {
+  height: 0.375rem !important;
+}
+
+body::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--ls-colors-secondary-text), 0.4) !important;
+}
+
+body::-webkit-scrollbar-thumb {
+  --tw-bg-opacity: 1 !important;
+}
+
+body::-webkit-scrollbar-thumb {
+  border-radius: 0.25rem !important;
+}
+
+input:disabled,
+textarea:disabled,
+input:disabled::placeholder,
+textarea:disabled::placeholder {
+  -webkit-text-fill-color: theme('colors.primary.text-placeholder');
+  /* 1. sets text fill to 'primary-text': '#a4afc8' */
+  opacity: 1;
+  /* 2. correct opacity on iOS */
+}
+
+.space-x-reverse {
+  --space-x-reverse: 1
+}
+
+.space-y-reverse {
+  --space-y-reverse: 1
+}
+
+.loader, .loader:before, .loader:after {
+  border-radius: 50%;
+  width: 2.5em;
+  height: 2.5em;
+  animation-fill-mode: both;
+  animation: bblFadInOut 1.8s infinite ease-in-out;
+}
+.loader {
+  color: #FFF;
+  font-size: 7px;
+  position: relative;
+  text-indent: -9999em;
+  transform: translateZ(0);
+  animation-delay: -0.16s;
+}
+.loader:before,
+.loader:after {
+  content: '';
+  position: absolute;
+  top: 0;
+}
+.loader:before {
+  left: -3.5em;
+  animation-delay: -0.32s;
+}
+.loader:after {
+  left: 3.5em;
+}
+
+@keyframes bblFadInOut {
+  0%, 80%, 100% { box-shadow: 0 2.5em 0 -1.3em }
+  40% { box-shadow: 0 2.5em 0 0 }
+}
+    
