@@ -19,6 +19,13 @@
     "url": "git+https://github.com/layerswap/layerswapapp.git",
     "directory": "packages/widget"
   },
+  "keywords": [
+    "layerswap",
+    "layerswap-widget",
+    "widget",
+    "cross-chain",
+    "bridge"
+  ],
   "license": "MIT",
   "dependencies": {
     "@bitget-wallet/web3-sdk": "^0.0.8",
@@ -131,5 +138,11 @@
   },
   "engines": {
     "node": ">=20.9.0"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "bugs": {
+    "url": "https://github.com/layerswap/layerswapapp/issues"
   }
 }
