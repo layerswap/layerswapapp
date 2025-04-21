@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { NetworkRoute, NetworkRouteToken } from "../../Models/Network";
 import { Selector, SelectorContent, SelectorTrigger } from "../Select/CommandNew/Index";
@@ -38,12 +38,13 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const { isDesktop } = useWindowDimensions();
 
     const { allRoutes, isLoading, groupedRoutes } = useFormRoutes({ direction, values })
+    const [searchQuery, setSearchQuery] = useState("")
 
     const currencyFieldName = direction === 'from' ? 'fromCurrency' : 'toCurrency';
 
     const selectedRoute = resolveSelectedRoute(values, direction)
     const selectedToken = resolveSelectedToken(values, direction)
-    
+
     useEffect(() => {
 
         if (!selectedRoute || !selectedToken || !allRoutes) return
@@ -85,6 +86,33 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
         }
     }, [currencyFieldName, direction, values])
 
+    const filteredGroups = useMemo(() => {
+        if (!searchQuery) return groupedRoutes;
+
+        return groupedRoutes.map(group => ({
+            ...group,
+            routes: group.routes?.filter(route => {
+                const tokens = getSortedRouteTokens(route) || [];
+                const routeMatch = route.display_name.toLowerCase().includes(searchQuery.toLowerCase());
+                const tokenMatch = tokens.some(token =>
+                    token.symbol.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+                return routeMatch || tokenMatch;
+            })
+        })).filter(group => group.routes && group.routes.length > 0);
+    }, [groupedRoutes, searchQuery]);
+
+    const flatTokenResults = useMemo(() => {
+        if (!searchQuery || !allRoutes) return [];
+
+        return allRoutes.flatMap(route => {
+            const tokens = getSortedRouteTokens(route) || [];
+            return tokens
+                .filter(token => token.symbol.toLowerCase().includes(searchQuery.toLowerCase()))
+                .map(token => ({ route, token }));
+        });
+    }, [allRoutes, searchQuery]);
+
     return (
         <div className="flex w-full flex-col self-end relative ml-auto items-center">
             <Selector>
@@ -93,32 +121,70 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 </SelectorTrigger>
                 <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search">
                     {({ closeModal }) => (
-                        <CommandWrapper>
-                            <CommandInput autoFocus={isDesktop} placeholder="Search">
-                                <div className="pl-2">
-                                    <Search className="w-6 h-6 text-secondary-text" />
-                                </div>
-                            </CommandInput>
+                        <div className="flex h-full w-full flex-col overflow-hidden rounded-md">
+                            <div className="flex items-center bg-secondary-500 rounded-lg px-2 mb-2">
+                                <Search className="w-6 h-6 mr-2 text-primary-text-placeholder" />
+                                <input
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    autoFocus={isDesktop}
+                                    placeholder="Search"
+                                    autoComplete="off"
+                                    className="placeholder:text-primary-text-placeholder border-0 border-b-0 border-primary-text bg-secondary-500 focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-11 text-base outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
+                                />
+                            </div>
                             {isLoading ? (
                                 <div className="flex justify-center h-full items-center">
                                     <SpinIcon className="animate-spin h-5 w-5" />
                                 </div>
+                            ) : filteredGroups.length === 0 ? (
+                                <div className="text-center text-secondary-text">No results found.</div>
                             ) : (
-                                <CommandList className="overflow-y-auto styled-scroll hide-main-scrollbar">
-                                    <CommandEmpty>No results found.</CommandEmpty>
-                                    {groupedRoutes.filter(g => g.routes?.length > 0).map((group) => {
-                                        return <Group
+                                <div className="overflow-y-auto styled-scroll hide-main-scrollbar">
+                                    {filteredGroups.map((group) => (
+                                        <Group
                                             group={group}
                                             key={group.name}
                                             direction={direction}
-                                            onSelect={(n, t) => { handleSelect(n, t); closeModal() }}
+                                            onSelect={(n, t) => {
+                                                handleSelect(n, t);
+                                                closeModal();
+                                            }}
                                             selectedRoute={selectedRoute?.name}
                                             selectedToken={selectedToken?.symbol}
                                         />
-                                    })}
-                                </CommandList>
+                                    ))}
+
+                                    {flatTokenResults.length > 0 && (
+                                        <div className="mb-2">
+                                            <div className="text-primary-text-placeholder text-base mb-1 px-3">Tokens</div>
+                                            <div className="bg-secondary-400 rounded-xl overflow-hidden mx-3">
+                                                {flatTokenResults.map(({ route, token }) => {
+                                                    const isSelected = selectedRoute?.display_name === route.name && selectedToken?.symbol === token.symbol;
+                                                    return (
+                                                        <div
+                                                            key={`${route.name}-${token.symbol}-flat`}
+                                                            className={`pl-4 cursor-pointer hover:bg-secondary-300 ${isSelected ? "bg-secondary-300" : ""}`}
+                                                            onClick={() => {
+                                                                handleSelect(route, token);
+                                                                closeModal();
+                                                            }}
+                                                        >
+                                                            <CurrencySelectItemDisplay
+                                                                item={token}
+                                                                selected={isSelected}
+                                                                route={route}
+                                                                direction={direction}
+                                                            />
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             )}
-                        </CommandWrapper>
+                        </div>
                     )}
                 </SelectorContent>
             </Selector>
@@ -143,24 +209,28 @@ const Group = ({ group, direction, onSelect, selectedRoute, selectedToken }: Gro
             prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
         )
     }
-    return <CommandGroup heading={<span className='text-primary-text-placeholder text-base'>{group.name}</span>}>
-        <div className="bg-secondary-700">
-            <Accordion type="multiple" value={openValues} defaultValue={selectedRoute ? [selectedRoute] : []} className="space-y-2">
-                {group.routes.sort(SortNetworkRoutes).map((route, index) => {
-                    return <GroupItem
-                        route={route}
-                        underline={index > 0}
-                        toggleContent={toggleAccordionItem}
-                        onSelect={onSelect}
-                        direction={direction}
-                        key={route.name}
-                        selectedRoute={selectedRoute}
-                        selectedToken={selectedToken}
-                    />
-                })}
-            </Accordion>
+
+    return (
+        <div className="overflow-hidden p-1 py-1.5 text-primary-text">
+            <div className="text-primary-text-placeholder text-base mb-2 px-3">{group.name}</div>
+            <div className="bg-secondary-700 rounded-lg px-2">
+                <Accordion type="multiple" value={openValues} className="space-y-2">
+                    {group.routes.sort(SortNetworkRoutes).map((route, index) => (
+                        <GroupItem
+                            key={route.name}
+                            route={route}
+                            underline={index > 0}
+                            toggleContent={toggleAccordionItem}
+                            onSelect={onSelect}
+                            direction={direction}
+                            selectedRoute={selectedRoute}
+                            selectedToken={selectedToken}
+                        />
+                    ))}
+                </Accordion>
+            </div>
         </div>
-    </CommandGroup>
+    )
 }
 
 type GroupItemProps = {
@@ -180,25 +250,25 @@ function getSortedRouteTokens(route: Route) {
     return route.tokens?.sort((a, b) => ResolveCurrencyOrder(a) - ResolveCurrencyOrder(b))
 }
 
-const GroupItem = ({ route, underline, toggleContent, direction, onSelect, selectedRoute, selectedToken }: GroupItemProps) => {
-
-    const itemRef = React.useRef<HTMLDivElement>(null);
-
+const GroupItem = ({
+    route,
+    underline,
+    toggleContent,
+    direction,
+    onSelect,
+    selectedRoute,
+    selectedToken
+}: GroupItemProps) => {
     const sortedTokens = getSortedRouteTokens(route)
-
-    const filterValue = `${route.display_name} ${sortedTokens?.map(si => si.symbol).join(" ")}`;
+    const filterValue = `${route.display_name} ${sortedTokens?.map(si => si.symbol).join(" ")}`
 
     return (
-        //// Wrap accordion with disabled command itme to filter out in search. (when accordion is oppen it will ocupy some space)
-        <CommandItem
-            ref={itemRef}
-            disabled={true}
-            value={`${filterValue} **`}>
+        <div>
             <AccordionItem value={route.name}>
-                <CommandItem
-                    value={filterValue}
-                    key={route.name}
-                    onSelect={() => { toggleContent(route.name) }} className="bg-secondary-700">
+                <div
+                    onClick={() => toggleContent(route.name)}
+                    className="cursor-pointer bg-secondary-700 rounded-lg hover:bg-secondary-600"
+                >
                     <AccordionTrigger>
                         <RouteSelectItemDisplay
                             item={route}
@@ -206,26 +276,24 @@ const GroupItem = ({ route, underline, toggleContent, direction, onSelect, selec
                             direction={direction}
                         />
                     </AccordionTrigger>
-                </CommandItem >
-                <AccordionContent className="AccordionContent">
+                </div>
+                <AccordionContent className="AccordionContent mt-1">
                     <div className='has-[.token-item]:mt-1 bg-secondary-400 rounded-xl overflow-hidden'>
-                        {
-                            sortedTokens?.map((token: ExchangeToken | NetworkRouteToken, index) => {
-                                return <TokenCommandWrapper
-                                    key={`${route.name}-${token.symbol}`}
-                                    token={token}
-                                    route={route}
-                                    direction={direction}
-                                    onSelect={onSelect}
-                                    selectedRoute={selectedRoute}
-                                    selectedToken={selectedToken}
-                                />
-                            })
-                        }
+                        {sortedTokens?.map((token, index) => (
+                            <TokenCommandWrapper
+                                key={`${route.name}-${token.symbol}`}
+                                token={token}
+                                route={route}
+                                direction={direction}
+                                onSelect={onSelect}
+                                selectedRoute={selectedRoute}
+                                selectedToken={selectedToken}
+                            />
+                        ))}
                     </div>
                 </AccordionContent>
-            </AccordionItem >
-        </CommandItem >
+            </AccordionItem>
+        </div>
     )
 }
 
@@ -238,10 +306,15 @@ type TokenCommandWrapperProps = {
     selectedToken: string | undefined;
 }
 
-
-const TokenCommandWrapper = (props: TokenCommandWrapperProps) => {
-    const { route, token, direction, onSelect, selectedRoute, selectedToken } = props
-    const tokenItemRef = React.useRef<HTMLDivElement>(null);
+const TokenCommandWrapper = ({
+    token,
+    route,
+    direction,
+    onSelect,
+    selectedRoute,
+    selectedToken
+}: TokenCommandWrapperProps) => {
+    const tokenItemRef = React.useRef<HTMLDivElement>(null)
     const isSelected = selectedRoute === route.name && selectedToken === token.symbol
 
     useEffect(() => {
@@ -250,22 +323,20 @@ const TokenCommandWrapper = (props: TokenCommandWrapperProps) => {
         }
     }, [isSelected])
 
-    return <div className={`${isSelected ? "bg-secondary-300" : ""} pl-5 hover:bg-secondary-300 aria-selected:bg-secondary-300`}>
-        <CommandItem
-            className="aria-selected:text-primary-text relative token-item"
-            value={`${route.display_name} ${token.symbol} ##`}
-            key={token.symbol}
-            onSelect={() => { onSelect(route, token) }}
+    return (
+        <div
             ref={tokenItemRef}
+            className={`pl-5 cursor-pointer hover:bg-secondary-300 ${isSelected ? "bg-secondary-300" : ""} outline-none disabled:cursor-not-allowed`}
+            onClick={() => onSelect(route, token)}
         >
             <CurrencySelectItemDisplay
                 item={token}
-                selected={false}
+                selected={isSelected}
                 route={route}
                 direction={direction}
             />
-        </CommandItem>
-    </div>
+        </div>
+    )
 }
 
 

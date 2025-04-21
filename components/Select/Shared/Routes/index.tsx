@@ -102,7 +102,7 @@ const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     );
 
     return (
-        <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative">
+        <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7">
             <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} />
             <SelectItem.Title className="py-3" >
                 <>
