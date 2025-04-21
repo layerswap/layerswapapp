@@ -13,6 +13,9 @@
 /out/
 next-env.d.ts
 
+# TypeScript cache
+*.tsbuildinfo
+
 # production
 /build
 
@@ -35,6 +38,7 @@ yarn-error.log*
 # Moving to yarn
 package-lock.json
 storybook-static/*
+
 # Sentry Config File
 .sentryclirc
 .env*.local
