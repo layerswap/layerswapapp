@@ -1,15 +1,16 @@
 {
   "name": "@layerswap/widget",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Layerswap Widget for cross-chain bridging.",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "dist/styles"
   ],
   "scripts": {
     "clean": "rimraf dist && rm -rf tsconfig.tsbuildinfo",
-    "build": "npm run clean && tsc -b",
+    "build": "npm run clean && tsc --build && cp -r src/styles dist/styles",
     "lint": "eslint src --ext .ts,.tsx --fix"
   },
   "author": "Layerswap",

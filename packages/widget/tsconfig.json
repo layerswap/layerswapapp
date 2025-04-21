@@ -1,11 +1,17 @@
 {
   "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "esnext",
+    "preserveSymlinks": false,
+    "declaration": true,
+    "noEmit": false,
+    "declarationDir": "dist",
+    "outDir": "dist"
+  },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    "**/**/*.tsx",
+    "src",
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
   ]
 }

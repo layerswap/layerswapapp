@@ -4,12 +4,12 @@
   "version": "0.0.0",
   "workspaces": {
     "packages": [
-      "apps/*",
-      "packages/*"
+      "packages/*",
+      "apps/*"
     ],
     "nohoist": [
-      "apps/*",
-      "packages/*"
+      "packages/*",
+      "apps/*"
     ]
   },
   "devDependencies": {
