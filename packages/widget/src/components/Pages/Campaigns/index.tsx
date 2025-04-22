@@ -4,7 +4,6 @@ import { ApiResponse } from "../../../Models/ApiResponse";
 import LayerSwapApiClient, { Campaign } from "../../../lib/layerSwapApiClient";
 import SpinIcon from "../../Icons/spinIcon";
 import useSWR from 'swr'
-import Image from "next/image";
 import LinkWrapper from "../../Common/LinkWrapper";
 import { Widget } from "../../Widget/Index";
 import AppWrapper, { AppPageProps } from "../../AppWrapper";
@@ -86,7 +85,7 @@ const CampaignItem: FC<CampaignProps> = ({ campaign }) => {
         className="flex justify-between items-center">
         <span className="flex items-center gap-1 hover:opacity-70 active:scale-90 duration-200 transition-all">
             <span className="h-5 w-5 relative">
-                {(campaign.logo_url || campaign.network.logo) && <Image
+                {(campaign.logo_url || campaign.network.logo) && <img
                     src={(campaign.logo_url || campaign.network.logo) as string}
                     alt="Project Logo"
                     height="40"

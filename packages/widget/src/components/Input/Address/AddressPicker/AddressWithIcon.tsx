@@ -3,12 +3,10 @@ import { AddressGroup, AddressItem } from ".";
 import AddressIcon from "../../../Common/AddressIcon";
 import shortenAddress from "../../../utils/ShortenAddress";
 import { History, ExternalLink, Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, Power } from "lucide-react";
-import Image from "next/image";
 import { Partner } from "../../../../Models/Partner";
 import { Network } from "../../../../Models/Network";
 import { Popover, PopoverContent, PopoverTrigger } from "../../../shadcn/popover";
 import useCopyClipboard from "../../../../hooks/useCopyClipboard";
-import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../../shadcn/tooltip";
 import { Wallet } from "../../../../Models/WalletProvider";
 
@@ -62,7 +60,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
                 {
                     (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) ? (
                         partner?.logo && (
-                            <Image
+                            <img
                                 alt="Partner logo"
                                 className="rounded-md object-contain"
                                 src={partner.logo}
@@ -169,12 +167,12 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, ad
                     </div>
                     {
                         network &&
-                        <Link href={network?.account_explorer_template?.replace('{0}', address)} target="_blank" className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
+                        <a href={network?.account_explorer_template?.replace('{0}', address)} target="_blank" className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
                             <p>
                                 Open in explorer
                             </p>
                             <ExternalLink className="w-4 h-4" />
-                        </Link>
+                        </a>
                     }
                     {
                         onDisconnect &&

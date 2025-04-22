@@ -1,6 +1,5 @@
-import { FC, useState, Fragment } from 'react'
+import { FC, useState } from 'react'
 import LayerSwapApiClient, { SwapResponse, TransactionType } from '../../../lib/layerSwapApiClient';
-import Image from 'next/image'
 import shortenAddress, { shortenEmail } from '../../utils/ShortenAddress';
 import CopyButton from '../../Buttons/copyButton';
 import StatusIcon from './StatusIcons';
@@ -15,7 +14,6 @@ import { isValidAddress } from '../../../lib/address/validator';
 import { ExtendedAddress } from '../../Input/Address/AddressPicker/AddressWithIcon';
 import { addressFormat } from '../../../lib/address/formatter';
 import { truncateDecimals } from '../../utils/RoundDecimals';
-import Link from 'next/link';
 import calculateDatesDifference from '../../../lib/calculateDatesDifference';
 import { SwapStatus } from '../../../Models/SwapStatus';
 import { resolvePersistantQueryParams } from '../../../helpers/querryHelper';
@@ -94,7 +92,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             <p className='text-xs font-normal text-secondary-text pl-1'>From</p>
                             <div className="flex items-center justify-between w-full">
                                 <div className="flex items-center gap-3">
-                                    <Image
+                                    <img
                                         src={source_exchange?.logo || source.logo}
                                         alt={source_exchange?.display_name || source.display_name}
                                         width={32}
@@ -136,7 +134,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             <div className='flex flex-row space-x-2'>
                                 <div className='flex flex-col gap-1 justify-start items-center w-fit ml-2.5'>
                                     <div className="w-0.5 h-2.5 bg-[#d9d9d9] rounded-xs" />
-                                    <Image
+                                    <img
                                         src={source_exchange ? source_network?.logo : destination_network?.logo}
                                         alt={source_exchange ? source_network?.display_name : destination_network?.display_name}
                                         width={24}
@@ -154,7 +152,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             <p className='text-xs font-normal text-secondary-text pl-1'>To</p>
                             <div className="flex items-center justify-between w-full ">
                                 <div className="flex items-center gap-3">
-                                    <Image
+                                    <img
                                         src={destination_exchange?.logo || destination.logo}
                                         alt={destination_exchange?.display_name || destination.display_name}
                                         width={32}
@@ -321,14 +319,14 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                     <p className="text-left text-secondary-text">Source transaction</p>
                                     {
                                         swapInputTransaction?.transaction_hash ?
-                                            <Link
+                                            <a
                                                 target="_blank"
                                                 href={input_tx_explorer_template?.replace("{0}", swapInputTransaction.transaction_hash)}
                                                 className='flex items-center space-x-1'
                                             >
                                                 <span>{shortenAddress(swapInputTransaction.transaction_hash)}</span>
                                                 <ExternalLink className='h-4' />
-                                            </Link>
+                                            </a>
                                             :
                                             <span>-</span>
                                     }
@@ -341,14 +339,14 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                                 (swapOutputTransaction?.transaction_hash && swap?.destination_exchange?.name === KnownInternalNames.Exchanges.Coinbase && (isGuid(swapOutputTransaction?.transaction_hash))) ?
                                                     <span><CopyButton toCopy={swapOutputTransaction.transaction_hash} iconClassName="text-primary-text order-2">{shortenAddress(swapOutputTransaction.transaction_hash)}</CopyButton></span>
                                                     :
-                                                    <Link
+                                                    <a
                                                         target="_blank"
                                                         href={output_tx_explorer_template?.replace("{0}", swapOutputTransaction.transaction_hash)}
                                                         className='flex items-center space-x-1'
                                                     >
                                                         <span>{shortenAddress(swapOutputTransaction.transaction_hash)}</span>
                                                         <ExternalLink className='h-4' />
-                                                    </Link>
+                                                    </a>
                                             )
                                             :
                                             <span>-</span>

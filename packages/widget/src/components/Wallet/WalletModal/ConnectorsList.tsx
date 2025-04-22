@@ -9,7 +9,6 @@ import clsx from "clsx";
 import useWindowDimensions from "../../../hooks/useWindowDimensions";
 import Connector from "./Connector";
 import { removeDuplicatesWithKey } from "./utils";
-import Image from "next/image";
 import { usePersistedState } from "../../../hooks/usePersistedState";
 import { Popover, PopoverContent, PopoverTrigger } from "../../shadcn/popover";
 import { Checkbox } from "../../shadcn/checkbox";
@@ -376,7 +375,7 @@ const MultichainConnectorModal: FC<MultichainConnectorModalProps> = ({ selectedC
                                 >
                                     {
                                         provider?.providerIcon &&
-                                        <Image
+                                        <img
                                             className="w-8 h-8 rounded-md"
                                             width={30}
                                             height={30}

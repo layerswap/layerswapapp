@@ -2,15 +2,18 @@
   "name": "@layerswap/widget",
   "version": "0.1.0",
   "description": "Layerswap Widget for cross-chain bridging.",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist",
     "dist/styles"
   ],
   "scripts": {
+    "type-check": "tsc --noEmit",
     "clean": "rimraf dist && rm -rf tsconfig.tsbuildinfo",
-    "build": "npm run clean && tsc --build && cp -r src/styles dist/styles",
+    "build": "npm run clean && npm run type-check && rollup -c",
+    "copy-assets": "cp -r src/styles dist/styles",
     "lint": "eslint src --ext .ts,.tsx --fix"
   },
   "author": "Layerswap",
@@ -114,19 +117,26 @@
     "zustand": "^4.4.1"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^28.0.3",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "@rollup/plugin-typescript": "^12.1.2",
     "@types/bn.js": "^5.1.0",
     "@types/crypto-js": "^4.1.1",
     "@types/node": "^16.11.7",
-    "@types/react": "18.x",
     "@types/styled-jsx": "^3.4.4",
     "@web3-react/types": "^6.0.7",
-    "autoprefixer": "^10.4.5",
-    "chromatic": "^6.24.1",
+    "autoprefixer": "^10.4.21",
     "cross-env": "^7.0.3",
     "eslint": "8.49.0",
     "eslint-plugin-no-conditional-literals-in-jsx": "file:eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx",
     "fuels": "^0.98.0",
-    "postcss": "^8.4.13",
+    "postcss": "^8.5.3",
+    "rollup-plugin-copy": "^3.5.0",
+    "rollup-plugin-dts": "^6.2.1",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "rollup-plugin-postcss": "^4.0.2",
+    "rollup-plugin-terser": "^7.0.2",
     "tailwindcss": "^3.0.24",
     "tailwindcss-themer": "^2.0.2",
     "tronweb": "^6.0.0",
@@ -135,7 +145,9 @@
   "resolutions": {
     "rpc-websockets": "7.11.0",
     "@solana/web3.js": "1.66.0",
-    "@radix-ui/react-dismissable-layer": "1.1.1"
+    "@radix-ui/react-dismissable-layer": "1.1.1",
+    "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc"
   },
   "engines": {
     "node": ">=20.9.0"

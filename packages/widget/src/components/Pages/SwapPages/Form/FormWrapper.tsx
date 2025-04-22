@@ -19,14 +19,12 @@ import { resolvePersistantQueryParams } from "../../../../helpers/querryHelper";
 import { useQueryState } from "../../../../context/query";
 import TokenService from "../../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../../lib/userAuthApiClient";
-import Image from 'next/image';
 import { ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useFee } from "../../../../context/feeContext";
 import ResizablePanel from "../../../Common/ResizablePanel";
 import useWallet from "../../../../hooks/useWallet";
 import { DepositMethodProvider } from "../../../../context/depositMethodContext";
-import { dynamicWithRetries } from "../../../../lib/dynamicWithRetries";
 import AddressNote from "../../../Input/Address/AddressNote";
 import { addressFormat } from "../../../../lib/address/formatter";
 import { AddressGroup } from "../../../Input/Address/AddressPicker";
@@ -36,22 +34,23 @@ import { ValidationProvider } from "../../../../context/validationErrorContext";
 import { useAppRouter } from "../../../../context/AppRouter/RouterProvider";
 import { AppRouter } from "../../../../context/AppRouter/routerTypes";
 import ConnectNetwork from "./SecondaryComponents/ConnectNetwork";
+import SwapDetails from "../Withdraw/SwapDetails";
 
 type NetworkToConnect = {
     DisplayName: string;
     AppURL: string;
 }
-const SwapDetails = dynamicWithRetries(() => import("../Withdraw/SwapDetails"),
-    <div className="w-full h-[450px]">
-        <div className="animate-pulse flex space-x-4">
-            <div className="flex-1 space-y-6 py-1">
-                <div className="h-32 bg-secondary-700 rounded-lg"></div>
-                <div className="h-40 bg-secondary-700 rounded-lg"></div>
-                <div className="h-12 bg-secondary-700 rounded-lg"></div>
-            </div>
-        </div>
-    </div>
-)
+// const SwapDetails = dynamicWithRetries(() => import("../Withdraw/SwapDetails"),
+//     <div className="w-full h-[450px]">
+//         <div className="animate-pulse flex space-x-4">
+//             <div className="flex-1 space-y-6 py-1">
+//                 <div className="h-32 bg-secondary-700 rounded-lg"></div>
+//                 <div className="h-40 bg-secondary-700 rounded-lg"></div>
+//                 <div className="h-12 bg-secondary-700 rounded-lg"></div>
+//             </div>
+//         </div>
+//     </div>
+// )
 
 export default function Form() {
 
@@ -268,14 +267,14 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                 className="flex items-center bg-secondary-600 rounded-r-lg">
                 <div className="text-primary-text flex px-3 p-2 items-center space-x-2">
                     <div className="flex-shrink-0 h-5 w-5 relative">
-                        {source_exchange ? <Image
+                        {source_exchange ? <img
                             src={source_exchange.logo}
                             alt="From Logo"
                             height="60"
                             width="60"
                             className="rounded-md object-contain"
                         /> : source_network ?
-                            <Image
+                            <img
                                 src={source_network.logo}
                                 alt="From Logo"
                                 height="60"
@@ -286,14 +285,14 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                     </div>
                     <ChevronRight className="block h-4 w-4 mx-1" />
                     <div className="flex-shrink-0 h-5 w-5 relative block">
-                        {destination_exchange ? <Image
+                        {destination_exchange ? <img
                             src={destination_exchange.logo}
                             alt="To Logo"
                             height="60"
                             width="60"
                             className="rounded-md object-contain"
                         /> : destination_network ?
-                            <Image
+                            <img
                                 src={destination_network.logo}
                                 alt="To Logo"
                                 height="60"

@@ -5,7 +5,6 @@ import { FC, useCallback, useMemo, useState } from "react"
 import HistorySummary from "./HistorySummary";
 import useSWRInfinite from 'swr/infinite'
 import useWallet from "../../../hooks/useWallet"
-import Link from "next/link"
 import Snippet, { HistoryItemSceleton } from "./Snippet"
 import { groupBy } from "../../utils/groupBy"
 import { useAuthState, UserType } from "../../../context/authContext"
@@ -259,10 +258,10 @@ const BlankHistory = ({ onNewTransferClick, onLogin }: BlankHistoryProps) => {
                     Transfers you make with this wallet/account will appear here after excution.
                 </p>
             </div>
-            <Link onClick={onNewTransferClick} href={"/"} className="mt-10 flex items-center gap-2 text-base text-secondary-text font-normal bg-secondary-500 hover:bg-secondary-600 py-2 px-3 rounded-lg">
+            <a onClick={onNewTransferClick} href={"/"} className="mt-10 flex items-center gap-2 text-base text-secondary-text font-normal bg-secondary-500 hover:bg-secondary-600 py-2 px-3 rounded-lg">
                 <Plus className="w-4 h-4" />
                 <p>New Transfer</p>
-            </Link>
+            </a>
 
         </div>
         <div className="w-full">

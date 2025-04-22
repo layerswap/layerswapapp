@@ -1,7 +1,6 @@
 import { X } from "lucide-react";
 import toast, { ToastBar, Toaster } from "react-hot-toast"
 import Navbar from "./Common/navbar"
-import Link from "next/link";
 import DiscordLogo from "./Icons/DiscordLogo";
 import GitHubLogo from "./Icons/GitHubLogo";
 import YoutubeLogo from "./Icons/YoutubeLogo";
@@ -134,12 +133,12 @@ const GlobalFooter = () => {
                 <div className="flex justify-between items-center w-full px-6">
                     <div className="px-6">
                         <div className="flex mt-3 md:mt-0 gap-6">
-                            <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/privacy-policy/" className="text-xs leading-6 text-primary-text-muted underline hover:no-underline hover:text-opacity-70 duration-200 transition-all">
+                            <a target="_blank" href="https://docs.layerswap.io/user-docs/more-information/privacy-policy/" className="text-xs leading-6 text-primary-text-muted underline hover:no-underline hover:text-opacity-70 duration-200 transition-all">
                                 Privacy Policy
-                            </Link>
-                            <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/terms-of-services/" className="text-xs leading-6 text-primary-text-muted underline hover:no-underline hover:text-opacity-70 duration-200 transition-all">
+                            </a>
+                            <a target="_blank" href="https://docs.layerswap.io/user-docs/more-information/terms-of-services/" className="text-xs leading-6 text-primary-text-muted underline hover:no-underline hover:text-opacity-70 duration-200 transition-all">
                                 Terms of Services
-                            </Link>
+                            </a>
                         </div>
                         <p className="text-center text-xs text-primary-text-muted leading-6">
                             &copy; {new Date().getFullYear()} Layerswap Labs, Inc. All rights reserved.
@@ -147,10 +146,10 @@ const GlobalFooter = () => {
                     </div>
                     <div className="flex space-x-6 px-6">
                         {footerNavigation.social.map((item) => (
-                            <Link target="_blank" key={item.name} href={item.href} className="text-gray-400 hover:text-gray-500">
+                            <a target="_blank" key={item.name} href={item.href} className="text-gray-400 hover:text-gray-500">
                                 <span className="sr-only">{item.name}</span>
                                 <item.icon />
-                            </Link>
+                            </a>
                         ))}
                     </div>
                 </div>

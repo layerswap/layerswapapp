@@ -1,5 +1,4 @@
 import { FC, useState } from "react"
-import Image from 'next/image'
 import LayerSwapApiClient, { Campaign, Leaderboard, Reward } from "../../../../lib/layerSwapApiClient"
 import useSWR from "swr"
 import { ApiResponse } from "../../../../Models/ApiResponse"
@@ -9,7 +8,6 @@ import { useAccount } from "wagmi"
 import { truncateDecimals } from "../../../utils/RoundDecimals"
 import AddressIcon from "../../../Common/AddressIcon";
 import Modal from "../../../Modal/modal";
-import Link from "next/link";
 import { RewardsComponentLeaderboardSceleton } from "../../../Common/Sceletons"
 
 type Props = {
@@ -72,9 +70,9 @@ const Component: FC<Props> = ({ campaign }) => {
                                         <AddressIcon address={user.address} size={25} />
                                         <div>
                                             <div className="text-sm font-bold text-primary-text leading-3">
-                                                {user?.address && network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user?.address)}>
+                                                {user?.address && network?.account_explorer_template && <a target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user?.address)}>
                                                     {user?.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user?.address)}
-                                                </Link>}
+                                                </a>}
                                             </div>
                                             <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(user.amount, token?.precision)} {token.symbol}</p>
                                         </div>
@@ -86,7 +84,7 @@ const Component: FC<Props> = ({ campaign }) => {
                                             <div className="flex items-center space-x-1">
                                                 <span>+</span>
                                                 <div className="h-3.5 w-3.5 relative">
-                                                    <Image
+                                                    <img
                                                         src={network?.logo || ''}
                                                         alt="Project Logo"
                                                         height="40"
@@ -117,9 +115,9 @@ const Component: FC<Props> = ({ campaign }) => {
                                         <AddressIcon address={address} size={25} />
                                         <div>
                                             <div className="text-sm font-bold text-primary-text leading-3">
-                                                {network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", address)}>
+                                                {network?.account_explorer_template && <a target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", address)}>
                                                     <span className="text-primary">You</span>
-                                                </Link>}
+                                                </a>}
                                             </div>
                                             <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(rewards.user_reward.total_amount, token?.precision)} {token?.symbol}</p>
                                         </div>
@@ -149,9 +147,9 @@ const Component: FC<Props> = ({ campaign }) => {
                                             <AddressIcon address={user.address} size={25} />
                                             <div>
                                                 <div className="text-sm font-bold text-primary-text leading-3">
-                                                    {user?.address && network?.account_explorer_template && <Link target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user?.address)}>
+                                                    {user?.address && network?.account_explorer_template && <a target="_blank" className="hover:opacity-80" href={network?.account_explorer_template?.replace("{0}", user?.address)}>
                                                         {user.position === rewards?.user_reward?.position ? <span className="text-primary">You</span> : shortenAddress(user.address)}
-                                                    </Link>}
+                                                    </a>}
                                                 </div>
                                                 <p className="mt-1 text-sm font-medium text-secondary-text leading-3">{truncateDecimals(user.amount, token?.precision)} {token?.symbol}</p>
                                             </div>
@@ -164,7 +162,7 @@ const Component: FC<Props> = ({ campaign }) => {
                                                 <div className="flex items-center space-x-1">
                                                     <span>+</span>
                                                     <div className="h-3.5 w-3.5 relative">
-                                                        <Image
+                                                        <img
                                                             src={network?.logo || ''}
                                                             alt="Address Logo"
                                                             height="40"

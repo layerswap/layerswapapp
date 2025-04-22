@@ -1,6 +1,7 @@
-import { RouterProvider, useAppRouter, LayerSwapSettings, THEME_COLORS, ThemeData, NextAppRouter } from "@layerswap/widget";
+import { RouterProvider, useAppRouter, LayerSwapSettings, THEME_COLORS, ThemeData } from "@layerswap/widget";
 import { useRouter } from 'next/router';
 import Head from "next/head";
+import { NextAppRouter } from "../lib/Router/NextAppRouter";
 
 type Props = {
   children: JSX.Element | JSX.Element[];

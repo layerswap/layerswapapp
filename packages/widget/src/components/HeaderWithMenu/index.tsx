@@ -4,13 +4,14 @@ import IconButton from "../Buttons/iconButton"
 import GoHomeButton from "../utils/GoHome"
 import { ArrowLeft } from 'lucide-react'
 import ChatIcon from "../Icons/ChatIcon"
-import dynamic from "next/dynamic"
 import LayerswapMenu from "../LayerswapMenu"
 import { useQueryState } from "../../context/query"
+import { WalletsHeader } from "../Wallet/WalletComponents/ConnectedWallets"
 
-const WalletsHeader = dynamic(() => import("../Wallet/WalletComponents/ConnectedWallets").then((comp) => comp.WalletsHeader), {
-   loading: () => <></>
-})
+// const WalletsHeader = dynamic(() => import("../Wallet/WalletComponents/ConnectedWallets").then((comp) => comp.WalletsHeader), {
+//    loading: () => <></>
+// })
+
 
 function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null }) {
    const { email, userId } = useAuthState()

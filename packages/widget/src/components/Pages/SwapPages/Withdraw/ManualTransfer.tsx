@@ -1,6 +1,5 @@
 import { FC, useCallback } from "react"
 import { ArrowLeftRight } from "lucide-react"
-import Image from 'next/image';
 import { useSwapDataState } from "../../../../context/swap";
 import KnownInternalNames from "../../../../lib/knownIds";
 import BackgroundField from "../../../Common/backgroundField";
@@ -9,7 +8,6 @@ import shortenAddress from "../../../utils/ShortenAddress";
 import { isValidAddress } from "../../../../lib/address/validator";
 import { useSwapDepositHintClicked } from "../../../../stores/swapTransactionStore";
 import { Exchange } from "../../../../Models/Exchange";
-import Link from "next/link";
 import CopyButton from "../../../Buttons/copyButton";
 import useWindowDimensions from "../../../../hooks/useWindowDimensions";
 
@@ -37,7 +35,7 @@ const ManualTransfer: FC = () => {
                             About manual transfers
                         </p>
                         <p className="text-xs text-secondary-text">
-                            <span>Transfer assets to Layerswap’s deposit address to complete the swap.</span> <Link target="_blank" className="text-primary underline hover:no-underline decoration-primary cursor-pointer" href='https://intercom.help/layerswap/en/articles/8448449-transferring-manually'>Learn more</Link>
+                            <span>Transfer assets to Layerswap’s deposit address to complete the swap.</span> <a target="_blank" className="text-primary underline hover:no-underline decoration-primary cursor-pointer" href='https://intercom.help/layerswap/en/articles/8448449-transferring-manually'>Learn more</a>
                         </p>
                     </div>
                 </div>
@@ -132,7 +130,7 @@ const TransferInvoice: FC<{ deposit_address?: string }> = ({ deposit_address }) 
                     <div className="flex-shrink-0 h-7 w-7 relative">
                         {
                             source_token &&
-                            <Image
+                            <img
                                 src={source_token.logo}
                                 alt="From Logo"
                                 height="60"
@@ -175,7 +173,7 @@ const ExchangeNetworkPicker: FC<{ onChange?: (exchnage: Exchange) => void }> = (
         <span>Network:</span>
         {/* {exchangeAssets?.length === 1 ? */}
         <div className='flex space-x-1 items-center w-fit font-semibold text-primary-text'>
-            <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={swap?.swap.source_network.logo || ''}></Image>
+            <img alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={swap?.swap.source_network.logo || ''} />
             <span>{swap?.swap.source_network.display_name}</span>
         </div>
         {/* :

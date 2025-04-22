@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { FeeData, useLoopringTokens } from './hooks';
 import { ISelectMenuItem } from '../../../Form/Select/Shared/Props/selectMenuItem';
 import formatAmount from '../../../../../../lib/formatAmount';
@@ -72,7 +71,7 @@ export const ActivationTokenPicker = ({ availableBalances, defaultValue, onChang
                                             <div className="flex-shrink-0 h-5 w-5 relative">
                                                 {
                                                     cv &&
-                                                    <Image
+                                                    <img
                                                         src={cv.imgSrc}
                                                         alt="From Logo"
                                                         height="60"

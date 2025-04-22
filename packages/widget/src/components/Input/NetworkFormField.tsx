@@ -5,7 +5,6 @@ import { SwapDirection, SwapFormValues } from "../Pages/SwapPages/Form/SwapFormV
 import { ISelectMenuItem, SelectMenuItem } from "../Pages/SwapPages/Form/Select/Shared/Props/selectMenuItem";
 import CommandSelectWrapper from "../Pages/SwapPages/Form/Select/Command/CommandSelectWrapper";
 import { ResolveExchangeOrder, ResolveNetworkOrder, SortAscending, SortNetworks } from "../../lib/sorting"
-import NetworkSettings from "../../lib/NetworkSettings";
 import { SelectMenuItemGroup } from "../Pages/SwapPages/Form/Select/Command/commandSelect";
 import { useQueryState } from "../../context/query";
 import CurrencyFormField from "./CurrencyFormField";
@@ -20,10 +19,9 @@ import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "..
 import RouteIcon from "./RouteIcon";
 import SourceWalletPicker from "./SourceWalletPicker";
 import DestinationWalletPicker from "./DestinationWalletPicker";
-import dynamic from "next/dynamic";
 import { Partner } from "../../Models/Partner";
-import { PlusIcon } from "lucide-react";
 import useWallet from "../../hooks/useWallet";
+import Address from "./Address";
 
 type Props = {
     direction: SwapDirection,
@@ -33,9 +31,10 @@ type Props = {
     currencyIsSetManually?: boolean,
     setCurrencyIsSetManually?: Dispatch<SetStateAction<boolean>>
 }
-const Address = dynamic(() => import("./Address"), {
-    loading: () => <></>,
-});
+
+// const Address = dynamic(() => import("./Address"), {
+//     loading: () => <></>,
+// });
 
 const GROUP_ORDERS = { "Popular": 1, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
 export const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;

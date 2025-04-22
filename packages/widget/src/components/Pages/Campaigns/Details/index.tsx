@@ -1,5 +1,4 @@
 import { FC, useCallback } from "react"
-import Image from 'next/image'
 import { Gift } from "lucide-react"
 import LayerSwapApiClient, { Campaign } from "../../../../lib/layerSwapApiClient"
 import useSWR from "swr"
@@ -47,7 +46,7 @@ function Comp() {
                 <div className="space-y-5">
                     <div className="flex items-center gap-1">
                         <div className="h-7 w-7 relative">
-                            {(campaign.logo_url || network?.logo) && <Image
+                            {(campaign.logo_url || network?.logo) && <img
                                 src={(campaign.logo_url || network?.logo) as string}
                                 alt="Project Logo"
                                 height="40"

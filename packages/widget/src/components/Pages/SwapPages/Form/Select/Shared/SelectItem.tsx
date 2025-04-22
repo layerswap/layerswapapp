@@ -1,5 +1,4 @@
 import { ISelectMenuItem } from "./Props/selectMenuItem";
-import Image from 'next/image';
 
 export default function SelectItem({ item }: { item: ISelectMenuItem }) {
 
@@ -13,7 +12,7 @@ export default function SelectItem({ item }: { item: ISelectMenuItem }) {
                 }
                 <div className={`${item?.displayName ? "h-9 w-9" : "h-6 w-6"} flex-shrink-0 relative`}>
                     {item.imgSrc && (
-                        <Image
+                        <img
                             src={item.imgSrc}
                             alt="Project Logo"
                             height="40"

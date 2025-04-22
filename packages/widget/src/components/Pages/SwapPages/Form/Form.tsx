@@ -12,7 +12,6 @@ import { useQueryState } from "../../../../context/query";
 import FeeDetailsComponent from "./FeeDetails";
 import { useFee } from "../../../../context/feeContext";
 import AmountField from "../../../Input/Amount"
-import dynamic from "next/dynamic";
 import { Balance } from "../../../../Models/Balance";
 import ResizablePanel from "../../../Common/ResizablePanel";
 import CEXNetworkFormField from "../../../Input/CEXNetworkFormField";
@@ -23,14 +22,15 @@ import { useSwapDataState, useSwapDataUpdate } from "../../../../context/swap";
 import useWallet from "../../../../hooks/useWallet";
 import { useSettingsState } from "../../../../context/settings";
 import FormButton from "./SecondaryComponents/FormButton";
+import ReserveGasNote from "./SecondaryComponents/ReserveGasNote";
 
 type Props = {
     partner?: Partner,
 }
 
-const ReserveGasNote = dynamic(() => import("./SecondaryComponents/ReserveGasNote"), {
-    loading: () => <></>,
-});
+// const ReserveGasNote = dynamic(() => import("./SecondaryComponents/ReserveGasNote"), {
+//     loading: () => <></>,
+// });
 
 const SwapForm: FC<Props> = ({ partner }) => {
     const {

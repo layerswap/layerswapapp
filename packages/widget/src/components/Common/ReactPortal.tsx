@@ -6,7 +6,8 @@ type Props = {
     children?: React.ReactNode
 }
 
-const ReactPortal: FC<Props> = ({ children, wrapperId = "react-portal-wrapper" }) => {
+// const ReactPortal: FC<Props> = ({ children, wrapperId = "react-portal-wrapper" }) => {
+const ReactPortal:any = ({ children, wrapperId = "react-portal-wrapper" }) => {
     const ref = useRef<Element | null>(null);
     const [mounted, setMounted] = useState(false)
 

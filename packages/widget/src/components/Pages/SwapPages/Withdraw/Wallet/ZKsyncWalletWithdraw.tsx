@@ -13,7 +13,6 @@ import ClickTooltip from '../../../../Common/ClickTooltip';
 import SignatureIcon from '../../../../Icons/SignatureIcon';
 import formatAmount from '../../../../../lib/formatAmount';
 import useWallet from '../../../../../hooks/useWallet';
-import Link from 'next/link';
 import KnownInternalNames from '../../../../../lib/knownIds';
 import { WithdrawPageProps } from './WalletTransferContent';
 
@@ -132,7 +131,7 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
                 <div className="ml-3">
                     <h3 className="text-sm font-medium text-primary-text">Please switch to manually</h3>
                     <div className="mt-2 text-sm text-secondary-text">
-                        <p><span>Automatic transfers from Argent zkSync Lite wallet are not supported now. Choose the manual transfer option and follow the</span> <Link target="_blank" className="underline hover:no-underline cursor-pointer hover:text-secondary-text text-primary-text font-light" href='https://www.youtube.com/watch?v=u_KzSr5v8M8&ab_channel=Layerswap'>tutorial</Link> <span>for a smooth swap.</span></p>
+                        <p><span>Automatic transfers from Argent zkSync Lite wallet are not supported now. Choose the manual transfer option and follow the</span> <a target="_blank" className="underline hover:no-underline cursor-pointer hover:text-secondary-text text-primary-text font-light" href='https://www.youtube.com/watch?v=u_KzSr5v8M8&ab_channel=Layerswap'>tutorial</a> <span>for a smooth swap.</span></p>
                     </div>
                 </div>
             </div>

@@ -9,20 +9,18 @@ import DiscordLogo from "../Icons/DiscordLogo";
 import GitHubLogo from "../Icons/GitHubLogo";
 import SubstackLogo from "../Icons/SubstackLogo";
 import TwitterLogo from "../Icons/TwitterLogo";
-import Link from "next/link";
 import Popover from "../Modal/popover";
 import YoutubeLogo from "../Icons/YoutubeLogo";
 import { shortenEmail } from '../utils/ShortenAddress';
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import Menu from "./Menu";
-import dynamic from "next/dynamic";
 import { MenuStep } from "../../Models/Wizard";
 import { useAppRouter } from "../../context/AppRouter/RouterProvider";
 import SendFeedback from "./Feedback";
-
-const WalletsMenu = dynamic(() => import("../Wallet/WalletComponents/ConnectedWallets").then((comp) => comp.WalletsMenu), {
-    loading: () => <></>
-})
+import { WalletsMenu } from "../Wallet/WalletComponents/ConnectedWallets";
+// const WalletsMenu = dynamic(() => import("../Wallet/WalletComponents/ConnectedWallets").then((comp) => comp.WalletsMenu), {
+//     loading: () => <></>
+// })
 
 const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ goToStep }) => {
     const { email, userType, userId } = useAuthState()
@@ -134,12 +132,12 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
 
             <div className="grid grid-cols-2 gap-2 justify-center">
                 {navigation.social.map((item, index) => (
-                    <Link key={index} target="_blank" href={item.href} className={`flex relative bg-secondary-700 hover:bg-secondary-600 rounded-md cursor-pointer select-none items-center outline-none text-primary-text ${item.className}`}>
+                    <a key={index} target="_blank" href={item.href} className={`flex relative bg-secondary-700 hover:bg-secondary-600 rounded-md cursor-pointer select-none items-center outline-none text-primary-text ${item.className}`}>
                         <div className="p-2 w-full flex justify-center gap-1">
                             <item.icon className="h-5 w-5" aria-hidden="true" />
                             <p>{item.name}</p>
                         </div>
-                    </Link>
+                    </a>
                 ))}
             </div>
             {

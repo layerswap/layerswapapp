@@ -8,8 +8,11 @@ export { CampaignDetails } from './components/Pages/Campaigns/Details';
 export { Salon } from './components/Pages/Salon'
 export { Custom404 } from './components/Pages/404'
 export { NoCookies } from './components/Pages/NoCookies'
-export * from './context/AppRouter/RouterProvider'
-export * from './context/AppRouter/Routers';
+export { RouterProvider, useAppRouter } from './context/AppRouter/RouterProvider'
+export { useReactRouterDomAppRouter } from './context/AppRouter/Routers';
+export type { AppRouter } from './context/AppRouter/routerTypes'
 export * from './Models/LayerSwapSettings'
-export * from './Models/Theme'
+export { THEME_COLORS } from './Models/Theme'
+export type { ThemeColor, ThemeData } from './Models/Theme'
+export type * from './context/authContext'
 export * from './context/authContext'

@@ -12,7 +12,6 @@ import { truncateDecimals } from "../../utils/RoundDecimals";
 import useSWRBalance from "../../../lib/balances/useSWRBalance";
 import { useSettingsState } from "../../../context/settings";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../shadcn/tooltip";
-import Image from 'next/image'
 
 type Props = {
     selectable?: boolean;
@@ -109,7 +108,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                             />
                             {
                                 wallet?.networkIcon && <div className="h-5 w-5 absolute -right-1 -bottom-1">
-                                    <Image
+                                    <img
                                         src={wallet?.networkIcon || ''}
                                         alt="Wallet default network icon"
                                         height="40"

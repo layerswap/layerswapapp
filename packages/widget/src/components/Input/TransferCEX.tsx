@@ -1,5 +1,4 @@
 import { FC } from "react";
-import Image from 'next/image'
 import { SwapFormValues } from "../Pages/SwapPages/Form/SwapFormValues";
 import { useFormikContext } from "formik";
 
@@ -33,7 +32,7 @@ const TransferCEX: FC<Props> = ({ direction }) => {
             </div>
             <div className="relative flex items-center space-x-2 py-2">
                 <div className="flex-shrink-0 h-6 w-6 relative">
-                    {sourceLogo && <Image
+                    {sourceLogo && <img
                         src={sourceLogo!}
                         alt="Project Logo"
                         height="40"
@@ -44,7 +43,7 @@ const TransferCEX: FC<Props> = ({ direction }) => {
                 </div>
                 <div className="w-full h-[2px] bg-primary-text-placeholder my-2 line line-left" />
                 <div className="flex-shrink-0 h-8 w-8 relative">
-                    {exchangeNetwork ? <Image
+                    {exchangeNetwork ? <img
                         src={exchangeNetwork.logo}
                         alt="Project Logo"
                         height="40"
@@ -57,7 +56,7 @@ const TransferCEX: FC<Props> = ({ direction }) => {
                 </div>
                 <div className="w-full h-[2px] bg-primary-text-placeholder my-2 line line-right" />
                 <div className="flex-shrink-0 h-6 w-6 relative">
-                    {destinationLogo && <Image
+                    {destinationLogo && <img
                         src={destinationLogo!}
                         alt="Project Logo"
                         height="40"

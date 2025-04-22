@@ -1,5 +1,5 @@
 import { NextRouter } from "next/router";
-import { AppRouter } from "../routerTypes";
+import { AppRouter } from "@layerswap/widget";
 
 export class NextAppRouter implements AppRouter {
     constructor(private router: NextRouter) { }

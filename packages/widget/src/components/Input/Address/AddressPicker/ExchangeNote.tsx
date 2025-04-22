@@ -1,8 +1,6 @@
 import { Info } from "lucide-react";
 import { RouteNetwork, Token } from "../../../../Models/Network";
-import Image from "next/image";
 import { Exchange } from "../../../../Models/Exchange";
-
 
 const ExchangeNote = ({ destinationAsset, destinationExchange, destination }: { destinationAsset: Token | undefined, destinationExchange: Exchange, destination: RouteNetwork | undefined }) => {
 
@@ -20,7 +18,7 @@ const ExchangeNote = ({ destinationAsset, destinationExchange, destination }: { 
                     <span>Select</span>
                     <span className="inline-block mx-1">
                         <span className='flex gap-1 items-baseline text-sm '>
-                            <Image src={destinationAsset.logo}
+                            <img src={destinationAsset.logo}
                                 alt="Project Logo"
                                 height="15"
                                 width="15"
@@ -35,7 +33,7 @@ const ExchangeNote = ({ destinationAsset, destinationExchange, destination }: { 
                     <span>Select</span>
                     <span className="inline-block mx-1">
                         <span className='flex gap-1 items-baseline text-sm '>
-                            <Image src={destination?.logo || ''}
+                            <img src={destination?.logo || ''}
                                 alt="Project Logo"
                                 height="15"
                                 width="15"

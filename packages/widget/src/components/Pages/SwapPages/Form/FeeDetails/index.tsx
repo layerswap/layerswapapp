@@ -2,21 +2,22 @@ import { ReceiveAmounts } from './ReceiveAmounts';
 import DetailedEstimates from './DetailedEstimates';
 import FeeDetails from './FeeDetailsComponent';
 import { useState } from 'react';
-import dynamic from 'next/dynamic';
 import DepositMethod from './DepositMethod';
 import Campaign from './Campaign';
 import { SwapFormValues } from '../SwapFormValues';
 import { useFee } from '../../../../../context/feeContext';
 import { useQueryState } from '../../../../../context/query';
 import ResizablePanel from '../../../../Common/ResizablePanel';
+import RefuelToggle from './Refuel';
+import RefuelModal from './RefuelModal';
 
-const RefuelModal = dynamic(() => import("./RefuelModal"), {
-    loading: () => <></>,
-});
+// const RefuelModal = dynamic(() => import("./RefuelModal"), {
+//     loading: () => <></>,
+// });
 
-const RefuelToggle = dynamic(() => import("./Refuel"), {
-    loading: () => <></>,
-});
+// const RefuelToggle = dynamic(() => import("./Refuel"), {
+//     loading: () => <></>,
+// });
 
 export default function FeeDetailsComponent({ values }: { values: SwapFormValues }) {
     const { toCurrency, to, refuel, toExchange, from, fromCurrency, amount, destination_address } = values || {};

@@ -3,14 +3,11 @@ import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "r
 import { SwapFormValues } from "../../Pages/SwapPages/Form/SwapFormValues";
 import NumericInput from "../NumericInput";
 import { useFee } from "../../../context/feeContext";
-import dynamic from "next/dynamic";
-import { useQueryState } from "../../../context/query";
 import useSWRGas from "../../../lib/gases/useSWRGas";
 import useSWRBalance from "../../../lib/balances/useSWRBalance";
 import { useSwapDataState } from "../../../context/swap";
 import MinMax from "./MinMax";
 import { resolveMacAllowedAmount } from "./helpers";
-
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 

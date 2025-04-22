@@ -1,6 +1,5 @@
 import { FC } from "react"
 import useSWR from "swr"
-import Image from 'next/image';
 import FeeDetails from "./FeeDetailsComponent"
 import LayerSwapApiClient, { Campaign, QuoteReward } from "../../../../../lib/layerSwapApiClient";
 import useSWRNftBalance from "../../../../../lib/nft/useSWRNftBalance";
@@ -76,7 +75,7 @@ const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, reward, destinati
             <div className="flex items-center space-x-1 text-secondary-text">
                 <p>{reward.amount}</p>
                 <div className="h-5 w-5 relative">
-                    <Image
+                    <img
                         src={token?.logo || ''}
                         alt="Project Logo"
                         height="40"

@@ -1,5 +1,4 @@
 import { useCallback, useState } from 'react'
-import Image from 'next/image'
 import { ChevronDown } from 'lucide-react'
 import { ISelectMenuItem, SelectMenuItem } from '../Shared/Props/selectMenuItem'
 import CommandSelect, { SelectMenuItemGroup } from './commandSelect'
@@ -60,7 +59,7 @@ export default function CommandSelectWrapper<T>({
                         {
                             value?.imgSrc && <div className="flex items-center">
                                 <div className="flex-shrink-0 h-6 w-6 relative">
-                                    <Image
+                                    <img
                                         src={value.imgSrc}
                                         alt="Project Logo"
                                         height="40"

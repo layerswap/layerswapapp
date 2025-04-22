@@ -1,7 +1,6 @@
 import { FC } from "react"
 import { ExternalLink } from "lucide-react"
 import CopyButton from "../../Buttons/copyButton"
-import Link from "next/link"
 import AddressIcon from "../../Common/AddressIcon"
 import { SwapFormValues } from "../../Pages/SwapPages/Form/SwapFormValues"
 import { Partner } from "../../../Models/Partner"
@@ -39,9 +38,9 @@ const AddressNote: FC<AddressNoteModalProps> = ({ partner, values }) => {
                         </div>
                         <div className="flex items-center gap-4 text-secondary-text">
                             <CopyButton toCopy={destination_address} />
-                            <Link href={destination?.account_explorer_template?.replace('{0}', destination_address) || ''} target="_blank">
+                            <a href={destination?.account_explorer_template?.replace('{0}', destination_address) || ''} target="_blank">
                                 <ExternalLink className="h-4 w-4" />
-                            </Link>
+                            </a>
                         </div>
                     </div>
                 </div>

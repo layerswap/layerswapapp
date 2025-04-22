@@ -242,7 +242,8 @@ type Props = {
     isWalletModalOpen?: boolean
 }
 
-export const WalletFooterPortal: FC<Props> = ({ children, isWalletModalOpen }) => {
+// export const WalletFooterPortal: FC<Props> = ({ children, isWalletModalOpen }) => {
+export const WalletFooterPortal: any = ({ children, isWalletModalOpen }) => {
     const ref = useRef<Element | null>(null);
     const [mounted, setMounted] = useState(false)
 

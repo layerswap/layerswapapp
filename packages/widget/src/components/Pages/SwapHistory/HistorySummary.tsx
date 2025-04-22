@@ -2,7 +2,6 @@
 import useSWR from "swr"
 import LayerSwapApiClient, { SwapResponse, TransactionType } from "../../../lib/layerSwapApiClient"
 import { ApiResponse } from "../../../Models/ApiResponse"
-import Image from 'next/image';
 import { useQueryState } from "../../../context/query"
 import { Partner } from "../../../Models/Partner"
 import { addressEnding, shortenEmail } from "../../utils/ShortenAddress"
@@ -74,7 +73,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                         <div className="col-span-1 h-11 w-11 relative min-w-11">
                             {
                                 source &&
-                                <Image
+                                <img
                                     src={source.logo}
                                     alt={source.display_name}
                                     width={28}
@@ -83,7 +82,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                             }
                             {
                                 destination &&
-                                <Image
+                                <img
                                     src={destination.logo}
                                     alt={destination.display_name}
                                     width={28}
@@ -95,7 +94,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                         <div className="w-11 h-11 col-span-1">
                             {
                                 source &&
-                                <Image
+                                <img
                                     src={source.logo}
                                     alt={source.display_name}
                                     width={44}

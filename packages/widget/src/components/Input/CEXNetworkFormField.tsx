@@ -6,13 +6,11 @@ import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import shortenAddress from "../utils/ShortenAddress";
-import Link from "next/link";
 import CommandSelectWrapper from "../Pages/SwapPages/Form/Select/Command/CommandSelectWrapper";
 import { NetworkWithTokens, RouteNetwork } from "../../Models/Network";
 import { ExchangeNetwork } from "../../Models/Exchange";
 import { isValidAddress } from "../../lib/address/validator";
 import TransferCEX from "./TransferCEX";
-import Image from 'next/image'
 import Address from "./Address";
 import { Partner } from "../../Models/Partner";
 import { ExtendedAddress } from "./Address/AddressPicker/AddressWithIcon";
@@ -121,9 +119,9 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction,
                 currency?.contract && isValidAddress(currency.contract, network) && network &&
                 <div className="justify-self-end space-x-1">
                     <span>Contract:</span>
-                    <Link target="_blank" href={network.account_explorer_template?.replace("{0}", currency.contract)} className="underline text-primary-buttonTextColor hover:no-underline w-fit">
+                    <a target="_blank" href={network.account_explorer_template?.replace("{0}", currency.contract)} className="underline text-primary-buttonTextColor hover:no-underline w-fit">
                         {shortenAddress(currency?.contract)}
-                    </Link>
+                    </a>
                 </div>
             }
         </label>
@@ -189,7 +187,7 @@ function GenerateMenuItems(
             <p className="pl-1 text-primary-text text-base">{network?.display_name}</p>
             <div className="flex items-center space-x-1">
                 <div className="w-4 h-4">
-                    <Image
+                    <img
                         src={e.token.logo}
                         alt="Project Logo"
                         height="20"
@@ -202,13 +200,13 @@ function GenerateMenuItems(
                     {e.token.contract && network && (
                         <>
                             {' - '}
-                            <Link
+                            <a
                                 target="_blank"
                                 href={network.account_explorer_template.replace("{0}", e.token.contract)}
                                 className="underline text-secondary-text hover:no-underline w-fit"
                             >
                                 {shortenAddress(e.token.contract)}
-                            </Link>
+                            </a>
                         </>
                     )}
                 </p>

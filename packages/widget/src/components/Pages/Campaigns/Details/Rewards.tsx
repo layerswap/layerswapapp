@@ -1,5 +1,4 @@
 import { FC } from "react"
-import Image from 'next/image'
 import BackgroundField from "../../../Common/backgroundField";
 import { Clock } from "lucide-react"
 import LayerSwapApiClient, { Campaign, Reward, RewardPayout } from "../../../../lib/layerSwapApiClient"
@@ -70,7 +69,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
                         <div className="flex justify-between w-full text-2xl">
                             <div className="flex items-center space-x-1">
                                 <div className="h-5 w-5 relative">
-                                    <Image
+                                    <img
                                         src={campaign.token?.logo || ''}
                                         alt="Project Logo"
                                         height="40"
@@ -95,7 +94,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
                     <div className="flex justify-between w-full text-slate-300 text-2xl">
                         <div className="flex items-center space-x-1">
                             <div className="h-5 w-5 relative">
-                                <Image
+                                <img
                                     src={campaign.token?.logo || ''}
                                     alt="Project Logo"
                                     height="40"
