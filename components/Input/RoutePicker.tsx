@@ -103,6 +103,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
         return allRoutes.flatMap(route => {
             const tokens = getSortedRouteTokens(route) || [];
+
             return tokens
                 .filter(token => token.symbol.toLowerCase().includes(searchQuery.toLowerCase()))
                 .map(token => ({ route, token }));
@@ -118,7 +119,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search">
                     {({ closeModal }) => (
                         <div className="flex h-full w-full flex-col overflow-hidden rounded-md">
-                            <div className="flex items-center bg-secondary-500 rounded-lg px-2 mb-2">
+                            <div className="flex items-center bg-secondary-500 rounded-lg px-2 mb-2 mr-4 ml-3">
                                 <Search className="w-6 h-6 mr-2 text-primary-text-placeholder" />
                                 <input
                                     value={searchQuery}
@@ -133,7 +134,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                                 <div className="flex justify-center h-full items-center">
                                     <SpinIcon className="animate-spin h-5 w-5" />
                                 </div>
-                            ) : filteredGroups.length === 0 ? (
+                            ) : (filteredGroups.length === 0 && flatTokenResults.length === 0) ? (
                                 <div className="text-center text-secondary-text">No results found.</div>
                             ) : (
                                 <div className="overflow-y-auto styled-scroll hide-main-scrollbar">
