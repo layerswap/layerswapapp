@@ -155,13 +155,13 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                                     {flatTokenResults.length > 0 && (
                                         <div className="mb-2">
                                             <div className="text-primary-text-placeholder text-base leading-5 font-medium mb-1 px-3">Tokens</div>
-                                            <div className="rounded-xl overflow-hidden mx-3">
+                                            <div className="overflow-hidden mx-3">
                                                 {flatTokenResults.map(({ route, token }) => {
                                                     const isSelected = selectedRoute?.display_name === route.name && selectedToken?.symbol === token.symbol;
                                                     return (
                                                         <div
                                                             key={`${route.name}-${token.symbol}-flat`}
-                                                            className={`cursor-pointer hover:bg-secondary-300 ${isSelected ? "bg-secondary-300" : ""}`}
+                                                            className={`rounded-xl cursor-pointer hover:bg-secondary-300 ${isSelected ? "bg-secondary-300" : ""}`}
                                                             onClick={() => {
                                                                 handleSelect(route, token);
                                                                 closeModal();
