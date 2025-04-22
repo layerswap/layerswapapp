@@ -6,15 +6,11 @@ import { SettingsProvider } from "../context/settings";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import ErrorFallback from "./ErrorFallback";
-import { SendErrorMessage } from "../lib/telegram";
-import { QueryParams } from "../Models/QueryParams";
 import QueryProvider from "../context/query";
 import { THEME_COLORS, ThemeData } from "../Models/Theme";
 import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
-import { IsExtensionError } from "../helpers/errorHelper";
 import { AsyncModalProvider } from "../context/asyncModal";
-import { useAppRouter } from "../context/AppRouter/RouterProvider";
 import LayerSwapApiClient from "../lib/layerSwapApiClient";
 import WalletsProviders from "./Wallet/WalletProviders";
 import { Maintanance } from "./Pages/Maintanance";
@@ -28,7 +24,6 @@ export type AppPageProps = {
 };
 
 const AppWrapper: FC<AppPageProps> = ({ children, settings, themeData, apiKey }) => {
-    const router = useAppRouter();
     LayerSwapApiClient.apiKey = apiKey
 
     if (!settings)
@@ -38,22 +33,22 @@ const AppWrapper: FC<AppPageProps> = ({ children, settings, themeData, apiKey })
 
     let appSettings = new LayerSwapAppSettings(settings)
 
-    const query: QueryParams = {
-        ...router.query,
-        lockNetwork: router.query.lockNetwork === 'true',
-        lockExchange: router.query.lockExchange === 'true',
-        hideRefuel: router.query.hideRefuel === 'true',
-        hideAddress: router.query.hideAddress === 'true',
-        hideFrom: router.query.hideFrom === 'true',
-        hideTo: router.query.hideTo === 'true',
-        lockFrom: router.query.lockFrom === 'true',
-        lockTo: router.query.lockTo === 'true',
-        lockAsset: router.query.lockAsset === 'true',
-        lockFromAsset: router.query.lockFromAsset === 'true',
-        lockToAsset: router.query.lockToAsset === 'true',
-        hideLogo: router.query.hideLogo === 'true',
-        hideDepositMethod: router.query.hideDepositMethod === 'true'
-    };
+    // const query: QueryParams = {
+    //     ...router.query,
+    //     lockNetwork: router.query.lockNetwork === 'true',
+    //     lockExchange: router.query.lockExchange === 'true',
+    //     hideRefuel: router.query.hideRefuel === 'true',
+    //     hideAddress: router.query.hideAddress === 'true',
+    //     hideFrom: router.query.hideFrom === 'true',
+    //     hideTo: router.query.hideTo === 'true',
+    //     lockFrom: router.query.lockFrom === 'true',
+    //     lockTo: router.query.lockTo === 'true',
+    //     lockAsset: router.query.lockAsset === 'true',
+    //     lockFromAsset: router.query.lockFromAsset === 'true',
+    //     lockToAsset: router.query.lockToAsset === 'true',
+    //     hideLogo: router.query.hideLogo === 'true',
+    //     hideDepositMethod: router.query.hideDepositMethod === 'true'
+    // };
 
     // function logErrorToService(error, info) {
     //     const extension_error = IsExtensionError(error)
@@ -70,7 +65,7 @@ const AppWrapper: FC<AppPageProps> = ({ children, settings, themeData, apiKey })
                 themeData &&
                 <ColorSchema themeData={themeData} />
             }
-            <QueryProvider query={query}>
+            <QueryProvider query={{}}>
                 <SettingsProvider data={appSettings}>
                     <AuthProvider>
                         <TooltipProvider delayDuration={500}>
@@ -79,7 +74,7 @@ const AppWrapper: FC<AppPageProps> = ({ children, settings, themeData, apiKey })
                             // onError={logErrorToService}
                             >
                                 <ThemeWrapper>
-                                    <WalletsProviders themeData={themeData} appName={router.query.appName?.toString()}>
+                                    <WalletsProviders themeData={themeData}>
                                         <AsyncModalProvider>
                                             {children}
                                         </AsyncModalProvider>

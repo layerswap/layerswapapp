@@ -12,20 +12,14 @@ import TwitterLogo from "../Icons/TwitterLogo";
 import Popover from "../Modal/popover";
 import YoutubeLogo from "../Icons/YoutubeLogo";
 import { shortenEmail } from '../utils/ShortenAddress';
-import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import Menu from "./Menu";
 import { MenuStep } from "../../Models/Wizard";
-import { useAppRouter } from "../../context/AppRouter/RouterProvider";
 import SendFeedback from "./Feedback";
 import { WalletsMenu } from "../Wallet/WalletComponents/ConnectedWallets";
-// const WalletsMenu = dynamic(() => import("../Wallet/WalletComponents/ConnectedWallets").then((comp) => comp.WalletsMenu), {
-//     loading: () => <></>
-// })
 
 const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ goToStep }) => {
     const { email, userType, userId } = useAuthState()
     const { setUserType } = useAuthDataUpdate()
-    const router = useAppRouter();
     const { boot, show, update } = useIntercom()
     const [embedded, setEmbedded] = useState<boolean>()
     const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
@@ -36,18 +30,18 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
 
     const updateWithProps = () => update({ userId, customAttributes: { email: email, } })
 
-    const handleLogout = useCallback(() => {
+    const handleLogout = () => {
         TokenService.removeAuthData()
-        if (router.pathname != '/') {
-            router.push({
-                pathname: '/',
-                query: resolvePersistantQueryParams(router.query)
-            })
-        } else {
-            router.reload()
-        }
+        // if (router.pathname != '/') {
+        //     router.push({
+        //         pathname: '/',
+        //         query: resolvePersistantQueryParams(router.query)
+        //     })
+        // } else {
+        //     router.reload()
+        // }
         setUserType(UserType.NotAuthenticatedUser)
-    }, [router.query])
+    }
 
     const handleCloseFeedback = () => {
         setOpenFeedbackModal(false)
@@ -59,23 +53,19 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
 
             <Menu.Group>
                 <>
+                    <Menu.Item pathname='/' icon={<Home className="h-5 w-5" />} >
+                        Home
+                    </Menu.Item>
+                </>
+                <>
+                    <Menu.Item onClick={() => goToStep(MenuStep.Transactions, "/transactions")} icon={<ScrollText className="h-5 w-5" />} >
+                        Transactions
+                    </Menu.Item>
+                </>
+                <>
                     {
-                        router.pathname != '/' &&
-                        <Menu.Item pathname='/' icon={<Home className="h-5 w-5" />} >
-                            Home
-                        </Menu.Item>
-                    }
-                </>
-                <>
-                    {router.pathname != '/transactions' &&
-                        <Menu.Item onClick={() => goToStep(MenuStep.Transactions, "/transactions")} icon={<ScrollText className="h-5 w-5" />} >
-                            Transactions
-                        </Menu.Item>
-                    }
-                </>
-                <>
-                    {!embedded && router.pathname != '/campaigns' &&
-                        <Menu.Item pathname='/campaigns' icon={<Gift className="h-5 w-5" />} >
+                        !embedded &&
+                        <Menu.Item onClick={() => goToStep(MenuStep.Campaigns, "/campaigns")} icon={<Gift className="h-5 w-5" />} >
                             Campaigns
                         </Menu.Item>
                     }
@@ -140,33 +130,30 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
                     </a>
                 ))}
             </div>
-            {
-                router.pathname != '/auth' &&
-                <Menu.Footer>
-                    <Menu.Group>
-                        {
-                            userType == UserType.AuthenticatedUser ?
-                                <div>
-                                    <div
-                                        className={`gap-4 flex justify-between items-center relative select-none px-4 py-3 outline-none w-full text-primary-text`}
-                                    >
-                                        <div className="font-normal flex gap-2 items-center">
-                                            <UserCircle2 className="h-5 w-5" />
-                                            <p>{email && shortenEmail(email, 22)}</p>
-                                        </div>
-                                        <button type="button" className="text-primary hover:text-primary-600" onClick={handleLogout}>
-                                            Sign out
-                                        </button>
+            <Menu.Footer>
+                <Menu.Group>
+                    {
+                        userType == UserType.AuthenticatedUser ?
+                            <div>
+                                <div
+                                    className={`gap-4 flex justify-between items-center relative select-none px-4 py-3 outline-none w-full text-primary-text`}
+                                >
+                                    <div className="font-normal flex gap-2 items-center">
+                                        <UserCircle2 className="h-5 w-5" />
+                                        <p>{email && shortenEmail(email, 22)}</p>
                                     </div>
+                                    <button type="button" className="text-primary hover:text-primary-600" onClick={handleLogout}>
+                                        Sign out
+                                    </button>
                                 </div>
-                                :
-                                <Menu.Item pathname='/auth' icon={<LogIn className="h-5 w-5" />} >
-                                    Sign in
-                                </Menu.Item>
-                        }
-                    </Menu.Group>
-                </Menu.Footer>
-            }
+                            </div>
+                            :
+                            <Menu.Item pathname='/auth' icon={<LogIn className="h-5 w-5" />} >
+                                Sign in
+                            </Menu.Item>
+                    }
+                </Menu.Group>
+            </Menu.Footer>
         </Menu>
     </div>
 }

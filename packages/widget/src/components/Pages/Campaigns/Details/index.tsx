@@ -5,22 +5,18 @@ import useSWR from "swr"
 import { ApiResponse } from "../../../../Models/ApiResponse"
 import SubmitButton from "../../../Buttons/submitButton";
 import WalletIcon from "../../../Icons/WalletIcon";
-import LinkWrapper from "../../../Common/LinkWrapper";
 import { Widget } from "../../../Widget/Index";
 import Leaderboard from "./Leaderboard"
 import Rewards from "./Rewards";
 import SpinIcon from "../../../Icons/spinIcon"
 import useWallet from "../../../../hooks/useWallet"
-import { useAppRouter } from "../../../../context/AppRouter/RouterProvider"
 import AppWrapper, { AppPageProps } from "../../../AppWrapper"
 
-function Comp() {
-    const router = useAppRouter();
-    const camapaignName = router.query.campaign?.toString()
+const Comp: FC<{ campaignName: string }> = ({ campaignName }) => {
 
     const apiClient = new LayerSwapApiClient()
     const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
-    const campaign = campaignsData?.data?.find(c => c.name === camapaignName)
+    const campaign = campaignsData?.data?.find(c => c.name === campaignName)
     const network = campaign?.network
 
     const { provider } = useWallet(network, 'autofil')
@@ -114,16 +110,16 @@ const NotFound = () => <Widget className="min-h-[500px]">
         <div className="h-[364px] flex flex-col items-center justify-center space-y-4">
             <Gift className="h-20 w-20 text-primary" />
             <p className="font-bold text-center">Campaign not found</p>
-            <LinkWrapper className="text-xs underline hover:no-underline" href='/campaigns'>See all campaigns</LinkWrapper>
+            <a className="text-xs underline hover:no-underline" href='/campaigns'>See all campaigns</a>
         </div>
     </Widget.Content>
 </Widget>
 
 
-export const CampaignDetails: FC<AppPageProps> = (props) => {
+export const CampaignDetails: FC<AppPageProps & { campaignName: string }> = (props) => {
     return (
         <AppWrapper {...props}>
-            <Comp />
+            <Comp campaignName={props.campaignName} />
         </AppWrapper>
     )
 }

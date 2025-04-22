@@ -31,8 +31,6 @@ import { AddressGroup } from "../../../Input/Address/AddressPicker";
 import { useAddressesStore } from "../../../../stores/addressesStore";
 import { useAsyncModal } from "../../../../context/asyncModal";
 import { ValidationProvider } from "../../../../context/validationErrorContext";
-import { useAppRouter } from "../../../../context/AppRouter/RouterProvider";
-import { AppRouter } from "../../../../context/AppRouter/routerTypes";
 import ConnectNetwork from "./SecondaryComponents/ConnectNetwork";
 import SwapDetails from "../Withdraw/SwapDetails";
 
@@ -40,17 +38,6 @@ type NetworkToConnect = {
     DisplayName: string;
     AppURL: string;
 }
-// const SwapDetails = dynamicWithRetries(() => import("../Withdraw/SwapDetails"),
-//     <div className="w-full h-[450px]">
-//         <div className="animate-pulse flex space-x-4">
-//             <div className="flex-1 space-y-6 py-1">
-//                 <div className="h-32 bg-secondary-700 rounded-lg"></div>
-//                 <div className="h-40 bg-secondary-700 rounded-lg"></div>
-//                 <div className="h-12 bg-secondary-700 rounded-lg"></div>
-//             </div>
-//         </div>
-//     </div>
-// )
 
 export default function Form() {
 
@@ -59,7 +46,6 @@ export default function Form() {
     const [showSwapModal, setShowSwapModal] = useState(false);
     const [isAddressFromQueryConfirmed, setIsAddressFromQueryConfirmed] = useState(false);
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
-    const router = useAppRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
     const { getProvider } = useWallet()
     const addresses = useAddressesStore(state => state.addresses)
@@ -116,7 +102,7 @@ export default function Form() {
             const swapId = await createSwap(values, query, partner);
             setSwapId(swapId)
             pollFee(false)
-            setSwapPath(swapId, router)
+            // setSwapPath(swapId, router)
             setShowSwapModal(true)
         }
         catch (error) {
@@ -150,7 +136,7 @@ export default function Form() {
                 toast.error(data?.message || error?.message)
             }
         }
-    }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getProvider])
+    }, [createSwap, query, partner, updateAuthData, setUserType, swap, getProvider])
 
     const destAddress: string = query?.destAddress as string;
 
@@ -168,8 +154,12 @@ export default function Form() {
     const handleShowSwapModal = useCallback((value: boolean) => {
         pollFee(!value)
         setShowSwapModal(value)
-        value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
-    }, [router, swap])
+        //TODO: implement
+        // value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
+    }, [
+        // router, 
+        swap
+    ])
 
     const validator = useMemo(() => MainStepValidation({ minAllowedAmount, maxAllowedAmount, sourceAddress: selectedSourceAccount?.address, sameAccountNetwork: query.sameAccountNetwork }), [minAllowedAmount, maxAllowedAmount, selectedSourceAccount, query.sameAccountNetwork])
 
@@ -307,31 +297,31 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
     </motion.div>
 }
 
-const setSwapPath = (swapId: string, router: AppRouter) => {
-    //TODO: as path should be without basepath and host
-    const basePath = router?.basePath || ""
-    var swapURL = window.location.protocol + "//"
-        + window.location.host + `${basePath}/swap/${swapId}`;
-    const params = resolvePersistantQueryParams(router.query)
-    if (params && Object.keys(params).length) {
-        const search = new URLSearchParams(params as any);
-        if (search)
-            swapURL += `?${search}`
-    }
+// const setSwapPath = (swapId: string, router: AppRouter) => {
+//     //TODO: as path should be without basepath and host
+//     const basePath = router?.basePath || ""
+//     var swapURL = window.location.protocol + "//"
+//         + window.location.host + `${basePath}/swap/${swapId}`;
+//     const params = resolvePersistantQueryParams(router.query)
+//     if (params && Object.keys(params).length) {
+//         const search = new URLSearchParams(params as any);
+//         if (search)
+//             swapURL += `?${search}`
+//     }
 
-    window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
-}
+//     window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
+// }
 
-const removeSwapPath = (router: AppRouter) => {
-    const basePath = router?.basePath || ""
-    let homeURL = window.location.protocol + "//"
-        + window.location.host + basePath
+// const removeSwapPath = (router: AppRouter) => {
+//     const basePath = router?.basePath || ""
+//     let homeURL = window.location.protocol + "//"
+//         + window.location.host + basePath
 
-    const params = resolvePersistantQueryParams(router.query)
-    if (params && Object.keys(params).length) {
-        const search = new URLSearchParams(params as any);
-        if (search)
-            homeURL += `?${search}`
-    }
-    window.history.replaceState({ ...window.history.state, as: router.asPath, url: homeURL }, '', homeURL);
-}
+//     const params = resolvePersistantQueryParams(router.query)
+//     if (params && Object.keys(params).length) {
+//         const search = new URLSearchParams(params as any);
+//         if (search)
+//             homeURL += `?${search}`
+//     }
+//     window.history.replaceState({ ...window.history.state, as: router.asPath, url: homeURL }, '', homeURL);
+// }

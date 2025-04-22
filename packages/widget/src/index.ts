@@ -5,13 +5,10 @@ export { Auth } from './components/Pages/Auth';
 export { Maintanance } from './components/Pages/Maintanance';
 export { Campaigns } from './components/Pages/Campaigns';
 export { CampaignDetails } from './components/Pages/Campaigns/Details';
-export { Salon } from './components/Pages/Salon'
-export { Custom404 } from './components/Pages/404'
 export { NoCookies } from './components/Pages/NoCookies'
-export { RouterProvider, useAppRouter } from './context/AppRouter/RouterProvider'
-export type { AppRouter } from './context/AppRouter/routerTypes'
+export { Custom404 } from './components/Pages/404'
 export * from './Models/LayerSwapSettings'
-export { THEME_COLORS } from './Models/Theme'
-export type { ThemeColor, ThemeData } from './Models/Theme'
+export * from './Models/Theme'
+export type * from './Models/Theme'
 export type * from './context/authContext'
 export * from './context/authContext'

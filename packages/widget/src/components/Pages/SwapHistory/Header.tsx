@@ -1,21 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import HeaderWithMenu from "../../HeaderWithMenu";
-import { resolvePersistantQueryParams } from "../../../helpers/querryHelper";
 import { motion } from "framer-motion";
-import { useAppRouter } from "../../../context/AppRouter/RouterProvider";
 
 const Header = () => {
 
-    const router = useAppRouter();
+    // const router = useAppRouter();
 
     const goBack = useCallback(() => {
-        window?.['navigation']?.['canGoBack'] ?
-            router.back()
-            : router.push({
-                pathname: "/",
-                query: resolvePersistantQueryParams(router.query)
-            })
-    }, [router])
+        // window?.['navigation']?.['canGoBack'] ?
+        //     router.back()
+        //     : router.push({
+        //         pathname: "/",
+        //         query: resolvePersistantQueryParams(router.query)
+        //     })
+    }, [])
     const [height, setHeight] = useState(0)
     const ref = useRef<HTMLDivElement>(null)
 

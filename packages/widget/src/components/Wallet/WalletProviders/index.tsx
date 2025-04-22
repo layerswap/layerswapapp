@@ -7,9 +7,9 @@ import { ImtblPassportProvider } from "./ImtblPassportProvider";
 import TronProvider from "./TronProvider";
 import { ThemeData } from "../../../Models/Theme";
 
-const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], themeData: ThemeData, appName: string | undefined }> = ({ children, themeData, appName }) => {
+const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], themeData: ThemeData }> = ({ children, themeData }) => {
     return (
-        <TonConnectProvider themeData={themeData} appName={appName}>
+        <TonConnectProvider themeData={themeData}>
             <SolanaProvider>
                 <TronProvider>
                     <StarknetProvider>

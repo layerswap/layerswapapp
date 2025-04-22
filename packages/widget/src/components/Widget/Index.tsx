@@ -2,9 +2,7 @@ import HeaderWithMenu from "../HeaderWithMenu"
 import { default as Content } from './Content';
 import { default as Footer } from './Footer';
 import { useCallback, useRef } from "react";
-import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import AppSettings from "../../lib/AppSettings";
-import { useAppRouter } from "../../context/AppRouter/RouterProvider";
 
 type Props = {
    children: JSX.Element | JSX.Element[];
@@ -13,20 +11,19 @@ type Props = {
 }
 
 const Widget = ({ children, className, hideMenu }: Props) => {
-   const router = useAppRouter()
    const wrapper = useRef(null);
 
    const goBack = useCallback(() => {
-      window?.['navigation']?.['canGoBack'] ?
-         router.back()
-         : router.push({
-            pathname: "/",
-            query: resolvePersistantQueryParams(router.query)
-         })
+      // window?.['navigation']?.['canGoBack'] ?
+      //    router.back()
+      //    : router.push({
+      //       pathname: "/",
+      //       query: resolvePersistantQueryParams(router.query)
+      //    })
    }, [])
 
 
-   const handleBack = router.pathname === "/" ? null : goBack
+   const handleBack = null
 
    return <>
       <div id="widget" className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative `}>

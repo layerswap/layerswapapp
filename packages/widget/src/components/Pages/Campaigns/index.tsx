@@ -4,11 +4,10 @@ import { ApiResponse } from "../../../Models/ApiResponse";
 import LayerSwapApiClient, { Campaign } from "../../../lib/layerSwapApiClient";
 import SpinIcon from "../../Icons/spinIcon";
 import useSWR from 'swr'
-import LinkWrapper from "../../Common/LinkWrapper";
 import { Widget } from "../../Widget/Index";
 import AppWrapper, { AppPageProps } from "../../AppWrapper";
 
-const Comp = () => {
+export const CampaignsComponent = () => {
 
     const apiClient = new LayerSwapApiClient()
     const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
@@ -81,7 +80,7 @@ const CampaignItem: FC<CampaignProps> = ({ campaign }) => {
     const campaignDaysLeft = ((new Date(campaign.end_date).getTime() - new Date().getTime()) / 86400000).toFixed()
     const campaignIsActive = IsCampaignActive(campaign)
 
-    return <LinkWrapper href={`/campaigns/${campaign.name}`}
+    return <a href={`/campaigns/${campaign.name}`}
         className="flex justify-between items-center">
         <span className="flex items-center gap-1 hover:opacity-70 active:scale-90 duration-200 transition-all">
             <span className="h-5 w-5 relative">
@@ -101,7 +100,7 @@ const CampaignItem: FC<CampaignProps> = ({ campaign }) => {
                 {campaignDaysLeft} days left
             </span>
         }
-    </LinkWrapper>
+    </a>
 }
 
 function IsCampaignActive(campaign: Campaign) {
@@ -112,7 +111,7 @@ function IsCampaignActive(campaign: Campaign) {
 export const Campaigns: FC<AppPageProps> = (props) => {
     return (
         <AppWrapper {...props}>
-            <Comp />
+            <CampaignsComponent />
         </AppWrapper>
     )
 }

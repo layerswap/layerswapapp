@@ -57,7 +57,9 @@ export enum AuthStep {
 export enum MenuStep {
     Menu = "Menu",
     Transactions = "Transactions",
-    TransactionDetails = "Transaction Details"
+    TransactionDetails = "Transaction Details",
+    Campaigns = "Campaigns",
+    CampaignDetails = "Campaign Details",
 }
 
 export type Steps = AuthStep | SwapWithdrawalStep | SwapCreateStep | MenuStep

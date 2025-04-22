@@ -20,7 +20,6 @@ import { resolvePersistantQueryParams } from '../../../helpers/querryHelper';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../shadcn/accordion';
 import VaulDrawer from '../../Modal/vaulModal';
 import { Popover, PopoverContent, PopoverTrigger } from '../../shadcn/popover';
-import { useAppRouter } from '../../../context/AppRouter/RouterProvider';
 
 type Props = {
     swapResponse: SwapResponse
@@ -32,7 +31,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     const { swap, refuel, quote } = swapResponse
     const { source_token, destination_token, destination_address, source_network, destination_network, source_exchange, destination_exchange, requested_amount } = swap
 
-    const router = useAppRouter()
     const {
         hideFrom,
         hideTo,
@@ -360,18 +358,18 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                         swap.status === SwapStatus.Completed &&
                         <button
                             type='button'
-                            onClick={() => router.push({
-                                pathname: `/`,
-                                query: {
-                                    amount: requested_amount,
-                                    destAddress: destination_address,
-                                    from: source_network?.name,
-                                    to: destination_network?.name,
-                                    fromAsset: source_token.symbol,
-                                    toAsset: destination_token.symbol,
-                                    ...resolvePersistantQueryParams(router.query),
-                                }
-                            }, undefined, { shallow: false })}
+                            // onClick={() => router.push({
+                            //     pathname: `/`,
+                            //     query: {
+                            //         amount: requested_amount,
+                            //         destAddress: destination_address,
+                            //         from: source_network?.name,
+                            //         to: destination_network?.name,
+                            //         fromAsset: source_token.symbol,
+                            //         toAsset: destination_token.symbol,
+                            //         ...resolvePersistantQueryParams(router.query),
+                            //     }
+                            // }, undefined, { shallow: false })}
                             className='w-full inline-flex items-center gap-2 justify-center py-2.5 px-3 text-xl font-semibold bg-primary-text-placeholder hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-lg text-secondary-950'
                         >
                             <RefreshCw className='h-6 w-6' />
@@ -384,10 +382,10 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                         (swap.status !== SwapStatus.Completed && swap.status !== SwapStatus.Expired && swap.status !== SwapStatus.Failed) &&
                         <button
                             type='button'
-                            onClick={() => router.push({
-                                pathname: `/swap/${swap.id}`,
-                                query: resolvePersistantQueryParams(router.query),
-                            }, undefined, { shallow: false })}
+                            // onClick={() => router.push({
+                            //     pathname: `/swap/${swap.id}`,
+                            //     query: resolvePersistantQueryParams(router.query),
+                            // }, undefined, { shallow: false })}
                             className='w-full inline-flex items-center gap-2 justify-center py-2.5 px-3 text-xl font-semibold bg-primary hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-lg text-primary-text'
                         >
                             <p>

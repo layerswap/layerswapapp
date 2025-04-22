@@ -14,7 +14,6 @@ import IconButton from '../../../../Buttons/iconButton';
 import { motion } from 'framer-motion';
 import { useCoinbaseStore } from './CoinbaseStore';
 import { Widget } from '../../../../Widget/Index';
-import { useAppRouter } from '../../../../../context/AppRouter/RouterProvider';
 
 type Props = {
     onAuthorized: () => void,
@@ -27,7 +26,6 @@ const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
     const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
     const { source_exchange: exchange } = swap || {}
-    const router = useAppRouter()
     let alreadyFamiliar = useCoinbaseStore((state) => state.alreadyFamiliar);
     let toggleAlreadyFamiliar = useCoinbaseStore((state) => state.toggleAlreadyFamiliar);
     const [carouselFinished, setCarouselFinished] = useState(alreadyFamiliar)
@@ -82,13 +80,13 @@ const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
             }
             const { sub } = parseJwt(access_token) || {}
             const encoded = btoa(JSON.stringify({ SwapId: swap?.id, UserId: Number(sub), RedirectUrl: `${window.location.origin}/salon` }))
-            const authWindow = OpenLink({ link: authorize_url + encoded, query: router.query, swapId: swap.id })
+            // const authWindow = OpenLink({ link: authorize_url + encoded, query: router.query, swapId: swap.id })
             setAuthWindow(authWindow)
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [carouselFinished, alreadyFamiliar, swap?.id, authorize_url, router.query])
+    }, [carouselFinished, alreadyFamiliar, swap?.id, authorize_url])
 
     const handlePrev = useCallback(() => {
         carouselRef?.current?.prev()

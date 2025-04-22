@@ -10,7 +10,6 @@ import { ResolvePollingInterval } from '../components/utils/SwapStatus';
 import { Wallet, WalletProvider } from '../Models/WalletProvider';
 import useWallet from '../hooks/useWallet';
 import { Network } from '../Models/Network';
-import { useAppRouter } from './AppRouter/RouterProvider';
 
 export const SwapDataStateContext = createContext<SwapData>({
     codeRequested: false,
@@ -49,9 +48,8 @@ export function SwapDataProvider({ children }) {
     const [codeRequested, setCodeRequested] = useState<boolean>(false)
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
     const [depositAddressIsFromAccount, setDepositAddressIsFromAccount] = useState<boolean>()
-    const router = useAppRouter();
     const { providers } = useWallet()
-    const [swapId, setSwapId] = useState<string | undefined>(router.query.swapId?.toString())
+    const [swapId, setSwapId] = useState<string | undefined>()
     
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `/swaps/${swapId}?exclude_deposit_actions=true`

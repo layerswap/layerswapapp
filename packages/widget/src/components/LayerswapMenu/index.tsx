@@ -8,12 +8,11 @@ import Wizard from "../Wizard/Wizard";
 import WizardItem from "../Wizard/WizardItem";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import { AppRouter } from "../../context/AppRouter/routerTypes";
-import { useAppRouter } from "../../context/AppRouter/RouterProvider";
 import Modal from "../Modal/modal";
 import HistoryList from "../Pages/SwapHistory/History";
+import { CampaignsComponent } from "../Pages/Campaigns";
 
 const Comp = () => {
-    const router = useAppRouter();
 
     const { goBack, currentStepName } = useFormWizardState()
     const { goToStep } = useFormWizardaUpdate()
@@ -24,14 +23,17 @@ const Comp = () => {
         setOpenTopModal(value)
         if (value === false) {
             goToStep(MenuStep.Menu)
-            clearMenuPath(router)
+            // clearMenuPath(router)
         }
     }
-    const goBackToMenuStep = () => { goToStep(MenuStep.Menu, "back"); clearMenuPath(router) }
+    const goBackToMenuStep = () => {
+        goToStep(MenuStep.Menu, "back");
+        //   clearMenuPath(router) 
+    }
 
     const handleGoToStep = (step: MenuStep, path: string) => {
         goToStep(step)
-        setMenuPath(path, router)
+        // setMenuPath(path, router)
     }
 
     return <>
@@ -65,6 +67,9 @@ const Comp = () => {
                     </WizardItem>
                     <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full" inModal>
                         <HistoryList onNewTransferClick={() => handleModalOpenStateChange(false)} />
+                    </WizardItem>
+                    <WizardItem StepName={MenuStep.Campaigns} GoBack={goBackToMenuStep} className="h-full" inModal>
+                        <CampaignsComponent />
                     </WizardItem>
                 </Wizard>
             </Modal>

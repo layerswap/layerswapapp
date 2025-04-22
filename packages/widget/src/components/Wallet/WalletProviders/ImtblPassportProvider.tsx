@@ -1,5 +1,4 @@
 import { useEffect } from "react"
-import { useAppRouter } from "../../../context/AppRouter/RouterProvider";
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY;
 const CLIENT_ID = process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID;
@@ -29,12 +28,11 @@ export const initilizePassport = async (basePath: string) => {
 export var passportInstance: any = undefined
 
 export function ImtblPassportProvider({ children }: { children: JSX.Element | JSX.Element[] }) {
-    const router = useAppRouter();
 
     useEffect(() => {
         if (!passportInstance) {
             (async () => {
-                await initilizePassport(router.basePath)
+                await initilizePassport('')
                 passportInstance.connectEvm() // EIP-6963
             })()
         }

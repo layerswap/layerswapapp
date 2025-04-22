@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "paths": {
-      "@layerswap/widget": ["../../packages/widget/dist"],
+      // "@layerswap/widget": ["../../packages/widget/dist"],
     }
   },
   "include": [

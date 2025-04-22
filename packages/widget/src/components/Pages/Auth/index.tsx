@@ -2,24 +2,22 @@ import { FC, useCallback } from "react";
 import { FormWizardProvider, useFormWizardaUpdate } from "../../../context/formWizardProvider";
 import { TimerProvider } from "../../../context/timerContext";
 import { AuthStep, SwapCreateStep } from "../../../Models/Wizard";
-// import { TrackEvent } from "../../../pages/_document";
 import CodeStep from "./Steps/CodeStep";
 import EmailStep from "./Steps/EmailStep";
 import Wizard from "../../Wizard/Wizard";
 import WizardItem from "../../Wizard/WizardItem";
-import { useAppRouter } from "../../../context/AppRouter/RouterProvider";
 import { SwapDataProvider } from "../../../context/swap";
 import AppWrapper, { AppPageProps } from "../../AppWrapper";
 
 const Comp: FC = () => {
     const { goToStep } = useFormWizardaUpdate()
-    const router = useAppRouter();
+    // const router = useAppRouter();
 
     const CodeOnNext = useCallback(async () => {
-        await router.push({
-            pathname: "/",
-            query: router.query
-        })
+        // await router.push({
+        //     pathname: "/",
+        //     query: router.query
+        // })
         // plausible(TrackEvent.SignedIn)
     }, []);
 
@@ -27,8 +25,8 @@ const Comp: FC = () => {
     const GoToCodeStep = useCallback(() => goToStep(AuthStep.Code), [])
 
     const handleGoBack = useCallback(() => {
-        router.back()
-    }, [router])
+        // router.back()
+    }, [])
 
     return (
         <TimerProvider>

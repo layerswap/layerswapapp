@@ -1,5 +1,4 @@
 import { ChevronRight, ExternalLink } from "lucide-react"
-import LinkWrapper from "../Common/LinkWrapper"
 import { ReactNode } from "react"
 import { motion } from "framer-motion";
 import { useEffect, useRef, useState } from "react"
@@ -26,7 +25,7 @@ const Item = (function Item({ children, pathname, onClick, icon, target = '_self
         <>
             {
                 pathname ?
-                    <LinkWrapper href={pathname} target={target} className="gap-4 flex relative cursor-pointer hover:bg-secondary-600 select-none w-full items-center px-4 py-3 outline-none text-primary-text">
+                    <a href={pathname} target={target} className="gap-4 flex relative cursor-pointer hover:bg-secondary-600 select-none w-full items-center px-4 py-3 outline-none text-primary-text">
                         <div>
                             {icon}
                         </div>
@@ -37,7 +36,7 @@ const Item = (function Item({ children, pathname, onClick, icon, target = '_self
                                 :
                                 <ExternalLink className="h-4 w-4 absolute right-3" />
                         }
-                    </LinkWrapper>
+                    </a>
                     :
                     <button
                         type="button"

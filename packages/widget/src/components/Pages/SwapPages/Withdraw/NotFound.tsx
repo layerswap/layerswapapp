@@ -1,24 +1,18 @@
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback } from "react";
 import MessageComponent from "../../../Common/MessageComponent";
 import SubmitButton, { DoubleLineText } from "../../../Buttons/submitButton";
 import GoHomeButton from "../../../utils/GoHome";
-import { useAuthState } from "../../../../context/authContext";
 import { useIntercom } from "react-use-intercom";
 import { Home, MessageSquare } from "lucide-react";
-import { useAppRouter } from "../../../../context/AppRouter/RouterProvider";
 
 const NotFound: FC = () => {
 
-    const { email, userId } = useAuthState()
-    const { boot, show, update } = useIntercom()
-    const { query } = useAppRouter()
-    const updateWithProps = () => update({ userId, customAttributes: { swapId: query?.swapId, email: email, } })
+    const { boot, show } = useIntercom()
 
     const startIntercom = useCallback(() => {
         boot();
         show();
-        updateWithProps()
-    }, [boot, show, updateWithProps])
+    }, [boot, show])
 
     return <MessageComponent>
         <MessageComponent.Content icon='red'>

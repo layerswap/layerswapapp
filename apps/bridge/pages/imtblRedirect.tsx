@@ -1,11 +1,8 @@
 import { useEffect } from "react";
-import { RouterProvider, useAppRouter } from '@layerswap/widget'
 import { useRouter } from "next/router";
-import { NextAppRouter } from "../lib/Router/NextAppRouter";
 // import { initilizePassport, passportInstance } from "../components/Wallet/WalletProviders/ImtblPassportProvider";
 
 const Comp = () => {
-    const router = useAppRouter();
 
     // useEffect(() => {
     //     (async () => {
@@ -24,9 +21,7 @@ const Comp = () => {
 const ImtblRedirect = () => {
     const router = useRouter()
     return (
-        <RouterProvider router={new NextAppRouter(router)}>
-            <Comp />
-        </RouterProvider>
+        <Comp />
     );
 }
 

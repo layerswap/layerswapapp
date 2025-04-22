@@ -1,7 +1,6 @@
-import { RouterProvider, useAppRouter, LayerSwapSettings, THEME_COLORS, ThemeData, useReactRouterDomAppRouter } from "@layerswap/widget";
+import { LayerSwapSettings, THEME_COLORS, ThemeData } from "@layerswap/widget";
 import { useRouter } from 'next/router';
 import Head from "next/head";
-import { NextAppRouter } from "../lib/Router/NextAppRouter";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -10,8 +9,8 @@ type Props = {
 };
 
 
-function Comp({ children, themeData }: Props) {
-  const router = useAppRouter();
+export default function Layout({ children, themeData }: Props) {
+  const router = useRouter();
 
   themeData = themeData || THEME_COLORS.default
 
@@ -47,16 +46,4 @@ function Comp({ children, themeData }: Props) {
     </Head>
     {children}
   </>)
-}
-
-
-export default function LayoutWrapper({ children, ...props }: Props) {
-  const router = useRouter();
-  return (
-    <RouterProvider router={new NextAppRouter(router)}>
-      <Comp {...props}>
-        {children}
-      </Comp>
-    </RouterProvider>
-  )
 }
