@@ -92,12 +92,8 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
         return groupedRoutes.map(group => ({
             ...group,
             routes: group.routes?.filter(route => {
-                const tokens = getSortedRouteTokens(route) || [];
                 const routeMatch = route.display_name.toLowerCase().includes(searchQuery.toLowerCase());
-                const tokenMatch = tokens.some(token =>
-                    token.symbol.toLowerCase().includes(searchQuery.toLowerCase())
-                );
-                return routeMatch || tokenMatch;
+                return routeMatch;
             })
         })).filter(group => group.routes && group.routes.length > 0);
     }, [groupedRoutes, searchQuery]);
