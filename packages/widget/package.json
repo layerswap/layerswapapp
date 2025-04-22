@@ -2,8 +2,8 @@
   "name": "@layerswap/widget",
   "version": "0.1.0",
   "description": "Layerswap Widget for cross-chain bridging.",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
+  "main": "dist/widget.cjs.js",
+  "module": "dist/widget.es.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist",
@@ -12,8 +12,7 @@
   "scripts": {
     "type-check": "tsc --noEmit",
     "clean": "rimraf dist && rm -rf tsconfig.tsbuildinfo",
-    "build": "npm run clean && npm run type-check && rollup -c",
-    "copy-assets": "cp -r src/styles dist/styles",
+    "build": "npm run clean && tsc && vite build",
     "lint": "eslint src --ext .ts,.tsx --fix"
   },
   "author": "Layerswap",
@@ -31,6 +30,10 @@
     "bridge"
   ],
   "license": "MIT",
+  "peerDependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
   "dependencies": {
     "@bitget-wallet/web3-sdk": "^0.0.8",
     "@datadog/browser-rum": "^5.9.0",
@@ -96,11 +99,8 @@
     "lucide-react": "^0.379.0",
     "memoizee": "^0.4.17",
     "qrcode.react": "^3.1.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
     "react-error-boundary": "^4.0.11",
     "react-hot-toast": "^2.2.0",
-    "react-router-dom": "^7.5.1",
     "react-swipeable": "^7.0.0",
     "react-use-intercom": "^2.0.0",
     "starknet": "^6.23.1",
@@ -121,10 +121,14 @@
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-typescript": "^12.1.2",
+    "@swc/cli": "^0.7.3",
+    "@swc/core": "^1.11.21",
     "@types/bn.js": "^5.1.0",
     "@types/crypto-js": "^4.1.1",
     "@types/node": "^16.11.7",
     "@types/styled-jsx": "^3.4.4",
+    "@vitejs/plugin-react": "^4.4.1",
+    "@vitejs/plugin-react-swc": "^3.9.0",
     "@web3-react/types": "^6.0.7",
     "autoprefixer": "^10.4.21",
     "cross-env": "^7.0.3",
@@ -140,14 +144,15 @@
     "tailwindcss": "^3.0.24",
     "tailwindcss-themer": "^2.0.2",
     "tronweb": "^6.0.0",
-    "typescript": "^5.1"
+    "typescript": "^5.1",
+    "unplugin-swc": "^1.5.2",
+    "vite": "^6.3.2",
+    "vite-plugin-dts": "^4.5.3"
   },
   "resolutions": {
     "rpc-websockets": "7.11.0",
     "@solana/web3.js": "1.66.0",
-    "@radix-ui/react-dismissable-layer": "1.1.1",
-    "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
-    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc"
+    "@radix-ui/react-dismissable-layer": "1.1.1"
   },
   "engines": {
     "node": ">=20.9.0"

@@ -55,12 +55,12 @@ const AppWrapper: FC<AppPageProps> = ({ children, settings, themeData, apiKey })
         hideDepositMethod: router.query.hideDepositMethod === 'true'
     };
 
-    function logErrorToService(error, info) {
-        const extension_error = IsExtensionError(error)
-        if (process.env.NEXT_PUBLIC_VERCEL_ENV && !extension_error) {
-            SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: ${error?.message} %0A errorInfo: ${info?.componentStack} %0A stack: ${error?.stack ?? error.stack} %0A`)
-        }
-    }
+    // function logErrorToService(error, info) {
+    //     const extension_error = IsExtensionError(error)
+    //     if (process.env.NEXT_PUBLIC_VERCEL_ENV && !extension_error) {
+    //         SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: ${error?.message} %0A errorInfo: ${info?.componentStack} %0A stack: ${error?.stack ?? error.stack} %0A`)
+    //     }
+    // }
 
     themeData = themeData || THEME_COLORS.default
 
@@ -74,13 +74,14 @@ const AppWrapper: FC<AppPageProps> = ({ children, settings, themeData, apiKey })
                 <SettingsProvider data={appSettings}>
                     <AuthProvider>
                         <TooltipProvider delayDuration={500}>
-                            <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
+                            <ErrorBoundary
+                                FallbackComponent={ErrorFallback}
+                            // onError={logErrorToService}
+                            >
                                 <ThemeWrapper>
                                     <WalletsProviders themeData={themeData} appName={router.query.appName?.toString()}>
                                         <AsyncModalProvider>
-                                            {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                                                <Maintanance />
-                                                : children}
+                                            {children}
                                         </AsyncModalProvider>
                                     </WalletsProviders>
                                 </ThemeWrapper>

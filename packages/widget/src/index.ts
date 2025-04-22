@@ -9,7 +9,6 @@ export { Salon } from './components/Pages/Salon'
 export { Custom404 } from './components/Pages/404'
 export { NoCookies } from './components/Pages/NoCookies'
 export { RouterProvider, useAppRouter } from './context/AppRouter/RouterProvider'
-export { useReactRouterDomAppRouter } from './context/AppRouter/Routers';
 export type { AppRouter } from './context/AppRouter/routerTypes'
 export * from './Models/LayerSwapSettings'
 export { THEME_COLORS } from './Models/Theme'
