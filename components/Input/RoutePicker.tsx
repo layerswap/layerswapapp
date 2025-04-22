@@ -153,14 +153,14 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
                                     {flatTokenResults.length > 0 && (
                                         <div className="mb-2">
-                                            <div className="text-primary-text-placeholder text-base mb-1 px-3">Tokens</div>
-                                            <div className="bg-secondary-400 rounded-xl overflow-hidden mx-3">
+                                            <div className="text-primary-text-placeholder text-base leading-5 font-medium mb-1 px-3">Tokens</div>
+                                            <div className="rounded-xl overflow-hidden mx-3">
                                                 {flatTokenResults.map(({ route, token }) => {
                                                     const isSelected = selectedRoute?.display_name === route.name && selectedToken?.symbol === token.symbol;
                                                     return (
                                                         <div
                                                             key={`${route.name}-${token.symbol}-flat`}
-                                                            className={`pl-4 cursor-pointer hover:bg-secondary-300 ${isSelected ? "bg-secondary-300" : ""}`}
+                                                            className={`cursor-pointer hover:bg-secondary-300 ${isSelected ? "bg-secondary-300" : ""}`}
                                                             onClick={() => {
                                                                 handleSelect(route, token);
                                                                 closeModal();
@@ -208,7 +208,7 @@ const Group = ({ group, direction, onSelect, selectedRoute, selectedToken }: Gro
 
     return (
         <div className="overflow-hidden p-1 py-1.5 text-primary-text">
-            <div className="text-primary-text-placeholder text-base mb-2 px-3">{group.name}</div>
+            <div className="text-primary-text-placeholder text-base font-medium leading-5 mb-2 px-3">{group.name}</div>
             <div className="bg-secondary-700 rounded-lg px-2">
                 <Accordion type="multiple" value={openValues} className="space-y-2">
                     {group.routes.sort(SortNetworkRoutes).map((route, index) => (
