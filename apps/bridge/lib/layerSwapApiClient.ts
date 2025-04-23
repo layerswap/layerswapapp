@@ -12,7 +12,6 @@ import { datadogRum } from '@datadog/browser-rum';
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;
-    static bridgeApiBaseEndpoint?: string = AppSettings.LayerswapBridgeApiUri;
     static apiKey: string | undefined;
 
     _authInterceptor: AxiosInstance;

@@ -21,11 +21,12 @@ import FuelProviderWrapper from "./FuelProvider";
 import { browserInjected } from "../../../lib/wallets/connectors/browserInjected";
 import { useSyncProviders } from "../../../lib/wallets/connectors/useSyncProviders";
 import { okxWallet } from "../../../lib/wallets/connectors/okxWallet";
+import AppSettings from "../../../lib/AppSettings";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
 }
-const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
+const WALLETCONNECT_PROJECT_CONFIGS = AppSettings.WalletConnectConfig
 
 const queryClient = new QueryClient()
 
@@ -57,15 +58,15 @@ function WagmiComponent({ children }: Props) {
     const config = createConfig({
         connectors: [
             coinbaseWallet({
-                appName: 'Layerswap',
-                appLogoUrl: 'https://layerswap.io/app/symbol.png',
+                appName: WALLETCONNECT_PROJECT_CONFIGS.name,
+                appLogoUrl: WALLETCONNECT_PROJECT_CONFIGS.icons[0],
             }),
-            walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' }),
-            argent({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'argent' }),
-            ...(!isMetaMaskInjected ? [metaMask({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'metamask', providers })] : []),
-            ...(!isRainbowInjected ? [rainbow({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'rainbow' })] : []),
-            ...(!isBitKeepInjected ? [bitget({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'bitget' })] : []),
-            ...(!isOkxInjected ? [okxWallet({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'okxWallet', providers })] : []),
+            walletConnect({ projectId: WALLETCONNECT_PROJECT_CONFIGS.projectId, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' }),
+            argent({ projectId: WALLETCONNECT_PROJECT_CONFIGS.projectId, showQrModal: false, customStoragePrefix: 'argent' }),
+            ...(!isMetaMaskInjected ? [metaMask({ projectId: WALLETCONNECT_PROJECT_CONFIGS.projectId, showQrModal: false, customStoragePrefix: 'metamask', providers })] : []),
+            ...(!isRainbowInjected ? [rainbow({ projectId: WALLETCONNECT_PROJECT_CONFIGS.projectId, showQrModal: false, customStoragePrefix: 'rainbow' })] : []),
+            ...(!isBitKeepInjected ? [bitget({ projectId: WALLETCONNECT_PROJECT_CONFIGS.projectId, showQrModal: false, customStoragePrefix: 'bitget' })] : []),
+            ...(!isOkxInjected ? [okxWallet({ projectId: WALLETCONNECT_PROJECT_CONFIGS.projectId, showQrModal: false, customStoragePrefix: 'okxWallet', providers })] : []),
             browserInjected()
         ],
         chains: settingsChains as [Chain, ...Chain[]],

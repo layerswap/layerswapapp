@@ -1,8 +1,9 @@
 import { TonClient } from "@ton/ton";
+import AppSettings from "../../AppSettings";
 
 const tonClient = new TonClient({
     endpoint: 'https://toncenter.com/api/v2/jsonRPC',
-    apiKey: process.env.NEXT_PUBLIC_TON_API_KEY
+    apiKey: AppSettings.TonClientConfig.TonApiKey,
 });
 
 export default tonClient;

@@ -22,6 +22,7 @@ import DestinationWalletPicker from "./DestinationWalletPicker";
 import { Partner } from "../../Models/Partner";
 import useWallet from "../../hooks/useWallet";
 import Address from "./Address";
+import AppSettings from "../../lib/AppSettings";
 
 type Props = {
     direction: SwapDirection,
@@ -107,7 +108,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         if (!isLoading && routes?.data) setRoutesData(routes.data)
     }, [routes])
 
-    const disableExchanges = process.env.NEXT_PUBLIC_DISABLE_EXCHANGES === 'true' || sameAccountNetwork
+    const disableExchanges = AppSettings.DisableExchanges === true || sameAccountNetwork
     const popularRoutes = useMemo(() => routesData
         ?.filter(r => r.tokens?.some(r => r.status === 'active'))
         ?.sort((a, b) =>

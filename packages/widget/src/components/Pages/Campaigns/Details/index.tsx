@@ -112,7 +112,7 @@ const NotFound = () => <Widget.Content>
 </Widget.Content>
 
 
-export const CampaignDetailsPage: FC<AppPageProps & { campaignName: string }> = (props) => {
+export const CampaignDetails: FC<AppPageProps & { campaignName: string }> = (props) => {
     return (
         <AppWrapper {...props}>
             <Widget>

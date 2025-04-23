@@ -4,11 +4,12 @@ import formatAmount from '../../../../../../lib/formatAmount';
 import { useEffect, useState } from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '../../../../../shadcn/select';
 import { UserBalanceInfo } from '../../../../../../lib/loopring/defs';
+import AppSettings from '../../../../../../lib/AppSettings';
 
 export const ActivationTokenPicker = ({ availableBalances, defaultValue, onChange, feeData }: { availableBalances: UserBalanceInfo[] | undefined, defaultValue: UserBalanceInfo | undefined, feeData: FeeData | undefined, onChange: (v: string | undefined) => void }) => {
     const { tokens } = useLoopringTokens()
 
-    const resource_storage_url = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL;
+    const resource_storage_url = AppSettings.ResourseStorageUrl;
     const activationCurrencyValues: ISelectMenuItem[]
         = tokens && availableBalances?.map(b => {
             const loopringToken = tokens?.find(t => t.tokenId === b.tokenId)

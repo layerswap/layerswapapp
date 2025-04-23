@@ -11,8 +11,8 @@
   ],
   "scripts": {
     "type-check": "tsc --noEmit",
-    "clean": "rimraf dist && rm -rf tsconfig.tsbuildinfo",
-    "build": "npm run clean && tsc && vite build",
+    "clean": "rimraf dist",
+    "build": "yarn clean && yarn tsc --build && cp -r src/styles dist/styles",
     "lint": "eslint src --ext .ts,.tsx --fix"
   },
   "author": "Layerswap",
@@ -88,6 +88,7 @@
     "blake2b": "^2.1.4",
     "bn.js": "^5.2.0",
     "cmdk": "^0.2.0",
+    "copy-to-clipboard": "^3.3.3",
     "crypto-js": "^4.1.1",
     "ethers": "5.7.2",
     "formik": "^2.2.9",
