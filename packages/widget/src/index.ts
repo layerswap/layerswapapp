@@ -4,7 +4,7 @@ export { TransactionsHistory } from './components/Pages/SwapHistory';
 export { Auth } from './components/Pages/Auth';
 export { Maintanance } from './components/Pages/Maintanance';
 export { Campaigns } from './components/Pages/Campaigns';
-export { CampaignDetails } from './components/Pages/Campaigns/Details';
+export { CampaignDetailsPage as CampaignDetails } from './components/Pages/Campaigns/Details';
 export { NoCookies } from './components/Pages/NoCookies'
 export { Custom404 } from './components/Pages/404'
 export * from './Models/LayerSwapSettings'

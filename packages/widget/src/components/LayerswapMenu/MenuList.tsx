@@ -52,11 +52,11 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
             <WalletsMenu />
 
             <Menu.Group>
-                <>
+                {/* <>
                     <Menu.Item pathname='/' icon={<Home className="h-5 w-5" />} >
                         Home
                     </Menu.Item>
-                </>
+                </> */}
                 <>
                     <Menu.Item onClick={() => goToStep(MenuStep.Transactions, "/transactions")} icon={<ScrollText className="h-5 w-5" />} >
                         Transactions
