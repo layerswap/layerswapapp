@@ -3,7 +3,7 @@ import { Widget } from "../../../Widget/Index";
 import { SwapDataProvider, useSwapDataState, useSwapDataUpdate } from "../../../../context/swap";
 import NotFound from "./NotFound";
 import SwapDetails from "./SwapDetails";
-import AppWrapper, { AppPageProps } from "../../../AppWrapper";
+import LayerswapContext, { LayerswapContextProps } from "../../../../context/LayerswapContext";
 import { TimerProvider } from "../../../../context/timerContext";
 import { DepositMethodProvider } from "../../../../context/depositMethodContext";
 
@@ -31,9 +31,9 @@ const Comp: FC = () => {
     )
 };
 
-export const SwapWithdrawal: FC<AppPageProps> = (props) => {
+export const SwapWithdrawal: FC<LayerswapContextProps> = (props) => {
     return (
-        <AppWrapper {...props}>
+        <LayerswapContext {...props}>
             <SwapDataProvider>
                 <TimerProvider>
                     <DepositMethodProvider>
@@ -41,6 +41,6 @@ export const SwapWithdrawal: FC<AppPageProps> = (props) => {
                     </DepositMethodProvider>
                 </TimerProvider>
             </SwapDataProvider >
-        </AppWrapper>
+        </LayerswapContext>
     )
 }

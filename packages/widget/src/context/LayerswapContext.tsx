@@ -1,37 +1,63 @@
-import React, { FC } from "react"
-import ThemeWrapper from "./themeWrapper";
-import { ErrorBoundary } from "react-error-boundary";
-import { AuthProvider } from "../context/authContext";
-import { SettingsProvider } from "../context/settings";
-import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
-import { LayerSwapSettings } from "../Models/LayerSwapSettings";
-import ErrorFallback from "./ErrorFallback";
-import QueryProvider from "../context/query";
-import { THEME_COLORS, ThemeData } from "../Models/Theme";
-import { TooltipProvider } from "./shadcn/tooltip";
-import ColorSchema from "./ColorSchema";
-import { AsyncModalProvider } from "../context/asyncModal";
-import WalletsProviders from "./Wallet/WalletProviders";
-import { Maintanance } from "./Pages/Maintanance";
-import { IntercomProvider } from 'react-use-intercom';
 import '../styles/globals.css'
 import '../styles/dialog-transition.css'
 import '../styles/manual-trasnfer-svg.css'
 import '../styles/vaul.css'
+import { FC, useEffect } from "react"
+import ThemeWrapper from "../components/themeWrapper";
+import { ErrorBoundary } from "react-error-boundary";
+import { AuthProvider } from "./authContext";
+import { SettingsProvider } from "./settings";
+import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
+import { LayerSwapSettings } from "../Models/LayerSwapSettings";
+import ErrorFallback from "../components/ErrorFallback";
+import QueryProvider from "./query";
+import { THEME_COLORS, ThemeData } from "../Models/Theme";
+import { TooltipProvider } from "../components/shadcn/tooltip";
+import ColorSchema from "../components/ColorSchema";
+import { AsyncModalProvider } from "./asyncModal";
+import WalletsProviders from "../components/Wallet/WalletProviders";
+import { IntercomProvider } from 'react-use-intercom';
+import AppSettings from "../lib/AppSettings";
+import { getSettings } from "../helpers/getSettings";
 
-export type AppPageProps = {
+export type LayerswapContextProps = {
     children?: JSX.Element | JSX.Element[];
     settings: LayerSwapSettings;
     apiKey?: string;
     themeData?: ThemeData | null
+    integrator: string
+    version?: 'mainnet' | 'testnet'
+    walletConnect?: {
+        projectId?: string
+        name?: string
+        description?: string
+        url?: string
+        icons?: string[]
+    }
 }
-const INTERCOM_APP_ID = 'h5zisg78'
-const AppWrapper: FC<AppPageProps> = ({ children, settings, themeData, apiKey }) => {
 
-    if (!settings)
-        return <ThemeWrapper>
-            <Maintanance />
-        </ThemeWrapper>
+const INTERCOM_APP_ID = 'h5zisg78'
+const LayerswapContext: FC<LayerswapContextProps> = ({ children, settings, themeData, apiKey, integrator, version, walletConnect }) => {
+
+    AppSettings.ApiVersion = version
+    AppSettings.Integrator = integrator
+
+    if (apiKey)
+        AppSettings.apikey = apiKey
+
+    useEffect(() => {
+        if (!settings) {
+            (async () => {
+                const fetchedSettings = await getSettings()
+                if (!fetchedSettings) throw new Error('Failed to fetch settings')
+                settings = fetchedSettings
+            })()
+        }
+    }, [])
+
+    if (!settings) {
+        return <div>Loading...</div>
+    }
 
     let appSettings = new LayerSwapAppSettings(settings)
 
@@ -50,6 +76,7 @@ const AppWrapper: FC<AppPageProps> = ({ children, settings, themeData, apiKey })
                             <TooltipProvider delayDuration={500}>
                                 <ErrorBoundary
                                     FallbackComponent={ErrorFallback}
+                                // onError={logErrorToService}
                                 >
                                     <ThemeWrapper>
                                         <WalletsProviders themeData={themeData}>
@@ -68,4 +95,4 @@ const AppWrapper: FC<AppPageProps> = ({ children, settings, themeData, apiKey })
     )
 }
 
-export default AppWrapper
+export default LayerswapContext

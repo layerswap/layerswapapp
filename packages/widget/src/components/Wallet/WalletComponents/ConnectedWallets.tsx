@@ -9,7 +9,6 @@ import { Wallet } from "../../../Models/WalletProvider"
 
 export const WalletsHeader = () => {
     const { wallets } = useWallet()
-
     if (wallets.length > 0) {
         return (
             <WalletsHeaderWalletsList wallets={wallets} />
