@@ -1,12 +1,16 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "jsx": "react-jsx",
+    "emitDeclarationOnly": false,
     "module": "esnext",
     "preserveSymlinks": false,
     "declaration": true,
     "noEmit": false,
     "declarationDir": "dist",
-    "outDir": "dist"
+    "outDir": "dist",
+    "resolveJsonModule": true,
+    "esModuleInterop": true 
   },
   "include": [
     "src",
@@ -15,3 +19,4 @@
     "node_modules",
   ]
 }
+

@@ -22,6 +22,9 @@ export const LayerswapWidget: FC<LayerswapWidgetProps> = ({ apiKey, settings, th
 
     AppSettings.ApiVersion = version
     AppSettings.Integrator = integrator
+    
+    if (apiKey)
+        AppSettings.apikey = apiKey
 
     useEffect(() => {
         if (!settings) {

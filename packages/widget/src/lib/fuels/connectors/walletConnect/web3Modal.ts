@@ -4,7 +4,6 @@ import { DEFAULT_PROJECT_ID } from './constants';
 import { createAppKit, AppKit } from '@reown/appkit/react'
 import { arbitrum, mainnet, sepolia } from '@reown/appkit/networks'
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
-import { EthereumProvider } from '@walletconnect/ethereum-provider'
 
 export const createWagmiConfig = (): Config =>
   createConfig({

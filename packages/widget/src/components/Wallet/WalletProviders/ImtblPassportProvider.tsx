@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 
-const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY;
-const CLIENT_ID = process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID;
+const PUBLISHABLE_KEY = ""//process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY;
+const CLIENT_ID = ""//process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID;
 
 export const initilizePassport = async (basePath: string) => {
     const passport = (await import('@imtbl/sdk')).passport
@@ -30,12 +30,12 @@ export var passportInstance: any = undefined
 export function ImtblPassportProvider({ children }: { children: JSX.Element | JSX.Element[] }) {
 
     useEffect(() => {
-        if (!passportInstance) {
-            (async () => {
-                await initilizePassport('')
-                passportInstance.connectEvm() // EIP-6963
-            })()
-        }
+        // if (!passportInstance) {
+        //     (async () => {
+        //         await initilizePassport('')
+        //         passportInstance.connectEvm() // EIP-6963
+        //     })()
+        // }
     }, [passportInstance])
 
     return (

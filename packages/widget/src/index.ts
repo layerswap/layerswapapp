@@ -8,8 +8,7 @@ export { Campaigns } from './components/Pages/Campaigns';
 export { CampaignDetails } from './components/Pages/Campaigns/Details';
 export { NoCookies } from './components/Pages/NoCookies'
 export { Custom404 } from './components/Pages/404'
-export * from './Models/LayerSwapSettings'
-export * from './Models/Theme'
-export type * from './Models/Theme'
-export type * from './context/authContext'
-export * from './context/authContext'
+export { LayerSwapSettings } from './Models/LayerSwapSettings'
+export { type ThemeData, THEME_COLORS, type ThemeColor } from './Models/Theme'
+export { type AuthData, AuthDataUpdateContext, AuthProvider, AuthStateContext, type UpdateInterface, type UserType, useAuthDataUpdate, useAuthState } from "./context/authContext"
+export { GetSettings } from './lib/GetSettings'
