@@ -11,6 +11,7 @@ import { useMemo } from "react";
 import useParadex from "../lib/wallets/paradex/useParadex";
 import { useSettingsState } from "../context/settings";
 
+
 export type WalletPurpose = "autofil" | "withdrawal" | "asSource"
 
 export default function useWallet(network?: Network | undefined, purpose?: WalletPurpose) {
