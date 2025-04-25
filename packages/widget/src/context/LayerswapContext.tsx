@@ -2,7 +2,7 @@ import '../styles/globals.css'
 import '../styles/dialog-transition.css'
 import '../styles/manual-trasnfer-svg.css'
 import '../styles/vaul.css'
-import { FC, useEffect } from "react"
+import { FC, useEffect, useState } from "react"
 import ThemeWrapper from "../components/themeWrapper";
 import { ErrorBoundary } from "react-error-boundary";
 import { AuthProvider } from "./authContext";
@@ -37,7 +37,8 @@ export type LayerswapContextProps = {
 }
 
 const INTERCOM_APP_ID = 'h5zisg78'
-const LayerswapContext: FC<LayerswapContextProps> = ({ children, settings, themeData, apiKey, integrator, version, walletConnect }) => {
+const LayerswapContext: FC<LayerswapContextProps> = ({ children, settings: _settings, themeData, apiKey, integrator, version, walletConnect }) => {
+    const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
 
     AppSettings.ApiVersion = version
     AppSettings.Integrator = integrator
@@ -46,15 +47,16 @@ const LayerswapContext: FC<LayerswapContextProps> = ({ children, settings, theme
         AppSettings.apikey = apiKey
 
     useEffect(() => {
-        if (!settings) {
+        if (!_settings) {
             (async () => {
                 const fetchedSettings = await getSettings()
                 if (!fetchedSettings) throw new Error('Failed to fetch settings')
-                settings = fetchedSettings
+                setFetchedSettings(fetchedSettings)
             })()
         }
     }, [])
 
+    const settings = _settings || fetchedSettings
     if (!settings) {
         return <div>Loading...</div>
     }
@@ -74,10 +76,7 @@ const LayerswapContext: FC<LayerswapContextProps> = ({ children, settings, theme
                     <SettingsProvider data={appSettings}>
                         <AuthProvider>
                             <TooltipProvider delayDuration={500}>
-                                <ErrorBoundary
-                                    FallbackComponent={ErrorFallback}
-                                // onError={logErrorToService}
-                                >
+                                <ErrorBoundary FallbackComponent={ErrorFallback} >
                                     <ThemeWrapper>
                                         <WalletsProviders themeData={themeData}>
                                             <AsyncModalProvider>
