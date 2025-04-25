@@ -1,8 +1,9 @@
 import HeaderWithMenu from "../HeaderWithMenu"
 import { default as Content } from './Content';
 import { default as Footer } from './Footer';
-import { useCallback, useRef } from "react";
+import { useRef } from "react";
 import AppSettings from "../../lib/AppSettings";
+import { WalletModalProvider } from "../Wallet/WalletModal";
 
 type Props = {
    children: JSX.Element | JSX.Element[];
@@ -12,20 +13,9 @@ type Props = {
 
 const Widget = ({ children, className, hideMenu }: Props) => {
    const wrapper = useRef(null);
-
-   const goBack = useCallback(() => {
-      // window?.['navigation']?.['canGoBack'] ?
-      //    router.back()
-      //    : router.push({
-      //       pathname: "/",
-      //       query: resolvePersistantQueryParams(router.query)
-      //    })
-   }, [])
-
-
    const handleBack = null
 
-   return <>
+   return <WalletModalProvider>
       <div id="widget" className={`bg-secondary-900 rounded-lg w-full sm:overflow-hidden relative `}>
          <div className="relative z-20">
             {
@@ -55,7 +45,7 @@ const Widget = ({ children, className, hideMenu }: Props) => {
          </div>
          <div id="widget_root" />
       </div>
-   </>
+   </WalletModalProvider>
 }
 
 Widget.Content = Content

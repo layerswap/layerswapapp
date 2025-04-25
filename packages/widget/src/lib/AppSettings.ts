@@ -25,4 +25,9 @@ export default class AppSettings {
             TonApiKey: 'ac793ea74c19105d617dfbeedb827f1b267b4e91f1b15b2420d003ec49722c82',
         }
     static DisableExchanges: boolean = false
+    static FeaturedNetwork?: {
+        initialDirection: 'from' | 'to',
+        network: string,
+        oppositeDirectionOverrides?: 'allNetworks' | 'onlyNetworks' | 'allExchanges' | 'onlyExchanges' | string[]
+    }
 }

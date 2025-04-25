@@ -5,7 +5,7 @@ import LayerSwapApiClient, { Campaign } from "../../../lib/layerSwapApiClient";
 import SpinIcon from "../../Icons/spinIcon";
 import useSWR from 'swr'
 import { Widget } from "../../Widget/Index";
-import AppWrapper, { AppPageProps } from "../../AppWrapper";
+import LayerswapContext, { LayerswapContextProps } from "../../../context/LayerswapContext";
 import VaulDrawer from "../../Modal/vaulModal";
 import { CampaignDetailsComponent } from "./Details";
 
@@ -134,14 +134,14 @@ function IsCampaignActive(campaign: Campaign) {
     return (new Date(campaign?.end_date).getTime() > now.getTime())
 }
 
-export const Campaigns: FC<AppPageProps & { hideMenu?: boolean }> = (props) => {
+export const Campaigns: FC<LayerswapContextProps & { hideMenu?: boolean }> = (props) => {
     return (
-        <AppWrapper {...props}>
+        <LayerswapContext {...props}>
             <Widget hideMenu={props.hideMenu} className="min-h-[520px]">
                 <Widget.Content>
                     <CampaignsComponent />
                 </Widget.Content>
             </Widget>
-        </AppWrapper>
+        </LayerswapContext>
     )
 }
