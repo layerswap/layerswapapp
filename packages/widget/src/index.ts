@@ -1,4 +1,3 @@
-export { unused } from './someunusedfile'
 export { LayerswapWidget } from './components/LayerswapWidget';
 export { Swap } from './components/Pages/SwapPages/Form';
 export { SwapWithdrawal } from './components/Pages/SwapPages/Withdraw';
