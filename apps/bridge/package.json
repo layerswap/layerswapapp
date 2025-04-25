@@ -15,8 +15,6 @@
   "dependencies": {
     "@badrap/bar-of-progress": "^0.2.2",
     "@datadog/browser-rum": "^5.9.0",
-    "@dynamic-labs/ethereum": "^4.12.4",
-    "@dynamic-labs/sdk-react-core": "^4.12.4",
     "@headlessui/react": "^2.1.1",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-checkbox": "^1.1.5",

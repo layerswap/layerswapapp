@@ -96,7 +96,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 ref={mobileModalRef}
                 animate={controls}
                 className={`max-h-full overflow-y-hidden group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'rounded-t-2xl' : ''}  bg-secondary-900 ${wrapperHeightClass} ${className} shadow-lg`}
-                initial={{ y: "0%" }}
+                initial={{ y: "20%" }}
                 exit={{ y: "100%" }}
                 transition={transitionProps}
                 drag={height != 'full' ? "y" : false}

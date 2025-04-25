@@ -1,6 +1,6 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { SwapStatus } from "../../Models/SwapStatus";
-// import { useIntercom } from "react-use-intercom";
+import { useIntercom } from "react-use-intercom";
 import { useAuthState } from "../../context/authContext";
 import { SwapItem, TransactionType } from "../../lib/layerSwapApiClient";
 import { datadogRum } from "@datadog/browser-rum";
@@ -8,7 +8,7 @@ import { datadogRum } from "@datadog/browser-rum";
 const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTime, swap }) => {
 
     const { email, userId } = useAuthState();
-    // const { boot, show, update } = useIntercom();
+    const { boot, show, update } = useIntercom();
     const [countdown, setCountdown] = useState<number>();
     const [thresholdElapsed, setThresholdElapsed] = useState<boolean>(false);
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
@@ -30,12 +30,12 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
         return () => clearInterval(timer);
     }, [initialTime, swap.status, swapInputTransaction, thresholdElapsed]);
 
-    // // const updateWithProps = () => update({ userId, customAttributes: { email: email, swapId: swap.id } })
-    // const startIntercom = useCallback(() => {
-    //     // boot();
-    //     // show();
-    //     // updateWithProps();
-    // }, [boot, show, updateWithProps]);
+    const updateWithProps = () => update({ userId, customAttributes: { email: email, swapId: swap.id } })
+    const startIntercom = useCallback(() => {
+        boot();
+        show();
+        updateWithProps();
+    }, [boot, show, updateWithProps]);
 
     const formatTime = (milliseconds: number): string => {
         const totalSeconds = Math.floor(milliseconds / 1000);
@@ -63,7 +63,7 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
                 thresholdElapsed && swap.status !== SwapStatus.UserTransferPending ? (
                     <div>
                         <span>Transaction is taking longer than expected </span>
-                        {/* <a className='underline hover:cursor-pointer' onClick={() => startIntercom()}>please contact our support.</a> */}
+                        <a className='underline hover:cursor-pointer' onClick={() => startIntercom()}>please contact our support.</a>
                     </div>
                 ) : countdown === 0 && swap.status !== SwapStatus.Completed ? (
                     <div>
