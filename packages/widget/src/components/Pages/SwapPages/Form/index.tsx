@@ -6,8 +6,9 @@ import { SWRConfig, mutate } from 'swr';
 import { SwapStatus } from '../../../../Models/SwapStatus';
 import { FeeProvider } from '../../../../context/feeContext';
 import AppWrapper, { AppPageProps } from '../../../AppWrapper';
+import { SwapFormValues } from './SwapFormValues';
 
-export const Swap: FC<AppPageProps> = (props) => {
+export const Swap: FC<AppPageProps & { formValues?: SwapFormValues }> = (props) => {
   return (
     <AppWrapper {...props}>
       <div className="text-primary-text">
@@ -15,7 +16,7 @@ export const Swap: FC<AppPageProps> = (props) => {
           <SwapDataProvider >
             <TimerProvider>
               <FeeProvider>
-                <SwapForm />
+                <SwapForm formValues={props.formValues} />
               </FeeProvider>
             </TimerProvider>
           </SwapDataProvider >

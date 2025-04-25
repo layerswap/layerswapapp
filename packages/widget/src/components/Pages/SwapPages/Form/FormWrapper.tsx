@@ -15,7 +15,6 @@ import { ApiResponse } from "../../../../Models/ApiResponse";
 import { Partner } from "../../../../Models/Partner";
 import { UserType, useAuthDataUpdate } from "../../../../context/authContext";
 import { ApiError, LSAPIKnownErrorCode } from "../../../../Models/ApiError";
-import { resolvePersistantQueryParams } from "../../../../helpers/querryHelper";
 import { useQueryState } from "../../../../context/query";
 import TokenService from "../../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../../lib/userAuthApiClient";
@@ -39,7 +38,7 @@ type NetworkToConnect = {
     AppURL: string;
 }
 
-export default function Form() {
+export default function Form({ formValues }: { formValues?: SwapFormValues }) {
 
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
@@ -144,8 +143,8 @@ export default function Form() {
 
     const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
 
-    const initialValues: SwapFormValues = swapResponse ? generateSwapInitialValuesFromSwap(swapResponse, settings)
-        : generateSwapInitialValues(settings, query)
+    const initialValues: SwapFormValues = formValues ?? (swapResponse ? generateSwapInitialValuesFromSwap(swapResponse, settings)
+        : generateSwapInitialValues(settings, query))
 
     useEffect(() => {
         formikRef.current?.validateForm();
