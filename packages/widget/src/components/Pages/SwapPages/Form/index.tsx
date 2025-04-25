@@ -14,7 +14,7 @@ type SwapProps = {
   featuredNetwork?: {
     initialDirection: 'from' | 'to',
     network: string,
-    oppositeDirectionOverrides?: 'allNetworks' | 'onlyNetworks' | 'allExchanges' | 'onlyExchanges' | string[]
+    oppositeDirectionOverrides?: 'onlyNetworks' | 'onlyExchanges' | string[]
   }
 }
 

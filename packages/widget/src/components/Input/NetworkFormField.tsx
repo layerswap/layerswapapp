@@ -279,13 +279,9 @@ function GenerateMenuItems(props: GenerateMenuItemsProps): (SelectMenuItem<Route
         const featuredNetworkCureentDirection = from?.name === featuredNetwork.network ? 'from' : 'to';
 
         if (direction !== featuredNetworkCureentDirection) {
-            if (overrides === 'allNetworks') {
-                mappedLayers = []
-            } else if (overrides === 'onlyNetworks') {
+            if (overrides === 'onlyNetworks') {
                 mappedLayers = mappedLayers.filter(item => item.isExchange || item.baseObject.name !== featuredNetwork.network);
                 mappedExchanges = []
-            } else if (overrides === 'allExchanges') {
-                mappedExchanges = [];
             } else if (overrides === 'onlyExchanges') {
                 mappedExchanges = mappedExchanges.filter(item => item.baseObject.name !== featuredNetwork.network);
                 mappedLayers = []
