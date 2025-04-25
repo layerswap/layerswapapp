@@ -10,7 +10,7 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
     return (
         <>
             {themeData &&
-                <style global jsx>{`
+                <style>{`
                     :root {
                         --ls-colors-backdrop:${themeData.backdrop};
                         --ls-colors-logo: ${themeData.logo};

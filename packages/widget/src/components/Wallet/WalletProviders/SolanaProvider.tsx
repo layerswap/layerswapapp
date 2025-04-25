@@ -11,8 +11,9 @@ import {
 } from "@solana/wallet-adapter-react";
 import { ReactNode, useMemo } from "react";
 import { CoinbaseWalletAdapter } from "@solana/wallet-adapter-coinbase";
+import AppSettings from "../../../lib/AppSettings";
 
-const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
+const WALLETCONNECT_PROJECT_CONFIG = AppSettings.WalletConnectConfig;
 
 function SolanaProvider({ children }: { children: ReactNode }) {
     const solNetwork = WalletAdapterNetwork.Mainnet;
@@ -27,12 +28,12 @@ function SolanaProvider({ children }: { children: ReactNode }) {
             new WalletConnectWalletAdapter({
                 network: solNetwork,
                 options: {
-                    projectId: WALLETCONNECT_PROJECT_ID,
+                    projectId: WALLETCONNECT_PROJECT_CONFIG.projectId,
                     metadata: {
-                        name: 'Layerwap',
-                        description: 'Layerswap App',
-                        url: 'https://layerswap.io/app/',
-                        icons: ['https://www.layerswap.io/app/symbol.png'],
+                        name: WALLETCONNECT_PROJECT_CONFIG.name,
+                        description: WALLETCONNECT_PROJECT_CONFIG.description,
+                        url: WALLETCONNECT_PROJECT_CONFIG.url,
+                        icons: WALLETCONNECT_PROJECT_CONFIG.icons,
                     },
                 },
             })

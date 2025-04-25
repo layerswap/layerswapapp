@@ -3,7 +3,7 @@ const configs: {
     feedback_chat_id: string,
     error_token: string,
     error_chat_id: string
-} = process.env.NEXT_PUBLIC_TELEGRAM_CONFIGS ? JSON.parse(process.env.NEXT_PUBLIC_TELEGRAM_CONFIGS) : undefined
+} = {} as any//rocess.env.NEXT_PUBLIC_TELEGRAM_CONFIGS ? JSON.parse(process.env.NEXT_PUBLIC_TELEGRAM_CONFIGS) : undefined
 
 export const SendFeedbackMessage = async (title: string, text: string) => {
     if (!configs.feedback_token || !configs.feedback_chat_id) return

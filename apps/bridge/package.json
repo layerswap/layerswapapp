@@ -15,6 +15,8 @@
   "dependencies": {
     "@badrap/bar-of-progress": "^0.2.2",
     "@datadog/browser-rum": "^5.9.0",
+    "@dynamic-labs/ethereum": "^4.12.4",
+    "@dynamic-labs/sdk-react-core": "^4.12.4",
     "@headlessui/react": "^2.1.1",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-checkbox": "^1.1.5",
@@ -26,7 +28,6 @@
     "@radix-ui/react-tooltip": "^1.0.7",
     "@tailwindcss/forms": "^0.5.0",
     "@tailwindcss/typography": "^0.5.2",
-    "@uidotdev/usehooks": "^2.4.1",
     "axios": "^0.21.4",
     "blake2b": "^2.1.4",
     "bn.js": "^5.2.0",
@@ -44,6 +45,7 @@
     "swr": "^2.2.5",
     "tailwindcss-animate": "^1.0.5",
     "uuid": "^9.0.0",
+    "viem": "^2.28.0",
     "web-encoding": "^1.1.5",
     "web3": "1.8.0",
     "zustand": "^4.4.1"

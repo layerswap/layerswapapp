@@ -2,6 +2,7 @@ import { defineChain, parseGwei } from "viem";
 import { Network } from "../Models/Network";
 import NetworkSettings from "./NetworkSettings";
 import { SendErrorMessage } from "./telegram";
+import AppSettings from "./AppSettings";
 
 export default function resolveChain(network: Network) {
 
@@ -15,7 +16,7 @@ export default function resolveChain(network: Network) {
     const { evm_multicall_contract } = metadata || {}
 
     if (!nativeCurrency) {
-        SendErrorMessage("UI Settings error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: could not find native currency for ${network.name} ${JSON.stringify(network)} %0A`)
+        SendErrorMessage("UI Settings error", `env: ${AppSettings.ApiVersion} %0A url: ${AppSettings.Integrator} %0A message: could not find native currency for ${network.name} ${JSON.stringify(network)} %0A`)
         return
     }
 

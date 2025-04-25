@@ -12,7 +12,7 @@ import { LSConnector } from "../connectors/EthereumProvider"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useConnectModal } from "../../../components/Wallet/WalletModal"
 import { explicitInjectedproviderDetected } from "../connectors/getInjectedConnector"
-import walletsData from "./walletsData.json"
+// import walletsData from "./walletsData.json"
 
 type Props = {
     network: Network | undefined,
@@ -187,17 +187,17 @@ export default function useEVM({ network }: Props): WalletProvider {
     const activeBrowserWallet = explicitInjectedproviderDetected() && allConnectors.filter(c => c.id !== "com.immutable.passport" && c.type === "injected").length === 1
     const filterConnectors = wallet => !isNotAvailable(wallet, network) && ((wallet.id === "injected" ? activeBrowserWallet : true))
 
-    const fetchedWallets = useMemo(() => Object.values(walletsData.listings), [])
+    // const fetchedWallets = useMemo(() => Object.values(walletsData.listings), [])
 
     {/* //TODO: refactor ordering */ }
     const availableWalletsForConnect = allConnectors.filter(filterConnectors)
         .map(w => {
-            const isMobileSupported = fetchedWallets.some(w2 => w2.name.toLowerCase() === w.name.toLowerCase() && w2.mobile.native)
+            // const isMobileSupported = fetchedWallets.some(w2 => w2.name.toLowerCase() === w.name.toLowerCase() && w2.mobile.native)
             return {
                 ...w,
                 order: resolveWalletConnectorIndex(w.id),
                 type: (w.type == 'injected' && w.id !== 'com.immutable.passport') ? w.type : "other",
-                isMobileSupported
+                // isMobileSupported
             }
         })
 

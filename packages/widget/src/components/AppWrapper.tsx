@@ -11,20 +11,22 @@ import { THEME_COLORS, ThemeData } from "../Models/Theme";
 import { TooltipProvider } from "./shadcn/tooltip";
 import ColorSchema from "./ColorSchema";
 import { AsyncModalProvider } from "../context/asyncModal";
-import LayerSwapApiClient from "../lib/layerSwapApiClient";
 import WalletsProviders from "./Wallet/WalletProviders";
 import { Maintanance } from "./Pages/Maintanance";
 import '../styles/globals.css'
+import '../styles/dialog-transition.css'
+import '../styles/manual-trasnfer-svg.css'
+import '../styles/vaul.css'
+import { IntercomProvider } from 'react-use-intercom';
 
 export type AppPageProps = {
     children?: JSX.Element | JSX.Element[];
-    settings?: LayerSwapSettings;
+    settings: LayerSwapSettings;
     apiKey?: string;
     themeData?: ThemeData | null
-};
-
+}
+const INTERCOM_APP_ID = 'h5zisg78'
 const AppWrapper: FC<AppPageProps> = ({ children, settings, themeData, apiKey }) => {
-    LayerSwapApiClient.apiKey = apiKey
 
     if (!settings)
         return <ThemeWrapper>
@@ -65,26 +67,28 @@ const AppWrapper: FC<AppPageProps> = ({ children, settings, themeData, apiKey })
                 themeData &&
                 <ColorSchema themeData={themeData} />
             }
-            <QueryProvider query={{}}>
-                <SettingsProvider data={appSettings}>
-                    <AuthProvider>
-                        <TooltipProvider delayDuration={500}>
-                            <ErrorBoundary
-                                FallbackComponent={ErrorFallback}
-                            // onError={logErrorToService}
-                            >
-                                <ThemeWrapper>
-                                    <WalletsProviders themeData={themeData}>
-                                        <AsyncModalProvider>
-                                            {children}
-                                        </AsyncModalProvider>
-                                    </WalletsProviders>
-                                </ThemeWrapper>
-                            </ErrorBoundary>
-                        </TooltipProvider>
-                    </AuthProvider>
-                </SettingsProvider >
-            </QueryProvider >
+            <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
+                <QueryProvider query={{}}>
+                    <SettingsProvider data={appSettings}>
+                        <AuthProvider>
+                            <TooltipProvider delayDuration={500}>
+                                <ErrorBoundary
+                                    FallbackComponent={ErrorFallback}
+                                // onError={logErrorToService}
+                                >
+                                    <ThemeWrapper>
+                                        <WalletsProviders themeData={themeData}>
+                                            <AsyncModalProvider>
+                                                {children}
+                                            </AsyncModalProvider>
+                                        </WalletsProviders>
+                                    </ThemeWrapper>
+                                </ErrorBoundary>
+                            </TooltipProvider>
+                        </AuthProvider>
+                    </SettingsProvider >
+                </QueryProvider >
+            </IntercomProvider>
         </>
     )
 }

@@ -6,14 +6,14 @@ import Navbar from "./Common/navbar"
 import GoHomeButton from "./utils/GoHome"
 import { IsExtensionError } from "../helpers/errorHelper";
 import { useAuthState } from "../context/authContext";
-import { useIntercom } from "react-use-intercom";
+// import { useIntercom } from "react-use-intercom";
 
 export default function ErrorFallback({ error, resetErrorBoundary }) {
 
     const extension_error = IsExtensionError(error)
     const { email, userId } = useAuthState()
-    const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ userId, customAttributes: { email: email, } })
+    // const { boot, show, update } = useIntercom()
+    // const updateWithProps = () => update({ userId, customAttributes: { email: email, } })
 
     return (
         <div className="styled-scroll">
@@ -46,9 +46,9 @@ export default function ErrorFallback({ error, resetErrorBoundary }) {
 
                                         <span
                                             onClick={() => {
-                                                boot();
-                                                show();
-                                                updateWithProps()
+                                                // boot();
+                                                // show();
+                                                // updateWithProps()
                                             }}
                                             className="underline cursor-pointer text-primary"
                                         >

@@ -18,7 +18,6 @@
         "resolveJsonModule": true,
         "isolatedModules": true,
         "jsx": "preserve",
-        "incremental": true
     },
     "exclude": ["**/.*/", "**/build", "**/dist", "node_modules"]
 }
