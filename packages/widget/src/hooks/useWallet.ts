@@ -1,5 +1,5 @@
 import { Network } from "../Models/Network"
-import useEVM from "../lib/wallets/evm/useEVM";
+import useEVM from "../lib/wallets/evmDynamic/useEVM";
 import useImtblX from "../lib/wallets/imtblX/useImtblX";
 import useSVM from "../lib/wallets/solana/useSVM";
 import useStarknet from "../lib/wallets/starknet/useStarknet";

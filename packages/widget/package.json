@@ -49,6 +49,9 @@
   "dependencies": {
     "@bitget-wallet/web3-sdk": "^0.0.8",
     "@datadog/browser-rum": "^5.9.0",
+    "@dynamic-labs/ethereum": "^4.13.0",
+    "@dynamic-labs/sdk-react-core": "^4.13.0",
+    "@dynamic-labs/wagmi-connector": "^4.13.0",
     "@eth-optimism/contracts-ts": "^0.15.0",
     "@ethereumjs/util": "^9.1.0",
     "@fuel-ts/account": "^0.96.1",
