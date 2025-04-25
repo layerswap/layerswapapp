@@ -20,7 +20,6 @@ import RouteIcon from "./RouteIcon";
 import SourceWalletPicker from "./SourceWalletPicker";
 import DestinationWalletPicker from "./DestinationWalletPicker";
 import { Partner } from "../../Models/Partner";
-import useWallet from "../../hooks/useWallet";
 import Address from "./Address";
 import AppSettings from "../../lib/AppSettings";
 
@@ -32,10 +31,6 @@ type Props = {
     currencyIsSetManually?: boolean,
     setCurrencyIsSetManually?: Dispatch<SetStateAction<boolean>>
 }
-
-// const Address = dynamic(() => import("./Address"), {
-//     loading: () => <></>,
-// });
 
 const GROUP_ORDERS = { "Popular": 1, "Fiat": 3, "Networks": 4, "Exchanges": 5, "Other": 10, "Unavailable": 20 };
 export const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
@@ -61,17 +56,9 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     } = useFormikContext<SwapFormValues>();
     const name = direction
 
-    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, destination_address, currencyGroup } = values
+    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, currencyGroup } = values
     const query = useQueryState()
     const { lockFrom, lockTo } = query
-
-    const sourceWalletNetwork = fromExchange ? undefined : values.from
-    const destinationWalletNetwork = toExchange ? undefined : values.to
-
-    const { provider: withdrawalProvider } = useWallet(sourceWalletNetwork, 'withdrawal')
-    const { provider: autofilProvider } = useWallet(destinationWalletNetwork, 'autofil')
-
-    const availableWallets = withdrawalProvider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
 
     const { sourceExchanges, destinationExchanges, destinationRoutes, sourceRoutes } = useSettingsState();
     let placeholder = "";
@@ -127,7 +114,9 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             exchanges: (toExchange || disableExchanges ? [] : exchangesData),
             direction,
             lock: !!(from && lockFrom),
-            query, popularRoutes
+            query, popularRoutes,
+            from,
+            to
         });
     }
     else {
@@ -138,7 +127,9 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             exchanges: (fromExchange || disableExchanges ? [] : exchangesData),
             direction,
             lock: !!(to && lockTo),
-            query, popularRoutes
+            query, popularRoutes,
+            from,
+            to
         });
     }
 
@@ -229,13 +220,17 @@ type GenerateMenuItemsProps = {
     exchanges: Exchange[],
     direction: SwapDirection,
     lock: boolean,
-    query: QueryParams
+    query: QueryParams,
+    from: RouteNetwork | undefined,
+    to: RouteNetwork | undefined
 }
 
 function GenerateMenuItems(props: GenerateMenuItemsProps): (SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean })[] {
-    const { direction, exchanges, lock, popularRoutes, query, routesData: routes } = props
+    const { direction, exchanges, lock, popularRoutes, query, routesData: routes, from, to } = props
 
-    const mappedLayers = routes?.map(r => {
+    const featuredNetwork = AppSettings.FeaturedNetwork
+
+    let mappedLayers = routes?.map(r => {
         const isNewlyListed = r?.tokens?.every(t => new Date(t?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK);
         const badge = isNewlyListed ? (
             <span className="bg-secondary-50 px-1 rounded text-xs flex items-center">New</span>
@@ -265,7 +260,7 @@ function GenerateMenuItems(props: GenerateMenuItemsProps): (SelectMenuItem<Route
         return res;
     }).sort(SortNetworks) || [];
 
-    const mappedExchanges = exchanges?.map(e => {
+    let mappedExchanges = exchanges?.map(e => {
         const res: SelectMenuItem<Exchange> & { isExchange: boolean } = {
             baseObject: e,
             id: e.name,
@@ -278,6 +273,31 @@ function GenerateMenuItems(props: GenerateMenuItemsProps): (SelectMenuItem<Route
         }
         return res;
     }).sort(SortAscending) || [];
+
+    if (featuredNetwork && featuredNetwork.oppositeDirectionOverrides) {
+        const overrides = featuredNetwork.oppositeDirectionOverrides;
+        const featuredNetworkCureentDirection = from?.name === featuredNetwork.network ? 'from' : 'to';
+
+        if (direction !== featuredNetworkCureentDirection) {
+            if (overrides === 'allNetworks') {
+                mappedLayers = []
+            } else if (overrides === 'onlyNetworks') {
+                mappedLayers = mappedLayers.filter(item => item.isExchange || item.baseObject.name !== featuredNetwork.network);
+                mappedExchanges = []
+            } else if (overrides === 'allExchanges') {
+                mappedExchanges = [];
+            } else if (overrides === 'onlyExchanges') {
+                mappedExchanges = mappedExchanges.filter(item => item.baseObject.name !== featuredNetwork.network);
+                mappedLayers = []
+            } else if (Array.isArray(overrides)) {
+                mappedLayers = mappedLayers.filter(item => !overrides.includes(item.baseObject.name));
+                mappedExchanges = mappedExchanges.filter(item => !overrides.includes(item.baseObject.name));
+            }
+        } else {
+            mappedLayers = mappedLayers.filter(item => item.baseObject.name == featuredNetwork.network);
+            mappedExchanges = mappedExchanges.filter(item => item.baseObject.name == featuredNetwork.network);
+        }
+    }
 
     const items = [...mappedExchanges, ...mappedLayers]
     return items

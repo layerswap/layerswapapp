@@ -77,9 +77,7 @@ function WagmiComponent({ children }: Props) {
         <WagmiProvider config={config} >
             <QueryClientProvider client={queryClient}>
                 <FuelProviderWrapper>
-                    <WalletModalProvider>
-                        {children}
-                    </WalletModalProvider>
+                    {children}
                 </FuelProviderWrapper>
             </QueryClientProvider>
         </WagmiProvider >

@@ -1,10 +1,13 @@
 {
   "extends": "../../tsconfig.base.json",
-  // "compilerOptions": {
-  //   "paths": {
-  //     "@layerswap/widget": ["../../packages/widget/dist"],
-  //   }
-  // },
+  "compilerOptions": {
+    "paths": {
+      "@layerswap/widget": [
+        "../../packages/widget/src"
+      ],
+    },
+    "incremental": true
+  },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
@@ -15,7 +18,4 @@
   "exclude": [
     "node_modules"
   ],
-  "compilerOptions": {
-    "incremental": true
-  }
 }

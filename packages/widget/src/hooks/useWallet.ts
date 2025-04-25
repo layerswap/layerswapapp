@@ -10,14 +10,17 @@ import useTron from "../lib/wallets/tron/useTron";
 import { useMemo } from "react";
 import useParadex from "../lib/wallets/paradex/useParadex";
 import { useSettingsState } from "../context/settings";
+import { useWalletProviderOverrides } from "../context/walletHooksProvider";
+
 
 export type WalletPurpose = "autofil" | "withdrawal" | "asSource"
 
 export default function useWallet(network?: Network | undefined, purpose?: WalletPurpose) {
     const { networks } = useSettingsState()
+    const overrides = useWalletProviderOverrides()
 
     const walletProviders: WalletProvider[] = [
-        useEVM({ network }),
+        overrides?.evm ?? useEVM({ network }),
         useStarknet(),
         useImtblX(),
         useSVM({ network }),

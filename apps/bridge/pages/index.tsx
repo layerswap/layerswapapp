@@ -1,55 +1,38 @@
 import Layout from '../components/Layout'
 import { InferGetServerSidePropsType } from 'next'
 import { getServerSideProps } from '../helpers/getSettings'
-import { Swap } from '@layerswap/widget'
-import LayerSwapApiClient from '../lib/layerSwapApiClient'
+import { Swap, LayerswapContext } from '@layerswap/widget'
+import CustomHooks from '../components/CustomHooks'
+import {
+  DynamicContextProvider,
+  DynamicWidget,
+} from "@dynamic-labs/sdk-react-core";
+import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 
 export default function Home({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-  LayerSwapApiClient.apiKey = apiKey
-
-  // const sourceRoutesDeafultKey = resolveRoutesURLForSelectedToken({ direction: 'from', network: undefined, token: undefined, includes: { unmatched: true, unavailable: true } })
-  // const destinationRoutesDefaultKey = resolveRoutesURLForSelectedToken({ direction: 'to', network: undefined, token: undefined, includes: { unmatched: true, unavailable: true } })
-
-  // const sourceExchangesDeafaultkey = resolveExchangesURLForSelectedToken("from", {})
-  // const destinationExchangesDeafaultkey = resolveExchangesURLForSelectedToken("to", {})
 
   return (
-    // <SWRConfig value={{
-    //   use: [updatePendingCount],
-    //   fallback: {
-    //     [sourceRoutesDeafultKey]: { data: settings.sourceRoutes, error: null },
-    //     [destinationRoutesDefaultKey]: { data: settings.destinationRoutes, error: null },
-    //     [sourceExchangesDeafaultkey]: { data: settings.sourceExchanges, error: null },
-    //     [destinationExchangesDeafaultkey]: { data: settings.destinationExchanges, error: null },
-    //   }
-    // }}>
-      <Layout settings={settings} themeData={themeData}>
-        <Swap apiKey={apiKey} settings={settings} themeData={themeData} />
-      </Layout>
-    // </SWRConfig>
+    <Layout settings={settings} themeData={themeData}>
+      <DynamicContextProvider
+        settings={{
+          // Find your environment id at https://app.dynamic.xyz/dashboard/developer
+          environmentId: "2762a57b-faa4-41ce-9f16-abff9300e2c9",
+          walletConnectors: [EthereumWalletConnectors],
+        }}
+      >
+        <LayerswapContext
+          integrator='experimental'
+          apiKey={apiKey}
+          settings={settings}
+          themeData={themeData}
+        >
+          <CustomHooks>
+            <Swap />
+          </CustomHooks>
+        </LayerswapContext>
+      </DynamicContextProvider>
+    </Layout>
   )
 }
-
-// const swapsStatuses: { [key: string]: SwapStatus } = {}
-
-// function updatePendingCount(useSWRNext) {
-//   return (key, fetcher, config) => {
-//     const swr = useSWRNext(key, fetcher, config)
-//     useEffect(() => {
-//       const swapKeyPattern = /^\/swaps\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/;
-//       // Update ref if data is not undefined.
-//       const swap = swr.data?.data
-//       if (swapKeyPattern.test(key) && swap) {
-//         const status = swap.status
-//         if (swapsStatuses[swap.id] !== status) {
-//           mutate('/internal/swaps/count')
-//         }
-//         swapsStatuses[swap.id] = status
-//       }
-//     }, [swr.data, key])
-
-//     return useSWRNext(key, fetcher, config)
-//   }
-// }
 
 export { getServerSideProps };
