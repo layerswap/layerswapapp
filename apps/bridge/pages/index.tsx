@@ -27,7 +27,13 @@ export default function Home({ settings, themeData, apiKey }: InferGetServerSide
           themeData={themeData}
         >
           <CustomHooks>
-            <Swap />
+            <Swap 
+              featuredNetwork={{
+                initialDirection: 'from',
+                network: 'ETHEREUM_MAINNET',
+                oppositeDirectionOverrides: 'onlyExchanges',
+              }}
+            />
           </CustomHooks>
         </LayerswapContext>
       </DynamicContextProvider>

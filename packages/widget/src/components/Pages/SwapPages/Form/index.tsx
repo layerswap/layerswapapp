@@ -1,4 +1,4 @@
-import { FC, useEffect } from 'react';
+import { FC, useEffect, useMemo } from 'react';
 import { SwapDataProvider } from '../../../../context/swap';
 import { TimerProvider } from '../../../../context/timerContext';
 import SwapForm from "./FormWrapper"
@@ -6,16 +6,46 @@ import { SWRConfig, mutate } from 'swr';
 import { SwapStatus } from '../../../../Models/SwapStatus';
 import { FeeProvider } from '../../../../context/feeContext';
 import { SwapFormValues } from './SwapFormValues';
-import { WalletModalProvider } from '../../../Wallet/WalletModal';
+import { useSettingsState } from '../../../../context/settings';
+import AppSettings from '../../../../lib/AppSettings';
 
-export const Swap: FC<{ formValues?: SwapFormValues }> = (props) => {
+type SwapProps = {
+  formValues?: SwapFormValues,
+  featuredNetwork?: {
+    initialDirection: 'from' | 'to',
+    network: string,
+    oppositeDirectionOverrides?: 'allNetworks' | 'onlyNetworks' | 'allExchanges' | 'onlyExchanges' | string[]
+  }
+}
+
+export const Swap: FC<SwapProps> = (props) => {
+  const { formValues, featuredNetwork } = props;
+  const settings = useSettingsState()
+
+  AppSettings.FeaturedNetwork = featuredNetwork
+
+  const overriddenFormValues = useMemo(() => {
+    const updatedFormValues = { ...formValues };
+    if (featuredNetwork) {
+      if (featuredNetwork.initialDirection === 'from') {
+        const from = settings?.sourceRoutes?.find(network => network.name === featuredNetwork.network);
+        updatedFormValues.from = from;
+      } else if (featuredNetwork.initialDirection === 'to') {
+        const to = settings?.destinationRoutes?.find(network => network.name === featuredNetwork.network);
+        updatedFormValues.to = to;
+      }
+      return updatedFormValues;
+    }
+    return updatedFormValues;
+  }, [formValues, featuredNetwork]);
+
   return (
     <div className="text-primary-text">
       <SWRConfig value={{ use: [updatePendingCount] }}>
         <SwapDataProvider >
           <TimerProvider>
             <FeeProvider>
-              <SwapForm formValues={props.formValues} />
+              <SwapForm formValues={overriddenFormValues} />
             </FeeProvider>
           </TimerProvider>
         </SwapDataProvider >

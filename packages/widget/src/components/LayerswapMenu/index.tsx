@@ -6,9 +6,6 @@ import { MenuStep } from "../../Models/Wizard";
 import MenuList from "./MenuList";
 import Wizard from "../Wizard/Wizard";
 import WizardItem from "../Wizard/WizardItem";
-import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
-import { AppRouter } from "../../context/AppRouter/routerTypes";
-import Modal from "../Modal/modal";
 import HistoryList from "../Pages/SwapHistory/History";
 import { CampaignsComponent } from "../Pages/Campaigns";
 import VaulDrawer from "../Modal/vaulModal";
@@ -62,7 +59,10 @@ const Comp = () => {
                 }
                 modalId="menuModal"
             >
-                <VaulDrawer.Snap id='item-1'>
+                <VaulDrawer.Snap
+                    id='item-1'
+                    fullheight={true}
+                >
                     <Wizard wizardId='menuWizard' >
                         <WizardItem StepName={MenuStep.Menu} inModal>
                             <MenuList goToStep={handleGoToStep} />
@@ -86,28 +86,6 @@ const LayerswapMenu: FC = () => {
             <Comp />
         </FormWizardProvider>
     )
-}
-
-//TODO: move URI handling to wizard provider
-export const setMenuPath = (path: string, router: AppRouter) => {
-    const basePath = router?.basePath || ""
-    var finalURI = window.location.protocol + "//"
-        + window.location.host + `${basePath}${path}`;
-    const params = resolvePersistantQueryParams(router.query)
-    if (params && Object.keys(params).length) {
-        const search = new URLSearchParams(params as any);
-        if (search)
-            finalURI += `?${search}`
-    }
-    window.history.pushState({ ...window.history.state, as: router.asPath, url: finalURI }, '', finalURI);
-}
-
-export const clearMenuPath = (router: AppRouter) => {
-    const basePath = router?.basePath || ""
-    let finalURI = window.location.protocol + "//"
-        + window.location.host + basePath + router.asPath;
-
-    window.history.replaceState({ ...window.history.state, as: router.asPath, url: finalURI }, '', finalURI);
 }
 
 export default LayerswapMenu
