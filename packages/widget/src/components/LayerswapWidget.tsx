@@ -1,4 +1,4 @@
-import { FC, useEffect } from "react"
+import { FC, useEffect, useMemo } from "react"
 import { Swap } from "./Pages/SwapPages/Form"
 import { AppPageProps } from "./AppWrapper"
 import AppSettings from "../lib/AppSettings"
@@ -16,13 +16,31 @@ type LayerswapWidgetProps = {
         icons?: string[]
     },
     formValues?: SwapFormValues
+    featuredNetwork?: typeof AppSettings.FeaturedNetwork,
 } & AppPageProps
 
-export const LayerswapWidget: FC<LayerswapWidgetProps> = ({ apiKey, settings, themeData, version, walletConnect, integrator, formValues }) => {
+export const LayerswapWidget: FC<LayerswapWidgetProps> = ({ apiKey, settings, themeData, version = 'mainnet', walletConnect, integrator, formValues, featuredNetwork }) => {
 
     AppSettings.ApiVersion = version
     AppSettings.Integrator = integrator
-    
+    AppSettings.FeaturedNetwork = featuredNetwork
+
+    const overriddenFormValues = useMemo(() => {
+        const updatedFormValues = { ...formValues };
+        if (featuredNetwork) {
+            if (featuredNetwork.initialDirection === 'from') {
+                const from = settings?.sourceRoutes?.find(network => network.name === featuredNetwork.network);
+                updatedFormValues.from = from;
+            } else if (featuredNetwork.initialDirection === 'to') {
+                const to = settings?.destinationRoutes?.find(network => network.name === featuredNetwork.network);
+                updatedFormValues.to = to;
+            }
+            return updatedFormValues;
+        }
+        console.log(updatedFormValues, featuredNetwork)
+        return updatedFormValues;
+    }, [formValues, featuredNetwork]);
+
     if (apiKey)
         AppSettings.apikey = apiKey
 
@@ -45,7 +63,7 @@ export const LayerswapWidget: FC<LayerswapWidgetProps> = ({ apiKey, settings, th
             apiKey={apiKey}
             settings={settings}
             themeData={themeData}
-            formValues={formValues}
+            formValues={overriddenFormValues}
         />
     )
 }
