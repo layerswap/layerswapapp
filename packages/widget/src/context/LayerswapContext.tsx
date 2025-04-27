@@ -1,7 +1,3 @@
-import '../styles/globals.css'
-import '../styles/dialog-transition.css'
-import '../styles/manual-trasnfer-svg.css'
-import '../styles/vaul.css'
 import { FC, useEffect, useState } from "react"
 import ThemeWrapper from "../components/themeWrapper";
 import { ErrorBoundary } from "react-error-boundary";

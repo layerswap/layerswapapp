@@ -46,6 +46,7 @@
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "viem": "^2.21.16",
+    "zustand": "^4.5.1",
     "wagmi": "2.15.0"
   },
   "dependencies": {
@@ -98,9 +99,9 @@
     "tailwindcss-animate": "^1.0.5",
     "tailwindcss-themer": "^2.0.2",
     "uuid": "^9.0.0",
+    "viem": "^2.21.16",
     "web-encoding": "^1.1.5",
-    "zksync": "0.13.1",
-    "zustand": "^4.4.1"
+    "zksync": "0.13.1"
   },
   "devDependencies": {
     "@types/bn.js": "^5.1.0",
@@ -113,7 +114,8 @@
     "eslint-plugin-no-conditional-literals-in-jsx": "file:eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx",
     "postcss": "^8.5.3",
     "tsup": "^8.4.0",
-    "typescript": "^5.1"
+    "typescript": "^5.1",
+    "wagmi": "2.15.0"
   },
   "resolutions": {
     "rpc-websockets": "7.11.0",

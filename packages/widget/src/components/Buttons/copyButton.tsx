@@ -1,3 +1,5 @@
+'use client'
+
 import { Check, Copy } from 'lucide-react'
 import { classNames } from '../utils/classNames'
 import useCopyClipboard from '../../hooks/useCopyClipboard'
