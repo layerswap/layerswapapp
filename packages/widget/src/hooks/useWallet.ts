@@ -1,14 +1,14 @@
 import { Network } from "../Models/Network"
 import useEVM from "../lib/wallets/evm/useEVM";
-import useImtblX from "../lib/wallets/imtblX/useImtblX";
-import useSVM from "../lib/wallets/solana/useSVM";
-import useStarknet from "../lib/wallets/starknet/useStarknet";
-import useTON from "../lib/wallets/ton/useTON";
-import useFuel from "../lib/wallets/fuel/useFuel"
+// import useImtblX from "../lib/wallets/imtblX/useImtblX";
+// import useSVM from "../lib/wallets/solana/useSVM";
+// import useStarknet from "../lib/wallets/starknet/useStarknet";
+// import useTON from "../lib/wallets/ton/useTON";
+// import useFuel from "../lib/wallets/fuel/useFuel"
 import { Wallet, WalletProvider } from "../Models/WalletProvider";
-import useTron from "../lib/wallets/tron/useTron";
+// import useTron from "../lib/wallets/tron/useTron";
 import { useMemo } from "react";
-import useParadex from "../lib/wallets/paradex/useParadex";
+// import useParadex from "../lib/wallets/paradex/useParadex";
 import { useSettingsState } from "../context/settings";
 import { useWalletProviderOverrides } from "../context/walletHooksProvider";
 
@@ -21,13 +21,13 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
 
     const walletProviders: WalletProvider[] = [
         overrides?.evm ?? useEVM({ network }),
-        useStarknet(),
-        useImtblX(),
-        useSVM({ network }),
-        useTON(),
-        useFuel(),
-        useTron(),
-        useParadex({ network })
+        // useStarknet(),
+        // useImtblX(),
+        // useSVM({ network }),
+        // useTON(),
+        // useFuel(),
+        // useTron(),
+        // useParadex({ network })
     ].filter(provider => networks.some(obj => provider?.autofillSupportedNetworks?.includes(obj.name) || provider?.withdrawalSupportedNetworks?.includes(obj.name) || provider?.asSourceSupportedNetworks?.includes(obj.name)))
 
     const provider = network && resolveProvider(network, walletProviders, purpose)

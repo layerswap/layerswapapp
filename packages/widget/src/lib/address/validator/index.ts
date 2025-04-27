@@ -1,8 +1,8 @@
 import { keccak256 } from "js-sha3";
 import KnownInternalNames from "../../knownIds";
 import { validateAndParseAddress } from "./starkNetAddressValidator";
-import { PublicKey } from '@solana/web3.js'
-import { Address } from "@ton/core";
+// import { PublicKey } from '@solana/web3.js'
+// import { Address } from "@ton/core";
 
 export function isValidAddress(address?: string, network?: { name: string } | null): boolean {
     if (!address || isBlacklistedAddress(address)) {
@@ -17,28 +17,28 @@ export function isValidAddress(address?: string, network?: { name: string } | nu
     else if (network?.name.toLowerCase().startsWith("STARKNET".toLowerCase()) || network?.name.toLowerCase().startsWith("PARADEX".toLowerCase())) {
         return validateAndParseAddress(address);
     }
-    else if (network?.name.toLowerCase().startsWith("TON".toLowerCase())) {
-        try {
-            return !!Address.parse(address).toString({ bounceable: false, testOnly: false, urlSafe: true })
-        } catch (error) {
-            return false
-        }
-    }
+    // else if (network?.name.toLowerCase().startsWith("TON".toLowerCase())) {
+    //     try {
+    //         return !!Address.parse(address).toString({ bounceable: false, testOnly: false, urlSafe: true })
+    //     } catch (error) {
+    //         return false
+    //     }
+    // }
     else if (network?.name === KnownInternalNames.Networks.OsmosisMainnet) {
         if (/^(osmo1)?[a-z0-9]{38}$/.test(address)) {
             return true
         }
         return false
     }
-    else if (network?.name.toLowerCase().startsWith("solana") || network?.name.toLowerCase().startsWith("eclipse") || network?.name.toLowerCase().startsWith("soon")) {
-        try {
-            let pubkey = new PublicKey(address)
-            let isSolana = PublicKey.isOnCurve(pubkey.toBuffer())
-            return isSolana
-        } catch (error) {
-            return false
-        }
-    }
+    // else if (network?.name.toLowerCase().startsWith("solana") || network?.name.toLowerCase().startsWith("eclipse") || network?.name.toLowerCase().startsWith("soon")) {
+    //     try {
+    //         let pubkey = new PublicKey(address)
+    //         let isSolana = PublicKey.isOnCurve(pubkey.toBuffer())
+    //         return isSolana
+    //     } catch (error) {
+    //         return false
+    //     }
+    // }
     else if (network?.name === KnownInternalNames.Networks.SorareStage) {
         if (/^(0x)?[0-9a-f]{64}$/.test(address) || /^(0x)?[0-9A-F]{64}$/.test(address) || /^(0x)?[0-9a-f]{66}$/.test(address) || /^(0x)?[0-9A-F]{66}$/.test(address)) {
             return true;

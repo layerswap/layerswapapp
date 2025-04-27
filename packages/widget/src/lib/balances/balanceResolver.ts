@@ -1,29 +1,29 @@
 import { NetworkWithTokens } from "../../Models/Network";
 import { EVMBalanceProvider } from "./providers/evmBalanceProvider";
-import { FuelBalanceProvider } from "./providers/fuelBalanceProvider";
-import { ImmutableXBalanceProvider } from "./providers/immutableXBalanceProvider";
-import { LoopringBalanceProvider } from "./providers/loopringBalanceProvider";
-import { ParadexBalanceProvider } from "./providers/paradexBalanceProvider";
+// import { FuelBalanceProvider } from "./providers/fuelBalanceProvider";
+// import { ImmutableXBalanceProvider } from "./providers/immutableXBalanceProvider";
+// import { LoopringBalanceProvider } from "./providers/loopringBalanceProvider";
+// import { ParadexBalanceProvider } from "./providers/paradexBalanceProvider";
 import { QueryBalanceProvider } from "./providers/queryBalanceProvider";
-import { SolanaBalanceProvider } from "./providers/solanaBalanceProvider";
-import { StarknetBalanceProvider } from "./providers/starknetBalanceProvider";
-import { TonBalanceProvider } from "./providers/tonBalanceProvider";
-import { TronBalanceProvider } from "./providers/tronBalanceResolver";
+// import { SolanaBalanceProvider } from "./providers/solanaBalanceProvider";
+// import { StarknetBalanceProvider } from "./providers/starknetBalanceProvider";
+// import { TonBalanceProvider } from "./providers/tonBalanceProvider";
+// import { TronBalanceProvider } from "./providers/tronBalanceResolver";
 import { ZkSyncBalanceProvider } from "./providers/zkSyncBalanceProvider";
 
 export class BalanceResolver {
     private providers = [
         new QueryBalanceProvider(),
-        new StarknetBalanceProvider(),
+        // new StarknetBalanceProvider(),
         new EVMBalanceProvider(),
-        new FuelBalanceProvider(),
-        new ImmutableXBalanceProvider(),
-        new LoopringBalanceProvider(),
-        new SolanaBalanceProvider(),
-        new TonBalanceProvider(),
+        // new FuelBalanceProvider(),
+        // new ImmutableXBalanceProvider(),
+        // new LoopringBalanceProvider(),
+        // new SolanaBalanceProvider(),
+        // new TonBalanceProvider(),
         new ZkSyncBalanceProvider(),
-        new TronBalanceProvider(),
-        new ParadexBalanceProvider()
+        // new TronBalanceProvider(),
+        // new ParadexBalanceProvider()
     ];
 
     getBalance(address: string, network: NetworkWithTokens) {

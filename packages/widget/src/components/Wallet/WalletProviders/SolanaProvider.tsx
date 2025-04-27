@@ -1,53 +1,53 @@
-import { clusterApiUrl } from "@solana/web3.js";
-import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
-import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
-import { WalletConnectWalletAdapter } from "@solana/wallet-adapter-walletconnect";
-import { SolflareWalletAdapter } from "@solana/wallet-adapter-solflare";
-import { GlowWalletAdapter } from "@solana/wallet-adapter-glow";
-import { NightlyWalletAdapter } from '@solana/wallet-adapter-wallets';
-import {
-    ConnectionProvider,
-    WalletProvider,
-} from "@solana/wallet-adapter-react";
-import { ReactNode, useMemo } from "react";
-import { CoinbaseWalletAdapter } from "@solana/wallet-adapter-coinbase";
-import AppSettings from "../../../lib/AppSettings";
+// import { clusterApiUrl } from "@solana/web3.js";
+// import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
+// import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
+// import { WalletConnectWalletAdapter } from "@solana/wallet-adapter-walletconnect";
+// import { SolflareWalletAdapter } from "@solana/wallet-adapter-solflare";
+// import { GlowWalletAdapter } from "@solana/wallet-adapter-glow";
+// import { NightlyWalletAdapter } from '@solana/wallet-adapter-wallets';
+// import {
+//     ConnectionProvider,
+//     WalletProvider,
+// } from "@solana/wallet-adapter-react";
+// import { ReactNode, useMemo } from "react";
+// import { CoinbaseWalletAdapter } from "@solana/wallet-adapter-coinbase";
+// import AppSettings from "../../../lib/AppSettings";
 
-const WALLETCONNECT_PROJECT_CONFIG = AppSettings.WalletConnectConfig;
+// const WALLETCONNECT_PROJECT_CONFIG = AppSettings.WalletConnectConfig;
 
-function SolanaProvider({ children }: { children: ReactNode }) {
-    const solNetwork = WalletAdapterNetwork.Mainnet;
-    const endpoint = useMemo(() => clusterApiUrl(solNetwork), [solNetwork]);
-    const wallets = useMemo(
-        () => [
-            new PhantomWalletAdapter(),
-            new CoinbaseWalletAdapter(),
-            new SolflareWalletAdapter(),
-            new GlowWalletAdapter(),
-            new NightlyWalletAdapter(),
-            new WalletConnectWalletAdapter({
-                network: solNetwork,
-                options: {
-                    projectId: WALLETCONNECT_PROJECT_CONFIG.projectId,
-                    metadata: {
-                        name: WALLETCONNECT_PROJECT_CONFIG.name,
-                        description: WALLETCONNECT_PROJECT_CONFIG.description,
-                        url: WALLETCONNECT_PROJECT_CONFIG.url,
-                        icons: WALLETCONNECT_PROJECT_CONFIG.icons,
-                    },
-                },
-            })
-        ],
-        [solNetwork]
-    );
+// function SolanaProvider({ children }: { children: ReactNode }) {
+//     const solNetwork = WalletAdapterNetwork.Mainnet;
+//     const endpoint = useMemo(() => clusterApiUrl(solNetwork), [solNetwork]);
+//     const wallets = useMemo(
+//         () => [
+//             new PhantomWalletAdapter(),
+//             new CoinbaseWalletAdapter(),
+//             new SolflareWalletAdapter(),
+//             new GlowWalletAdapter(),
+//             new NightlyWalletAdapter(),
+//             new WalletConnectWalletAdapter({
+//                 network: solNetwork,
+//                 options: {
+//                     projectId: WALLETCONNECT_PROJECT_CONFIG.projectId,
+//                     metadata: {
+//                         name: WALLETCONNECT_PROJECT_CONFIG.name,
+//                         description: WALLETCONNECT_PROJECT_CONFIG.description,
+//                         url: WALLETCONNECT_PROJECT_CONFIG.url,
+//                         icons: WALLETCONNECT_PROJECT_CONFIG.icons,
+//                     },
+//                 },
+//             })
+//         ],
+//         [solNetwork]
+//     );
 
-    return (
-        <ConnectionProvider endpoint={endpoint}>
-            <WalletProvider wallets={wallets} autoConnect={true}>
-                {children}
-            </WalletProvider>
-        </ConnectionProvider>
-    );
-}
+//     return (
+//         <ConnectionProvider endpoint={endpoint}>
+//             <WalletProvider wallets={wallets} autoConnect={true}>
+//                 {children}
+//             </WalletProvider>
+//         </ConnectionProvider>
+//     );
+// }
 
-export default SolanaProvider;
+// export default SolanaProvider;

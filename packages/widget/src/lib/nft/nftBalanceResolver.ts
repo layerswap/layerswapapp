@@ -1,9 +1,10 @@
 import { Network } from "../../Models/Network";
-import { StarknetNftProvider } from "./providers/starknetNftProvider";
+// import { StarknetNftProvider } from "./providers/starknetNftProvider";
+import { Provider } from "./providers/types";
 
 export class NftBalanceResolver {
-    private providers = [
-        new StarknetNftProvider()
+    private providers: Provider[] = [
+        // new StarknetNftProvider()
     ];
 
     async getBalance({ address, network, contractAddress }: { address: string, network: Network, contractAddress: string }) {

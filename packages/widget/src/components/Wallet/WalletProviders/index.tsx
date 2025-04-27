@@ -1,27 +1,27 @@
 import { FC } from "react"
-import TonConnectProvider from "./TonConnectProvider"
-import SolanaProvider from "./SolanaProvider"
+// import TonConnectProvider from "./TonConnectProvider"
+// import SolanaProvider from "./SolanaProvider"
 import Wagmi from "./Wagmi";
-import StarknetProvider from "./StarknetProvider";
-import { ImtblPassportProvider } from "./ImtblPassportProvider";
-import TronProvider from "./TronProvider";
+// import StarknetProvider from "./StarknetProvider";
+// import { ImtblPassportProvider } from "./ImtblPassportProvider";
+// import TronProvider from "./TronProvider";
 import { ThemeData } from "../../../Models/Theme";
 
 const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], themeData: ThemeData }> = ({ children, themeData }) => {
     return (
-        <TonConnectProvider themeData={themeData}>
-            <SolanaProvider>
-                <TronProvider>
-                    <StarknetProvider>
+        // <TonConnectProvider themeData={themeData}>
+            // <SolanaProvider>
+                // <TronProvider>
+                    // <StarknetProvider>
                         <Wagmi>
-                            <ImtblPassportProvider>
+                            {/* <ImtblPassportProvider> */}
                                 {children}
-                            </ImtblPassportProvider>
+                            {/* </ImtblPassportProvider> */}
                         </Wagmi>
-                    </StarknetProvider>
-                </TronProvider>
-            </SolanaProvider>
-        </TonConnectProvider>
+                    // </StarknetProvider>
+                // </TronProvider>
+            // </SolanaProvider>
+        // </TonConnectProvider>
     )
 }
 
