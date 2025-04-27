@@ -41,7 +41,7 @@ const TransferFromWallet: FC<WithdrawPageProps> = ({
             console.error(e.message)
         }
     }, [swapId])
-    if (!swapId || !sequenceNumber) return
+    if (!swapId || !sequenceNumber) return null
 
     const hexed_sequence_number = sequenceNumber?.toString(16)
     const sequence_number_even = (hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number)

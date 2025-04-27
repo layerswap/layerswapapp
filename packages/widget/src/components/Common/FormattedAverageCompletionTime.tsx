@@ -6,7 +6,7 @@ type AverageCompletionTimeProps = {
 
 const FormattedAverageCompletionTime: FC<AverageCompletionTimeProps> = ({ avgCompletionTime }) => {
 
-    if (!avgCompletionTime) return
+    if (!avgCompletionTime) return null
 
     const parts = avgCompletionTime.split('.');
     const time = parts[0];

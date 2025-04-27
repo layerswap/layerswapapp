@@ -48,42 +48,17 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
     }
     return <div className="text-sm font-medium focus:outline-none h-full">
         <Menu>
-
-            <WalletsMenu />
-
+            {/* <WalletsMenu /> */}
             <Menu.Group>
-                {/* <>
-                    <Menu.Item pathname='/' icon={<Home className="h-5 w-5" />} >
-                        Home
-                    </Menu.Item>
-                </> */}
                 <>
                     <Menu.Item onClick={() => goToStep(MenuStep.Transactions, "/transactions")} icon={<ScrollText className="h-5 w-5" />} >
                         Transactions
                     </Menu.Item>
                 </>
-                <>
-                    {
-                        !embedded &&
-                        <Menu.Item onClick={() => goToStep(MenuStep.Campaigns, "/campaigns")} icon={<Gift className="h-5 w-5" />} >
-                            Campaigns
-                        </Menu.Item>
-                    }
-                </>
             </Menu.Group>
             <Menu.Group>
-                <Menu.Item onClick={() => {
-                    boot();
-                    show();
-                    updateWithProps();
-                }} target="_blank" icon={<ChatIcon strokeWidth={2} className="h-5 w-5" />} >
-                    Help
-                </Menu.Item>
                 <Menu.Item pathname='https://docs.layerswap.io/' target="_blank" icon={<BookOpen className="h-5 w-5" />} >
-                    Docs for Users
-                </Menu.Item>
-                <Menu.Item pathname='https://docs.layerswap.io/user-docs/partners-and-integrations/' target="_blank" icon={<Users className="h-5 w-5" />} >
-                    Docs for Partners
+                    Docs
                 </Menu.Item>
             </Menu.Group>
 
@@ -95,84 +70,8 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
                     Terms of Service
                 </Menu.Item>
             </Menu.Group>
-
-            <Menu.Group>
-                <Popover
-                    opener={
-                        <Menu.Item onClick={() => setOpenFeedbackModal(true)} target="_blank" icon={<MessageSquarePlus className="h-5 w-5" />} >
-                            Suggest a Feature
-                        </Menu.Item>
-                    }
-                    isNested={true}
-                    show={openFeedbackModal}
-                    header="Suggest a Feature"
-                    setShow={setOpenFeedbackModal}
-                    popoverId={"feedback"}
-                >
-                    <div className="p-0 md:max-w-md">
-                        <SendFeedback onSend={handleCloseFeedback} />
-                    </div>
-                </Popover>
-            </Menu.Group>
-
-            <div className="space-y-3 w-full">
-                <hr className="border-secondary-500" />
-                <p className="text-primary-text-muted flex justify-center my-3">Media links & suggestions:</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 justify-center">
-                {navigation.social.map((item, index) => (
-                    <a key={index} target="_blank" href={item.href} className={`flex relative bg-secondary-700 hover:bg-secondary-600 rounded-md cursor-pointer select-none items-center outline-none text-primary-text ${item.className}`}>
-                        <div className="p-2 w-full flex justify-center gap-1">
-                            <item.icon className="h-5 w-5" aria-hidden="true" />
-                            <p>{item.name}</p>
-                        </div>
-                    </a>
-                ))}
-            </div>
         </Menu>
     </div>
-}
-
-const navigation = {
-    social: [
-        {
-            name: 'Twitter',
-            href: 'https://twitter.com/layerswap/',
-            icon: (props) => TwitterLogo(props),
-            className: 'plausible-event-name=Twitter'
-        },
-        {
-            name: 'GitHub',
-            href: 'https://github.com/layerswap/layerswapapp/',
-            icon: (props) => GitHubLogo(props),
-            className: 'plausible-event-name=GitHub'
-        },
-        {
-            name: 'Discord',
-            href: 'https://discord.com/invite/KhwYN35sHy/',
-            icon: (props) => DiscordLogo(props),
-            className: 'plausible-event-name=Discord'
-        },
-        {
-            name: 'YouTube',
-            href: 'https://www.youtube.com/@layerswaphq/',
-            icon: (props) => YoutubeLogo(props),
-            className: 'plausible-event-name=Youtube'
-        },
-        {
-            name: 'Substack',
-            href: 'https://layerswap.substack.com/',
-            icon: (props) => SubstackLogo(props),
-            className: 'plausible-event-name=Substack'
-        },
-        {
-            name: 'Roadmap',
-            href: 'https://layerswap.ducalis.io/roadmap/summary/',
-            icon: (props) => <Map {...props}></Map>,
-            className: 'plausible-event-name=Roadmap'
-        },
-    ]
 }
 
 export default MenuList

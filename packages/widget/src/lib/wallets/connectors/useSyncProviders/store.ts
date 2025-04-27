@@ -1,9 +1,9 @@
 import type { EIP6963AnnounceProviderEvent, EIP6963ProviderDetail } from "./EthereumProviderTypes";
 
 declare global {
-    interface WindowEventMap {
-      "eip6963:announceProvider": CustomEvent<EIP6963AnnounceProviderEvent>;
-    }
+    // interface WindowEventMap {
+    //   "eip6963:announceProvider": CustomEvent<EIP6963AnnounceProviderEvent>;
+    // }
   }
   
   let providers: EIP6963ProviderDetail[] = [];
