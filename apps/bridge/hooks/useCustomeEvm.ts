@@ -125,6 +125,7 @@ export default function useEVM(): WalletProvider {
     }]
     const provider = {
         connectWallet,
+        connectConnector: connectWallet,
         disconnectWallets,
         activeWallet: resolvedConnectors.find(w => w.isActive),
         connectedWallets: resolvedConnectors,

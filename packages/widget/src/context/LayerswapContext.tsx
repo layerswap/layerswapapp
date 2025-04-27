@@ -22,7 +22,7 @@ import { getSettings } from "../helpers/getSettings";
 
 export type LayerswapContextProps = {
     children?: JSX.Element | JSX.Element[];
-    settings: LayerSwapSettings;
+    settings?: LayerSwapSettings;
     apiKey?: string;
     themeData?: ThemeData | null
     integrator: string
