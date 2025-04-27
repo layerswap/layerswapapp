@@ -1,7 +1,7 @@
 {
   "name": "@layerswap/widget",
   "type": "module",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Layerswap Widget for cross-chain bridging.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
