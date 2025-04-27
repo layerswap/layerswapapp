@@ -1,8 +1,7 @@
 {
   "name": "@layerswap/widget",
-  "type": "module",
   "version": "0.1.4",
-  "description": "Layerswap Widget for cross-chain bridging.",
+  "description": "Streamline your asset transaction experience with Layerswap Widget across 50+ blockchains and 15+ exchanges.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
@@ -45,7 +44,9 @@
   "license": "MIT",
   "peerDependencies": {
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
-    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc"
+    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "viem": "^2.21.16",
+    "wagmi": "2.15.0"
   },
   "dependencies": {
     "@eth-optimism/contracts-ts": "^0.15.0",
@@ -97,8 +98,6 @@
     "tailwindcss-animate": "^1.0.5",
     "tailwindcss-themer": "^2.0.2",
     "uuid": "^9.0.0",
-    "viem": "^2.21.16",
-    "wagmi": "2.15.0",
     "web-encoding": "^1.1.5",
     "zksync": "0.13.1",
     "zustand": "^4.4.1"

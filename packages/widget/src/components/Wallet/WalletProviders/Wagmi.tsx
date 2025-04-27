@@ -3,13 +3,11 @@
 import { useSettingsState } from "../../../context/settings";
 import { NetworkType } from "../../../Models/Network";
 import resolveChain from "../../../lib/resolveChain";
-import React from "react";
 import NetworkSettings from "../../../lib/NetworkSettings";
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createConfig } from 'wagmi';
 import { Chain, http } from 'viem';
-import { WalletModalProvider } from '../WalletModal';
 import { argent } from '../../../lib/wallets/connectors/argent';
 import { rainbow } from '../../../lib/wallets/connectors/rainbow';
 import { metaMask } from '../../../lib/wallets/connectors/metamask';
