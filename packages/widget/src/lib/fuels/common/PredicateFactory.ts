@@ -14,18 +14,18 @@ import {
   getPredicateRoot,
 } from 'fuels';
 import memoize from 'memoizee';
-import type { PredicateWalletAdapter } from './PredicateWalletAdapter';
+// import type { PredicateWalletAdapter } from './PredicateWalletAdapter';
 import type { Maybe, PredicateConfig } from './types';
 
 export class PredicateFactory {
   private abi: JsonAbi;
   private bytecode: BytesLike;
-  private adapter: PredicateWalletAdapter;
+  private adapter: any//PredicateWalletAdapter;
   private root: string;
   private generatedAt: number = Date.now();
 
   constructor(
-    adapter: PredicateWalletAdapter,
+    adapter: any, //PredicateWalletAdapter,
     { abi, bin }: PredicateConfig,
     root: string,
     generatedAt: number = Date.now(),

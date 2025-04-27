@@ -40,7 +40,7 @@ const RouteIcon: FC<Props> = (props) => {
             </TooltipContent>
         </Tooltip>
 
-    return undefined
+    return null
 }
 
 export default RouteIcon

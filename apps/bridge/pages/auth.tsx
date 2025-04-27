@@ -6,7 +6,7 @@ import { getServerSideProps } from '../helpers/getSettings'
 export default function AuthPage({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   return (<>
     <Layout settings={settings} themeData={themeData} >
-      <Auth apiKey={apiKey} settings={settings} themeData={themeData} />
+      <Auth apiKey={apiKey} settings={settings} themeData={themeData} integrator='' />
     </Layout>
   </>
   )

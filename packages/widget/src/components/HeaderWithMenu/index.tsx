@@ -37,16 +37,6 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
             </div>
          }
          <div className="col-start-5 justify-self-end self-center flex items-center gap-x-1 -mr-2">
-            <WalletsHeader />
-            <IconButton className="relative hidden md:inline" onClick={() => {
-               boot();
-               show();
-               updateWithProps()
-            }}
-               icon={
-                  <ChatIcon className="h-6 w-6" strokeWidth="2" />
-               }>
-            </IconButton>
             <div className="fixed-width-container">
                <LayerswapMenu />
             </div>

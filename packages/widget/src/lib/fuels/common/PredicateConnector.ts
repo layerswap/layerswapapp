@@ -19,7 +19,7 @@ import {
   } from 'fuels';
   
   import { PredicateFactory, getMockedSignatureIndex } from './PredicateFactory';
-  import type { PredicateWalletAdapter } from './PredicateWalletAdapter';
+  // import type { PredicateWalletAdapter } from './PredicateWalletAdapter';
   import type {
     ConnectorConfig,
     Maybe,
@@ -55,7 +55,7 @@ import {
     public abstract disconnect(): Promise<boolean>;
   
     protected abstract configProviders(config: ConnectorConfig): MaybeAsync<void>;
-    protected abstract getWalletAdapter(): PredicateWalletAdapter;
+    protected abstract getWalletAdapter(): any//PredicateWalletAdapter;
     protected abstract getPredicateVersions(): Record<string, PredicateVersion>;
     protected abstract getAccountAddress(): MaybeAsync<Maybe<string>>;
     protected abstract getProviders(): Promise<ProviderDictionary>;

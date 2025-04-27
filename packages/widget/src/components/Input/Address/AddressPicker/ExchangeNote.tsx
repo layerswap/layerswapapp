@@ -4,7 +4,7 @@ import { Exchange } from "../../../../Models/Exchange";
 
 const ExchangeNote = ({ destinationAsset, destinationExchange, destination }: { destinationAsset: Token | undefined, destinationExchange: Exchange, destination: RouteNetwork | undefined }) => {
 
-    if (!destinationAsset || !destinationExchange || !destination) return
+    if (!destinationAsset || !destinationExchange || !destination) return null
 
     return (
         <div className='text-left p-4 bg-secondary-800 text-primary-text rounded-lg border border-secondary-500 mt-3 w-full'>

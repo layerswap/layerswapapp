@@ -1,18 +1,18 @@
 import { FC } from "react";
 import { useSwapDataState } from "../../../../../context/swap";
 import KnownInternalNames from "../../../../../lib/knownIds";
-import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep";
-import StarknetWalletWithdrawStep from "./StarknetWalletWithdraw";
+// import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep";
+// import StarknetWalletWithdrawStep from "./StarknetWalletWithdraw";
 import TransferFromWallet from "./WalletTransfer";
-import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw";
-import LoopringWalletWithdraw from "./Loopring";
+// import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw";
+// import LoopringWalletWithdraw from "./Loopring";
 import { Network, NetworkType, Token } from "../../../../../Models/Network";
-import TonWalletWithdrawStep from "./TonWalletWithdraw";
-import ParadexWalletWithdrawStep from "./paradex/index";
-import FuelWalletWithdrawStep from "./FuelWalletWithdrawal";
-import SophonWalletWithdraw from "./SophonWalletWithdraw";
-import TronWalletWithdraw from "./TronWalletWithdraw";
-import SVMWalletWithdrawStep from "./SVMWalletWithdraw";
+// import TonWalletWithdrawStep from "./TonWalletWithdraw";
+// import ParadexWalletWithdrawStep from "./paradex/index";
+// import FuelWalletWithdrawStep from "./FuelWalletWithdrawal";
+// import SophonWalletWithdraw from "./SophonWalletWithdraw";
+// import TronWalletWithdraw from "./TronWalletWithdraw";
+// import SVMWalletWithdrawStep from "./SVMWalletWithdraw";
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 export const WalletTransferContent: FC = () => {
@@ -53,95 +53,95 @@ export const WalletTransferContent: FC = () => {
     const depositAddress = depositActionsResponse?.find(da => true)?.to_address;
     const amount = depositActionsResponse?.find(da => true)?.amount || 0;
     const callData = depositActionsResponse?.find(da => true)?.call_data;
-    if (sourceIsImmutableX)
-        return <ImtblxWalletWithdrawStep
-            amount={amount}
-            depositAddress={depositAddress}
-            network={swap?.source_network}
-            token={swap?.source_token}
-            swapId={swap?.id}
-        />;
-    else if (sourceIsStarknet)
-        return <StarknetWalletWithdrawStep
-            network={swap?.source_network}
-            token={swap?.source_token}
-            swapId={swap?.id}
-            callData={callData}
-        />;
-    else if (sourceIsZkSync)
-        return <ZkSyncWalletWithdrawStep
-            amount={amount}
-            depositAddress={depositAddress}
-            network={swap?.source_network}
-            token={swap?.source_token}
-            swapId={swap?.id}
-            sequenceNumber={swap.metadata.sequence_number}
-        />;
-    else if (sourceIsLoopring)
-        return <LoopringWalletWithdraw
-            amount={amount}
-            depositAddress={depositAddress}
-            network={swap?.source_network}
-            token={swap?.source_token}
-            swapId={swap?.id}
-            callData={callData}
-        />;
-    else if (sourceIsSVM)
-        return <SVMWalletWithdrawStep
-            amount={amount}
-            depositAddress={depositAddress}
-            network={swap?.source_network}
-            token={swap?.source_token}
-            swapId={swap?.id}
-            callData={callData}
-        />;
-    else if (sourceIsTon)
-        return <TonWalletWithdrawStep
-            amount={amount}
-            depositAddress={depositAddress}
-            network={swap?.source_network}
-            token={swap?.source_token}
-            swapId={swap?.id}
-            callData={callData}
-        />;
-    else if (sourceIsParadex)
-        return <ParadexWalletWithdrawStep
-            amount={amount}
-            depositAddress={depositAddress}
-            network={swap?.source_network}
-            token={swap?.source_token}
-            swapId={swap?.id}
-            callData={callData}
-        />;
-    else if (sourceIsFuel)
-        return <FuelWalletWithdrawStep
-            amount={amount}
-            depositAddress={depositAddress}
-            network={swap?.source_network}
-            token={swap?.source_token}
-            sequenceNumber={swap?.metadata.sequence_number}
-            swapId={swap?.id}
-            callData={callData}
-        />
-    else if (sourceIsSophon)
-        return <SophonWalletWithdraw
-            amount={amount}
-            depositAddress={depositAddress}
-            network={swap?.source_network}
-            token={swap?.source_token}
-            swapId={swap?.id}
-            callData={callData}
-        />;
-    else if (sourceIsTron)
-        return <TronWalletWithdraw
-            amount={amount}
-            depositAddress={depositAddress}
-            network={swap?.source_network}
-            token={swap?.source_token}
-            swapId={swap?.id}
-            callData={callData}
-        />;
-    else
+    // if (sourceIsImmutableX)
+    //     return <ImtblxWalletWithdrawStep
+    //         amount={amount}
+    //         depositAddress={depositAddress}
+    //         network={swap?.source_network}
+    //         token={swap?.source_token}
+    //         swapId={swap?.id}
+    //     />;
+    // else if (sourceIsStarknet)
+    //     return <StarknetWalletWithdrawStep
+    //         network={swap?.source_network}
+    //         token={swap?.source_token}
+    //         swapId={swap?.id}
+    //         callData={callData}
+    //     />;
+    // else if (sourceIsZkSync)
+    //     return <ZkSyncWalletWithdrawStep
+    //         amount={amount}
+    //         depositAddress={depositAddress}
+    //         network={swap?.source_network}
+    //         token={swap?.source_token}
+    //         swapId={swap?.id}
+    //         sequenceNumber={swap.metadata.sequence_number}
+    //     />;
+    // else if (sourceIsLoopring)
+    //     return <LoopringWalletWithdraw
+    //         amount={amount}
+    //         depositAddress={depositAddress}
+    //         network={swap?.source_network}
+    //         token={swap?.source_token}
+    //         swapId={swap?.id}
+    //         callData={callData}
+    //     />;
+    // else if (sourceIsSVM)
+    //     return <SVMWalletWithdrawStep
+    //         amount={amount}
+    //         depositAddress={depositAddress}
+    //         network={swap?.source_network}
+    //         token={swap?.source_token}
+    //         swapId={swap?.id}
+    //         callData={callData}
+    //     />;
+    // else if (sourceIsTon)
+    //     return <TonWalletWithdrawStep
+    //         amount={amount}
+    //         depositAddress={depositAddress}
+    //         network={swap?.source_network}
+    //         token={swap?.source_token}
+    //         swapId={swap?.id}
+    //         callData={callData}
+    //     />;
+    // else if (sourceIsParadex)
+    //     return <ParadexWalletWithdrawStep
+    //         amount={amount}
+    //         depositAddress={depositAddress}
+    //         network={swap?.source_network}
+    //         token={swap?.source_token}
+    //         swapId={swap?.id}
+    //         callData={callData}
+    //     />;
+    // else if (sourceIsFuel)
+    //     return <FuelWalletWithdrawStep
+    //         amount={amount}
+    //         depositAddress={depositAddress}
+    //         network={swap?.source_network}
+    //         token={swap?.source_token}
+    //         sequenceNumber={swap?.metadata.sequence_number}
+    //         swapId={swap?.id}
+    //         callData={callData}
+    //     />
+    // else if (sourceIsSophon)
+    //     return <SophonWalletWithdraw
+    //         amount={amount}
+    //         depositAddress={depositAddress}
+    //         network={swap?.source_network}
+    //         token={swap?.source_token}
+    //         swapId={swap?.id}
+    //         callData={callData}
+    //     />;
+    // else if (sourceIsTron)
+    //     return <TronWalletWithdraw
+    //         amount={amount}
+    //         depositAddress={depositAddress}
+    //         network={swap?.source_network}
+    //         token={swap?.source_token}
+    //         swapId={swap?.id}
+    //         callData={callData}
+    //     />;
+    // else
         return <>
             {
                 swap &&

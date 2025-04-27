@@ -6,7 +6,7 @@ import { Campaigns } from '@layerswap/widget'
 export default function CampaignsPage({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     return (<>
         <Layout settings={settings} themeData={themeData}>
-            <Campaigns settings={settings} themeData={themeData} apiKey={apiKey} />
+            <Campaigns settings={settings} themeData={themeData} apiKey={apiKey} integrator='' />
         </Layout>
     </>)
 }

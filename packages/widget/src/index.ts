@@ -1,3 +1,4 @@
+'use client'
 export { Swap } from './components/Pages/SwapPages/Form';
 export { SwapWithdrawal } from './components/Pages/SwapPages/Withdraw';
 export { TransactionsHistory } from './components/Pages/SwapHistory';
@@ -14,7 +15,7 @@ export { GetSettings } from './lib/GetSettings'
 import LayerswapContext from './context/LayerswapContext';
 export { LayerswapContext }
 export { WalletHooksProvider } from './context/walletHooksProvider'
-export type { WalletProvider, Wallet } from './Models/WalletProvider'
+export type { WalletProvider, Wallet, InternalConnector } from './Models/WalletProvider'
 export { useSettingsState } from './context/settings'
 export { resolveWalletConnectorIcon } from './lib/wallets/utils/resolveWalletIcon'
 export { NetworkWithTokens, NetworkType } from './Models/Network'

@@ -1,3 +1,5 @@
+'use client'
+
 import { ChevronDown, MailOpen } from 'lucide-react';
 import { Form, Formik, FormikErrors } from 'formik';
 import { FC, useCallback, useState } from 'react'

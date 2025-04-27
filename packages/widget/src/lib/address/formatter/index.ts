@@ -1,4 +1,4 @@
-import { Address } from "@ton/core";
+// import { Address } from "@ton/core";
 
 export function addressFormat(address: string, network: { name: string } | null): string {
 
@@ -16,13 +16,13 @@ export function addressFormat(address: string, network: { name: string } | null)
         return addAddressPadding(address?.toLowerCase());
 
     }
-    else if (network?.name.toLowerCase().startsWith("ton")) {
-        try {
-            return Address.parse(address).toString({ bounceable: false, testOnly: false, urlSafe: true })
-        } catch (error) {
-            return address
-        }
-    }
+    // else if (network?.name.toLowerCase().startsWith("ton")) {
+    //     try {
+    //         return Address.parse(address).toString({ bounceable: false, testOnly: false, urlSafe: true })
+    //     } catch (error) {
+    //         return address
+    //     }
+    // }
     else if (network?.name.toLowerCase().startsWith("solana") || network?.name.toLowerCase().startsWith("eclipse") || network?.name.toLowerCase().startsWith("soon") || network?.name.toLowerCase().startsWith("tron")) {
         return address
     }

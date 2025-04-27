@@ -1,24 +1,22 @@
 
 import { GasProps } from "../../Models/Balance";
 import { EVMGasProvider } from "./providers/evmGasProvider";
-import { FuelGasProvider } from "./providers/fuelGasProvider";
-import { ImmutableXGasProvider } from "./providers/immutableXGasProvider";
-import { LoopringGasProvider } from "./providers/loopringGasProvider";
-import { SolanaGasProvider } from "./providers/solanaGasProvider";
-import { StarknetGasProvider } from "./providers/starknetGasProvider";
-import { TonGasProvider } from "./providers/tonGasProvider";
-import { TronGasProvider } from "./providers/tronGasProvider";
+// import { FuelGasProvider } from "./providers/fuelGasProvider";
+// import { LoopringGasProvider } from "./providers/loopringGasProvider";
+// import { SolanaGasProvider } from "./providers/solanaGasProvider";
+// import { StarknetGasProvider } from "./providers/starknetGasProvider";
+// import { TronGasProvider } from "./providers/tronGasProvider";
 import { ZkSyncGasProvider } from "./providers/zkSyncGasProvider";
 
 export class GasResolver {
     private providers = [
-        new StarknetGasProvider(),
+        // new StarknetGasProvider(),
         new EVMGasProvider(),
-        new FuelGasProvider(),
-        new LoopringGasProvider(),
-        new SolanaGasProvider(),
+        // new FuelGasProvider(),
+        // new LoopringGasProvider(),
+        // new SolanaGasProvider(),
         new ZkSyncGasProvider(),
-        new TronGasProvider()
+        // new TronGasProvider()
     ];
 
     getGas({ address, network, token, recipientAddress }: GasProps) {

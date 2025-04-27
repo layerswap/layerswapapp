@@ -1,7 +1,3 @@
-import '../styles/globals.css'
-import '../styles/dialog-transition.css'
-import '../styles/manual-trasnfer-svg.css'
-import '../styles/vaul.css'
 import { FC, useEffect, useState } from "react"
 import ThemeWrapper from "../components/themeWrapper";
 import { ErrorBoundary } from "react-error-boundary";
@@ -22,7 +18,7 @@ import { getSettings } from "../helpers/getSettings";
 
 export type LayerswapContextProps = {
     children?: JSX.Element | JSX.Element[];
-    settings: LayerSwapSettings;
+    settings?: LayerSwapSettings;
     apiKey?: string;
     themeData?: ThemeData | null
     integrator: string

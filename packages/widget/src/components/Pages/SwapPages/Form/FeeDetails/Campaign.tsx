@@ -1,3 +1,4 @@
+'use client'
 import { FC } from "react"
 import useSWR from "swr"
 import FeeDetails from "./FeeDetailsComponent"

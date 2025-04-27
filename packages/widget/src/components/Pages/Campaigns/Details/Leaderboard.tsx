@@ -1,3 +1,4 @@
+'use client'
 import { FC, useState } from "react"
 import LayerSwapApiClient, { Campaign, Leaderboard, Reward } from "../../../../lib/layerSwapApiClient"
 import useSWR from "swr"

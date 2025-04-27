@@ -1,7 +1,7 @@
 import { useAccount, useConfig, useSwitchAccount } from "wagmi"
 import { useMemo } from "react"
 import { useUserWallets, useDynamicContext, Wallet as DynamicWallet, dynamicEvents } from "@dynamic-labs/sdk-react-core"
-import { WalletProvider, useSettingsState, Wallet, resolveWalletConnectorIcon, NetworkWithTokens, NetworkType } from "@layerswap/widget"
+import { WalletProvider, useSettingsState, Wallet, resolveWalletConnectorIcon, NetworkWithTokens, NetworkType, InternalConnector } from "@layerswap/widget"
 
 export default function useEVM(): WalletProvider {
     const name = 'EVM'
@@ -117,8 +117,15 @@ export default function useEVM(): WalletProvider {
         }).filter(w => w !== undefined) as Wallet[]
     }, [activeAccount, activeConnectors, config, userWallets])
 
+    const logo = networks.find(n => n.name.toLowerCase().includes('ethereum'))?.logo
+    const availableWalletsForConnect: InternalConnector[] = [{
+        id: id,
+        name: name,
+        icon: logo,
+    }]
     const provider = {
         connectWallet,
+        connectConnector: connectWallet,
         disconnectWallets,
         activeWallet: resolvedConnectors.find(w => w.isActive),
         connectedWallets: resolvedConnectors,
@@ -127,8 +134,8 @@ export default function useEVM(): WalletProvider {
         asSourceSupportedNetworks,
         name,
         id,
-        providerIcon: networks.find(n => "ETHEREUM_MAINNET")?.logo,
-        blah: "asdasdasdasd"
+        availableWalletsForConnect,
+        providerIcon: logo,
     }
 
     return provider

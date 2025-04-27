@@ -61,6 +61,7 @@ export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = (
             details={`Please try again or switch your wallet network manually to ${network}`}
         />
     }
+    return null
 }
 
 export const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ chainId, network }) => {

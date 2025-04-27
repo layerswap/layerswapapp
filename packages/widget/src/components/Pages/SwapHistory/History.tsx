@@ -279,21 +279,11 @@ const ConnectOrSignIn = ({ onLogin }: SignInProps) => {
             <HistoryItemSceleton className="scale-[.63] -mt-12 shadow-card ml-7 w-full" />
             <div className="mt-4 text-center space-y-3">
                 <h1 className="text-secondary-text text-[28px] font-bold tracking-wide" >
-                    Connect wallet or sign in
+                    No transactions
                 </h1>
                 <p className="max-w-xs text-center text-primary-text-muted text-base font-normal mx-auto">
-                    In order to see your transfer history you need to connect your wallet or Sign in with your email.
+                    You do not have any transactions.
                 </p>
-            </div>
-        </div>
-        <div className="flex flex-col items-center w-full space-y-3">
-            <ConnectButton className="w-full">
-                <div className="w-full py-2.5 px-3 text-xl font-semibold bg-primary-text-placeholder hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-lg text-secondary-950">
-                    <div className="text-center text-xl font-semibold">Connect Wallet</div>
-                </div>
-            </ConnectButton>
-            <div className="w-full overflow-hidden">
-                <SignIn onLogin={onLogin} />
             </div>
         </div>
     </div>

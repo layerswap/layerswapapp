@@ -1,5 +1,5 @@
-import { AccountInterface } from 'starknet';
-import { StarknetWindowObject } from 'starknetkit';
+// import { AccountInterface } from 'starknet';
+// import { StarknetWindowObject } from 'starknetkit';
 
 export type InternalConnector = {
     name: string,
@@ -24,8 +24,8 @@ export type Wallet = {
     icon: (props: any) => React.JSX.Element;
     //TODO: this is name of the connector, should be changed to connectorId
     metadata?: {
-        starknetAccount?: AccountInterface,
-        wallet?: StarknetWindowObject,
+        // starknetAccount?: AccountInterface,
+        // wallet?: StarknetWindowObject,
         l1Address?: string,
         deepLink?: string
     }

@@ -8,7 +8,7 @@ export default function RewardsPage({ settings, themeData, apiKey }: InferGetSer
     const router = useRouter();
     return (<>
         <Layout settings={settings} themeData={themeData}>
-            <CampaignDetails apiKey={apiKey} settings={settings} themeData={themeData} campaignName={router.query.campaign?.toString()!} />
+            <CampaignDetails apiKey={apiKey} settings={settings} themeData={themeData} campaignName={router.query.campaign?.toString()!} integrator='' />
         </Layout>
     </>
     )
