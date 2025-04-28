@@ -7,7 +7,7 @@ export default function PopoverSelect({ values, value, setValue }: SelectProps) 
 
     return (
         <CommandWrapper>
-            <CommandList>
+            <CommandList className='max-h-[265px]'>
                 {values.map((item, index) => {
 
                     const shouldGroupped = !upperValue && item.isAvailable && index !== 0;
