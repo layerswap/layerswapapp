@@ -31,11 +31,6 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
                }>
             </IconButton>
          }
-         {
-            !query.hideLogo && <div className='justify-self-center self-center col-start-2 col-span-3 mx-auto overflow-hidden md:hidden headerLogo'>
-               <GoHomeButton />
-            </div>
-         }
          <div className="col-start-5 justify-self-end self-center flex items-center gap-x-1 -mr-2">
             <div className="fixed-width-container">
                <LayerswapMenu />
