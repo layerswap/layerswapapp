@@ -7,7 +7,7 @@ import EmailStep from "./Steps/EmailStep";
 import Wizard from "../../Wizard/Wizard";
 import WizardItem from "../../Wizard/WizardItem";
 import { SwapDataProvider } from "../../../context/swap";
-import LayerswapContext, { LayerswapContextProps } from "../../../context/LayerswapContext";
+import { LayerswapContextProps, LayerswapContext } from "../../../context/LayerswapContext";
 
 const Comp: FC = () => {
     const { goToStep } = useFormWizardaUpdate()

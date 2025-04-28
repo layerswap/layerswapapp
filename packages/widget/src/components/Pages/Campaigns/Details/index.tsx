@@ -11,7 +11,7 @@ import Leaderboard from "./Leaderboard"
 import Rewards from "./Rewards";
 import SpinIcon from "../../../Icons/spinIcon"
 import useWallet from "../../../../hooks/useWallet"
-import LayerswapContext, { LayerswapContextProps } from "../../../../context/LayerswapContext"
+import { LayerswapContextProps, LayerswapContext } from "../../../../context/LayerswapContext"
 
 export const CampaignDetailsComponent: FC<{ campaignName: string }> = ({ campaignName }) => {
 

@@ -5,7 +5,7 @@ import LayerSwapApiClient, { Campaign } from "../../../lib/layerSwapApiClient";
 import SpinIcon from "../../Icons/spinIcon";
 import useSWR from 'swr'
 import { Widget } from "../../Widget/Index";
-import LayerswapContext, { LayerswapContextProps } from "../../../context/LayerswapContext";
+import { LayerswapContextProps, LayerswapContext } from "../../../context/LayerswapContext";
 import VaulDrawer from "../../Modal/vaulModal";
 import { CampaignDetailsComponent } from "./Details";
 

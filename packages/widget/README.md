@@ -19,19 +19,19 @@ Layerswap Widget is available as an [npm package](https://www.npmjs.com/package/
 **pnpm:**
 
 ```sh
-pnpm add @layerswap/widget wagmi viem 
+pnpm add @layerswap/widget wagmi viem zustand @tanstack/react-query
 ```
 
 **npm:**
 
 ```sh
-npm install @layerswap/widget wagmi viem
+npm install @layerswap/widget wagmi viem zustand @tanstack/react-query
 ```
 
 **yarn:**
 
 ```sh
-yarn add @layerswap/widget wagmi viem
+yarn add @layerswap/widget wagmi viem zustand @tanstack/react-query
 ```
 
 ## Getting started with Layerswap Widget

@@ -10,7 +10,7 @@ import { createWalletClient, custom, JsonRpcAccount } from 'viem';
 import { eip712WalletActions, getGeneralPaymasterInput } from 'viem/zksync';
 import KnownInternalNames from '../../../../../lib/knownIds';
 import TransactionMessages from '../Messages/TransactionMessages';
-import { datadogRum } from '@datadog/browser-rum';
+// import { datadogRum } from '@datadog/browser-rum';
 import WalletIcon from '../../../../Icons/WalletIcon';
 import { getTransactionCount } from '@wagmi/core'
 
@@ -123,7 +123,7 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
         const swapWithdrawalError = new Error(error);
         swapWithdrawalError.name = `SwapWithdrawalError`;
         swapWithdrawalError.cause = error;
-        datadogRum.addError(swapWithdrawalError);
+        // datadogRum.addError(swapWithdrawalError);
 
         return <TransactionMessages.UexpectedErrorMessage message={error} />
     }

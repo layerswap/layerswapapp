@@ -15,7 +15,7 @@ import TransactionMessage from "./transactionMessage";
 import { ButtonWrapper } from "./buttons";
 import { useSwapTransactionStore } from "../../../../../../stores/swapTransactionStore";
 import { useSwapDataState } from "../../../../../../context/swap";
-import { datadogRum } from "@datadog/browser-rum";
+// import { datadogRum } from "@datadog/browser-rum";
 import { isMobile } from "../../../../../../lib/openLink";
 
 const TransferTokenButton: FC<BaseTransferButtonProps> = ({
@@ -55,7 +55,7 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
                     const error = e;
                     error.name = `EstimateGasError`;
                     error.cause = error;
-                    datadogRum.addError(error);
+                    // datadogRum.addError(error);
                     console.error(e)
                 }
             }
@@ -103,7 +103,7 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
             const error = new Error(e)
             error.name = "TransferTokenError"
             error.cause = e
-            datadogRum.addError(error);
+            // datadogRum.addError(error);
         }
     }, [transaction, estimatedGas, depositAddress, amount, callData, chainId])
 

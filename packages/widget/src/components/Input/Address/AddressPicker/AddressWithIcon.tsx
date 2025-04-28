@@ -6,9 +6,9 @@ import { History, ExternalLink, Copy, Check, ChevronDown, WalletIcon, Pencil, Li
 import { Partner } from "../../../../Models/Partner";
 import { Network } from "../../../../Models/Network";
 import { Popover, PopoverContent, PopoverTrigger } from "../../../shadcn/popover";
-import useCopyClipboard from "../../../../hooks/useCopyClipboard";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../../shadcn/tooltip";
 import { Wallet } from "../../../../Models/WalletProvider";
+import { useCopyToClipboard } from "@uidotdev/usehooks";
 
 type Props = {
     addressItem: AddressItem;
@@ -131,7 +131,7 @@ const calculateMaxWidth = (balance: string | undefined) => {
 };
 
 export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, addressClassNames, onDisconnect }) => {
-    const [isCopied, setCopied] = useCopyClipboard()
+    const [isCopied, setCopied] = useCopyToClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
 
     return (

@@ -33,7 +33,7 @@ export type LayerswapContextProps = {
 }
 
 const INTERCOM_APP_ID = 'h5zisg78'
-const LayerswapContext: FC<LayerswapContextProps> = ({ children, settings: _settings, themeData, apiKey, integrator, version, walletConnect }) => {
+export const LayerswapContext: FC<LayerswapContextProps> = ({ children, settings: _settings, themeData, apiKey, integrator, version, walletConnect }) => {
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
 
     AppSettings.ApiVersion = version
@@ -89,5 +89,3 @@ const LayerswapContext: FC<LayerswapContextProps> = ({ children, settings: _sett
         </>
     )
 }
-
-export default LayerswapContext

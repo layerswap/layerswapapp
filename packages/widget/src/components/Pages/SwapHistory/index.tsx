@@ -1,6 +1,6 @@
 import Content from "./History"
 import Header from "./Header";
-import LayerswapContext, { LayerswapContextProps } from "../../../context/LayerswapContext";
+import { LayerswapContextProps, LayerswapContext } from "../../../context/LayerswapContext";
 import { SwapDataProvider } from "../../../context/swap";
 import { FC } from "react";
 

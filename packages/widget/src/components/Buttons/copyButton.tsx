@@ -2,9 +2,9 @@
 
 import { Check, Copy } from 'lucide-react'
 import { classNames } from '../utils/classNames'
-import useCopyClipboard from '../../hooks/useCopyClipboard'
 import React, { FC, useState } from 'react'
 import { Tooltip, TooltipContent, TooltipTrigger } from '../shadcn/tooltip'
+import { useCopyToClipboard } from '@uidotdev/usehooks'
 
 interface CopyButtonProps {
   className?: string
@@ -15,10 +15,10 @@ interface CopyButtonProps {
 }
 
 const CopyButton: FC<CopyButtonProps> = ({ className, toCopy, children, iconSize, iconClassName }) => {
-  const [isCopied, setCopied] = useCopyClipboard()
+  const [isCopied, setCopied] = useCopyToClipboard()
   const [isTooltipOpen, setTooltipOpen] = useState(false);
   const handleCopyClick = () => {
-    setCopied(toCopy);
+    setCopied(toCopy.toString());
     setTooltipOpen(true);
   };
 

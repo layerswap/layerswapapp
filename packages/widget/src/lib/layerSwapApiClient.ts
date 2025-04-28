@@ -8,7 +8,7 @@ import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
 import { NetworkWithTokens, Network, Token } from "../Models/Network";
 import { Exchange } from "../Models/Exchange";
-import { datadogRum } from '@datadog/browser-rum';
+// import { datadogRum } from '@datadog/browser-rum';
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;
@@ -90,7 +90,7 @@ export default class LayerSwapApiClient {
                     const renderingError = new Error(`API request error with uri:${uri}`);
                     renderingError.name = `APIError`;
                     renderingError.cause = reason;
-                    datadogRum.addError(renderingError);
+                    // datadogRum.addError(renderingError);
                     return Promise.reject(reason);
                 }
             });

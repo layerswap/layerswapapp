@@ -15,7 +15,7 @@ import FormattedAverageCompletionTime from '../../../../Common/FormattedAverageC
 import CountdownTimer from '../../../../Common/CountDownTimer';
 import useSWR from 'swr';
 import { ApiResponse } from '../../../../../Models/ApiResponse';
-import { datadogRum } from '@datadog/browser-rum';
+// import { datadogRum } from '@datadog/browser-rum';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../../../context/authContext';
 import logError from '../../../../../lib/logError';
@@ -83,7 +83,7 @@ const Processing: FC<Props> = ({ swapResponse }) => {
             const renderingError = new Error(`Swap:${swap?.id} transaction:${transactionHash} failed`);
             renderingError.name = `TransactionFailed`;
             renderingError.cause = err;
-            datadogRum.addError(renderingError);
+            // datadogRum.addError(renderingError);
         }
     }, [inputTxStatus, transactionHash, swap?.id])
 

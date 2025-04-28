@@ -1,5 +1,5 @@
 import React, { forwardRef, useCallback, useImperativeHandle, useState } from "react";
-import { useSwipeable } from "react-swipeable";
+// import { useSwipeable } from "react-swipeable";
 
 
 interface CarouselItemProps {
@@ -59,14 +59,15 @@ const Carousel = forwardRef<CarouselRef, CarouselProps>(function Carousel({ onFi
         }
     }), [activeIndex, children, updateIndex]);
 
-    const handlers = useSwipeable({
-        onSwipedLeft: () => updateIndex(activeIndex + 1),
-        onSwipedRight: () => updateIndex(activeIndex - 1),
-    });
+    //TODO: Implement without package
+    // const handlers = useSwipeable({
+    //     onSwipedLeft: () => updateIndex(activeIndex + 1),
+    //     onSwipedRight: () => updateIndex(activeIndex - 1),
+    // });
 
     return (
         <div
-            {...handlers}
+            // {...handlers}
             className="overflow-hidden h-full"
         >
             <div

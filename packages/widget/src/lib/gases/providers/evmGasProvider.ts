@@ -4,7 +4,7 @@ import { NetworkType, Network, Token } from "../../../Models/Network"
 import { Provider } from "./types"
 import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, http, parseEther, serializeTransaction } from "viem";
 import { erc20Abi } from "viem";
-import { datadogRum } from "@datadog/browser-rum";
+// import { datadogRum } from "@datadog/browser-rum";
 import formatAmount from "../../formatAmount";
 import { publicActionsL2 } from 'viem/op-stack'
 import resolveChain from "../../resolveChain";
@@ -128,7 +128,7 @@ abstract class getEVMGas {
             const error = new Error(e)
             error.name = "GasPriceError"
             error.cause = e
-            datadogRum.addError(error);
+            // datadogRum.addError(error);
         }
     }
     private async estimateFeesPerGas() {
@@ -139,7 +139,7 @@ abstract class getEVMGas {
             const error = new Error(e)
             error.name = "FeesPerGasError"
             error.cause = e
-            datadogRum.addError(error);
+            // datadogRum.addError(error);
         }
     }
     private async estimateMaxPriorityFeePerGas() {
@@ -150,7 +150,7 @@ abstract class getEVMGas {
             const error = new Error(e)
             error.name = "MaxPriorityFeePerGasError"
             error.cause = e
-            datadogRum.addError(error);
+            // datadogRum.addError(error);
         }
     }
 
@@ -280,6 +280,7 @@ export default class getOptimismGas extends getEVMGas {
         }
 
         const fee = await this.client.estimateL1Fee({
+            chain: resolveChain(this.from),
             data: serializedTransaction,
             to: this.destination,
             account: this.account,

@@ -3,7 +3,7 @@ import { Widget } from "../../../Widget/Index";
 import { SwapDataProvider, useSwapDataState, useSwapDataUpdate } from "../../../../context/swap";
 import NotFound from "./NotFound";
 import SwapDetails from "./SwapDetails";
-import LayerswapContext, { LayerswapContextProps } from "../../../../context/LayerswapContext";
+import { LayerswapContextProps, LayerswapContext } from "../../../../context/LayerswapContext";
 import { TimerProvider } from "../../../../context/timerContext";
 import { DepositMethodProvider } from "../../../../context/depositMethodContext";
 
