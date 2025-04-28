@@ -28,6 +28,13 @@ const WALLETCONNECT_PROJECT_CONFIGS = AppSettings.WalletConnectConfig
 
 const queryClient = new QueryClient()
 
+const wltcnnct_inited = walletConnect({ projectId: WALLETCONNECT_PROJECT_CONFIGS.projectId, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' })
+const argent_inited = argent({ projectId: WALLETCONNECT_PROJECT_CONFIGS.projectId, showQrModal: false, customStoragePrefix: 'argent' })
+const metaMask_inited = metaMask({ projectId: WALLETCONNECT_PROJECT_CONFIGS.projectId, showQrModal: false, customStoragePrefix: 'metamask' })
+const rnbw_inited = rainbow({ projectId: WALLETCONNECT_PROJECT_CONFIGS.projectId, showQrModal: false, customStoragePrefix: 'rainbow' })
+const btgt_inited = bitget({ projectId: WALLETCONNECT_PROJECT_CONFIGS.projectId, showQrModal: false, customStoragePrefix: 'bitget' })
+const okx_inited = okxWallet({ projectId: WALLETCONNECT_PROJECT_CONFIGS.projectId, showQrModal: false, customStoragePrefix: 'okxWallet' })
+
 function WagmiComponent({ children }: Props) {
     const settings = useSettingsState();
     const isChain = (c: Chain | undefined): c is Chain => c != undefined
@@ -59,12 +66,12 @@ function WagmiComponent({ children }: Props) {
                 appName: WALLETCONNECT_PROJECT_CONFIGS.name,
                 appLogoUrl: WALLETCONNECT_PROJECT_CONFIGS.icons[0],
             }),
-            walletConnect({ projectId: WALLETCONNECT_PROJECT_CONFIGS.projectId, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' }),
-            argent({ projectId: WALLETCONNECT_PROJECT_CONFIGS.projectId, showQrModal: false, customStoragePrefix: 'argent' }),
-            ...(!isMetaMaskInjected ? [metaMask({ projectId: WALLETCONNECT_PROJECT_CONFIGS.projectId, showQrModal: false, customStoragePrefix: 'metamask', providers })] : []),
-            ...(!isRainbowInjected ? [rainbow({ projectId: WALLETCONNECT_PROJECT_CONFIGS.projectId, showQrModal: false, customStoragePrefix: 'rainbow' })] : []),
-            ...(!isBitKeepInjected ? [bitget({ projectId: WALLETCONNECT_PROJECT_CONFIGS.projectId, showQrModal: false, customStoragePrefix: 'bitget' })] : []),
-            ...(!isOkxInjected ? [okxWallet({ projectId: WALLETCONNECT_PROJECT_CONFIGS.projectId, showQrModal: false, customStoragePrefix: 'okxWallet', providers })] : []),
+            wltcnnct_inited,
+            argent_inited,
+            ...(!isMetaMaskInjected ? [metaMask_inited] : []),
+            ...(!isRainbowInjected ? [rnbw_inited] : []),
+            ...(!isBitKeepInjected ? [btgt_inited] : []),
+            ...(!isOkxInjected ? [okx_inited] : []),
             browserInjected()
         ],
         chains: settingsChains as [Chain, ...Chain[]],
@@ -75,7 +82,7 @@ function WagmiComponent({ children }: Props) {
         <WagmiProvider config={config} >
             <QueryClientProvider client={queryClient}>
                 {/* <FuelProviderWrapper> */}
-                    {children}
+                {children}
                 {/* </FuelProviderWrapper> */}
             </QueryClientProvider>
         </WagmiProvider >

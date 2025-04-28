@@ -1,3 +1,4 @@
+'use client'
 import { FC, createContext, useContext } from "react";
 import { WalletProvider } from "../Models/WalletProvider";
 

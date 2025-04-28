@@ -39,13 +39,13 @@ yarn add @layerswap/widget wagmi viem zustand @tanstack/react-query
 Here is an example of a basic app using Layerswap Widget:
 
 ```tsx
-import { LayerswapContext, Swap } from '@layerswap/widget';
+import { LayerswapProvider, Swap } from '@layerswap/widget';
 
 export const WidgetPage = () => {
   return (
-    <LayerswapContext>
+    <LayerswapProvider>
       <Swap />
-    </LayerswapContext>
+    </LayerswapProvider>
   );
 };
 ```
@@ -53,7 +53,7 @@ export const WidgetPage = () => {
 You can create your custom wallet provider if you want to use RainbowKit, Dynamic, etc.
 
 ```tsx
-import { LayerswapContext, Swap, WalletHooksProvider } from '@layerswap/widget';
+import { LayerswapProvider, Swap, WalletHooksProvider } from '@layerswap/widget';
 import useCustomEVM from "../hooks/useCustomEvm";
 
 function CustomHooks ({ children }: { children: ReactNode }) {
@@ -66,11 +66,11 @@ function CustomHooks ({ children }: { children: ReactNode }) {
 export const WidgetPage = () => {
 
   return (
-    <LayerswapContext>
+    <LayerswapProvider>
       <CustomHooks>
         <Swap />
       <CustomHooks>
-    </LayerswapContext>
+    </LayerswapProvider>
   );
 };
 ```

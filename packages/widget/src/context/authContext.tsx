@@ -1,3 +1,4 @@
+'use client'
 import React, { Context, useCallback, useEffect, useState } from 'react'
 import { parseJwt } from '../lib/jwtParser';
 import TokenService from '../lib/TokenService';

@@ -1,3 +1,4 @@
+'use client'
 import { FC, useEffect } from "react";
 import { useIntercom } from "react-use-intercom";
 import { useAuthState } from "../../../context/authContext";

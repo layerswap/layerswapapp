@@ -1,3 +1,4 @@
+'use client'
 import { Gift } from "lucide-react";
 import { FC, useState } from "react";
 import { ApiResponse } from "../../../Models/ApiResponse";
@@ -5,7 +6,7 @@ import LayerSwapApiClient, { Campaign } from "../../../lib/layerSwapApiClient";
 import SpinIcon from "../../Icons/spinIcon";
 import useSWR from 'swr'
 import { Widget } from "../../Widget/Index";
-import { LayerswapContextProps, LayerswapContext } from "../../../context/LayerswapContext";
+import { LayerswapContextProps, LayerswapProvider } from "../../../context/LayerswapProvider";
 import VaulDrawer from "../../Modal/vaulModal";
 import { CampaignDetailsComponent } from "./Details";
 
@@ -136,12 +137,12 @@ function IsCampaignActive(campaign: Campaign) {
 
 export const Campaigns: FC<LayerswapContextProps & { hideMenu?: boolean }> = (props) => {
     return (
-        <LayerswapContext {...props}>
+        <LayerswapProvider {...props}>
             <Widget hideMenu={props.hideMenu} className="min-h-[520px]">
                 <Widget.Content>
                     <CampaignsComponent />
                 </Widget.Content>
             </Widget>
-        </LayerswapContext>
+        </LayerswapProvider>
     )
 }

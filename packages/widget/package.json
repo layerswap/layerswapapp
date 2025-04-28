@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/widget",
-  "version": "0.1.5-alpha0.1",
+  "version": "0.1.7",
   "description": "Streamline your asset transaction experience with Layerswap Widget across 50+ blockchains and 15+ exchanges.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -52,6 +52,7 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.1.1",
+    "@layerswap/widget": "^0.1.5-alpha0.2",
     "@metamask/jazzicon": "^2.0.0",
     "@radix-ui/react-accordion": "^1.2.8",
     "@radix-ui/react-checkbox": "^1.2.3",
@@ -85,6 +86,7 @@
     "zksync": "0.13.1"
   },
   "devDependencies": {
+    "@tanstack/react-query": "^5.59.20",
     "@types/bn.js": "^5.1.0",
     "@types/node": "^16.11.7",
     "@types/styled-jsx": "^3.4.4",
@@ -96,8 +98,7 @@
     "tsup": "^8.4.0",
     "typescript": "^5.1",
     "viem": "^2.21.16",
-    "wagmi": "2.15.0",
-    "@tanstack/react-query": "^5.59.20"
+    "wagmi": "2.15.0"
   },
   "resolutions": {
     "rpc-websockets": "7.11.0",

@@ -1,9 +1,10 @@
+'use client'
 import { FC, useEffect } from "react";
 import { Widget } from "../../../Widget/Index";
 import { SwapDataProvider, useSwapDataState, useSwapDataUpdate } from "../../../../context/swap";
 import NotFound from "./NotFound";
 import SwapDetails from "./SwapDetails";
-import { LayerswapContextProps, LayerswapContext } from "../../../../context/LayerswapContext";
+import { LayerswapContextProps, LayerswapProvider } from "../../../../context/LayerswapProvider";
 import { TimerProvider } from "../../../../context/timerContext";
 import { DepositMethodProvider } from "../../../../context/depositMethodContext";
 
@@ -33,7 +34,7 @@ const Comp: FC = () => {
 
 export const SwapWithdrawal: FC<LayerswapContextProps> = (props) => {
     return (
-        <LayerswapContext {...props}>
+        <LayerswapProvider {...props}>
             <SwapDataProvider>
                 <TimerProvider>
                     <DepositMethodProvider>
@@ -41,6 +42,6 @@ export const SwapWithdrawal: FC<LayerswapContextProps> = (props) => {
                     </DepositMethodProvider>
                 </TimerProvider>
             </SwapDataProvider >
-        </LayerswapContext>
+        </LayerswapProvider>
     )
 }

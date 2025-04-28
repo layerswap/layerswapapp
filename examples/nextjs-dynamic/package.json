@@ -1,0 +1,48 @@
+{
+  "name": "nextjs-dynamic",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "debug": "next dev",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@dynamic-labs/ethereum": "^4.14.0",
+    "@dynamic-labs/sdk-react-core": "^4.14.0",
+    "@dynamic-labs/wagmi-connector": "^4.14.0",
+    "@layerswap/widget": "^0.1.6",
+    "@tanstack/react-query": "^5.74.7",
+    "next": "^14.0.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-error-boundary": "^4.0.11",
+    "viem": "^2.28.0",
+    "wagmi": "^2.15.0",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@types/bn.js": "^5.1.0",
+    "@types/crypto-js": "^4.1.1",
+    "@types/node": "^16.11.7",
+    "@types/react": "18.x",
+    "@web3-react/types": "^6.0.7",
+    "autoprefixer": "^10.4.5",
+    "eslint": "8.49.0",
+    "eslint-config-next": "^14.0.4",
+    "postcss": "^8.4.13",
+    "tailwindcss": "^3.0.24",
+    "tailwindcss-themer": "^2.0.2",
+    "typescript": "^5.1"
+  },
+  "resolutions": {
+    "rpc-websockets": "7.11.0",
+    "@solana/web3.js": "1.66.0",
+    "@radix-ui/react-dismissable-layer": "1.1.1"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  }
+}

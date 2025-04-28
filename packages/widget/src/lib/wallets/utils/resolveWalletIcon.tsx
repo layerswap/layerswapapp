@@ -1,3 +1,4 @@
+'use client'
 import AddressIcon from "../../../components/Common/AddressIcon";
 import SVGWithImg from "../../../components/Icons/SvgWithImg";
 import WalletIcon from "../../../components/Icons/WalletIcon";
