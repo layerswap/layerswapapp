@@ -1,3 +1,4 @@
+'use client'
 import { FC, useEffect, useMemo } from 'react';
 import { SwapDataProvider } from '../../../../context/swap';
 import { TimerProvider } from '../../../../context/timerContext';

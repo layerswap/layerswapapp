@@ -1,3 +1,4 @@
+'use client'
 import { Home } from "lucide-react"
 import Navbar from "../../Common/navbar"
 import MessageComponent from "../../Common/MessageComponent"

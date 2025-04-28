@@ -1,3 +1,4 @@
+'use client'
 import Content from "./History"
 import Header from "./Header";
 import { LayerswapContextProps, LayerswapProvider } from "../../../context/LayerswapProvider";

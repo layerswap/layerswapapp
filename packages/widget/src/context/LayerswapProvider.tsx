@@ -1,3 +1,4 @@
+'use client'
 import { FC, useEffect, useState } from "react"
 import ThemeWrapper from "../components/themeWrapper";
 import { ErrorBoundary } from "react-error-boundary";

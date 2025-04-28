@@ -1,4 +1,3 @@
-'use client'
 export { Swap } from './components/Pages/SwapPages/Form';
 export { SwapWithdrawal } from './components/Pages/SwapPages/Withdraw';
 export { TransactionsHistory } from './components/Pages/SwapHistory';

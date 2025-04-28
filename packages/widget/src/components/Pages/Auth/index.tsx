@@ -1,3 +1,4 @@
+'use client'
 import { FC, useCallback } from "react";
 import { FormWizardProvider, useFormWizardaUpdate } from "../../../context/formWizardProvider";
 import { TimerProvider } from "../../../context/timerContext";

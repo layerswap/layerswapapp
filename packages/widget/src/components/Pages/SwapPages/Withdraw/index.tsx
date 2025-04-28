@@ -1,3 +1,4 @@
+'use client'
 import { FC, useEffect } from "react";
 import { Widget } from "../../../Widget/Index";
 import { SwapDataProvider, useSwapDataState, useSwapDataUpdate } from "../../../../context/swap";

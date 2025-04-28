@@ -1,3 +1,4 @@
+'use client'
 import { FC, useEffect, useState } from "react";
 import MessageComponent from "../../Common/MessageComponent";
 import inIframe from "../../utils/inIframe";

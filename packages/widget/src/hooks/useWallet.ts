@@ -1,3 +1,4 @@
+'use client'
 import { Network } from "../Models/Network"
 import useEVM from "../lib/wallets/evm/useEVM";
 // import useImtblX from "../lib/wallets/imtblX/useImtblX";
