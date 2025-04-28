@@ -1,13 +1,13 @@
 import Layout from '../components/Layout'
 import { InferGetServerSidePropsType } from 'next'
 import { getServerSideProps } from '../helpers/getSettings'
-import { Swap, LayerswapContext } from '@layerswap/widget'
+import { Swap, LayerswapProvider } from '@layerswap/widget'
 
 export default function Home({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
 
   return (
     <Layout settings={settings} themeData={themeData}>
-      <LayerswapContext
+      <LayerswapProvider
         integrator='experimental'
         apiKey={apiKey}
         settings={settings}
@@ -15,7 +15,7 @@ export default function Home({ settings, themeData, apiKey }: InferGetServerSide
         version='testnet'
       >
         <Swap/>
-      </LayerswapContext>
+      </LayerswapProvider>
     </Layout>
   )
 }

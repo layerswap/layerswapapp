@@ -1710,10 +1710,10 @@
     viem "^2.21.16"
     zksync "0.13.1"
 
-"@layerswap/widget@^0.1.6":
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/@layerswap/widget/-/widget-0.1.6.tgz#b990913aaeb2e6a78fa5eaea46ca88c9127f3fec"
-  integrity sha512-MGrGIAxvYmGY8jD5lf2nJg2//kt3MY7D/UYsVgcv8wYT/LV4jRJgP1rfaaak5o5fVYycfZQ5LOY/33xA0vgycA==
+"@layerswap/widget@^0.1.8":
+  version "0.1.8"
+  resolved "https://registry.yarnpkg.com/@layerswap/widget/-/widget-0.1.8.tgz#8fda92ca059dc8a0af29f3fd23f28ecaa4bda2a0"
+  integrity sha512-XhIbxhYskBAxVQWCEH+9M1vWh+fI54v7J0TFyZMaKf1qIksMI5fB5A9EZZZq56Kua8Ek1+Ho9Hyoonr++oMMKQ==
   dependencies:
     "@headlessui/react" "^2.1.1"
     "@layerswap/widget" "^0.1.5-alpha0.2"
