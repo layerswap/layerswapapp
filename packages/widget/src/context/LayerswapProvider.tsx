@@ -16,6 +16,7 @@ import WalletsProviders from "../components/Wallet/WalletProviders";
 import { IntercomProvider } from 'react-use-intercom';
 import AppSettings from "../lib/AppSettings";
 import { getSettings } from "../helpers/getSettings";
+import WidgetLoading from "../components/WidgetLoading";
 
 export type LayerswapContextProps = {
     children?: JSX.Element | JSX.Element[];
@@ -55,7 +56,7 @@ export const LayerswapProvider: FC<LayerswapContextProps> = ({ children, setting
 
     const settings = _settings || fetchedSettings
     if (!settings) {
-        return <div>Loading...</div>
+        return <WidgetLoading />
     }
 
     let appSettings = new LayerSwapAppSettings(settings)
