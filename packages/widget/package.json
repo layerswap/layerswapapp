@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/widget",
-  "version": "0.1.7",
+  "version": "0.1.9",
   "description": "Streamline your asset transaction experience with Layerswap Widget across 50+ blockchains and 15+ exchanges.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -52,7 +52,6 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.1.1",
-    "@layerswap/widget": "^0.1.5-alpha0.2",
     "@metamask/jazzicon": "^2.0.0",
     "@radix-ui/react-accordion": "^1.2.8",
     "@radix-ui/react-checkbox": "^1.2.3",
