@@ -7,7 +7,7 @@ import EmailStep from "./Steps/EmailStep";
 import Wizard from "../../Wizard/Wizard";
 import WizardItem from "../../Wizard/WizardItem";
 import { SwapDataProvider } from "../../../context/swap";
-import { LayerswapContextProps, LayerswapContext } from "../../../context/LayerswapContext";
+import { LayerswapContextProps, LayerswapProvider } from "../../../context/LayerswapProvider";
 
 const Comp: FC = () => {
     const { goToStep } = useFormWizardaUpdate()
@@ -44,12 +44,12 @@ const Comp: FC = () => {
 
 export const Auth: FC<LayerswapContextProps> = (props) => {
     return (
-        <LayerswapContext {...props}>
+        <LayerswapProvider {...props}>
             <SwapDataProvider>
                 <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false}>
                     <Comp />
                 </FormWizardProvider>
             </SwapDataProvider>
-        </LayerswapContext>
+        </LayerswapProvider>
     )
 }

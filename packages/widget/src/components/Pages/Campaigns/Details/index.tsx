@@ -11,7 +11,7 @@ import Leaderboard from "./Leaderboard"
 import Rewards from "./Rewards";
 import SpinIcon from "../../../Icons/spinIcon"
 import useWallet from "../../../../hooks/useWallet"
-import { LayerswapContextProps, LayerswapContext } from "../../../../context/LayerswapContext"
+import { LayerswapContextProps, LayerswapProvider } from "../../../../context/LayerswapProvider"
 
 export const CampaignDetailsComponent: FC<{ campaignName: string }> = ({ campaignName }) => {
 
@@ -115,10 +115,10 @@ const NotFound = () => <Widget.Content>
 
 export const CampaignDetails: FC<LayerswapContextProps & { campaignName: string }> = (props) => {
     return (
-        <LayerswapContext {...props}>
+        <LayerswapProvider {...props}>
             <Widget>
                 <CampaignDetailsComponent campaignName={props.campaignName} />
             </Widget>
-        </LayerswapContext>
+        </LayerswapProvider>
     )
 }

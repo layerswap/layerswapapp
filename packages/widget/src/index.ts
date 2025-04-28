@@ -12,11 +12,10 @@ export { LayerSwapSettings } from './Models/LayerSwapSettings'
 export { type ThemeData, THEME_COLORS, type ThemeColor } from './Models/Theme'
 export { type AuthData, AuthDataUpdateContext, AuthProvider, AuthStateContext, type UpdateInterface, type UserType, useAuthDataUpdate, useAuthState } from "./context/authContext"
 export { GetSettings } from './lib/GetSettings'
-export { LayerswapContext } from './context/LayerswapContext';
+export { LayerswapProvider } from './context/LayerswapProvider';
 export { WalletHooksProvider } from './context/walletHooksProvider'
 export type { WalletProvider, Wallet, InternalConnector } from './Models/WalletProvider'
 export { useSettingsState } from './context/settings'
 export { resolveWalletConnectorIcon } from './lib/wallets/utils/resolveWalletIcon'
 export { NetworkWithTokens, NetworkType } from './Models/Network'
-import useWallet from './hooks/useWallet'
-export { useWallet }
+export { default as useWallet } from './hooks/useWallet'
