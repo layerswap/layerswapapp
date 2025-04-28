@@ -1,11 +1,11 @@
 export default class AppSettings {
     static ApiVersion?: string = "mainnet"
     static Integrator: string = 'Layerswap'
-    static apikey: string = this.ApiVersion === 'testnet' ? 'sandbox' : 'NDBxG+aon6WlbgIA2LfwmcbLU52qUL9qTnztTuTRPNSohf/VnxXpRaJlA5uLSQVqP8YGIiy/0mz+mMeZhLY4/Q'
+    static apikey: string = 'NDBxG+aon6WlbgIA2LfwmcbLU52qUL9qTnztTuTRPNSohf/VnxXpRaJlA5uLSQVqP8YGIiy/0mz+mMeZhLY4/Q'
     static ExplorerURl: string = `https://www.layerswap.io/explorer/`
-    static LayerswapApiUri?: string = this.ApiVersion === 'testnet' ? 'https://api-dev.layerswap.cloud' : 'https://api.layerswap.io'
-    static IdentitiyApiUri?: string = this.ApiVersion === 'testnet' ? 'https://identity-api-dev.layerswap.cloud' : 'https://identity-api.layerswap.io'
-    static ResourseStorageUrl: string = this.ApiVersion === 'testnet' ? 'ttps://devlslayerswapbridgesa.blob.core.windows.net/' : 'https://prodlslayerswapbridgesa.blob.core.windows.net/'
+    static LayerswapApiUri?: string = 'https://api.layerswap.io'
+    static IdentitiyApiUri?: string = 'https://identity-api.layerswap.io'
+    static ResourseStorageUrl: string = 'https://prodlslayerswapbridgesa.blob.core.windows.net/'
     static WalletConnectConfig: {
         projectId: string
         name: string
