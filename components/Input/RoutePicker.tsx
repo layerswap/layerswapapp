@@ -1,15 +1,14 @@
 import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
-import { NetworkRoute, NetworkRouteToken } from "../../Models/Network";
+import { NetworkRoute } from "../../Models/Network";
 import { Selector, SelectorContent, SelectorTrigger } from "../Select/CommandNew/Index";
-import { ChevronDown, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
-import { CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandWrapper } from "../shadcn/command";
 import SpinIcon from "../icons/spinIcon";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import { CurrencySelectItemDisplay, RouteSelectItemDisplay, SelectedRouteDisplay } from "../Select/Shared/Routes";
-import { Exchange, ExchangeToken } from "../../Models/Exchange";
+import { Exchange } from "../../Models/Exchange";
 import React from "react";
 import { ResolveCEXCurrencyOrder, ResolveCurrencyOrder, SortNetworkRoutes } from "../../lib/sorting";
 import useFormRoutes from "../../hooks/useFormRoutes";
