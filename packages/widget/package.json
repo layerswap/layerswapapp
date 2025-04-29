@@ -64,7 +64,7 @@
     "@stablelib/ed25519": "^2.0.2",
     "@tanstack/react-virtual": "^3.10.8",
     "@uidotdev/usehooks": "^2.4.1",
-    "@walletconnect/universal-provider": "^2.17.0",
+    "@walletconnect/universal-provider": "2.19.2",
     "axios": "^0.21.4",
     "bn.js": "^5.2.0",
     "cmdk": "^0.2.0",
