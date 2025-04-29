@@ -29,6 +29,15 @@ const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_
 
 const queryClient = new QueryClient()
 
+const wltcnnct_inited = walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' })
+const argent_inited = argent({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'argent' })
+const metaMask_inited = metaMask({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'metamask' })
+const rnbw_inited = rainbow({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'rainbow' })
+const btgt_inited = bitget({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'bitget' })
+const okx_inited = okxWallet({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'okxWallet' })
+
+
+
 function WagmiComponent({ children }: Props) {
     const settings = useSettingsState();
     const isChain = (c: Chain | undefined): c is Chain => c != undefined
@@ -60,12 +69,12 @@ function WagmiComponent({ children }: Props) {
                 appName: 'Layerswap',
                 appLogoUrl: 'https://layerswap.io/app/symbol.png',
             }),
-            walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' }),
-            argent({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'argent' }),
-            ...(!isMetaMaskInjected ? [metaMask({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'metamask', providers })] : []),
-            ...(!isRainbowInjected ? [rainbow({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'rainbow' })] : []),
-            ...(!isBitKeepInjected ? [bitget({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'bitget' })] : []),
-            ...(!isOkxInjected ? [okxWallet({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'okxWallet', providers })] : []),
+            wltcnnct_inited,
+            argent_inited,
+            ...(!isMetaMaskInjected ? [metaMask_inited] : []),
+            ...(!isRainbowInjected ? [rnbw_inited] : []),
+            ...(!isBitKeepInjected ? [btgt_inited] : []),
+            ...(!isOkxInjected ? [okx_inited] : []),
             browserInjected()
         ],
         chains: settingsChains as [Chain, ...Chain[]],
