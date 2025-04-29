@@ -16,9 +16,9 @@ const adjustBorderRadius = (key: string, borderRadiusType: string | undefined) =
     if (borderRadiusType === 'full') return '9999px';
 
     const values = {
-        sm: { sm: 4, md: 8, lg: 12 },
-        md: { sm: 6, md: 12, lg: 16 },
-        lg: { sm: 8, md: 16, lg: 20 },
+        sm: { sm: 4, md: 6, lg: 8 },
+        md: { sm: 6, md: 8, lg: 12 },
+        lg: { sm: 10, md: 12, lg: 16 },
     };
 
     const selected = values[borderRadiusType as keyof typeof values];
