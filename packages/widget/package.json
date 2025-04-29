@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/widget",
-  "version": "0.1.9",
+  "version": "0.1.11",
   "description": "Streamline your asset transaction experience with Layerswap Widget across 50+ blockchains and 15+ exchanges.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -21,7 +21,7 @@
     "type-check": "tsc --noEmit",
     "clean": "rimraf dist && rm -rf tsconfig.tsbuildinfo",
     "build:js": "tsup",
-    "build:css": "tailwindcss -c tailwind.config.js -o dist/index.css --minify",
+    "build:css": "tailwindcss -c tailwind.config.js -i ./src/styles/globals.css -o dist/index.css --minify",
     "build:types": "tsc --outDir dist",
     "build": "yarn clean && yarn build:js && yarn build:types && yarn build:css",
     "dev": "yarn tsc --build --watch",
@@ -81,7 +81,6 @@
     "swr": "^2.2.5",
     "tailwindcss": "^3.0.24",
     "uuid": "^9.0.0",
-    "viem": "^2.21.16",
     "zksync": "0.13.1"
   },
   "devDependencies": {

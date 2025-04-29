@@ -1,6 +1,5 @@
 import { Form, useFormikContext } from "formik";
 import { FC, useCallback, useEffect } from "react";
-import React from "react";
 import NetworkFormField from "../../../Input/NetworkFormField";
 import { SwapFormValues } from "./SwapFormValues";
 import { Partner } from "../../../../Models/Partner";
@@ -27,10 +26,6 @@ import ReserveGasNote from "./SecondaryComponents/ReserveGasNote";
 type Props = {
     partner?: Partner,
 }
-
-// const ReserveGasNote = dynamic(() => import("./SecondaryComponents/ReserveGasNote"), {
-//     loading: () => <></>,
-// });
 
 const SwapForm: FC<Props> = ({ partner }) => {
     const {
@@ -177,7 +172,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
     }, [values.amount])
 
     const sourceWalletNetwork = values.fromExchange ? undefined : values.from
-    const shouldConnectWallet = (sourceWalletNetwork && values.from?.deposit_methods?.includes('wallet') && values.depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!values.from && !values.fromExchange && !wallets.length && values.depositMethod !== 'deposit_address')
+    const shouldConnectWallet = (sourceWalletNetwork && values.from?.deposit_methods?.includes('wallet') && values.depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!values.from && !values.fromExchange && !wallets.length && values.depositMethod !== 'deposit_address' && !(!values.from && values.to))
 
     return <Widget className="sm:min-h-[450px] h-full">
         <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
