@@ -10,6 +10,7 @@ export type ThemeData = {
     headerLogo?: string,
     footerLogo?: string,
     footerLogoHeight?: string,
+    borderRadius?: 'none' | 'sm' | 'md' | 'lg' | 'full' | 'default',
 }
 
 export type ThemeColor = {

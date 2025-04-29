@@ -16,7 +16,7 @@ const Widget = ({ children, className, hideMenu }: Props) => {
    const handleBack = null
 
    return <WalletModalProvider>
-      <div id="widget" className={`bg-secondary-900 rounded-lg w-full sm:overflow-hidden relative text-left`}>
+      <div id="widget" className="bg-secondary-900 rounded-lg w-full sm:overflow-hidden relative text-left">
          <div className="relative z-20">
             {
                AppSettings.ApiVersion === 'sandbox' &&
