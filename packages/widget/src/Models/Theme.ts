@@ -1,11 +1,11 @@
 
 export type ThemeData = {
     backdrop?: string,
-    actionButtonText: string,
-    buttonTextColor: string,
-    logo: string,
-    placeholderText: string,
-    primary: ThemeColor,
+    actionButtonText?: string,
+    buttonTextColor?: string,
+    logo?: string,
+    placeholderText?: string,
+    primary?: ThemeColor,
     secondary?: ThemeColor,
     headerLogo?: string,
     footerLogo?: string,

@@ -56,7 +56,13 @@ export const LayerswapProvider: FC<LayerswapContextProps> = ({ children, setting
 
     const settings = _settings || fetchedSettings
     if (!settings) {
-        return <WidgetLoading />
+        return <>
+            {
+                themeData &&
+                <ColorSchema themeData={themeData} />
+            }
+            <WidgetLoading />
+        </>
     }
 
     let appSettings = new LayerSwapAppSettings(settings)

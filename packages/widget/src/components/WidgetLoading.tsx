@@ -1,4 +1,4 @@
-import { MenuIcon, ChevronLeft } from "lucide-react";
+import { MenuIcon } from "lucide-react";
 
 export default function WidgetLoading() {
     return (
