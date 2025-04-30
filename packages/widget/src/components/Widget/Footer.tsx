@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import GoHomeButton from "../utils/GoHome";
 import { useMeasure } from "@uidotdev/usehooks";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
+import AppSettings from "../../lib/AppSettings";
 
 const variants = {
     enter: () => {
@@ -33,8 +34,8 @@ type FooterProps = {
 
 const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
     let [footerRef, { height }] = useMeasure();
-    const isFooterVisible = LayerSwapApiClient.apiKey !== 'NDBxG+aon6WlbgIA2LfwmcbLU52qUL9qTnztTuTRPNSohf/VnxXpRaJlA5uLSQVqP8YGIiy/0mz+mMeZhLY4/Q' &&
-        LayerSwapApiClient.apiKey !== 'Dz1jVir9WUD0gBWoGbOmS1oe5K4985SGptaZXjF4z9VVrvO5nC9q55h8TE/3CIESRxWdYVpPnz/H2BogL2eG+A'
+    const isFooterVisible = LayerSwapApiClient.apiKey !== AppSettings.LayerswapApiKeys['mainnet'] &&
+        LayerSwapApiClient.apiKey !== AppSettings.LayerswapApiKeys['testnet']
 
     return (
         sticky ?
