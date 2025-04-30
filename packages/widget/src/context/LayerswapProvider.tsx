@@ -41,6 +41,7 @@ export const LayerswapProvider: FC<LayerswapContextProps> = ({ children, setting
 
     AppSettings.ApiVersion = version
     AppSettings.Integrator = integrator
+    AppSettings.ThemeData = themeData
     LayerSwapApiClient.apiKey = apiKey
 
     useEffect(() => {

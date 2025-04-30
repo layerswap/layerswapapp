@@ -3,6 +3,7 @@ import GoHomeButton from "../utils/GoHome";
 import { useMeasure } from "@uidotdev/usehooks";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import AppSettings from "../../lib/AppSettings";
+import { ReactNode } from "react";
 
 const variants = {
     enter: () => {
@@ -28,14 +29,12 @@ const variants = {
 
 type FooterProps = {
     hidden?: boolean,
-    children?: JSX.Element | JSX.Element[];
+    children?: ReactNode;
     sticky?: boolean
 }
 
-const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
+const Comp = ({ children, hidden, sticky = true }: FooterProps) => {
     let [footerRef, { height }] = useMeasure();
-    const isFooterVisible = LayerSwapApiClient.apiKey !== AppSettings.LayerswapApiKeys['mainnet'] &&
-        LayerSwapApiClient.apiKey !== AppSettings.LayerswapApiKeys['testnet']
 
     return (
         sticky ?
@@ -58,13 +57,6 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                         max-sm:px-6 
                         max-sm:w-full ${hidden ? 'animation-slide-out' : ''}`}>
                     {children}
-                    {
-                        isFooterVisible &&
-                        <a target="_blank" href='https://layerswap.io/' className="flex justify-center text-primary-text-placeholder mt-3 -mb-3">
-                            <span className="text-xs content-center">Powered by</span> <GoHomeButton className='ml-1 fill-primary-text-placeholder h-5 w-auto cursor-pointer' />
-                        </a>
-                    }
-
                 </motion.div>
 
                 <div style={{ height: `${height}px` }}
@@ -80,4 +72,24 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
             </>
     )
 }
+
+const Footer = ({ children, hidden, sticky }: FooterProps) => {
+    const isFooterVisible = LayerSwapApiClient.apiKey !== AppSettings.LayerswapApiKeys['mainnet'] &&
+        LayerSwapApiClient.apiKey !== AppSettings.LayerswapApiKeys['testnet']
+
+    const isFooterSticky = AppSettings.ThemeData?.footerSticky ?? false
+
+    return (
+        <Comp hidden={hidden} sticky={isFooterSticky ? sticky : false}>
+            {children}
+            {
+                isFooterVisible &&
+                <a target="_blank" href='https://layerswap.io/' className="flex justify-center text-primary-text-placeholder mt-3 -mb-1.5 sm:-mb-3">
+                    <span className="text-xs content-center">Powered by</span> <GoHomeButton className='ml-1 fill-primary-text-placeholder h-5 w-auto cursor-pointer' />
+                </a>
+            }
+        </Comp>
+    )
+}
+
 export default Footer;
