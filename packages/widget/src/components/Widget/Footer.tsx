@@ -58,8 +58,9 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                         max-sm:px-6 
                         max-sm:w-full ${hidden ? 'animation-slide-out' : ''}`}>
                     {children}
-                    {isFooterVisible &&
-                        <a target="_blank" href='https://layerswap.io/' className="flex justify-center text-primary-text-placeholder mt-3">
+                    {
+                        isFooterVisible &&
+                        <a target="_blank" href='https://layerswap.io/' className="flex justify-center text-primary-text-placeholder mt-3 -mb-3">
                             <span className="text-xs content-center">Powered by</span> <GoHomeButton className='ml-1 fill-primary-text-placeholder h-5 w-auto cursor-pointer' />
                         </a>
                     }

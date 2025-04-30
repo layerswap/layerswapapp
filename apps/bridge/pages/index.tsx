@@ -3,7 +3,7 @@ import { InferGetServerSidePropsType } from 'next'
 import { getServerSideProps } from '../helpers/getSettings'
 import { Swap, LayerswapProvider } from '@layerswap/widget'
 
-export default function Home({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Home({ settings, apiKey, themeData }: InferGetServerSidePropsType<typeof getServerSideProps>) {
 
   return (
     <Layout settings={settings} themeData={themeData}>
