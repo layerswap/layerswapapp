@@ -50,10 +50,6 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
                     .headerLogo {
                         display: ${themeData.headerLogo};
                     }
-                    .footerLogo {
-                        display: ${themeData.footerLogo};
-                        height: ${themeData.footerLogoHeight};
-                    }
                 `}
                 </style>
             }
