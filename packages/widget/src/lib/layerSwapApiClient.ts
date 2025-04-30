@@ -12,7 +12,7 @@ import { Exchange } from "../Models/Exchange";
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;
-    static apiKey: string = '';
+    static apiKey: string = AppSettings.LayerswapApiKeys[AppSettings.ApiVersion || 'mainnet'];
 
     _authInterceptor: AxiosInstance;
     _unauthInterceptor: AxiosInstance
