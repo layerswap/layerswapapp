@@ -8,7 +8,6 @@ export type ThemeData = {
     primary?: ThemeColor,
     secondary?: ThemeColor,
     headerLogo?: string,
-    footerLogo?: string,
     footerLogoHeight?: string,
     borderRadius?: 'none' | 'small' | 'medium' | 'large' | 'extraLarge' | 'default',
 }
@@ -37,7 +36,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         buttonTextColor: '255, 255, 255',
         placeholderText: '140, 152, 192',
         logo: '255, 255, 255',
-        footerLogo: 'none',
         borderRadius: 'small',
         primary: {
             DEFAULT: '46, 236, 255',
@@ -76,7 +74,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         actionButtonText: '0, 0, 0',
         buttonTextColor: '255, 255, 255',
         logo: '255, 255, 255',
-        footerLogo: 'none',
         borderRadius: 'small',
         primary: {
             DEFAULT: '128, 226, 235',
@@ -115,7 +112,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         actionButtonText: '255, 255, 255',
         buttonTextColor: '17, 17, 17',
         logo: '255, 0, 147',
-        footerLogo: 'none',
         borderRadius: 'small',
         primary: {
             DEFAULT: '228, 37, 117',
@@ -154,7 +150,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         actionButtonText: '254, 255, 254',
         buttonTextColor: '228, 229, 240',
         logo: '255, 0, 147',
-        footerLogo: 'none',
         borderRadius: 'small',
         primary: {
             DEFAULT: '228, 37, 117',
@@ -192,7 +187,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         actionButtonText: '254, 255, 254',
         buttonTextColor: '74, 61, 59',
         logo: '226, 49, 115',
-        footerLogo: 'none',
         borderRadius: 'small',
         primary: {
             DEFAULT: '237, 78, 51',
@@ -230,7 +224,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         actionButtonText: '255, 255, 255',
         buttonTextColor: '15, 15, 15',
         logo: '15, 15, 15',
-        footerLogo: 'none',
         borderRadius: 'small',
         primary: {
             DEFAULT: '51, 144, 236',
@@ -269,7 +262,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         buttonTextColor: '243, 243, 243',
         logo: '15, 15, 15',
         headerLogo: 'none',
-        footerLogo: 'block',
         footerLogoHeight: '20px',
         borderRadius: 'small',
         primary: {

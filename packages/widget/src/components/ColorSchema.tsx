@@ -40,8 +40,6 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
     const buttonTextColor = themeData?.buttonTextColor || fallbackTheme.buttonTextColor;
     const placeholderText = themeData?.placeholderText || fallbackTheme.placeholderText;
     const headerLogo = themeData?.headerLogo || fallbackTheme.headerLogo;
-    const footerLogo = themeData?.footerLogo || fallbackTheme.footerLogo;
-    const footerLogoHeight = themeData?.footerLogoHeight || fallbackTheme.footerLogoHeight;
     const borderRadius = themeData?.borderRadius || fallbackTheme.borderRadius;
     
     const primary = themeData?.primary || fallbackTheme.primary;
@@ -97,10 +95,6 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
 
                 .headerLogo {
                     display: ${headerLogo};
-                }
-                .footerLogo {
-                    display: ${footerLogo};
-                    height: ${footerLogoHeight};
                 }
             `}</style>
         </>

@@ -1,6 +1,8 @@
 import { motion } from "framer-motion";
 import GoHomeButton from "../utils/GoHome";
 import { useMeasure } from "@uidotdev/usehooks";
+import LayerSwapApiClient from "../../lib/layerSwapApiClient";
+import AppSettings from "../../lib/AppSettings";
 
 const variants = {
     enter: () => {
@@ -32,6 +34,8 @@ type FooterProps = {
 
 const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
     let [footerRef, { height }] = useMeasure();
+    const isFooterVisible = LayerSwapApiClient.apiKey !== AppSettings.LayerswapApiKeys['mainnet'] &&
+        LayerSwapApiClient.apiKey !== AppSettings.LayerswapApiKeys['testnet']
 
     return (
         sticky ?
@@ -54,9 +58,12 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                         max-sm:px-6 
                         max-sm:w-full ${hidden ? 'animation-slide-out' : ''}`}>
                     {children}
-                    <div className="flex justify-center  text-primary-text-placeholder">
-                        <span className="text-xs content-center footerLogo mt-2.5">Powered by</span> <GoHomeButton className='footerLogo ml-1 mt-2.5 fill-primary-text-placeholder h-5 w-auto cursor-pointer' />
-                    </div>
+                    {isFooterVisible &&
+                        <a target="_blank" href='https://layerswap.io/' className="flex justify-center text-primary-text-placeholder mt-3">
+                            <span className="text-xs content-center">Powered by</span> <GoHomeButton className='ml-1 fill-primary-text-placeholder h-5 w-auto cursor-pointer' />
+                        </a>
+                    }
+
                 </motion.div>
 
                 <div style={{ height: `${height}px` }}
