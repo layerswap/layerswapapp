@@ -11,8 +11,7 @@ export default function Home({ settings, themeData, apiKey }: InferGetServerSide
         integrator='experimental'
         apiKey={apiKey}
         settings={settings}
-        themeData={themeData}
-        version='testnet'
+        themeData={{...themeData, borderRadius: 'default'}}
       >
         <Swap/>
       </LayerswapProvider>

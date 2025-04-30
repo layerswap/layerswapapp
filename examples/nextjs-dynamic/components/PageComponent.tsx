@@ -32,6 +32,7 @@ const PageComponent: FC<{ settings: LayerSwapSettings }> = ({ settings }) => {
                 integrator='experimental'
                 settings={settings}
                 version='mainnet'
+                apiKey='NDBxG+aon6WlbgIA2LfwmcbLU52qUL9qTnztTuTRPNSohf/VnxXpRaJlA5uLSQVqP8YGIiy/0mz+mMeZhLY4/Q'
             >
                 <CustomHooks >
                     <Swap
