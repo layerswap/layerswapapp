@@ -6,19 +6,20 @@ type Props = {
 }
 
 const BORDER_RADIUS_VALUES = {
-    sm: 8,
-    md: 20,
-    lg: 56,
+    small: 6,
+    medium: 8,
+    large: 12,
+    extraLarge: 16 
 };
 
 const adjustBorderRadius = (key: string, borderRadiusType: string | undefined) => {
     if (borderRadiusType === 'none') return '0';
-    if (borderRadiusType === 'full') return '9999px';
 
     const values = {
-        sm: { sm: 4, md: 6, lg: 8 },
-        md: { sm: 6, md: 8, lg: 12 },
-        lg: { sm: 10, md: 12, lg: 16 },
+        small: { small: 4, medium: 6, large: 8, extraLarge: 10 },
+        medium: { small: 6, medium: 8, large: 10, extraLarge: 12 },
+        large: { small: 8, medium: 10, large: 12, extraLarge: 14 },
+        extraLarge: { small: 10, medium: 12, large: 14, extraLarge: 16 },
     };
 
     const selected = values[borderRadiusType as keyof typeof values];
@@ -51,11 +52,11 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
             <style>{`
                 :root {
                     --ls-border-radius-none: 0px;
-                    --ls-border-radius-sm: ${adjustBorderRadius('sm', borderRadius)};
-                    --ls-border-radius-md: ${adjustBorderRadius('md', borderRadius)};
-                    --ls-border-radius-lg: ${adjustBorderRadius('lg', borderRadius)};
-                    --ls-border-radius-default: ${adjustBorderRadius('sm', borderRadius)};
-                    --ls-border-radius-full: 9999px;
+                    --ls-border-radius-sm: ${adjustBorderRadius('small', borderRadius)};
+                    --ls-border-radius-md: ${adjustBorderRadius('medium', borderRadius)};
+                    --ls-border-radius-lg: ${adjustBorderRadius('large', borderRadius)};
+                    --ls-border-radius-xl: ${adjustBorderRadius('extraLarge', borderRadius)};
+                    --ls-border-radius-default: ${adjustBorderRadius('small', borderRadius)};
 
                     --ls-colors-backdrop: ${backdrop};
                     --ls-colors-logo: ${logo};

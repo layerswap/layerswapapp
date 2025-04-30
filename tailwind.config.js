@@ -29,7 +29,7 @@ module.exports = {
             DEFAULT: 'var(--ls-border-radius-default, 0.25rem)',
             md: 'var(--ls-border-radius-md, 1rem)',
             lg: 'var(--ls-border-radius-lg, 1.5rem)',
-            full: '9999px',
+            xl: 'var(--ls-border-radius-xl, 2rem)',
         },
         extend: {
             colors: {
