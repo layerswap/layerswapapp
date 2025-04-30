@@ -1,7 +1,6 @@
 export default class AppSettings {
     static ApiVersion?: string = "mainnet"
     static Integrator: string = 'Layerswap'
-    static apikey: string = 'NDBxG+aon6WlbgIA2LfwmcbLU52qUL9qTnztTuTRPNSohf/VnxXpRaJlA5uLSQVqP8YGIiy/0mz+mMeZhLY4/Q'
     static ExplorerURl: string = `https://www.layerswap.io/explorer/`
     static LayerswapApiUri?: string = 'https://api.layerswap.io'
     static IdentitiyApiUri?: string = 'https://identity-api.layerswap.io'

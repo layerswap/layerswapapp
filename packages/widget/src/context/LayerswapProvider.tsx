@@ -17,11 +17,12 @@ import { IntercomProvider } from 'react-use-intercom';
 import AppSettings from "../lib/AppSettings";
 import { getSettings } from "../helpers/getSettings";
 import WidgetLoading from "../components/WidgetLoading";
+import LayerSwapApiClient from "../lib/layerSwapApiClient";
 
 export type LayerswapContextProps = {
     children?: JSX.Element | JSX.Element[];
     settings?: LayerSwapSettings;
-    apiKey?: string;
+    apiKey: string;
     themeData?: ThemeData | null
     integrator: string
     version?: 'mainnet' | 'testnet'
@@ -40,9 +41,7 @@ export const LayerswapProvider: FC<LayerswapContextProps> = ({ children, setting
 
     AppSettings.ApiVersion = version
     AppSettings.Integrator = integrator
-
-    if (apiKey)
-        AppSettings.apikey = apiKey
+    LayerSwapApiClient.apiKey = apiKey
 
     useEffect(() => {
         if (!_settings) {
@@ -56,11 +55,10 @@ export const LayerswapProvider: FC<LayerswapContextProps> = ({ children, setting
 
     const settings = _settings || fetchedSettings
     if (!settings) {
-        return <>
-            {
-                themeData &&
-                <ColorSchema themeData={themeData} />
-            }
+        return <>{
+            themeData &&
+            <ColorSchema themeData={themeData} />
+        }
             <WidgetLoading />
         </>
     }

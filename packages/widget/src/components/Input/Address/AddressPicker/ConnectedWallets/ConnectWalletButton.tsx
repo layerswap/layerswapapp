@@ -15,10 +15,16 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, destination }) =>
     const [isLoading, setIsLoading] = useState(false)
 
     const connect = async () => {
-        setIsLoading(true)
-        const result = await provider.connectWallet()
-        if (onConnect && result) onConnect(result)
-        setIsLoading(false)
+        try {
+            setIsLoading(true)
+            const result = await provider.connectWallet()
+            if (onConnect && result) onConnect(result)
+        } catch (error) {
+            console.error('Error connecting:', error);
+        } finally {
+            setIsLoading(false)
+        }
+
     }
 
     return <>

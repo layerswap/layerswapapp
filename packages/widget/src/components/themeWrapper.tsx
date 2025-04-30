@@ -8,17 +8,20 @@ export default function ThemeWrapper({ children }: Props) {
     return <div className='styled-scroll'>
         <main className="styled-scroll">
             <div className={`flex flex-col items-center overflow-hidden relative font-robo`}>
-                <Toaster position="top-center" toastOptions={{
-                    duration: 5000,
-                    style: {
-                        background: '#131E36',
-                        color: '#a4afc8'
-                    },
-                    position: 'top-center',
-                    error: {
-                        duration: Infinity,
-                    },
-                }}
+                <Toaster
+                    containerStyle={{
+                        position: 'absolute',
+                    }}
+                    toastOptions={{
+                        duration: 5000,
+                        style: {
+                            background: '#131E36',
+                            color: '#a4afc8'
+                        },
+                        error: {
+                            duration: Infinity,
+                        },
+                    }}
                 >
                     {(t) => (
                         <ToastBar toast={t}>
