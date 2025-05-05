@@ -25,13 +25,13 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { selectedSourceAccount } = useSwapDataState()
     const sourceAddress = selectedSourceAccount?.address
 
-    const { balance, isBalanceLoading } = useSWRBalance(sourceAddress, from)
+    const { balances, isBalanceLoading } = useSWRBalance(sourceAddress, from)
     const { gas, isGasLoading } = useSWRGas(sourceAddress, from, fromCurrency)
     const gasAmount = gas || 0;
     const native_currency = from?.token
 
     const name = "amount"
-    const walletBalance = balance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
+    const walletBalance = balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
     let maxAllowedAmount: number = useMemo(() => {
         if (!fromCurrency || !minAllowedAmount || !maxAmountFromApi) return 0
         return resolveMacAllowedAmount({ fromCurrency, limitsMinAmount: minAllowedAmount, limitsMaxAmount: maxAmountFromApi, walletBalance, gasAmount, native_currency })

@@ -3,22 +3,22 @@ import { useFormikContext } from "formik"
 import { SwapFormValues } from "./DTOs/SwapFormValues"
 import { truncateDecimals } from "./utils/RoundDecimals"
 import { useFee } from "../context/feeContext"
-import { Balance } from "../Models/Balance"
+import { TokenBalance } from "../Models/Balance"
 import useSWRBalance from "../lib/balances/useSWRBalance"
 import useSWRGas from "../lib/gases/useSWRGas"
 import { useSwapDataState } from "../context/swap"
 
-const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: Balance, networkGas: number) => void }) => {
+const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: TokenBalance, networkGas: number) => void }) => {
     const {
         values,
     } = useFormikContext<SwapFormValues>();
     const { minAllowedAmount, maxAllowedAmount } = useFee()
     const { selectedSourceAccount } = useSwapDataState()
 
-    const { balance } = useSWRBalance(selectedSourceAccount?.address, values.from)
+    const { balances } = useSWRBalance(selectedSourceAccount?.address, values.from)
     const { gas: networkGas } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromCurrency)
 
-    const walletBalance = selectedSourceAccount && balance?.find(b => b?.network === values?.from?.name && b?.token === values?.fromCurrency?.symbol)
+    const walletBalance = selectedSourceAccount && balances?.find(b => b?.network === values?.from?.name && b?.token === values?.fromCurrency?.symbol)
 
     const mightBeOutOfGas = !!(networkGas && walletBalance?.isNativeCurrency && (Number(values.amount)
         + networkGas) > walletBalance.amount

@@ -31,7 +31,7 @@ const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapI
 
     const { networks } = useSettingsState()
     const networkWithTokens = networks.find(n => n.name === networkName)
-    const { balance } = useSWRBalance(wallet?.address, networkWithTokens)
+    const { balances } = useSWRBalance(wallet?.address, networkWithTokens)
 
     const handleTransfer = useCallback(async () => {
         setLoading(true)
@@ -53,8 +53,8 @@ const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapI
             const feeInLamports = await transaction.getEstimatedFee(connection)
             const feeInSol = feeInLamports / LAMPORTS_PER_SOL
 
-            const nativeTokenBalance = balance?.find(b => b.token == network?.token?.symbol)
-            const tokenbalanceData = balance?.find(b => b.token == token?.symbol)
+            const nativeTokenBalance = balances?.find(b => b.token == network?.token?.symbol)
+            const tokenbalanceData = balances?.find(b => b.token == token?.symbol)
             const tokenBalanceAmount = tokenbalanceData?.amount
             const nativeTokenBalanceAmount = nativeTokenBalance?.amount
 

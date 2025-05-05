@@ -10,6 +10,7 @@ import { Exchange } from "../../../../Models/Exchange";
 import { Route, RouteToken } from "../../../../Models/Route";
 import { ChevronDown } from "lucide-react";
 import RoutePickerIcon from "../../../icons/RoutePickerPlaceholder";
+import { Wallet } from "../../../../Models/WalletProvider";
 
 type TokenItemProps = {
     route: Route;
@@ -44,8 +45,8 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const { item, route, direction } = props
     const { provider } = useWallet(route, direction === "from" ? "withdrawal" : "autofil")
     const activeAddress = provider?.activeWallet
-    const { balance } = useSWRBalance(activeAddress?.address, route)
-    const tokenbalance = balance?.find(b => b.token === item.symbol)
+    const { balances } = useSWRBalance(activeAddress?.address, route)
+    const tokenbalance = balances?.find(b => b.token === item.symbol)
     const formatted_balance_amount = tokenbalance?.amount ? Number(truncateDecimals(tokenbalance?.amount, item.precision)) : 0
     const balanceAmountInUsd = (item?.price_in_usd * formatted_balance_amount).toFixed(2)
 
@@ -84,17 +85,17 @@ const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const { item, direction } = props
     const { provider } = useWallet(item, direction === "from" ? "withdrawal" : "autofil")
     const activeAddress = provider?.activeWallet
-    const { balance } = useSWRBalance(activeAddress?.address, item)
+    const { balances } = useSWRBalance(activeAddress?.address, item)
 
-    const networkBalanceInUsd = useMemo(() => balance?.reduce((acc, b) => {
+    const networkBalanceInUsd = useMemo(() => balances?.reduce((acc, b) => {
         const token = item?.tokens?.find(t => t?.symbol === b?.token);
         const tokenPriceInUsd = token?.price_in_usd || 0;
         const tokenPrecision = token?.precision || 0;
         const formattedBalance = Number(truncateDecimals(b?.amount, tokenPrecision));
         return acc + (formattedBalance * tokenPriceInUsd);
-    }, 0), [balance, item])
+    }, 0), [balances, item])
 
-    const tokensWithBalance = balance?.filter(b => b.amount > 0)
+    const tokensWithBalance = balances?.filter(b => b.amount > 0)
         ?.map(b => b.token);
 
     const filteredNetworkTokens = item?.tokens?.filter(token =>
@@ -108,7 +109,7 @@ const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                 <>
                     <span>{item.display_name}</span>
                     {
-                        Number(balance?.length) > 0 &&
+                        Number(balances?.length) > 0 &&
                         <div className={`${filteredNetworkTokens?.length > 0 ? "flex flex-col space-y-0.5" : ""}`}>
                             <span className="text-secondary-text text-sm leading-4 font-medium">{<span>${networkBalanceInUsd?.toFixed(2)}</span>}</span>
                             {filteredNetworkTokens?.length > 0

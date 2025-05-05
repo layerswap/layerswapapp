@@ -46,7 +46,8 @@ const TronWalletWithdraw: FC<WithdrawPageProps> = ({ network, callData, swapId, 
             const amountInWei = Math.pow(10, token?.decimals) * amount
 
             const initialTransaction = await buildInitialTransaction({ tronWeb, token, depositAddress, amountInWei, gas, issuerAddress: walletAddress })
-            const transaction = await tronWeb.transactionBuilder.addUpdateData(initialTransaction, Buffer.from(callData).toString('hex'), "hex")
+            const data = Buffer.from(callData).toString('hex')
+            const transaction = await tronWeb.transactionBuilder.addUpdateData(initialTransaction, data, "hex")
             const signature = await signTransaction(transaction)
             const res = await tronWeb.trx.sendRawTransaction(signature)
 

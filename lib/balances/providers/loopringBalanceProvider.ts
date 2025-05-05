@@ -4,7 +4,7 @@ import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
 import { LOOPRING_URLs } from "../../loopring/defs";
 import { LoopringAPI } from "../../loopring/LoopringAPI";
-import { Balance } from "../../../Models/Balance";
+import { TokenBalance } from "../../../Models/Balance";
 import { insertIfNotExists } from "./helpers";
 
 export class LoopringBalanceProvider {
@@ -14,7 +14,7 @@ export class LoopringBalanceProvider {
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
 
-        let balances: Balance[] = [];
+        let balances: TokenBalance[] = [];
 
         if (!network?.tokens) return
 

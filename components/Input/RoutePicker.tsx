@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { NetworkRoute } from "../../Models/Network";
 import { Selector, SelectorContent, SelectorTrigger } from "../Select/CommandNew/Index";
@@ -14,6 +14,8 @@ import { ResolveCEXCurrencyOrder, ResolveCurrencyOrder, SortNetworkRoutes } from
 import useFormRoutes from "../../hooks/useFormRoutes";
 import { Route, RouteToken, RoutesGroup } from "../../Models/Route";
 import Balance from "./Amount/Balance";
+import useWallet from "../../hooks/useWallet";
+import { Wallet } from "../../Models/WalletProvider";
 
 function resolveSelectedRoute(values: SwapFormValues, direction: SwapDirection): NetworkRoute | Exchange | undefined {
     const { from, to, fromExchange, toExchange } = values
@@ -35,6 +37,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const { isDesktop } = useWindowDimensions();
+    // const { loading } = useAllBalances()
 
     const { allRoutes, isLoading, groupedRoutes } = useFormRoutes({ direction, values })
     const [searchQuery, setSearchQuery] = useState("")
@@ -200,6 +203,9 @@ type GroupProps = {
 }
 const Group = ({ group, direction, onSelect, selectedRoute, selectedToken }: GroupProps) => {
     const [openValues, setOpenValues] = useState<string[]>(selectedRoute ? [selectedRoute] : [])
+
+    const { wallets } = useWallet()
+
     const toggleAccordionItem = (value: string) => {
         setOpenValues((prev) =>
             prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
@@ -215,7 +221,6 @@ const Group = ({ group, direction, onSelect, selectedRoute, selectedToken }: Gro
                         <GroupItem
                             key={route.name}
                             route={route}
-                            underline={index > 0}
                             toggleContent={toggleAccordionItem}
                             onSelect={onSelect}
                             direction={direction}
@@ -229,7 +234,8 @@ const Group = ({ group, direction, onSelect, selectedRoute, selectedToken }: Gro
     )
 }
 
-type GroupItemProps = {
+type RouteItemProps = {
+    wallets?: Wallet[],
     route: Route,
     underline: boolean,
     toggleContent: (itemName: string) => void;
@@ -237,6 +243,8 @@ type GroupItemProps = {
     onSelect: (route: Route, token: RouteToken) => void;
     selectedRoute: string | undefined;
     selectedToken: string | undefined;
+    onMouseEnter: () => void;
+    onMouseLeave: () => void;
 }
 
 function getSortedRouteTokens(route: Route) {
@@ -245,10 +253,16 @@ function getSortedRouteTokens(route: Route) {
     }
     return route.tokens?.sort((a, b) => ResolveCurrencyOrder(a) - ResolveCurrencyOrder(b))
 }
-
+type GroupItemProps = {
+    route: Route,
+    toggleContent: (itemName: string) => void;
+    direction: SwapDirection;
+    onSelect: (route: Route, token: RouteToken) => void;
+    selectedRoute: string | undefined;
+    selectedToken: string | undefined;
+}
 const GroupItem = ({
     route,
-    underline,
     toggleContent,
     direction,
     onSelect,
@@ -313,11 +327,11 @@ const TokenCommandWrapper = ({
     const tokenItemRef = React.useRef<HTMLDivElement>(null)
     const isSelected = selectedRoute === route.name && selectedToken === token.symbol
 
-    useEffect(() => {
-        if (isSelected && tokenItemRef.current) {
-            tokenItemRef.current.scrollIntoView({ behavior: "instant", block: "center" });
-        }
-    }, [isSelected])
+    // useEffect(() => {
+    //     if (isSelected && tokenItemRef.current) {
+    //         tokenItemRef.current.scrollIntoView({ behavior: "instant", block: "center" });
+    //     }
+    // }, [isSelected])
 
     return (
         <div

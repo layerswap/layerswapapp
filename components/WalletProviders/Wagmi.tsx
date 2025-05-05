@@ -3,7 +3,7 @@
 import { useSettingsState } from "../../context/settings";
 import { NetworkType } from "../../Models/Network";
 import resolveChain from "../../lib/resolveChain";
-import React from "react";
+import React, { useMemo } from "react";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -29,24 +29,21 @@ const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_
 
 const queryClient = new QueryClient()
 
+const wltcnnct_inited = walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' })
+const argent_inited = argent({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'argent' })
+const metaMask_inited = metaMask({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'metamask' })
+const rnbw_inited = rainbow({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'rainbow' })
+const btgt_inited = bitget({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'bitget' })
+const okx_inited = okxWallet({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'okxWallet' })
+
+
+
 function WagmiComponent({ children }: Props) {
     const settings = useSettingsState();
     const isChain = (c: Chain | undefined): c is Chain => c != undefined
-    const settingsChains = settings?.networks
-        .sort((a, b) => (NetworkSettings.KnownSettings[a.name]?.ChainOrder || Number(a.chain_id)) - (NetworkSettings.KnownSettings[b.name]?.ChainOrder || Number(b.chain_id)))
-        .filter(net => net.type === NetworkType.EVM
-            && net.node_url
-            && net.token)
-        .map(resolveChain).filter(isChain) as Chain[]
 
-    const transports = {}
     const providers = useSyncProviders();
-
-    settingsChains.forEach(chain => {
-        transports[chain.id] = chain.rpcUrls.default.http[0] ? http(chain.rpcUrls.default.http[0]) : http()
-    })
-
-    const isMetaMaskInjected = providers?.some(provider => provider.info.name.toLowerCase() === 'metamask');
+    const isMetaMaskInjected = hasInjectedProvider({ flag: 'isMetaMask' });
     const isOkxInjected = providers?.some(provider => provider.info.name.toLowerCase() === 'okx wallet');
     const isRainbowInjected = hasInjectedProvider({ flag: 'isRainbow' });
     const isBitKeepInjected = hasInjectedProvider({
@@ -54,23 +51,38 @@ function WagmiComponent({ children }: Props) {
         flag: 'isBitKeep',
     });
 
-    const config = createConfig({
-        connectors: [
-            coinbaseWallet({
-                appName: 'Layerswap',
-                appLogoUrl: 'https://layerswap.io/app/symbol.png',
-            }),
-            walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' }),
-            argent({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'argent' }),
-            ...(!isMetaMaskInjected ? [metaMask({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'metamask', providers })] : []),
-            ...(!isRainbowInjected ? [rainbow({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'rainbow' })] : []),
-            ...(!isBitKeepInjected ? [bitget({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'bitget' })] : []),
-            ...(!isOkxInjected ? [okxWallet({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'okxWallet', providers })] : []),
-            browserInjected()
-        ],
-        chains: settingsChains as [Chain, ...Chain[]],
-        transports: transports,
-    });
+    const config = useMemo(() => {
+        const settingsChains = settings?.networks
+            .sort((a, b) => (NetworkSettings.KnownSettings[a.name]?.ChainOrder || Number(a.chain_id)) - (NetworkSettings.KnownSettings[b.name]?.ChainOrder || Number(b.chain_id)))
+            .filter(net => net.type === NetworkType.EVM
+                && net.node_url
+                && net.token)
+            .map(resolveChain).filter(isChain) as Chain[]
+
+        const transports = {}
+
+        settingsChains.forEach(chain => {
+            transports[chain.id] = chain.rpcUrls.default.http[0] ? http(chain.rpcUrls.default.http[0]) : http()
+        })
+
+        return createConfig({
+            connectors: [
+                coinbaseWallet({
+                    appName: 'Layerswap',
+                    appLogoUrl: 'https://layerswap.io/app/symbol.png',
+                }),
+                wltcnnct_inited,
+                argent_inited,
+                ...(!isMetaMaskInjected ? [metaMask_inited] : []),
+                ...(!isRainbowInjected ? [rnbw_inited] : []),
+                ...(!isBitKeepInjected ? [btgt_inited] : []),
+                ...(!isOkxInjected ? [okx_inited] : []),
+                browserInjected()
+            ],
+            chains: settingsChains as [Chain, ...Chain[]],
+            transports: transports,
+        })
+    }, [settings?.networks]);
 
     return (
         <WagmiProvider config={config} >

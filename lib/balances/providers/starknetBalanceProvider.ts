@@ -1,4 +1,4 @@
-import { Balance } from "../../../Models/Balance";
+import { TokenBalance } from "../../../Models/Balance";
 import { NetworkWithTokens } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import Erc20Abi from '../../abis/ERC20.json'
@@ -18,7 +18,7 @@ export class StarknetBalanceProvider {
         } = await import("starknet");
         const { BigNumber } = await import("ethers");
 
-        let balances: Balance[] = []
+        let balances: TokenBalance[] = []
 
         if (!network?.tokens) return
 

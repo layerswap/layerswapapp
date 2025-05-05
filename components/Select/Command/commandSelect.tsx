@@ -100,9 +100,7 @@ const Group = ({ group }: GroupProps) => {
         );
     };
     return <CommandGroup heading={<span className='text-secondary-text pl-2'>{group.name.toUpperCase()}</span>}>
-        <Accordion type="multiple" value={openValues} onSelectCapture={() => {
-            console.log('acc selected')
-        }}>
+        <Accordion type="multiple" value={openValues}>
             {group.items.map((item, index) => {
                 return (<GroupItem key={item.id} item={item} underline={index + 1 < group.items.length} onTriggerSelect={toggleAccordionItem} />)
             })}
@@ -121,9 +119,6 @@ const GroupItem = ({ item, underline, onTriggerSelect }: GroupItemProps) => {
             <CommandItem
                 value={`${item.name} ${item.subItems?.map(si => si.name).join(" ")}`}
                 key={item.id}
-                onSelectCapture={() => {
-                    console.log('cmd selected')
-                }}
                 onSelect={() => {
                     onTriggerSelect(item.name)
                 }}>

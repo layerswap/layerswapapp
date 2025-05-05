@@ -1,11 +1,11 @@
-import { Balance } from "../../../Models/Balance"
+import { TokenBalance } from "../../../Models/Balance"
 import { Token } from "../../../Models/Network"
 
 
 type ResoleMaxAllowedAmountProps = {
     limitsMinAmount: number
     limitsMaxAmount: number
-    walletBalance: Balance | undefined
+    walletBalance: TokenBalance | undefined
     gasAmount: number
     fromCurrency: Token
     native_currency: Token | undefined
