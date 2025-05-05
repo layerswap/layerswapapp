@@ -88,7 +88,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             <p className="text-secondary-text">
                 Scan the QR code with your phone
             </p>
-            <div className="w-full h-full bg-secondary-700 pb-3 pt-5 rounded-lg">
+            <div className="w-full h-full bg-secondary-600 pb-3 pt-5 rounded-lg">
                 <div className='flex flex-col justify-center items-center pt-2 w-fit mx-auto'>
                     {
                         selectedConnector?.qr.state == 'fetched' ?
@@ -115,7 +115,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                                 <ConnectorIcon className='h-[50px] w-[50px] absolute top-[calc(50%-25px)] right-[calc(50%-25px)]' />
                             </div>
                     }
-                    <div className='bg-secondary-500 text-secondary-text w-full px-2 py-1.5 rounded-md mt-3 flex justify-center items-center'>
+                    <div className='bg-secondary-400 text-secondary-text w-full px-2 py-1.5 rounded-md mt-3 flex justify-center items-center'>
                         <CopyButton toCopy={selectedConnector?.qr.value || ''}>Copy QR URL</CopyButton>
                     </div>
                 </div>
@@ -138,7 +138,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         <>
             <div className="text-primary-text space-y-3">
                 <div className="flex items-center gap-3">
-                    <div className="relative z-0 flex items-center px-3 rounded-lg bg-secondary-700 border border-secondary-500 w-full">
+                    <div className="relative z-0 flex items-center px-3 rounded-lg bg-secondary-600 border border-secondary-500 w-full">
                         <Search className="w-6 h-6 mr-2 text-primary-text-placeholder" />
                         <input
                             value={searchValue}
@@ -307,7 +307,7 @@ const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: st
     return (
         <Popover open={open} onOpenChange={() => setOpen(!open)}>
             <PopoverTrigger
-                className={clsx('p-3 border border-secondary-500 rounded-lg bg-secondary-700 hover:brightness-125', {
+                className={clsx('p-3 border border-secondary-500 rounded-lg bg-secondary-600 hover:brightness-125', {
                     '!bg-secondary-500 brightness-125': !!selectedProviderName,
                 })}
             >

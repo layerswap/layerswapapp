@@ -56,10 +56,10 @@ const GLobalFooter = () => {
                 <div className="flex justify-between items-center w-full px-6">
                     <div className="px-6">
                         <div className="flex mt-3 md:mt-0 gap-6">
-                            <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/privacy-policy/" className="text-xs leading-6 text-primary-text-muted underline hover:no-underline hover:text-opacity-70 duration-200 transition-all">
+                            <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/privacy-policy/" className="text-xs leading-6 text-primary-text-muted underline hover:no-underline hover:text-primary-text-muted/70 duration-200 transition-all">
                                 Privacy Policy
                             </Link>
-                            <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/terms-of-services/" className="text-xs leading-6 text-primary-text-muted underline hover:no-underline hover:text-opacity-70 duration-200 transition-all">
+                            <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/terms-of-services/" className="text-xs leading-6 text-primary-text-muted underline hover:no-underline hover:text-primary-text-muted/70 duration-200 transition-all">
                                 Terms of Services
                             </Link>
                         </div>

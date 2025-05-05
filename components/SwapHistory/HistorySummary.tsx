@@ -79,7 +79,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                     alt={source.display_name}
                                     width={28}
                                     height={28}
-                                    className="rounded" />
+                                    className="rounded-sm" />
                             }
                             {
                                 destination &&
@@ -88,7 +88,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                     alt={destination.display_name}
                                     width={28}
                                     height={28}
-                                    className="rounded absolute left-4 top-4" />
+                                    className="rounded-sm absolute left-4 top-4" />
                             }
                         </div>
                         :
@@ -133,7 +133,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                                 :
                                                 (
                                                     sourceAddressFromInput && !source_exchange ?
-                                                        <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded h-3.5 overflow-hidden w-3.5'>
+                                                        <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-sm h-3.5 overflow-hidden w-3.5'>
                                                             <AddressIcon className="scale-150 h-3.5 w-3.5" address={sourceAddressFromInput} size={14} />
                                                         </div>
                                                         :
@@ -153,7 +153,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                                     <destination_wallet.icon className="h-3.5 w-3.5" />
                                                     :
                                                     !destination_exchange &&
-                                                    <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded h-3.5 overflow-hidden w-3.5'>
+                                                    <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-sm h-3.5 overflow-hidden w-3.5'>
                                                         <AddressIcon className="scale-150 h-3.5 w-3.5" address={destAddress} size={14} />
                                                     </div>
                                             }

@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import { useSwapDataState } from "../../../context/swap";
 import useSWRBalance from "../../../lib/balances/useSWRBalance";
+import { motion } from "framer-motion";
 
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
@@ -28,7 +29,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     }, [to, destination_address])
 
     if (isBalanceLoading)
-        return <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+        return <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-xs animate-pulse' />
 
     return (
         <>
@@ -36,7 +37,14 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
                 (network && token && network) &&
 
                 (truncatedBalance !== undefined && !isNaN(truncatedBalance)) &&
-                <span>{truncatedBalance > 0 ? truncatedBalance.toFixed(token?.precision) : truncatedBalance}</span>
+                <motion.div
+                    layoutId="affect"
+                    className="in-has-[.input-wide]:absolute in-has-[.input-wide]:rounded-lg in-has-[.input-wide]:mt-1 in-has-[.input-wide]:px-1.5 in-has-[.input-wide]:w-full 
+                                  in-has-[.input-wide]:py-0.5 in-has-[.input-wide]:m-auto in-has-[.input-wide]:text-xs in-has-[.input-wide]:text-primary-text-placeholder in-has-[.input-wide]:-bottom-6
+                                  w-4/5 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs text-primary-text-placeholder"
+                >
+                    <span>{truncatedBalance > 0 ? truncatedBalance.toFixed(token?.precision) : truncatedBalance}</span>
+                </motion.div>
             }
         </>
     )

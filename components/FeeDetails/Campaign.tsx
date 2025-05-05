@@ -67,7 +67,7 @@ const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, reward, destinati
         <div className='w-full flex items-center justify-between rounded-b-lg bg-secondary-700 relative text-right'>
             <div className='flex items-center text-primary-buttonTextColor'>
                 <p>{token?.symbol} reward</p>
-                <ClickTooltip text={<span className="!text-start">
+                <ClickTooltip text={<span className="text-start!">
                     {reward.campaign_type === "for_nft_holders" 
                         ? "The amount of reward that you'll earn as an NFT holder." 
                         : "The amount of reward that you'll earn."}

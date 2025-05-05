@@ -32,7 +32,7 @@ const TransferCEX: FC<Props> = ({ direction }) => {
                 </p>
             </div>
             <div className="relative flex items-center space-x-2 py-2">
-                <div className="flex-shrink-0 h-6 w-6 relative">
+                <div className="shrink-0 h-6 w-6 relative">
                     {sourceLogo && <Image
                         src={sourceLogo!}
                         alt="Project Logo"
@@ -43,7 +43,7 @@ const TransferCEX: FC<Props> = ({ direction }) => {
                     />}
                 </div>
                 <div className="w-full h-[2px] bg-primary-text-placeholder my-2 line line-left" />
-                <div className="flex-shrink-0 h-8 w-8 relative">
+                <div className="shrink-0 h-8 w-8 relative">
                     {exchangeNetwork ? <Image
                         src={exchangeNetwork.logo}
                         alt="Project Logo"
@@ -56,7 +56,7 @@ const TransferCEX: FC<Props> = ({ direction }) => {
                     </div>}
                 </div>
                 <div className="w-full h-[2px] bg-primary-text-placeholder my-2 line line-right" />
-                <div className="flex-shrink-0 h-6 w-6 relative">
+                <div className="shrink-0 h-6 w-6 relative">
                     {destinationLogo && <Image
                         src={destinationLogo!}
                         alt="Project Logo"

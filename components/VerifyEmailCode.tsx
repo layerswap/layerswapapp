@@ -124,7 +124,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                 </div>
                                 <div className="text-sm text-secondary-text font-normal mt-5">
                                     <div className='grid gap-4 grid-cols-5  items-center'>
-                                        <div className="relative rounded-md shadow-sm col-span-3">
+                                        <div className="relative rounded-md shadow-xs col-span-3">
                                             <NumericInput
                                                 pattern='^[0-9]*$'
                                                 placeholder="XXXXXX"
@@ -172,7 +172,7 @@ const VerifyEmailCode: FC<VerifyEmailCodeProps> = ({ onSuccessfullVerify, disclo
                                     <div className='text-center mt-5'>
                                         <p className='text-lg'><span>Please enter the 6 digit code sent to&nbsp;</span><span className='font-medium text-primary-text'>{tempEmail}</span></p>
                                     </div>
-                                    <div className="relative rounded-md shadow-sm mt-5">
+                                    <div className="relative rounded-md shadow-xs mt-5">
                                         <NumericInput
                                             pattern='^[0-9]*$'
                                             placeholder="XXXXXX"

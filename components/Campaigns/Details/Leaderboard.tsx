@@ -106,7 +106,7 @@ const Component: FC<Props> = ({ campaign }) => {
                     }
                     {
                         position >= 4 && address && rewards?.user_reward &&
-                        <div className={position > 4 ? "!mt-0 !pt-0" : ""}>
+                        <div className={position > 4 ? "mt-0! pt-0!" : ""}>
                             {position > 4 && < div className="text-2xl text-center leading-3 text-secondary-text my-3">
                                 ...
                             </div>}

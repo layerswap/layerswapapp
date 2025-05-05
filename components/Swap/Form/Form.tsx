@@ -10,7 +10,6 @@ import { classNames } from "../../utils/classNames";
 import { useQueryState } from "../../../context/query";
 import FeeDetailsComponent from "../../FeeDetails";
 import { useFee } from "../../../context/feeContext";
-import AmountField from "../../Input/Amount"
 import dynamic from "next/dynamic";
 import { TokenBalance } from "../../../Models/Balance";
 import ResizablePanel from "../../ResizablePanel";
@@ -24,6 +23,7 @@ import SourcePicker from "../../Input/SourcePicker";
 import DestinationPicker from "../../Input/DestinationPicker";
 import CexNetworkPicker from "../../Input/CexNetworkPicker";
 import FormButton from "../FormButton";
+import { AmountFocusProvider } from "../../../context/amountFocusContext";
 
 type Props = {
     partner?: Partner,
@@ -183,69 +183,69 @@ const SwapForm: FC<Props> = ({ partner }) => {
 
     const sourceWalletNetwork = values.fromExchange ? undefined : values.from
     const shouldConnectWallet = (sourceWalletNetwork && values.from?.deposit_methods?.includes('wallet') && values.depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!values.from && !values.fromExchange && !wallets.length && values.depositMethod !== 'deposit_address')
-    return <Widget className="sm:min-h-[450px] h-full">
-        <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
-            <Widget.Content>
-                <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4 bg-secondary-700 rounded-xl'>
-                    {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
-                        <SourcePicker />
-                    </div>}
-                    {!query?.hideFrom && !query?.hideTo &&
-                        <button
-                            type="button"
-                            aria-label="Reverse the source and destination"
-                            disabled={valuesSwapperDisabled}
-                            onClick={valuesSwapper}
-                            className={`hover:text-primary absolute right-[calc(50%-16px)] top-[122px] z-10 border-2 border-secondary-700 bg-secondary-600 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none`}>
-                            <motion.div
-                                animate={animate}
-                                transition={{ duration: 0.3 }}
-                                onTap={() => !valuesSwapperDisabled && cycle()}
-                            >
-                                <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-500 rounded-lg disabled:opacity-30")} />
-                            </motion.div>
-                        </button>}
-                    {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full">
-                        <DestinationPicker partner={partner} />
-                    </div>}
-                </div>
-                {
-                    (((fromExchange && destination) || (toExchange && source)) && currencyGroup) ?
-                        <div className="mb-6 leading-4">
-                            <ResizablePanel>
-                                <CexNetworkPicker direction={fromExchange ? 'from' : 'to'} partner={partner} />
-                            </ResizablePanel>
-                        </div>
-                        : <></>
-                }
-                <div className="mb-6 leading-4">
-                    <AmountField />
-                </div>
-                <div className="w-full">
-                    {validationMessage ?
-                        <ValidationError />
-                        :
-                        <FeeDetailsComponent values={values} />
-                    }
+
+    return <AmountFocusProvider>
+        <Widget className="sm:min-h-[450px] h-full">
+            <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
+                <Widget.Content>
+                    <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
+                        {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full bg-secondary-500 rounded-2xl">
+                            <SourcePicker />
+                        </div>}
+                        {!query?.hideFrom && !query?.hideTo &&
+                            <button
+                                type="button"
+                                aria-label="Reverse the source and destination"
+                                disabled={valuesSwapperDisabled}
+                                onClick={valuesSwapper}
+                                className="hover:text-primary absolute right-[calc(50%-16px)] top-[132px] z-10 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none">
+                                <motion.div
+                                    animate={animate}
+                                    transition={{ duration: 0.3 }}
+                                    onTap={() => !valuesSwapperDisabled && cycle()}
+                                >
+                                    <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-300 rounded-lg disabled:opacity-30")} />
+                                </motion.div>
+                            </button>}
+                        {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full bg-secondary-500 rounded-xl">
+                            <DestinationPicker partner={partner} />
+                        </div>}
+                    </div>
                     {
-                        values.amount &&
-                        <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                        (((fromExchange && destination) || (toExchange && source)) && currencyGroup) ?
+                            <div className="mb-6 leading-4">
+                                <ResizablePanel>
+                                    <CexNetworkPicker direction={fromExchange ? 'from' : 'to'} partner={partner} />
+                                </ResizablePanel>
+                            </div>
+                            : <></>
                     }
-                </div>
-            </Widget.Content>
-            <Widget.Footer>
-                <FormButton
-                    shouldConnectWallet={shouldConnectWallet}
-                    values={values}
-                    isValid={isValid}
-                    errors={errors}
-                    isSubmitting={isSubmitting}
-                    actionDisplayName={actionDisplayName}
-                    partner={partner}
-                />
-            </Widget.Footer>
-        </Form>
-    </Widget>
+                    <div className="w-full">
+                        {validationMessage ?
+                            <ValidationError />
+                            :
+                            <FeeDetailsComponent values={values} />
+                        }
+                        {
+                            values.amount &&
+                            <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                        }
+                    </div>
+                </Widget.Content>
+                <Widget.Footer>
+                    <FormButton
+                        shouldConnectWallet={shouldConnectWallet}
+                        values={values}
+                        isValid={isValid}
+                        errors={errors}
+                        isSubmitting={isSubmitting}
+                        actionDisplayName={actionDisplayName}
+                        partner={partner}
+                    />
+                </Widget.Footer>
+            </Form>
+        </Widget>
+    </AmountFocusProvider>
 }
 
 export default SwapForm

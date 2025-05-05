@@ -58,7 +58,7 @@ export const ActivationTokenPicker = ({ availableBalances, defaultValue, onChang
             <span className=' text-secondary-text text-sm ml-1'>
                 {
                     activationCurrencyValues.length > 0 ? <Select onValueChange={handleChange} value={selectedValue} >
-                        <SelectTrigger className="w-fit border-none !text-primary-text !font-semibold !h-fit !p-0">
+                        <SelectTrigger className="w-fit border-none text-primary-text! font-semibold! h-fit! p-0!">
                             <SelectValue>
                                 <span className='space-x-1'><span>{formattedFee}</span><span>{selectedValue}</span></span>
                             </SelectValue>
@@ -69,7 +69,7 @@ export const ActivationTokenPicker = ({ availableBalances, defaultValue, onChang
                                 {activationCurrencyValues?.map(cv => (
                                     <SelectItem key={cv.name} value={cv.name}>
                                         <div className="flex items-center">
-                                            <div className="flex-shrink-0 h-5 w-5 relative">
+                                            <div className="shrink-0 h-5 w-5 relative">
                                                 {
                                                     cv &&
                                                     <Image

@@ -45,16 +45,14 @@ const MinMax = (props: MinMaxProps) => {
     }
 
     return (
-        <div className="flex flex-col justify-center">
-            <div className="text-xs flex flex-col items-center space-x-1 md:space-x-2 ml-2 md:ml-5 px-2">
-                <div className="flex">
-                    <SecondaryButton disabled={!limitsMinAmount} onClick={handleSetMinAmount} size="xs">
-                        MIN
-                    </SecondaryButton>
-                    <SecondaryButton disabled={!maxAllowedAmount} onClick={handleSetMaxAmount} size="xs" className="ml-1.5">
-                        MAX
-                    </SecondaryButton>
-                </div>
+        <div className="px-2 flex flex-col justify-center">
+            <div className="flex">
+                <SecondaryButton disabled={!limitsMinAmount} onClick={handleSetMinAmount} size="xs" className="!py-0 !font-medium !bg-secondary-300 rounded-sm">
+                    Min
+                </SecondaryButton>
+                <SecondaryButton disabled={!maxAllowedAmount} onClick={handleSetMaxAmount} size="xs" className="ml-1 !py-0 !font-medium !bg-secondary-300 rounded-sm">
+                    Max
+                </SecondaryButton>
             </div>
         </div>
     )

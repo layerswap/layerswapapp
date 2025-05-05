@@ -75,7 +75,7 @@ const WalletTransferContent: FC = () => {
             {
                 selectedWallet &&
                 source_network &&
-                <div onClick={() => setOpenModal(true)} className="cursor-pointer group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-sm mt-1.5 text-primary-text bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
+                <div onClick={() => setOpenModal(true)} className="cursor-pointer group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-xs mt-1.5 text-primary-text bg-secondary-500 border-secondary-300 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
                     <AddressWithIcon
                         addressItem={{ address: accountAddress, group: AddressGroup.ConnectedWallet }}
                         connectedWallet={selectedWallet}

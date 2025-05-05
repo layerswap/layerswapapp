@@ -54,7 +54,7 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
     const handleCloseFeedback = () => {
         setOpenFeedbackModal(false)
     }
-    return <div className="text-sm font-medium focus:outline-none h-full">
+    return <div className="text-sm font-medium focus:outline-hidden h-full">
         <Menu>
 
             <WalletsMenu />
@@ -134,7 +134,7 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
 
             <div className="grid grid-cols-2 gap-2 justify-center">
                 {navigation.social.map((item, index) => (
-                    <Link key={index} target="_blank" href={item.href} className={`flex relative bg-secondary-700 hover:bg-secondary-600 rounded-md cursor-pointer select-none items-center outline-none text-primary-text ${item.className}`}>
+                    <Link key={index} target="_blank" href={item.href} className={`flex relative bg-secondary-500 hover:bg-secondary-400 rounded-md cursor-pointer select-none items-center outline-hidden text-primary-text ${item.className}`}>
                         <div className="p-2 w-full flex justify-center gap-1">
                             <item.icon className="h-5 w-5" aria-hidden="true" />
                             <p>{item.name}</p>
@@ -150,7 +150,7 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
                             userType == UserType.AuthenticatedUser ?
                                 <div>
                                     <div
-                                        className={`gap-4 flex justify-between items-center relative select-none px-4 py-3 outline-none w-full text-primary-text`}
+                                        className={`gap-4 flex justify-between items-center relative select-none px-4 py-3 outline-hidden w-full text-primary-text`}
                                     >
                                         <div className="font-normal flex gap-2 items-center">
                                             <UserCircle2 className="h-5 w-5" />

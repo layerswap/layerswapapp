@@ -268,7 +268,7 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                 variants={textMotion}
                 className="flex items-center bg-secondary-600 rounded-r-lg">
                 <div className="text-primary-text flex px-3 p-2 items-center space-x-2">
-                    <div className="flex-shrink-0 h-5 w-5 relative">
+                    <div className="shrink-0 h-5 w-5 relative">
                         {source_exchange ? <Image
                             src={source_exchange.logo}
                             alt="From Logo"
@@ -286,7 +286,7 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                         }
                     </div>
                     <ChevronRight className="block h-4 w-4 mx-1" />
-                    <div className="flex-shrink-0 h-5 w-5 relative block">
+                    <div className="shrink-0 h-5 w-5 relative block">
                         {destination_exchange ? <Image
                             src={destination_exchange.logo}
                             alt="To Logo"

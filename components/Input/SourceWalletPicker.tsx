@@ -54,8 +54,6 @@ const Component: FC = () => {
         }
     }, [values.depositMethod, defaultWallet?.address, availableWallets.length])
 
-
-
     const handleWalletChange = () => {
         setOpenModal(true)
     }
@@ -92,11 +90,10 @@ const Component: FC = () => {
                     </div>
                 </div>
                 :
-                <div className="rounded-lg bg-secondary-800 pl-2 flex items-center space-x-2 text-sm leading-4">
+                <div className="rounded-lg pl-2 flex items-center space-x-2 text-sm leading-4">
                     {
                         selectedWallet && selectedSourceAccount?.address && <>
-                            <div><Balance values={values} direction="from" /></div>
-                            <div onClick={handleWalletChange} className="rounded-lg bg-secondary-500 flex space-x-1 items-center py-0.5 pl-2 pr-1 cursor-pointer">
+                            <div onClick={handleWalletChange} className="rounded-lg flex space-x-1 items-center py-0.5 pl-2 cursor-pointer">
                                 <div className="inline-flex items-center relative p-0.5">
                                     <selectedWallet.icon className="w-5 h-5" />
                                 </div>
@@ -285,9 +282,9 @@ const Connect: FC<{ connectFn?: () => Promise<Wallet | undefined | void>; setMou
 }
 
 const ContinueWithoutWallet: FC<{ onClick: () => void }> = ({ onClick }) => {
-    //TODO: bg-secondary-900 is a hotfix, should refactor and fix sticky footer for VaulDrawer
+    //TODO: bg-secondary-700 is a hotfix, should refactor and fix sticky footer for VaulDrawer
     return (
-        <div className="inline-flex items-center gap-1.5 justify-center w-full pt-2 bg-secondary-900">
+        <div className="inline-flex items-center gap-1.5 justify-center w-full pt-2 bg-secondary-700">
             <button onClick={onClick} className="underline hover:no-underline text-base text-center text-secondary-text cursor-pointer ">
                 Continue without a wallet
             </button>

@@ -90,10 +90,10 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, token?.precision)
 
     return (
-        <div {...props} className="rounded-md outline-none text-primary-tex">
+        <div {...props} className="rounded-md outline-hidden text-primary-tex">
             <div
                 onClick={() => (selectable && wallet.addresses.length == 1 && onWalletSelect) && onWalletSelect(wallet, wallet.address)}
-                className={clsx('w-full relative items-center justify-between gap-2 flex rounded-lg outline-none bg-secondary-700 text-primary-text p-3 group/addressItem', {
+                className={clsx('w-full relative items-center justify-between gap-2 flex rounded-lg outline-hidden bg-secondary-700 text-primary-text p-3 group/addressItem', {
                     'hover:bg-secondary-600 cursor-pointer': selectable && wallet.addresses.length == 1,
                     'bg-secondary-800 py-2': wallet.addresses.length > 1
                 })}>
@@ -104,7 +104,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                         <div className="inline-flex items-center relative">
                             <wallet.icon
                                 className={clsx('w-9 h-9 p-0.5 rounded-md bg-secondary-800', {
-                                    '!w-6 !h-6': wallet.addresses.length > 1,
+                                    'w-6! h-6!': wallet.addresses.length > 1,
                                 })}
                             />
                             {
@@ -151,7 +151,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                                                 <div className="text-right text-secondary-text font-normal text-sm">
                                                     {
                                                         isBalanceLoading ?
-                                                            <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+                                                            <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-xs animate-pulse' />
                                                             :
                                                             <>
                                                                 <span>{walletBalanceAmount}</span> <span>{token?.symbol}</span>
@@ -170,7 +170,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                     !selectable &&
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <button type="button" onClick={wallet.disconnect} className="text-xs text-secondary-text hover:text-primary-text rounded-full p-1.5 bg-secondary-900 hover:bg-secondary-950 transition-colors duration-200 ">
+                            <button type="button" onClick={wallet.disconnect} className="text-xs text-secondary-text hover:text-primary-text rounded-full p-1.5 bg-secondary-700 hover:bg-secondary-950 transition-colors duration-200 ">
                                 <Power className="h-3.5 w-3.5" />
                             </button>
                         </TooltipTrigger>
@@ -264,7 +264,7 @@ const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddre
                                 <div className="text-right text-secondary-text font-normal text-sm">
                                     {
                                         isBalanceLoading ?
-                                            <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+                                            <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-xs animate-pulse' />
                                             :
                                             <>
                                                 <span>{nestedWalletBalanceAmount}</span> <span>{token?.symbol}</span>

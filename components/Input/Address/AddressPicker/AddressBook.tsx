@@ -20,7 +20,7 @@ type AddressBookProps = {
 const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, destination, destination_address, partner }) => {
 
     return (
-        <div className="text-left !mt-1">
+        <div className="text-left mt-1!">
             <CommandWrapper>
                 <CommandList>
                     <CommandGroup
@@ -30,7 +30,7 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                                 <p className="text-sm text-secondary-text">Address Book</p>
                             </div>
                         }
-                        className="[&_[cmdk-group-heading]]:!pb-1 [&_[cmdk-group-heading]]:!px-0 !py-0 !px-0"
+                        className="[&_[cmdk-group-heading]]:pb-1! [&_[cmdk-group-heading]]:px-0! py-0! px-0!"
                     >
                         <div className="space-y-0 w-full flex flex-col items-stretch max-h-[200px] overflow-y-auto styled-scroll">
                             {addressBook.sort(sortingByDate).map(item => {

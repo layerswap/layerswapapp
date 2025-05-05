@@ -75,7 +75,7 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
                     <div className='text-secondary-text flex items-center'>
                         <span>Estimated time:</span>
                         <span className='text-primary-text ml-0.5'>
-                            {countdown ? formatted : <div className="h-[10px] mt-1 w-16 ml-1 animate-pulse rounded bg-gray-500" />}
+                            {countdown ? formatted : <div className="h-[10px] mt-1 w-16 ml-1 animate-pulse rounded-sm bg-gray-500" />}
                         </span>
                     </div>
                 )

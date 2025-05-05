@@ -1,22 +1,17 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
-import { Network, NetworkRoute, NetworkRouteToken } from "../../Models/Network";
+import { Network } from "../../Models/Network";
 import { Selector, SelectorContent, SelectorTrigger } from "../Select/CommandNew/Index";
-import { ChevronDown, Check, ChevronRight, PlusIcon } from "lucide-react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
-import { CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandWrapper } from "../shadcn/command";
+import { ChevronDown, ChevronRight, PlusIcon, Search } from "lucide-react";
+import { CommandEmpty, CommandInput, CommandItem, CommandList, CommandWrapper } from "../shadcn/command";
 import SpinIcon from "../icons/spinIcon";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
-import { CurrencySelectItemDisplay, RouteSelectItemDisplay, SelectedRouteDisplay } from "../Select/Shared/Routes";
-import { Exchange, ExchangeToken } from "../../Models/Exchange";
+import { ExchangeToken } from "../../Models/Exchange";
 import React from "react";
-import { ResolveCEXCurrencyOrder, ResolveCurrencyOrder, SortNetworkRoutes } from "../../lib/sorting";
-import useFormRoutes from "../../hooks/useFormRoutes";
-import { Route, RouteToken, RoutesGroup } from "../../Models/Route";
+import { RouteToken } from "../../Models/Route";
 import useExchangeNetworks from "../../hooks/useExchangeNetworks";
 import { SelectItem } from "../Select/CommandNew/SelectItem/Index";
-import Image from 'next/image'
 import Address from "./Address";
 import { Partner } from "../../Models/Partner";
 import AddressIcon from "../AddressIcon";
@@ -62,7 +57,11 @@ const CexNetworkPicker: FC<{ direction: SwapDirection, partner: Partner | undefi
                     <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search">
                         {({ closeModal }) => (
                             <CommandWrapper>
-                                <CommandInput autoFocus={isDesktop} placeholder="Search" />
+                                <CommandInput autoFocus={isDesktop} placeholder="Search">
+                                    <div className="pl-2">
+                                        <Search className="w-6 h-6 text-secondary-text" />
+                                    </div>
+                                </CommandInput>
                                 {isLoading ? (
                                     <div className="flex justify-center h-full items-center">
                                         <SpinIcon className="animate-spin h-5 w-5" />
