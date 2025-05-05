@@ -20,7 +20,6 @@ type ContextType = {
 export function FeeProvider({ children }) {
 
     const [values, setValues] = useState<SwapFormValues>()
-    const [cachedRateData, setCachedRateData] = useState<Quote>()
     const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod } = values || {}
     const [debouncedAmount, setDebouncedAmount] = useState(amount);
     const [poll, updatePolling] = useState(true)
@@ -60,13 +59,7 @@ export function FeeProvider({ children }) {
 
     const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading, error: lsFeeError } = useSWR<ApiResponse<Quote>>(quoteURL, apiClient.fetcher, {
         refreshInterval: poll ? 42000 : 0,
-        fallbackData: { data: cachedRateData }
     })
-
-    useEffect(() => {
-        if (lsFeeError) setCachedRateData(undefined)
-        setCachedRateData(lsFee?.data)
-    }, [lsFee, lsFeeError])
 
     return (
         <FeeStateContext.Provider value={{

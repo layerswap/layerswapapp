@@ -1,9 +1,10 @@
 import { ConnectedWallet, useTonConnectUI, useTonWallet } from "@tonconnect/ui-react"
 import { Address } from "@ton/core";
 import KnownInternalNames from "../../knownIds";
-import { Wallet, WalletProvider } from "../../../Models/WalletProvider";
+import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { useSettingsState } from "../../../context/settings";
+import { useConnectModal } from "../../../components/WalletModal";
 
 export default function useTON(): WalletProvider {
     const { networks } = useSettingsState()
@@ -18,6 +19,7 @@ export default function useTON(): WalletProvider {
 
     const tonWallet = useTonWallet();
     const [tonConnectUI] = useTonConnectUI();
+    const { connect } = useConnectModal()
 
     const address = tonWallet?.account && Address.parse(tonWallet.account.address).toString({ bounceable: false })
     const iconUrl = tonWallet?.["imageUrl"] as string
@@ -45,8 +47,16 @@ export default function useTON(): WalletProvider {
         return undefined
     }
 
-
     const connectWallet = async () => {
+        try {
+            return await connect(provider)
+        }
+        catch (e) {
+            console.log(e)
+        }
+    }
+
+    const connectConnector = async () => {
 
         if (tonWallet) {
             await disconnectWallets()
@@ -58,6 +68,11 @@ export default function useTON(): WalletProvider {
                     // Initiate the connection
                     tonConnectUI.openModal();
 
+                    tonConnectUI.onModalStateChange((state) => {
+                        if (state.status == 'closed' && state.closeReason == 'action-cancelled') {
+                            reject("You've declined the wallet connection request");
+                        }
+                    })
                     // Listen for the status change
                     tonConnectUI.onStatusChange((status) => {
                         if (status) resolve(status); // Resolve the promise with the status
@@ -93,7 +108,7 @@ export default function useTON(): WalletProvider {
             })
             .catch((error) => {
                 console.error('Promise rejected with error:', error);
-                return undefined
+                throw new Error(error);
             });
 
         return result
@@ -109,16 +124,18 @@ export default function useTON(): WalletProvider {
         }
     }
 
-    // const availableWalletsForConnect: InternalConnector[] | undefined = tonWallets?.map(w => ({
-    //     id: w.appName,
-    //     name: w.name,
-    //     icon: w.imageUrl,
-    // }))
+    const logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAALSSURBVHgB7ZoxUxNBGIa/YEhITJRRG61ig40wjlJpExttsbWCX0DyC5L8AqCzQxpbMmNlFxtoYIYRGipS6YwjMxkxxkRE7r0Z7vYWyIXdb8NsZp8qN3N3e+++u9+7t7kEvfv+n0aYMRpxnEDbcQJtxwm0HSfQdpxA23ECbWfkBSZJk8l0gp7cSVIhf4M4aR79o8a3v6SLlsC5QppWizlPpJmBAJHljTbVm11SRfnJivfHaf31LWPiAEYF2kBbqig/3dLzHA2LyuxNUkVpiE6mvHl3L7y0ftCl8uavvtesv7odXNP42qOFxlHf80vTGVqczvq/iw/GPTfHvCF7QldFTaA0LD97xSCu8VYvuvUTd76KmItQGqKY/K1u+ACLXm+jmnKCe4btnSgLVp6DK3ud4DeKQelxhrjAnBNjZ22/Q6ooC1z+0om6OJNlcRHC5qfSwTGcW967BoGYU+XNdnCMwlN5ql7tzqg8y0bcq223vY5U37rVCrH3+3+8ihiuNkozGa0Vje/eo4ngGO6hDR20Uxo9LLJazJMqcE/k5ccW6aItEA6uCb2MzFJZecwVUhH34ByqtS4s66zq9u9IwVFZecgro5p3Tw5YBKKnxdiAi/NTEwNfj3MjhWWrzeIeYFspIzbEMF56kRs4Niqz4dzDPapM7gE2gX5sbITrS8TGIOEvh7pctHRhfdepN3uR2IgLfznUdw6PtWNBhv1lTnQgzkU51N98+kncsAuEgyu74Ry6zEU51LliQcbI63h1K4yNy1wUQx2FpcZYWESMCETBEWPDdzEVuljIJyPuwXET7oGEyY8QDt7e9d/E+wH3Hn44JFMY3RddaMQXDe5YkDEqEAVHjA0ZFBbuWJAxvrPdb3PJVGERMS7QX6funhdiKhZkhvLfhBgbwGQsyAxFIGIDQ3Xnx7HvGorPMNwDCfetmuU4gbbjBNqOE2g7TqDtOIG2cwq0XR5LWK5AWAAAAABJRU5ErkJggg=='
+    const availableWalletsForConnect: InternalConnector[] = [{
+        id: id,
+        name: name,
+        icon: logo,
+    }]
 
     const provider = {
         connectWallet,
         disconnectWallets,
-        // availableWalletsForConnect,
+        connectConnector,
+        availableWalletsForConnect,
         activeAccountAddress: wallet?.address,
         connectedWallets: getWallet(),
         activeWallet: wallet,

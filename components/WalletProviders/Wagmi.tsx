@@ -19,6 +19,8 @@ import { bitget } from '../../lib/wallets/connectors/bitget';
 import { isMobile } from '../../lib/isMobile';
 import FuelProviderWrapper from "./FuelProvider";
 import { browserInjected } from "../../lib/wallets/connectors/browserInjected";
+import { useSyncProviders } from "../../lib/wallets/connectors/useSyncProviders";
+import { okxWallet } from "../../lib/wallets/connectors/okxWallet";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -26,18 +28,23 @@ type Props = {
 const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
 
 const queryClient = new QueryClient()
-const wltcnnct_inited = walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' })
 
+const wltcnnct_inited = walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' })
 const argent_inited = argent({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'argent' })
 const metaMask_inited = metaMask({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'metamask' })
 const rnbw_inited = rainbow({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'rainbow' })
 const btgt_inited = bitget({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'bitget' })
+const okx_inited = okxWallet({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'okxWallet' })
+
+
 
 function WagmiComponent({ children }: Props) {
     const settings = useSettingsState();
     const isChain = (c: Chain | undefined): c is Chain => c != undefined
 
+    const providers = useSyncProviders();
     const isMetaMaskInjected = hasInjectedProvider({ flag: 'isMetaMask' });
+    const isOkxInjected = providers?.some(provider => provider.info.name.toLowerCase() === 'okx wallet');
     const isRainbowInjected = hasInjectedProvider({ flag: 'isRainbow' });
     const isBitKeepInjected = hasInjectedProvider({
         namespace: 'bitkeep.ethereum',
@@ -69,6 +76,7 @@ function WagmiComponent({ children }: Props) {
                 ...(!isMetaMaskInjected ? [metaMask_inited] : []),
                 ...(!isRainbowInjected ? [rnbw_inited] : []),
                 ...(!isBitKeepInjected ? [btgt_inited] : []),
+                ...(!isOkxInjected ? [okx_inited] : []),
                 browserInjected()
             ],
             chains: settingsChains as [Chain, ...Chain[]],

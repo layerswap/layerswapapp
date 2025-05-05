@@ -42,7 +42,8 @@ export default function useParadex({ network }: Props): WalletProvider {
     const asSourceSupportedNetworks = [
         ...withdrawalSupportedNetworks
     ]
-    const { connect, setSelectedProvider } = useConnectModal()
+
+    const { connect, setSelectedConnector } = useConnectModal()
     const evmProvider = useEVM({ network })
     const starknetProvider = useStarknet()
 
@@ -60,13 +61,13 @@ export default function useParadex({ network }: Props): WalletProvider {
     const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
 
         try {
-            setSelectedProvider({ ...provider, connector: { name: connector.name } })
+            setSelectedConnector(connector)
             const isEvm = evmProvider.availableWalletsForConnect?.find(w => w.id === connector.id)
             const isStarknet = starknetProvider.availableWalletsForConnect?.find(w => w.id === connector.id)
             if (isEvm) {
                 const connectionResult = evmProvider.connectConnector && await evmProvider.connectConnector({ connector })
                 if (!connectionResult) return
-                if (!paradexAccounts?.[connectionResult.address.toLowerCase()]) {
+                if (!paradexAccounts?.[connectionResult?.address?.toLowerCase()]) {
                     const l1Network = networks.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
                     const l1ChainId = Number(l1Network?.chain_id)
                     if (!Number(l1ChainId)) {
@@ -105,7 +106,7 @@ export default function useParadex({ network }: Props): WalletProvider {
             else if (isStarknet) {
                 const connectionResult = starknetProvider.connectConnector && await starknetProvider.connectConnector({ connector })
                 if (!connectionResult) return
-                if (!paradexAccounts?.[connectionResult.address.toLowerCase()]) {
+                if (!paradexAccounts?.[connectionResult?.address?.toLowerCase()]) {
                     const snAccount = connectionResult.metadata?.starknetAccount
                     if (!snAccount) {
                         throw Error("Starknet account not found")
@@ -120,12 +121,14 @@ export default function useParadex({ network }: Props): WalletProvider {
             //TODO: handle error like in transfer
             const error = e as ConnectorAlreadyConnectedError
             if (error.name == 'ConnectorAlreadyConnectedError') {
-                toast.error('Wallet is already connected.')
+                throw new Error('Wallet is already connected.')
+            }
+            else if (error.message.includes("Cannot read properties of undefined (reading 'toLowerCase')")) {
+                throw new Error('Please update your wallet to the latest version.')
             }
             else {
-                toast.error(e.message)
+                throw new Error(e.message || e)
             }
-            throw new Error(e)
         }
     }
 

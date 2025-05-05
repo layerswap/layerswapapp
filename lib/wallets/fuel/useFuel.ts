@@ -2,7 +2,6 @@ import KnownInternalNames from "../../knownIds";
 import {
     useConnectors,
     useFuel as useGlobalFuel,
-    useAccounts
 } from '@fuels/react';
 import { Connector, useAccount } from "wagmi";
 import {
@@ -38,7 +37,6 @@ export default function useFuel(): WalletProvider {
     const wallets = useWalletStore((state) => state.connectedWallets)
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
-    const { accounts } = useAccounts()
     const connectedWallets = wallets.filter(wallet => wallet.providerName === name)
 
     const connectWallet = async () => {
@@ -54,14 +52,6 @@ export default function useFuel(): WalletProvider {
         try {
 
             const fuelConnector = connectors.find(w => w.name === connector.name)
-
-            if (!fuelConnector?.installed) {
-                const installLink = fuelConnector?.metadata.install.link
-                if (installLink) {
-                    window.open(installLink, "_blank");
-                    return
-                }
-            }
 
             BAKO_STATE.state.last_req = undefined
             BAKO_STATE.period_durtion = 120_000
@@ -92,6 +82,7 @@ export default function useFuel(): WalletProvider {
         }
         catch (e) {
             console.log(e)
+            throw new Error(e)
         }
     }
 
@@ -165,13 +156,12 @@ export default function useFuel(): WalletProvider {
     }, [connectedConnectors])
 
     const availableWalletsForConnect: InternalConnector[] = connectors.map(c => {
-
-        const name = c.installed ? c.name : `Install ${c.name}`
-
+        const isInstalled = c.installed && !c['dAppWindow']
         return {
-            name: name,
+            name: c.name,
             id: c.name,
-            type: c.installed ? 'injected' : 'other',
+            type: isInstalled ? 'injected' : 'other',
+            installUrl: c.installed ? undefined :  c.metadata.install.link,
         }
     })
 
