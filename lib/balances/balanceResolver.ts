@@ -1,4 +1,5 @@
 import { NetworkBalance, TokenBalance } from "../../Models/Balance";
+import { IBalanceProvider } from "../../Models/BalanceProvider";
 import { NetworkWithTokens } from "../../Models/Network";
 import { truncateDecimals } from "../../components/utils/RoundDecimals";
 import { useNetworksBalanceStore } from "../../stores/networksBalanceStore";
@@ -16,7 +17,7 @@ import { ZkSyncBalanceProvider } from "./providers/zkSyncBalanceProvider";
 
 export class BalanceResolver {
 
-    private providers = [
+    private providers: IBalanceProvider[] = [
         new QueryBalanceProvider(),
         new StarknetBalanceProvider(),
         new EVMBalanceProvider(),
@@ -34,12 +35,13 @@ export class BalanceResolver {
         try {
             if (!address)
                 throw new Error(`No address provided for network ${network.name}`)
-
+            useNetworksBalanceStore.getState().setNetwrkBalanceIsLoading(network.name)
             const provider = this.providers.find(p => p.supportsNetwork(network))
             //TODO: create interface for balance providers in case of empty state they shoudl throw error 
             //never return undefined as SWR does not set loading state if undefined is returned
             if (!provider) throw new Error(`No balance provider found for network ${network.name}`)
             const balances = await provider.fetchBalance(address, network)
+
             const totalInUSD = balances?.reduce((acc, b) => {
                 const token = network.tokens.find(t => t?.symbol === b?.token);
                 const tokenPriceInUsd = token?.price_in_usd || 0;
@@ -47,16 +49,23 @@ export class BalanceResolver {
                 const formattedBalance = Number(truncateDecimals(b?.amount, tokenPrecision));
                 return acc + (formattedBalance * tokenPriceInUsd);
             }, 0)
-
+            if (network.name === "ETHEREUM_MAINNET") {
+                console.log("setting ETHEREUM_MAINNET", balances, totalInUSD)
+            }
             useNetworksBalanceStore.getState().setNetworkBalance(network.name, {
                 balances: balances || [],
                 totalInUSD,
                 success: true
             })
-
+            if (network.name === "ETHEREUM_MAINNET") {
+                debugger
+            }
             return { balances, totalInUSD };
         }
         catch (e) {
+            if (network.name === "ETHEREUM_MAINNET") {
+                console.log("ETHEREUM_MAINNET not success", e)
+            }
             useNetworksBalanceStore.getState().setNetworkBalance(network.name, {
                 success: false
             })

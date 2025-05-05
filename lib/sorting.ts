@@ -37,10 +37,10 @@ export const SortNetworkRoutes = (
         return b_order - a_order;
     }
 
-    return b.name.localeCompare(a.name);
+    return a.name.localeCompare(b.name);
 }
 
-export const SortNetworkRoutesWithBalances = (
+export const SortNetworkRoutesWithBalances = (balances: Record<string, number>) => (
     a: NetworkRoute,
     b: NetworkRoute
 ) => {
@@ -54,8 +54,8 @@ export const SortNetworkRoutesWithBalances = (
         return b_order - a_order;
     }
 
-    const balance_a = useNetworksBalanceStore.getState().getNetworkBalance(a.name)?.totalInUSD || 0
-    const balance_b = useNetworksBalanceStore.getState().getNetworkBalance(b.name)?.totalInUSD || 0
+    const balance_a = balances[a.name]//useNetworksBalanceStore.getState().getNetworkBalance(a.name)?.totalInUSD || 0
+    const balance_b = balances[b.name] //useNetworksBalanceStore.getState().getNetworkBalance(b.name)?.totalInUSD || 0
 
     if (balance_b !== balance_a) {
         return balance_b - balance_a;

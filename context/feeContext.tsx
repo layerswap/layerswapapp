@@ -58,14 +58,15 @@ export function FeeProvider({ children }) {
     const quoteURL = (from && fromCurrency?.status === "active" && to && toCurrency?.status === "active" && debouncedAmount && depositMethod) ?
         `/quote?source_network=${from?.name}&source_token=${fromCurrency?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}&amount=${debouncedAmount}&refuel=${!!refuel}&use_deposit_address=${use_deposit_address}` : null
 
-    const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading } = useSWR<ApiResponse<Quote>>(quoteURL, apiClient.fetcher, {
+    const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading, error: lsFeeError } = useSWR<ApiResponse<Quote>>(quoteURL, apiClient.fetcher, {
         refreshInterval: poll ? 42000 : 0,
         fallbackData: { data: cachedRateData }
     })
 
     useEffect(() => {
+        if (lsFeeError) setCachedRateData(undefined)
         setCachedRateData(lsFee?.data)
-    }, [lsFee])
+    }, [lsFee, lsFeeError])
 
     return (
         <FeeStateContext.Provider value={{
