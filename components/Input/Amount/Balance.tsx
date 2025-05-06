@@ -36,7 +36,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
                 (network && token && network) &&
 
                 (truncatedBalance !== undefined && !isNaN(truncatedBalance)) &&
-                <span>{truncatedBalance > 0 ? truncatedBalance.toFixed(token?.precision) : truncatedBalance}</span>
+                <span>{truncatedBalance > 0 ? Number(truncatedBalance.toFixed(token?.precision)).toString() : truncatedBalance}</span>
             }
         </>
     )
