@@ -1,5 +1,5 @@
 {
-  "count": 524,
+  "count": 527,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -7604,7 +7604,8 @@
       "category": "Mobile Wallets",
       "chains": [
         "eip155:1",
-        "eip155:137"
+        "eip155:137",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
       "description": "Cake Wallet allows you to safely store, exchange, and spend your Monero, Bitcoin, Ethereum, Litecoin, and Haven.",
       "desktop": {
@@ -7613,11 +7614,11 @@
       },
       "homepage": "https://cakewallet.com/",
       "id": "32caff85195f843b19e79669e63bf3f4ad97b23b3a48b65b3781c0d193a3fcae",
-      "image_id": "547998c5-7908-4f11-bdc3-93da789d8c00",
+      "image_id": "b05af25b-fa4d-4f91-a4cb-2f8f7d544000",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/547998c5-7908-4f11-bdc3-93da789d8c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/547998c5-7908-4f11-bdc3-93da789d8c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/547998c5-7908-4f11-bdc3-93da789d8c00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/b05af25b-fa4d-4f91-a4cb-2f8f7d544000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/b05af25b-fa4d-4f91-a4cb-2f8f7d544000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/b05af25b-fa4d-4f91-a4cb-2f8f7d544000?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -8519,7 +8520,8 @@
         "eip155:66",
         "eip155:80084",
         "eip155:80085",
-        "eip155:8217"
+        "eip155:8217",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
       "description": "Bitget Wallet",
       "desktop": {
@@ -13996,6 +13998,72 @@
         "2"
       ]
     },
+    "5d9f1395b3a8e848684848dc4147cbd05c8d54bb737eac78fe103901fe6b01a1": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.okx.wallet",
+        "browser": null,
+        "chrome": "https://chrome.google.com/webstore/detail/okx-wallet/mcohilncbfahbmgdjkbpemcciiolgcge",
+        "edge": null,
+        "firefox": null,
+        "ios": "https://apps.apple.com/us/app/okx-wallet-portal-to-web3/id6743309484",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "bip122:000000000019d6689c085ae165831e93",
+        "bip122:000000000933ea01ad0ee984209779ba",
+        "eip155:1",
+        "eip155:137",
+        "eip155:43114",
+        "eip155:56",
+        "eip155:66",
+        "eip155:80084",
+        "eip155:80085",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "description": "One Web3 portal to rule them all",
+      "desktop": {
+        "native": "",
+        "universal": null
+      },
+      "homepage": "https://www.okx.com/download",
+      "id": "5d9f1395b3a8e848684848dc4147cbd05c8d54bb737eac78fe103901fe6b01a1",
+      "image_id": "c55df831-3c52-49fc-d1d1-97a926dc0c00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/c55df831-3c52-49fc-d1d1-97a926dc0c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/c55df831-3c52-49fc-d1d1-97a926dc0c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/c55df831-3c52-49fc-d1d1-97a926dc0c00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "okxwallet://main",
+        "universal": "https://web3.okx.com/download"
+      },
+      "name": "OKX Wallet",
+      "rdns": "com.okex.wallet",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "okx-wallet-1",
+      "updatedAt": "2025-05-02T06:39:34.995258+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "5dc61e9d57489bccc11306365361614dac3de1d8eab2a9a7877a95970f68712f": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.fincrypt.paybolt",
@@ -14128,6 +14196,63 @@
       ],
       "slug": "tomo-extension-wallet",
       "updatedAt": "2024-06-06T12:02:21.697113+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "5eac22ff46c34944f245146ad45f62923360290d90bb292a4f019668d74f7792": {
+      "app": {
+        "android": null,
+        "browser": "https://oaog.uxlink.io",
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": null,
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:42161"
+      ],
+      "description": "UXLINK is a web3 social platform and infrastructure, where super Dapps take off.\n",
+      "desktop": {
+        "native": "",
+        "universal": "https://oaog.uxlink.io"
+      },
+      "homepage": "https://uxlink.io",
+      "id": "5eac22ff46c34944f245146ad45f62923360290d90bb292a4f019668d74f7792",
+      "image_id": "7c0ac68c-efd6-42ab-488b-be8febe45f00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/7c0ac68c-efd6-42ab-488b-be8febe45f00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/7c0ac68c-efd6-42ab-488b-be8febe45f00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/7c0ac68c-efd6-42ab-488b-be8febe45f00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": null
+      },
+      "name": "UXLINK",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "uxlink",
+      "updatedAt": "2025-04-22T16:32:04.710479+00:00",
       "versions": [
         "1",
         "2"
@@ -18190,11 +18315,11 @@
       },
       "homepage": "https://docs.reown.com/walletkit/android/installation",
       "id": "7f3449afd0516845236c4f15f73cf3e106cb5706a349a8d6d7e1490b9c2cb0da",
-      "image_id": "01517ff8-39c9-40f3-2eca-732dec224000",
+      "image_id": "2e3866ec-a700-48a2-2db8-7c6af6481900",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/01517ff8-39c9-40f3-2eca-732dec224000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/01517ff8-39c9-40f3-2eca-732dec224000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/01517ff8-39c9-40f3-2eca-732dec224000?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/2e3866ec-a700-48a2-2db8-7c6af6481900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/2e3866ec-a700-48a2-2db8-7c6af6481900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/2e3866ec-a700-48a2-2db8-7c6af6481900?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -24089,6 +24214,75 @@
       "updatedAt": "2022-08-25T12:31:24.418626+00:00",
       "versions": [
         "1"
+      ]
+    },
+    "aee5083aac025c4c3f1c9afc31ea89dbddca0b1c248195bef469fc4886ae3ab2": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=app.herewallet.hot&hl=en_US",
+        "browser": "https://t.me/hot_wallet/app",
+        "chrome": "https://chromewebstore.google.com/detail/hot-wallet/mpeengabcnhhjjgleiodimegnkpcenbk?pli=1",
+        "edge": null,
+        "firefox": null,
+        "ios": "https://apps.apple.com/us/app/hot-wallet/id6740916148",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:204",
+        "eip155:42161",
+        "eip155:56",
+        "eip155:8453",
+        "near:mainnet",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "stellar:pubnet"
+      ],
+      "description": "Multi-chain Wallet with MPC Protocol",
+      "desktop": {
+        "native": "",
+        "universal": "https://t.me/hot_wallet/app"
+      },
+      "homepage": "https://hot-labs.org/wallet",
+      "id": "aee5083aac025c4c3f1c9afc31ea89dbddca0b1c248195bef469fc4886ae3ab2",
+      "image_id": "809867ce-345f-4180-033a-165019d4c700",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/809867ce-345f-4180-033a-165019d4c700?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/809867ce-345f-4180-033a-165019d4c700?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/809867ce-345f-4180-033a-165019d4c700?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": [
+        {
+          "injected_id": "isHotWallet",
+          "namespace": "eip155"
+        }
+      ],
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "hotwallet://",
+        "universal": null
+      },
+      "name": "HOT Wallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "hot-wallet",
+      "updatedAt": "2025-05-02T13:24:51.103068+00:00",
+      "versions": [
+        "1",
+        "2"
       ]
     },
     "af9a6dfff9e63977bbde28fb23518834f08b696fe8bff6dd6827acad1814c6be": {
@@ -30857,18 +31051,18 @@
         "eip155:8453",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
-      "description": "reown test wallet",
+      "description": "Reown Swift Sample Wallet",
       "desktop": {
         "native": "",
         "universal": null
       },
       "homepage": "https://reown.com",
       "id": "dfa04e5a17584aa9b3a9637f10ce2e95fcd6343fb81e8c634922b21a28cc66a8",
-      "image_id": "103ab6e9-eebc-4c78-ea85-89762c628000",
+      "image_id": "d4ef1a64-f5e3-4f11-9fe0-035e22ca6200",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/103ab6e9-eebc-4c78-ea85-89762c628000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/103ab6e9-eebc-4c78-ea85-89762c628000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/103ab6e9-eebc-4c78-ea85-89762c628000?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/d4ef1a64-f5e3-4f11-9fe0-035e22ca6200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/d4ef1a64-f5e3-4f11-9fe0-035e22ca6200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/d4ef1a64-f5e3-4f11-9fe0-035e22ca6200?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -30879,10 +31073,10 @@
         "shortName": null
       },
       "mobile": {
-        "native": "",
+        "native": "walletapp://",
         "universal": "https://lab.web3modal.com/wallet"
       },
-      "name": "swift wallet",
+      "name": "Swift Sample Wallet",
       "rdns": null,
       "sdks": [
         "sign_v1",
@@ -35281,5 +35475,5 @@
       ]
     }
   },
-  "total": 524
+  "total": 527
 }
