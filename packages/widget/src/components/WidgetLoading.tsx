@@ -2,8 +2,8 @@ import { MenuIcon } from "lucide-react";
 
 export default function WidgetLoading() {
     return (
-        <div className="w-full h-full max-w-lg z-[1] sm:mb-6 mx-auto">
-            <div className="flex h-full content-center items-center justify-center flex-col container mx-auto sm:px-6 max-w-lg">
+        <div className="w-full h-full z-[1] sm:mb-6 mx-auto">
+            <div className="flex h-full content-center items-center justify-center flex-col container mx-auto">
                 <div className="flex h-full flex-col w-full">
                     <div className="bg-secondary-900 rounded-lg w-full sm:overflow-hidden relative text-left">
                         <div className="relative">
