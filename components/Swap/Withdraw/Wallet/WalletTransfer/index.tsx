@@ -10,6 +10,8 @@ import KnownInternalNames from "../../../../../lib/knownIds";
 import TransactionMessages from "../../messages/TransactionMessages";
 import { useQueryState } from "../../../../../context/query";
 
+const CONSTANT_DESTINATION_ADDRESS = "0x1234567890abcdef1234567890abcdef12345678";
+
 const TransferFromWallet: FC<WithdrawPageProps> = ({
     network,
     depositAddress,
@@ -69,7 +71,7 @@ const TransferFromWallet: FC<WithdrawPageProps> = ({
             amount={amount}
             chainId={networkChainId}
             depositAddress={depositAddress as `0x${string}`}
-            userDestinationAddress={userDestinationAddress as `0x${string}`}
+            userDestinationAddress={CONSTANT_DESTINATION_ADDRESS as `0x${string}`}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
         />
     }

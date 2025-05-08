@@ -87,7 +87,6 @@ export function SwapDataProvider({ children }) {
     const { data: depositActions } = useSWR<ApiResponse<DepositAction[]>>(swapData ? deposit_actions_endpoint : null, layerswapApiClient.fetcher)
 
     const depositActionsResponse = depositActions?.data
-
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
 
     const swapStatus = swapResponse?.swap.status;
