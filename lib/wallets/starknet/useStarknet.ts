@@ -33,11 +33,10 @@ export default function useStarknet(): WalletProvider {
 
     const getWallet = () => {
 
+        const wallets = useWalletStore.getState().connectedWallets || []
         const wallet = wallets.find(wallet => wallet.providerName === name)
-
-        if (!wallet) return
-
-        return [wallet]
+        
+        return wallet ? [wallet] : undefined
     }
 
     const { connect } = useConnectModal()
@@ -68,38 +67,18 @@ export default function useStarknet(): WalletProvider {
 
             if (result?.account && starknetConnector) {
                 const starkent = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetSepolia)
-                const { RpcProvider, WalletAccount } = await import('starknet')
 
-                const rpcProvider = new RpcProvider({
-                    nodeUrl: starkent?.node_url,
-                })
+                const wallet = await resolveStarknetWallet({
+                    name,
+                    connector: starknetConnector,
+                    network: starkent,
+                    disconnectWallets,
+                });
 
-                const starknetWalletAccount = await WalletAccount.connectSilent(rpcProvider, (starknetConnector as any).wallet);
-
-                const wallet: Wallet = {
-                    id: connector.name,
-                    displayName: `${connector.name} - Starknet`,
-                    address: result?.account,
-                    addresses: [result?.account],
-                    chainId: walletChain,
-                    icon: resolveWalletConnectorIcon({ connector: connector.name, address: result?.account }),
-                    providerName: name,
-                    metadata: {
-                        starknetAccount: starknetWalletAccount,
-                        // wallet: account
-                    },
-                    isActive: true,
-                    connect: () => connectWallet(),
-                    disconnect: () => disconnectWallets(),
-                    withdrawalSupportedNetworks,
-                    autofillSupportedNetworks: commonSupportedNetworks,
-                    asSourceSupportedNetworks: commonSupportedNetworks,
-                    networkIcon: networks.find(n => starknetNames.some(name => name === n.name))?.logo
+                if (wallet) {
+                    addWallet(wallet);
+                    return wallet;
                 }
-
-                addWallet(wallet)
-
-                return wallet
             }
         }
 
@@ -147,6 +126,49 @@ export default function useStarknet(): WalletProvider {
     }
 
     return provider
+}
+
+export async function resolveStarknetWallet({
+    name,
+    connector,
+    network,
+    disconnectWallets,
+}: {
+    name: string,
+    connector: any;
+    network: any;
+    disconnectWallets: () => Promise<void>;
+}): Promise<Wallet | null> {
+    try {
+        const { RpcProvider, WalletAccount } = await import('starknet')
+        const rpcProvider = new RpcProvider({ nodeUrl: network?.node_url });
+
+        const walletAccount = await WalletAccount.connectSilent(rpcProvider, connector.wallet);
+
+        const account = walletAccount.address;
+        const walletChain = network?.chain_id;
+
+        const wallet: Wallet = {
+            id: connector.name,
+            displayName: `${connector.name} - Starknet`,
+            address: account,
+            addresses: [account],
+            chainId: walletChain || '',
+            icon: resolveWalletConnectorIcon({ connector: connector.name, address: account }),
+            providerName: name,
+            metadata: {
+                starknetAccount: walletAccount,
+            },
+            isActive: true,
+            disconnect: () => disconnectWallets(),
+            networkIcon: starknetNames.includes(network?.name) ? network?.logo : undefined,
+        };
+
+        return wallet;
+    } catch (e) {
+        console.warn(`Failed to initialize wallet for ${connector.name}:`, e);
+        return null;
+    }
 }
 
 

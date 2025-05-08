@@ -6,9 +6,14 @@ import { useState } from "react"
 import WalletsList from "./WalletsList"
 import VaulDrawer from "../modal/vaulModal"
 import { Wallet } from "../../Models/WalletProvider"
+import { useWalletStore } from "../../stores/walletStore"
 
 export const WalletsHeader = () => {
     const { wallets } = useWallet()
+    const StarknetWallets = useWalletStore((state) => state.connectedWallets)
+
+console.log(wallets,"initial wallet")
+console.log(StarknetWallets,"StarknetWallets")
 
     if (wallets.length > 0) {
         return (
@@ -45,7 +50,7 @@ const WalletsHeaderWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
 }
 
 const WalletsIcons = ({ wallets }: { wallets: Wallet[] }) => {
-
+debugger
     const uniqueWallets = wallets.filter((wallet, index, self) => index === self.findIndex((t) => t.id === wallet.id))
 
     const firstWallet = uniqueWallets[0]

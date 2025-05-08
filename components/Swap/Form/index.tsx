@@ -217,7 +217,7 @@ export default function Form() {
                 <SwapForm partner={partner} />
             </ValidationProvider>
         </Formik>
-    </DepositMethodProvider >
+    </DepositMethodProvider>
 }
 
 const textMotion = {
