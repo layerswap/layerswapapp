@@ -30,7 +30,6 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
     const provider = network && resolveProvider(network, walletProviders, purpose)
 
     const wallets = useMemo(() => {
-        console.log(walletProviders, "walletProviders")
         let connectedWallets: Wallet[] = [];
         walletProviders.forEach((wallet) => {
             const w = wallet.connectedWallets;
