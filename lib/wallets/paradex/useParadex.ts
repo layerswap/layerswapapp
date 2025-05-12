@@ -1,8 +1,6 @@
 import { Network } from "../../../Models/Network"
 import KnownInternalNames from "../../knownIds"
 import { useMemo } from "react"
-import toast from "react-hot-toast"
-import { LSConnector } from "../connectors/EthereumProvider"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useConnectModal } from "../../../components/WalletModal"
 import { type ConnectorAlreadyConnectedError } from '@wagmi/core'
@@ -58,12 +56,19 @@ export default function useParadex({ network }: Props): WalletProvider {
     const config = useConfig()
 
 
-    const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
+    const connectConnector = async (props?: { connector: InternalConnector }) => {
+        const { connector } = props || {};
+        if (!connector) {
+            throw new Error("Connector is required");
+        }
 
         try {
             setSelectedConnector(connector)
             const isEvm = evmProvider.availableWalletsForConnect?.find(w => w.id === connector.id)
             const isStarknet = starknetProvider.availableWalletsForConnect?.find(w => w.id === connector.id)
+
+            let accounts: typeof paradexAccounts | undefined
+
             if (isEvm) {
                 const connectionResult = evmProvider.connectConnector && await evmProvider.connectConnector({ connector })
                 if (!connectionResult) return
@@ -81,9 +86,9 @@ export default function useParadex({ network }: Props): WalletProvider {
                             await switchChain(config, { chainId: l1ChainId })
                         }
                         catch (e) {
-                            await getChainId(config)
+                            getChainId(config)
                             await sleep(1000)
-                            const chainId = await getChainId(config)
+                            const chainId = getChainId(config)
 
                             if (l1ChainId !== chainId) {
                                 throw Error("Could not switch to ethereum network")
@@ -99,9 +104,14 @@ export default function useParadex({ network }: Props): WalletProvider {
                     }
                     const paradexAccount = await AuhorizeEthereum(ethersSigner)
                     addParadexAccount({ l1Address: connectionResult.address, paradexAddress: paradexAccount.address })
+                    accounts = { [connectionResult.address.toLowerCase()]: paradexAccount.address }
+                } else {
+                    accounts = { [connectionResult.address.toLowerCase()]: paradexAccounts[connectionResult.address.toLowerCase()] }
                 }
                 selectProvider(evmProvider.name)
-                return resolveSingleWallet(connectionResult, name, paradexAccounts, removeParadexAccount, paradexNetwork?.logo)
+
+                const wallet = resolveSingleWallet(connectionResult, name, accounts, removeParadexAccount, paradexNetwork?.logo)
+                return wallet
             }
             else if (isStarknet) {
                 const connectionResult = starknetProvider.connectConnector && await starknetProvider.connectConnector({ connector })
@@ -113,9 +123,13 @@ export default function useParadex({ network }: Props): WalletProvider {
                     }
                     const paradexAccount = await AuthorizeStarknet(snAccount)
                     addParadexAccount({ l1Address: connectionResult.address, paradexAddress: paradexAccount.address })
+                    accounts = { [connectionResult.address.toLowerCase()]: paradexAccount.address }
+                }
+                else {
+                    accounts = { [connectionResult.address.toLowerCase()]: paradexAccounts[connectionResult.address.toLowerCase()] }
                 }
                 selectProvider(starknetProvider.name)
-                return resolveSingleWallet(connectionResult, name, paradexAccounts, removeParadexAccount, paradexNetwork?.logo)
+                return resolveSingleWallet(connectionResult, name, accounts, removeParadexAccount, paradexNetwork?.logo)
             }
         } catch (e) {
             //TODO: handle error like in transfer
