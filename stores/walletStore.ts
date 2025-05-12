@@ -44,7 +44,7 @@ export const useWalletStore = create<WalletState>()(persist((set) => ({
         connectedWallets: state.connectedWallets.filter(w => connectorName ? !(w.providerName == providerName && w.id == connectorName) : w.providerName != providerName)
     }))
 }), {
-    name: "ls-paradex-accounts",
+    name: "ls-accounts",
     storage: createJSONStorage(() => localStorage),
     partialize: (state) => ({
         accounts: state.accounts,
