@@ -28,8 +28,6 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
     const apiClient = new LayerSwapApiClient()
     const {
         data: exchanges,
-        isLoading,
-        error
     } = useSWR<ApiResponse<Exchange[]>>(`${exchangeRoutesURL}`, apiClient.fetcher, { keepPreviousData: true, fallbackData: { data: direction === 'from' ? sourceExchanges : destinationExchanges }, dedupingInterval: 10000 })
 
     const availableAssetGroups = exchanges?.data?.find(e => e.name === exchange?.name)?.token_groups
@@ -60,9 +58,10 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
     useEffect(() => {
         const currency = direction === 'from' ? toCurrency : fromCurrency
         const value = availableAssetGroups?.find(r => r.symbol === currency?.symbol && r.status === 'active')
-        
-        if (!value || currencyGroup?.manuallySet)
-            return
+        const newCurrencyGroupValue = availableAssetGroups?.find(r => r.symbol === currencyGroup?.symbol && r.status === 'active')
+
+        if (newCurrencyGroupValue) setFieldValue(name, newCurrencyGroupValue)
+        if (!value || currencyGroup?.manuallySet) return
 
         (async () => {
             setFieldValue(name, value)
