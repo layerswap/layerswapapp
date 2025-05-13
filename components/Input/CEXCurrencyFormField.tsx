@@ -1,8 +1,8 @@
 import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect } from "react";
-import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
-import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
-import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
+import { SwapDirection, SwapFormValues } from "../Pages/SwapPages/Form/SwapFormValues";
+import { SelectMenuItem } from "../Pages/SwapPages/Form/Select/Shared/Props/selectMenuItem";
+import PopoverSelectWrapper from "../Pages/SwapPages/Form/Select/Popover/PopoverSelectWrapper";
 import { ResolveCEXCurrencyOrder } from "../../lib/sorting";
 import { useQueryState } from "../../context/query";
 import { Exchange, ExchangeToken } from "../../Models/Exchange";
@@ -12,6 +12,7 @@ import useSWR from "swr";
 import LayerSwapApiClient from "../../lib/layerSwapApiClient";
 import RouteIcon from "./RouteIcon";
 import { useSettingsState } from "../../context/settings";
+import { NetworkWithTokens } from "../../Models/Network";
 
 const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -40,10 +41,12 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
 
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : availableAssetGroups
 
+    const oppositeDirectionNetwork = direction === 'from' ? to : from
     const currencyMenuItems = GenerateCurrencyMenuItems(
         filteredCurrencies!,
         direction,
-        lockedCurrency
+        lockedCurrency,
+        oppositeDirectionNetwork
     )
 
     const value = currencyMenuItems?.find(x => x.id == currencyGroup?.symbol);
@@ -58,9 +61,9 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
     useEffect(() => {
         const currency = direction === 'from' ? toCurrency : fromCurrency
         const value = availableAssetGroups?.find(r => r.symbol === currency?.symbol && r.status === 'active')
-        const newCurrencyGroupValue = availableAssetGroups?.find(r => r.symbol === currencyGroup?.symbol && r.status === 'active')
+        const newCurrencyGroup = availableAssetGroups?.find(r => r.symbol === currencyGroup?.symbol && r.status === 'active')
 
-        if (newCurrencyGroupValue) setFieldValue(name, newCurrencyGroupValue)
+        if (newCurrencyGroup) setFieldValue(name, newCurrencyGroup)
         if (!value || currencyGroup?.manuallySet) return
 
         (async () => {
@@ -99,9 +102,16 @@ export function GenerateCurrencyMenuItems(
     currencies: ExchangeToken[],
     direction: string,
     lockedCurrency?: ExchangeToken | undefined,
+    oppositeDirectionNetwork?: NetworkWithTokens | undefined,
 ): SelectMenuItem<ExchangeToken>[] {
 
-    return currencies?.map(c => {
+    const filterCondition = (c: ExchangeToken) => {
+        if (oppositeDirectionNetwork) {
+            return oppositeDirectionNetwork?.tokens?.some(t => t.symbol === c.symbol)
+        }
+    }
+
+    return currencies?.filter(filterCondition)?.map(c => {
         const currency = c
         const displayName = lockedCurrency?.symbol ?? currency.symbol;
 
