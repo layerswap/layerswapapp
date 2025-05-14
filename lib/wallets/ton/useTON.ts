@@ -4,7 +4,6 @@ import KnownInternalNames from "../../knownIds";
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { useSettingsState } from "../../../context/settings";
-import { useConnectModal } from "../../../components/WalletModal";
 
 export default function useTON(): WalletProvider {
     const { networks } = useSettingsState()
@@ -19,7 +18,6 @@ export default function useTON(): WalletProvider {
 
     const tonWallet = useTonWallet();
     const [tonConnectUI] = useTonConnectUI();
-    const { connect } = useConnectModal()
 
     const address = tonWallet?.account && Address.parse(tonWallet.account.address).toString({ bounceable: false })
     const iconUrl = tonWallet?.["imageUrl"] as string
@@ -33,7 +31,6 @@ export default function useTON(): WalletProvider {
         isActive: true,
         icon: resolveWalletConnectorIcon({ connector: name, address, iconUrl }),
         disconnect: () => disconnectWallets(),
-        connect: () => connectWallet(),
         withdrawalSupportedNetworks: commonSupportedNetworks,
         autofillSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,
@@ -48,21 +45,12 @@ export default function useTON(): WalletProvider {
     }
 
     const connectWallet = async () => {
-        try {
-            return await connect(provider)
-        }
-        catch (e) {
-            console.log(e)
-        }
-    }
-
-    const connectConnector = async () => {
 
         if (tonWallet) {
             await disconnectWallets()
         }
 
-        function connectAndWaitForStatusChange() {
+        function connectAndWaitForStatusChange(): Promise<ConnectedWallet> {
             return new Promise((resolve, reject) => {
                 try {
                     // Initiate the connection
@@ -134,7 +122,6 @@ export default function useTON(): WalletProvider {
     const provider = {
         connectWallet,
         disconnectWallets,
-        connectConnector,
         availableWalletsForConnect,
         activeAccountAddress: wallet?.address,
         connectedWallets: getWallet(),

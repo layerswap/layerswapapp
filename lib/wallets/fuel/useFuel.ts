@@ -14,7 +14,6 @@ import shortenAddress from "../../../components/utils/ShortenAddress";
 import { BAKO_STATE } from "./Basko";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
-import { useConnectModal } from "../../../components/WalletModal";
 import { useEffect, useMemo } from "react";
 import { useWalletStore } from "../../../stores/walletStore";
 import { useSettingsState } from "../../../context/settings";
@@ -31,7 +30,6 @@ export default function useFuel(): WalletProvider {
     const { address: evmAddress, connector: evmConnector } = useAccount()
     const { connectors } = useConnectors()
     const { fuel } = useGlobalFuel()
-    const { connect } = useConnectModal()
     const { networks } = useSettingsState()
 
     const wallets = useWalletStore((state) => state.connectedWallets)
@@ -39,16 +37,7 @@ export default function useFuel(): WalletProvider {
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
     const connectedWallets = wallets.filter(wallet => wallet.providerName === name)
 
-    const connectWallet = async () => {
-        try {
-            return await connect(provider)
-        }
-        catch (e) {
-            console.log(e)
-        }
-    }
-
-    const connectConnector = async ({ connector }: { connector: InternalConnector }) => {
+    const connectWallet = async ({ connector }: { connector: InternalConnector }) => {
         try {
 
             const fuelConnector = connectors.find(w => w.name === connector.name)
@@ -67,7 +56,6 @@ export default function useFuel(): WalletProvider {
                     connector: fuelConnector,
                     evmAddress,
                     evmConnector,
-                    connectWallet,
                     disconnectWallet,
                     name,
                     commonSupportedNetworks,
@@ -139,7 +127,6 @@ export default function useFuel(): WalletProvider {
                             connector,
                             evmAddress,
                             evmConnector,
-                            connectWallet,
                             disconnectWallet,
                             name,
                             commonSupportedNetworks: commonSupportedNetworks,
@@ -167,7 +154,6 @@ export default function useFuel(): WalletProvider {
 
     const provider = {
         connectWallet,
-        connectConnector,
         disconnectWallets,
         switchAccount,
         availableWalletsForConnect,
@@ -188,14 +174,13 @@ type ResolveWalletProps = {
     connector: FuelConnector,
     evmAddress: `0x${string}` | undefined,
     evmConnector: Connector | undefined,
-    connectWallet: () => Promise<Wallet | undefined>,
     disconnectWallet: (connectorName: string) => Promise<void>,
     name: string,
     commonSupportedNetworks: string[],
     networkIcon?: string,
 }
 
-const resolveFuelWallet = async ({ address, addresses, commonSupportedNetworks, connectWallet, connector, disconnectWallet, evmAddress, evmConnector, name, networkIcon }: ResolveWalletProps) => {
+const resolveFuelWallet = async ({ address, addresses, commonSupportedNetworks, connector, disconnectWallet, evmAddress, evmConnector, name, networkIcon }: ResolveWalletProps) => {
     let fuelCurrentConnector: string | undefined = undefined
 
     let customConnectorname: string | undefined = undefined
@@ -225,7 +210,6 @@ const resolveFuelWallet = async ({ address, addresses, commonSupportedNetworks, 
         address: address,
         addresses: addresses,
         isActive: true,
-        connect: connectWallet,
         chainId: chainId,
         disconnect: () => disconnectWallet(connector.name),
         displayName: `${fuelCurrentConnector || connector.name} - Fuel`,
