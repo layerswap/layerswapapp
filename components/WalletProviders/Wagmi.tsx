@@ -49,14 +49,13 @@ function WagmiComponent({ children }: Props) {
         .map(resolveChain).filter(isChain) as Chain[]
 
     const transports = {}
-    const providers = useSyncProviders();
 
     settingsChains.forEach(chain => {
         transports[chain.id] = chain.rpcUrls.default.http[0] ? http(chain.rpcUrls.default.http[0]) : http()
     })
 
-    const isMetaMaskInjected = providers?.some(provider => provider.info.name.toLowerCase() === 'metamask');
-    const isOkxInjected = providers?.some(provider => provider.info.name.toLowerCase() === 'okx wallet');
+    const isMetaMaskInjected = hasInjectedProvider({ flag: 'isMetaMask' });
+    const isOkxInjected = hasInjectedProvider({ flag: 'isOkxWallet' }) || hasInjectedProvider({ flag: 'isOKExWallet' });
     const isRainbowInjected = hasInjectedProvider({ flag: 'isRainbow' });
     const isBitKeepInjected = hasInjectedProvider({
         namespace: 'bitkeep.ethereum',
