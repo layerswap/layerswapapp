@@ -2,7 +2,7 @@ import { Dispatch, FC, SetStateAction, useEffect, useMemo, useRef, useState } fr
 import useWallet from "../../hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
 import { InternalConnector, Wallet, WalletProvider } from "../../Models/WalletProvider";
-import { Check, CircleX, Link2Off, RotateCw, Search, SlidersHorizontal, XCircle } from "lucide-react";
+import { CircleX, Link2Off, RotateCw, Search, SlidersHorizontal, XCircle } from "lucide-react";
 import { resolveWalletConnectorIcon } from "../../lib/wallets/utils/resolveWalletIcon";
 import { QRCodeSVG } from "qrcode.react";
 import CopyButton from "../buttons/copyButton";
@@ -55,7 +55,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             setSelectedConnector(connector)
             if (connector.installUrl) return
 
-            const result = provider?.connectConnector && await provider.connectConnector({ connector })
+            const result = provider?.connectWallet && await provider.connectWallet({ connector })
 
             if (result && connector && provider) {
                 setRecentConnectors((prev) => [...(prev?.filter(v => v.providerName !== provider.name) || []), { providerName: provider.name, connectorName: connector.name }])
