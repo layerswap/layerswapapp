@@ -10,6 +10,7 @@ import useTron from "../lib/wallets/tron/useTron";
 import { useMemo } from "react";
 import useParadex from "../lib/wallets/paradex/useParadex";
 import { useSettingsState } from "../context/settings";
+import { useStarknetStore } from "../stores/starknetWalletStore";
 
 export type WalletPurpose = "autofil" | "withdrawal" | "asSource"
 
@@ -28,15 +29,18 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
     ].filter(provider => networks.some(obj => provider?.autofillSupportedNetworks?.includes(obj.name) || provider?.withdrawalSupportedNetworks?.includes(obj.name) || provider?.asSourceSupportedNetworks?.includes(obj.name)))
 
     const provider = network && resolveProvider(network, walletProviders, purpose)
+    const starknetAccounts = useStarknetStore((state) => state.starknetAccounts) || {};
 
     const wallets = useMemo(() => {
         let connectedWallets: Wallet[] = [];
         walletProviders.forEach((wallet) => {
+            if (wallet.id === 'starknet' && !Object.keys(starknetAccounts).length) return;
+
             const w = wallet.connectedWallets;
             connectedWallets = w ? [...connectedWallets, ...w] : [...connectedWallets];
         });
         return connectedWallets;
-    }, [walletProviders]);
+    }, [walletProviders, starknetAccounts]);
 
     const getProvider = (network: Network, purpose: WalletPurpose) => {
         return network && resolveProvider(network, walletProviders, purpose)

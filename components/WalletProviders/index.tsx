@@ -6,6 +6,7 @@ import Wagmi from "./Wagmi";
 import StarknetProvider from "./StarknetProvider";
 import { ImtblPassportProvider } from "./ImtblPassportProvider";
 import TronProvider from "./TronProvider";
+import { StarknetWalletProvider } from "../../context/starknetWalletContext";
 
 const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], basePath: string, themeData: ThemeData, appName: string | undefined }> = ({ children, basePath, themeData, appName }) => {
     return (
@@ -13,11 +14,13 @@ const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], basePath: st
             <SolanaProvider>
                 <TronProvider>
                     <StarknetProvider>
-                        <Wagmi>
-                            <ImtblPassportProvider>
-                                {children}
-                            </ImtblPassportProvider>
-                        </Wagmi>
+                        <StarknetWalletProvider>
+                            <Wagmi>
+                                <ImtblPassportProvider>
+                                    {children}
+                                </ImtblPassportProvider>
+                            </Wagmi>
+                        </StarknetWalletProvider>
                     </StarknetProvider>
                 </TronProvider>
             </SolanaProvider>
