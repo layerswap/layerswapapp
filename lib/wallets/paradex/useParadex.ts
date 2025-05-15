@@ -1,4 +1,3 @@
-import { Network } from "../../../Models/Network"
 import KnownInternalNames from "../../knownIds"
 import { useMemo } from "react"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
@@ -16,11 +15,7 @@ import { switchChain, getChainId } from '@wagmi/core'
 import { useSettingsState } from "../../../context/settings"
 import shortenAddress from "../../../components/utils/ShortenAddress"
 
-type Props = {
-    network: Network | undefined,
-}
-
-export default function useParadex({ network }: Props): WalletProvider {
+export default function useParadex(): WalletProvider {
     const name = 'Paradex'
     const id = 'prdx'
     const { networks } = useSettingsState()
@@ -41,22 +36,13 @@ export default function useParadex({ network }: Props): WalletProvider {
         ...withdrawalSupportedNetworks
     ]
 
-    const { connect, setSelectedConnector } = useConnectModal()
-    const evmProvider = useEVM({ network })
+    const { setSelectedConnector } = useConnectModal()
+    const evmProvider = useEVM()
     const starknetProvider = useStarknet()
 
-    const connectWallet = async () => {
-        try {
-            return await connect(provider)
-        }
-        catch (e) {
-            console.log(e)
-        }
-    }
     const config = useConfig()
 
-
-    const connectConnector = async (props?: { connector: InternalConnector }) => {
+    const connectWallet = async (props?: { connector: InternalConnector }) => {
         const { connector } = props || {};
         if (!connector) {
             throw new Error("Connector is required");
@@ -70,7 +56,7 @@ export default function useParadex({ network }: Props): WalletProvider {
             let accounts: typeof paradexAccounts | undefined
 
             if (isEvm) {
-                const connectionResult = evmProvider.connectConnector && await evmProvider.connectConnector({ connector })
+                const connectionResult = evmProvider.connectWallet && await evmProvider.connectWallet({ connector })
                 if (!connectionResult) return
                 if (!paradexAccounts?.[connectionResult?.address?.toLowerCase()]) {
                     const l1Network = networks.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
@@ -114,7 +100,7 @@ export default function useParadex({ network }: Props): WalletProvider {
                 return wallet
             }
             else if (isStarknet) {
-                const connectionResult = starknetProvider.connectConnector && await starknetProvider.connectConnector({ connector })
+                const connectionResult = starknetProvider.connectWallet && await starknetProvider.connectWallet({ connector })
                 if (!connectionResult) return
                 if (!paradexAccounts?.[connectionResult?.address?.toLowerCase()]) {
                     const snAccount = connectionResult.metadata?.starknetAccount
@@ -182,7 +168,6 @@ export default function useParadex({ network }: Props): WalletProvider {
 
     const provider = {
         connectWallet,
-        connectConnector,
         switchAccount,
         connectedWallets,
         activeWallet,

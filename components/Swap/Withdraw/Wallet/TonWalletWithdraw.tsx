@@ -13,9 +13,11 @@ import tonClient from '../../../../lib/wallets/ton/client';
 import { ConnectWalletButton } from './WalletTransfer/buttons';
 import TransactionMessages from '../messages/TransactionMessages';
 import { datadogRum } from '@datadog/browser-rum';
+import { useConnectModal } from '../../../WalletModal';
 
 const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {
     const [loading, setLoading] = useState(false);
+    const { connect } = useConnectModal()
     const { provider } = useWallet(network, 'withdrawal');
     const { setSwapTransaction } = useSwapTransactionStore();
     const [tonConnectUI] = useTonConnectUI();
@@ -27,7 +29,7 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
         setLoading(true)
         setTransactionErrorMessage(undefined)
         try {
-            await provider?.connectWallet()
+            await connect(provider)
         }
         catch (e) {
             toast(e.message)

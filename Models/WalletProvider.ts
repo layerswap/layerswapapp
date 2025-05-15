@@ -15,6 +15,7 @@ export type InternalConnector = {
 
 export type Wallet = {
     id: string;
+    internalId?: string;
     displayName?: string;
     // TODO: might be unused and unnecessary check
     isActive: boolean;
@@ -44,9 +45,10 @@ export type Wallet = {
 
 export type WalletProvider = {
     hideFromList?: boolean,
-    connectWallet: () => Promise<Wallet | undefined>,
-    connectConnector?: (props?: { connector: InternalConnector }) => Promise<Wallet | undefined> | undefined
-    switchAccount?: (connector: Wallet, address: string) => Promise<void>
+    connectWallet: (props?: { connector?: InternalConnector }) => Promise<Wallet | undefined> | undefined,
+    disconnectWallets?: () => Promise<void> | undefined | void,
+    switchAccount?: (connector: Wallet, address: string) => Promise<void>,
+    isNotAvailableCondition?: (connector: string, network: string) => boolean,
     availableWalletsForConnect?: InternalConnector[],
     connectedWallets: Wallet[] | undefined,
     activeWallet: Wallet | undefined,

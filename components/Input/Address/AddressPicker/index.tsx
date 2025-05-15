@@ -159,7 +159,8 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         <Modal
             header='Send To'
             height="80%"
-            show={showAddressModal} setShow={setShowAddressModal}
+            show={showAddressModal}
+            setShow={setShowAddressModal}
             modalId="address"
         >
             {/* <ResizablePanel> */}
@@ -175,7 +176,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         <ConnectWalletButton
                             provider={provider}
                             onConnect={onConnect}
-                            destination={destination}
                         />
                     }
 
@@ -209,7 +209,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         <ConnectedWallets
                             provider={provider}
                             wallets={wallets}
-                            onClick={(wallet, address) => handleSelectAddress(address)}
+                            onClick={(_, address) => handleSelectAddress(address)}
                             onConnect={onConnect}
                             destination={destination}
                             destination_address={destination_address}

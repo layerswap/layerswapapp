@@ -4,7 +4,6 @@ import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { useSettingsState } from "../../../context/settings";
 import { useConnect, useDisconnect } from "@starknet-react/core";
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
-import { useConnectModal } from "../../../components/WalletModal";
 
 const starknetNames = [KnownInternalNames.Networks.StarkNetGoerli, KnownInternalNames.Networks.StarkNetMainnet, KnownInternalNames.Networks.StarkNetSepolia]
 export default function useStarknet(): WalletProvider {
@@ -40,18 +39,7 @@ export default function useStarknet(): WalletProvider {
         return [wallet]
     }
 
-    const { connect } = useConnectModal()
-
-    const connectWallet = async () => {
-        try {
-            return await connect(provider)
-        }
-        catch (e) {
-            console.log(e)
-        }
-    }
-
-    const connectConnector = async ({ connector }) => {
+    const connectWallet = async ({ connector }) => {
         try {
             const starknetConnector = connectors.find(c => c.id === connector.id)
 
@@ -89,7 +77,6 @@ export default function useStarknet(): WalletProvider {
                         // wallet: account
                     },
                     isActive: true,
-                    connect: () => connectWallet(),
                     disconnect: () => disconnectWallets(),
                     withdrawalSupportedNetworks,
                     autofillSupportedNetworks: commonSupportedNetworks,
@@ -134,7 +121,7 @@ export default function useStarknet(): WalletProvider {
 
     const provider: WalletProvider = {
         connectWallet,
-        connectConnector,
+        disconnectWallets,
         connectedWallets: getWallet(),
         activeWallet: getWallet()?.[0],
         withdrawalSupportedNetworks,

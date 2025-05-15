@@ -5,7 +5,7 @@ import NetworkFormField from "../../Input/NetworkFormField";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
 import { motion, useCycle } from "framer-motion";
-import { ArrowUpDown, PlusIcon } from 'lucide-react'
+import { ArrowUpDown } from 'lucide-react'
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
 import { useQueryState } from "../../../context/query";
@@ -29,10 +29,6 @@ type Props = {
 }
 
 const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
-    loading: () => <></>,
-});
-
-const Address = dynamic(() => import("../../Input/Address"), {
     loading: () => <></>,
 });
 
