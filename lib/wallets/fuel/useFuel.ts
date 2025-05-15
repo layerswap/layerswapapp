@@ -16,7 +16,7 @@ import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { useConnectModal } from "../../../components/WalletModal";
 import { useEffect, useMemo } from "react";
-import { useWalletStore } from "../../../stores/walletStore";
+import { useWalletStore } from "../../../stores/paradexWalletStore";
 import { useSettingsState } from "../../../context/settings";
 
 export default function useFuel(): WalletProvider {

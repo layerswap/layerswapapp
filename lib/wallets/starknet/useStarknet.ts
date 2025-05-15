@@ -1,10 +1,11 @@
-import { useWalletStore } from "../../../stores/walletStore"
+import { useStarknetStore } from '../../../stores/starknetWalletStore'
 import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { useSettingsState } from "../../../context/settings";
-import { useConnect, useDisconnect } from "@starknet-react/core";
+import { Connector, useConnect, useDisconnect } from "@starknet-react/core";
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { useConnectModal } from "../../../components/WalletModal";
+import { NetworkWithTokens } from '../../../Models/Network';
 
 const starknetNames = [KnownInternalNames.Networks.StarkNetGoerli, KnownInternalNames.Networks.StarkNetMainnet, KnownInternalNames.Networks.StarkNetSepolia]
 export default function useStarknet(): WalletProvider {
@@ -25,20 +26,17 @@ export default function useStarknet(): WalletProvider {
     const { connectors } = useConnect();
     const { disconnectAsync } = useDisconnect()
 
-    const wallets = useWalletStore((state) => state.connectedWallets)
-    const addWallet = useWalletStore((state) => state.connectWallet)
-    const removeWallet = useWalletStore((state) => state.disconnectWallet)
+    const starknetWallets = useStarknetStore((state) => state.connectedWallets)
+    const addWallet = useStarknetStore((state) => state.connectWallet)
+    const removeWallet = useStarknetStore((state) => state.disconnectWallet)
+    const addAccount = useStarknetStore((state) => state.addAccount)
+    const starknetAccounts = useStarknetStore((state) => state.starknetAccounts) || {};
 
+    const activeWalletAddress = useStarknetStore((state) => state.activeWalletAddress);
+    const setActiveWallet = useStarknetStore((state) => state.setActiveWallet);
+
+    const activeWallet = starknetWallets.find(wallet => wallet.address === activeWalletAddress);
     const isMainnet = networks?.some(network => network.name === KnownInternalNames.Networks.StarkNetMainnet)
-
-    const getWallet = () => {
-
-        const wallet = wallets.find(wallet => wallet.providerName === name)
-
-        if (!wallet) return
-
-        return [wallet]
-    }
 
     const { connect } = useConnectModal()
 
@@ -68,38 +66,21 @@ export default function useStarknet(): WalletProvider {
 
             if (result?.account && starknetConnector) {
                 const starkent = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetSepolia)
-                const { RpcProvider, WalletAccount } = await import('starknet')
 
-                const rpcProvider = new RpcProvider({
-                    nodeUrl: starkent?.node_url,
-                })
+                const wallet = await resolveStarknetWallet({
+                    name,
+                    connector: starknetConnector,
+                    network: starkent,
+                    disconnectWallets,
+                    address: starknetAccounts[result.account.toLowerCase()],
+                });
 
-                const starknetWalletAccount = await WalletAccount.connectSilent(rpcProvider, (starknetConnector as any).wallet);
-
-                const wallet: Wallet = {
-                    id: connector.name,
-                    displayName: `${connector.name} - Starknet`,
-                    address: result?.account,
-                    addresses: [result?.account],
-                    chainId: walletChain,
-                    icon: resolveWalletConnectorIcon({ connector: connector.name, address: result?.account }),
-                    providerName: name,
-                    metadata: {
-                        starknetAccount: starknetWalletAccount,
-                        // wallet: account
-                    },
-                    isActive: true,
-                    connect: () => connectWallet(),
-                    disconnect: () => disconnectWallets(),
-                    withdrawalSupportedNetworks,
-                    autofillSupportedNetworks: commonSupportedNetworks,
-                    asSourceSupportedNetworks: commonSupportedNetworks,
-                    networkIcon: networks.find(n => starknetNames.some(name => name === n.name))?.logo
+                addAccount(starknetConnector.id, result.account);
+                if (wallet) {
+                    addWallet(wallet);
+                    setActiveWallet(wallet.address)
+                    return wallet;
                 }
-
-                addWallet(wallet)
-
-                return wallet
             }
         }
 
@@ -132,11 +113,16 @@ export default function useStarknet(): WalletProvider {
         }
     })
 
+    const switchAccount = async (connector: Wallet, address: string): Promise<void> => {
+        setActiveWallet(address);
+    };
+
     const provider: WalletProvider = {
         connectWallet,
         connectConnector,
-        connectedWallets: getWallet(),
-        activeWallet: getWallet()?.[0],
+        switchAccount,
+        connectedWallets: starknetWallets,
+        activeWallet,
         withdrawalSupportedNetworks,
         autofillSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,
@@ -149,6 +135,57 @@ export default function useStarknet(): WalletProvider {
     return provider
 }
 
+export async function resolveStarknetWallet({
+    name,
+    connector,
+    network,
+    disconnectWallets,
+    address
+}: {
+    name: string,
+    connector: Connector;
+    network: NetworkWithTokens | undefined;
+    disconnectWallets: () => Promise<void>;
+    address?: string;
+}): Promise<Wallet | null> {
+    try {
+        const { RpcProvider, WalletAccount } = await import('starknet')
+        const rpcProvider = new RpcProvider({ nodeUrl: network?.node_url });
+        const walletAccount = new WalletAccount(rpcProvider, (connector as any).wallet, "1", address);
+        const accounts = await walletAccount.requestAccounts(true)
+
+        const account = accounts?.[0];
+
+        if (!account) {
+            const removeAccount = useStarknetStore.getState().removeAccount;
+            removeAccount(connector.id);
+            return null;
+        }
+
+        const walletChain = network?.chain_id;
+
+        const wallet: Wallet = {
+            id: connector.name,
+            displayName: `${connector.name} - Starknet`,
+            address: account,
+            addresses: [account],
+            chainId: walletChain || '',
+            icon: resolveWalletConnectorIcon({ connector: connector.name, address: account }),
+            providerName: name,
+            metadata: {
+                starknetAccount: walletAccount,
+            },
+            isActive: true,
+            disconnect: () => disconnectWallets(),
+            networkIcon: starknetNames.includes(network?.name || '') ? network?.logo : undefined,
+        };
+
+        return wallet;
+    } catch (e) {
+        console.warn(`Failed to initialize wallet for ${connector.name}:`, e);
+        return null;
+    }
+}
 
 const connectorsConfigs = [
     {
