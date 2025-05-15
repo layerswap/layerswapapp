@@ -60,7 +60,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
     useEffect(() => {
         const currency = direction === 'from' ? toCurrency : fromCurrency
         const value = availableAssetGroups?.find(r => r.symbol === currency?.symbol && r.status === 'active')
-        
+
         if (!value || currencyGroup?.manuallySet)
             return
 
