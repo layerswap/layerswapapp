@@ -6929,18 +6929,23 @@
   resolved "https://registry.yarnpkg.com/@starknet-io/types-js/-/types-js-0.7.10.tgz#d21dc973d0cd04d7b6293ce461f2f06a5873c760"
   integrity sha512-1VtCqX4AHWJlRRSYGSn+4X1mqolI1Tdq62IwzoU2vUuEE72S1OlEeGhpvd6XsdqXcfHmVzYfj8k1XtKBQqwo9w==
 
-"@starknet-react/chains@^3.1.0", "@starknet-react/chains@^3.1.2":
+"@starknet-react/chains@^3.1.0":
   version "3.1.2"
   resolved "https://registry.yarnpkg.com/@starknet-react/chains/-/chains-3.1.2.tgz#8944d1f544ec87832cb07ed184b4c6a3ccf45459"
   integrity sha512-/Oldb4AVYdvHXzlBRxu01s0WwdOjqL2Q47BAmiv07/aBRU7mSZl6r/6l+bYKNrChSZl7WVnlpb+ojfwhRpbGcw==
 
-"@starknet-react/core@^3.7.2":
-  version "3.7.2"
-  resolved "https://registry.yarnpkg.com/@starknet-react/core/-/core-3.7.2.tgz#0431e1fd11705bd77833ff7aefddc07fb2bb9db7"
-  integrity sha512-5l6IlXqYzbnInVPwL2VdSwmIiaNnTjm4iYnEGSSVUUPyklHr3bdXaZoILJWcIQ0NaF2ebhNhoKYL8GDHiSKTPw==
+"@starknet-react/chains@^3.1.3":
+  version "3.1.3"
+  resolved "https://registry.yarnpkg.com/@starknet-react/chains/-/chains-3.1.3.tgz#13e5ef27e6c8abb375b5ba40a89a74fc890f88aa"
+  integrity sha512-b16VQyxqZXfiVmlKEkjfg+Oj8fdSnGWh1KU87O/unn6NpmaD9h511az1Cs6aW/j3qCIF1o5CrqfEnU1NWV7MVA==
+
+"@starknet-react/core@^3.7.4":
+  version "3.7.4"
+  resolved "https://registry.yarnpkg.com/@starknet-react/core/-/core-3.7.4.tgz#d4062c1055459074e6fb1827ecccfd1e6d793371"
+  integrity sha512-fHzme/TLyhSJRIo3BarehiM23IZuLeT0gM0jvTpz8w1/Y05tK+UywpyzBCkueU+iHEwhopsICDpOFhFtqaJJZA==
   dependencies:
     "@starknet-io/types-js" "^0.7.7"
-    "@starknet-react/chains" "^3.1.2"
+    "@starknet-react/chains" "^3.1.3"
     "@tanstack/react-query" "^5.25.0"
     abi-wan-kanabi "^2.2.4"
     eventemitter3 "^5.0.1"

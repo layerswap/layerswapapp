@@ -45,7 +45,6 @@ const WalletsHeaderWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
 }
 
 const WalletsIcons = ({ wallets }: { wallets: Wallet[] }) => {
-
     const uniqueWallets = wallets.filter((wallet, index, self) => index === self.findIndex((t) => t.id === wallet.id))
 
     const firstWallet = uniqueWallets[0]

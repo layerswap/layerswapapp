@@ -127,7 +127,7 @@ const StarknetProvider: FC<{ children: ReactNode }> = ({ children }) => {
     const chains = [mainnet, sepolia]
 
     return (
-        <StarknetConfig
+        <StarknetConfig 
             chains={chains}
             provider={publicProvider()}
             connectors={connectors}

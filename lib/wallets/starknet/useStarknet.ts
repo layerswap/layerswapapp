@@ -34,10 +34,17 @@ export default function useStarknet(): WalletProvider {
     const getWallet = () => {
 
         const wallet = wallets.find(wallet => wallet.providerName === name)
-
+        
         if (!wallet) return
 
-        return [wallet]
+        const parsedWallet = {
+            ...wallet,
+            icon: resolveWalletConnectorIcon({ connector: wallet.id, address: wallet.address }),
+            connect: () => connectWallet(),
+            disconnect: () => disconnectWallets(),
+        }
+
+        return [parsedWallet]
     }
 
     const { connect } = useConnectModal()
@@ -53,6 +60,7 @@ export default function useStarknet(): WalletProvider {
 
     const connectConnector = async ({ connector }) => {
         try {
+            
             const starknetConnector = connectors.find(c => c.id === connector.id)
 
             const result = await starknetConnector?.connect({})
