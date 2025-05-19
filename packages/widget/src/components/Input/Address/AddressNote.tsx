@@ -20,7 +20,7 @@ const AddressNote: FC<AddressNoteModalProps> = ({ partner, values }) => {
     return (
         destination && destination_address ?
             <div className="flex flex-col items-center gap-6 mt-2">
-                <div className="h-24 w-24 rounded-2xl overflow-hidden">
+                <div className="h-24 w-24 rounded-xl overflow-hidden">
                     <AddressIcon className="scale-150 h-24 w-24 blur-[1.5px]" address={destination_address} size={96} />
                 </div>
                 <div className="text-center max-w-xs space-y-1">

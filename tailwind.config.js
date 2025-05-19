@@ -30,6 +30,7 @@ module.exports = {
             md: 'var(--ls-border-radius-md, 1rem)',
             lg: 'var(--ls-border-radius-lg, 1.5rem)',
             xl: 'var(--ls-border-radius-xl, 2rem)',
+            full: 'var(--ls-border-radius-full, 9999px)',
         },
         extend: {
             colors: {

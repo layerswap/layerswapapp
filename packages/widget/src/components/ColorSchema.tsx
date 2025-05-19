@@ -54,6 +54,7 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
                     --ls-border-radius-md: ${adjustBorderRadius('medium', borderRadius)};
                     --ls-border-radius-lg: ${adjustBorderRadius('large', borderRadius)};
                     --ls-border-radius-xl: ${adjustBorderRadius('extraLarge', borderRadius)};
+                    --ls-border-radius-full: 9999px;
                     --ls-border-radius-default: ${adjustBorderRadius('small', borderRadius)};
 
                     --ls-colors-backdrop: ${backdrop};

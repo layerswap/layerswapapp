@@ -1,6 +1,7 @@
 import { LayerSwapSettings, THEME_COLORS, ThemeData } from "@layerswap/widget";
 import { useRouter } from 'next/router';
 import Head from "next/head";
+import AppWrapper from "./AppWrapper";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -44,6 +45,8 @@ export default function Layout({ children, themeData }: Props) {
       <meta name="twitter:description" content="Streamline your asset transaction experience with Layerswap across 50+ blockchains and 15+ exchanges. Fast, affordable and secure." />
       <meta name="twitter:image" content={`https://layerswap.io/${basePath}/opengraphtw.jpg`} />
     </Head>
-    {children}
+    <AppWrapper>
+      {children}
+    </AppWrapper>
   </>)
 }
