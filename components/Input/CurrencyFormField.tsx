@@ -105,7 +105,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     useEffect(() => {
         if (direction !== "from") return
-
+        
         let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.symbol === currencyAsset)
 
         if (currencyIsAvailable) return
@@ -179,7 +179,6 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             if (default_currency) {
                 await setFieldValue("validatingCurrencyGroup", true, true)
                 await setFieldValue(direction == "from" ? "validatingSource" : "validatingDestination", true, true)
-                await setFieldValue("currencyGroup", default_currency, true)
             }
         }
 

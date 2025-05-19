@@ -77,26 +77,6 @@ const CEXNetworkFormField = forwardRef(function CEXNetworkFormField({ direction,
         item.baseObject.token.symbol ===
         (direction === 'from' ? fromCurrency : toCurrency)?.symbol
         && item.baseObject.network.name === formValue?.name)
-    //Setting default value
-    useEffect(() => {
-        if (!menuItems) return
-        if (menuItems.length == 0) {
-            setFieldValue(`${name}Currency`, null, true)
-            setFieldValue('currencyGroup', null, true)
-            return
-        }
-        else if (value || !formValue) return
-    }, [routesData, historicalNetworks])
-
-    useEffect(() => {
-        if (!currencyGroup) return
-        if (!menuItems) return
-        if (menuItems.length == 0) {
-            setFieldValue(`${direction === 'to' ? 'from' : 'to'}Currency`, null, true)
-            return
-        }
-        else if (value) return
-    }, [currencyGroup])
 
     const valueDetails = <>
         <div className="flex">{network?.display_name}</div>

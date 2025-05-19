@@ -32,7 +32,12 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
         error
     } = useSWR<ApiResponse<Exchange[]>>(`${exchangeRoutesURL}`, apiClient.fetcher, { keepPreviousData: true, fallbackData: { data: direction === 'from' ? sourceExchanges : destinationExchanges }, dedupingInterval: 10000 })
 
-    const availableAssetGroups = exchanges?.data?.find(e => e.name === exchange?.name)?.token_groups
+    const shouldFilterExchange = (exchange && currencyGroup)
+    const exchangesData = shouldFilterExchange
+        ? exchanges
+        : { data: direction === 'from' ? sourceExchanges : destinationExchanges }
+
+    const availableAssetGroups = exchangesData?.data?.find(e => e.name === exchange?.name)?.token_groups
 
     const isLocked = direction === 'from' ? query?.lockFromAsset : query?.lockToAsset
     const asset = direction === 'from' ? query?.fromAsset : query?.toAsset
@@ -58,27 +63,31 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
     }, [])
 
     useEffect(() => {
-        const currency = direction === 'from' ? toCurrency : fromCurrency
-        const value = availableAssetGroups?.find(r => r.symbol === currency?.symbol && r.status === 'active')
+        if (!isLoading && exchangesData) {
+            (async () => {
+                const currency = direction === 'from' ? toCurrency : fromCurrency
+                const exchange = direction === 'from' ? fromExchange : toExchange
+                const value = exchangesData?.data?.find(r => r.name === exchange?.name)?.token_groups?.find(t => t.symbol === currency?.symbol)
 
-        if (!value || currencyGroup?.manuallySet)
-            return
-
-        (async () => {
-            setFieldValue(name, value)
-            await setFieldValue(direction == "from" ? "validatingSource" : "validatingDestination", true, true)
-            await setFieldValue("validatingCurrencyGroup", false, true)
-        })();
-    }, [fromCurrency, toCurrency, availableAssetGroups])
+                if (!value || value === currencyGroup) return
+                (value as any).manuallySet = currency?.manuallySet
+                await setFieldValue(`${direction == "from" ? "to" : "from"}Currency`, currency, true)
+                await setFieldValue(name, value, true)
+                await setFieldValue("validatingCurrencyGroup", false, true)
+            })();
+        }
+    }, [fromCurrency, toCurrency, exchangesData, currencyGroup])
 
     const handleSelect = useCallback(async (item: SelectMenuItem<ExchangeToken>) => {
         const oppositeCurrency = direction === 'from' ? toCurrency : fromCurrency
-        if (oppositeCurrency && !oppositeCurrency?.manuallySet) {
+        if (oppositeCurrency && !oppositeCurrency?.manuallySet && oppositeCurrency.symbol !== item.baseObject.symbol) {
+            
             const network = direction === 'to' ? from : to
             const default_currency = network?.tokens?.find(t => t.symbol === item.baseObject.symbol) || network?.tokens?.find(t => t.symbol.includes(item.baseObject.symbol) || item.baseObject.symbol.includes(t.symbol))
             if (default_currency) {
                 await setFieldValue("validatingDestination", true, true)
                 await setFieldValue("validatingSource", true, true)
+                await setFieldValue("validatingCurrencyGroup", true, true)
                 await setFieldValue(`${direction == "from" ? "to" : "from"}Currency`, default_currency, true)
             }
         }
