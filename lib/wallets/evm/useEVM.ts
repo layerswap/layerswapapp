@@ -5,7 +5,7 @@ import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useMemo } from "react"
-import { getAccount, getConnections } from '@wagmi/core'
+import { CreateConnectorFn, getAccount, getConnections } from '@wagmi/core'
 import { isMobile } from "../../isMobile"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
 import { LSConnector } from "../connectors/EthereumProvider"
@@ -13,6 +13,7 @@ import { InternalConnector, Wallet, WalletProvider } from "../../../Models/Walle
 import { useConnectModal } from "../../../components/WalletModal"
 import { explicitInjectedproviderDetected } from "../connectors/getInjectedConnector"
 import walletsData from "../../../public/walletsData.json"
+import sleep from "../utils/sleep"
 
 type Props = {
     network: Network | undefined,
@@ -190,16 +191,18 @@ export default function useEVM({ network }: Props): WalletProvider {
     const fetchedWallets = useMemo(() => Object.values(walletsData.listings), [])
 
     {/* //TODO: refactor ordering */ }
-    const availableWalletsForConnect = allConnectors.filter(filterConnectors)
-        .map(w => {
-            const isWalletConnectSupported = fetchedWallets.some(w2 => w2.name.toLowerCase().includes(w.name.toLowerCase()) && (w2.mobile.universal || w2.mobile.native || w2.desktop.native || w2.desktop.universal)) || w.name === "WalletConnect"
-            return {
-                ...w,
-                order: resolveWalletConnectorIndex(w.id),
-                type: (w.type == 'injected' && w.id !== 'com.immutable.passport') ? w.type : "other",
-                isMobileSupported: isWalletConnectSupported
-            }
-        })
+    const availableWalletsForConnect: InternalConnector[] = useMemo(() => {
+        return dedupePreferInjected(allConnectors.filter(filterConnectors))
+            .map(w => {
+                const isWalletConnectSupported = fetchedWallets.some(w2 => w2.name.toLowerCase().includes(w.name.toLowerCase()) && (w2.mobile.universal || w2.mobile.native || w2.desktop.native || w2.desktop.universal)) || w.name === "WalletConnect"
+                return {
+                    ...w,
+                    order: resolveWalletConnectorIndex(w.id),
+                    type: (w.type == 'injected' && w.id !== 'com.immutable.passport') ? w.type : "other",
+                    isMobileSupported: isWalletConnectSupported
+                }
+            })
+    }, [allConnectors, fetchedWallets])
 
     const provider = {
         connectWallet,
@@ -211,7 +214,7 @@ export default function useEVM({ network }: Props): WalletProvider {
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks,
-        availableWalletsForConnect: availableWalletsForConnect as InternalConnector[],
+        availableWalletsForConnect: availableWalletsForConnect,
         name,
         id,
         providerIcon: networks.find(n => ethereumNames.some(name => name === n.name))?.logo
@@ -339,7 +342,7 @@ const resolveSupportedNetworks = (supportedNetworks: string[], connectorId: stri
 
 async function attemptGetAccount(config, maxAttempts = 5) {
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
-        const account = await getAccount(config);
+        const account = getAccount(config);
 
         if (account.address) {
             return account;
@@ -347,8 +350,19 @@ async function attemptGetAccount(config, maxAttempts = 5) {
         await sleep(500);
     }
 
-    return await getAccount(config);
+    return getAccount(config);
 }
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+
+function dedupePreferInjected(arr: Connector<CreateConnectorFn>[]) {
+    // Group items by id
+    const groups = arr.reduce((acc, obj) => {
+        (acc[obj.id] = acc[obj.id] || []).push(obj);
+        return acc;
+    }, {});
+    // For each id, if any item is injected, keep only those; otherwise keep all
+    return Object.values(groups).flatMap(group => {
+        const groupArr = group as Connector<CreateConnectorFn>[];
+        const injected = groupArr.filter(o => o.type === 'injected');
+        return injected.length > 0 ? injected : groupArr;
+    });
 }

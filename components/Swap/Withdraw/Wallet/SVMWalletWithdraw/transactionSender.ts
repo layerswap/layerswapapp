@@ -5,6 +5,7 @@ import {
     VersionedTransactionResponse,
 } from "@solana/web3.js";
 import { retry } from "../../../../../lib/retry";
+import sleep from "../../../../../lib/wallets/utils/sleep";
 
 type TransactionSenderAndConfirmationWaiterArgs = {
     connection: Connection;
@@ -99,8 +100,4 @@ export async function transactionSenderAndConfirmationWaiter({
     );
 
     return response;
-}
-
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
 }
