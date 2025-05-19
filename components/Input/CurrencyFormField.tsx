@@ -105,7 +105,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     useEffect(() => {
         if (direction !== "from") return
-        
+
         let currencyIsAvailable = (fromCurrency || toCurrency) && currencyMenuItems?.some(c => c?.baseObject.symbol === currencyAsset)
 
         if (currencyIsAvailable) return
@@ -180,6 +180,11 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 await setFieldValue("validatingCurrencyGroup", true, true)
                 await setFieldValue(direction == "from" ? "validatingSource" : "validatingDestination", true, true)
             }
+        } else if (currencyGroup) {
+            const default_currency = exchange?.token_groups?.find(t => t.symbol === item.baseObject.symbol) || exchange?.token_groups?.find(t => t.symbol.includes(item.baseObject.symbol) || item.baseObject.symbol.includes(t.symbol))
+            if (default_currency) {
+                await setFieldValue(`currencyGroup`, default_currency, true)
+            }
         }
 
         if (oppositeCurrency && !oppositeCurrency?.manuallySet && oppositeCurrency.symbol !== item.baseObject.symbol) {
@@ -194,7 +199,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         }
         (item.baseObject as any).manuallySet = true
         await setFieldValue(name, item.baseObject, true)
-    }, [name, direction, toCurrency, fromCurrency, from, to, values])
+    }, [name, direction, toCurrency, fromCurrency, from, to, values, currencyGroup])
 
     const isLocked = direction === 'from' ? query?.lockFromAsset
         : query?.lockToAsset

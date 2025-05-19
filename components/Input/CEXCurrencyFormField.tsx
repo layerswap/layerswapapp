@@ -67,7 +67,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
             (async () => {
                 const currency = direction === 'from' ? toCurrency : fromCurrency
                 const exchange = direction === 'from' ? fromExchange : toExchange
-                const value = exchangesData?.data?.find(r => r.name === exchange?.name)?.token_groups?.find(t => t.symbol === currency?.symbol)
+                const value = exchangesData?.data?.find(r => r.name === exchange?.name)?.token_groups?.find(t => t.symbol === currencyGroup?.symbol)
 
                 if (!value || value === currencyGroup) return
                 (value as any).manuallySet = currency?.manuallySet
