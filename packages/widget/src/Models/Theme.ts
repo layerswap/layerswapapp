@@ -9,7 +9,7 @@ export type ThemeData = {
     secondary?: ThemeColor,
     headerLogo?: string,
     footerLogoHeight?: string,
-    footerSticky?: boolean,
+    enablePortal?: boolean,
     borderRadius?: 'none' | 'small' | 'medium' | 'large' | 'extraLarge' | 'default',
 }
 

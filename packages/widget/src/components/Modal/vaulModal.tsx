@@ -8,6 +8,7 @@ import { SnapElement, SnapPointsProvider, useSnapPoints } from '../../context/sn
 import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { Drawer } from './vaul';
+import AppSettings from '../../lib/AppSettings';
 
 type VaulDrawerProps = {
     children: ReactNode;
@@ -21,7 +22,7 @@ type VaulDrawerProps = {
 }
 
 const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd }) => {
-    const { isMobile } = useWindowDimensions();
+    const { isMobileWithPortal: isMobile } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
     const expandRef = useRef<HTMLDivElement>(null);
@@ -113,6 +114,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                     data-testid="content"
                     className={clsx('fixed sm:absolute flex flex-col bg-secondary-900 rounded-t-xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text !ring-0 !outline-none ', {
                         '!border-none !rounded-none': snap === 1,
+                        '!absolute': AppSettings.ThemeData?.enablePortal == false,
                     })}
                 >
                     <div
@@ -121,7 +123,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         {
                             isMobile &&
                             <div className="absolute top-2 left-[calc(50%-24px)]" >
-                                <Drawer.Handle className='!w-12 bg-primary-text-muted'/>
+                                <Drawer.Handle className='!w-12 bg-primary-text-muted' />
                             </div>
                         }
 
@@ -222,10 +224,10 @@ const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement> & { id: `item-${nu
 }
 
 const VaulDrawer: typeof Comp & { Snap: typeof VaulDrawerSnap } = (props) => {
-    const { isMobile } = useWindowDimensions();
+    const { isMobileWithPortal } = useWindowDimensions();
 
     return (
-        <SnapPointsProvider isMobile={isMobile}>
+        <SnapPointsProvider isMobile={isMobileWithPortal}>
             <Comp {...props}>
                 {props.children}
             </Comp>
@@ -237,11 +239,10 @@ const VaulDrawer: typeof Comp & { Snap: typeof VaulDrawerSnap } = (props) => {
 VaulDrawer.Snap = VaulDrawerSnap;
 
 
-type Props = {
-    children: React.ReactNode,
-    isWalletModalOpen?: boolean
-}
-
+// type Props = {
+//     children: React.ReactNode,
+//     isWalletModalOpen?: boolean
+// }
 // export const WalletFooterPortal: FC<Props> = ({ children, isWalletModalOpen }) => {
 export const WalletFooterPortal: any = ({ children, isWalletModalOpen }) => {
     const ref = useRef<Element | null>(null);

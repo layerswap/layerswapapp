@@ -77,7 +77,7 @@ const Footer = ({ children, hidden, sticky }: FooterProps) => {
     const isFooterVisible = LayerSwapApiClient.apiKey !== AppSettings.LayerswapApiKeys['mainnet'] &&
         LayerSwapApiClient.apiKey !== AppSettings.LayerswapApiKeys['testnet']
 
-    const isFooterSticky = AppSettings.ThemeData?.footerSticky ?? false
+    const isFooterSticky = (AppSettings.ThemeData?.enablePortal && AppSettings.ThemeData?.enablePortal == true) ?? false
 
     return (
         <Comp hidden={hidden} sticky={isFooterSticky ? sticky : false}>

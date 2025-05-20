@@ -1,5 +1,5 @@
 import { AnimatePresence } from "framer-motion";
-import React, { Dispatch, ReactNode, SetStateAction, useEffect, useRef, useState } from "react";
+import { Dispatch, ReactNode, SetStateAction, useEffect, useRef, useState } from "react";
 import { FC } from "react"
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import { Leaflet, LeafletHeight } from "./leaflet";
@@ -18,7 +18,7 @@ export interface ModalProps {
 }
 
 const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader, show, setShow, modalId, onClose }) => {
-    const { isMobile, isDesktop } = useWindowDimensions()
+    const { isMobileWithPortal, isDesktop } = useWindowDimensions()
     const mobileModalRef = useRef(null)
     //Fixes draggebles closing
     const [delayedShow, setDelayedShow] = useState<boolean>()
@@ -29,7 +29,7 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
 
     return (
         <>
-            {isDesktop && (
+            {(isDesktop || (!isDesktop && !isMobileWithPortal)) && (
                 <ReactPortal wrapperId="widget_root">
                     <AnimatePresence>
                         {delayedShow &&
@@ -50,7 +50,7 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
                     </AnimatePresence>
                 </ReactPortal>
             )}
-            {isMobile && (
+            {isMobileWithPortal && (
                 <AnimatePresence>
                     {delayedShow &&
                         <Leaflet

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import AppSettings from "../lib/AppSettings";
 
 export default function useWindowDimensions() {
   const [windowSize, setWindowSize] = useState<{
@@ -29,10 +30,13 @@ export default function useWindowDimensions() {
     return () => window.removeEventListener("resize", handleResize);
   }, []); // Empty array ensures that effect is only run on mount
 
+  const isMobile = typeof windowSize?.width === "number" && windowSize?.width < 768;
+  const isDesktop = typeof windowSize?.width === "number" && windowSize?.width >= 768;
+
   return {
     windowSize,
-    isMobile: typeof windowSize?.width === "number" && windowSize?.width < 768,
-    isDesktop:
-      typeof windowSize?.width === "number" && windowSize?.width >= 768,
+    isMobile,
+    isMobileWithPortal: isMobile && AppSettings.ThemeData?.enablePortal == true,
+    isDesktop
   };
 }
