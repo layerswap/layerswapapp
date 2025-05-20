@@ -6,6 +6,7 @@ import ResizablePanel from "../../../../ResizablePanel";
 import { Wallet, WalletProvider } from "../../../../../Models/WalletProvider";
 import WalletIcon from "../../../../icons/WalletIcon";
 import { WalletItem } from "../../../../Wallet/WalletsList";
+import { useConnectModal } from "../../../../WalletModal";
 
 type Props = {
     provider: WalletProvider,
@@ -20,11 +21,12 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
 
     const [isLoading, setIsLoading] = useState(false)
     const [showIncompatibleWallets, setShowIncompatibleWallets] = useState(false)
+    const { connect } = useConnectModal()
     const connectedWallets = provider.connectedWallets?.filter(wallet => !wallet.isNotAvailable)
 
-    const connect = async () => {
+    const handleConnect = async () => {
         setIsLoading(true)
-        const result = await provider.connectWallet()
+        const result = await connect(provider)
         if (onConnect && result) onConnect(result)
         setIsLoading(false)
     }
@@ -42,7 +44,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                     </div>
                     <button
                         type="button"
-                        onClick={connect}
+                        onClick={handleConnect}
                         disabled={isLoading}
                         className="text-secondary-text hover:text-primary-text text-xs rounded-lg flex items-center gap-1.5 transition-colors duration-200"
                     >

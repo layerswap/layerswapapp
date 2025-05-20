@@ -9,14 +9,15 @@ import ManualTransferNote from "./manualTransferNote";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import WalletMessage from "../../messages/Message";
+import { useConnectModal } from "../../../../WalletModal";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
     const { source_network } = swap || {}
     const [loading, setLoading] = useState(false)
-
     const { provider } = useWallet(source_network, 'withdrawal')
+    const { connect } = useConnectModal()
 
     const clickHandler = useCallback(async () => {
         try {
@@ -24,7 +25,7 @@ export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
 
             if (!provider) throw new Error(`No provider from ${source_network?.name}`)
 
-            await provider.connectWallet()
+            await connect(provider)
         }
         catch (e) {
             toast.error(e.message)

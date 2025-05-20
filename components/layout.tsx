@@ -130,21 +130,21 @@ export default function Layout({ children, settings, themeData }: Props) {
     }
     <QueryProvider query={query}>
       <SettingsProvider data={appSettings}>
-        <AuthProvider>
-          <TooltipProvider delayDuration={500}>
-            <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
-              <ThemeWrapper>
-                <WalletsProviders basePath={basePath} themeData={themeData} appName={router.query.appName?.toString()}>
+        <WalletsProviders basePath={basePath} themeData={themeData} appName={router.query.appName?.toString()}>
+          <AuthProvider>
+            <TooltipProvider delayDuration={500}>
+              <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
+                <ThemeWrapper>
                   <AsyncModalProvider>
                     {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
                       <MaintananceContent />
                       : children}
                   </AsyncModalProvider>
-                </WalletsProviders>
-              </ThemeWrapper>
-            </ErrorBoundary>
-          </TooltipProvider>
-        </AuthProvider>
+                </ThemeWrapper>
+              </ErrorBoundary>
+            </TooltipProvider>
+          </AuthProvider>
+        </WalletsProviders>
       </SettingsProvider >
     </QueryProvider >
   </>)
