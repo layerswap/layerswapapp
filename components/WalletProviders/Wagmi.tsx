@@ -9,7 +9,6 @@ import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createConfig } from 'wagmi';
 import { Chain, http } from 'viem';
-import { WalletModalProvider } from '../WalletModal';
 import { argent } from '../../lib/wallets/connectors/argent';
 import { rainbow } from '../../lib/wallets/connectors/rainbow';
 import { metaMask } from '../../lib/wallets/connectors/metamask';
@@ -17,7 +16,6 @@ import { coinbaseWallet, walletConnect } from '@wagmi/connectors'
 import { hasInjectedProvider } from '../../lib/wallets/connectors/getInjectedConnector';
 import { bitget } from '../../lib/wallets/connectors/bitget';
 import { isMobile } from '../../lib/isMobile';
-import FuelProviderWrapper from "./FuelProvider";
 import { browserInjected } from "../../lib/wallets/connectors/browserInjected";
 import { useSyncProviders } from "../../lib/wallets/connectors/useSyncProviders";
 import { okxWallet } from "../../lib/wallets/connectors/okxWallet";
@@ -83,11 +81,7 @@ function WagmiComponent({ children }: Props) {
     return (
         <WagmiProvider config={config} >
             <QueryClientProvider client={queryClient}>
-                <FuelProviderWrapper>
-                    <WalletModalProvider>
-                        {children}
-                    </WalletModalProvider>
-                </FuelProviderWrapper>
+                    {children}
             </QueryClientProvider>
         </WagmiProvider >
     )
