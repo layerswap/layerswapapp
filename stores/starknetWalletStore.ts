@@ -39,37 +39,36 @@ export const useStarknetStore = create<StarknetStoreState>()(
                 }),
             removeAccount: (address) =>
                 set((state) => {
-                    const { [address.toLowerCase()]: _, ...updated } = state.starknetAccounts || {}
+                    const updated = Object.entries(state.starknetAccounts || {}).reduce(
+                        (acc, [key, value]) => {
+                            if (value.toLowerCase() !== address.toLowerCase()) {
+                                acc[key] = value
+                            }
+                            return acc
+                        },
+                        {} as StarknetAccountMap
+                    )
                     return { starknetAccounts: updated }
                 }),
-            connectWallet: (wallet) =>
-                set((state) => {
-                    const exists = state.connectedWallets.some(
-                        (w) =>
-                            w.providerName === wallet.providerName &&
-                            w.id === wallet.id &&
-                            w.address === wallet.address
-                    )
-                    if (exists) return state
-                    return { connectedWallets: [...state.connectedWallets, wallet] }
-                }),
+            connectWallet: (wallet) => set((state) => {
+                if (state.connectedWallets.find(w => w.providerName == wallet.providerName && w.id == wallet.id && w.address == wallet.address)) {
+                    return state
+                }
+                return ({
+                    connectedWallets: [
+                        ...state.connectedWallets,
+                        wallet
+                    ]
+                })
+            }),
             disconnectWallet: (providerName, connectorName) =>
-                set((state) => {
-                    const filteredWallets = state.connectedWallets.filter((w) =>
+                set((state) => ({
+                    connectedWallets: state.connectedWallets.filter((w) =>
                         connectorName
-                            ? !(w.providerName === providerName && w.id === connectorName)
+                            ? !(w.providerName === providerName && w?.id?.toLowerCase() === connectorName?.toLowerCase())
                             : w.providerName !== providerName
-                    );
-
-                    let updatedAccounts = { ...state.starknetAccounts };
-                    if (connectorName && updatedAccounts[connectorName]) {
-                        delete updatedAccounts[connectorName];
-                    }
-                    return {
-                        connectedWallets: filteredWallets,
-                        starknetAccounts: updatedAccounts,
-                    };
-                }),
+                    ),
+                })),
         }),
         {
             name: 'ls-starknet-accounts',
