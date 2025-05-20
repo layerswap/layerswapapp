@@ -54,13 +54,22 @@ export const useStarknetStore = create<StarknetStoreState>()(
                     return { connectedWallets: [...state.connectedWallets, wallet] }
                 }),
             disconnectWallet: (providerName, connectorName) =>
-                set((state) => ({
-                    connectedWallets: state.connectedWallets.filter((w) =>
+                set((state) => {
+                    const filteredWallets = state.connectedWallets.filter((w) =>
                         connectorName
                             ? !(w.providerName === providerName && w.id === connectorName)
                             : w.providerName !== providerName
-                    ),
-                })),
+                    );
+
+                    let updatedAccounts = { ...state.starknetAccounts };
+                    if (connectorName && updatedAccounts[connectorName]) {
+                        delete updatedAccounts[connectorName];
+                    }
+                    return {
+                        connectedWallets: filteredWallets,
+                        starknetAccounts: updatedAccounts,
+                    };
+                }),
         }),
         {
             name: 'ls-starknet-accounts',
