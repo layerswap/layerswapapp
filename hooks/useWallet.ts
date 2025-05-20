@@ -66,8 +66,8 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletPr
             } : undefined,
             availableWalletsForConnect: provider.availableWalletsForConnect?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name) : true)
         }
-        console.log(resolvedProvider)
         return resolvedProvider
+        
     }
 
     return provider
