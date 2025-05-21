@@ -14,13 +14,10 @@ import { useConnectModal } from "../../../components/WalletModal"
 import { explicitInjectedproviderDetected } from "../connectors/getInjectedConnector"
 import walletsData from "../../../public/walletsData.json"
 
-type Props = {
-    network: Network | undefined,
-}
 const ethereumNames = [KnownInternalNames.Networks.EthereumMainnet, KnownInternalNames.Networks.EthereumSepolia]
 const immutableZKEvm = [KnownInternalNames.Networks.ImmutableZkEVM]
 
-export default function useEVM({ network }: Props): WalletProvider {
+export default function useEVM(): WalletProvider {
     const name = 'EVM'
     const id = 'evm'
     const { networks } = useSettingsState()
@@ -51,16 +48,7 @@ export default function useEVM({ network }: Props): WalletProvider {
     const config = useConfig()
     const { connectAsync } = useConnect();
 
-    const { connect, setSelectedConnector } = useConnectModal()
-
-    const connectWallet = async () => {
-        try {
-            return await connect(provider)
-        }
-        catch (e) {
-            console.log(e)
-        }
-    }
+    const { setSelectedConnector } = useConnectModal()
 
     const disconnectWallet = async (connectorName: string) => {
 
@@ -86,8 +74,10 @@ export default function useEVM({ network }: Props): WalletProvider {
         }
     }
 
-    const connectConnector = async ({ connector }: { connector: InternalConnector & LSConnector }) => {
+    const connectWallet = async ({ connector: internalConnector }: { connector: InternalConnector }) => {
         try {
+            const connector = availableWalletsForConnect.find(w => w.id === internalConnector.id) as InternalConnector & LSConnector
+            if (!connector) throw new Error("Connector not found")
             const Icon = connector.icon || resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
             const base64Icon = typeof Icon == 'string' ? Icon : convertSvgComponentToBase64(Icon)
             setSelectedConnector({ ...connector, icon: base64Icon })
@@ -124,7 +114,6 @@ export default function useEVM({ network }: Props): WalletProvider {
                 connection,
                 discconnect: disconnectWallet,
                 networks,
-                network,
                 supportedNetworks: {
                     asSource: asSourceSupportedNetworks,
                     autofill: autofillSupportedNetworks,
@@ -160,7 +149,6 @@ export default function useEVM({ network }: Props): WalletProvider {
                 connection,
                 discconnect: disconnectWallet,
                 networks,
-                network,
                 supportedNetworks: {
                     asSource: asSourceSupportedNetworks,
                     autofill: autofillSupportedNetworks,
@@ -171,7 +159,7 @@ export default function useEVM({ network }: Props): WalletProvider {
 
             return wallet
         }).filter(w => w !== undefined) as Wallet[]
-    }, [activeAccount, activeConnectors, config, network])
+    }, [activeAccount, activeConnectors, config])
 
     const switchAccount = async (wallet: Wallet, address: string) => {
         const connector = getConnections(config).find(c => c.connector.name === wallet.id)?.connector
@@ -185,12 +173,12 @@ export default function useEVM({ network }: Props): WalletProvider {
 
 
     const activeBrowserWallet = explicitInjectedproviderDetected() && allConnectors.filter(c => c.id !== "com.immutable.passport" && c.type === "injected").length === 1
-    const filterConnectors = wallet => !isNotAvailable(wallet, network) && ((wallet.id === "injected" ? activeBrowserWallet : true))
+    const filterConnectors = wallet => ((wallet.id === "injected" ? activeBrowserWallet : true))
 
     const fetchedWallets = useMemo(() => Object.values(walletsData.listings), [])
 
     {/* //TODO: refactor ordering */ }
-    const availableWalletsForConnect = allConnectors.filter(filterConnectors)
+    const availableWalletsForConnect: InternalConnector[] = allConnectors.filter(filterConnectors)
         .map(w => {
             const isWalletConnectSupported = fetchedWallets.some(w2 => w2.name.toLowerCase().includes(w.name.toLowerCase()) && (w2.mobile.universal || w2.mobile.native || w2.desktop.native || w2.desktop.universal)) || w.name === "WalletConnect"
             return {
@@ -203,9 +191,9 @@ export default function useEVM({ network }: Props): WalletProvider {
 
     const provider = {
         connectWallet,
-        connectConnector,
         disconnectWallets,
         switchAccount,
+        isNotAvailableCondition: isNotAvailable,
         connectedWallets: resolvedConnectors,
         activeWallet: resolvedConnectors.find(w => w.isActive),
         autofillSupportedNetworks,
@@ -239,10 +227,10 @@ const getWalletConnectUri = async (
     );
 };
 
-const isNotAvailable = (connector: Connector | undefined, network: Network | undefined) => {
+const isNotAvailable = (connector: string | undefined, network: string | undefined) => {
     if (!network) return false
     if (!connector) return true
-    return resolveSupportedNetworks([network.name], connector.id).length === 0
+    return resolveSupportedNetworks([network], connector).length === 0
 }
 
 type ResolveWalletProps = {
@@ -252,12 +240,11 @@ type ResolveWalletProps = {
         connector: Connector;
     } | undefined,
     networks: NetworkWithTokens[],
-    network: Network | undefined,
     activeConnection: {
         id: string,
         address: string
     } | undefined,
-    discconnect: (connectorName: string | undefined) => Promise<void>,
+    discconnect: (connectorName: string) => Promise<void>,
     supportedNetworks: {
         asSource: string[],
         autofill: string[],
@@ -267,7 +254,7 @@ type ResolveWalletProps = {
 }
 
 const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
-    const { activeConnection, connection, networks, discconnect, network, supportedNetworks, providerName } = props
+    const { activeConnection, connection, networks, discconnect, supportedNetworks, providerName } = props
     const accountIsActive = activeConnection?.id === connection?.connector.id
 
     const addresses = connection?.accounts as (string[] | undefined);
@@ -282,6 +269,7 @@ const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
 
     const wallet: Wallet = {
         id: connector.name,
+        internalId: connector.id,
         isActive: accountIsActive,
         address,
         addresses: addresses || [address],
@@ -289,7 +277,6 @@ const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
         providerName,
         icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector), address, iconUrl: connector.icon }),
         disconnect: () => discconnect(connector.name),
-        isNotAvailable: isNotAvailable(connector, network),
         asSourceSupportedNetworks: resolveSupportedNetworks(supportedNetworks.asSource, connector.id),
         autofillSupportedNetworks: resolveSupportedNetworks(supportedNetworks.autofill, connector.id),
         withdrawalSupportedNetworks: resolveSupportedNetworks(supportedNetworks.withdrawal, connector.id),
@@ -347,7 +334,7 @@ async function attemptGetAccount(config, maxAttempts = 5) {
         await sleep(500);
     }
 
-    return await getAccount(config);
+    return getAccount(config);
 }
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));

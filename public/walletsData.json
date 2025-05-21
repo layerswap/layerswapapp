@@ -1,5 +1,5 @@
 {
-  "count": 528,
+  "count": 529,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -1995,6 +1995,66 @@
       ],
       "slug": "wigwam",
       "updatedAt": "2025-01-06T21:01:35.86632+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "0d0972488cb7fc332af5ac3be6b679a1699518ab4d0048d74cb9b4268ec0263a": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=app.banksocial.io&hl=en_US",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": null,
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "bip122:000000000019d6689c085ae165831e93",
+        "eip155:1",
+        "hedera:mainnet",
+        "polkadot:6fbd74e5e1d0a61d52ccfe9d4adaed16"
+      ],
+      "description": "Banksocial is a self-custody crypto and digital asset wallet and exchange to securely hold, buy, and stake digital assets and crypto.",
+      "desktop": {
+        "native": "",
+        "universal": null
+      },
+      "homepage": "https://www.banksocial.io/",
+      "id": "0d0972488cb7fc332af5ac3be6b679a1699518ab4d0048d74cb9b4268ec0263a",
+      "image_id": "159ae656-ae24-4717-f78f-f84eb2b2e700",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/159ae656-ae24-4717-f78f-f84eb2b2e700?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/159ae656-ae24-4717-f78f-f84eb2b2e700?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/159ae656-ae24-4717-f78f-f84eb2b2e700?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": "https://banksocial.app.link/download"
+      },
+      "name": "BankSocial ",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "banksocial",
+      "updatedAt": "2025-05-19T14:29:10.278706+00:00",
       "versions": [
         "1",
         "2"
@@ -9386,7 +9446,7 @@
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.elrond.maiar.wallet",
         "browser": null,
-        "chrome": null,
+        "chrome": "-",
         "edge": null,
         "firefox": null,
         "ios": "https://apps.apple.com/ro/app/xportal/id1519405832",
@@ -9401,6 +9461,10 @@
       "chains": [
         "eip155:1",
         "eip155:11155111",
+        "eip155:137",
+        "eip155:56",
+        "eip155:80094",
+        "eip155:8453",
         "mvx:1",
         "mvx:D",
         "mvx:T"
@@ -9412,11 +9476,11 @@
       },
       "homepage": "https://xportal.com",
       "id": "4119a5b3e5ebc809b6a3680a280ae517b92fead02e4c07b7cec0d3385c87aee2",
-      "image_id": "ad14e385-5452-457b-4b84-31e4d4c75f00",
+      "image_id": "1bc53e49-1e7f-4129-4c87-3f8c7b91cb00",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/ad14e385-5452-457b-4b84-31e4d4c75f00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/ad14e385-5452-457b-4b84-31e4d4c75f00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/ad14e385-5452-457b-4b84-31e4d4c75f00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/1bc53e49-1e7f-4129-4c87-3f8c7b91cb00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/1bc53e49-1e7f-4129-4c87-3f8c7b91cb00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/1bc53e49-1e7f-4129-4c87-3f8c7b91cb00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -12388,7 +12452,7 @@
     "519cf00a0517cc299a898d38f440197d171f6b438aa8e6d59fa73696dbe7817d": {
       "app": {
         "android": null,
-        "browser": "https://hub.n3mus.com/wallet",
+        "browser": "https://n3mus.ecosystem.thirdweb.com",
         "chrome": null,
         "edge": null,
         "firefox": null,
@@ -12407,9 +12471,9 @@
       "description": "N3MUS ID: A Web3 wallet that lets gamers seamlessly onboard, own, and use in-game assets across platforms with ease.",
       "desktop": {
         "native": "",
-        "universal": "https://hub.n3mus.com/wallet"
+        "universal": "https://n3mus.ecosystem.thirdweb.com"
       },
-      "homepage": "https://n3mus.ecosystem.thirdweb.com",
+      "homepage": "https://n3mus.com",
       "id": "519cf00a0517cc299a898d38f440197d171f6b438aa8e6d59fa73696dbe7817d",
       "image_id": "e0195490-4997-497a-8a97-751dd4e8a400",
       "image_url": {
@@ -15582,12 +15646,12 @@
     },
     "6880782cf8ff712bf8772b585960346290fd2499c1f1c51df9fe713d9d2e9384": {
       "app": {
-        "android": "https://appdistribution.firebase.dev/i/b8a79a0d8b6e9188",
+        "android": "https://appdistribution.firebase.dev/i/e7711e780547234e",
         "browser": null,
         "chrome": null,
         "edge": null,
         "firefox": null,
-        "ios": "https://testflight.apple.com/join/MgKJtgd4",
+        "ios": "https://testflight.apple.com/join/kdlGVGLo",
         "linux": null,
         "mac": null,
         "opera": null,
@@ -15621,8 +15685,8 @@
         "shortName": null
       },
       "mobile": {
-        "native": "rn-web3wallet://",
-        "universal": "https://appkit-lab.reown.com/rn_walletkit"
+        "native": "rn-web3wallet-internal://",
+        "universal": "https://appkit-lab.reown.com/rn_walletkit_internal"
       },
       "name": "React Native Sample Wallet",
       "rdns": null,
@@ -35536,5 +35600,5 @@
       ]
     }
   },
-  "total": 528
+  "total": 529
 }
