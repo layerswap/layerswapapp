@@ -41,7 +41,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
         });
         return connectedWallets;
     }, [walletProviders, starknetAccounts]);
-
+ 
     const getProvider = (network: Network, purpose: WalletPurpose) => {
         return network && resolveProvider(network, walletProviders, purpose)
     }

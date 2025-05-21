@@ -70,7 +70,8 @@ export default function useStarknet(): WalletProvider {
                     connector: starknetConnector,
                     network: starkent,
                     disconnectWallets: () => disconnectWallets(starknetConnector.id, result?.account),
-                    address: result?.account
+                    address: result?.account,
+                    withdrawalSupportedNetworks
                 });
 
                 addAccount(starknetConnector.id, result.account);
@@ -138,13 +139,15 @@ export async function resolveStarknetWallet({
     connector,
     network,
     disconnectWallets,
-    address
+    address,
+    withdrawalSupportedNetworks
 }: {
     name: string,
     connector: Connector;
     network: NetworkWithTokens | undefined;
     disconnectWallets: (connectorName?: string, address?: string) => Promise<void>;
-    address: string
+    address: string,
+    withdrawalSupportedNetworks?: string[]
 }): Promise<Wallet | null> {
     try {
         const walletChain = network?.chain_id;
@@ -168,6 +171,7 @@ export async function resolveStarknetWallet({
                 starknetAccount: walletAccount,
             },
             isActive: true,
+            withdrawalSupportedNetworks,
             disconnect: () => disconnectWallets(connector.name, account),
             networkIcon: starknetNames.includes(network?.name || '') ? network?.logo : undefined,
         };
