@@ -46,12 +46,14 @@ export const useStarknetStore = create<StarknetStoreState>()(
                         (w) => w.address.toLowerCase() !== address.toLowerCase()
                     );
 
-                    const isActiveRemoved = state.activeWalletAddress?.toLowerCase() === address.toLowerCase();
-
+                    let newActiveAddress: string | undefined = state.activeWalletAddress;
+                    if (state.activeWalletAddress?.toLowerCase() === address.toLowerCase()) {
+                        newActiveAddress = updatedWallets.length > 0 ? updatedWallets[0].address : undefined;
+                    }
                     return {
                         starknetAccounts: updatedAccounts,
                         connectedWallets: updatedWallets,
-                        activeWalletAddress: isActiveRemoved ? undefined : state.activeWalletAddress
+                        activeWalletAddress: newActiveAddress
                     };
                 }),
             connectWallet: (wallet) => set((state) => {
