@@ -14,6 +14,7 @@ import { useConfig } from "wagmi"
 import { switchChain, getChainId } from '@wagmi/core'
 import { useSettingsState } from "../../../context/settings"
 import shortenAddress from "../../../components/utils/ShortenAddress"
+import sleep from "../utils/sleep"
 
 export default function useParadex(): WalletProvider {
     const name = 'Paradex'
@@ -207,8 +208,4 @@ const resolveSingleWallet = (wallet: Wallet, name: string, accounts: { [key: str
         disconnect: () => disconnect(wallet.address),
         networkIcon
     }
-}
-
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
 }

@@ -13,11 +13,9 @@ import { argent } from '../../lib/wallets/connectors/argent';
 import { rainbow } from '../../lib/wallets/connectors/rainbow';
 import { metaMask } from '../../lib/wallets/connectors/metamask';
 import { coinbaseWallet, walletConnect } from '@wagmi/connectors'
-import { hasInjectedProvider } from '../../lib/wallets/connectors/getInjectedConnector';
 import { bitget } from '../../lib/wallets/connectors/bitget';
 import { isMobile } from '../../lib/isMobile';
 import { browserInjected } from "../../lib/wallets/connectors/browserInjected";
-import { useSyncProviders } from "../../lib/wallets/connectors/useSyncProviders";
 import { okxWallet } from "../../lib/wallets/connectors/okxWallet";
 
 type Props = {
@@ -33,8 +31,6 @@ const metaMask_inited = metaMask({ projectId: WALLETCONNECT_PROJECT_ID, showQrMo
 const rnbw_inited = rainbow({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'rainbow' })
 const btgt_inited = bitget({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'bitget' })
 const okx_inited = okxWallet({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'okxWallet' })
-
-
 
 function WagmiComponent({ children }: Props) {
     const settings = useSettingsState();
@@ -52,14 +48,6 @@ function WagmiComponent({ children }: Props) {
         transports[chain.id] = chain.rpcUrls.default.http[0] ? http(chain.rpcUrls.default.http[0]) : http()
     })
 
-    const isMetaMaskInjected = hasInjectedProvider({ flag: 'isMetaMask' });
-    const isOkxInjected = hasInjectedProvider({ flag: 'isOkxWallet' }) || hasInjectedProvider({ flag: 'isOKExWallet' });
-    const isRainbowInjected = hasInjectedProvider({ flag: 'isRainbow' });
-    const isBitKeepInjected = hasInjectedProvider({
-        namespace: 'bitkeep.ethereum',
-        flag: 'isBitKeep',
-    });
-
     const config = createConfig({
         connectors: [
             coinbaseWallet({
@@ -68,10 +56,10 @@ function WagmiComponent({ children }: Props) {
             }),
             wltcnnct_inited,
             argent_inited,
-            ...(!isMetaMaskInjected ? [metaMask_inited] : []),
-            ...(!isRainbowInjected ? [rnbw_inited] : []),
-            ...(!isBitKeepInjected ? [btgt_inited] : []),
-            ...(!isOkxInjected ? [okx_inited] : []),
+            metaMask_inited,
+            rnbw_inited,
+            btgt_inited,
+            okx_inited,
             browserInjected()
         ],
         chains: settingsChains as [Chain, ...Chain[]],
