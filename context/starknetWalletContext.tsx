@@ -37,18 +37,24 @@ export const StarknetWalletProvider = ({ children }: { children: ReactNode }) =>
                     n.name === KnownInternalNames.Networks.StarkNetMainnet ||
                     n.name === KnownInternalNames.Networks.StarkNetSepolia
             );
-            
-            for (const connector of connectors) {
-                const wallet = await resolveStarknetWallet({
-                    name,
-                    connector,
-                    network: starknetNetwork,
-                    disconnectWallets: () => disconnectWallets(connector.name, starknetAccounts[connector.id]),
-                    address: starknetAccounts[connector.id]
-                });
 
-                if (wallet && wallet.address && starknetAccounts[connector.id]) {
-                    addWallet(wallet);
+            for (const connector of connectors) {
+                const address = starknetAccounts[connector.id]
+                if (address) {
+                    const wallet = await resolveStarknetWallet({
+                        name,
+                        connector,
+                        network: starknetNetwork,
+                        disconnectWallets: () => disconnectWallets(connector.name, address),
+                        address
+                    });
+
+                    if (wallet?.address) {
+                        addWallet(wallet);
+                    }
+                    else {
+                        removeAccount(address)
+                    }
                 }
             }
         };

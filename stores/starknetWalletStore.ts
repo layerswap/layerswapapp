@@ -8,8 +8,6 @@ interface StarknetStoreState {
     connectedWallets: Wallet[]
     connectWallet: (wallet: Wallet) => void
     disconnectWallet: (providerName: string, connectorName?: string) => void
-    selectedProvider?: string
-    selectProvider: (providerName: string) => void
     starknetAccounts?: StarknetAccountMap
     addAccount: (connectorId: string, l1Address: string, isActive?: boolean) => void;
     removeAccount: (address: string) => void
@@ -22,7 +20,6 @@ export const useStarknetStore = create<StarknetStoreState>()(
         (set) => ({
             connectedWallets: [],
             setActiveWallet: (address) => set({ activeWalletAddress: address }),
-            selectProvider: (providerName) => set({ selectedProvider: providerName }),
             addAccount: (connectorId, l1Address, isActive = false) =>
                 set((state) => {
                     const updatedAccounts = {
@@ -48,6 +45,7 @@ export const useStarknetStore = create<StarknetStoreState>()(
                         },
                         {} as StarknetAccountMap
                     )
+
                     return { starknetAccounts: updated }
                 }),
             connectWallet: (wallet) => set((state) => {
