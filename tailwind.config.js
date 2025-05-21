@@ -17,21 +17,22 @@ module.exports = {
         "./pages/**/*.{js,ts,jsx,tsx}",
         "./components/**/*.{js,ts,jsx,tsx}",
         "../../packages/**/*{.js,.ts,.jsx,.tsx}",
+        "../../examples/**/*{.js,.ts,.jsx,.tsx}",
         "../../apps/**/*{.js,.ts,.jsx,.tsx}",
         "!../../**/node_modules/**/*.{html,js}",
         "!./node_modules/**/*.{js,ts,jsx,tsx}",
     ],
     darkMode: 'media',
     theme: {
-        borderRadius: {
-            none: '0',
-            sm: 'var(--ls-border-radius-sm, 0.5rem)',
-            DEFAULT: 'var(--ls-border-radius-default, 0.25rem)',
-            md: 'var(--ls-border-radius-md, 1rem)',
-            lg: 'var(--ls-border-radius-lg, 1.5rem)',
-            xl: 'var(--ls-border-radius-xl, 2rem)',
-            full: 'var(--ls-border-radius-full, 9999px)',
-        },
+        // borderRadius: {
+        //     none: '0',
+        //     sm: 'var(--ls-border-radius-sm, 0.5rem)',
+        //     DEFAULT: 'var(--ls-border-radius-default, 0.25rem)',
+        //     md: 'var(--ls-border-radius-md, 1rem)',
+        //     lg: 'var(--ls-border-radius-lg, 1.5rem)',
+        //     xl: 'var(--ls-border-radius-xl, 2rem)',
+        //     full: 'var(--ls-border-radius-full, 9999px)',
+        // },
         extend: {
             colors: {
                 coinbase: { primary: '#4a6cee', diabled: '#192445' },
