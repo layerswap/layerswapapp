@@ -61,17 +61,9 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     } = useFormikContext<SwapFormValues>();
     const name = direction
 
-    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, destination_address, currencyGroup } = values
+    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, currencyGroup } = values
     const query = useQueryState()
     const { lockFrom, lockTo } = query
-
-    const sourceWalletNetwork = fromExchange ? undefined : values.from
-    const destinationWalletNetwork = toExchange ? undefined : values.to
-
-    const { provider: withdrawalProvider } = useWallet(sourceWalletNetwork, 'withdrawal')
-    const { provider: autofilProvider } = useWallet(destinationWalletNetwork, 'autofil')
-
-    const availableWallets = withdrawalProvider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
 
     const { sourceExchanges, destinationExchanges, destinationRoutes, sourceRoutes } = useSettingsState();
     let placeholder = "";

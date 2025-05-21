@@ -2,9 +2,8 @@ import { clusterApiUrl } from "@solana/web3.js";
 import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
 import { WalletConnectWalletAdapter } from "@solana/wallet-adapter-walletconnect";
-import { SolflareWalletAdapter } from "@solana/wallet-adapter-solflare";
 import { GlowWalletAdapter } from "@solana/wallet-adapter-glow";
-import { NightlyWalletAdapter } from '@solana/wallet-adapter-wallets';
+import { NightlyWalletAdapter } from "@solana/wallet-adapter-nightly";
 import {
     ConnectionProvider,
     WalletProvider,
@@ -21,7 +20,6 @@ function SolanaProvider({ children }: { children: ReactNode }) {
         () => [
             new PhantomWalletAdapter(),
             new CoinbaseWalletAdapter(),
-            new SolflareWalletAdapter(),
             new GlowWalletAdapter(),
             new NightlyWalletAdapter(),
             new WalletConnectWalletAdapter({
@@ -42,7 +40,7 @@ function SolanaProvider({ children }: { children: ReactNode }) {
 
     return (
         <ConnectionProvider endpoint={endpoint}>
-            <WalletProvider wallets={wallets} autoConnect={true}>
+            <WalletProvider wallets={wallets} autoConnect={false}>
                 {children}
             </WalletProvider>
         </ConnectionProvider>

@@ -4,7 +4,6 @@ import KnownInternalNames from "../../knownIds"
 import IMX from "../../../components/icons/Wallets/IMX"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useSettingsState } from "../../../context/settings"
-import { useConnectModal } from "../../../components/WalletModal"
 
 export default function useImtblX(): WalletProvider {
     const withdrawalSupportedNetworks = [
@@ -21,7 +20,6 @@ export default function useImtblX(): WalletProvider {
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
     const wallet = wallets.find(wallet => wallet.providerName === id)
-    const { connect } = useConnectModal()
 
     const getWallet = () => {
         if (wallet) {
@@ -30,7 +28,7 @@ export default function useImtblX(): WalletProvider {
         return undefined
     }
 
-    const connectConnector = async () => {
+    const connectWallet = async () => {
         const isMainnet = networks?.some(network => network.name === KnownInternalNames.Networks.ImmutableXMainnet)
         const chain = (isMainnet ? KnownInternalNames.Networks.ImmutableXMainnet : KnownInternalNames.Networks.ImmutableXGoerli)
 
@@ -63,15 +61,6 @@ export default function useImtblX(): WalletProvider {
         }
     }
 
-    const connectWallet = async () => {
-        try {
-            return await connect(provider)
-        }
-        catch (e) {
-            console.log(e)
-        }
-    }
-
     const disconnectWallet = () => {
         return removeWallet(id)
     }
@@ -87,7 +76,6 @@ export default function useImtblX(): WalletProvider {
         connectedWallets: getWallet(),
         activeWallet: wallet,
         connectWallet,
-        connectConnector,
         disconnectWallets: disconnectWallet,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks: withdrawalSupportedNetworks,
