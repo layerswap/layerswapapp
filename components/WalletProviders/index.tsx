@@ -9,7 +9,6 @@ import TronProvider from "./TronProvider";
 import { WalletProvidersProvider } from "../../context/walletProviders";
 import { WalletModalProvider } from "../WalletModal";
 import FuelProviderWrapper from "./FuelProvider";
-import { StarknetWalletProvider } from "../../context/starknetWalletContext";
 
 const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], basePath: string, themeData: ThemeData, appName: string | undefined }> = ({ children, basePath, themeData, appName }) => {
     return (
@@ -17,19 +16,17 @@ const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], basePath: st
             <SolanaProvider>
                 <TronProvider>
                     <StarknetProvider>
-                        <StarknetWalletProvider>
-                            <Wagmi>
-                                <FuelProviderWrapper>
-                                    <ImtblPassportProvider>
-                                        <WalletModalProvider>
-                                            <WalletProvidersProvider>
-                                                {children}
-                                            </WalletProvidersProvider>
-                                        </WalletModalProvider>
-                                    </ImtblPassportProvider>
-                                </FuelProviderWrapper>
-                            </Wagmi>
-                        </StarknetWalletProvider>
+                        <Wagmi>
+                            <FuelProviderWrapper>
+                                <ImtblPassportProvider>
+                                    <WalletModalProvider>
+                                        <WalletProvidersProvider>
+                                            {children}
+                                        </WalletProvidersProvider>
+                                    </WalletModalProvider>
+                                </ImtblPassportProvider>
+                            </FuelProviderWrapper>
+                        </Wagmi>
                     </StarknetProvider>
                 </TronProvider>
             </SolanaProvider>
