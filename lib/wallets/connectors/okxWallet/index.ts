@@ -75,9 +75,7 @@ export type WalletConnectParameters = Compute<
 >
 
 export function okxWallet(parameters: WalletConnectParameters & { providers?: any[] }) {
-    const isOkxInjected = parameters?.providers?.some((provider) => provider.info.name.toLowerCase() === 'okx wallet');
-    const shouldUseWalletConnect = !isOkxInjected;
-    return shouldUseWalletConnect ? walletConnect(parameters) : getInjectedConnector({ flag: 'isOkxWallet' })({ id: 'okxWallet', name: 'OKX Wallet' });
+    return walletConnect(parameters);
 }
 
 walletConnect.type = 'okxWallet' as const
@@ -116,9 +114,9 @@ export function walletConnect(parameters: WalletConnectParameters) {
 
     return createConnector<Provider, Properties, StorageItem>((config) => {
         return ({
-            id: 'okxWallet',
+            id: 'com.okex.wallet',
             name: 'OKX Wallet',
-            rdns: 'com.okex.wallet',
+            rdns: 'com.okex.wallet.wc',
             deepLink: 'okex://main/wc',
             resolveURI: (uri: string) => {
                 return isAndroid()
