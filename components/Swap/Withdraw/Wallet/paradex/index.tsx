@@ -5,7 +5,7 @@ import { useSettingsState } from '../../../../../context/settings';
 import KnownInternalNames from '../../../../../lib/knownIds';
 import Evm from './Evm';
 import Starknet from './Starknet';
-import { useWalletStore } from '../../../../../stores/walletStore';
+import { useWalletStore } from '../../../../../stores/paradexWalletStore';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../../context/swap';
 import { Wallet } from '../../../../../Models/WalletProvider';
 import SubmitButton from '../../../../buttons/submitButton';

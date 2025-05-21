@@ -1,6 +1,9 @@
 import { Network } from "../Models/Network"
 import { Wallet, WalletProvider } from "../Models/WalletProvider";
 import { useMemo } from "react";
+import useParadex from "../lib/wallets/paradex/useParadex";
+import { useSettingsState } from "../context/settings";
+import { useStarknetStore } from "../stores/starknetWalletStore";
 import { useWalletProviders } from "../context/walletProviders";
 
 export type WalletPurpose = "autofil" | "withdrawal" | "asSource"
@@ -9,10 +12,13 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
     const walletProviders = useWalletProviders()
 
     const provider = network && resolveProvider(network, walletProviders, purpose)
+    const starknetAccounts = useStarknetStore((state) => state.starknetAccounts) || {};
 
     const wallets = useMemo(() => {
         let connectedWallets: Wallet[] = [];
         walletProviders.forEach((provider) => {
+            if (provider.id === 'starknet' && !Object.keys(starknetAccounts).length) return;
+
             const w = provider.connectedWallets?.map(wallet => {
                 return {
                     ...wallet,
@@ -67,7 +73,7 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletPr
             availableWalletsForConnect: provider.availableWalletsForConnect?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name) : true)
         }
         return resolvedProvider
-        
+
     }
 
     return provider

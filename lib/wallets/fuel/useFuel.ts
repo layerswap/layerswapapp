@@ -15,7 +15,7 @@ import { BAKO_STATE } from "./Basko";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { useEffect, useMemo } from "react";
-import { useWalletStore } from "../../../stores/walletStore";
+import { useWalletStore } from "../../../stores/paradexWalletStore";
 import { useSettingsState } from "../../../context/settings";
 
 export default function useFuel(): WalletProvider {
