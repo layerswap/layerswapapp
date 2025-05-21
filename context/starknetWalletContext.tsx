@@ -15,14 +15,12 @@ export const StarknetWalletProvider = ({ children }: { children: ReactNode }) =>
     const name = 'Starknet'
 
     const addWallet = useStarknetStore((state) => state.connectWallet)
-    const removeWallet = useStarknetStore((state) => state.disconnectWallet)
     const removeAccount = useStarknetStore((state) => state.removeAccount)
     const starknetAccounts = useStarknetStore((state) => state.starknetAccounts) || {};
 
     const disconnectWallets = async (connectorName?: string, address?: string) => {
         try {
             await disconnectAsync()
-            removeWallet(name, connectorName)
             if (address) removeAccount(address)
         }
         catch (e) {

@@ -28,7 +28,6 @@ export default function useStarknet(): WalletProvider {
 
     const starknetWallets = useStarknetStore((state) => state.connectedWallets)
     const addWallet = useStarknetStore((state) => state.connectWallet)
-    const removeWallet = useStarknetStore((state) => state.disconnectWallet)
     const removeAccount = useStarknetStore((state) => state.removeAccount)
     const addAccount = useStarknetStore((state) => state.addAccount)
 
@@ -92,7 +91,6 @@ export default function useStarknet(): WalletProvider {
     const disconnectWallets = async (connectorName?: string, address?: string) => {
         try {
             await disconnectAsync()
-            removeWallet(name, connectorName)
             if (address) removeAccount(address)
         }
         catch (e) {

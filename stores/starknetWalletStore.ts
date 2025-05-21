@@ -7,9 +7,8 @@ type StarknetAccountMap = { [key: string]: string }
 interface StarknetStoreState {
     connectedWallets: Wallet[]
     connectWallet: (wallet: Wallet) => void
-    disconnectWallet: (providerName: string, connectorName?: string) => void
     starknetAccounts?: StarknetAccountMap
-    addAccount: (connectorId: string, l1Address: string, isActive?: boolean) => void;
+    addAccount: (connectorId: string, l1Address: string) => void;
     removeAccount: (address: string) => void
     activeWalletAddress?: string;
     setActiveWallet: (address: string) => void;
@@ -20,7 +19,7 @@ export const useStarknetStore = create<StarknetStoreState>()(
         (set) => ({
             connectedWallets: [],
             setActiveWallet: (address) => set({ activeWalletAddress: address }),
-            addAccount: (connectorId, l1Address, isActive = false) =>
+            addAccount: (connectorId, l1Address) =>
                 set((state) => {
                     const updatedAccounts = {
                         ...state.starknetAccounts,
@@ -29,24 +28,31 @@ export const useStarknetStore = create<StarknetStoreState>()(
                     const updatedState: Partial<StarknetStoreState> = {
                         starknetAccounts: updatedAccounts,
                     };
-                    if (isActive) {
-                        updatedState.activeWalletAddress = l1Address;
-                    }
                     return updatedState;
                 }),
             removeAccount: (address) =>
                 set((state) => {
-                    const updated = Object.entries(state.starknetAccounts || {}).reduce(
+                    const updatedAccounts = Object.entries(state.starknetAccounts || {}).reduce(
                         (acc, [key, value]) => {
                             if (value.toLowerCase() !== address.toLowerCase()) {
-                                acc[key] = value
+                                acc[key] = value;
                             }
-                            return acc
+                            return acc;
                         },
-                        {} as StarknetAccountMap
-                    )
+                        {}
+                    );
 
-                    return { starknetAccounts: updated }
+                    const updatedWallets = state.connectedWallets.filter(
+                        (w) => w.address.toLowerCase() !== address.toLowerCase()
+                    );
+
+                    const isActiveRemoved = state.activeWalletAddress?.toLowerCase() === address.toLowerCase();
+
+                    return {
+                        starknetAccounts: updatedAccounts,
+                        connectedWallets: updatedWallets,
+                        activeWalletAddress: isActiveRemoved ? undefined : state.activeWalletAddress
+                    };
                 }),
             connectWallet: (wallet) => set((state) => {
                 if (state.connectedWallets.find(w => w.providerName == wallet.providerName && w.id == wallet.id && w.address == wallet.address)) {
@@ -58,15 +64,7 @@ export const useStarknetStore = create<StarknetStoreState>()(
                         wallet
                     ]
                 })
-            }),
-            disconnectWallet: (providerName, connectorName) =>
-                set((state) => ({
-                    connectedWallets: state.connectedWallets.filter((w) =>
-                        connectorName
-                            ? !(w.providerName === providerName && w?.id?.toLowerCase() === connectorName?.toLowerCase())
-                            : w.providerName !== providerName
-                    ),
-                })),
+            })
         }),
         {
             name: 'ls-starknet-accounts',
