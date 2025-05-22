@@ -114,7 +114,7 @@ export function walletConnect(parameters: WalletConnectParameters) {
 
   return createConnector<Provider, Properties, StorageItem>((config) => {
     return ({
-      id: 'rainbow',
+      id: 'me.rainbow',
       name: 'Rainbow',
       rdns: 'rainbow.wc',
       deepLink: 'rainbow://wc',
