@@ -128,12 +128,12 @@ export default function Layout({ children, settings, themeData }: Props) {
       themeData &&
       <ColorSchema themeData={themeData} />
     }
-    <QueryProvider query={query}>
-      <SettingsProvider data={appSettings}>
-        <WalletsProviders basePath={basePath} themeData={themeData} appName={router.query.appName?.toString()}>
-          <AuthProvider>
-            <TooltipProvider delayDuration={500}>
-              <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
+    <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
+      <TooltipProvider delayDuration={500}>
+        <QueryProvider query={query}>
+          <SettingsProvider data={appSettings}>
+            <WalletsProviders basePath={basePath} themeData={themeData} appName={router.query.appName?.toString()}>
+              <AuthProvider>
                 <ThemeWrapper>
                   <AsyncModalProvider>
                     {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
@@ -141,11 +141,11 @@ export default function Layout({ children, settings, themeData }: Props) {
                       : children}
                   </AsyncModalProvider>
                 </ThemeWrapper>
-              </ErrorBoundary>
-            </TooltipProvider>
-          </AuthProvider>
-        </WalletsProviders>
-      </SettingsProvider >
-    </QueryProvider >
+              </AuthProvider>
+            </WalletsProviders>
+          </SettingsProvider >
+        </QueryProvider >
+      </TooltipProvider>
+    </ErrorBoundary>
   </>)
 }
