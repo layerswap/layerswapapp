@@ -5494,7 +5494,7 @@
       "app": {
         "android": "https://t.me/BitgetWallet_TGBot/BGW",
         "browser": "https://mini-app.bitkeep.com/",
-        "chrome": null,
+        "chrome": "https://t.me/BitgetWallet_TGBot/BGW",
         "edge": null,
         "firefox": null,
         "ios": "https://t.me/BitgetWallet_TGBot/BGW",
@@ -8652,11 +8652,11 @@
       },
       "homepage": "https://web3.bitget.com",
       "id": "38f5d18bd8522c244bdd70cb4a68e0e718865155811c043f052fb9f1c51de662",
-      "image_id": "68e8063a-ff69-4941-3b40-af09e2fcd700",
+      "image_id": "2b569b7f-e6c6-4faa-8e5a-ecd4dec8cf00",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/68e8063a-ff69-4941-3b40-af09e2fcd700?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/68e8063a-ff69-4941-3b40-af09e2fcd700?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/68e8063a-ff69-4941-3b40-af09e2fcd700?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/2b569b7f-e6c6-4faa-8e5a-ecd4dec8cf00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/2b569b7f-e6c6-4faa-8e5a-ecd4dec8cf00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/2b569b7f-e6c6-4faa-8e5a-ecd4dec8cf00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": [
         {
@@ -21007,7 +21007,7 @@
     "9414d5a85c8f4eabc1b5b15ebe0cd399e1a2a9d35643ab0ad22a6e4a32f596f0": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.zengo.wallet",
-        "browser": null,
+        "browser": "https://web.zengo.com/",
         "chrome": null,
         "edge": null,
         "firefox": null,
@@ -21022,12 +21022,17 @@
       "category": "MPC-based wallets",
       "chains": [
         "eip155:1",
-        "eip155:137"
+        "eip155:10",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:56",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
-      "description": "Web3, DeFi and Dapp wallet",
+      "description": "The leading self-custodial wallet with no seed phrase vulnerability",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": "https://web.zengo.com/"
       },
       "homepage": "https://zengo.com/",
       "id": "9414d5a85c8f4eabc1b5b15ebe0cd399e1a2a9d35643ab0ad22a6e4a32f596f0",
