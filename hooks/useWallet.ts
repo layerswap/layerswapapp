@@ -40,14 +40,16 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletPr
     if (!purpose || !network) return
 
     let provider: WalletProvider | undefined = undefined
-
     switch (purpose) {
         case "withdrawal":
             provider = walletProviders.find(provider => provider.withdrawalSupportedNetworks?.includes(network.name))
+            break;
         case "autofil":
             provider = walletProviders.find(provider => provider.autofillSupportedNetworks?.includes(network.name))
+            break;
         case "asSource":
             provider = walletProviders.find(provider => provider.asSourceSupportedNetworks?.includes(network.name))
+            break;
     }
 
     if (provider?.isNotAvailableCondition) {
@@ -67,7 +69,7 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletPr
             availableWalletsForConnect: provider.availableWalletsForConnect?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name) : true)
         }
         return resolvedProvider
-        
+
     }
 
     return provider
