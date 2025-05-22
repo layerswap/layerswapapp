@@ -5,17 +5,8 @@ import SubmitButton, { SubmitButtonProps } from "../../../../buttons/submitButto
 import { useSwapDataState } from "../../../../../context/swap";
 import { ActionData } from "../WalletTransfer/sharedTypes";
 import ManualTransferNote from "../WalletTransfer/manualTransferNote";
-import { NetworkWithTokens } from "../../../../../Models/Network";
 import WalletMessage from "../../messages/Message";
-
-type ConnectProps = {
-    network: NetworkWithTokens | undefined,
-    text: string,
-    icon: React.ReactNode,
-    onClick?: () => void,
-    secondary: boolean,
-    onConnect?: () => void
-}
+import { SendTransactionButton } from "../WalletTransfer/buttons";
 
 export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = ({ data, network }) => {
     if (data.isPending) {
@@ -54,15 +45,11 @@ export const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ 
         }
         {
             !isPending &&
-            <ButtonWrapper
+            <SendTransactionButton
                 onClick={clickHandler}
                 icon={<WalletIcon className="stroke-2 w-6 h-6" />}
-            >
-                {
-                    error ? <span>Try again</span>
-                        : <span>Send from wallet</span>
-                }
-            </ButtonWrapper>
+                error={!!error}
+            />
         }
     </>
 }
