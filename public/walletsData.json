@@ -1,5 +1,5 @@
 {
-  "count": 529,
+  "count": 528,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -5494,7 +5494,7 @@
       "app": {
         "android": "https://t.me/BitgetWallet_TGBot/BGW",
         "browser": "https://mini-app.bitkeep.com/",
-        "chrome": null,
+        "chrome": "https://t.me/BitgetWallet_TGBot/BGW",
         "edge": null,
         "firefox": null,
         "ios": "https://t.me/BitgetWallet_TGBot/BGW",
@@ -8304,6 +8304,7 @@
         "bip122:000000000933ea01ad0ee984209779ba",
         "eip155:1",
         "eip155:10",
+        "eip155:114",
         "eip155:137",
         "eip155:14",
         "eip155:16",
@@ -8320,18 +8321,18 @@
         "xrpl:0",
         "xrpl:1"
       ],
-      "description": "A multi-chain wallet for decentralized finance and NFTs on Songbird, Flare, Ethereum and beyond.",
+      "description": "A multi-chain wallet for Flare, XRP, Dogecoin, Bitcoin and beyond.",
       "desktop": {
         "native": "",
         "universal": null
       },
       "homepage": "https://bifrostwallet.com",
       "id": "37a686ab6223cd42e2886ed6e5477fce100a4fb565dcd57ed4f81f7c12e93053",
-      "image_id": "86be07e2-6652-4fd1-5f33-651682c95400",
+      "image_id": "27c999c6-3492-4161-bbb8-1b75bdb97500",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/86be07e2-6652-4fd1-5f33-651682c95400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/86be07e2-6652-4fd1-5f33-651682c95400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/86be07e2-6652-4fd1-5f33-651682c95400?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/27c999c6-3492-4161-bbb8-1b75bdb97500?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/27c999c6-3492-4161-bbb8-1b75bdb97500?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/27c999c6-3492-4161-bbb8-1b75bdb97500?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -8651,11 +8652,11 @@
       },
       "homepage": "https://web3.bitget.com",
       "id": "38f5d18bd8522c244bdd70cb4a68e0e718865155811c043f052fb9f1c51de662",
-      "image_id": "68e8063a-ff69-4941-3b40-af09e2fcd700",
+      "image_id": "2b569b7f-e6c6-4faa-8e5a-ecd4dec8cf00",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/68e8063a-ff69-4941-3b40-af09e2fcd700?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/68e8063a-ff69-4941-3b40-af09e2fcd700?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/68e8063a-ff69-4941-3b40-af09e2fcd700?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/2b569b7f-e6c6-4faa-8e5a-ecd4dec8cf00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/2b569b7f-e6c6-4faa-8e5a-ecd4dec8cf00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/2b569b7f-e6c6-4faa-8e5a-ecd4dec8cf00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": [
         {
@@ -13775,6 +13776,10 @@
       "chains": [
         "eip155:1",
         "eip155:11155111",
+        "eip155:56",
+        "eip155:8453",
+        "eip155:84532",
+        "eip155:97",
         "solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
         "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
@@ -15513,71 +15518,6 @@
       ],
       "slug": "mirai-app",
       "updatedAt": "2023-12-04T15:12:42.227237+00:00",
-      "versions": [
-        "1",
-        "2"
-      ]
-    },
-    "67f1ec404dbf3bddc509b5fcf615850e05b28c287ccd7167b4fe81b4293ac9df": {
-      "app": {
-        "android": "https://www.kucoin.com/download",
-        "browser": "https://www.kucoin.com",
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
-        "ios": "https://www.kucoin.com/download",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
-      },
-      "app_type": "wallet",
-      "category": null,
-      "chains": [
-        "eip155:1",
-        "eip155:10",
-        "eip155:137",
-        "eip155:321",
-        "eip155:42161",
-        "eip155:43114",
-        "eip155:56",
-        "eip155:8453",
-        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
-      ],
-      "description": "Find the Next Crypto Gem",
-      "desktop": {
-        "native": "",
-        "universal": null
-      },
-      "homepage": "https://www.kucoin.com",
-      "id": "67f1ec404dbf3bddc509b5fcf615850e05b28c287ccd7167b4fe81b4293ac9df",
-      "image_id": "70d8a90b-457b-4c04-4bc3-791e97caab00",
-      "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/70d8a90b-457b-4c04-4bc3-791e97caab00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/70d8a90b-457b-4c04-4bc3-791e97caab00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/70d8a90b-457b-4c04-4bc3-791e97caab00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
-      },
-      "injected": null,
-      "metadata": {
-        "colors": {
-          "primary": null,
-          "secondary": null
-        },
-        "shortName": null
-      },
-      "mobile": {
-        "native": "kucoin:///wallet/walletConnect",
-        "universal": null
-      },
-      "name": "KuCoin Web3 Wallet",
-      "rdns": null,
-      "sdks": [
-        "sign_v1",
-        "sign_v2"
-      ],
-      "slug": "kucoin-web3-wallet",
-      "updatedAt": "2025-02-27T20:13:00.702464+00:00",
       "versions": [
         "1",
         "2"
@@ -21067,7 +21007,7 @@
     "9414d5a85c8f4eabc1b5b15ebe0cd399e1a2a9d35643ab0ad22a6e4a32f596f0": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.zengo.wallet",
-        "browser": null,
+        "browser": "https://web.zengo.com/",
         "chrome": null,
         "edge": null,
         "firefox": null,
@@ -21082,12 +21022,17 @@
       "category": "MPC-based wallets",
       "chains": [
         "eip155:1",
-        "eip155:137"
+        "eip155:10",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:56",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
-      "description": "Web3, DeFi and Dapp wallet",
+      "description": "The leading self-custodial wallet with no seed phrase vulnerability",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": "https://web.zengo.com/"
       },
       "homepage": "https://zengo.com/",
       "id": "9414d5a85c8f4eabc1b5b15ebe0cd399e1a2a9d35643ab0ad22a6e4a32f596f0",
@@ -22885,7 +22830,8 @@
         "eip155:50",
         "eip155:56",
         "eip155:66",
-        "eip155:8217"
+        "eip155:8217",
+        "eip155:8453"
       ],
       "description": "The most advanced cryptocurrency wallet",
       "desktop": {
@@ -35600,5 +35546,5 @@
       ]
     }
   },
-  "total": 529
+  "total": 528
 }

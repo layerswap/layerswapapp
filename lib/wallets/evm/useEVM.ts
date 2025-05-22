@@ -1,5 +1,5 @@
 import { useAccount, useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
-import { Network, NetworkType, NetworkWithTokens } from "../../../Models/Network"
+import { NetworkType, NetworkWithTokens } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
