@@ -8,7 +8,7 @@ export type WalletPurpose = "autofil" | "withdrawal" | "asSource"
 export default function useWallet(network?: Network | undefined, purpose?: WalletPurpose) {
     const walletProviders = useWalletProviders()
 
-    const provider = network && resolveProvider(network, walletProviders, purpose)
+    const provider = useMemo(() => network && resolveProvider(network, walletProviders, purpose), [network, purpose, walletProviders])
 
     const wallets = useMemo(() => {
         let connectedWallets: Wallet[] = [];

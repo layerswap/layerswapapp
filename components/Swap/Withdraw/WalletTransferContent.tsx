@@ -32,22 +32,14 @@ const WalletTransferContent: FC = () => {
 
     const selectedWallet = selectedSourceAccount?.wallet
     const activeWallet = provider?.activeWallet
-
+    
     useEffect(() => {
         if (!selectedSourceAccount && activeWallet) {
             setSelectedSourceAccount({
                 wallet: activeWallet,
                 address: activeWallet.address
             })
-        } else if (selectedSourceAccount && activeWallet && !activeWallet.addresses.some(a => a.toLowerCase() === selectedSourceAccount.address.toLowerCase())) {
-            const selectedWalletIsConnected = availableWallets?.some(w => w.addresses.some(a => a.toLowerCase() === selectedSourceAccount.address.toLowerCase()))
-            if (selectedWalletIsConnected) {
-                provider.switchAccount && provider.switchAccount(selectedSourceAccount.wallet, selectedSourceAccount.address)
-            }
-            else {
-                setSelectedSourceAccount(undefined)
-            }
-        }
+        } 
     }, [activeWallet?.address, setSelectedSourceAccount, provider, selectedSourceAccount?.address])
 
     const { balance, isBalanceLoading } = useSWRBalance(selectedSourceAccount?.address, source_network)
