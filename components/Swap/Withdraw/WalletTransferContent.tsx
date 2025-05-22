@@ -20,6 +20,7 @@ const WalletTransferContent: FC = () => {
     const { source_token, source_network: swap_source_network } = swap || {}
     const source_network = swap_source_network && networks.find(n => n.name === swap_source_network?.name)
     const { provider } = useWallet(source_network, 'withdrawal')
+    const availableWallets = provider?.connectedWallets?.filter(c => !c.isNotAvailable) || []
 
     const [openModal, setOpenModal] = useState(false)
 
@@ -39,7 +40,7 @@ const WalletTransferContent: FC = () => {
                 address: activeWallet.address
             })
         } else if (selectedSourceAccount && activeWallet && !activeWallet.addresses.some(a => a.toLowerCase() === selectedSourceAccount.address.toLowerCase())) {
-            const selectedWalletIsConnected = provider.connectedWallets?.some(w => w.addresses.some(a => a.toLowerCase() === selectedSourceAccount.address.toLowerCase()))
+            const selectedWalletIsConnected = availableWallets?.some(w => w.addresses.some(a => a.toLowerCase() === selectedSourceAccount.address.toLowerCase()))
             if (selectedWalletIsConnected) {
                 provider.switchAccount && provider.switchAccount(selectedSourceAccount.wallet, selectedSourceAccount.address)
             }
@@ -90,7 +91,7 @@ const WalletTransferContent: FC = () => {
             source_network &&
             source_token &&
             provider &&
-            provider.connectedWallets &&
+            availableWallets &&
             <VaulDrawer
                 show={openModal}
                 setShow={setOpenModal}
@@ -103,7 +104,7 @@ const WalletTransferContent: FC = () => {
                         token={source_token}
                         onSelect={changeWallet}
                         selectable
-                        wallets={provider.connectedWallets}
+                        wallets={availableWallets}
                         provider={provider}
                     />
                 </VaulDrawer.Snap>
