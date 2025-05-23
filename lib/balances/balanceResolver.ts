@@ -1,4 +1,5 @@
 import { NetworkWithTokens } from "../../Models/Network";
+import { BitcoinBalanceProvider } from "./providers/bitcoinBalanceResolver";
 import { EVMBalanceProvider } from "./providers/evmBalanceProvider";
 import { FuelBalanceProvider } from "./providers/fuelBalanceProvider";
 import { ImmutableXBalanceProvider } from "./providers/immutableXBalanceProvider";
@@ -23,7 +24,8 @@ export class BalanceResolver {
         new TonBalanceProvider(),
         new ZkSyncBalanceProvider(),
         new TronBalanceProvider(),
-        new ParadexBalanceProvider()
+        new ParadexBalanceProvider(),
+        new BitcoinBalanceProvider()
     ];
 
     getBalance(address: string, network: NetworkWithTokens) {

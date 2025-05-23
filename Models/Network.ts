@@ -9,6 +9,7 @@ export enum NetworkType {
     ZkSyncLite = "zksynclite",
     TON = 'ton',
     Fuel = 'fuel',
+    Bitcoin = 'bitcoin',
 }
 
 export class Network {
