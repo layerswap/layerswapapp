@@ -1,4 +1,4 @@
-import { FC, useCallback, useState } from "react";
+import { ComponentProps, FC, useCallback, useState } from "react";
 import { useSwitchChain } from "wagmi";
 import WalletIcon from "../../../../icons/WalletIcon";
 import { ActionData } from "./sharedTypes";
@@ -119,4 +119,28 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
             <ManualTransferNote />
         }
     </div>
+}
+
+type ButtonWrapperProps = ComponentProps<typeof ButtonWrapper>;
+type SendFromWalletButtonProps = ButtonWrapperProps & {
+    error?: boolean;
+};
+
+export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
+    ...props
+}) => {
+
+    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+        window.safary?.track({
+            eventName: 'click',
+            eventType: 'send_from_wallet',
+        })
+        props.onClick && props.onClick(e)
+    }
+
+    return <ButtonWrapper
+        onClick={handleClick}
+        {...props}>
+        {props.error ? 'Try again' : 'Send from wallet'}
+    </ButtonWrapper>
 }

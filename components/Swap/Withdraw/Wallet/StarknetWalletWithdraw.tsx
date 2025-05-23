@@ -1,12 +1,11 @@
 import { FC, useCallback, useState } from 'react'
-import SubmitButton from '../../../buttons/submitButton';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
 import { useAuthState } from '../../../../context/authContext';
 import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
-import { ConnectWalletButton } from './WalletTransfer/buttons';
+import { ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
 import TransactionMessages from '../messages/TransactionMessages';
 import { datadogRum } from '@datadog/browser-rum';
 
@@ -59,7 +58,7 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
             <TransactionMessage isLoading={loading} error={error} />
             {
                 !loading &&
-                <SubmitButton
+                <SendTransactionButton
                     isDisabled={!!(loading || transferDone) || !wallet}
                     isSubmitting={!!(loading || transferDone)}
                     onClick={handleTransfer}
@@ -68,9 +67,9 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
                             className="h-6 w-6 stroke-2"
                             aria-hidden="true"
                         />
-                    } >
-                    {error ? 'Try again' : 'Send from wallet'}
-                </SubmitButton>
+                    }
+                    error={!!error}
+                />
             }
         </div >
     )

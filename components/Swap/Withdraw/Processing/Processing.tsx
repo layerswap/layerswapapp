@@ -87,6 +87,21 @@ const Processing: FC<Props> = ({ swapResponse }) => {
         }
     }, [inputTxStatus, transactionHash, swap?.id])
 
+    useEffect(() => {
+        if (swap?.status === SwapStatus.Completed || swap.status === SwapStatus.Failed) {
+            window.safary?.track({
+                eventName: "swap_status",
+                eventType: "transfer",
+                parameters: {
+                    custom_str_1_label: "swap_id",
+                    custom_str_1_value: swap?.id,
+                    custom_str_2_label: "status",
+                    custom_str_2_value: swap?.status,
+                }
+            })
+        }
+    }, [swap.status])
+
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 
     const progressStatuses = getProgressStatuses(swapResponse, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)

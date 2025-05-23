@@ -6,7 +6,7 @@ import { utils } from 'ethers';
 import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';
+import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
 import { useSettingsState } from '../../../../context/settings';
 import { useAccount } from 'wagmi';
 import ClickTooltip from '../../../Tooltips/ClickTooltip';
@@ -195,9 +195,7 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
                     }
                     {
                         syncWallet && accountIsActivated &&
-                        <ButtonWrapper isDisabled={!!(loading)} isSubmitting={!!loading} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Send from wallet
-                        </ButtonWrapper>
+                        <SendTransactionButton isDisabled={!!(loading)} isSubmitting={!!loading} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} />
                     }
                 </div>
             </div>

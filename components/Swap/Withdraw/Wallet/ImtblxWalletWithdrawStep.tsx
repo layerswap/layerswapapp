@@ -7,7 +7,7 @@ import GuideLink from '../../../guideLink';
 import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import { WithdrawPageProps } from './WalletTransferContent';
-import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
+import { ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
 
 const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId }) => {
     const [loading, setLoading] = useState(false)
@@ -63,9 +63,7 @@ const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
                     </WarningMessage>
                     {
                         imxAccount &&
-                        <ButtonWrapper isDisabled={!!(loading || transferDone) || !depositAddress} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                            Send from wallet
-                        </ButtonWrapper>
+                        <SendTransactionButton isDisabled={!!(loading || transferDone) || !depositAddress} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} />
                     }
                 </div>
             </div>

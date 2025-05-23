@@ -1,7 +1,7 @@
 import { FC, useCallback, useState } from 'react'
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from './WalletTransfer/buttons';
+import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
 import { useAccount, useConfig } from 'wagmi';
 import useWallet from '../../../../hooks/useWallet';
 import { WithdrawPageProps } from './WalletTransferContent';
@@ -101,9 +101,7 @@ const SophonWalletWithdraw: FC<WithdrawPageProps> = ({ amount, depositAddress, n
             />
             {
                 wallet && !loading &&
-                <ButtonWrapper isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
-                    {error ? 'Try again' : 'Send from wallet'}
-                </ButtonWrapper>
+                <SendTransactionButton isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} error={!!error} />
             }
         </div>
     )
