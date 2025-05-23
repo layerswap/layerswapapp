@@ -66,6 +66,7 @@
     "@uidotdev/usehooks": "^2.4.1",
     "@walletconnect/universal-provider": "^2.17.0",
     "axios": "^0.21.4",
+    "bitcoin-address-validation": "^3.0.0",
     "blake2b": "^2.1.4",
     "bn.js": "^5.2.0",
     "cmdk": "^0.2.0",
