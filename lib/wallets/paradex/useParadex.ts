@@ -145,17 +145,14 @@ export default function useParadex(): WalletProvider {
     }, [evmProvider, starknetProvider])
 
     const switchAccount = async (wallet: Wallet, address: string) => {
-        const evmWallet = evmProvider?.connectedWallets?.find(w => w.id === wallet.id)
-        const starknetWallet = starknetProvider?.connectedWallets?.find(w => w.id === wallet.id)
-
-        if (evmWallet && evmProvider.switchAccount && wallet.metadata?.l1Address) {
-            evmProvider.switchAccount(evmWallet, wallet.metadata?.l1Address)
-            selectProvider(evmProvider.name)
-        }
-        else if (starknetWallet && starknetProvider.switchAccount && wallet.metadata?.l1Address) {
-            starknetProvider.switchAccount(starknetWallet, wallet.metadata.l1Address)
-            selectProvider(starknetProvider.name)
-        }
+        const providers = [evmProvider, starknetProvider]
+        const paradexProvider = providers.find(p => p?.connectedWallets?.find(w => w.id === wallet.id))
+        const paradexWallet = paradexProvider?.connectedWallets?.find(w => w.id === wallet.id)
+        
+        if (paradexProvider?.switchAccount && paradexWallet && wallet.metadata?.l1Address)
+            paradexProvider.switchAccount(paradexWallet, wallet.metadata?.l1Address)
+        if (paradexProvider?.name)
+            selectProvider(paradexProvider.name)
     }
 
     const activeWallet = useMemo(() => {
