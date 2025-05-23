@@ -28,15 +28,14 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     }, [to, destination_address])
 
     if (isBalanceLoading)
-        return <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+        return <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse pl-2' />
 
     return (
         <>
             {
                 (network && token && network) &&
-
                 (truncatedBalance !== undefined && !isNaN(truncatedBalance)) &&
-                <span>{truncatedBalance > 0 ? Number(truncatedBalance.toFixed(token?.precision)).toString() : truncatedBalance}</span>
+                <div className="pl-2">{truncatedBalance > 0 ? Number(truncatedBalance.toFixed(token?.precision)).toString() : truncatedBalance}</div>
             }
         </>
     )
