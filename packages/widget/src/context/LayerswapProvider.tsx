@@ -36,7 +36,7 @@ export type LayerswapContextProps = {
 }
 
 const INTERCOM_APP_ID = 'h5zisg78'
-export const LayerswapProvider: FC<LayerswapContextProps> = ({ children, settings: _settings, themeData, apiKey, integrator, version, walletConnect }) => {
+const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, settings: _settings, themeData, apiKey, integrator, version, walletConnect }) => {
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
 
     AppSettings.ApiVersion = version
@@ -55,44 +55,45 @@ export const LayerswapProvider: FC<LayerswapContextProps> = ({ children, setting
     }, [])
 
     const settings = _settings || fetchedSettings
-    if (!settings) {
-        return <>{
-            themeData &&
-            <ColorSchema themeData={themeData} />
-        }
-            <WidgetLoading />
-        </>
-    }
+    if (!settings) return <WidgetLoading />
 
     let appSettings = new LayerSwapAppSettings(settings)
 
     themeData = themeData || THEME_COLORS.default
 
     return (
+        <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
+            <QueryProvider query={{}}>
+                <SettingsProvider data={appSettings}>
+                    <AuthProvider>
+                        <TooltipProvider delayDuration={500}>
+                            <ErrorBoundary FallbackComponent={ErrorFallback} >
+                                <ThemeWrapper>
+                                    <WalletsProviders themeData={themeData}>
+                                        <AsyncModalProvider>
+                                            {children}
+                                        </AsyncModalProvider>
+                                    </WalletsProviders>
+                                </ThemeWrapper>
+                            </ErrorBoundary>
+                        </TooltipProvider>
+                    </AuthProvider>
+                </SettingsProvider >
+            </QueryProvider >
+        </IntercomProvider>
+    )
+}
+
+export const LayerswapProvider: typeof LayerswapProviderComponent = (props) => {
+    return (
         <>
             {
-                themeData &&
-                <ColorSchema themeData={themeData} />
+                props.themeData &&
+                <ColorSchema themeData={props.themeData} />
             }
-            <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
-                <QueryProvider query={{}}>
-                    <SettingsProvider data={appSettings}>
-                        <AuthProvider>
-                            <TooltipProvider delayDuration={500}>
-                                <ErrorBoundary FallbackComponent={ErrorFallback} >
-                                    <ThemeWrapper>
-                                        <WalletsProviders themeData={themeData}>
-                                            <AsyncModalProvider>
-                                                {children}
-                                            </AsyncModalProvider>
-                                        </WalletsProviders>
-                                    </ThemeWrapper>
-                                </ErrorBoundary>
-                            </TooltipProvider>
-                        </AuthProvider>
-                    </SettingsProvider >
-                </QueryProvider >
-            </IntercomProvider>
+            <LayerswapProviderComponent  {...props}>
+                {props.children}
+            </LayerswapProviderComponent>
         </>
     )
 }

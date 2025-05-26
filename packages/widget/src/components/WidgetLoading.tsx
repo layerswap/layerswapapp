@@ -11,7 +11,7 @@ export default function WidgetLoading() {
                                 <div className="flex flex-nowrap grow w-full">
                                     <div className="w-full pb-6 flex flex-col justify-between text-secondary-500 sm:min-h-[500px] h-full">
                                         <div className="flex flex-col">
-                                            <div className="w-full grid grid-cols-5 px-6 mt-3 pb-2">
+                                            <div className="w-full grid grid-cols-5 px-6 mt-3 pb-1">
                                                 <div className="col-start-5 justify-self-end self-center flex items-center gap-x-1 -mr-2">
                                                     <div className="mx-2 space-y-1 py-1.5">
                                                         <MenuIcon strokeWidth="2" />
