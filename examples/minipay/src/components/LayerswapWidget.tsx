@@ -17,7 +17,7 @@ const LayerswapWidget: FC<PageComponentProps> = ({ settings }) => {
 
     return (
         <LayerswapProvider
-            apiKey='sHc3vgu/I7xj4/JPrfCV2LNOWd34g1AUMemlGh4owsVDcvnbXSvrzUp1UvQq3LR2UcWLRwk+EoowKDPP32j6jw'
+            apiKey={process.env.NEXT_PUBLIC_LAYERSWAP_API_KEY as string}
             integrator='test'
             settings={settings}
             themeData={{
