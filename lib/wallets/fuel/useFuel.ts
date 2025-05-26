@@ -6,6 +6,7 @@ import {
 import { Connector, useAccount } from "wagmi";
 import {
     FuelConnector,
+    FuelConnectorEventTypes,
     Predicate,
     getPredicateRoot,
 } from '@fuel-ts/account';
@@ -117,30 +118,51 @@ export default function useFuel(): WalletProvider {
 
     useEffect(() => {
         (async () => {
-            for (const connector of connectedConnectors) {
-                try {
-                    const addresses = (await connector.accounts()).map(a => Address.fromAddressOrString(a).toB256())
-                    if (connector.connected && addresses.length > 0) {
-                        const w = await resolveFuelWallet({
-                            address: addresses?.[0],
-                            addresses,
-                            connector,
-                            evmAddress,
-                            evmConnector,
-                            disconnectWallet,
-                            name,
-                            commonSupportedNetworks: commonSupportedNetworks,
-                            networkIcon: networks.find(n => commonSupportedNetworks.some(name => name === n.name))?.logo
-                        })
-                        addWallet(w)
-                    }
-
-                } catch (e) {
-                    console.log(e)
-                }
-            }
+            resolveWallet()
         })()
     }, [connectedConnectors])
+
+    const resolveWallet = async () => {
+        for (const connector of connectedConnectors) {
+            try {
+                const addresses = (await connector.accounts()).map(a => Address.fromAddressOrString(a).toB256())
+                if (connector.connected && addresses.length > 0) {
+                    const w = await resolveFuelWallet({
+                        address: addresses?.[0],
+                        addresses,
+                        connector,
+                        evmAddress,
+                        evmConnector,
+                        disconnectWallet,
+                        name,
+                        commonSupportedNetworks: commonSupportedNetworks,
+                        networkIcon: networks.find(n => commonSupportedNetworks.some(name => name === n.name))?.logo
+                    })
+                    addWallet(w)
+                }
+
+            } catch (e) {
+                console.log(e)
+            }
+        }
+    };
+
+    useEffect(() => {
+        const disposers = connectors.map((c) => {
+            const handler = async () => {
+                await resolveWallet()
+            };
+
+            c.on(FuelConnectorEventTypes.currentNetwork, handler);
+            return { connector: c, handler };
+        });
+
+        return () => {
+            disposers.forEach(({ connector, handler }) => {
+                connector.off(FuelConnectorEventTypes.currentNetwork, handler);
+            });
+        };
+    }, [connectors]);
 
     const availableWalletsForConnect: InternalConnector[] = connectors.map(c => {
         const isInstalled = c.installed && !c['dAppWindow']
