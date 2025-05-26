@@ -32,7 +32,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
         error
     } = useSWR<ApiResponse<Exchange[]>>(`${exchangeRoutesURL}`, apiClient.fetcher, { keepPreviousData: true, fallbackData: { data: direction === 'from' ? sourceExchanges : destinationExchanges }, dedupingInterval: 10000 })
 
-    const shouldFilterExchange = (exchange && currencyGroup)
+    const shouldFilterExchange = !!(exchange && currencyGroup)
     const exchangesData = shouldFilterExchange
         ? exchanges
         : { data: direction === 'from' ? sourceExchanges : destinationExchanges }
@@ -69,19 +69,19 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
                 const exchange = direction === 'from' ? fromExchange : toExchange
                 const value = exchangesData?.data?.find(r => r.name === exchange?.name)?.token_groups?.find(t => t.symbol === currencyGroup?.symbol)
 
-                if (!value || value === currencyGroup) return
+                if (!value || value === currencyGroup || currency?.manuallySet) return
                 (value as any).manuallySet = currency?.manuallySet
+                await setFieldValue(name, value, true);
                 await setFieldValue(`${direction == "from" ? "to" : "from"}Currency`, currency, true)
-                await setFieldValue(name, value, true)
                 await setFieldValue("validatingCurrencyGroup", false, true)
             })();
         }
-    }, [fromCurrency, toCurrency, exchangesData, currencyGroup])
+    }, [fromCurrency, toCurrency, exchangesData])
 
     const handleSelect = useCallback(async (item: SelectMenuItem<ExchangeToken>) => {
         const oppositeCurrency = direction === 'from' ? toCurrency : fromCurrency
         if (oppositeCurrency && !oppositeCurrency?.manuallySet && oppositeCurrency.symbol !== item.baseObject.symbol) {
-            
+
             const network = direction === 'to' ? from : to
             const default_currency = network?.tokens?.find(t => t.symbol === item.baseObject.symbol) || network?.tokens?.find(t => t.symbol.includes(item.baseObject.symbol) || item.baseObject.symbol.includes(t.symbol))
             if (default_currency) {
