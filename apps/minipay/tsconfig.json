@@ -20,7 +20,10 @@
     "paths": {
       "@/*": [
         "./src/*"
-      ]
+      ],
+      "@layerswap/widget": [
+        "../../packages/widget/src"
+      ],
     }
   },
   "include": [

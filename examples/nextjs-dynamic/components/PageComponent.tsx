@@ -5,7 +5,7 @@ import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
 import {
     DynamicContextProvider,
 } from "@dynamic-labs/sdk-react-core";
-import CustomHooks from '../components/CustomHooks';
+import CustomHooks from './CustomHooks';
 
 const PageComponent: FC<{ settings: LayerSwapSettings }> = ({ settings }) => {
 
