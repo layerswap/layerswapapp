@@ -4,7 +4,7 @@ import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
-import { ButtonWrapper, ChangeNetworkMessage, ConnectWalletButton } from './WalletTransfer/buttons';
+import { ButtonWrapper, ChangeNetworkMessage, ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
 import {
     useSelectNetwork,
     useFuel,
@@ -114,9 +114,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
             }
             {
                 !loading &&
-                <ButtonWrapper isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
-                    Send from wallet
-                </ButtonWrapper>
+                <SendTransactionButton isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} />
             }
         </div>
     )
@@ -161,7 +159,7 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
     if (isLoading) {
         return <TransactionMessages.ConfirmTransactionMessage />
     }
-    else if (error === "The account(s) sending the transaction don't have enough funds to cover the transaction." 
+    else if (error === "The account(s) sending the transaction don't have enough funds to cover the transaction."
         || error === "the target cannot be met due to no coins available or exceeding the 255 coin limit."
     ) {
         return <TransactionMessages.InsufficientFundsMessage />

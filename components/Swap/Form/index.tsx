@@ -79,7 +79,7 @@ export default function Form() {
     const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useFee()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
-        const { destination_address, to } = values
+        const { destination_address, to, from, amount, toCurrency, fromCurrency, fromExchange, toExchange, currencyGroup, depositMethod } = values
 
         if (to &&
             destination_address &&
@@ -115,6 +115,21 @@ export default function Form() {
                 }
             }
             const swapId = await createSwap(values, query, partner);
+            window.safary?.track({
+                eventType: 'swap',
+                eventName: 'swap_created',
+                parameters: {
+                    custom_str_1_label: "from",
+                    custom_str_1_value: fromExchange?.display_name || from?.display_name!,
+                    custom_str_2_label: "to",
+                    walletAddress: (fromExchange || depositMethod !== 'wallet') ? '' : selectedSourceAccount?.address!,
+                    custom_str_2_value: toExchange?.display_name || to?.display_name!,
+                    fromCurrency: fromExchange ? currencyGroup?.symbol! : fromCurrency?.symbol!,
+                    toCurrency: toExchange ? currencyGroup?.symbol! : toCurrency?.symbol!,
+                    fromAmount: amount!,
+                    toAmount: amount!
+                }
+            })
             plausible(TrackEvent.SwapInitiated)
             setSwapId(swapId)
             pollFee(false)
