@@ -91,7 +91,7 @@ const Processing: FC<Props> = ({ swapResponse }) => {
         if (swap?.status === SwapStatus.Completed || swap.status === SwapStatus.Failed) {
             window.safary?.track({
                 eventName: "swap_status",
-                eventType: "transfer",
+                eventType: "status",
                 parameters: {
                     custom_str_1_label: "swap_id",
                     custom_str_1_value: swap?.id,

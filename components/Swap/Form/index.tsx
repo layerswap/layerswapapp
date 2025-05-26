@@ -79,7 +79,7 @@ export default function Form() {
     const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useFee()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
-        const { destination_address, to, from, amount, toCurrency, fromCurrency, fromExchange, toExchange, currencyGroup } = values
+        const { destination_address, to, from, amount, toCurrency, fromCurrency, fromExchange, toExchange, currencyGroup, depositMethod } = values
 
         if (to &&
             destination_address &&
@@ -116,19 +116,18 @@ export default function Form() {
             }
             const swapId = await createSwap(values, query, partner);
             window.safary?.track({
-                eventType: 'click',
+                eventType: 'swap',
                 eventName: 'swap_created',
                 parameters: {
                     custom_str_1_label: "from",
                     custom_str_1_value: fromExchange?.display_name || from?.display_name!,
                     custom_str_2_label: "to",
+                    walletAddress: (fromExchange || depositMethod !== 'wallet') ? '' : selectedSourceAccount?.address!,
                     custom_str_2_value: toExchange?.display_name || to?.display_name!,
-                    custom_str_3_label: "fromAsset",
-                    custom_str_3_value: fromExchange ? currencyGroup?.symbol! : fromCurrency?.symbol!,
-                    custom_str_4_label: "toAsset",
-                    custom_str_4_value: toExchange ? currencyGroup?.symbol! : toCurrency?.symbol!,
-                    custom_nr_1_label: "amount",
-                    custom_nr_1_value: amount!,
+                    fromCurrency: fromExchange ? currencyGroup?.symbol! : fromCurrency?.symbol!,
+                    toCurrency: toExchange ? currencyGroup?.symbol! : toCurrency?.symbol!,
+                    fromAmount: amount!,
+                    toAmount: amount!
                 }
             })
             plausible(TrackEvent.SwapInitiated)
