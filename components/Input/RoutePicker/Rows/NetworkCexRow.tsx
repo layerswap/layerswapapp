@@ -5,7 +5,6 @@ import { SwapDirection } from "../../../DTOs/SwapFormValues";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "../../../shadcn/accordion";
 import { CurrencySelectItemDisplay, RouteSelectItemDisplay } from "../Routes";
 import ReactPortal from "../../../Common/ReactPortal";
-import { motion } from "framer-motion";
 
 function getSortedRouteTokens(route: Route) {
     if (route.cex) {
@@ -85,11 +84,7 @@ export const NetworkCexRow = ({
             {
                 isSticky &&
                 <ReactPortal wrapperId="sticky_accordion_header" >
-                    <motion.div
-                        initial={{ opacity: 1 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2, ease: "easeOut" }}
+                    <div
                         onClick={stickyToggle}
                         className="cursor-pointer bg-secondary-700 hover:bg-secondary-600 relative pb-1">
                         <AccordionTrigger>
@@ -99,7 +94,7 @@ export const NetworkCexRow = ({
                                 direction={direction}
                             />
                         </AccordionTrigger>
-                    </motion.div>
+                    </div>
                 </ReactPortal>
             }
             <AccordionContent className="AccordionContent mt-1" ref={contentRef}>
