@@ -62,7 +62,5 @@ export class BalanceResolver {
             })
             return { balances: [], totalInUSD: 0 }
         }
-
     }
-
 }

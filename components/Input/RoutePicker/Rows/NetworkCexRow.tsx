@@ -74,7 +74,7 @@ export const NetworkCexRow = ({
                 id={`${route.name}-header`}
                 onClick={() => toggleContent(route.name)}
                 className={`cursor-pointer bg-secondary-700 rounded-lg hover:bg-secondary-600 relative ${isSticky ? 'opacity-0' : ''}`}>
-                <AccordionTrigger className={route.name === "ETHEREUM_MAINNET" ? "sticky" : ""}>
+                <AccordionTrigger>
                     <RouteSelectItemDisplay
                         item={route}
                         selected={false}
@@ -92,7 +92,7 @@ export const NetworkCexRow = ({
                         transition={{ duration: 0.2, ease: "easeOut" }}
                         onClick={stickyToggle}
                         className="cursor-pointer bg-secondary-700 hover:bg-secondary-600 relative pb-1">
-                        <AccordionTrigger className={route.name === "ETHEREUM_MAINNET" ? "sticky" : ""}>
+                        <AccordionTrigger>
                             <RouteSelectItemDisplay
                                 item={route}
                                 selected={false}
