@@ -1,6 +1,6 @@
 import SourceWalletPicker from "./SourceWalletPicker";
 import { PlusIcon } from "lucide-react";
-import RoutePicker from "./RoutePicker";
+import RoutePicker from "./RoutePicker/RoutePicker";
 import AmountField from "./Amount";
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";

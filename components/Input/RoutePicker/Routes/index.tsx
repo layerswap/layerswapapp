@@ -4,13 +4,14 @@ import useSWRBalance from "../../../../lib/balances/useSWRBalance";
 import { SwapDirection } from "../../../DTOs/SwapFormValues";
 import { truncateDecimals } from "../../../utils/RoundDecimals";
 import Image from 'next/image'
-import { SelectItem } from "../../CommandNew/SelectItem/Index";
+import { SelectItem } from "../../../Select/CommandNew/SelectItem/Index";
 import { useMemo } from "react";
 import { Exchange } from "../../../../Models/Exchange";
 import { Route, RouteToken } from "../../../../Models/Route";
 import { ChevronDown } from "lucide-react";
 import RoutePickerIcon from "../../../icons/RoutePickerPlaceholder";
 import { Wallet } from "../../../../Models/WalletProvider";
+import { useBalance } from "../../../../lib/balances/providers/useBalance";
 
 type TokenItemProps = {
     route: Route;
@@ -45,7 +46,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const { item, route, direction } = props
     const { provider } = useWallet(route, direction === "from" ? "withdrawal" : "autofil")
     const activeAddress = provider?.activeWallet
-    const { balances } = useSWRBalance(activeAddress?.address, route)
+    const { balances } = useBalance(activeAddress?.address, route)
     const tokenbalance = balances?.find(b => b.token === item.symbol)
     const formatted_balance_amount = tokenbalance?.amount ? Number(truncateDecimals(tokenbalance?.amount, item.precision)) : 0
     const balanceAmountInUsd = (item?.price_in_usd * formatted_balance_amount).toFixed(2)
@@ -85,7 +86,7 @@ const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const { item, direction } = props
     const { provider } = useWallet(item, direction === "from" ? "withdrawal" : "autofil")
     const activeAddress = provider?.activeWallet
-    const { balances } = useSWRBalance(activeAddress?.address, item)
+    const { balances } = useBalance(activeAddress?.address, item)
 
     const networkBalanceInUsd = useMemo(() => balances?.reduce((acc, b) => {
         const token = item?.tokens?.find(t => t?.symbol === b?.token);

@@ -1,5 +1,5 @@
 import { PlusIcon } from "lucide-react";
-import RoutePicker from "./RoutePicker";
+import RoutePicker from "./RoutePicker/RoutePicker";
 import Address from "./Address";
 import DestinationWalletPicker from "./DestinationWalletPicker";
 import { useFormikContext } from "formik";

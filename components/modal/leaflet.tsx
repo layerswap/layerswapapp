@@ -120,7 +120,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                         </div>
                     </div>
                     <div
-                        className='select-text max-h-full in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll px-6 h-full' id="virtualListContainer">
+                        className='select-text max-h-full in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll px-6 h-full'>
                         {children}
                     </div>
                 </div>

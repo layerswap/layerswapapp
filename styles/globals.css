@@ -395,6 +395,7 @@ textarea:disabled::placeholder {
 /* styles.css */
 .AccordionContent {
 	overflow: hidden;
+  transform-origin: top;
 }
 .layout-animating .AccordionContent[data-state="open"],
 .layout-animating .AccordionContent[data-state="closed"] {
@@ -409,7 +410,9 @@ textarea:disabled::placeholder {
 .AccordionContent.NoAnimation {
   animation-play-state: paused !important;
 }
-
+.no-anchor {
+  overflow-anchor: none;
+}
 @keyframes slideDown {
 	from {
 		height: 0;

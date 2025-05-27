@@ -7,23 +7,27 @@ import { NetworkRoute } from "../Models/Network";
 import { useEffect, useMemo, useState } from "react";
 import { useSettingsState } from "../context/settings";
 import { Exchange } from "../Models/Exchange";
-import { RoutesGroup } from "../Models/Route";
+import { NetworkElement, RowElement, RoutesGroup, NetworkTokenElement, _Route, _RoutesGroup, ExchangeTokenElement, ExchangeElement, TitleElement } from "../Models/Route";
 
 type Props = {
     direction: SwapDirection;
     values: SwapFormValues;
 }
 
-export default function useFormRoutes({ direction, values }: Props) {
+export default function useFormRoutes({ direction, values }: Props, search?: string) {
     const { networkRoutes, isLoading: networkRoutesLoading } = useNetworkRoutes({ direction, values })
     const { exchangesRoutes, isLoading: exchangesRoutesLoading } = useExchangeRoutes({ direction, values })
 
     const allRoutes = useMemo(() => [...networkRoutes, ...exchangesRoutes], [networkRoutes, exchangesRoutes])
-    const groupedRoutes = useMemo(() => groupRoutes(networkRoutes, exchangesRoutes, direction), [networkRoutes, exchangesRoutes, direction])
 
     const isLoading = networkRoutesLoading || exchangesRoutesLoading
 
-    return { allRoutes, isLoading, groupedRoutes }
+    const routeElements = useMemo(() => groupRoutes(networkRoutes, exchangesRoutes, direction, search), [networkRoutes, exchangesRoutes, direction, search])
+
+    const selectedRoute = useMemo(() => resolveSelectedRoute(values, direction), [values, direction])
+    const selectedToken = useMemo(() => resolveSelectedToken(values, direction), [values, direction])
+
+    return { allRoutes, isLoading, routeElements, selectedRoute, selectedToken }
 }
 
 function useNetworkRoutes({ direction, values }: Props) {
@@ -77,19 +81,80 @@ function resolvePopularRoutes(routes: NetworkRoute[], direction: SwapDirection) 
         .map(r => r.name) || []
 }
 
-function groupRoutes(networkRoutes: NetworkRoute[], exchangesRoutes: ({ cex: true } & Exchange)[], direction: SwapDirection): RoutesGroup[] {
+
+function groupRoutes(networkRoutes: NetworkRoute[], exchangesRoutes: ({ cex: true } & Exchange)[], direction: SwapDirection, search?: string): RowElement[] {
+    if (search) {
+        const networks = networkRoutes.filter(r => r.name.toLowerCase().includes(search.toLowerCase())).map((r): NetworkElement => ({ type: 'network', route: { ...r, cex: false } }))
+        const networkrksTitle: TitleElement[] = networks.length > 0 ? [{
+            type: 'group_title',
+            text: "Networks"
+        }] : []
+
+        const networktokens = networkRoutes.flatMap(r => r.tokens?.filter(t => t.symbol.toLowerCase().includes(search.toLowerCase())).map((t): NetworkTokenElement => ({ type: 'network_token', route: { token: t, route: { ...r, cex: false } } })) || [])
+        const exchangeTokens = exchangesRoutes.flatMap(r => r.token_groups?.filter(t => t.symbol.toLowerCase().includes(search.toLowerCase())).map((t): ExchangeTokenElement => ({ type: 'exchange_token', route: { token: t, route: { ...r, cex: true } } })) || [])
+        const tokensTitle: TitleElement[] = (networks.length > 0 || exchangeTokens.length > 0) ? [{
+            type: 'group_title',
+            text: "Tokens"
+        }] : []
+
+        const exchanges = exchangesRoutes.filter(r => r.name.toLowerCase().includes(search.toLowerCase())).map((r): ExchangeElement => ({ type: 'exchange', route: { ...r, cex: true } }))
+        const exchangesTitle: TitleElement[] = exchanges.length > 0 ? [{
+            type: 'group_title',
+            text: "Exchanges"
+        }] : []
+
+        return [
+            ...networkrksTitle,
+            ...networks,
+            ...tokensTitle,
+            ...networktokens,
+            ...exchangeTokens,
+            ...exchangesTitle,
+            ...exchanges,
+        ]
+    }
+
     const popularRoutes = resolvePopularRoutes(networkRoutes, direction)
 
-    let groups: RoutesGroup[] = [{
-        name: "Popular",
-        routes: networkRoutes.filter(r => popularRoutes?.includes(r.name))
-    }, {
-        name: "All Networks",
-        routes: networkRoutes.filter(r => !popularRoutes?.includes(r.name))
-    }, {
-        name: "Exchanges",
-        routes: exchangesRoutes
-    }]
+    const popularNetworks = networkRoutes.filter(r => popularRoutes?.includes(r.name)).map((r): NetworkElement => ({ type: 'network', route: { ...r, cex: false } }))
+    const popularesTitle: TitleElement[] = popularNetworks.length > 0 ? [{
+        type: 'group_title',
+        text: "Popular"
+    }] : []
 
-    return groups;
+    const networks = networkRoutes.filter(r => !popularRoutes?.includes(r.name)).map((r): NetworkElement => ({ type: 'network', route: { ...r, cex: false } }))
+    const networksTitle: TitleElement[] = networks.length > 0 ? [{
+        type: 'group_title',
+        text: "All Networks"
+    }] : []
+
+    const exchanges = exchangesRoutes.map((r): ExchangeElement => ({ type: 'exchange', route: { ...r, cex: true } }))
+    const exchangesTitle: TitleElement[] = exchanges.length > 0 ? [{
+        type: 'group_title',
+        text: "Exchanges"
+    }] : []
+
+
+    return [
+        ...popularesTitle,
+        ...popularNetworks,
+        ...networksTitle,
+        ...networks,
+        ...exchangesTitle,
+        ...exchanges,
+    ]
+}
+
+function resolveSelectedRoute(values: SwapFormValues, direction: SwapDirection): NetworkRoute | Exchange | undefined {
+    const { from, to, fromExchange, toExchange } = values
+    return direction === 'from' ? fromExchange || from : toExchange || to;
+}
+function resolveSelectedToken(values: SwapFormValues, direction: SwapDirection) {
+    const { fromCurrency, toCurrency, fromExchange, toExchange } = values
+    //TODO: might need model refactoring as for now we just assume if exchange is selected then token is curencyGroup
+    if ((direction === 'from' && fromExchange) || (direction === 'to' && toExchange)) {
+        return values.currencyGroup
+    }
+    else
+        return direction === 'from' ? fromCurrency : toCurrency;
 }
