@@ -154,6 +154,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 (value as any).manuallySet = toCurrency.manuallySet
                 await setFieldValue(name, value)
                 await setFieldValue("validatingDestination", false, true)
+                await setFieldValue("validatingSource", false, true)
             })()
         }
     }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading])
@@ -166,6 +167,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 (value as any).manuallySet = fromCurrency.manuallySet
                 await setFieldValue(name, value)
                 await setFieldValue("validatingSource", false, true)
+                await setFieldValue("validatingDestination", false, true)
             })()
         }
     }, [toCurrency, currencyGroup, name, from, routes, error, isLoading])

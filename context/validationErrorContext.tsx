@@ -41,6 +41,12 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     let validationMessage = '';
     let validationDetails: ValidationDetails = {};
 
+    console.log(validatingSource, "validatingSource")
+    console.log(validatingDestination, "validatingDestination")
+    console.log(validatingCurrencyGroup, "validatingCurrencyGroup")
+    console.log(currencyGroup, "currencyGroup")
+    console.log(toCurrency, "toCurrency")
+    console.log(fromCurrency, "fromCurrency")
     if (query?.lockToAsset) {
         if (fromCurrency?.status === 'not_found' || (currencyGroup?.status === 'not_found' && fromExchange)) {
             validationMessage = `Transfers from ${fromDisplayName} ${fromCurrency?.symbol || currencyGroup?.symbol} to this token are not supported`;
