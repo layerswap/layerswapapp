@@ -22,7 +22,6 @@ type RouteElementProps = {
     selectedToken: string | undefined;
     openValues?: string[]
     scrollContainerRef: RefObject<HTMLDivElement>
-    setOnValueChange: (callback: (v: string[]) => void) => void
 }
 export const NetworkCexRow = ({
     route,
@@ -33,7 +32,6 @@ export const NetworkCexRow = ({
     selectedToken,
     openValues,
     scrollContainerRef,
-    setOnValueChange
 }: RouteElementProps) => {
     const sortedTokens = getSortedRouteTokens(route)
 

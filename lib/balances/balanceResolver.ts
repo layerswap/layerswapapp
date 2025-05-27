@@ -49,23 +49,14 @@ export class BalanceResolver {
                 const formattedBalance = Number(truncateDecimals(b?.amount, tokenPrecision));
                 return acc + (formattedBalance * tokenPriceInUsd);
             }, 0)
-            if (network.name === "ETHEREUM_MAINNET") {
-                console.log("setting ETHEREUM_MAINNET", balances, totalInUSD)
-            }
             useNetworksBalanceStore.getState().setNetworkBalance(network.name, {
                 balances: balances || [],
                 totalInUSD,
                 success: true
             })
-            if (network.name === "ETHEREUM_MAINNET") {
-                debugger
-            }
             return { balances, totalInUSD };
         }
         catch (e) {
-            if (network.name === "ETHEREUM_MAINNET") {
-                console.log("ETHEREUM_MAINNET not success", e)
-            }
             useNetworksBalanceStore.getState().setNetworkBalance(network.name, {
                 success: false
             })

@@ -13,9 +13,8 @@ type Props = {
     onSelect: (route: Route, token: RouteToken) => void
     openValues: string[]
     scrollContainerRef: RefObject<HTMLDivElement>
-    setOnValueChange: (callback: (v: string[]) => void) => void
 }
-export default function Row({ item, direction, selectedRoute, selectedToken, toggleContent, onSelect, openValues, scrollContainerRef, setOnValueChange }: Props) {
+export default function Row({ item, direction, selectedRoute, selectedToken, toggleContent, onSelect, openValues, scrollContainerRef }: Props) {
     if (item.type == "network" || item.type == "exchange") {
         const route = item.route
         return <NetworkCexRow
@@ -28,7 +27,6 @@ export default function Row({ item, direction, selectedRoute, selectedToken, tog
             selectedToken={selectedToken}
             toggleContent={toggleContent}
             openValues={openValues}
-            setOnValueChange={setOnValueChange}
         />
     }
     if (item.type == "network_token" || item.type == "exchange_token") {
