@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect, useMemo } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
@@ -47,13 +47,13 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
 
     const filteredCurrencies = lockedCurrency ? [lockedCurrency] : availableAssetGroups
 
-    const currencyMenuItems = GenerateCurrencyMenuItems(
+    const currencyMenuItems = useMemo(() => GenerateCurrencyMenuItems(
         filteredCurrencies!,
         direction,
         lockedCurrency
-    )
+    ), [filteredCurrencies, direction, lockedCurrency]);
 
-    const value = currencyMenuItems?.find(x => x.id == currencyGroup?.symbol);
+    const value = useMemo(() => currencyMenuItems?.find(x => x.id == currencyGroup?.symbol), [currencyMenuItems, currencyGroup]);
 
     useEffect(() => {
         if (value) return
@@ -70,7 +70,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
                 const value = exchangesData?.data?.find(r => r.name === exchange?.name)?.token_groups?.find(t => t.symbol === currencyGroup?.symbol)
 
                 if (!value || value === currencyGroup) return
-                //(value as any).manuallySet = currency?.manuallySet
+                (value as any).manuallySet = currencyGroup?.manuallySet
                 await setFieldValue(name, value, true);
                 await setFieldValue(`${direction == "from" ? "to" : "from"}Currency`, currency, true)
                 await setFieldValue("validatingCurrencyGroup", false, true)
