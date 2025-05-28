@@ -18,11 +18,9 @@ export default function useBitcoin(): WalletProvider {
     const { networks } = useSettingsState()
     const [resolvedConnectors, setResolvedConnectors] = useState<InternalConnector[]>([])
 
-    const autofillSupportedNetworks = [
+    const commonSupportedNetworks = [
         ...networks.filter(network => network.type === NetworkType.Bitcoin).map(l => l.name),
     ]
-    const withdrawalSupportedNetworks = []
-    const asSourceSupportedNetworks = []
 
     const account = useAccount()
     const { connectAsync, connectors } = useConnect()
@@ -76,9 +74,9 @@ export default function useBitcoin(): WalletProvider {
                 networks,
                 discconnect: disconnectWallet,
                 supportedNetworks: {
-                    asSource: asSourceSupportedNetworks,
-                    autofill: autofillSupportedNetworks,
-                    withdrawal: withdrawalSupportedNetworks
+                    asSource: commonSupportedNetworks,
+                    autofill: commonSupportedNetworks,
+                    withdrawal: commonSupportedNetworks
                 },
                 providerName: name
             })
@@ -106,9 +104,9 @@ export default function useBitcoin(): WalletProvider {
             networks,
             discconnect: disconnectWallet,
             supportedNetworks: {
-                asSource: asSourceSupportedNetworks,
-                autofill: autofillSupportedNetworks,
-                withdrawal: withdrawalSupportedNetworks
+                asSource: commonSupportedNetworks,
+                autofill: commonSupportedNetworks,
+                withdrawal: commonSupportedNetworks
             },
             providerName: name
         })
@@ -143,9 +141,9 @@ export default function useBitcoin(): WalletProvider {
         connectedWallets: resolvedWallet ? [resolvedWallet] : [],
         activeWallet: resolvedWallet,
         availableWalletsForConnect: resolvedConnectors,
-        autofillSupportedNetworks: autofillSupportedNetworks,
-        withdrawalSupportedNetworks: withdrawalSupportedNetworks,
-        asSourceSupportedNetworks: asSourceSupportedNetworks,
+        autofillSupportedNetworks: commonSupportedNetworks,
+        withdrawalSupportedNetworks: commonSupportedNetworks,
+        asSourceSupportedNetworks: commonSupportedNetworks,
         name,
         id,
     }

@@ -1,5 +1,5 @@
 import { NetworkWithTokens } from "../../Models/Network";
-import { BitcoinBalanceProvider } from "./providers/bitcoinBalanceResolver";
+import { BitcoinBalanceProvider } from "./providers/bitcoinBalanceProvider";
 import { EVMBalanceProvider } from "./providers/evmBalanceProvider";
 import { FuelBalanceProvider } from "./providers/fuelBalanceProvider";
 import { ImmutableXBalanceProvider } from "./providers/immutableXBalanceProvider";
@@ -9,7 +9,7 @@ import { QueryBalanceProvider } from "./providers/queryBalanceProvider";
 import { SolanaBalanceProvider } from "./providers/solanaBalanceProvider";
 import { StarknetBalanceProvider } from "./providers/starknetBalanceProvider";
 import { TonBalanceProvider } from "./providers/tonBalanceProvider";
-import { TronBalanceProvider } from "./providers/tronBalanceResolver";
+import { TronBalanceProvider } from "./providers/tronBalanceProvider";
 import { ZkSyncBalanceProvider } from "./providers/zkSyncBalanceProvider";
 
 export class BalanceResolver {

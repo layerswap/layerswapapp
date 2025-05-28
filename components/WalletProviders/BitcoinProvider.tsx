@@ -1,20 +1,14 @@
 import { BigmiProvider } from '@bigmi/react'
-import {
-    createConfig,
-    ctrl,
-    leather,
-    okx,
-    onekey,
-    phantom,
-    unisat,
-    xverse,
-} from '@bigmi/client'
-import type { Config, CreateConnectorFn } from '@bigmi/client'
-import { http, bitcoin, createClient } from '@bigmi/core'
+import { createConfig, ctrl, leather, okx, onekey, phantom, unisat, xverse } from '@bigmi/client'
+import type { CreateConnectorFn } from '@bigmi/client'
+import { http, bitcoin, createClient, defineChain, Chain } from '@bigmi/core'
+import { NetworkType, NetworkWithTokens } from '../../Models/Network'
+import { useSettingsState } from '../../context/settings'
 
 export const BitcoinProvider = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
-
-    const { config } = createDefaultBigmiConfig()
+    const { networks } = useSettingsState()
+    const network = networks.find(n => n.type === NetworkType.Bitcoin)
+    const config = createDefaultBigmiConfig(network)
 
     return (
         <BigmiProvider config={config} reconnectOnMount={true}>
@@ -23,9 +17,16 @@ export const BitcoinProvider = ({ children }: { children: JSX.Element | JSX.Elem
     )
 }
 
-function createDefaultBigmiConfig(): DefaultBigmiConfigResult {
-    const btcChainId = 20000000000001
+function createDefaultBigmiConfig(network?: NetworkWithTokens) {
 
+    let chain: Chain
+    if (network?.name.toLowerCase().includes('testnet')) {
+        chain = bitcoinTestnet(network)
+    } else {
+        chain = bitcoin
+    }
+
+    const btcChainId = chain.id
     const connectors: CreateConnectorFn[] = [
         phantom({ chainId: btcChainId }),
         xverse({ chainId: btcChainId }),
@@ -37,20 +38,30 @@ function createDefaultBigmiConfig(): DefaultBigmiConfigResult {
     ]
 
     const config = createConfig({
-        chains: [bitcoin],
+        chains: [chain],
         connectors,
         client({ chain }) {
             return createClient({ chain, transport: http() })
         },
     })
 
-    return {
-        config,
-        connectors,
-    }
+    return config
 }
 
-interface DefaultBigmiConfigResult {
-    config: Config
-    connectors: CreateConnectorFn[]
-}
+const bitcoinTestnet = (network: NetworkWithTokens) => defineChain({
+    id: 20000000000002,
+    name: 'Bitcoin Testnet',
+    nativeCurrency: { name: 'Bitcoin', symbol: 'BTC', decimals: 8 },
+    rpcUrls: {
+        default: {
+            http: [network.node_url],
+        },
+    },
+    testnet: true,
+    blockExplorers: {
+        default: {
+            name: 'Mempool',
+            url: 'https://mempool.space/testnet',
+        },
+    },
+});
