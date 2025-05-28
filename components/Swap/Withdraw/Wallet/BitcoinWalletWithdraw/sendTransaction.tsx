@@ -1,10 +1,10 @@
 export const sendUTXOTransaction = async (nodeUrl: string, txHex: string) => {
-    
+
     const payload = {
         jsonrpc: "2.0",
         method: 'sendrawtransaction',
         params: [txHex],
-        id: 1,
+        id: new Date().getTime(),
     };
 
     const response = await fetch(nodeUrl, {
@@ -14,6 +14,12 @@ export const sendUTXOTransaction = async (nodeUrl: string, txHex: string) => {
         },
         body: JSON.stringify(payload),
     });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Failed to send transaction: ${errorText}`);
+    }
+
     const txHash = (await response.json()).result;
 
     return txHash;

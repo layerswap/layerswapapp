@@ -22,7 +22,7 @@ export class BitcoinGasProvider {
         if (!network?.token) throw new Error("No native token provided")
 
         try {
-            const recommendedFees = await fetchRecommendedFees(network.name);
+            const recommendedFees = await fetchRecommendedFees(network.node_url);
 
             return Number((formatAmount(Number(recommendedFees.economyFee), network.token.decimals) * 2).toFixed(network.token.decimals))
 
@@ -33,9 +33,26 @@ export class BitcoinGasProvider {
     }
 }
 
-async function fetchRecommendedFees(networkName: string): Promise<RecommendedFeeResponse> {
-    const url = `https://mempool.space${networkName.toLowerCase().includes('testnet') ? '/testnet' : ''}/api//v1/fees/recommended`;
-    const fetchedData = await axios.get<RecommendedFeeResponse>(url)
-    return fetchedData.data
+async function fetchRecommendedFees(node_url: string): Promise<RecommendedFeeResponse> {
+    const payload = {
+        jsonrpc: "2.0",
+        method: 'estimatesmartfee',
+        params: [6],
+        id: 1,
+    };
+
+    const response = await fetch(node_url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+    });
+    const json = await response.json();
+
+    if (!response.ok || !json.result || !json.result.feerate) {
+        throw new Error(`Failed to fetch fee: ${json.error?.message || 'Unknown error'}`);
+    }
+    return json.result.feerate; // Returns the fee rate in satoshis per byte
 
 }

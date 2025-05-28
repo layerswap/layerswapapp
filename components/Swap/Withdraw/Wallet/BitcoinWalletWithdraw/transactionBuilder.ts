@@ -7,11 +7,12 @@ type TransactionBuilderParams = {
     depositAddress: string,
     userAddress: string,
     memo: string,
+    feeRate?: number
     version?: 'mainnet' | 'testnet'
     publicClient?: Client<Transport<string, Record<string, any>, BtcRpcRequestFn>, Chain>
 }
 
-export const transactionBuilder = async (props: TransactionBuilderParams & {}) => {
+export const transactionBuilder = async (props: TransactionBuilderParams) => {
 
     const { psbt, utxos } = await buildPsbt(props);
 
@@ -49,7 +50,7 @@ export const transactionBuilder = async (props: TransactionBuilderParams & {}) =
 async function buildPsbt({ amount, depositAddress, userAddress, memo, version }: TransactionBuilderParams) {
 
     const utxos = await getUTXOs(userAddress, version);
-
+    let total = 0;
     const psbt = new Psbt({ network: version == 'testnet' ? networks.testnet : networks.bitcoin });
     for (const u of utxos) {
         const rawHex = await fetchRawTxHex(u.txid, version)
@@ -60,6 +61,7 @@ async function buildPsbt({ amount, depositAddress, userAddress, memo, version }:
             index: u.vout,
             witnessUtxo: { script: out.script, value: out.value }
         })
+        total += u.value;
     }
 
     psbt.addOutput({ address: depositAddress, value: BigInt(amount) })
@@ -76,6 +78,20 @@ async function buildPsbt({ amount, depositAddress, userAddress, memo, version }:
         script: embed,
         value: 0n,
     })
+
+    const vsize = (psbt as any).__CACHE.__TX.virtualSize(); // Accessing private property to get vsize
+    const feeRate = await fetchFee(version);
+    const fee = vsize * feeRate; // Calculate fee in satoshis
+
+    const changeSat = total - amount - fee;
+    if (changeSat < 0) {
+        throw new Error(`Total UTXO value: ${total} satoshi, Amount: ${amount} satoshi, Fee: ${fee} satoshi, Change: ${changeSat} satoshi`);
+    }
+
+    psbt.addOutput({
+        address: userAddress,
+        value: BigInt(changeSat),
+    });
 
     return { psbt, utxos }
 }
@@ -98,6 +114,18 @@ async function fetchRawTxHex(txid: string, version?: 'mainnet' | 'testnet'): Pro
     const res = await fetch(url)
     if (!res.ok) throw new Error(res.statusText)
     return res.text()
+}
+
+async function fetchFee(version?: 'mainnet' | 'testnet'): Promise<number> {
+    try {
+        const url = `https://mempool.space${version === 'testnet' ? '/testnet' : ''}/api/v1/fees/recommended`;
+        const res = await axios.get(url)
+        return res.data.economyFee
+    }
+    catch (error) {
+        console.error('Error fetching fee:', error);
+        throw new Error('Failed to fetch fee');
+    }
 }
 
 interface Utxo {

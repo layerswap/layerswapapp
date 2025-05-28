@@ -54,11 +54,11 @@ const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddre
             }
             const isTestnet = network.name === KnownInternalNames.Networks.BitcoinTestnet;
 
-            amount = Math.floor(amount * 1e8); // Convert to satoshis
+            const amountInSatoshi = Math.floor(amount * 1e8); // Convert to satoshis
             const hexMemo = Number(callData).toString(16);
 
             const { psbt, inputsToSign, utxos } = await transactionBuilder({
-                amount,
+                amount: amountInSatoshi,
                 depositAddress,
                 userAddress: wallet?.address,
                 memo: hexMemo,
@@ -70,8 +70,8 @@ const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddre
 
             if (utxos.length === 0) {
                 throw new Error(`Insufficient balance.`);
-            } else if (balance < amount) {
-                throw new Error(`Insufficient balance. Available: ${balance}, Required: ${amount}`);
+            } else if (balance < amountInSatoshi) {
+                throw new Error(`Insufficient balance. Available: ${balance}, Required: ${amountInSatoshi}`);
             }
 
             const psbtHex = psbt.toHex();
@@ -95,14 +95,11 @@ const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddre
             const tx = signedPsbt.extractTransaction()
             const txHex = tx.toHex();
 
-            const fee = signedPsbt.getFee();
-            const vsize = tx.virtualSize();
-            debugger
-            // const txHash = await sendUTXOTransaction(network.node_url, txHex);
-
-            // if (txHash) {
-            //     setSwapTransaction(swapId, BackendTransactionStatus.Pending, txHash);
-            // }
+            const txHash = await sendUTXOTransaction(network.node_url, txHex);
+debugger
+            if (txHash) {
+                setSwapTransaction(swapId, BackendTransactionStatus.Pending, txHash);
+            }
 
         }
         catch (e) {
@@ -111,7 +108,7 @@ const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddre
         finally {
             setLoading(false)
         }
-    }, [swapId, depositAddress, network, token, amount, callData])
+    }, [swapId, depositAddress, network, token, amount, callData, wallet, connector])
 
     if (!wallet) {
         return <ConnectWalletButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} />
