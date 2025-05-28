@@ -8,7 +8,7 @@ type TransactionBuilderParams = {
     userAddress: string,
     memo: string,
     version?: 'mainnet' | 'testnet'
-    publicClient?: Client<Transport<string, Record<string, any>, BtcRpcRequestFn>, Chain> // Replace with actual type if available
+    publicClient?: Client<Transport<string, Record<string, any>, BtcRpcRequestFn>, Chain>
 }
 
 export const transactionBuilder = async (props: TransactionBuilderParams & {}) => {
