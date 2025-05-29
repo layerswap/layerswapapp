@@ -60,7 +60,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
         if (currencyMenuItems?.[0])
             setFieldValue(name, currencyMenuItems?.[0]?.baseObject)
         return () => { setFieldValue(name, null) }
-    }, [])
+    }, [currencyMenuItems])
 
     useEffect(() => {
         if (!isLoading && exchangesData) {
