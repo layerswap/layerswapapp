@@ -75,9 +75,7 @@ export type WalletConnectParameters = Compute<
 >
 
 export function rainbow(parameters: WalletConnectParameters) {
-  const isRainbowInjected = hasInjectedProvider({ flag: 'isRainbow' });
-  const shouldUseWalletConnect = !isRainbowInjected;
-  return shouldUseWalletConnect ? walletConnect(parameters) : getInjectedConnector({ flag: 'isRainbow' })({ id: 'rainbow', name: 'My Rainbow' });
+  return walletConnect(parameters)
 }
 
 walletConnect.type = 'rainbow' as const
@@ -116,9 +114,9 @@ export function walletConnect(parameters: WalletConnectParameters) {
 
   return createConnector<Provider, Properties, StorageItem>((config) => {
     return ({
-      id: 'rainbow',
+      id: 'me.rainbow',
       name: 'Rainbow',
-      rdns: 'rainbow',
+      rdns: 'rainbow.wc',
       deepLink: 'rainbow://wc',
       resolveURI: (uri: string) => {
         return isAndroid()

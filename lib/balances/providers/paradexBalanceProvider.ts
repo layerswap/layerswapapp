@@ -10,7 +10,6 @@ export class ParadexBalanceProvider {
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
-
         try {
             const environment = process.env.NEXT_PUBLIC_API_VERSION === 'sandbox' ? 'testnet' : 'prod'
             const config = await Paradex.Config.fetchConfig(environment);
@@ -21,24 +20,27 @@ export class ParadexBalanceProvider {
             const result: TokenBalance[] = []
 
             for (const token of tokens) {
+                try {
+                    const getBalanceResult = await Paradex.Paraclear.getTokenBalance({
+                        provider: paraclearProvider, //account can be passed as the provider
+                        config,
+                        account: { address },
+                        token: token.symbol,
+                    });
 
-                const getBalanceResult = await Paradex.Paraclear.getTokenBalance({
-                    provider: paraclearProvider, //account can be passed as the provider
-                    config,
-                    account: { address },
-                    token: token.symbol,
-                });
-                
-                const balance = {
-                    network: network.name,
-                    token: token.symbol,
-                    amount: Number(getBalanceResult.size),
-                    request_time: new Date().toJSON(),
-                    decimals: Number(token?.decimals),
-                    isNativeCurrency: false
+                    const balance = {
+                        network: network.name,
+                        token: token.symbol,
+                        amount: Number(getBalanceResult.size),
+                        request_time: new Date().toJSON(),
+                        decimals: Number(token?.decimals),
+                        isNativeCurrency: false
+                    }
+                    result.push(balance)
                 }
-                result.push(balance)
-
+                catch (e) {
+                    console.log(`Error fetching balance for token ${token.symbol}:`, e)
+                }
             }
             return result
         }

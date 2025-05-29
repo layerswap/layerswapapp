@@ -7,7 +7,7 @@ import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
 import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
 import WalletIcon from '../../../../icons/WalletIcon';
 import { WithdrawPageProps } from '../WalletTransferContent';
-import { ButtonWrapper, ConnectWalletButton } from '../WalletTransfer/buttons';
+import { ConnectWalletButton, SendTransactionButton } from '../WalletTransfer/buttons';
 import useSWRBalance from '../../../../../lib/balances/useSWRBalance';
 import { useSettingsState } from '../../../../../context/settings';
 import WalletMessage from '../../messages/Message';
@@ -103,9 +103,7 @@ const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapI
             />
             {
                 wallet && !loading &&
-                <ButtonWrapper isDisabled={!!loading || !callData} isSubmitting={!!loading || !callData} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
-                    {error ? 'Try again' : 'Send from wallet'}
-                </ButtonWrapper>
+                <SendTransactionButton isDisabled={!!loading || !callData} isSubmitting={!!loading || !callData} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} error={!!error} />
             }
         </div>
     )

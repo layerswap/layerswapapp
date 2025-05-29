@@ -22,6 +22,7 @@ const GLobalFooter = () => {
                 icon: () => (
                     <TwitterLogo className="h-6 w-6" aria-hidden="true" />
                 ),
+                sendEvent: true
             },
             {
                 name: 'Discord',
@@ -29,6 +30,7 @@ const GLobalFooter = () => {
                 icon: () => (
                     <DiscordLogo className="h-6 w-6" aria-hidden="true" />
                 ),
+                sendEvent: true
             },
             {
                 name: 'GitHub',
@@ -46,9 +48,6 @@ const GLobalFooter = () => {
             },
         ],
     }
-
-    const version = process.env.NEXT_PUBLIC_API_VERSION
-    const isMaintenance = process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true'
 
     return (
         <>
@@ -69,7 +68,24 @@ const GLobalFooter = () => {
                     </div>
                     <div className="flex space-x-6 px-6">
                         {footerNavigation.social.map((item) => (
-                            <Link target="_blank" key={item.name} href={item.href} className="text-gray-400 hover:text-gray-500">
+                            <Link
+                                target="_blank"
+                                key={item.name}
+                                href={item.href}
+                                onClick={() => {
+                                    if(item.sendEvent) {
+                                        window.safary?.track({
+                                            eventType: 'click',
+                                            eventName: 'footer_social_click',
+                                            parameters: {
+                                                custom_str_1_label: 'social',
+                                                custom_str_1_value: item.name,
+                                            }
+                                        })
+                                    }
+                                }}
+                                className="text-gray-400 hover:text-gray-500"
+                            >
                                 <span className="sr-only">{item.name}</span>
                                 <item.icon />
                             </Link>

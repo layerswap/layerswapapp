@@ -2,7 +2,7 @@ import { Dispatch, FC, SetStateAction, useEffect, useMemo, useRef, useState } fr
 import useWallet from "../../hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
 import { InternalConnector, Wallet, WalletProvider } from "../../Models/WalletProvider";
-import { Check, CircleX, Link2Off, RotateCw, Search, SlidersHorizontal, XCircle } from "lucide-react";
+import { CircleX, Link2Off, RotateCw, Search, SlidersHorizontal, XCircle } from "lucide-react";
 import { resolveWalletConnectorIcon } from "../../lib/wallets/utils/resolveWalletIcon";
 import { QRCodeSVG } from "qrcode.react";
 import CopyButton from "../buttons/copyButton";
@@ -55,7 +55,20 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             setSelectedConnector(connector)
             if (connector.installUrl) return
 
-            const result = provider?.connectConnector && await provider.connectConnector({ connector })
+            const result = provider?.connectWallet && await provider.connectWallet({ connector })
+
+            window.safary?.track({
+                eventName: 'connected_wallet',
+                eventType: 'connect',
+                parameters: {
+                    custom_str_1_label: 'wallet_name',
+                    custom_str_1_value: connector.name,
+                    custom_str_2_label: 'network',
+                    custom_str_2_value: provider.id,
+                    custom_str_3_label: 'address',
+                    custom_str_3_value: result?.address || '',
+                }
+            })
 
             if (result && connector && provider) {
                 setRecentConnectors((prev) => [...(prev?.filter(v => v.providerName !== provider.name) || []), { providerName: provider.name, connectorName: connector.name }])

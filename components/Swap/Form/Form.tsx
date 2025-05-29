@@ -33,10 +33,6 @@ const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
     loading: () => <></>,
 });
 
-const Address = dynamic(() => import("../../Input/Address"), {
-    loading: () => <></>,
-});
-
 const SwapForm: FC<Props> = ({ partner }) => {
     const {
         values,

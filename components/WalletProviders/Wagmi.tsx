@@ -9,17 +9,13 @@ import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createConfig } from 'wagmi';
 import { Chain, http } from 'viem';
-import { WalletModalProvider } from '../WalletModal';
 import { argent } from '../../lib/wallets/connectors/argent';
 import { rainbow } from '../../lib/wallets/connectors/rainbow';
 import { metaMask } from '../../lib/wallets/connectors/metamask';
 import { coinbaseWallet, walletConnect } from '@wagmi/connectors'
-import { hasInjectedProvider } from '../../lib/wallets/connectors/getInjectedConnector';
 import { bitget } from '../../lib/wallets/connectors/bitget';
 import { isMobile } from '../../lib/isMobile';
-import FuelProviderWrapper from "./FuelProvider";
 import { browserInjected } from "../../lib/wallets/connectors/browserInjected";
-import { useSyncProviders } from "../../lib/wallets/connectors/useSyncProviders";
 import { okxWallet } from "../../lib/wallets/connectors/okxWallet";
 
 type Props = {
@@ -36,62 +32,45 @@ const rnbw_inited = rainbow({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: 
 const btgt_inited = bitget({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'bitget' })
 const okx_inited = okxWallet({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: false, customStoragePrefix: 'okxWallet' })
 
-
-
 function WagmiComponent({ children }: Props) {
     const settings = useSettingsState();
     const isChain = (c: Chain | undefined): c is Chain => c != undefined
+    const settingsChains = settings?.networks
+        .sort((a, b) => (NetworkSettings.KnownSettings[a.name]?.ChainOrder || Number(a.chain_id)) - (NetworkSettings.KnownSettings[b.name]?.ChainOrder || Number(b.chain_id)))
+        .filter(net => net.type === NetworkType.EVM
+            && net.node_url
+            && net.token)
+        .map(resolveChain).filter(isChain) as Chain[]
 
-    const providers = useSyncProviders();
-    const isMetaMaskInjected = hasInjectedProvider({ flag: 'isMetaMask' });
-    const isOkxInjected = providers?.some(provider => provider.info.name.toLowerCase() === 'okx wallet');
-    const isRainbowInjected = hasInjectedProvider({ flag: 'isRainbow' });
-    const isBitKeepInjected = hasInjectedProvider({
-        namespace: 'bitkeep.ethereum',
-        flag: 'isBitKeep',
+    const transports = {}
+
+    settingsChains.forEach(chain => {
+        transports[chain.id] = chain.rpcUrls.default.http[0] ? http(chain.rpcUrls.default.http[0]) : http()
+    })
+
+    const config = createConfig({
+        connectors: [
+            coinbaseWallet({
+                appName: 'Layerswap',
+                appLogoUrl: 'https://layerswap.io/app/symbol.png',
+            }),
+            wltcnnct_inited,
+            argent_inited,
+            metaMask_inited,
+            rnbw_inited,
+            btgt_inited,
+            okx_inited,
+            browserInjected()
+        ],
+        chains: settingsChains as [Chain, ...Chain[]],
+        transports: transports,
     });
 
-    const config = useMemo(() => {
-        const settingsChains = settings?.networks
-            .sort((a, b) => (NetworkSettings.KnownSettings[a.name]?.ChainOrder || Number(a.chain_id)) - (NetworkSettings.KnownSettings[b.name]?.ChainOrder || Number(b.chain_id)))
-            .filter(net => net.type === NetworkType.EVM
-                && net.node_url
-                && net.token)
-            .map(resolveChain).filter(isChain) as Chain[]
-
-        const transports = {}
-
-        settingsChains.forEach(chain => {
-            transports[chain.id] = chain.rpcUrls.default.http[0] ? http(chain.rpcUrls.default.http[0]) : http()
-        })
-
-        return createConfig({
-            connectors: [
-                coinbaseWallet({
-                    appName: 'Layerswap',
-                    appLogoUrl: 'https://layerswap.io/app/symbol.png',
-                }),
-                wltcnnct_inited,
-                argent_inited,
-                ...(!isMetaMaskInjected ? [metaMask_inited] : []),
-                ...(!isRainbowInjected ? [rnbw_inited] : []),
-                ...(!isBitKeepInjected ? [btgt_inited] : []),
-                ...(!isOkxInjected ? [okx_inited] : []),
-                browserInjected()
-            ],
-            chains: settingsChains as [Chain, ...Chain[]],
-            transports: transports,
-        })
-    }, [settings?.networks]);
 
     return (
         <WagmiProvider config={config} >
             <QueryClientProvider client={queryClient}>
-                <FuelProviderWrapper>
-                    <WalletModalProvider>
-                        {children}
-                    </WalletModalProvider>
-                </FuelProviderWrapper>
+                {children}
             </QueryClientProvider>
         </WagmiProvider >
     )

@@ -182,7 +182,7 @@ export const FormSourceWalletButton: FC = () => {
     const walletNetwork = values.fromExchange ? undefined : values.from
 
     const { provider } = useWallet(walletNetwork, 'withdrawal')
-    const { isWalletModalOpen, cancel, selectedConnector } = useConnectModal()
+    const { isWalletModalOpen, cancel, selectedConnector, connect } = useConnectModal()
 
     const handleWalletChange = () => {
         setOpenModal(true)
@@ -204,9 +204,9 @@ export const FormSourceWalletButton: FC = () => {
         setOpenModal(false)
     }
 
-    const connect = async () => {
+    const handleConnect = async () => {
         setMounWalletPortal(true)
-        const result = await provider?.connectWallet()
+        const result = await connect(provider)
         if (result) {
             handleSelectWallet(result, result.address)
         }
@@ -216,7 +216,7 @@ export const FormSourceWalletButton: FC = () => {
 
     if (!availableWallets.length && walletNetwork) {
         return <>
-            <Connect connectFn={connect} />
+            <Connect connectFn={handleConnect} />
             {
                 mountWalletPortal && values.from?.deposit_methods?.includes('deposit_address') && values.depositMethod !== 'deposit_address' && !selectedConnector &&
                 <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
