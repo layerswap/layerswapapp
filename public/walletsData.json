@@ -1,5 +1,5 @@
 {
-  "count": 527,
+  "count": 530,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -2733,6 +2733,63 @@
       ],
       "slug": "compass-wallet",
       "updatedAt": "2024-07-01T09:05:00.034613+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "12f913ed1cba36d11c175ffaea4157864f3363a690ecf3cc24e9683ef9ce2915": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=org.tucop",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": null,
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:42220"
+      ],
+      "description": "TuCOP Wallet is the first Colombian virtual wallet that simplifies your everyday use of money.",
+      "desktop": {
+        "native": "",
+        "universal": null
+      },
+      "homepage": "https://tucop.xyz/",
+      "id": "12f913ed1cba36d11c175ffaea4157864f3363a690ecf3cc24e9683ef9ce2915",
+      "image_id": "2d38bfd6-85dc-41b5-a125-a0eca4100200",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/2d38bfd6-85dc-41b5-a125-a0eca4100200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/2d38bfd6-85dc-41b5-a125-a0eca4100200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/2d38bfd6-85dc-41b5-a125-a0eca4100200?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "myapp://tucop",
+        "universal": null
+      },
+      "name": "TuCOP Wallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "tucop-wallet",
+      "updatedAt": "2025-05-28T16:22:21.234658+00:00",
       "versions": [
         "1",
         "2"
@@ -15527,6 +15584,71 @@
         "2"
       ]
     },
+    "67f1ec404dbf3bddc509b5fcf615850e05b28c287ccd7167b4fe81b4293ac9df": {
+      "app": {
+        "android": "https://www.kucoin.com/download",
+        "browser": "",
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "https://www.kucoin.com/download",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:137",
+        "eip155:321",
+        "eip155:42161",
+        "eip155:43114",
+        "eip155:56",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "description": "Find the Next Crypto Gem",
+      "desktop": {
+        "native": "",
+        "universal": null
+      },
+      "homepage": "https://www.kucoin.com/Web3",
+      "id": "67f1ec404dbf3bddc509b5fcf615850e05b28c287ccd7167b4fe81b4293ac9df",
+      "image_id": "70d8a90b-457b-4c04-4bc3-791e97caab00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/70d8a90b-457b-4c04-4bc3-791e97caab00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/70d8a90b-457b-4c04-4bc3-791e97caab00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/70d8a90b-457b-4c04-4bc3-791e97caab00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "kucoin:///wallet/walletConnect",
+        "universal": null
+      },
+      "name": "KuCoin Web3 Wallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "kucoin-web3-wallet",
+      "updatedAt": "2025-02-27T20:13:00.702464+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "682095eadf8c068064ffc2777e7e9d936469debda32c997b301b79f9cd87cd54": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=io.yooba.main",
@@ -22602,6 +22724,69 @@
       "updatedAt": "2021-12-20T13:00:01.498413+00:00",
       "versions": [
         "1"
+      ]
+    },
+    "a0c4b25a00028162432d173d110dbd8ee086a01c3a00f94d97f70b779d25c794": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.saify",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "https://apps.apple.com/app/saify-crypto-wallet-app/id6737464724",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:43114",
+        "eip155:56",
+        "eip155:8453"
+      ],
+      "description": "Saify is a cryptocurrency wallet app that manages assets across major blockchains and offers customisable fun themes.",
+      "desktop": {
+        "native": "",
+        "universal": null
+      },
+      "homepage": "https://saify.com/",
+      "id": "a0c4b25a00028162432d173d110dbd8ee086a01c3a00f94d97f70b779d25c794",
+      "image_id": "83e459aa-7e2c-45cf-1c6c-c71286f34c00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/83e459aa-7e2c-45cf-1c6c-c71286f34c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/83e459aa-7e2c-45cf-1c6c-c71286f34c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/83e459aa-7e2c-45cf-1c6c-c71286f34c00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "saify://",
+        "universal": null
+      },
+      "name": "Saify",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "saify",
+      "updatedAt": "2025-05-30T09:48:55.930662+00:00",
+      "versions": [
+        "1",
+        "2"
       ]
     },
     "a0e04f1086aac204d4ebdd5f985c12ed226cd0006323fd8143715f9324da58d1": {
@@ -35489,5 +35674,5 @@
       ]
     }
   },
-  "total": 527
+  "total": 530
 }
