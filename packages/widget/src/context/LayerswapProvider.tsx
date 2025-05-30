@@ -86,7 +86,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
 
 export const LayerswapProvider: typeof LayerswapProviderComponent = (props) => {
     return (
-        <>
+        <div className="layerswap-styles bg-transparent">
             {
                 props.themeData &&
                 <ColorSchema themeData={props.themeData} />
@@ -94,6 +94,6 @@ export const LayerswapProvider: typeof LayerswapProviderComponent = (props) => {
             <LayerswapProviderComponent  {...props}>
                 {props.children}
             </LayerswapProviderComponent>
-        </>
+        </div>
     )
 }
