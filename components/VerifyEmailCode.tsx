@@ -4,8 +4,8 @@ import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useAuthDataUpdate, useAuthState, UserType } from '../context/authContext';
 import { useTimerState } from '../context/timerContext';
-import LayerSwapApiClient from '../lib/layerSwapApiClient';
-import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
+import LayerSwapApiClient from '../lib/apiClients/layerSwapApiClient';
+import LayerSwapAuthApiClient from '../lib/apiClients/userAuthApiClient';
 import { AuthConnectResponse } from '../Models/LayerSwapAuth';
 import SubmitButton from './buttons/submitButton';
 import { DocIframe } from './docInIframe';

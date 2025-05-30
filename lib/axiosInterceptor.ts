@@ -2,7 +2,7 @@ import axios from "axios";
 import { parseJwt } from "./jwtParser";
 import TokenService from "./TokenService";
 import { AuthRefreshFailedError } from './Errors/AuthRefreshFailedError';
-import LayerSwapApiClient from "./layerSwapApiClient";
+import LayerSwapApiClient from "./apiClients/layerSwapApiClient";
 import { datadogRum } from "@datadog/browser-rum";
 
 type TokenStates = {

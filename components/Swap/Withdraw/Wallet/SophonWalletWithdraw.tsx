@@ -1,6 +1,6 @@
 import { FC, useCallback, useState } from 'react'
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { BackendTransactionStatus } from '../../../../lib/apiClients/layerSwapApiClient';
 import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
 import { useAccount, useConfig } from 'wagmi';
 import useWallet from '../../../../hooks/useWallet';

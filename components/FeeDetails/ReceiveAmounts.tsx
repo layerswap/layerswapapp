@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { Token } from "../../Models/Network";
 import { ArrowRight, Fuel } from "lucide-react";
-import { Quote } from "../../lib/layerSwapApiClient";
+import { Quote } from "../../lib/apiClients/layerSwapApiClient";
 import { roundDecimals } from "../utils/RoundDecimals";
 
 type WillReceiveProps = {

@@ -1,4 +1,4 @@
-import { FC, useCallback, useState } from 'react'
+import { FC, useCallback, useMemo, useState } from 'react'
 import toast from 'react-hot-toast';
 import useWallet from '../../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../.././../../../stores/swapTransactionStore';
@@ -9,12 +9,12 @@ import TransactionMessages from '../../messages/TransactionMessages';
 import { datadogRum } from '@datadog/browser-rum';
 import { useConnectModal } from '../../../../WalletModal';
 import { useAccount, useConfig } from '@bigmi/react';
-import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
-import { transactionBuilder } from './transactionBuilder';
+import { BackendTransactionStatus } from '../../../../../lib/apiClients/layerSwapApiClient';
 import { Psbt } from 'bitcoinjs-lib';
 import { UTXOWalletProvider } from '@bigmi/client/dist/esm/connectors/types';
 import KnownInternalNames from '../../../../../lib/knownIds';
-import { sendUTXOTransaction } from './sendTransaction';
+import { transactionBuilder } from './transactionBuilder';
+import { JsonRpcClient } from '../../../../../lib/apiClients/jsonRpcClient';
 
 const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {
     const [loading, setLoading] = useState(false);
@@ -25,6 +25,7 @@ const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddre
     const { connector } = useAccount()
     const wallet = provider?.activeWallet
     const dataLoading = !amount || !depositAddress || !network || !token || !swapId || !callData
+    const isTestnet = network?.name === KnownInternalNames.Networks.BitcoinTestnet;
 
     const config = useConfig()
     const publicClient = config.getClient()
@@ -43,16 +44,18 @@ const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddre
         }
     }, [provider])
 
+    const rpcClient = useMemo(() => {
+        return network && new JsonRpcClient(isTestnet ? 'https://bitcoin-testnet-rpc.publicnode.com' : network.node_url);
+    }, [network]);
 
     const handleTransfer = useCallback(async () => {
         setTransactionErrorMessage(undefined)
 
         try {
             setLoading(true)
-            if (!amount || !depositAddress || !network || !token || !swapId || !callData || !wallet || !connector) {
+            if (!amount || !depositAddress || !network || !token || !swapId || !callData || !wallet || !connector || !rpcClient) {
                 throw new Error('Missing required parameters for transfer');
             }
-            const isTestnet = network.name === KnownInternalNames.Networks.BitcoinTestnet;
 
             const amountInSatoshi = Math.floor(amount * 1e8); // Convert to satoshis
             const hexMemo = Number(callData).toString(16);
@@ -63,7 +66,8 @@ const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddre
                 userAddress: wallet?.address,
                 memo: hexMemo,
                 version: isTestnet ? 'testnet' : 'mainnet',
-                publicClient
+                publicClient,
+                rpcClient
             });
 
             const balance = utxos.reduce((sum, u) => sum + u.value, 0)
@@ -95,8 +99,8 @@ const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddre
             const tx = signedPsbt.extractTransaction()
             const txHex = tx.toHex();
 
-            const txHash = await sendUTXOTransaction(network.node_url, txHex);
-debugger
+            const txHash = await rpcClient?.call<string[], string>('sendrawtransaction', [txHex]);
+
             if (txHash) {
                 setSwapTransaction(swapId, BackendTransactionStatus.Pending, txHash);
             }
@@ -108,7 +112,7 @@ debugger
         finally {
             setLoading(false)
         }
-    }, [swapId, depositAddress, network, token, amount, callData, wallet, connector])
+    }, [swapId, depositAddress, network, token, amount, callData, wallet, connector, rpcClient, isTestnet])
 
     if (!wallet) {
         return <ConnectWalletButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} />

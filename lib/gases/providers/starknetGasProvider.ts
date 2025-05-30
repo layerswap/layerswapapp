@@ -2,7 +2,7 @@ import { GasProps } from "../../../Models/Balance";
 import { Network } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
-import InternalApiClient from "../../internalApiClient";
+import InternalApiClient from "../../apiClients/internalApiClient";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { EstimateFee } from "starknet";
 import { useRouter } from "next/router";

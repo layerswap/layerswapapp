@@ -5,7 +5,7 @@ import { Partner } from "../../../Models/Partner"
 import AddressPicker, { AddressTriggerProps } from "./AddressPicker"
 import useSWR from "swr"
 import { ApiResponse } from "../../../Models/ApiResponse"
-import LayerSwapApiClient, { AddressBookItem } from "../../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { AddressBookItem } from "../../../lib/apiClients/layerSwapApiClient"
 import { useAuthState } from "../../../context/authContext"
 
 type AddressProps = {
