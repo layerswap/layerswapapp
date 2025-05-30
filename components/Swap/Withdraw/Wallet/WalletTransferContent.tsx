@@ -10,7 +10,6 @@ import { Network, NetworkType, Token } from "../../../../Models/Network";
 import TonWalletWithdrawStep from "./TonWalletWithdraw";
 import ParadexWalletWithdrawStep from "./paradex/index";
 import FuelWalletWithdrawStep from "./FuelWalletWithdrawal";
-import SophonWalletWithdraw from "./SophonWalletWithdraw";
 import TronWalletWithdraw from "./TronWalletWithdraw";
 import SVMWalletWithdrawStep from "./SVMWalletWithdraw";
 import BitcoinWalletWithdrawStep from "./BitcoinWalletWithdraw";
@@ -46,8 +45,6 @@ export const WalletTransferContent: FC = () => {
 
     const sourceIsFuel = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.FuelMainnet?.toUpperCase()
         || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.FuelTestnet?.toUpperCase();
-    const sourceIsSophon = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SophonMainnet?.toUpperCase()
-        || source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.SophonSepolia?.toUpperCase();
 
     const sourceIsTron = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.TronMainnet?.toUpperCase()
     const sourceIsBitcoin = source_network_internal_name?.toUpperCase() === KnownInternalNames.Networks.BitcoinMainnet?.toUpperCase()
@@ -126,15 +123,6 @@ export const WalletTransferContent: FC = () => {
             swapId={swap?.id}
             callData={callData}
         />
-    else if (sourceIsSophon)
-        return <SophonWalletWithdraw
-            amount={amount}
-            depositAddress={depositAddress}
-            network={swap?.source_network}
-            token={swap?.source_token}
-            swapId={swap?.id}
-            callData={callData}
-        />;
     else if (sourceIsTron)
         return <TronWalletWithdraw
             amount={amount}
