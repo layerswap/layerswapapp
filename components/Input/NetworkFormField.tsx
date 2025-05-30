@@ -150,7 +150,18 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         if (item.baseObject.name === value?.baseObject.name)
             return
 
+        let exchnageCurrency;
+
         if (item.isExchange) {
+            const exchange = exchangesData?.find(e => e.name === item.baseObject.name);
+            if (fromCurrency || toCurrency) {
+                exchnageCurrency = exchange?.token_groups?.find(t => t.symbol === (direction === 'from' ? toCurrency?.symbol : fromCurrency?.symbol));
+                if (exchnageCurrency) {
+                    await setFieldValue("validatingCurrencyGroup", true, true)
+                    setFieldValue('currencyGroup', exchnageCurrency, true)
+                }
+            }
+            
             await setFieldValue(name, null)
             await setFieldValue(`${name}Currency`, null)
             await setFieldValue(`${name}Exchange`, item.baseObject, true)
@@ -158,7 +169,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             await setFieldValue(`${name}Exchange`, null)
             await setFieldValue(name, item.baseObject, true)
         }
-    }, [name, value]);
+    }, [name, value, fromCurrency, toCurrency, direction, exchangesData]);
 
     const isLocked = direction === 'from' ? !!lockFrom : !!lockTo
 

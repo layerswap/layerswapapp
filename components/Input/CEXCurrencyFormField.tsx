@@ -69,10 +69,20 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
                 const exchange = direction === 'from' ? fromExchange : toExchange
                 const value = exchangesData?.data?.find(r => r.name === exchange?.name)?.token_groups?.find(t => t.symbol === currencyGroup?.symbol)
 
+                let exchnageCurrency;
+                if (currency && currency.symbol !== currencyGroup?.symbol && !currencyGroup?.manuallySet) {
+                    exchnageCurrency = exchange?.token_groups?.find(t => t.symbol === (direction === 'from' ? toCurrency?.symbol : fromCurrency?.symbol));
+                    if (exchnageCurrency && currencyGroup?.symbol !== exchnageCurrency.symbol) {
+                        await setFieldValue("validatingCurrencyGroup", true, true);
+                        await setFieldValue(direction == "from" ? "validatingSource" : "validatingDestination", true, true)
+                        await setFieldValue('currencyGroup', exchnageCurrency, true);
+                    }
+                }
+
                 if (!value || value === currencyGroup) return
                 (value as any).manuallySet = currencyGroup?.manuallySet
+
                 await setFieldValue(name, value, true);
-                await setFieldValue(`${direction == "from" ? "to" : "from"}Currency`, currency, true)
                 await setFieldValue("validatingCurrencyGroup", false, true)
             })();
         }
