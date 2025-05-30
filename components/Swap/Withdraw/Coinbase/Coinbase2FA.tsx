@@ -4,7 +4,7 @@ import { FC, useCallback, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useSwapDataState } from '../../../../context/swap';
 import { useTimerState } from '../../../../context/timerContext';
-import LayerSwapApiClient from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient from '../../../../lib/apiClients/layerSwapApiClient';
 import { ApiError, LSAPIKnownErrorCode } from '../../../../Models/ApiError';
 import SubmitButton from '../../../buttons/submitButton';
 import SpinIcon from '../../../icons/spinIcon';

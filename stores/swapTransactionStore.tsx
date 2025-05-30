@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import { BackendTransactionStatus, TransactionStatus } from '../lib/layerSwapApiClient';
+import { BackendTransactionStatus, TransactionStatus } from '../lib/apiClients/layerSwapApiClient';
 
 type SwapTransaction = {
     hash: string;

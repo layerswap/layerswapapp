@@ -11,7 +11,7 @@ import { useQueryState } from "../../context/query";
 import CurrencyFormField from "./CurrencyFormField";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
-import LayerSwapApiClient from "../../lib/layerSwapApiClient";
+import LayerSwapApiClient from "../../lib/apiClients/layerSwapApiClient";
 import { RouteNetwork } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";

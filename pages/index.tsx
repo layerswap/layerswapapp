@@ -5,7 +5,7 @@ import { getServerSideProps } from '../helpers/getSettings'
 import { SWRConfig, mutate } from 'swr'
 import { SwapStatus } from '../Models/SwapStatus'
 import { useEffect } from 'react'
-import LayerSwapApiClient from '../lib/layerSwapApiClient'
+import LayerSwapApiClient from '../lib/apiClients/layerSwapApiClient'
 import { resolveExchangesURLForSelectedToken, resolveRoutesURLForSelectedToken } from '../helpers/routes'
 
 export default function Home({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {

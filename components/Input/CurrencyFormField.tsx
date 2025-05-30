@@ -7,7 +7,7 @@ import { ResolveCurrencyOrder, SortAscending } from "../../lib/sorting";
 import { truncateDecimals } from "../utils/RoundDecimals";
 import { useQueryState } from "../../context/query";
 import { RouteNetwork, RouteToken } from "../../Models/Network";
-import LayerSwapApiClient from "../../lib/layerSwapApiClient";
+import LayerSwapApiClient from "../../lib/apiClients/layerSwapApiClient";
 import useSWR from "swr";
 import { ApiResponse } from "../../Models/ApiResponse";
 import { Balance } from "../../Models/Balance";

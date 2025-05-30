@@ -9,7 +9,7 @@ import { Exchange, ExchangeToken } from "../../Models/Exchange";
 import { resolveExchangesURLForSelectedToken } from "../../helpers/routes";
 import { ApiResponse } from "../../Models/ApiResponse";
 import useSWR from "swr";
-import LayerSwapApiClient from "../../lib/layerSwapApiClient";
+import LayerSwapApiClient from "../../lib/apiClients/layerSwapApiClient";
 import RouteIcon from "./RouteIcon";
 import { useSettingsState } from "../../context/settings";
 

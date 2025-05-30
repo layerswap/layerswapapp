@@ -2,7 +2,7 @@ import { useRouter } from "next/router"
 import { FC, useCallback } from "react"
 import Image from 'next/image'
 import { Gift } from "lucide-react"
-import LayerSwapApiClient, { Campaign } from "../../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { Campaign } from "../../../lib/apiClients/layerSwapApiClient"
 import useSWR from "swr"
 import { ApiResponse } from "../../../Models/ApiResponse"
 import SubmitButton from "../../buttons/submitButton";
