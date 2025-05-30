@@ -76,7 +76,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
                 await setFieldValue("validatingCurrencyGroup", false, true)
             })();
         }
-    }, [fromCurrency, toCurrency, currencyGroup, exchangesData])
+    }, [fromCurrency, toCurrency, currencyGroup, exchangesData, fromExchange, toExchange, direction])
 
     const handleSelect = useCallback(async (item: SelectMenuItem<ExchangeToken>) => {
         const oppositeCurrency = direction === 'from' ? toCurrency : fromCurrency

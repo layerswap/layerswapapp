@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { Dispatch, FC, SetStateAction, useCallback, useEffect, useRef } from "react";
+import { Dispatch, FC, SetStateAction, useCallback, useEffect, useMemo, useRef } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import PopoverSelectWrapper from "../Select/Popover/PopoverSelectWrapper";
@@ -60,7 +60,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
         error
     )
     const currencyAsset = direction === 'from' ? fromCurrency?.symbol : toCurrency?.symbol;
-    const value = currencyMenuItems?.find(x => x.id == currencyAsset);
+    const value = useMemo(() => currencyMenuItems?.find(x => x.id == currencyAsset), [currencyMenuItems, currencyAsset]);
 
     useEffect(() => {
         if (direction !== "to") return
