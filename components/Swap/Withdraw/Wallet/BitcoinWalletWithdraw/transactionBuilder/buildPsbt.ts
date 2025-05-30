@@ -1,84 +1,109 @@
-import axios from "axios";
-import { Psbt, Transaction, networks, opcodes, script } from 'bitcoinjs-lib';
-import { TransactionBuilderParams } from "./types";
-import { estimateFee } from "./estimateFee";
+import axios from 'axios'
+import { Psbt, Transaction, networks, opcodes, script } from 'bitcoinjs-lib'
+import type { TransactionBuilderParams, Utxo } from './types'
+import { estimateFee } from './estimateFee'
 
-export interface Utxo {
-    txid: string
-    vout: number
-    value: number
-    status: { confirmed: boolean; block_height?: number }
+const MIN_FEE = 1000n // sats, as BigInt
+
+async function fetchUtxos(
+  address: string,
+  version: 'mainnet' | 'testnet',
+): Promise<Utxo[]> {
+  const base = `https://mempool.space${version === 'testnet' ? '/testnet' : ''}`
+  const { data } = await axios.get<Utxo[]>(`${base}/api/address/${address}/utxo`)
+  return data
 }
 
-export async function buildPsbt({ amount, depositAddress, userAddress, memo, version, rpcClient }: TransactionBuilderParams) {
+async function fetchAllRawTxs(
+  utxos: Utxo[],
+  version: 'mainnet' | 'testnet',
+): Promise<Record<string, Transaction>> {
+  const base = `https://mempool.space${version === 'testnet' ? '/testnet' : ''}/api/tx/`
+  const pairs = await Promise.all(
+    utxos.map(u =>
+      axios
+        .get<string>(`${base}${u.txid}/hex`)
+        .then(res => [u.txid, Transaction.fromHex(res.data)] as const),
+    ),
+  )
+  return Object.fromEntries(pairs)
+}
 
-    const utxos = await getUTXOs(userAddress, version);
-    let total = 0;
-    const psbt = new Psbt({ network: version == 'testnet' ? networks.testnet : networks.bitcoin });
-    for (const u of utxos) {
-        const rawHex = await fetchRawTxHex(u.txid, version)
-        const tx = Transaction.fromHex(rawHex)
-        const out = tx.outs[u.vout]
-        psbt.addInput({
-            hash: u.txid,
-            index: u.vout,
-            witnessUtxo: { script: out.script, value: out.value }
-        })
-        total += u.value;
+function selectUtxos(utxos: Utxo[], target: bigint): { selected: Utxo[]; total: bigint } {
+  const sorted = utxos.slice().sort((a, b) => a.value - b.value)
+  let sum = 0n
+  const selected: Utxo[] = []
+  for (const u of sorted) {
+    selected.push(u)
+    sum += BigInt(u.value)
+    if (sum >= target) break
+  }
+  if (sum < target) {
+    throw new Error(`Insufficient funds: need ${target} sats, have only ${sum}`)
+  }
+  return { selected, total: sum }
+}
+
+export async function buildPsbt({
+  amount,         // sats to send
+  depositAddress, // where funds go
+  userAddress,    // change address
+  memo,           // OP_RETURN data
+  version,        // 'mainnet' | 'testnet'
+  rpcClient,      // for estimateFee
+}: TransactionBuilderParams) {
+  const network = version === 'testnet' ? networks.testnet : networks.bitcoin
+
+  // fetch & cache
+  const utxos = await fetchUtxos(userAddress, version)
+  const rawTxMap = await fetchAllRawTxs(utxos, version)
+
+  // validate memo
+  const data = Buffer.from(memo || '', 'utf8')
+  if (data.length > 80) throw new Error('Memo too long; max 80 bytes')
+
+  let psbt: Psbt
+  let fee = MIN_FEE
+  let totalSelected: bigint
+
+  // 4️⃣ iterate until selection covers amount + fee
+  do {
+    const target = BigInt(amount) + fee
+    const { selected, total } = selectUtxos(utxos, target)
+    totalSelected = total
+
+    // build a fresh PSBT
+    psbt = new Psbt({ network })
+
+    // inputs
+    for (const u of selected) {
+      const tx = rawTxMap[u.txid]
+      const out = tx.outs[u.vout]
+      psbt.addInput({
+        hash: u.txid,
+        index: u.vout,
+        witnessUtxo: { script: out.script, value: out.value },
+      })
     }
 
+    // main output
     psbt.addOutput({ address: depositAddress, value: BigInt(amount) })
 
-    const data = Buffer.from(memo, 'utf8')
-    if (data.length > 80) throw new Error('Memo too long; must be ≤ 80 bytes')
-
-    const embed = script.compile([
-        opcodes.OP_RETURN,
-        data,
-    ])
-
+    // OP_RETURN
     psbt.addOutput({
-        script: embed,
-        value: 0n,
+      script: script.compile([opcodes.OP_RETURN, data]),
+      value: 0n,
     })
 
-    // Check if we have enough funds
-    const minFee = 1000; // Minimum reasonable fee
-    if (total < amount + minFee) {
-        throw new Error('Insufficient funds');
-    }
+    // re‐estimate fee on this draft PSBT
+    fee = BigInt((await estimateFee(psbt, rpcClient, version)).toFixed())
+  } while (totalSelected < BigInt(amount) + fee)
 
-    const fee = await estimateFee(psbt, rpcClient, version, utxos);
-console.log(fee)
-    const changeSat = Number((total - amount - Number(fee)).toFixed());
-    if (changeSat < 0) {
-        throw new Error(`Total UTXO value: ${total} satoshi, Amount: ${amount} satoshi, Fee: ${fee} satoshi, Change: ${changeSat} satoshi`);
-    }
+  // 5️⃣ add change if any
+  const change = totalSelected - BigInt(amount) - fee
+  if (change > 0n) {
+    psbt.addOutput({ address: userAddress, value: change })
+  }
 
-    psbt.addOutput({
-        address: userAddress,
-        value: BigInt(changeSat),
-    });
-
-    return { psbt, utxos }
-}
-
-const getUTXOs = async (address: string, version?: 'mainnet' | 'testnet'): Promise<Utxo[]> => {
-    try {
-        const url = `https://mempool.space${version === 'testnet' ? '/testnet' : ''}/api/address/${address}/utxo`;
-        const utxosData = await axios.get<Utxo[]>(url)
-        const utxos = utxosData.data;
-
-        return utxos
-    } catch (error) {
-        console.error('Error fetching UTXOs:', error);
-        throw new Error('Failed to fetch UTXOs');
-    }
-}
-
-async function fetchRawTxHex(txid: string, version?: 'mainnet' | 'testnet'): Promise<string> {
-    const url = `https://mempool.space${version === 'testnet' ? '/testnet' : ''}/api/tx/${txid}/hex`;
-    const res = await fetch(url)
-    if (!res.ok) throw new Error(res.statusText)
-    return res.text()
+  return { psbt, utxos }
 }

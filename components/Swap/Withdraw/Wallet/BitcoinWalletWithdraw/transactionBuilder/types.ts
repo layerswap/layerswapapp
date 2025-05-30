@@ -11,3 +11,10 @@ export type TransactionBuilderParams = {
     publicClient?: Client<Transport<string, Record<string, any>, BtcRpcRequestFn>, Chain>
     rpcClient: JsonRpcClient
 }
+
+export interface Utxo {
+    txid: string
+    vout: number
+    value: number
+    status: { confirmed: boolean; block_height?: number }
+}
