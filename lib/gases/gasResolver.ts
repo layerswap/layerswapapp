@@ -13,7 +13,7 @@ import { ZkSyncGasProvider } from "./providers/zkSyncGasProvider";
 
 export class GasResolver {
     private providers = [
-        new BitcoinGasProvider(),
+        // new BitcoinGasProvider(),
         new StarknetGasProvider(),
         new EVMGasProvider(),
         new FuelGasProvider(),
