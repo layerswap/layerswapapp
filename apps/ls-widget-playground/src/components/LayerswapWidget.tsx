@@ -11,7 +11,8 @@ export const WidgetPage = () => {
                 <LayerswapProvider
                     apiKey={process.env.NEXT_PUBLIC_LAYERSWAP_API_KEY as string}
                     integrator="test"
-                    themeData={themeData}>
+                    themeData={themeData}
+                >
                     <Swap />
                 </LayerswapProvider>
             </div>

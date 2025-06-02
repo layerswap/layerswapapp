@@ -23,9 +23,7 @@ interface RgbColor {
     g: number;
     b: number;
 }
-// const handleClick = (radius: string) => {
-//         updateTheme('borderRadius', radius as ThemeData['borderRadius']);
-//     };
+
 export function ColorBox({ rgbColor, colorKey }: ColorPickerProps) {
     const { updateTheme, themeData } = useTheme();
     const cssColor = `rgb(${rgbColor})`;

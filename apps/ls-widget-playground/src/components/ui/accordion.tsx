@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import * as React from "react"
 import * as AccordionPrimitive from "@radix-ui/react-accordion"
@@ -35,7 +35,7 @@ function AccordionTrigger({
       <AccordionPrimitive.Trigger
         data-slot="accordion-trigger"
         className={cn(
-          "focus-visible:border-ring focus-visible:ring-ring/50 flex flex-1 rounded-md  bg-transparent  border-secondary-500 dark:text-primary-text bg-secondary-700 placeholder:text-secondary-text items-start justify-between gap-4 py-2 px-3 text-left text-sm  transition-all outline-none  focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&[data-state=open]>svg]:rotate-180",
+          "focus-visible:border-ring focus-visible:ring-ring/50 flex flex-1 rounded-md  bg-transparent  border-secondary-500 dark:text-primary-text bg-secondary-700 placeholder:text-secondary-text items-start justify-between gap-4 p-3 text-left text-base  transition-all outline-none  focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&[data-state=open]>svg]:rotate-180",
           className
         )}
         {...props}

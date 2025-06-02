@@ -2,7 +2,7 @@ import { FC } from 'react'
 import { Switch } from '@headlessui/react'
 import { classNames } from '../utils/classNames';
 
-export class ToggleButtonProps {
+export interface ToggleButtonProps {
     value: boolean;
     onChange: (isChecked: boolean) => void;
     disabled?: boolean;
@@ -60,5 +60,3 @@ const ToggleButton: FC<ToggleButtonProps> = ({ onChange, value, disabled = false
 }
 
 export default ToggleButton
-
-

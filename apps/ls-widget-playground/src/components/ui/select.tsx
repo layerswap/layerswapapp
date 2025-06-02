@@ -37,7 +37,7 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "flex h-10 w-full items-center justify-between rounded-md border bg-transparent py-2 px-3 text-sm bg-secondary-700 placeholder:text-secondary-text focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50 border-secondary-500 dark:text-primary-text",
+        "flex w-full items-center justify-between rounded-md border bg-transparent p-3  text-base bg-secondary-700 placeholder:text-secondary-text focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50 border-secondary-500 dark:text-primary-text",
         className
       )}
       {...props}
@@ -92,7 +92,7 @@ function SelectLabel({
   return (
     <SelectPrimitive.Label
       data-slot="select-label"
-      className={cn("py-1.5 pr-2 pl-8 text-sm font-semibold text-primary-text-muted", className)}
+      className={cn("py-1.5 pr-2 pl-8 text-base font-semibold text-primary-text-muted", className)}
       {...props}
     />
   )
@@ -107,12 +107,12 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "relative flex cursor-default select-none items-center rounded-sm py-1.5 pr-2 pl-8 text-sm outline-none focus:bg-slate-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-secondary-500",
+        "relative flex cursor-default select-none items-center rounded-sm p-3  pl-8 text-base outline-none focus:bg-slate-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-secondary-500",
         className
       )}
       {...props}
     >
-      <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+      <span className="absolute left-2 flex  w-3.5 items-center justify-center">
         <SelectPrimitive.ItemIndicator>
           <CheckIcon className="size-4 text-primary" />
         </SelectPrimitive.ItemIndicator>

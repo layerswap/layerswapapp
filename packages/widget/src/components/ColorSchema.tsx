@@ -9,7 +9,7 @@ const BORDER_RADIUS_VALUES = {
     small: 6,
     medium: 8,
     large: 12,
-    extraLarge: 16 
+    extraLarge: 16
 };
 
 const adjustBorderRadius = (key: string, borderRadiusType: string | undefined) => {
@@ -25,10 +25,10 @@ const adjustBorderRadius = (key: string, borderRadiusType: string | undefined) =
     const selected = values[borderRadiusType as keyof typeof values];
 
     if (!selected) {
-        return `${BORDER_RADIUS_VALUES[key]}px`;
+        return `${BORDER_RADIUS_VALUES[key as keyof typeof BORDER_RADIUS_VALUES]}px`;
     }
 
-    return `${selected[key]}px`;
+    return `${selected[key as keyof typeof values]}px`;
 };
 
 const ColorSchema: FC<Props> = ({ themeData }) => {
@@ -41,7 +41,7 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
     const placeholderText = themeData?.placeholderText || fallbackTheme.placeholderText;
     const headerLogo = themeData?.headerLogo || fallbackTheme.headerLogo;
     const borderRadius = themeData?.borderRadius || fallbackTheme.borderRadius;
-    
+
     const primary = themeData?.primary || fallbackTheme.primary;
     const secondary = themeData?.secondary || fallbackTheme.secondary;
 
