@@ -28,22 +28,25 @@ const PageComponent: FC<{ settings: LayerSwapSettings }> = ({ settings }) => {
                 // }
             }}
         >
-            <LayerswapProvider
-                integrator='experimental'
-                settings={settings}
-                version='mainnet'
-                apiKey='NDBxG+aon6WlbgIA2LfwmcbLU52qUL9qTnztTuTRPNSohf/VnxXpRaJlA5uLSQVqP8YGIiy/0mz+mMeZhLY4/Q'
-            >
-                <CustomHooks >
-                    <Swap
-                        featuredNetwork={{
-                            initialDirection: 'from',
-                            network: 'LINEA_MAINNET',
-                            oppositeDirectionOverrides: 'onlyExchanges'
-                        }}
-                    />
-                </CustomHooks>
-            </LayerswapProvider>
+            <div className="max-w-lg mx-auto flex flex-col justify-center place-self-center h-screen rounded-lg">
+                <LayerswapProvider
+                    integrator='experimental'
+                    settings={settings}
+                    version='mainnet'
+                    themeData={{ enablePortal: false, borderRadius: 'extraLarge' }}
+                    apiKey='NDBxG+aon6WlbgIA2LfwmcbLU52qUL9qTnztTuTRPNSohf/VnxXpRaJlA5uLSQVqP8YGIiy/0mz+mMeZhLY4/Q'
+                >
+                    <CustomHooks >
+                        <Swap
+                            featuredNetwork={{
+                                initialDirection: 'from',
+                                network: 'LINEA_MAINNET',
+                                oppositeDirectionOverrides: 'onlyExchanges'
+                            }}
+                        />
+                    </CustomHooks>
+                </LayerswapProvider>
+            </div>
         </DynamicContextProvider>
     )
 }

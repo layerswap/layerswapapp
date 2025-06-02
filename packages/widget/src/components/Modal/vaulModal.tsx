@@ -112,9 +112,9 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
                 <Drawer.Content
                     data-testid="content"
-                    className={clsx('fixed sm:absolute flex flex-col bg-secondary-900 rounded-t-xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text !ring-0 !outline-none ', {
+                    className={clsx('fixed flex flex-col bg-secondary-900 rounded-t-xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text !ring-0 !outline-none ', {
                         '!border-none !rounded-none': snap === 1,
-                        '!absolute': AppSettings.ThemeData?.enablePortal == false,
+                        '!fixed sm:!absolute': AppSettings.ThemeData?.enablePortal == true,
                     })}
                 >
                     <div
