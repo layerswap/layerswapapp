@@ -11,7 +11,7 @@ export default function Home({ settings, apiKey, themeData }: InferGetServerSide
         integrator='experimental'
         apiKey={apiKey}
         settings={settings}
-        themeData={{ ...themeData, borderRadius: 'default', enablePortal: false }}
+        themeData={{ ...themeData, borderRadius: 'default', enablePortal: true }}
       >
         <Swap />
       </LayerswapProvider>

@@ -10,14 +10,14 @@ import ErrorFallback from "../components/ErrorFallback";
 import QueryProvider from "./query";
 import { THEME_COLORS, ThemeData } from "../Models/Theme";
 import { TooltipProvider } from "../components/shadcn/tooltip";
-import ColorSchema from "../components/ColorSchema";
 import { AsyncModalProvider } from "./asyncModal";
 import WalletsProviders from "../components/Wallet/WalletProviders";
 import { IntercomProvider } from 'react-use-intercom';
 import AppSettings from "../lib/AppSettings";
 import { getSettings } from "../helpers/getSettings";
-import WidgetLoading from "../components/WidgetLoading";
+import { WidgetLoading } from "../components/WidgetLoading";
 import LayerSwapApiClient from "../lib/layerSwapApiClient";
+import ColorSchema from "../components/ColorSchema";
 
 export type LayerswapContextProps = {
     children?: JSX.Element | JSX.Element[];
@@ -41,7 +41,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
 
     AppSettings.ApiVersion = version
     AppSettings.Integrator = integrator
-    AppSettings.ThemeData = themeData
+    AppSettings.ThemeData = { ...THEME_COLORS['default'], ...themeData }
     LayerSwapApiClient.apiKey = apiKey
 
     useEffect(() => {
@@ -59,7 +59,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
 
     let appSettings = new LayerSwapAppSettings(settings)
 
-    themeData = themeData || THEME_COLORS.default
+    themeData = { ...THEME_COLORS['default'], ...themeData }
 
     return (
         <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
@@ -87,13 +87,15 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
 export const LayerswapProvider: typeof LayerswapProviderComponent = (props) => {
     return (
         <>
-            {
-                props.themeData &&
-                <ColorSchema themeData={props.themeData} />
-            }
-            <LayerswapProviderComponent  {...props}>
-                {props.children}
-            </LayerswapProviderComponent>
+            <ColorSchema themeData={props.themeData} />
+            <div
+                style={{ backgroundColor: 'transparent' }}
+                className="layerswap-styles">
+                <LayerswapProviderComponent  {...props}>
+                    {props.children}
+                </LayerswapProviderComponent>
+            </div>
         </>
+
     )
 }
