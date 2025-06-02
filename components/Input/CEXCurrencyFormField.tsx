@@ -95,9 +95,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
             const network = direction === 'to' ? from : to
             const default_currency = network?.tokens?.find(t => t.symbol === item.baseObject.symbol) || network?.tokens?.find(t => t.symbol.includes(item.baseObject.symbol) || item.baseObject.symbol.includes(t.symbol))
             if (default_currency) {
-                await setFieldValue("validatingDestination", true, true)
-                await setFieldValue("validatingSource", true, true)
-                await setFieldValue("validatingCurrencyGroup", true, true)
+                await setFieldValue(direction == "from" ? "validatingDestination" : "validatingSource", true, true)
                 await setFieldValue(`${direction == "from" ? "to" : "from"}Currency`, default_currency, true)
             }
         }
