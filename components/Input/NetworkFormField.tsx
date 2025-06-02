@@ -166,6 +166,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
             await setFieldValue(`${name}Currency`, null)
             await setFieldValue(`${name}Exchange`, item.baseObject, true)
         } else {
+            await setFieldValue(direction == "from" ? "validatingSource" : "validatingDestination", true, true)
             await setFieldValue(`${name}Exchange`, null)
             await setFieldValue(name, item.baseObject, true)
         }

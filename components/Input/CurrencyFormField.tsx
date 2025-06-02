@@ -154,6 +154,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 (value as any).manuallySet = toCurrency.manuallySet
                 await setFieldValue(name, value)
                 await setFieldValue("validatingDestination", false, true)
+                await setFieldValue("validatingSource", false, true)
             })()
         }
     }, [fromCurrency, currencyGroup, name, to, routes, error, isLoading])
@@ -166,6 +167,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 (value as any).manuallySet = fromCurrency.manuallySet
                 await setFieldValue(name, value)
                 await setFieldValue("validatingSource", false, true)
+                await setFieldValue("validatingDestination", false, true)
             })()
         }
     }, [toCurrency, currencyGroup, name, from, routes, error, isLoading])
@@ -179,7 +181,6 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
             if (default_currency) {
                 await setFieldValue("validatingCurrencyGroup", true, true)
                 await setFieldValue("currencyGroup", default_currency, true)
-                await setFieldValue(direction == "from" ? "validatingSource" : "validatingDestination", true, true)
             }
         }
 
@@ -188,8 +189,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
             const default_currency = network?.tokens?.find(t => t.symbol === item.baseObject.symbol) || network?.tokens?.find(t => t.symbol.includes(item.baseObject.symbol) || item.baseObject.symbol.includes(t.symbol))
             if (default_currency) {
-                await setFieldValue("validatingDestination", true, true)
-                await setFieldValue("validatingSource", true, true)
+                await setFieldValue(direction == "from" ? "validatingDestination" : "validatingSource", true, true)
                 await setFieldValue(`${direction == "from" ? "to" : "from"}Currency`, default_currency, true)
             }
         }
