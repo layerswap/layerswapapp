@@ -89,6 +89,12 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         }
     }
     else if (!validatingSource && !validatingDestination && !validatingCurrencyGroup && (currencyGroup?.status === 'not_found' || toCurrency?.status === 'not_found' || fromCurrency?.status === 'not_found')) {
+        console.log("currencyGroup", currencyGroup)
+        console.log("toCurrency", toCurrency)
+        console.log("fromCurrency", fromCurrency)
+        console.log("validatingSource", validatingSource)
+        console.log("validatingDestination", validatingDestination)
+        console.log("validatingCurrencyGroup", validatingCurrencyGroup)
         validationMessage = 'Please change one of the selected tokens';
         validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
     }
