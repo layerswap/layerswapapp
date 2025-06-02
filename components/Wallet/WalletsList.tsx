@@ -258,21 +258,21 @@ const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddre
             </div>
             <div className="inline-flex gap-2">
                 {
-                    nestedWalletBalanceAmount && token &&
-                    <span className="text-sm flex space-x-2 justif-end">
-                        <div className="text-right text-secondary-text font-normal text-sm">
-                            {
-                                isBalanceLoading ?
-                                    <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
-                                    :
-                                    <>
-                                        <span>{nestedWalletBalanceAmount}</span> <span>{token?.symbol}</span>
-                                    </>
-                            }
-                        </div>
-                        :
-                        <></>
-                    </span>
+                    nestedWalletBalanceAmount && token && (
+                        <span className="text-sm flex space-x-2 justify-end">
+                            <div className="text-right text-secondary-text font-normal text-sm">
+                                {
+                                    isBalanceLoading ? (
+                                        <div className="h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse" />
+                                    ) : (
+                                        <>
+                                            <span>{nestedWalletBalanceAmount}</span> <span>{token?.symbol}</span>
+                                        </>
+                                    )
+                                }
+                            </div>
+                        </span>
+                    )
                 }
                 {
                     isNestedSelected &&
