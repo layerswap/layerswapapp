@@ -13,11 +13,13 @@ type Props = {
     onSelect: (route: Route, token: RouteToken) => void
     openValues: string[]
     scrollContainerRef: RefObject<HTMLDivElement>
+    allbalancesLoaded: boolean;
 }
-export default function Row({ item, direction, selectedRoute, selectedToken, toggleContent, onSelect, openValues, scrollContainerRef }: Props) {
+export default function Row({ item, direction, selectedRoute, selectedToken, toggleContent, onSelect, openValues, allbalancesLoaded, scrollContainerRef }: Props) {
     if (item.type == "network" || item.type == "exchange") {
         const route = item.route
         return <NetworkCexRow
+            allbalancesLoaded={allbalancesLoaded}
             scrollContainerRef={scrollContainerRef}
             key={route.name}
             route={route}
@@ -36,7 +38,9 @@ export default function Row({ item, direction, selectedRoute, selectedToken, tog
         return <div
             className={`pl-5 cursor-pointer hover:bg-secondary-300 ${isSelected ? "bg-secondary-300" : ""} outline-none disabled:cursor-not-allowed`}
             onClick={() => onSelect(route, token)}
-        ><CurrencySelectItemDisplay
+        >
+            <CurrencySelectItemDisplay
+                allbalancesLoaded={allbalancesLoaded}
                 item={token}
                 selected={false}
                 route={route}

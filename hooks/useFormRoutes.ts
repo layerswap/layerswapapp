@@ -8,6 +8,8 @@ import { useEffect, useMemo, useState } from "react";
 import { useSettingsState } from "../context/settings";
 import { Exchange } from "../Models/Exchange";
 import { NetworkElement, RowElement, RoutesGroup, NetworkTokenElement, _Route, _RoutesGroup, ExchangeTokenElement, ExchangeElement, TitleElement } from "../Models/Route";
+import useAllBalances from "./useAllBalances";
+import { NetworkBalance } from "../Models/Balance";
 
 type Props = {
     direction: SwapDirection;
@@ -18,22 +20,37 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const { networkRoutes, isLoading: networkRoutesLoading } = useNetworkRoutes({ direction, values })
     const { exchangesRoutes, isLoading: exchangesRoutesLoading } = useExchangeRoutes({ direction, values })
 
-    const allRoutes = useMemo(() => [...networkRoutes, ...exchangesRoutes], [networkRoutes, exchangesRoutes])
+    const allRoutes = useMemo(() => {
+        return [...networkRoutes, ...exchangesRoutes]
+    }, [networkRoutes, exchangesRoutes])
 
     const isLoading = networkRoutesLoading || exchangesRoutesLoading
 
-    const routeElements = useMemo(() => groupRoutes(networkRoutes, exchangesRoutes, direction, search), [networkRoutes, exchangesRoutes, direction, search])
+    const balances = useAllBalances({ direction })
+
+    const routeElements = useMemo(() => groupRoutes(networkRoutes, exchangesRoutes, direction, balances, search), [networkRoutes, exchangesRoutes, balances, direction, search])
 
     const selectedRoute = useMemo(() => resolveSelectedRoute(values, direction), [values, direction])
     const selectedToken = useMemo(() => resolveSelectedToken(values, direction), [values, direction])
+    const allbalancesLoaded = useMemo(() => !!balances, [balances])
+    const res = useMemo(() => {
+        return ({ allRoutes, isLoading, routeElements, selectedRoute, selectedToken, allbalancesLoaded })
+    }, [
+        allRoutes,
+        isLoading,
+        routeElements,
+        selectedRoute,
+        selectedToken,
+        allbalancesLoaded
+    ])
 
-    return { allRoutes, isLoading, routeElements, selectedRoute, selectedToken }
+    return res
 }
 
 function useNetworkRoutes({ direction, values }: Props) {
     const { destinationRoutes, sourceRoutes } = useSettingsState();
 
-    const networkRoutesURL = resolveNetworkRoutesURL(direction, values)
+    const networkRoutesURL = useMemo(() => resolveNetworkRoutesURL(direction, values), [direction, values])
     const apiClient = new LayerSwapApiClient()
     const {
         data: apiResponse,
@@ -47,14 +64,14 @@ function useNetworkRoutes({ direction, values }: Props) {
         if (!isLoading && apiResponse?.data) setRoutesData(apiResponse.data)
     }, [apiResponse])
 
-    return { networkRoutes, isLoading }
+    return useMemo(() => ({ networkRoutes, isLoading }), [networkRoutes, isLoading])
 }
 
 function useExchangeRoutes({ direction, values }: Props) {
     const { sourceExchanges, destinationExchanges } = useSettingsState();
 
     const apiClient = new LayerSwapApiClient()
-    const exchangeRoutesURL = resolveExchangesURLForSelectedToken(direction, values)
+    const exchangeRoutesURL = useMemo(() => resolveExchangesURLForSelectedToken(direction, values), [direction, values])
     const {
         data: apiResponse,
         isLoading,
@@ -67,7 +84,9 @@ function useExchangeRoutes({ direction, values }: Props) {
         if (!isLoading && apiResponse?.data) setExchangesData(apiResponse.data)
     }, [apiResponse])
 
-    return { exchangesRoutes: exchangesRoutes.map(r => ({ ...r, cex: true } as { cex: true } & Exchange)), isLoading }
+    const res = useMemo(() => exchangesRoutes.map(r => ({ ...r, cex: true } as { cex: true } & Exchange)), [exchangesRoutes])
+
+    return useMemo(() => ({ exchangesRoutes: res, isLoading }), [res, isLoading])
 }
 
 function resolvePopularRoutes(routes: NetworkRoute[], direction: SwapDirection) {
@@ -82,9 +101,9 @@ function resolvePopularRoutes(routes: NetworkRoute[], direction: SwapDirection) 
 }
 
 
-function groupRoutes(networkRoutes: NetworkRoute[], exchangesRoutes: ({ cex: true } & Exchange)[], direction: SwapDirection, search?: string): RowElement[] {
+function groupRoutes(networkRoutes: NetworkRoute[], exchangesRoutes: ({ cex: true } & Exchange)[], direction: SwapDirection, balances: Record<string, NetworkBalance> | null, search?: string): RowElement[] {
     if (search) {
-        const networks = networkRoutes.filter(r => r.name.toLowerCase().includes(search.toLowerCase())).map((r): NetworkElement => ({ type: 'network', route: { ...r, cex: false } }))
+        const networks = networkRoutes.filter(r => r.name.toLowerCase().includes(search.toLowerCase())).map((r): NetworkElement => ({ type: 'network', route: { ...r, cex: false } })).sort((a, b) => (balances?.[a.route.name]?.totalInUSD || 0) - (balances?.[b.route.name]?.totalInUSD || 0))
         const networkrksTitle: TitleElement[] = networks.length > 0 ? [{
             type: 'group_title',
             text: "Networks"
@@ -116,13 +135,13 @@ function groupRoutes(networkRoutes: NetworkRoute[], exchangesRoutes: ({ cex: tru
 
     const popularRoutes = resolvePopularRoutes(networkRoutes, direction)
 
-    const popularNetworks = networkRoutes.filter(r => popularRoutes?.includes(r.name)).map((r): NetworkElement => ({ type: 'network', route: { ...r, cex: false } }))
+    const popularNetworks = networkRoutes.filter(r => popularRoutes?.includes(r.name)).map((r): NetworkElement => ({ type: 'network', route: { ...r, cex: false } })).sort((a, b) => (balances?.[b.route.name]?.totalInUSD || 0) - (balances?.[a.route.name]?.totalInUSD || 0))
     const popularesTitle: TitleElement[] = popularNetworks.length > 0 ? [{
         type: 'group_title',
         text: "Popular"
     }] : []
 
-    const networks = networkRoutes.filter(r => !popularRoutes?.includes(r.name)).map((r): NetworkElement => ({ type: 'network', route: { ...r, cex: false } }))
+    const networks = networkRoutes.filter(r => !popularRoutes?.includes(r.name)).map((r): NetworkElement => ({ type: 'network', route: { ...r, cex: false } })).sort((a, b) => (balances?.[b.route.name]?.totalInUSD || 0) - (balances?.[a.route.name]?.totalInUSD || 0))
     const networksTitle: TitleElement[] = networks.length > 0 ? [{
         type: 'group_title',
         text: "All Networks"

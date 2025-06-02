@@ -148,7 +148,7 @@ export default function useParadex(): WalletProvider {
         const providers = [evmProvider, starknetProvider]
         const paradexProvider = providers.find(p => p?.connectedWallets?.find(w => w.id === wallet.id))
         const paradexWallet = paradexProvider?.connectedWallets?.find(w => w.id === wallet.id)
-        
+
         if (paradexProvider?.switchAccount && paradexWallet && wallet.metadata?.l1Address)
             paradexProvider.switchAccount(paradexWallet, wallet.metadata?.l1Address)
         if (paradexProvider?.name)
@@ -161,6 +161,14 @@ export default function useParadex(): WalletProvider {
         }
         else if (selectedProvider === evmProvider.name && evmProvider?.activeWallet) {
             return resolveSingleWallet(evmProvider.activeWallet, name, paradexAccounts, removeParadexAccount, paradexNetwork?.logo)
+        }
+        else {
+            const wallets = [...(evmProvider.connectedWallets || []), ...(starknetProvider.connectedWallets || [])]
+            const defaultWallet = wallets.find(w => paradexAccounts?.[w.address.toLowerCase()])
+            if (defaultWallet) {
+                return resolveSingleWallet(defaultWallet, name, paradexAccounts, removeParadexAccount, paradexNetwork?.logo)
+            }
+            return undefined
         }
     }, [evmProvider.activeWallet, starknetProvider.activeWallet, selectedProvider])
 
@@ -194,6 +202,9 @@ const resolveSingleWallet = (wallet: Wallet, name: string, accounts: { [key: str
     const displayName = `${wallet.id} (${shortenAddress(wallet.address)})`
     return {
         ...wallet,
+        asSourceSupportedNetworks: [KnownInternalNames.Networks.ParadexMainnet, KnownInternalNames.Networks.ParadexTestnet],
+        withdrawalSupportedNetworks: [KnownInternalNames.Networks.ParadexMainnet, KnownInternalNames.Networks.ParadexTestnet],
+        autofillSupportedNetworks: [KnownInternalNames.Networks.ParadexMainnet, KnownInternalNames.Networks.ParadexTestnet],
         metadata: {
             ...wallet.metadata,
             l1Address: wallet.address

@@ -1,8 +1,7 @@
-import { NetworkBalance, TokenBalance } from "../../Models/Balance";
+import { NetworkBalance } from "../../Models/Balance";
 import { IBalanceProvider } from "../../Models/BalanceProvider";
 import { NetworkWithTokens } from "../../Models/Network";
 import { truncateDecimals } from "../../components/utils/RoundDecimals";
-import { useNetworksBalanceStore } from "../../stores/networksBalanceStore";
 import { EVMBalanceProvider } from "./providers/evmBalanceProvider";
 import { FuelBalanceProvider } from "./providers/fuelBalanceProvider";
 import { ImmutableXBalanceProvider } from "./providers/immutableXBalanceProvider";
@@ -35,7 +34,6 @@ export class BalanceResolver {
         try {
             if (!address)
                 throw new Error(`No address provided for network ${network.name}`)
-            useNetworksBalanceStore.getState().setNetwrkBalanceIsLoading(network.name)
             const provider = this.providers.find(p => p.supportsNetwork(network))
             //TODO: create interface for balance providers in case of empty state they shoudl throw error 
             //never return undefined as SWR does not set loading state if undefined is returned
@@ -49,17 +47,9 @@ export class BalanceResolver {
                 const formattedBalance = Number(truncateDecimals(b?.amount, tokenPrecision));
                 return acc + (formattedBalance * tokenPriceInUsd);
             }, 0)
-            useNetworksBalanceStore.getState().setNetworkBalance(network.name, {
-                balances: balances || [],
-                totalInUSD,
-                success: true
-            })
             return { balances, totalInUSD };
         }
         catch (e) {
-            useNetworksBalanceStore.getState().setNetworkBalance(network.name, {
-                success: false
-            })
             return { balances: [], totalInUSD: 0 }
         }
     }

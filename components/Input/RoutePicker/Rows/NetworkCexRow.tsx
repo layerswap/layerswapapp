@@ -5,6 +5,7 @@ import { SwapDirection } from "../../../DTOs/SwapFormValues";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "../../../shadcn/accordion";
 import { CurrencySelectItemDisplay, RouteSelectItemDisplay } from "../Routes";
 import ReactPortal from "../../../Common/ReactPortal";
+import { motion } from "framer-motion";
 
 function getSortedRouteTokens(route: Route) {
     if (route.cex) {
@@ -21,6 +22,7 @@ type RouteElementProps = {
     selectedToken: string | undefined;
     openValues?: string[]
     scrollContainerRef: RefObject<HTMLDivElement>
+    allbalancesLoaded: boolean;
 }
 export const NetworkCexRow = ({
     route,
@@ -31,6 +33,7 @@ export const NetworkCexRow = ({
     selectedToken,
     openValues,
     scrollContainerRef,
+    allbalancesLoaded
 }: RouteElementProps) => {
     const sortedTokens = getSortedRouteTokens(route)
 
@@ -66,7 +69,8 @@ export const NetworkCexRow = ({
         headerRef.current?.scrollIntoView({ block: "start", inline: "start" })
     }
 
-    return (<div>
+    return (<motion.div
+        layout="position">
         <AccordionItem value={route.name}>
             <div
                 ref={headerRef}
@@ -78,6 +82,7 @@ export const NetworkCexRow = ({
                         item={route}
                         selected={false}
                         direction={direction}
+                        allbalancesLoaded={allbalancesLoaded}
                     />
                 </AccordionTrigger>
             </div>
@@ -92,6 +97,7 @@ export const NetworkCexRow = ({
                                 item={route}
                                 selected={false}
                                 direction={direction}
+                                allbalancesLoaded={allbalancesLoaded}
                             />
                         </AccordionTrigger>
                     </div>
@@ -102,6 +108,7 @@ export const NetworkCexRow = ({
                     <div className="overflow-y-auto styled-scroll">
                         {sortedTokens?.map((token, index) => (
                             <TokenCommandWrapper
+                                allbalancesLoaded={allbalancesLoaded}
                                 key={`${route.name}-${token.symbol}`}
                                 token={token}
                                 route={route}
@@ -115,7 +122,7 @@ export const NetworkCexRow = ({
                 </div>
             </AccordionContent>
         </AccordionItem>
-    </div>)
+    </motion.div>)
 }
 
 
@@ -126,6 +133,7 @@ type TokenCommandWrapperProps = {
     onSelect: (route: Route, token: RouteToken) => void;
     selectedRoute: string | undefined;
     selectedToken: string | undefined;
+    allbalancesLoaded: boolean;
 }
 
 const TokenCommandWrapper = ({
@@ -134,7 +142,8 @@ const TokenCommandWrapper = ({
     direction,
     onSelect,
     selectedRoute,
-    selectedToken
+    selectedToken,
+    allbalancesLoaded
 }: TokenCommandWrapperProps) => {
     const tokenItemRef = useRef<HTMLDivElement>(null)
     const isSelected = selectedRoute === route.name && selectedToken === token.symbol
@@ -152,6 +161,7 @@ const TokenCommandWrapper = ({
             onClick={() => onSelect(route, token)}
         >
             <CurrencySelectItemDisplay
+                allbalancesLoaded={allbalancesLoaded}
                 item={token}
                 selected={isSelected}
                 route={route}

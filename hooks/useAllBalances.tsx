@@ -1,56 +1,42 @@
-import { useEffect, useMemo, useRef, useState } from "react"
-import { useSWRConfig, preload } from "swr"
 import useWallet from "./useWallet"
-import { BalanceResolver } from "../lib/balances/balanceResolver"
 import { useSettingsState } from "../context/settings"
-import { NetworkBalance, TokenBalance } from "../Models/Balance"
+import { getKey, useBalanceStore } from "../stores/balanceStore"
+import { SwapDirection } from "../components/DTOs/SwapFormValues"
+import { useEffect, useMemo } from "react"
+import { NetworkWithTokens } from "../Models/Network"
 
-const loadingState: { [key: string]: boolean } = {}
+type Props = {
+    direction: SwapDirection
+}
+export default function useAllBalances({ direction }: Props) {
+    const wallets = useWallet().wallets
+    const networks = useSettingsState().networks
+    const walletAddresses = useMemo(() => wallets.map(w => w.address).join(":"), [wallets])
+    const activeWallets = useMemo(() => wallets.filter(w => w.isActive), [walletAddresses])
 
-const useAllBalances = () => {
-    const { mutate } = useSWRConfig()
-    const { providers, wallets } = useWallet()
-    const balanceResolver = new BalanceResolver()
-    const { networks } = useSettingsState()
-    const [loading, setLoading] = useState(false)
-    const lockFetching = useRef(false)
-    const addressesKey = useMemo(() => wallets.map(w => w.addresses).join(","), [wallets])
+    const walletNetworks = useMemo(() => {
+        return activeWallets.map(wallet => {
+            const sourceNetworks = wallet.asSourceSupportedNetworks
+            const withdrawalNetworks = wallet.withdrawalSupportedNetworks
+            const networkNames = direction === 'from' ? sourceNetworks : withdrawalNetworks
+            if (!networkNames || networkNames.length === 0) return []
+
+            return networkNames.map(networkName => {
+                const network = networks.find(n => n.name === networkName)
+                if (!network) return null
+                return {
+                    address: wallet.address,
+                    network,
+                }
+            })
+        }).flat().filter(item => item !== null) as Array<{ address: string, network: NetworkWithTokens }>
+    }, [activeWallets, direction, networks])
 
     useEffect(() => {
-        setLoading(true)
-        // getAllBalances()
-    }, [addressesKey])
+        if (walletNetworks)
+            useBalanceStore.getState().initAllBalances(walletNetworks)
+    }, [walletNetworks])
 
-    async function getAllBalances() {
-        lockFetching.current = true
-        for (const provider of providers) {
-            const address = provider.activeWallet?.address
-            const providerNetworks = provider.withdrawalSupportedNetworks
-            if (!address || !providerNetworks) continue
-            if (loadingState[address]) continue
-            loadingState[address] = true
-            for (const network_name of providerNetworks) {
-                const network = networks.find(n => n.name === network_name)
-                if (!network) continue
-                const key = `/balances/${address}/${network.name}`
-                try {
-                    const data = await balanceResolver.getBalance(network, address)
-                    await mutate<NetworkBalance>(key, data)
-                }
-                catch (e) {
-                    console.error(e)
-                }
-                await sleep(2000)
-            }
-        }
-        setLoading(false)
-        lockFetching.current = false
-    }
-
-    return { loading }
+    const allBalances = useBalanceStore(s => s.allBalances)
+    return allBalances
 }
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-export default useAllBalances

@@ -1,12 +1,9 @@
 import { Exchange, ExchangeToken } from "../Models/Exchange";
 import { NetworkRoute, NetworkRouteToken } from "../Models/Network";
-import { Wallet } from "../Models/WalletProvider";
 import { SwapDirection } from "../components/DTOs/SwapFormValues";
-import { useNetworksBalanceStore } from "../stores/networksBalanceStore";
 import CurrencySettings from "./CurrencySettings";
 import ExchangeSettings from "./ExchangeSettings";
 import NetworkSettings from "./NetworkSettings";
-import { BalanceResolver } from "./balances/balanceResolver";
 
 export const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
 

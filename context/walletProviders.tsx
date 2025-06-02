@@ -20,7 +20,7 @@ const WalletProvidersContext = createContext<WalletProvider[]>([]);
 export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     const { networks } = useSettingsState();
     const { goBack, onFinish, open, setOpen, selectedConnector } = useConnectModal()
-
+    
     const evm = useEVM();
     const starknet = useStarknet();
     const imtblX = useImtblX();

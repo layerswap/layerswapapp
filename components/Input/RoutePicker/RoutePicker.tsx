@@ -17,8 +17,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     } = useFormikContext<SwapFormValues>();
 
     const [searchQuery, setSearchQuery] = useState("")
-    const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken } = useFormRoutes({ direction, values }, searchQuery)
-
+    const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken, allbalancesLoaded } = useFormRoutes({ direction, values }, searchQuery)
     const currencyFieldName = direction === 'from' ? 'fromCurrency' : 'toCurrency';
 
     useEffect(() => {
@@ -71,6 +70,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search">
                     {({ closeModal }) => (
                         <Content
+                            allbalancesLoaded={allbalancesLoaded}
                             onSelect={(r, t) => { handleSelect(r, t); closeModal(); }}
                             searchQuery={searchQuery}
                             setSearchQuery={setSearchQuery}
