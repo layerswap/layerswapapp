@@ -5,9 +5,10 @@ export function roundDecimals(value: number, decimals: number) {
     return Number(Math.ceil(Number(value + 'e' + decimals)) + 'e-' + decimals);
 }
 
-export function truncateDecimals(value: number, decimals?: number) {
-    return Number(value?.toFixed(decimals || 0));
-} 
+export function truncateDecimals(value: number, decimals: number = 0): string {
+    if (!Number.isFinite(value)) return "0";
+    return value.toFixed(decimals);
+}
 
 export function truncateDecimalsToFloor(number: number, decimalPlaces: number) {
     let factor = Math.pow(10, decimalPlaces);
