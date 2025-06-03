@@ -27,32 +27,33 @@ export class EVMBalanceProvider {
             const { createPublicClient, http } = await import("viem")
             const publicClient = createPublicClient({
                 chain,
-                transport: http()
+                transport: http(network.node_url, { retryCount: 1, timeout: 5000 })
             })
 
             let erc20Balances: TokenBalance[] = []
 
-            try {
-                const erc20BalancesContractRes = await getErc20Balances({
-                    address,
-                    assets: network.tokens,
-                    network,
-                    publicClient,
-                    hasMulticall: !!network.metadata?.evm_multicall_contract
-                });
-
-                const balances = (erc20BalancesContractRes && await resolveERC20Balances(
-                    erc20BalancesContractRes,
-                    network
-                )) || [];
-                erc20Balances = balances
-            } catch (e) {
-                console.log(e)
-            }
-
+            const erc20Promise = getErc20Balances({
+                address,
+                assets: network.tokens,
+                network,
+                publicClient,
+                hasMulticall: !!network.metadata?.evm_multicall_contract
+            });
             const nativeToken = network.token
-            const nativeBalanceData = await getTokenBalance(address as `0x${string}`, network)
-            const nativeBalance = (nativeToken && nativeBalanceData) && await resolveBalance(network, nativeToken, nativeBalanceData)
+            const nativePromise = getTokenBalance(address as `0x${string}`, network)
+
+            const [erc20BalancesContractRes, nativeBalanceData] = await Promise.all([
+                erc20Promise,
+                nativePromise,
+            ]);
+
+            const balances = (erc20BalancesContractRes && resolveERC20Balances(
+                erc20BalancesContractRes,
+                network
+            )) || [];
+            erc20Balances = balances
+
+            const nativeBalance = (nativeToken && nativeBalanceData) && resolveBalance(network, nativeToken, nativeBalanceData)
             let res: TokenBalance[] = []
             return res.concat(erc20Balances, nativeBalance ? [nativeBalance] : [])
         }
@@ -74,7 +75,7 @@ export type ERC20ContractRes = ({
     status: "success";
 })
 
-export const resolveERC20Balances = async (
+export const resolveERC20Balances = (
     multicallRes: ERC20ContractRes[],
     from: NetworkWithTokens,
 ) => {
@@ -126,7 +127,7 @@ export const getErc20Balances = async ({
             const config = createConfig({
                 chains: [chain],
                 transports: {
-                    [chain.id]: http()
+                    [chain.id]: http(network.node_url, { retryCount: 1, timeout: 5000 })
                 }
             })
 
@@ -182,9 +183,10 @@ export const getTokenBalance = async (address: `0x${string}`, network: Network, 
         const config = createConfig({
             chains: [chain],
             transports: {
-                [chain.id]: http()
+                [chain.id]: http(network.node_url, { retryCount: 1, timeout: 5000 })
             }
         })
+
         const res = await getBalance(config, {
             address,
             chainId: chain.id,
@@ -201,7 +203,7 @@ export const getTokenBalance = async (address: `0x${string}`, network: Network, 
 
 }
 
-export const resolveBalance = async (
+export const resolveBalance = (
     network: Network,
     token: Token,
     balanceData: GetBalanceReturnType
@@ -219,7 +221,7 @@ export const resolveBalance = async (
     return nativeBalance
 }
 
-export const resolveERC20Balance = async (
+export const resolveERC20Balance = (
     network: Network,
     token: Token,
     balanceData: GetBalanceReturnType
