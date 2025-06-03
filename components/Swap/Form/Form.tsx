@@ -208,8 +208,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
                             <DestinationPicker partner={partner} />
                         </div>}
                     </div>
-                    <Comp />
-
                     {
                         (((fromExchange && destination) || (toExchange && source)) && currencyGroup) ?
                             <div className="mb-6 leading-4">
@@ -245,12 +243,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
             </Form>
         </Widget>
     </AmountFocusProvider>
-}
-
-const Comp = () => {
-    const balances = useAllBalances({ direction: 'from' })
-    console.log("balances", balances)
-    return <></>
 }
 
 export default SwapForm

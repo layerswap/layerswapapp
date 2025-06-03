@@ -18,6 +18,7 @@ interface BalanceEntry {
 
 type Options = {
   dedupeInterval?: number,
+  ignoreCache?: boolean
 }
 
 interface BalanceStore {
@@ -27,7 +28,7 @@ interface BalanceStore {
   fetchBalance: (
     address: string,
     network: NetworkWithTokens,
-    options?: Options
+    options?: Options,
   ) => Promise<NetworkBalance>
 
   // new derived state + initializer
@@ -58,12 +59,12 @@ export const useBalanceStore = create<BalanceStore>()(
     fetchBalance: (address, network, options) => {
       const key = getKey(address, network)
       const entry = get().balances[key]
-      const dedupeInterval = options?.dedupeInterval ?? 200_000
+      const dedupeInterval = options?.dedupeInterval ?? 120_000
       const now = Date.now()
       const last = get().lastFetchMap[key] ?? 0
 
       if (entry?.promise) return entry.promise
-      if (entry && now - last < dedupeInterval) return Promise.resolve(entry.data!)  
+      if (!options?.ignoreCache && entry && now - last < dedupeInterval) return Promise.resolve(entry.data!)
 
       const queuedPromise = new Promise<NetworkBalance>((resolve, reject) => {
         const job = () => {
@@ -120,7 +121,7 @@ export const useBalanceStore = create<BalanceStore>()(
 
       // kick off every fetch
       pairs.forEach(({ address, network }) => {
-        get().fetchBalance(address, network, { dedupeInterval: 200_000 })
+        get().fetchBalance(address, network, { dedupeInterval: 120_000, ignoreCache: true })
       })
 
       // subscribe to balance map changes
