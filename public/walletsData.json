@@ -15587,7 +15587,7 @@
     "67f1ec404dbf3bddc509b5fcf615850e05b28c287ccd7167b4fe81b4293ac9df": {
       "app": {
         "android": "https://www.kucoin.com/download",
-        "browser": "",
+        "browser": null,
         "chrome": null,
         "edge": null,
         "firefox": null,
@@ -15633,7 +15633,7 @@
         "shortName": null
       },
       "mobile": {
-        "native": "kucoin:///wallet/walletConnect",
+        "native": "kucoin://wallet/walletConnect",
         "universal": null
       },
       "name": "KuCoin Web3 Wallet",
