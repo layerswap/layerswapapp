@@ -23,11 +23,11 @@ export default function ({ direction }: Props) {
         if (route.cex) {
             setFieldValue(currencyFieldName, null)
             setFieldValue(direction, null)
-            setFieldValue(`${direction}Exchange`, route, true)
+            setFieldValue(`${direction}Exchange`, route.name, true)
         }
         else {
             setFieldValue(`${direction}Exchange`, null)
-            setFieldValue(direction, route, true)
+            setFieldValue(direction, route.name, true)
         }
     }, [currencyFieldName, direction, values])
 
