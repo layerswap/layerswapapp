@@ -9,8 +9,8 @@ export const resolveExchangesURLForSelectedToken = (direction: SwapDirection, va
 
     const { from, to, fromCurrency, toCurrency } = values
 
-    const network = direction === "from" ? to?.name : from?.name
-    const token = direction === "from" ? toCurrency?.symbol : fromCurrency?.symbol
+    const network = direction === "from" ? to : from
+    const token = direction === "from" ? toCurrency : fromCurrency
 
     const params = new URLSearchParams({
         include_unmatched,
@@ -47,8 +47,8 @@ export const resolveNetworkRoutesURL = (direction: SwapDirection, values: SwapFo
     }
     else {
         const selectednetwork = direction === "from" ? to : from
-        const selectedToken = direction === "from" ? toCurrency?.symbol : fromCurrency?.symbol
-        return resolveRoutesURLForSelectedToken({ direction, network: selectednetwork?.name, token: selectedToken, includes: { unmatched: true, unavailable: true }, networkTypes })
+        const selectedToken = direction === "from" ? toCurrency : fromCurrency
+        return resolveRoutesURLForSelectedToken({ direction, network: selectednetwork, token: selectedToken, includes: { unmatched: true, unavailable: true }, networkTypes })
     }
 }
 
@@ -86,7 +86,7 @@ export const resolveRoutesURLForSelectedToken = ({ direction, network, token, in
 
 }
 
-export const resolveRoutesURLForSelectedAssetGroup = (direction: SwapDirection, currencyGroup: ExchangeToken, networkTypes?: string[]) => {
+export const resolveRoutesURLForSelectedAssetGroup = (direction: SwapDirection, currencyGroup: string, networkTypes?: string[]) => {
     const include_unmatched = 'true'
     const include_swaps = 'true'
     const include_unavailable = 'true'
@@ -96,7 +96,7 @@ export const resolveRoutesURLForSelectedAssetGroup = (direction: SwapDirection, 
         include_swaps,
         include_unavailable,
         ...(networkTypes ? { network_types: networkTypes?.join(',') } : {}),
-        [direction === 'to' ? 'source_token_group' : 'destination_token_group']: currencyGroup.symbol
+        [direction === 'to' ? 'source_token_group' : 'destination_token_group']: currencyGroup
     });
     const endpoint = direction === "to" ? '/exchange_destination_networks' : '/exchange_source_networks'
     return `${endpoint}?${parrams.toString()}`

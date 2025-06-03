@@ -14,32 +14,24 @@ import { SelectProps } from '../Shared/Props/SelectProps'
 import SpinIcon from '../../icons/spinIcon';
 import { LeafletHeight } from '../../modal/leaflet';
 import VaulDrawer from '../../modal/vaulModal';
+import { Route } from '../../../Models/Route';
 
 export interface CommandSelectProps extends SelectProps {
     show: boolean;
     setShow: (value: boolean) => void;
     searchHint: string;
-    valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
     isLoading: boolean;
     modalHeight?: LeafletHeight;
     modalContent?: React.ReactNode;
     header?: string;
 }
 
-export class SelectMenuItemGroup {
-    constructor(init?: Partial<SelectMenuItemGroup>) {
-        Object.assign(this, init);
-    }
 
-    name: string;
-    items: ISelectMenuItem[];
-}
 
-export default function CommandSelect({ values, setValue, show, setShow, searchHint, valueGrouper, isLoading, modalHeight = 'full', modalContent, header }: CommandSelectProps) {
+export default function CommandSelect({ values, setValue, show, setShow, searchHint, isLoading, modalHeight = 'full', modalContent, header }: CommandSelectProps) {
     const { isDesktop, isMobile, windowSize } = useWindowDimensions();
 
-    let groups: SelectMenuItemGroup[] = valueGrouper(values);
-    const handleSelectValue = useCallback((item: ISelectMenuItem) => {
+    const handleSelectValue = useCallback((item: Route) => {
         setValue(item);
         setShow(false);
     }, [setValue, setShow]);
@@ -72,12 +64,12 @@ export default function CommandSelect({ values, setValue, show, setShow, searchH
                         !isLoading ?
                             <CommandList>
                                 <CommandEmpty>No results found.</CommandEmpty>
-                                {groups.filter(g => g.items?.length > 0).map((group) => {
+                                {values.filter(g => g.routes?.length > 0).map((group) => {
                                     return (
                                         <CommandGroup key={group.name} heading={group.name}>
-                                            {group.items.map(item => {
+                                            {group.routes.map(item => {
                                                 return (
-                                                    <CommandItem value={item.name} key={item.id} onSelect={() => handleSelectValue(item)}>
+                                                    <CommandItem value={item.name} key={item.name} onSelect={() => handleSelectValue(item)}>
                                                         <SelectItem item={item} />
                                                     </CommandItem>
                                                 )
