@@ -15633,7 +15633,7 @@
         "shortName": null
       },
       "mobile": {
-        "native": "kucoin://wallet/walletConnect",
+        "native": "kucoin:///wallet/walletConnect",
         "universal": null
       },
       "name": "KuCoin Web3 Wallet",
@@ -18158,7 +18158,7 @@
         "firefox": null,
         "ios": "https://apps.apple.com/in/app/ancrypto/id1660898349",
         "linux": null,
-        "mac": "",
+        "mac": null,
         "opera": null,
         "safari": null,
         "windows": null
@@ -18176,13 +18176,13 @@
         "native": "",
         "universal": null
       },
-      "homepage": "https://www.ancrypto.io/",
+      "homepage": "https://gemspocket.com/",
       "id": "7de190d03faf1f15027a834801f045bc66640045b0d5a0daa4686d7fa89fab74",
-      "image_id": "8dee1c33-b277-4a5a-5ddd-5e70fd9d1800",
+      "image_id": "085ac257-f026-469d-4f6b-e947b6aa4a00",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/8dee1c33-b277-4a5a-5ddd-5e70fd9d1800?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/8dee1c33-b277-4a5a-5ddd-5e70fd9d1800?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/8dee1c33-b277-4a5a-5ddd-5e70fd9d1800?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/085ac257-f026-469d-4f6b-e947b6aa4a00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/085ac257-f026-469d-4f6b-e947b6aa4a00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/085ac257-f026-469d-4f6b-e947b6aa4a00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -18196,7 +18196,7 @@
         "native": "ancrypto://app",
         "universal": null
       },
-      "name": "Ancrypto",
+      "name": "Gems Pocket",
       "rdns": null,
       "sdks": [
         "sign_v1",
