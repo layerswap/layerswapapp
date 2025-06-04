@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 function Accordion({
   ...props
 }: React.ComponentProps<typeof AccordionPrimitive.Root>) {
-  return <AccordionPrimitive.Root data-slot="accordion" className="rounded-md border bg-transparent  border-secondary-500 dark:text-primary-text bg-secondary-700 placeholder:text-secondary-text " {...props} />
+  return <AccordionPrimitive.Root data-slot="accordion"  {...props} className={cn("rounded-md border bg-transparent  border-secondary-500 dark:text-primary-text bg-secondary-700 placeholder:text-secondary-text ", props.className)} />
 }
 
 function AccordionItem({
@@ -41,7 +41,7 @@ function AccordionTrigger({
         {...props}
       >
         {children}
-        <ChevronDownIcon className=" fill-currenttext-muted-foreground pointer-events-none size-4 shrink-0 translate-y-0.5 transition-transform duration-200  border-secondary-500 dark:text-secondary-text bg-secondary-700 placeholder:text-secondary-text" />
+        <ChevronDownIcon className=" fill-currenttext-muted-foreground pointer-events-none size-4 shrink-0 translate-y-0.5 transition-transform duration-200  dark:text-secondary-text placeholder:text-secondary-text" />
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>
   )
@@ -55,10 +55,10 @@ function AccordionContent({
   return (
     <AccordionPrimitive.Content
       data-slot="accordion-content"
-      className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm  border-secondary-500 dark:text-primary-text bg-secondary-700 placeholder:text-secondary-text px-3"
       {...props}
+      className={cn("data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm  border-secondary-500 dark:text-primary-text bg-secondary-700 placeholder:text-secondary-text px-3 pt-0 pb-4", className)}
     >
-      <div className={cn("pt-0 pb-4 ", className)}>{children}</div>
+      {children}
     </AccordionPrimitive.Content>
   )
 }

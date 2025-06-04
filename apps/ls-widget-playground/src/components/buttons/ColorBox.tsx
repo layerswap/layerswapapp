@@ -2,7 +2,7 @@
 import tinycolor from "tinycolor2";
 import Sketch from "@uiw/react-color-sketch";
 import { } from "@uiw/react-color-swatch"
-import { useTheme } from "@/context/ThemeContext";
+import { useTheme } from "@/context/ConfigContext";
 import { ThemeData } from "@layerswap/widget";
 import { Popover, PopoverContent, PopoverTrigger, } from "@/components/ui/popover"
 

@@ -1,6 +1,6 @@
 "use client";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, } from "@/components/ui/accordion"
-import { useTheme } from "@/context/ThemeContext";
+import { useTheme } from "@/context/ConfigContext";
 import { THEME_COLORS } from "@layerswap/widget";
 import { useMemo } from "react";
 import { ColorBox } from "./ColorBox";

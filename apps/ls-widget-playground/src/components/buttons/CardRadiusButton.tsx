@@ -1,15 +1,8 @@
 "use client";
 import * as React from "react"
-import { useTheme } from "@/context/ThemeContext";
+import { useTheme } from "@/context/ConfigContext";
 import { ThemeData } from '@layerswap/widget';
-import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select"
 
 export function CardRadiusButton() {
     const { updateTheme, themeData } = useTheme();

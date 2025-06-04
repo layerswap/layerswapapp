@@ -1,5 +1,5 @@
 "use client";
-import { useTheme } from "@/context/ThemeContext";
+import { useTheme } from "@/context/ConfigContext";
 import hljs from 'highlight.js';
 import { useEffect, useState } from "react";
 import { Files } from 'lucide-react';
@@ -28,7 +28,7 @@ export function CodeSegment() {
                 <TooltipTrigger asChild>
                     <Files className="absolute right-4 top-4 z-10 rounded-full bg-secondary-500  text-base text-white transition hover:bg-primary-500 p-1.5 h-8 w-auto hover:cursor-pointer" onClick={handleCopy} />
                 </TooltipTrigger>
-                <TooltipContent>
+                <TooltipContent >
                     <p>{copied ? "Copied!" : "Copy"}</p>
                 </TooltipContent>
             </Tooltip>

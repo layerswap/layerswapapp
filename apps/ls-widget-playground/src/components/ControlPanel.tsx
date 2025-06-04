@@ -1,5 +1,5 @@
 "use client";
-import { CardRadiusButton, ThemeButton, ResetButton, CloseButton, ColorsButton } from "./buttons";
+import { CardRadiusButton, NetworksButton, ResetButton, CloseButton, ColorsButton } from "./buttons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import clsx from "clsx";
 import { Code, Palette } from 'lucide-react';
@@ -49,6 +49,7 @@ export function ControlPanel() {
                     <div className="flex flex-col gap-4 w-full">
                         <CardRadiusButton />
                         <ColorsButton />
+                        <NetworksButton />
                     </div>
                 </TabsContent>
                 <TabsContent value="code">

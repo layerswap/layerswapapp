@@ -1,3 +1,4 @@
+import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings"
 import LayerSwapApiClient from "./layerSwapApiClient"
 
 export async function GetSettings() {
@@ -13,7 +14,7 @@ export async function GetSettings() {
 
     if (!networkData) return
 
-    const settings = {
+    const settings: LayerSwapAppSettings = {
         networks: networkData,
         sourceExchanges: sourceExchangesData || [],
         destinationExchanges: destinationExchangesData || [],

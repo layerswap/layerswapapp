@@ -1,10 +1,15 @@
 import { X } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipTrigger, } from "@/components/ui/tooltip"
+
 export function CloseButton() {
     return (
-        <button
-            type='button'
-            className='p-1 rounded-full bg-transparent hover:bg-primary-500 transition-colors '>
-            <X className="w-5 h-5" />
-        </button>
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <X className=' w-8 h-8 p-1 rounded-full bg-transparent hover:bg-primary-500 transition-colors ' />
+            </TooltipTrigger >
+            <TooltipContent >
+                <p>Close</p>
+            </TooltipContent>
+        </Tooltip>
     );
 }
