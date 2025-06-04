@@ -49,7 +49,6 @@ export const SelectorContent = (props: SelectContentProps) => {
         setShow={setIsOpen}
         modalId='comandSelect'
     >
-
         {
             isOpen ?
                 <div className="h-full">

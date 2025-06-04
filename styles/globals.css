@@ -395,6 +395,11 @@ textarea:disabled::placeholder {
 /* styles.css */
 .AccordionContent {
 	overflow: hidden;
+  transform-origin: top;
+}
+.layout-animating .AccordionContent[data-state="open"],
+.layout-animating .AccordionContent[data-state="closed"] {
+  animation: none !important;
 }
 .AccordionContent[data-state="open"] {
 	animation: slideDown 300ms ease-out;
@@ -402,7 +407,12 @@ textarea:disabled::placeholder {
 .AccordionContent[data-state="closed"] {
 	animation: slideUp 300ms ease-out;
 }
-
+.AccordionContent.NoAnimation {
+  animation-play-state: paused !important;
+}
+.no-anchor {
+  overflow-anchor: none;
+}
 @keyframes slideDown {
 	from {
 		height: 0;

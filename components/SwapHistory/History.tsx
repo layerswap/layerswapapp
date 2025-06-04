@@ -15,7 +15,7 @@ import { TimerProvider } from "../../context/timerContext"
 import GuestCard from "../guestCard"
 import { AuthStep } from "../../Models/Wizard"
 import React from "react"
-import { useVirtualizer } from '@tanstack/react-virtual'
+import { useVirtualizer } from '../../lib/virtual'
 import SwapDetails from "./SwapDetailsComponent"
 import { addressFormat } from "../../lib/address/formatter";
 import { useSettingsState } from "../../context/settings";

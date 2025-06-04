@@ -1,4 +1,4 @@
-import { Context, createContext, useCallback, useContext, useEffect, useState } from 'react'
+import { Context, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { ChevronLeft } from 'lucide-react';
 import IconButton from '../buttons/iconButton';
 import VaulDrawer from '../modal/vaulModal';
@@ -25,6 +25,10 @@ type ConnectModalContextType = {
     isWalletModalOpen?: boolean;
     selectedConnector: WalletModalConnector | undefined;
     setSelectedConnector: (value: WalletModalConnector | undefined) => void;
+    goBack: () => void;
+    onFinish: (connectedWallet?: Wallet | undefined) => void;
+    setOpen: (value: boolean) => void;
+    open: boolean;
 };
 
 const ConnectModalContext = createContext<ConnectModalContextType | null>(null);
@@ -37,7 +41,7 @@ export function WalletModalProvider({ children }) {
     const [open, setOpen] = useState(false);
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
-    const connect = async ({ provider, connectCallback }: SharedType) => {
+    const connect = useCallback(async ({ provider, connectCallback }: SharedType) => {
         if (!provider?.availableWalletsForConnect) {
             await provider?.connectWallet()
         }
@@ -45,23 +49,23 @@ export function WalletModalProvider({ children }) {
         setOpen(true)
         setConnectConfig({ provider, connectCallback });
         return;
-    }
+    }, [setSelectedProvider, setOpen, setConnectConfig]);
 
-    const cancel = () => {
+    const cancel = useCallback(() => {
         if (connectConfig) {
             connectConfig.connectCallback(undefined);
             setConnectConfig(undefined);
         }
         setOpen(false);
-    }
+    }, [connectConfig, setConnectConfig, setOpen]);
 
-    const onFinish = (connectedWallet?: Wallet | undefined) => {
+    const onFinish = useCallback((connectedWallet?: Wallet | undefined) => {
         if (connectConfig) {
             connectConfig.connectCallback(connectedWallet);
             setConnectConfig(undefined);
         }
         setOpen(false);
-    }
+    }, [connectConfig, setConnectConfig, setOpen]);
 
     const goBack = useCallback(() => {
         if (selectedConnector) {
@@ -70,40 +74,11 @@ export function WalletModalProvider({ children }) {
         }
     }, [setSelectedConnector, selectedConnector])
 
-    useEffect(() => {
-        if (!open && selectedConnector) {
-            setSelectedConnector(undefined)
-            setSelectedProvider(undefined)
-        }
-        setIsWalletModalOpen(open)
-    }, [open])
-
+    const value = useMemo(() => ({ connect, cancel, selectedProvider, setSelectedProvider, selectedConnector, setSelectedConnector, isWalletModalOpen, goBack, onFinish, setOpen, open }), [connect, cancel, selectedProvider, setSelectedProvider, selectedConnector, setSelectedConnector, isWalletModalOpen, goBack, onFinish, setOpen, open])
+    
     return (
-        <ConnectModalContext.Provider value={{ connect, cancel, selectedProvider, setSelectedProvider, selectedConnector, setSelectedConnector, isWalletModalOpen }}>
+        <ConnectModalContext.Provider value={value}>
             {children}
-            <VaulDrawer
-                show={open}
-                setShow={setOpen}
-                onClose={onFinish}
-                modalId={"connectNewWallet"}
-                header={
-                    <div className="flex items-center gap-1">
-                        {
-                            selectedConnector &&
-                            <div className='-ml-2'>
-                                <IconButton onClick={goBack} icon={
-                                    <ChevronLeft className="h-6 w-6" />
-                                }>
-                                </IconButton>
-                            </div>
-                        }
-                        <p>Connect wallet</p>
-                    </div>
-                }>
-                <VaulDrawer.Snap id='item-1'>
-                    <ConnectorsList onFinish={onFinish} />
-                </VaulDrawer.Snap>
-            </VaulDrawer>
         </ConnectModalContext.Provider>
     )
 }

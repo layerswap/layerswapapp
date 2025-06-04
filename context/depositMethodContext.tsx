@@ -1,4 +1,4 @@
-import { Context, FC, createContext, useContext, useState } from 'react';
+import { Context, FC, createContext, useContext, useMemo, useState } from 'react';
 
 type DepositMethodState = {
     showModal: boolean;
@@ -28,12 +28,12 @@ export const DepositMethodProvider: FC<Props> = ({ children, onRedirect, canRedi
         setShowModal(value);
     }
 
-    const contextValue: DepositMethodState = {
+    const contextValue: DepositMethodState = useMemo(() => ({
         showModal,
         canRedirect,
         setShowModal,
         redirect
-    };
+    }), [])
 
     return (
         <DepositMethodContext.Provider value={contextValue}>

@@ -35,7 +35,31 @@ export const SortNetworkRoutes = (
     }
 
     return a.name.localeCompare(b.name);
-};
+}
+
+export const SortNetworkRoutesWithBalances = (balances: Record<string, number>) => (
+    a: NetworkRoute,
+    b: NetworkRoute
+) => {
+    const aIsNew = a?.tokens?.every(t => new Date(t?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK);
+    const bIsNew = b?.tokens?.every(t => new Date(t?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK);
+
+    const a_order = ResolveNetworkOrder(a, aIsNew);
+    const b_order = ResolveNetworkOrder(b, bIsNew);
+
+    if (a_order !== b_order) {
+        return b_order - a_order;
+    }
+
+    const balance_a = balances[a.name]//useNetworksBalanceStore.getState().getNetworkBalance(a.name)?.totalInUSD || 0
+    const balance_b = balances[b.name] //useNetworksBalanceStore.getState().getNetworkBalance(b.name)?.totalInUSD || 0
+
+    if (balance_b !== balance_a) {
+        return balance_b - balance_a;
+    }
+
+    return a.name.localeCompare(b.name);
+}
 
 export function ResolveNetworkOrder(
     network: NetworkRoute,

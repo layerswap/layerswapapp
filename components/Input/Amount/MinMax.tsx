@@ -23,14 +23,14 @@ const MinMax = (props: MinMaxProps) => {
     const { selectedSourceAccount } = useSwapDataState()
 
     const { gas } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency)
-    const { balance, mutate } = useSWRBalance(selectedSourceAccount?.address, from)
+    const { balances, mutate } = useSWRBalance(selectedSourceAccount?.address, from)
 
     const gasAmount = gas || 0;
 
     const handleSetMinAmount = () => {
         setFieldValue('amount', limitsMinAmount);
     }
-    const walletBalance = selectedSourceAccount?.address ? balance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol) : undefined
+    const walletBalance = selectedSourceAccount?.address ? balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol) : undefined
     const native_currency = from?.token
 
     let maxAllowedAmount: number = useMemo(() => {
@@ -38,8 +38,8 @@ const MinMax = (props: MinMaxProps) => {
     }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency])
 
     const handleSetMaxAmount = async () => {
-        const updatedBalance = await mutate()
-        const updatedWalletBalance = updatedBalance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
+        const updatedBalances = await mutate()
+        const updatedWalletBalance = updatedBalances?.balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
         const maxAllowedAmount = resolveMacAllowedAmount({ fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance: updatedWalletBalance, gasAmount, native_currency })
         setFieldValue('amount', maxAllowedAmount);
     }

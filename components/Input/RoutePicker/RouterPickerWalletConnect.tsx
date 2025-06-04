@@ -1,12 +1,14 @@
 import { FC, useState } from "react";
-import { useConnectModal } from "../WalletModal";
-import { Wallet, WalletProvider } from "../../Models/WalletProvider";
-import VaulDrawer from "../modal/vaulModal";
-import { Plus } from "lucide-react";
-import { WalletItem } from "../Wallet/WalletsList";
-import { Network, Token } from "../../Models/Network";
-import useWallet from "../../hooks/useWallet";
-import shortenAddress from "../utils/ShortenAddress";
+import { useConnectModal } from "../../WalletModal";
+import { Wallet, WalletProvider } from "../../../Models/WalletProvider";
+import VaulDrawer from "../../modal/vaulModal";
+import { ChevronDown, Plus } from "lucide-react";
+import { WalletItem } from "../../Wallet/WalletsList";
+import { Network, Token } from "../../../Models/Network";
+import useWallet from "../../../hooks/useWallet";
+import shortenAddress from "../../utils/ShortenAddress";
+import WalletIcon from "../../icons/WalletIcon";
+import ConnectButton from "../../buttons/connectButton";
 
 const PickerWalletConnect: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -20,20 +22,9 @@ const PickerWalletConnect: FC = () => {
     }
 
     const filteredWallets = wallets.filter(w => w.isActive)
-    const wallet = filteredWallets[0]
 
     return <>
-        <button onClick={() => setOpenModal(true)} type="button" className="py-1 px-2 bg-transparent flex items-center w-fit rounded-md space-x-1 relative font-semibold transform hover:bg-secondary-400 transition duration-200 ease-in-out">
-            {
-                filteredWallets.length === 1 ?
-                    <div className="flex gap-2 items-center text-sm text-primary-text">
-                        <wallet.icon className='h-5 w-5' />
-                        {!wallet.isLoading && wallet.address && <p>{shortenAddress(wallet.address)}</p>}
-                    </div>
-                    :
-                    <WalletsIcons wallets={filteredWallets} />
-            }
-        </button>
+        <WalletButton wallets={filteredWallets} onOpenModalClick={() => setOpenModal(true)} />
         <VaulDrawer
             show={openModal}
             setShow={setOpenModal}
@@ -75,6 +66,37 @@ const PickerWalletConnect: FC = () => {
             </VaulDrawer.Snap>
         </VaulDrawer >
     </>
+}
+
+const WalletButton: FC<{ wallets: Wallet[], onOpenModalClick: () => void }> = ({ wallets, onOpenModalClick }) => {
+
+    const wallet = wallets[0]
+
+    if (wallets.length > 0) {
+        return <button onClick={onOpenModalClick} type="button" className="py-1 px-2 bg-transparent flex items-center w-fit rounded-md space-x-1 relative font-semibold transform hover:bg-secondary-400 transition duration-200 ease-in-out">
+            {
+                wallets.length === 1 ?
+                    <div className="flex gap-2 items-center text-sm text-primary-text">
+                        <wallet.icon className='h-5 w-5' />
+                        {
+                            !wallet.isLoading && wallet.address &&
+                            <p>{shortenAddress(wallet.address)}</p>
+                        }
+                        <ChevronDown className="h-5 w-5" />
+                    </div>
+                    :
+                    <WalletsIcons wallets={wallets} />
+            }
+        </button>
+    }
+
+    return (
+        <ConnectButton>
+            <div className="p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center">
+                <WalletIcon className="h-6 w-6 mx-0.5" strokeWidth="2" />
+            </div>
+        </ConnectButton>
+    )
 }
 
 const WalletsIcons = ({ wallets }: { wallets: Wallet[] }) => {

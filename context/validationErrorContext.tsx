@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useState } from 'react';
+import React, { createContext, useEffect, useMemo, useState } from 'react';
 import { ReactNode } from 'react';
 import { Info, RouteOff } from 'lucide-react';
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
@@ -106,9 +106,11 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         }
 
     }
+    const value = useMemo(() => ({ validationMessage, validationDetails }), [validationMessage, validationDetails])
+
     return (
         <ValidationContext.Provider
-            value={{ validationMessage, validationDetails }}
+            value={value}
         >
             {children}
         </ValidationContext.Provider>

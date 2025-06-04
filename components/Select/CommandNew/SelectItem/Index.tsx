@@ -6,7 +6,7 @@ type SelectItemWrapperProps = {
 }
 const SelectItem = ({ children, className }: SelectItemWrapperProps) => {
     return <div className="flex items-center justify-between gap-3 w-full overflow-hidden cursor-pointer relative">
-        <div className={`gap-2 pl-2 pr-7 relative flex items-center w-full ${className}`}>
+        <div className={`gap-2 pl-2 pr-4 relative flex items-center w-full ${className}`}>
             {children}
         </div>
     </div>

@@ -11,7 +11,7 @@ import { useQueryState } from "../../../context/query";
 import FeeDetailsComponent from "../../FeeDetails";
 import { useFee } from "../../../context/feeContext";
 import dynamic from "next/dynamic";
-import { Balance } from "../../../Models/Balance";
+import { TokenBalance } from "../../../Models/Balance";
 import ResizablePanel from "../../ResizablePanel";
 import ValidationError from "../../validationError";
 import { Exchange, ExchangeToken } from "../../../Models/Exchange";
@@ -24,16 +24,13 @@ import DestinationPicker from "../../Input/DestinationPicker";
 import CexNetworkPicker from "../../Input/CexNetworkPicker";
 import FormButton from "../FormButton";
 import { AmountFocusProvider } from "../../../context/amountFocusContext";
+import useAllBalances from "../../../hooks/useAllBalances";
 
 type Props = {
     partner?: Partner,
 }
 
 const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
-    loading: () => <></>,
-});
-
-const Address = dynamic(() => import("../../Input/Address"), {
     loading: () => <></>,
 });
 
@@ -176,7 +173,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
         }
     }, [values, sourceRoutes, destinationRoutes, sourceCanBeSwapped, destinationExchanges, selectedSourceAccount])
 
-    const handleReserveGas = useCallback((walletBalance: Balance, networkGas: number) => {
+    const handleReserveGas = useCallback((walletBalance: TokenBalance, networkGas: number) => {
         if (walletBalance && networkGas)
             setFieldValue('amount', walletBalance?.amount - networkGas)
     }, [values.amount])

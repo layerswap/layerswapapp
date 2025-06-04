@@ -5,13 +5,13 @@ import { useWallet as useTronWallet } from '@tronweb3/tronwallet-adapter-react-h
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import WalletIcon from '../../../icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
-import { ButtonWrapper, ConnectWalletButton } from './WalletTransfer/buttons';
+import { ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
 import { useSettingsState } from '../../../../context/settings';
 import TransactionMessages from '../messages/TransactionMessages';
 import { datadogRum } from '@datadog/browser-rum';
 import { TronWeb } from 'tronweb'
 import useSWRGas from '../../../../lib/gases/useSWRGas';
-import { ContractParamter, Transaction, TransactionWrapper, TransferContract, TriggerSmartContract } from 'tronweb/lib/esm/types';
+import { ContractParamter, Transaction, TransferContract } from 'tronweb/lib/esm/types';
 import { Token } from '../../../../Models/Network';
 
 const TronWalletWithdraw: FC<WithdrawPageProps> = ({ network, callData, swapId, token, amount, depositAddress }) => {
@@ -46,7 +46,8 @@ const TronWalletWithdraw: FC<WithdrawPageProps> = ({ network, callData, swapId, 
             const amountInWei = Math.pow(10, token?.decimals) * amount
 
             const initialTransaction = await buildInitialTransaction({ tronWeb, token, depositAddress, amountInWei, gas, issuerAddress: walletAddress })
-            const transaction = await tronWeb.transactionBuilder.addUpdateData(initialTransaction, Buffer.from(callData).toString('hex'), "hex")
+            const data = Buffer.from(callData).toString('hex')
+            const transaction = await tronWeb.transactionBuilder.addUpdateData(initialTransaction, data, "hex")
             const signature = await signTransaction(transaction)
             const res = await tronWeb.trx.sendRawTransaction(signature)
 
@@ -80,9 +81,7 @@ const TronWalletWithdraw: FC<WithdrawPageProps> = ({ network, callData, swapId, 
             />
             {
                 wallet && !loading &&
-                <ButtonWrapper isDisabled={!!loading || isGasLoading} isSubmitting={!!loading || isGasLoading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
-                    {error ? 'Try again' : 'Send from wallet'}
-                </ButtonWrapper>
+                <SendTransactionButton isDisabled={!!loading || isGasLoading} isSubmitting={!!loading || isGasLoading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} error={!!error} />
             }
         </div>
     )

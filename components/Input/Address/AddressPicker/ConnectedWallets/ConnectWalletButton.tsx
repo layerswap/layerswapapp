@@ -1,28 +1,28 @@
 import { RefreshCw } from "lucide-react";
 import { ResolveConnectorIcon } from "../../../../icons/ConnectorIcons";
-import { Network } from "../../../../../Models/Network";
 import { FC, useState } from "react";
 import { Wallet, WalletProvider } from "../../../../../Models/WalletProvider";
+import { useConnectModal } from "../../../../WalletModal";
 
 type Props = {
     provider: WalletProvider,
     onConnect?: (wallet: Wallet) => void,
-    destination: Network,
 }
 
-const ConnectWalletButton: FC<Props> = ({ provider, onConnect, destination }) => {
+const ConnectWalletButton: FC<Props> = ({ provider, onConnect }) => {
 
     const [isLoading, setIsLoading] = useState(false)
+    const { connect } = useConnectModal()
 
-    const connect = async () => {
+    const handleConnect = async () => {
         setIsLoading(true)
-        const result = await provider.connectWallet()
+        const result = await connect(provider)
         if (onConnect && result) onConnect(result)
         setIsLoading(false)
     }
 
     return <>
-        <button typeof="button" onClick={connect} type="button" className={`py-5 px-6 bg-secondary-500 hover:bg-secondary-600 transition-colors duration-200 rounded-xl ${isLoading && 'cursor-progress opacity-80'}`}>
+        <button typeof="button" onClick={handleConnect} type="button" className={`py-5 px-6 bg-secondary-700 hover:bg-secondary-600 transition-colors duration-200 rounded-xl ${isLoading && 'cursor-progress opacity-80'}`}>
             <div className="flex flex-row justify-between gap-9 items-stretch">
                 <ResolveConnectorIcon
                     connector={provider.name}

@@ -20,6 +20,7 @@ const WalletTransferContent: FC = () => {
     const { source_token, source_network: swap_source_network } = swap || {}
     const source_network = swap_source_network && networks.find(n => n.name === swap_source_network?.name)
     const { provider } = useWallet(source_network, 'withdrawal')
+    const availableWallets = provider?.connectedWallets?.filter(c => !c.isNotAvailable) || []
 
     const [openModal, setOpenModal] = useState(false)
 
@@ -31,27 +32,19 @@ const WalletTransferContent: FC = () => {
 
     const selectedWallet = selectedSourceAccount?.wallet
     const activeWallet = provider?.activeWallet
-
+    
     useEffect(() => {
         if (!selectedSourceAccount && activeWallet) {
             setSelectedSourceAccount({
                 wallet: activeWallet,
                 address: activeWallet.address
             })
-        } else if (selectedSourceAccount && activeWallet && !activeWallet.addresses.some(a => a.toLowerCase() === selectedSourceAccount.address.toLowerCase())) {
-            const selectedWalletIsConnected = provider.connectedWallets?.some(w => w.addresses.some(a => a.toLowerCase() === selectedSourceAccount.address.toLowerCase()))
-            if (selectedWalletIsConnected) {
-                provider.switchAccount && provider.switchAccount(selectedSourceAccount.wallet, selectedSourceAccount.address)
-            }
-            else {
-                setSelectedSourceAccount(undefined)
-            }
-        }
+        } 
     }, [activeWallet?.address, setSelectedSourceAccount, provider, selectedSourceAccount?.address])
 
-    const { balance, isBalanceLoading } = useSWRBalance(selectedSourceAccount?.address, source_network)
+    const { balances, isBalanceLoading } = useSWRBalance(selectedSourceAccount?.address, source_network)
 
-    const walletBalance = source_network && balance?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
+    const walletBalance = source_network && balances?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
 
     let accountAddress: string | undefined = ""
@@ -90,7 +83,7 @@ const WalletTransferContent: FC = () => {
             source_network &&
             source_token &&
             provider &&
-            provider.connectedWallets &&
+            availableWallets &&
             <VaulDrawer
                 show={openModal}
                 setShow={setOpenModal}
@@ -103,7 +96,7 @@ const WalletTransferContent: FC = () => {
                         token={source_token}
                         onSelect={changeWallet}
                         selectable
-                        wallets={provider.connectedWallets}
+                        wallets={availableWallets}
                         provider={provider}
                     />
                 </VaulDrawer.Snap>

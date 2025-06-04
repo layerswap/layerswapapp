@@ -1,4 +1,4 @@
-import { Balance } from "../../../Models/Balance";
+import { TokenBalance } from "../../../Models/Balance";
 import { NetworkType, NetworkWithTokens } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import { insertIfNotExists } from "./helpers";
@@ -17,7 +17,7 @@ export class SolanaBalanceProvider {
         class SolanaConnection extends Connection { }
         const { getAssociatedTokenAddress } = await import('@solana/spl-token');
         const walletPublicKey = new PublicKey(address)
-        let balances: Balance[] = []
+        let balances: TokenBalance[] = []
 
         if (!network?.tokens || !walletPublicKey) return
 
