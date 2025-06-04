@@ -17,7 +17,7 @@ type SeelctItemLogoProps = {
     className?: string;
 }
 const Logo = ({ imgSrc, altText, className = 'rounded-md' }: SeelctItemLogoProps) => {
-    return <div className="shrink-0 relative h-8 w-8">
+    return <div className="shrink-0 relative h-9 w-9">
         {imgSrc ? <div className='inline-flex items-center relative'>
             <Image
                 src={imgSrc}

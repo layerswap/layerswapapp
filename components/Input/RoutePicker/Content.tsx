@@ -3,10 +3,11 @@ import { Route, RouteToken, RowElement } from "../../../Models/Route";
 import useWindowDimensions from "../../../hooks/useWindowDimensions";
 import { SwapDirection } from "../../DTOs/SwapFormValues";
 import { useVirtualizer } from "../../../lib/virtual";
-import { Search } from "lucide-react";
+import { Search, CircleX } from "lucide-react";
 import { Accordion } from "../../shadcn/accordion";
 import Row from "./Rows";
 import { LayoutGroup, motion } from "framer-motion";
+import FilledX from "../../icons/FilledX";
 
 
 type ContentProps = {
@@ -104,5 +105,11 @@ const SearchComponent = ({ searchQuery, setSearchQuery }: { searchQuery: string,
             autoComplete="off"
             className="placeholder:text-primary-text-placeholder border-0 border-b-0 border-primary-text bg-secondary-500 focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-11 text-base outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
         />
+        {searchQuery && (
+            <FilledX
+                className="w-3 h-3 text-primary-text-placeholder cursor-pointer ml-2"
+                onClick={() => setSearchQuery('')}
+            />
+        )}
     </div>
 }
