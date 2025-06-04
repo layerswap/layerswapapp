@@ -91,7 +91,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                         || default_currency.baseObject.symbol.includes(fromCurrency?.symbol)
                     )
                 if (resetFromCurrency) {
-                    const newFromCurrency = from?.tokens.find(t => t.symbol === default_currency.baseObject.symbol)
+                    const newFromCurrency = from?.tokens.find(t => t.symbol === default_currency.baseObject.symbol) && fromCurrency?.symbol !== default_currency.baseObject.symbol
                         || from?.tokens.find(t => t.symbol.includes(default_currency.baseObject.symbol) || default_currency.baseObject.symbol.includes(t.symbol))
                     if (newFromCurrency) {
                         await setFieldValue("validatingDestination", true, true)
