@@ -87,7 +87,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
     const walletBalance = balance?.find(b => b?.token === token?.symbol)
 
     const isSelected = selectable && (wallet.addresses.length == 1 && wallet.address == selectedAddress)
-    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, token?.precision)
+    const walletBalanceAmount = walletBalance?.amount !== undefined ? truncateDecimals(walletBalance.amount, token?.precision) : ''
 
     return (
         <div {...props} className="rounded-md outline-none text-primary-tex">
@@ -147,7 +147,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                                     walletBalanceAmount !== undefined && token &&
                                     <span className="text-sm flex space-x-2 justif-end">
                                         {
-                                            walletBalanceAmount != undefined && !isNaN(walletBalanceAmount) ?
+                                            walletBalanceAmount ?
                                                 <div className="text-right text-secondary-text font-normal text-sm">
                                                     {
                                                         isBalanceLoading ?
@@ -224,7 +224,8 @@ const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddre
 
     const isNestedSelected = selectable && address == selectedAddress
     const nestedWalletBalance = balance?.find(b => b?.token === token?.symbol)
-    const nestedWalletBalanceAmount = nestedWalletBalance?.amount && truncateDecimals(nestedWalletBalance?.amount, token?.precision)
+    const nestedWalletBalanceAmount = nestedWalletBalance?.amount !== undefined ? truncateDecimals(nestedWalletBalance.amount, token?.precision) : ''
+
 
     return (
         <div
@@ -257,24 +258,21 @@ const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddre
             </div>
             <div className="inline-flex gap-2">
                 {
-                    nestedWalletBalanceAmount !== undefined && token &&
-                    <span className="text-sm flex space-x-2 justif-end">
-                        {
-                            nestedWalletBalanceAmount != undefined && !isNaN(nestedWalletBalanceAmount) ?
-                                <div className="text-right text-secondary-text font-normal text-sm">
-                                    {
-                                        isBalanceLoading ?
-                                            <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
-                                            :
-                                            <>
-                                                <span>{nestedWalletBalanceAmount}</span> <span>{token?.symbol}</span>
-                                            </>
-                                    }
-                                </div>
-                                :
-                                <></>
-                        }
-                    </span>
+                    nestedWalletBalanceAmount && token && (
+                        <span className="text-sm flex space-x-2 justify-end">
+                            <div className="text-right text-secondary-text font-normal text-sm">
+                                {
+                                    isBalanceLoading ? (
+                                        <div className="h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse" />
+                                    ) : (
+                                        <>
+                                            <span>{nestedWalletBalanceAmount}</span> <span>{token?.symbol}</span>
+                                        </>
+                                    )
+                                }
+                            </div>
+                        </span>
+                    )
                 }
                 {
                     isNestedSelected &&
