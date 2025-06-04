@@ -1,5 +1,5 @@
 {
-  "count": 530,
+  "count": 531,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -433,6 +433,65 @@
       ],
       "slug": "essentials",
       "updatedAt": "2023-05-02T15:15:47.926242+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "02957f0659df422d5b8fa31a054a15140479cebdd715dfa1ba875a93a4236b05": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.oblio.wallet",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "https://play.google.com/store/apps/details?id=com.oblio.wallet",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+      ],
+      "description": "Oblio Wallet is a secure self-custody crypto wallet for Bitcoin, Ethereum, Solana, and more. Your keys, your crypto.",
+      "desktop": {
+        "native": "",
+        "universal": null
+      },
+      "homepage": "https://obliowallet.com",
+      "id": "02957f0659df422d5b8fa31a054a15140479cebdd715dfa1ba875a93a4236b05",
+      "image_id": "a0ff2932-e049-4622-a9c8-fa41278cff00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/a0ff2932-e049-4622-a9c8-fa41278cff00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/a0ff2932-e049-4622-a9c8-fa41278cff00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/a0ff2932-e049-4622-a9c8-fa41278cff00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "oblio://",
+        "universal": null
+      },
+      "name": "Oblio Wallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "oblio-wallet",
+      "updatedAt": "2025-06-03T12:58:41.463755+00:00",
       "versions": [
         "1",
         "2"
@@ -9552,7 +9611,7 @@
       },
       "mobile": {
         "native": "xportal://",
-        "universal": "https://xport.al"
+        "universal": "https://xportal.app.link"
       },
       "name": "xPortal",
       "rdns": "com.elrond.maiar.wallet",
@@ -19496,7 +19555,7 @@
       },
       "mobile": {
         "native": "blockchain-wallet://",
-        "universal": "https://www.blockchain.com"
+        "universal": "https://login.blockchain.com/app"
       },
       "name": "Blockchain.com",
       "rdns": null,
@@ -33378,13 +33437,15 @@
         "eip155:80085",
         "eip155:8217",
         "eip155:8453",
+        "near:mainnet",
         "polkadot:91b171bb158e2d3848fa23a9f1c25182",
-        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "xrpl:0"
       ],
       "description": "A non-custodial wallet that gives you access to a full suite of DeFi services in one place.",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://crypto.com/onchain",
       "id": "f2436c67184f158d1beda5df53298ee84abfc367581e4505134b5bcf5f46697d",
@@ -33404,7 +33465,7 @@
       },
       "mobile": {
         "native": "dfw://",
-        "universal": "https://wallet.crypto.com"
+        "universal": "https://wallet.crypto.com/deeplink"
       },
       "name": "Crypto.com Onchain",
       "rdns": "com.crypto.wallet",
@@ -35674,5 +35735,5 @@
       ]
     }
   },
-  "total": 530
+  "total": 531
 }
