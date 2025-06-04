@@ -65,11 +65,6 @@ const HistorySummary: FC<SwapInfoProps> = ({
 
     const source_wallet = sourceAddressFromInput ? wallets.find(w => (addressFormat(w.address, source_network) === addressFormat(sourceAddressFromInput, source_network))) : null
     const destination_wallet = wallets.find(w => addressFormat(w.address, destination_network) === addressFormat(destAddress, destination_network))
-    if (swap?.id === "2ca73461-5516-445c-9a75-03335574a9aa") {
-        console.log(calculatedReceiveAmount, "calculatedReceiveAmount")
-        console.log(destination_token?.price_in_usd, "destination_token?.price_in_usd")
-
-    }
 
     return (
         source_token && <>

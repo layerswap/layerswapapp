@@ -5,8 +5,8 @@ export function roundDecimals(value: number, decimals: number) {
     return Number(Math.ceil(Number(value + 'e' + decimals)) + 'e-' + decimals);
 }
 
-export function truncateDecimals(value: number, decimals = 0): string {
-    if (value === 0) return "0";
+export function truncateDecimals(value: number, decimals = 0) {
+    if (value == 0) return 0;
 
     const factor = Math.pow(10, decimals);
     const truncated = Math.trunc(value * factor) / factor;
