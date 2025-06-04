@@ -32,14 +32,14 @@ const WalletTransferContent: FC = () => {
 
     const selectedWallet = selectedSourceAccount?.wallet
     const activeWallet = provider?.activeWallet
-    
+
     useEffect(() => {
         if (!selectedSourceAccount && activeWallet) {
             setSelectedSourceAccount({
                 wallet: activeWallet,
                 address: activeWallet.address
             })
-        } 
+        }
     }, [activeWallet?.address, setSelectedSourceAccount, provider, selectedSourceAccount?.address])
 
     const { balance, isBalanceLoading } = useSWRBalance(selectedSourceAccount?.address, source_network)
@@ -73,7 +73,7 @@ const WalletTransferContent: FC = () => {
                         addressItem={{ address: accountAddress, group: AddressGroup.ConnectedWallet }}
                         connectedWallet={selectedWallet}
                         network={source_network}
-                        balance={(walletBalanceAmount !== undefined && source_token) ? { amount: walletBalanceAmount, symbol: source_token?.symbol, isLoading: isBalanceLoading } : undefined}
+                        balance={(walletBalanceAmount && source_token) ? { amount: Number(walletBalanceAmount), symbol: source_token?.symbol, isLoading: isBalanceLoading } : undefined}
                     />
                     <ChevronRight className="h-4 w-4" />
                 </div>
