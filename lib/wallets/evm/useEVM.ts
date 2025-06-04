@@ -339,7 +339,6 @@ async function attemptGetAccount(config, maxAttempts = 5) {
 
     return getAccount(config);
 }
-
 function dedupePreferInjected(arr: Connector<CreateConnectorFn>[]) {
     // Group items by id
     const groups = arr.reduce((acc, obj) => {
