@@ -86,6 +86,12 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         }
     }
 
+    const handleSelectProvider = (providerName?: string) => {
+        const provider = filteredProviders.find(p => p.name === providerName)
+        if (!provider) return setSelectedProvider(undefined)
+        setSelectedProvider({ ...provider, isSelectedFromFilter: true })
+    }
+
     const filteredProviders = providers.filter(p => !p.hideFromList)
     const featuredProviders = selectedProvider ? [selectedProvider] : filteredProviders
 
@@ -169,11 +175,14 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                             </button>
                         }
                     </div>
-                    <ProviderPicker
-                        providers={filteredProviders}
-                        selectedProviderName={selectedProvider?.name}
-                        setSelectedProviderName={(v) => setSelectedProvider(filteredProviders.find(p => p.name === v))}
-                    />
+                    {
+                        (!selectedProvider || selectedProvider?.isSelectedFromFilter) &&
+                        <ProviderPicker
+                            providers={filteredProviders}
+                            selectedProviderName={selectedProvider?.name}
+                            setSelectedProviderName={handleSelectProvider}
+                        />
+                    }
                 </div>
                 <div
                     onScroll={handleScroll}
