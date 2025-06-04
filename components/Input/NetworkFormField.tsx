@@ -153,7 +153,7 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     }, [name, value])
 
     const isLocked = direction === 'from' ? !!lockFrom : !!lockTo
-
+ 
     return (<div className={`${className}`}>
         <div className="flex justify-between items-center px-3 pt-2">
             <label htmlFor={name} className="block font-medium text-secondary-text text-sm pl-1 py-1">
