@@ -1,5 +1,5 @@
 {
-  "count": 531,
+  "count": 532,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -4939,11 +4939,11 @@
       },
       "homepage": "https://solflare.com/",
       "id": "1ca0bdd4747578705b1939af023d120677c64fe6ca76add81fda36e350605e79",
-      "image_id": "e813ff48-99a4-43b6-6049-b4e887d70a00",
+      "image_id": "34c0e38d-66c4-470e-1aed-a6fabe2d1e00",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/e813ff48-99a4-43b6-6049-b4e887d70a00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/e813ff48-99a4-43b6-6049-b4e887d70a00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/e813ff48-99a4-43b6-6049-b4e887d70a00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/34c0e38d-66c4-470e-1aed-a6fabe2d1e00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/34c0e38d-66c4-470e-1aed-a6fabe2d1e00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/34c0e38d-66c4-470e-1aed-a6fabe2d1e00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": [
         {
@@ -20019,6 +20019,68 @@
       ],
       "slug": "crossmint",
       "updatedAt": "2022-11-15T13:42:47.404555+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "881243c1854f238e1845820709d35dfe4316c6ea8415aa37d2e72de179fe66dc": {
+      "app": {
+        "android": null,
+        "browser": "https://app.hinkal.pro",
+        "chrome": "https://chromewebstore.google.com/detail/hinkal-wallet/khfjgapjfcdoffmklchibpepboholpbe",
+        "edge": null,
+        "firefox": null,
+        "ios": null,
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:43114",
+        "eip155:8453"
+      ],
+      "description": "Composable and self-custodial private wallet. It enables data privacy for on-chain assets for any transaction.",
+      "desktop": {
+        "native": "",
+        "universal": null
+      },
+      "homepage": "https://hinkal.pro",
+      "id": "881243c1854f238e1845820709d35dfe4316c6ea8415aa37d2e72de179fe66dc",
+      "image_id": "9618af59-f333-4e56-09f1-dd1e24cca800",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/9618af59-f333-4e56-09f1-dd1e24cca800?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/9618af59-f333-4e56-09f1-dd1e24cca800?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/9618af59-f333-4e56-09f1-dd1e24cca800?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": null
+      },
+      "name": "Hinkal Wallet",
+      "rdns": "pro.hinkal.walletconnect",
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "hinkal-wallet",
+      "updatedAt": "2025-06-05T06:42:37.312158+00:00",
       "versions": [
         "1",
         "2"
@@ -35735,5 +35797,5 @@
       ]
     }
   },
-  "total": 531
+  "total": 532
 }
