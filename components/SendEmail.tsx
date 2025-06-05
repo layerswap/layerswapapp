@@ -1,5 +1,4 @@
-import { Disclosure } from '@headlessui/react';
-import { Album, ChevronDown, Mail, ScrollText, User } from 'lucide-react';
+import { Album, Mail, ScrollText, User } from 'lucide-react';
 import { Field, Form, Formik, FormikErrors } from 'formik';
 import { FC, useCallback } from 'react'
 import toast from 'react-hot-toast';
