@@ -310,6 +310,7 @@ const resolveSupportedNetworks = (supportedNetworks: string[], connectorId: stri
                 KnownInternalNames.Networks.RoninMainnet,
                 KnownInternalNames.Networks.EthereumMainnet,
                 KnownInternalNames.Networks.PolygonMainnet,
+                KnownInternalNames.Networks.BaseMainnet,
                 KnownInternalNames.Networks.BNBChainMainnet,
                 KnownInternalNames.Networks.ArbitrumMainnet
             ]
@@ -339,7 +340,6 @@ async function attemptGetAccount(config, maxAttempts = 5) {
 
     return getAccount(config);
 }
-
 function dedupePreferInjected(arr: Connector<CreateConnectorFn>[]) {
     // Group items by id
     const groups = arr.reduce((acc, obj) => {

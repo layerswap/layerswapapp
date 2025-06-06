@@ -10,7 +10,7 @@ import KnownInternalNames from "../../lib/knownIds"
 import { ChevronRightIcon } from 'lucide-react'
 import StatusIcon from "./StatusIcons"
 import { FC } from "react"
-import { findIndexOfFirstNonZeroAfterComma, truncateDecimalsToFloor } from "../utils/RoundDecimals";
+import { findIndexOfFirstNonZeroAfterComma, truncateDecimals, truncateDecimalsToFloor } from "../utils/RoundDecimals";
 import AddressIcon from "../AddressIcon";
 import { addressFormat } from "../../lib/address/formatter";
 import { SwapStatus } from "../../Models/SwapStatus";
@@ -178,16 +178,16 @@ const HistorySummary: FC<SwapInfoProps> = ({
 
 const smartDecimalTruncate = (value: number, price_in_usd: number) => {
     let decimals = findIndexOfFirstNonZeroAfterComma((0.01 / Number(price_in_usd.toFixed()))) || 0
-    let truncatedAmount = truncateDecimalsToFloor(value, decimals)
+    let truncatedAmount = truncateDecimals(value, decimals)
 
-    if (truncatedAmount === 0) {
-        while (truncatedAmount === 0) {
+    if (truncatedAmount === "0") {
+        while (truncatedAmount === "0") {
             decimals += 1
-            truncatedAmount = truncateDecimalsToFloor(value, decimals)
+            truncatedAmount = truncateDecimals(value, decimals)
         }
     }
 
-    return truncateDecimalsToFloor(value, decimals)
+    return truncateDecimals(value, decimals)
 }
 
 

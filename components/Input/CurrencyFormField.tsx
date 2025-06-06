@@ -91,7 +91,7 @@ const CurrencyFormField: FC<{ direction: SwapDirection }> = ({ direction }) => {
                         || default_currency.baseObject.symbol.includes(fromCurrency?.symbol)
                     )
                 if (resetFromCurrency) {
-                    const newFromCurrency = from?.tokens.find(t => t.symbol === default_currency.baseObject.symbol)
+                    const newFromCurrency = from?.tokens.find(t => t.symbol === default_currency.baseObject.symbol) && fromCurrency?.symbol !== default_currency.baseObject.symbol
                         || from?.tokens.find(t => t.symbol.includes(default_currency.baseObject.symbol) || default_currency.baseObject.symbol.includes(t.symbol))
                     if (newFromCurrency) {
                         await setFieldValue("validatingDestination", true, true)
@@ -228,7 +228,7 @@ function GenerateCurrencyMenuItems(
         const currency = c
         const displayName = currency.symbol;
         const balance = balances?.find(b => b?.token === c?.symbol && (direction === 'from' ? from : to)?.name === b.network)
-        const formatted_balance_amount = balance ? Number(truncateDecimals(balance?.amount, c.precision)) : ''
+        const formatted_balance_amount = balance ? truncateDecimals(balance?.amount, c.precision) : ''
         const isNewlyListed = new Date(c?.listing_date)?.getTime() >= new Date().getTime() - ONE_WEEK;
 
         const currencyIsAvailable = (currency?.status === "active" && error?.code !== LSAPIKnownErrorCode.ROUTE_NOT_FOUND_ERROR) ||

@@ -11,9 +11,9 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     const token = direction === 'from' ? fromCurrency : toCurrency
     const network = direction === 'from' ? from : to
     const address = direction === 'from' ? selectedSourceAccount?.address : destination_address
-    const { balance, isBalanceLoading, isError } = useSWRBalance(address, network)
+    const { balance, isBalanceLoading } = useSWRBalance(address, network)
     const tokenBalance = balance?.find(b => b?.network === from?.name && b?.token === token?.symbol)
-    const truncatedBalance = tokenBalance?.amount && truncateDecimals(tokenBalance?.amount, token?.precision)
+    const truncatedBalance = tokenBalance?.amount !== undefined ? truncateDecimals(tokenBalance.amount, token?.precision) : ''
 
     const previouslySelectedSource = useRef(from);
 
@@ -28,14 +28,13 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     }, [to, destination_address])
 
     if (isBalanceLoading)
-        return <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse pl-2' />
+        return <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-sm animate-pulse' />
 
     return (
         <>
             {
-                (network && token && network) &&
-                (truncatedBalance !== undefined && !isNaN(truncatedBalance)) &&
-                <div className="pl-2">{truncatedBalance > 0 ? Number(truncatedBalance.toFixed(token?.precision)).toString() : truncatedBalance}</div>
+                network && token && truncatedBalance &&
+                <span>{truncatedBalance}</span>
             }
         </>
     )

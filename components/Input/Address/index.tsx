@@ -19,7 +19,6 @@ const Address = ({ partner, children }: AddressProps) => {
     } = useFormikContext<SwapFormValues>();
     const { authData } = useAuthState()
 
-
     const layerswapApiClient = new LayerSwapApiClient()
     const address_book_endpoint = authData?.access_token ? `/internal/recent_addresses` : null
     const { data: address_book } = useSWR<ApiResponse<AddressBookItem[]>>(address_book_endpoint, layerswapApiClient.fetcher, { dedupingInterval: 60000 })

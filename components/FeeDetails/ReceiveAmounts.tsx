@@ -1,8 +1,8 @@
 import { FC } from "react";
 import { Token } from "../../Models/Network";
 import { ArrowRight, Fuel } from "lucide-react";
-import { Quote } from "../../lib/apiClients/layerSwapApiClient";
-import { roundDecimals } from "../utils/RoundDecimals";
+import { roundDecimals, truncateDecimals } from "../utils/RoundDecimals";
+import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 
 type WillReceiveProps = {
     destination_token: Token | undefined;
@@ -15,8 +15,7 @@ type WillReceiveProps = {
 
 export const ReceiveAmounts: FC<WillReceiveProps> = ({ source_token, destination_token, refuel, fee, onButtonClick, isFeeLoading }) => {
     const receive_amount = fee?.quote.receive_amount
-    const parsedReceiveAmount = parseFloat(receive_amount?.toFixed(destination_token?.precision) || "")
-    const displayReceiveAmount = parsedReceiveAmount > 0 ? parsedReceiveAmount.toFixed(destination_token?.precision) : '-'
+    const parsedReceiveAmount = truncateDecimals(receive_amount ?? 0, destination_token?.precision);
 
     const receiveAmountInUsd = receive_amount && destination_token && fee.quote?.destination_token?.price_in_usd ? (receive_amount * fee.quote.destination_token.price_in_usd).toFixed(2) : undefined
 
@@ -30,11 +29,11 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ source_token, destination
             ) :
                 <div className="text-sm md:text-base flex flex-col items-end">
                     {
-                        source_token && destination_token && parsedReceiveAmount > 0 ?
+                        source_token && destination_token && Number(parsedReceiveAmount) > 0 ?
                             <div className="font-semibold md:font-bold text-right leading-8">
                                 <div className="flex items-center justify-end">
                                     <p>
-                                        <>{displayReceiveAmount}</>
+                                        <>{parsedReceiveAmount}</>
                                         &nbsp;
                                         <span>
                                             {destination_token?.symbol}
