@@ -1718,34 +1718,34 @@
   resolved "https://registry.yarnpkg.com/@base2/pretty-print-object/-/pretty-print-object-1.0.1.tgz#371ba8be66d556812dc7fb169ebc3c08378f69d4"
   integrity sha512-4iri8i1AqYHJE2DstZYkyEprg6Pq6sKx3xn5FpySk9sNhH7qN2LLlHJCfDTZRILNwQNPD7mATWM0TBui7uC1pA==
 
-"@bigmi/client@^0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@bigmi/client/-/client-0.2.1.tgz#59a1820bcd72fc184371608b4e22444ffe471b85"
-  integrity sha512-ef2Y7l6enQRg0HlSmC6YTU9ndmzDpKyg0sGpXdRyb2GeGfbveW/cH1UkhTij4BxOCSq/9B8z990mhaETz85a2g==
+"@bigmi/client@^0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@bigmi/client/-/client-0.3.1.tgz#824f01b857ef0bc9aeb8791b16593e5ca8bcc4ab"
+  integrity sha512-7VLRMuOSJtV72VhWSEk7b2FLAGzPvSr1s3aBPobYdndMqrkt1UF9b+2IudkRinsRKetuV8uaH1DtWsyrYCXGKg==
   dependencies:
-    "@bigmi/core" "^0.2.1"
+    "@bigmi/core" "^0.3.1"
     eventemitter3 "^5.0.1"
-    zustand "^5.0.4"
+    zustand "^5.0.5"
 
-"@bigmi/core@^0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@bigmi/core/-/core-0.2.1.tgz#f16a0119f04a3aa90ec23d9b7439dcd74cb5989d"
-  integrity sha512-gPwSQ7KFAyfrsiEtluwo6gzciBlnkVlbY5yTyzBTV27q0s30liY1BnzC474XRRzUtJbDEY7AumpY7CFP0xDaoA==
+"@bigmi/core@^0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@bigmi/core/-/core-0.3.1.tgz#5d0ac4ecbbf8d70af797fbbea58772dbafd4535d"
+  integrity sha512-KU2KZJmyHPtw7m9sTfOWZ2gQaE8iONpLajmh4gCZfscZIRiL1LddqWkLuFIoFNfY0jbJmvqX46leLUw5YIOVDw==
   dependencies:
     "@noble/hashes" "^1.8.0"
     bech32 "^2.0.0"
     bitcoinjs-lib "^7.0.0-rc.0"
     bs58 "^6.0.0"
     eventemitter3 "^5.0.1"
-    zustand "^5.0.4"
+    zustand "^5.0.5"
 
-"@bigmi/react@^0.2.1":
-  version "0.2.1"
-  resolved "https://registry.yarnpkg.com/@bigmi/react/-/react-0.2.1.tgz#252168f4155eb6dd50106e42fdce78c30a5ae768"
-  integrity sha512-bKUpVbP4TYiNeXlNaahkSpcU7D+Wm7fqcdGYZRQYm9W+mWSBen3XERzEVFpBSJsAJDQ3X/bELwXnD2YvFjmyLg==
+"@bigmi/react@^0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@bigmi/react/-/react-0.3.1.tgz#edf3cd6b09555ef8f26131ab3415306d08381380"
+  integrity sha512-+evNAsf/TNAGuSLwToQEyqX++FddLCqRBGKnRhmnk5WZJuOUtr+LwpjDFkGu2PNSMbbIFd8eprysMhVIGnEM3w==
   dependencies:
-    "@bigmi/client" "^0.2.1"
-    "@bigmi/core" "^0.2.1"
+    "@bigmi/client" "^0.3.1"
+    "@bigmi/core" "^0.3.1"
 
 "@biom3/design-tokens@^0.4.0", "@biom3/design-tokens@~0.4.2":
   version "0.4.7"
@@ -1771,6 +1771,13 @@
     react-is "^18.2.0"
     react-keyed-flatten-children "^3.0.0"
     ts-deepmerge "^6.2.0"
+
+"@bitcoinerlab/secp256k1@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@bitcoinerlab/secp256k1/-/secp256k1-1.2.0.tgz#429d043ef4218b9c71915b50172e9aa4a2a8fea4"
+  integrity sha512-jeujZSzb3JOZfmJYI0ph1PVpCRV5oaexCgy+RvCXV8XlY+XFB/2n3WOcvBsKLsOw78KYgnQrQWb2HrKE4be88Q==
+  dependencies:
+    "@noble/curves" "^1.7.0"
 
 "@bitget-wallet/web3-sdk@^0.0.8":
   version "0.0.8"
@@ -4458,7 +4465,7 @@
   dependencies:
     "@noble/hashes" "1.8.0"
 
-"@noble/curves@^1.0.0", "@noble/curves@^1.1.0", "@noble/curves@^1.6.0", "@noble/curves@^1.8.0", "@noble/curves@^1.9.1", "@noble/curves@~1.9.0":
+"@noble/curves@^1.0.0", "@noble/curves@^1.1.0", "@noble/curves@^1.6.0", "@noble/curves@^1.7.0", "@noble/curves@^1.8.0", "@noble/curves@^1.9.1", "@noble/curves@~1.9.0":
   version "1.9.2"
   resolved "https://registry.yarnpkg.com/@noble/curves/-/curves-1.9.2.tgz#73388356ce733922396214a933ff7c95afcef911"
   integrity sha512-HxngEd2XUcg9xi20JkwlLCtYwfoFw4JGkuZpT+WlsPD4gB/cxkvTD8fSsoAnphGZhFdZYKeQIPCuFlWPm1uE0g==
@@ -24936,7 +24943,7 @@ zustand@^4.4.1:
   dependencies:
     use-sync-external-store "^1.2.2"
 
-zustand@^5.0.4:
+zustand@^5.0.5:
   version "5.0.5"
   resolved "https://registry.yarnpkg.com/zustand/-/zustand-5.0.5.tgz#3e236f6a953142d975336d179bc735d97db17e84"
   integrity sha512-mILtRfKW9xM47hqxGIxCv12gXusoY/xTSHBYApXozR0HmQv299whhBeeAcRy+KrPPybzosvJBCOmVjq6x12fCg==

@@ -1,7 +1,10 @@
 import axios from 'axios'
-import { Psbt, Transaction, networks, opcodes, script } from 'bitcoinjs-lib'
+import { Psbt, Transaction, networks, opcodes, script, initEccLib } from 'bitcoinjs-lib'
 import type { TransactionBuilderParams, Utxo } from './types'
 import { estimateFee } from './estimateFee'
+import ecc from '@bitcoinerlab/secp256k1';
+
+initEccLib(ecc);
 
 const MIN_FEE = 1000n // sats, as BigInt
 

@@ -99,7 +99,7 @@ const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddre
             const tx = signedPsbt.extractTransaction()
             const txHex = tx.toHex();
 
-            const txHash = await rpcClient?.call<string[], string>('sendrawtransaction', [txHex]);
+            const txHash = await rpcClient.call<string[], string>('sendrawtransaction', [txHex]);
 
             if (txHash) {
                 setSwapTransaction(swapId, BackendTransactionStatus.Pending, txHash);
