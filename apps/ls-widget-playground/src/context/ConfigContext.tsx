@@ -1,101 +1,88 @@
 "use client";
-
-import { Context, createContext, useContext, useState } from 'react';
+import { Context, createContext, useContext, useEffect, useState } from 'react';
 import { ThemeData, THEME_COLORS } from '@layerswap/widget';
 
-export type ThemeType = 'dark' | 'light';
 
-interface ThemeContextType {
-    theme: ThemeType;
+export interface featuredNetworkType {
+    initialDirection?: 'from' | 'to';
+    network?: string | undefined;
+    oppositeDirectionOverrides?: 'onlyNetworks' | 'onlyExchanges' | string[] | undefined;
+}
+
+interface ContextType {
     themeData: ThemeData | undefined;
-
-    updateTheme: <K extends keyof ThemeData> (prop: K, value: ThemeData[K]) => void;
-    resetThemeData: () => void;
-}
-
-interface featuredNetworkType {
-    initialDirection: 'from' | 'to';
-    network: string;
-    oppositeDirectionOverrides?: 'onlyNetworks' | 'onlyExchanges' | string[];
-}
-
-interface NetworkContextType {
+    themeName: string | undefined;
     featuredNetwork: featuredNetworkType | undefined;
-    updateFeaturedNetwork: (
-        direction: 'from' | 'to',
-        network: string,
-        opposite?: 'onlyNetworks' | 'onlyExchanges' | string[]
-    ) => void;
-    resetFeaturedNetwork: () => void;
-}
-const NetworkContext = createContext<NetworkContextType | undefined>(undefined);
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
-
-export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
-    const [theme, setTheme] = useState<ThemeType>('dark');
-    const [themeData, setThemeData] = useState<ThemeData | undefined>(THEME_COLORS['default'])
-    const resetThemeData = () => {
-        setThemeData(THEME_COLORS['default']);
-    };
-    const updateTheme = <K extends keyof ThemeData>(
-        prop: K,
-        value: ThemeData[K]
-    ) => {
-        setThemeData((prevTheme) => {
-            if (!theme) return prevTheme;
-            return {
-                ...prevTheme,
-                [prop]: value,
-            };
-        });
-    };
-
-    return (
-        <ThemeContext.Provider value={{ theme, themeData, updateTheme, resetThemeData }}>
-            {children}
-        </ThemeContext.Provider>
-    );
+    widgetRenderKey: number;
+    updateFeaturedNetwork: <K extends keyof featuredNetworkType>(prop: K, value: featuredNetworkType[K]) => void;
+    updateTheme: <K extends keyof ThemeData> (prop: K, value: ThemeData[K]) => void;
+    updateWholeTheme: (themeData: ThemeData, themeName: string) => void
+    resetData: () => void;
 }
 
-export const NetworkProvider = ({ children }: { children: React.ReactNode }) => {
-    const [featuredNetwork, setFeaturedNetwork] = useState<featuredNetworkType | undefined>(undefined);
-    const updateFeaturedNetwork = (
-        direction: 'from' | 'to',
-        network: string,
-        opposite: 'onlyNetworks' | 'onlyExchanges' | string[]
-    ) => {
+const WidgetContext = createContext<ContextType | undefined>(undefined);
 
-        setFeaturedNetwork({
-            initialDirection: direction,
-            network,
-            oppositeDirectionOverrides: opposite,
-        });
+export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
+    const [themeData, setThemeData] = useState<{ theme: ThemeData | undefined, themeName?: string | undefined } | undefined>({ theme: THEME_COLORS['default'], themeName: 'default' });
+    const [featuredNetwork, setFeaturedNetwork] = useState<featuredNetworkType | undefined>({ initialDirection: 'to' });
+    const [widgetRenderKey, setWidgetRenderKey] = useState(0);
+
+    const bumpWidgetKey = () => {
+        setWidgetRenderKey(prev => prev + 1);
     };
 
-    const resetFeaturedNetwork = () => {
-        setFeaturedNetwork(undefined);
+    useEffect(() => {
+        bumpWidgetKey()
+    }, [featuredNetwork?.network, featuredNetwork?.initialDirection])
+
+    const resetData = () => {
+        setThemeData({ theme: THEME_COLORS['default'], themeName: 'default' });
+        setFeaturedNetwork({ initialDirection: 'to' });
+        if (featuredNetwork) {
+            bumpWidgetKey();
+        }
     };
-    return (
-        <NetworkContext.Provider value={{ featuredNetwork, updateFeaturedNetwork, resetFeaturedNetwork }}>
-            {children}
-        </NetworkContext.Provider>
-    );
-}
 
-export function useTheme() {
-    const data = useContext(ThemeContext as Context<ThemeContextType>);
-
-    if (data === null) {
-        throw new Error('useTheme must be used within a ThemeProvider');
+    function updateWholeTheme(themeData: ThemeData, themeName: string) {
+        setThemeData({ theme: themeData, themeName })
     }
 
-    return data;
+    function updateTheme<K extends keyof ThemeData>(
+        prop: K,
+        value: ThemeData[K]
+    ): void {
+        {
+            setThemeData((prevTheme) => ({
+                ...prevTheme,
+                theme: {
+                    ...prevTheme?.theme,
+                    [prop]: value!,
+                }
+            }));
+        }
+    }
+
+    const updateFeaturedNetwork = <K extends keyof featuredNetworkType>(
+        prop: K,
+        value: featuredNetworkType[K]
+    ) => {
+        setFeaturedNetwork((prev) => ({
+            ...(prev ?? {}),
+            [prop]: value,
+        }));
+    };
+
+    return (
+        <WidgetContext.Provider value={{ themeData: themeData?.theme, themeName: themeData?.themeName, featuredNetwork, widgetRenderKey, updateTheme, updateWholeTheme, updateFeaturedNetwork, resetData }}>
+            {children}
+        </WidgetContext.Provider>
+    );
 }
 
-export function useFeaturedNetwork() {
-    const data = useContext(NetworkContext);
-    if (!data) {
-        throw new Error('useFeaturedNetwork must be used within a NetworkProvider');
+export function useWidgetContext() {
+    const data = useContext(WidgetContext as Context<ContextType>);
+    if (data === null) {
+        throw new Error('useTheme must be used within a ThemeProvider');
     }
     return data;
 }

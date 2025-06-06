@@ -1,38 +1,70 @@
-import { CheckIcon } from "lucide-react"
-import { cn } from "@/lib/utils"
+"use client"
+import * as React from "react";
+import { CheckIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-type Option = {
-    value: string
-    label: string
+type RadioGroupContextType = {
+    value: string;
+    onChange: (val: string) => void;
+};
+
+const RadioGroupContext = React.createContext<RadioGroupContextType | null>(null);
+
+export interface RadioGroupProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "onChange"> {
+    value: string;
+    onChange: (val: string) => void;
 }
 
-interface CustomRadioGroupProps {
-    options: Option[]
-    value: string
-    onChange: (value: string) => void
-}
-
-export function CustomRadioGroup({ options, value, onChange }: CustomRadioGroupProps) {
+function RadioGroup({ value, onChange, className, ...props }: RadioGroupProps) {
     return (
-        <div className="space-y-1">
-            {options.map((option) => {
-                const isChecked = value === option.value
-                return (
-                    <button
-                        key={option.value}
-                        onClick={() => onChange(option.value)}
-                        type="button"
-                        className={cn(
-                            "relative flex w-full cursor-pointer items-center justify-between rounded-md border p-3 text-base transition-colors",
-                            "bg-secondary-700 text-secondary-text border-secondary-500",
-                            isChecked && "bg-secondary-700 text-primary-text border-primary"
-                        )}
-                    >
-                        <span>{option.label}</span>
-                        {isChecked && <CheckIcon className="h-4 w-4 text-primary" />}
-                    </button>
-                )
-            })}
-        </div>
-    )
+        <RadioGroupContext.Provider value={{ value, onChange }}>
+            <div className={cn("space-y-1", className)} {...props} />
+        </RadioGroupContext.Provider>
+    );
 }
+
+interface RadioGroupItemProps extends React.HTMLAttributes<HTMLButtonElement> {
+    value: string;
+    children: React.ReactNode;
+    asChild?: boolean;
+}
+
+function RadioGroupItem({ value, children, className, ...props }: RadioGroupItemProps) {
+    const context = React.useContext(RadioGroupContext);
+    if (!context) throw new Error("RadioGroup.Item must be used within RadioGroup");
+
+    const isChecked = context.value === value;
+
+    return (
+        <button
+            type="button"
+            onClick={() => context.onChange(value)}
+            className={cn(
+                "relative flex w-full cursor-pointer justify-start items-center rounded-md border p-3 text-base transition-colors bg-transparent bg-secondary-700",
+                "text-secondary-text border-secondary-500",
+                isChecked && "bg-secondary-700 text-primary-text border-primary  justify-between",
+                className
+            )}
+            {...props}
+        >
+            {children}
+            {isChecked && <CheckIcon className="h-4 w-4 text-primary shrink-0" />}
+        </button>
+    );
+}
+
+interface RadioGroupContentProps extends React.HTMLAttributes<HTMLDivElement> { }
+
+function RadioGroupContent({ className, ...props }: RadioGroupContentProps) {
+    return (
+        <div
+            className={cn("rounded-md border border-secondary-500 bg-secondary-700 p-2", className)}
+            {...props}
+        />
+    );
+}
+
+export const CustomRadioGroup = Object.assign(RadioGroup, {
+    Item: RadioGroupItem,
+    Content: RadioGroupContent,
+});

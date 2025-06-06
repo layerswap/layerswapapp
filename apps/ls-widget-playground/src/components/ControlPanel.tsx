@@ -1,19 +1,34 @@
 "use client";
-import { CardRadiusButton, NetworksButton, ResetButton, CloseButton, ColorsButton } from "./buttons";
+import { CardRadiusButton, NetworksButton, ResetButton, CloseButton, ColorsContent, ColorsTrigger, ThemeButton, CardRadiusButtonTrigger, ThemeButtonTrigger, NetworksButtonTrigger } from "./buttons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import clsx from "clsx";
 import { Code, Palette } from 'lucide-react';
 import { useState } from "react";
 import { CodeSegment } from "./CodeSegment";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, } from "@/components/ui/accordion"
 
 const tabValues = [
+    { value: 'design', component: <><Palette /> <span>Design</span></> },
+    { value: 'code', component: <><Code /> <span>Code</span></> },
+]
+
+
+const accordionElements = [
     {
-        value: 'design',
-        component: <><Palette /> <span>Design</span></>
+        trigger: <ColorsTrigger />,
+        content: <ColorsContent />
     },
     {
-        value: 'code',
-        component: <><Code /> <span>Code</span></>
+        trigger: <CardRadiusButtonTrigger />,
+        content: <CardRadiusButton />
+    },
+    {
+        trigger: <NetworksButtonTrigger />,
+        content: <NetworksButton />
+    },
+    {
+        trigger: <ThemeButtonTrigger />,
+        content: <ThemeButton />
     },
 ]
 
@@ -46,11 +61,20 @@ export function ControlPanel() {
                     }
                 </TabsList>
                 <TabsContent value="design">
-                    <div className="flex flex-col gap-4 w-full">
-                        <CardRadiusButton />
-                        <ColorsButton />
-                        <NetworksButton />
-                    </div>
+                    <Accordion collapsible type="single" className="flex flex-col gap-2 w-full border-none bg-transparent">
+                        {
+                            accordionElements.map((item, index) => (
+                                <AccordionItem key={index} value={`item-${index}`} className="bg-secondary-700 rounded-xl p-2">
+                                    <AccordionTrigger className="flex justify-normal gap-2 overflow-hidden">
+                                        {item.trigger}
+                                    </AccordionTrigger>
+                                    <AccordionContent>
+                                        {item.content}
+                                    </AccordionContent>
+                                </AccordionItem>
+                            ))
+                        }
+                    </Accordion>
                 </TabsContent>
                 <TabsContent value="code">
                     <CodeSegment />

@@ -1,12 +1,12 @@
 "use client";
-import { useTheme } from "@/context/ConfigContext";
+import { useWidgetContext } from "@/context/ConfigContext";
 import hljs from 'highlight.js';
 import { useEffect, useState } from "react";
 import { Files } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger, } from "@/components/ui/tooltip"
 
 export function CodeSegment() {
-    const { themeData } = useTheme();
+    const { themeData } = useWidgetContext();
     const data = themeData && formatObjectLiteral(themeData)
     const [copied, setCopied] = useState(false);
 

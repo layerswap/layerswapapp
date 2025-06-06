@@ -2,7 +2,7 @@
 import tinycolor from "tinycolor2";
 import Sketch from "@uiw/react-color-sketch";
 import { } from "@uiw/react-color-swatch"
-import { useTheme } from "@/context/ConfigContext";
+import { useWidgetContext } from "@/context/ConfigContext";
 import { ThemeData } from "@layerswap/widget";
 import { Popover, PopoverContent, PopoverTrigger, } from "@/components/ui/popover"
 
@@ -25,13 +25,12 @@ interface RgbColor {
 }
 
 export function ColorBox({ rgbColor, colorKey }: ColorPickerProps) {
-    const { updateTheme, themeData } = useTheme();
+    const { updateTheme, themeData } = useWidgetContext();
     const cssColor = `rgb(${rgbColor})`;
     const hexColor = tinycolor(cssColor).toHexString();
     const textColor = isDarkColor(rgbColor) ? 'white' : 'black';
 
     const handleColorChange = ({ b, g, r }: RgbColor) => {
-        const updatedTheme = { ...themeData };
         const group = colorKey.startsWith("primary") ? "primary" : "secondary";
         const rawKey = colorKey.replace(group, "").trim() || "DEFAULT";
         const rgbString = `${r}, ${g}, ${b}`;

@@ -1,9 +1,10 @@
 "use client";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, } from "@/components/ui/accordion"
-import { useTheme } from "@/context/ConfigContext";
+import { useWidgetContext } from "@/context/ConfigContext";
 import { THEME_COLORS } from "@layerswap/widget";
 import { useMemo } from "react";
 import { ColorBox } from "./ColorBox";
+import tinycolor from "tinycolor2";
 
 const getColors = (theme?: typeof THEME_COLORS['default']) => {
     if (!theme?.primary || !theme?.secondary) return undefined
@@ -38,29 +39,39 @@ const getColors = (theme?: typeof THEME_COLORS['default']) => {
     ]
 }
 
-export function ColorsButton() {
-    const { themeData } = useTheme();
+export function ColorsContent() {
+    const { themeData } = useWidgetContext();
+    const editColors = useMemo(() => getColors(themeData), [themeData]);
+    return editColors?.map(({ displayName, value, id }) => (
+        <div key={id} className="my-1 rounded-xl p-2 bg-secondary-600  flex items-center justify-between gap-4">
+            <span>{displayName}</span>
+            <ColorBox rgbColor={value!} colorKey={id} />
+        </div>
+    ))
+}
+
+
+
+export const ColorsTrigger = () => {
+    const { themeData } = useWidgetContext();
     const editColors = useMemo(() => getColors(themeData), [themeData]);
 
     return (
-        <Accordion type="multiple" >
-            <AccordionItem value="colors">
-                <AccordionTrigger>Colors</AccordionTrigger>
-                <AccordionContent>
-
-                    {editColors?.map(({ displayName, value, id }) => (
-                        <div key={id} className="my-1 rounded-xl p-2 bg-secondary-600  flex items-center justify-between gap-4">
-                            <span>{displayName}</span>
-                            <ColorBox rgbColor={value!} colorKey={id} />
-                        </div>
-                    ))}
-                </AccordionContent>
-
-            </AccordionItem>
-        </Accordion>
-    );
+        <div className="flex justify-between w-full">
+            <label>
+                Colors
+            </label>
+            <div className="flex justify-end ">
+                {editColors?.map(({ value, id }) => (
+                    <div key={id}
+                        style={{ backgroundColor: tinycolor(`rgb(${value})`).toRgbString() }}
+                        className="w-2.5 h-full"
+                    ></div>
+                ))}
+            </div>
+        </div>
+    )
 }
-
 
 /*
 "default": {

@@ -1,11 +1,11 @@
 "use client";
 import * as React from "react"
-import { useTheme } from "@/context/ConfigContext";
+import { useWidgetContext } from "@/context/ConfigContext";
 import { ThemeData } from '@layerswap/widget';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select"
 
 export function CardRadiusButton() {
-    const { updateTheme, themeData } = useTheme();
+    const { updateTheme, themeData } = useWidgetContext();
 
     const handleClick = (radius: string) => {
         updateTheme('borderRadius', radius as ThemeData['borderRadius']);
@@ -14,8 +14,8 @@ export function CardRadiusButton() {
     return (
         <div className="w-full flex gap-2 alling-items-center justify-center">
             <Select value={themeData?.borderRadius} onValueChange={handleClick}>
-                <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Border radius" />
+                <SelectTrigger className="flex gap-2 w-full border-none bg-secondary-600">
+                    <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                     <SelectGroup>
@@ -27,6 +27,20 @@ export function CardRadiusButton() {
                     </SelectGroup>
                 </SelectContent>
             </Select>
+        </div>
+    );
+}
+
+export const CardRadiusButtonTrigger = () => {
+    const { themeData } = useWidgetContext();
+    return (
+        <div className="flex justify-between w-full">
+            <label>
+                Border radius
+            </label>
+            <label className="capitalize">
+                {themeData?.borderRadius}
+            </label>
         </div>
     );
 }
