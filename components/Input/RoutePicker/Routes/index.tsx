@@ -47,14 +47,14 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const activeAddress = provider?.activeWallet
     const { balances } = useBalance(activeAddress?.address, route)
     const tokenbalance = balances?.find(b => b.token === item.symbol)
-    const formatted_balance_amount = tokenbalance?.amount ? Number(truncateDecimals(tokenbalance?.amount, item.precision)) : 0
+    const formatted_balance_amount = tokenbalance?.amount ? truncateDecimals(tokenbalance?.amount, item.precision) : 0
     const balanceAmountInUsd = (item?.price_in_usd * formatted_balance_amount).toFixed(2)
 
     return <SelectItem.DetailedTitle title={item.symbol} secondary={route.display_name} secondaryLogoSrc={route.logo}>
         {
             (allbalancesLoaded && tokenbalance && Number(formatted_balance_amount) > 0) ? (
                 <span className="text-sm text-secondary-text text-right my-auto leading-4 font-medium">
-                    <div className="text-primary-text"> {formatted_balance_amount}</div>
+                    <div className="text-primary-text"> {formatted_balance_amount.toFixed(item.precision)}</div>
                     {Number(tokenbalance?.amount) > 0 && <div>${balanceAmountInUsd}</div>}
                 </span>
             ) : <></>}

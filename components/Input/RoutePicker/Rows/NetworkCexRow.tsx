@@ -57,12 +57,12 @@ export const NetworkCexRow = ({
 
             const passedTop = Number(headerRect?.top) - 3 <= containerRect.top;
             const contentGone = Number(contentRect?.bottom) <= containerRect.top + (headerRect?.height || 0) * 1.5;
-            setSticky(passedTop && !contentGone);
+            setSticky(passedTop && !contentGone && sortedTokens && sortedTokens.length > 1);
         };
 
         container.addEventListener('scroll', onScroll, { passive: true });
         return () => container.removeEventListener('scroll', onScroll);
-    }, [isOpen, scrollContainerRef]);
+    }, [isOpen, scrollContainerRef, headerRef, contentRef, sortedTokens]);
 
     const stickyToggle = () => {
         toggleContent(route.name)
@@ -106,7 +106,7 @@ export const NetworkCexRow = ({
             <AccordionContent className="AccordionContent mt-1" ref={contentRef}>
                 <div className='has-[.token-item]:mt-1 bg-secondary-400 rounded-xl overflow-hidden'>
                     <div className="overflow-y-auto styled-scroll">
-                        {sortedTokens?.map((token, index) => (
+                        {sortedTokens?.map((token) => (
                             <TokenCommandWrapper
                                 allbalancesLoaded={allbalancesLoaded}
                                 key={`${route.name}-${token.symbol}`}
