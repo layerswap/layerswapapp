@@ -310,6 +310,7 @@ const resolveSupportedNetworks = (supportedNetworks: string[], connectorId: stri
                 KnownInternalNames.Networks.RoninMainnet,
                 KnownInternalNames.Networks.EthereumMainnet,
                 KnownInternalNames.Networks.PolygonMainnet,
+                KnownInternalNames.Networks.BaseMainnet,
                 KnownInternalNames.Networks.BNBChainMainnet,
                 KnownInternalNames.Networks.ArbitrumMainnet
             ]
