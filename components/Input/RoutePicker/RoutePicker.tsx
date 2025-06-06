@@ -20,8 +20,8 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const { allRoutes, isLoading, routeElements, tokenElements, selectedRoute, selectedToken, allbalancesLoaded } = useFormRoutes({ direction, values }, searchQuery)
     const currencyFieldName = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const [showTokens, setShowTokens] = useState(false);
-console.log(tokenElements,"tokenElements")
-console.log(routeElements,"routeElements")
+    console.log(tokenElements, "tokenElements")
+    console.log(routeElements, "routeElements")
     useEffect(() => {
 
         if (!selectedRoute || !selectedToken || !allRoutes) return
@@ -45,7 +45,7 @@ console.log(routeElements,"routeElements")
             setFieldValue(direction, updatedRoute, true)
         }
 
-    }, [selectedRoute, selectedToken, allRoutes, showTokens])
+    }, [selectedRoute, selectedToken, allRoutes])
 
     const handleSelect = useCallback(async (route: Route, token: RouteToken) => {
         if (route.cex) {
@@ -61,7 +61,7 @@ console.log(routeElements,"routeElements")
             setFieldValue(currencyFieldName, token, true)
             setFieldValue(direction, route, true)
         }
-    }, [currencyFieldName, direction, values])
+    }, [currencyFieldName, direction, values, showTokens])
 
     return (
         <div className="flex w-full flex-col self-end relative ml-auto items-center">
@@ -72,6 +72,7 @@ console.log(routeElements,"routeElements")
                 <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search">
                     {({ closeModal }) => (
                         <Content
+                            key={String(showTokens)} 
                             allbalancesLoaded={allbalancesLoaded}
                             onSelect={(r, t) => { handleSelect(r, t); closeModal(); }}
                             searchQuery={searchQuery}
