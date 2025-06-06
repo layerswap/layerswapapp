@@ -1,5 +1,5 @@
 {
-  "count": 532,
+  "count": 531,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -35671,67 +35671,6 @@
         "2"
       ]
     },
-    "ff771deda39152ddb76add14a8eb17564af6bf2765bb1298a69a062723608298": {
-      "app": {
-        "android": "https://play.google.com/store/apps/details?id=com.metapro.app&hl=en&gl=US",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
-        "ios": "https://apps.apple.com/us/app/metapro-wallet/id1628087356",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
-      },
-      "app_type": "wallet",
-      "category": "Mobile Wallets",
-      "chains": [
-        "eip155:1",
-        "eip155:137",
-        "eip155:42161",
-        "eip155:56",
-        "eip155:8453"
-      ],
-      "description": "First choice web3 gaming non-custodial wallet. Manage your games and assets!",
-      "desktop": {
-        "native": "",
-        "universal": null
-      },
-      "homepage": "https://wallet.metapro.one",
-      "id": "ff771deda39152ddb76add14a8eb17564af6bf2765bb1298a69a062723608298",
-      "image_id": "20775b9e-c38f-4173-509f-896a84593b00",
-      "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/20775b9e-c38f-4173-509f-896a84593b00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/20775b9e-c38f-4173-509f-896a84593b00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/20775b9e-c38f-4173-509f-896a84593b00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
-      },
-      "injected": null,
-      "metadata": {
-        "colors": {
-          "primary": "#141E2F",
-          "secondary": "#7763F6"
-        },
-        "shortName": "metapro"
-      },
-      "mobile": {
-        "native": "metapro://",
-        "universal": null
-      },
-      "name": "metapro wallet",
-      "rdns": null,
-      "sdks": [
-        "sign_v1",
-        "sign_v2"
-      ],
-      "slug": "metapro-wallet",
-      "updatedAt": "2024-05-14T17:39:08.62223+00:00",
-      "versions": [
-        "1",
-        "2"
-      ]
-    },
     "ff97af0ad5fca162553ebbd76f2564b7f7b04569c131e972b75bbff2dc13c1a9": {
       "app": {
         "android": null,
@@ -35797,5 +35736,5 @@
       ]
     }
   },
-  "total": 532
+  "total": 531
 }
