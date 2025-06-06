@@ -56,8 +56,6 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
         truncateDecimals(refuel.amount, nativeCurrency?.precision) : null
     const refuelAmountInUsd = nativeCurrency && ((nativeCurrency?.price_in_usd || 1) * (Number(truncatedRefuelAmount) || 0)).toFixed(2)
 
-    const displayReceiveAmount = receiveAmount ? truncateDecimals(receiveAmount, destinationCurrency.precision).toFixed(destinationCurrency?.precision) : undefined
-
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
 
     return (
@@ -116,7 +114,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                     {
                         receiveAmount != undefined ?
                             <div className="flex flex-col justify-end">
-                                <p className="text-primary-text text-sm">{displayReceiveAmount} {destinationCurrency.symbol}</p>
+                                <p className="text-primary-text text-sm">{truncateDecimals(receiveAmount, destinationCurrency.precision)} {destinationCurrency.symbol}</p>
                                 <p className="text-secondary-text text-sm flex justify-end">${receiveAmountInUsd}</p>
                             </div>
                             :
