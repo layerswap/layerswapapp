@@ -1,7 +1,7 @@
 import { FC } from "react"
 import { useSwapDataState } from "../../../context/swap"
 import Summary from "./Summary"
-import { TransactionType } from "../../../lib/layerSwapApiClient"
+import { TransactionType } from "../../../lib/apiClients/layerSwapApiClient"
 import { shortenEmail } from "../../utils/ShortenAddress"
 import KnownInternalNames from "../../../lib/knownIds"
 import useWallet from "../../../hooks/useWallet"

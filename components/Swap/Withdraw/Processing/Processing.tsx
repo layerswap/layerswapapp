@@ -4,7 +4,7 @@ import { Widget } from '../../../Widget/Index';
 import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
-import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapResponse, Transaction } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapResponse, Transaction } from '../../../../lib/apiClients/layerSwapApiClient';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { SwapStatus } from '../../../../Models/SwapStatus';
 import { SwapFailReasons } from '../../../../Models/RangeError';

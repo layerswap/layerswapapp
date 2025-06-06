@@ -1,4 +1,4 @@
-import LayerSwapApiClient from '../../lib/layerSwapApiClient';
+import LayerSwapApiClient from '../../lib/apiClients/layerSwapApiClient';
 import Layout from '../../components/layout';
 import { InferGetServerSidePropsType } from 'next';
 import React from 'react';

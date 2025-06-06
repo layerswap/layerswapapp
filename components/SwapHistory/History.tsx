@@ -1,4 +1,4 @@
-import LayerSwapApiClient, { SwapResponse } from "../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { SwapResponse } from "../../lib/apiClients/layerSwapApiClient"
 import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse"
 import { ChevronDown, Plus, RefreshCw } from 'lucide-react'
 import { FC, useCallback, useMemo, useState } from "react"

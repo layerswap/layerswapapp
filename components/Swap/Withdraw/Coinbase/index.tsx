@@ -5,7 +5,7 @@ import Authorize from './Authorize';
 import Coinbase2FA from './Coinbase2FA';
 import { ArrowLeftRight, Link } from 'lucide-react';
 import { useSwapDataState, useSwapDataUpdate } from '../../../../context/swap';
-import LayerSwapApiClient, { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { BackendTransactionStatus } from '../../../../lib/apiClients/layerSwapApiClient';
 import { LSAPIKnownErrorCode } from '../../../../Models/ApiError';
 import toast from 'react-hot-toast';
 import { TimerProvider, useTimerState } from '../../../../context/timerContext';

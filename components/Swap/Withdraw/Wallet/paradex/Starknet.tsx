@@ -6,7 +6,7 @@ import * as Paradex from "../../../../../lib/wallets/paradex/lib";
 import { useSettingsState } from '../../../../../context/settings';
 import KnownInternalNames from '../../../../../lib/knownIds';
 import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
-import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
+import { BackendTransactionStatus } from '../../../../../lib/apiClients/layerSwapApiClient';
 import toast from 'react-hot-toast';
 import SubmitButton from '../../../../buttons/submitButton';
 import { AuthorizeStarknet } from '../../../../../lib/wallets/paradex/Authorize/Starknet';

@@ -3,7 +3,7 @@ import firstGuidePic from './../public/images/withdrawGuideImages/01.png'
 import secondNetworkGuidePic from './../public/images/withdrawGuideImages/02Network.png'
 import secondExchangeGuideGuidePic from './../public/images/withdrawGuideImages/02Exchange.png'
 import thirdGuidePic from './../public/images/withdrawGuideImages/03.png'
-import { SwapItem } from '../lib/layerSwapApiClient'
+import { SwapItem } from '../lib/apiClients/layerSwapApiClient'
 
 const SwapGuide = ({ swap }: { swap: SwapItem }) => {
     return (

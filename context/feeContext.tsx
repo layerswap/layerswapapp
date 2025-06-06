@@ -1,6 +1,6 @@
 import { createContext, useState, useContext, useEffect } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import LayerSwapApiClient, { Quote } from '../lib/layerSwapApiClient';
+import LayerSwapApiClient, { Quote } from '../lib/apiClients/layerSwapApiClient';
 import useSWR from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
 

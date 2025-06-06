@@ -2,7 +2,7 @@ import Image from "next/image";
 import { Fuel } from "lucide-react";
 import { FC } from "react";
 import { truncateDecimals } from "../../utils/RoundDecimals";
-import LayerSwapApiClient, { Refuel } from "../../../lib/layerSwapApiClient";
+import LayerSwapApiClient, { Refuel } from "../../../lib/apiClients/layerSwapApiClient";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
 import useSWR from 'swr'

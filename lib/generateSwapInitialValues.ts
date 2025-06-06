@@ -2,7 +2,7 @@ import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { QueryParams } from "../Models/QueryParams";
 import { isValidAddress } from "./address/validator";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
-import { SwapResponse } from "./layerSwapApiClient";
+import { SwapResponse } from "./apiClients/layerSwapApiClient";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams): SwapFormValues {
     const { destAddress, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, depositMethod } = queryParams
