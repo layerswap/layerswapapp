@@ -4,11 +4,6 @@ import { NetworkRouteToken, NetworkRoute } from "./Network";
 export type RouteToken = NetworkRouteToken | ExchangeToken
 export type Route = ({ cex: true } & Exchange | { cex?: false } & NetworkRoute)
 
-export class RoutesGroup {
-    name: string;
-    routes: Route[];
-}
-
 export type NetworkElement = {
     type: 'network';
     route: NetworkRoute & { cex: false };
@@ -35,12 +30,21 @@ export type TitleElement = {
     type: 'group_title';
     text: string
 }
+export type GroupedTokenElement = {
+    type: 'grouped_token';
+    route: {
+        tokens: {
+            token: RouteToken
+        }[];
+    } & { name: string };
+};
 export type RowElement = {}
     & (NetworkElement
         | ExchangeElement
         | NetworkTokenElement
         | ExchangeTokenElement
-        | TitleElement)
+        | TitleElement
+        | GroupedTokenElement)
 
 
 

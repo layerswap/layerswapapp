@@ -1,16 +1,13 @@
 import { NetworkRoute, NetworkRouteToken } from "../../../../Models/Network";
 import useWallet from "../../../../hooks/useWallet";
-import useSWRBalance from "../../../../lib/balances/useSWRBalance";
 import { SwapDirection } from "../../../DTOs/SwapFormValues";
 import { truncateDecimals } from "../../../utils/RoundDecimals";
 import Image from 'next/image'
 import { SelectItem } from "../../../Select/CommandNew/SelectItem/Index";
-import { useMemo } from "react";
 import { Exchange } from "../../../../Models/Exchange";
 import { Route, RouteToken } from "../../../../Models/Route";
 import { ChevronDown } from "lucide-react";
 import RoutePickerIcon from "../../../icons/RoutePickerPlaceholder";
-import { Wallet } from "../../../../Models/WalletProvider";
 import { useBalance } from "../../../../lib/balances/providers/useBalance";
 
 type TokenItemProps = {

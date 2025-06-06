@@ -17,9 +17,11 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     } = useFormikContext<SwapFormValues>();
 
     const [searchQuery, setSearchQuery] = useState("")
-    const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken, allbalancesLoaded } = useFormRoutes({ direction, values }, searchQuery)
+    const { allRoutes, isLoading, routeElements, tokenElements, selectedRoute, selectedToken, allbalancesLoaded } = useFormRoutes({ direction, values }, searchQuery)
     const currencyFieldName = direction === 'from' ? 'fromCurrency' : 'toCurrency';
-
+    const [showTokens, setShowTokens] = useState(false);
+console.log(tokenElements,"tokenElements")
+console.log(routeElements,"routeElements")
     useEffect(() => {
 
         if (!selectedRoute || !selectedToken || !allRoutes) return
@@ -43,7 +45,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
             setFieldValue(direction, updatedRoute, true)
         }
 
-    }, [selectedRoute, selectedToken, allRoutes])
+    }, [selectedRoute, selectedToken, allRoutes, showTokens])
 
     const handleSelect = useCallback(async (route: Route, token: RouteToken) => {
         if (route.cex) {
@@ -74,10 +76,12 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                             onSelect={(r, t) => { handleSelect(r, t); closeModal(); }}
                             searchQuery={searchQuery}
                             setSearchQuery={setSearchQuery}
-                            rowElements={routeElements}
+                            rowElements={showTokens ? tokenElements : routeElements}
                             direction={direction}
                             selectedRoute={selectedRoute?.name}
                             selectedToken={selectedToken?.symbol}
+                            showTokens={showTokens}
+                            setShowTokens={setShowTokens}
                         />
                     )}
                 </SelectorContent>

@@ -7,7 +7,7 @@ import { NetworkRoute } from "../Models/Network";
 import { useEffect, useMemo, useState } from "react";
 import { useSettingsState } from "../context/settings";
 import { Exchange } from "../Models/Exchange";
-import { NetworkElement, RowElement, RoutesGroup, NetworkTokenElement, _Route, _RoutesGroup, ExchangeTokenElement, ExchangeElement, TitleElement } from "../Models/Route";
+import { NetworkElement, RowElement, NetworkTokenElement, _Route, _RoutesGroup, ExchangeTokenElement, ExchangeElement, TitleElement, GroupedTokenElement } from "../Models/Route";
 import useAllBalances from "./useAllBalances";
 import { NetworkBalance } from "../Models/Balance";
 
@@ -29,19 +29,21 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const balances = useAllBalances({ direction })
 
     const routeElements = useMemo(() => groupRoutes(networkRoutes, exchangesRoutes, direction, balances, search), [networkRoutes, exchangesRoutes, balances, direction, search])
+    const tokenElements = useMemo(() => groupTokens(networkRoutes, exchangesRoutes), [networkRoutes, exchangesRoutes]);
 
     const selectedRoute = useMemo(() => resolveSelectedRoute(values, direction), [values, direction])
     const selectedToken = useMemo(() => resolveSelectedToken(values, direction), [values, direction])
     const allbalancesLoaded = useMemo(() => !!balances, [balances])
     const res = useMemo(() => {
-        return ({ allRoutes, isLoading, routeElements, selectedRoute, selectedToken, allbalancesLoaded })
+        return ({ allRoutes, isLoading, routeElements, tokenElements, selectedRoute, selectedToken, allbalancesLoaded })
     }, [
         allRoutes,
         isLoading,
         routeElements,
+        tokenElements,
         selectedRoute,
         selectedToken,
-        allbalancesLoaded
+        allbalancesLoaded,
     ])
 
     return res
@@ -162,6 +164,49 @@ function groupRoutes(networkRoutes: NetworkRoute[], exchangesRoutes: ({ cex: tru
         ...exchangesTitle,
         ...exchanges,
     ]
+}
+
+function groupTokens(networkRoutes: NetworkRoute[], exchangesRoutes: ({ cex: true } & Exchange)[]): GroupedTokenElement[] {
+    const tokenMap: Record<string, GroupedTokenElement['route']> = {};
+
+    for (const net of networkRoutes) {
+        if (!net.tokens) continue;
+        for (const token of net.tokens) {
+            const symbol = token.symbol;
+            if (!tokenMap[symbol]) {
+                tokenMap[symbol] = {
+                    name: net.display_name,
+                    tokens: []
+                };
+            }
+            tokenMap[symbol].tokens.push({
+                token
+            });
+        }
+    }
+
+    for (const exch of exchangesRoutes) {
+        if (!exch.token_groups) continue;
+        for (const token of exch.token_groups) {
+            const symbol = token.symbol;
+            if (!tokenMap[symbol]) {
+                tokenMap[symbol] = {
+                    name: exch.display_name,
+                    tokens: []
+                };
+            }
+            tokenMap[symbol].tokens.push({
+                token
+            });
+        }
+    }
+
+    const grouped: GroupedTokenElement[] = Object.values(tokenMap).map(group => ({
+        type: 'grouped_token',
+        route: group
+    }));
+
+    return grouped
 }
 
 function resolveSelectedRoute(values: SwapFormValues, direction: SwapDirection): NetworkRoute | Exchange | undefined {
