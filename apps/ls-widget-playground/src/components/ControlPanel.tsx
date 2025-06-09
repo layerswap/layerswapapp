@@ -1,5 +1,8 @@
 "use client";
-import { CardRadiusButton, NetworksButton, ResetButton, CloseButton, ColorsContent, ColorsTrigger, ThemeButton, CardRadiusButtonTrigger, ThemeButtonTrigger, NetworksButtonTrigger } from "./buttons";
+import {
+    CardRadiusButton, NetworksButton, ResetButton, CloseButton, ColorsContent, ThemeButton, ManageExternallyButton,
+    ColorsTrigger, CardRadiusButtonTrigger, ThemeButtonTrigger, NetworksButtonTrigger, ManageExternallyTriger
+} from "./buttons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import clsx from "clsx";
 import { Code, Palette } from 'lucide-react';
@@ -29,6 +32,10 @@ const accordionElements = [
     {
         trigger: <ThemeButtonTrigger />,
         content: <ThemeButton />
+    },
+    {
+        trigger: <ManageExternallyTriger />,
+        content: <ManageExternallyButton />
     },
 ]
 

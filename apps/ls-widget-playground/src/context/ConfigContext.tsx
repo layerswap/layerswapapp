@@ -36,7 +36,7 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
 
     useEffect(() => {
         bumpWidgetKey()
-    }, [featuredNetwork?.network, featuredNetwork?.initialDirection])
+    }, [featuredNetwork?.network, featuredNetwork?.initialDirection, customEvmSwitch])
 
     const resetData = () => {
         setThemeData({ theme: THEME_COLORS['default'], themeName: 'default' });
@@ -44,6 +44,7 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
         if (featuredNetwork) {
             bumpWidgetKey();
         }
+        setCustomEvmSwitch(false);
     };
 
     function updateCustomEvmSwitch(val: boolean) {
