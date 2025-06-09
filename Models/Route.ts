@@ -32,12 +32,9 @@ export type TitleElement = {
 }
 export type GroupedTokenElement = {
     type: 'grouped_token';
-    route: {
-        tokens: {
-            token: RouteToken
-        }[];
-    } & { name: string };
-};
+    symbol: string;
+    items: (NetworkTokenElement | ExchangeTokenElement)[];
+}
 export type RowElement = {}
     & (NetworkElement
         | ExchangeElement

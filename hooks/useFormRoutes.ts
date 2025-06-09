@@ -166,47 +166,45 @@ function groupRoutes(networkRoutes: NetworkRoute[], exchangesRoutes: ({ cex: tru
     ]
 }
 
-function groupTokens(networkRoutes: NetworkRoute[], exchangesRoutes: ({ cex: true } & Exchange)[]): GroupedTokenElement[] {
-    const tokenMap: Record<string, GroupedTokenElement['route']> = {};
+function groupTokens(
+    networkRoutes: NetworkRoute[],
+    exchangeRoutes: (Exchange & { cex: true })[]
+): GroupedTokenElement[] {
+    const tokenMap: Record<string, (NetworkTokenElement | ExchangeTokenElement)[]> = {};
 
-    for (const net of networkRoutes) {
-        if (!net.tokens) continue;
-        for (const token of net.tokens) {
-            const symbol = token.symbol;
-            if (!tokenMap[symbol]) {
-                tokenMap[symbol] = {
-                    name: net.display_name,
-                    tokens: []
-                };
-            }
-            tokenMap[symbol].tokens.push({
-                token
-            });
+    for (const network of networkRoutes) {
+        for (const token of network.tokens || []) {
+            const item: NetworkTokenElement = {
+                type: 'network_token',
+                route: {
+                    token,
+                    route: { ...network, cex: false },
+                },
+            };
+            if (!tokenMap[token.symbol]) tokenMap[token.symbol] = [];
+            tokenMap[token.symbol].push(item);
         }
     }
 
-    for (const exch of exchangesRoutes) {
-        if (!exch.token_groups) continue;
-        for (const token of exch.token_groups) {
-            const symbol = token.symbol;
-            if (!tokenMap[symbol]) {
-                tokenMap[symbol] = {
-                    name: exch.display_name,
-                    tokens: []
-                };
-            }
-            tokenMap[symbol].tokens.push({
-                token
-            });
+    for (const exchange of exchangeRoutes) {
+        for (const token of exchange.token_groups || []) {
+            const item: ExchangeTokenElement = {
+                type: 'exchange_token',
+                route: {
+                    token,
+                    route: { ...exchange, cex: true },
+                },
+            };
+            if (!tokenMap[token.symbol]) tokenMap[token.symbol] = [];
+            tokenMap[token.symbol].push(item);
         }
     }
 
-    const grouped: GroupedTokenElement[] = Object.values(tokenMap).map(group => ({
+    return Object.entries(tokenMap).map(([symbol, items]) => ({
         type: 'grouped_token',
-        route: group
+        symbol,
+        items,
     }));
-
-    return grouped
 }
 
 function resolveSelectedRoute(values: SwapFormValues, direction: SwapDirection): NetworkRoute | Exchange | undefined {
