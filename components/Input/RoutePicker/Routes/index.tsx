@@ -19,17 +19,29 @@ type TokenItemProps = {
     isGroupedToken?: boolean;
 };
 export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
-    const { item, route, direction, allbalancesLoaded, isGroupedToken } = props
+    const { item, route, direction, allbalancesLoaded, isGroupedToken } = props;
+
+    const routeToken = item as NetworkRouteToken;
+    const isNetworkRoute = isGroupedToken && !route.cex;
+    const activeWallet = isNetworkRoute
+        ? useWallet(route as NetworkRoute, direction === "from" ? "withdrawal" : "autofil")?.provider?.activeWallet
+        : undefined;
+
+    const { balances } = useBalance(
+        isNetworkRoute ? activeWallet?.address : undefined,
+        isNetworkRoute ? (route as NetworkRoute) : undefined
+    );
+
+    const tokenbalance = balances?.find(b => b.token === routeToken.symbol);
+    const formatted_balance_amount = tokenbalance?.amount
+        ? truncateDecimals(tokenbalance.amount, routeToken.precision)
+        : 0;
+    const balanceAmountInUsd = (
+        (routeToken?.price_in_usd ?? 0) * Number(formatted_balance_amount)
+    ).toFixed(2);
 
     if (isGroupedToken) {
         if (!route.cex) {
-            const routeToken = item as NetworkRouteToken;
-            const activeWallet = useWallet(route as NetworkRoute, direction === "from" ? "withdrawal" : "autofil")?.provider?.activeWallet;
-            const { balances } = useBalance(activeWallet?.address, route as NetworkRoute);
-            const tokenbalance = balances?.find(b => b.token === routeToken.symbol);
-            const formatted_balance_amount = tokenbalance?.amount ? truncateDecimals(tokenbalance.amount, routeToken.precision) : 0;
-            const balanceAmountInUsd = (routeToken?.price_in_usd ?? 0 * formatted_balance_amount).toFixed(2);
-
             return (
                 <SelectItem>
                     <SelectItem.Logo
@@ -42,16 +54,14 @@ export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
                         secondary={routeToken.symbol}
                         secondaryLogoSrc={routeToken.logo}
                     >
-                        {
-                            (allbalancesLoaded && tokenbalance && Number(formatted_balance_amount) > 0) ? (
-                                <span className="text-sm text-secondary-text text-right my-auto leading-4 font-medium">
-                                    <div className="text-primary-text">
-                                        {formatted_balance_amount.toFixed(routeToken.precision)}
-                                    </div>
-                                    <div>${balanceAmountInUsd}</div>
-                                </span>
-                            ) : <></>
-                        }
+                        {(allbalancesLoaded && tokenbalance && Number(formatted_balance_amount) > 0) ? (
+                            <span className="text-sm text-secondary-text text-right my-auto leading-4 font-medium">
+                                <div className="text-primary-text">
+                                    {Number(formatted_balance_amount).toFixed(routeToken.precision)}
+                                </div>
+                                <div>${balanceAmountInUsd}</div>
+                            </span>
+                        ) : <></>}
                     </SelectItem.DetailedTitle>
                 </SelectItem>
             );
@@ -96,8 +106,8 @@ export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
                 )
             }
         </SelectItem>
-    )
-}
+    );
+};
 type NetworkTokenItemProps = {
     route: NetworkRoute;
     item: NetworkRouteToken;
