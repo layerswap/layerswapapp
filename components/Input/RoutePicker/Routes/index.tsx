@@ -70,14 +70,14 @@ export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
     return (
         <SelectItem>
             <SelectItem.Logo
-                imgSrc={route.logo}
+                imgSrc={item.logo}
                 altText={`${route.display_name} logo`}
-                className="rounded-md"
+                className="rounded-full"
             />
             <SelectItem.DetailedTitle
-                title={route.display_name}
-                secondary={item.symbol}
-                secondaryLogoSrc={item.logo}
+                title={item.symbol}
+                secondary={route.display_name}
+                secondaryLogoSrc={route.logo}
             />
         </SelectItem>
     );
