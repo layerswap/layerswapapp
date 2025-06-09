@@ -10,11 +10,9 @@ import { datadogRum } from '@datadog/browser-rum';
 import { useConnectModal } from '../../../../WalletModal';
 import { useAccount, useConfig } from '@bigmi/react';
 import { BackendTransactionStatus } from '../../../../../lib/apiClients/layerSwapApiClient';
-import { Psbt } from 'bitcoinjs-lib';
-import { UTXOWalletProvider } from '@bigmi/client/dist/esm/connectors/types';
 import KnownInternalNames from '../../../../../lib/knownIds';
-import { transactionBuilder } from './transactionBuilder';
 import { JsonRpcClient } from '../../../../../lib/apiClients/jsonRpcClient';
+import { sendTransaction } from './sendTransaction';
 
 const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {
     const [loading, setLoading] = useState(false);
@@ -57,49 +55,16 @@ const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddre
                 throw new Error('Missing required parameters for transfer');
             }
 
-            const amountInSatoshi = Math.floor(amount * 1e8); // Convert to satoshis
-            const hexMemo = Number(callData).toString(16);
-
-            const { psbt, inputsToSign, utxos } = await transactionBuilder({
-                amount: amountInSatoshi,
+            const txHash = await sendTransaction({
+                amount,
                 depositAddress,
-                userAddress: wallet?.address,
-                memo: hexMemo,
-                version: isTestnet ? 'testnet' : 'mainnet',
-                publicClient,
-                rpcClient
+                userAddress: wallet.address,
+                isTestnet,
+                rpcClient,
+                callData,
+                connector,
+                publicClient
             });
-
-            const balance = utxos.reduce((sum, u) => sum + u.value, 0)
-
-            if (utxos.length === 0) {
-                throw new Error(`Insufficient balance.`);
-            } else if (balance < amountInSatoshi) {
-                throw new Error(`Insufficient balance. Available: ${balance}, Required: ${amountInSatoshi}`);
-            }
-
-            const psbtHex = psbt.toHex();
-
-            const provider = (await connector?.getProvider()) as UTXOWalletProvider;
-
-            if (!provider) {
-                throw new Error('Provider not found');
-            }
-
-            const signature = await provider.request({
-                method: 'signPsbt',
-                params: {
-                    psbt: psbtHex,
-                    inputsToSign,
-                    finalize: false
-                }
-            })
-
-            const signedPsbt = Psbt.fromHex(signature).finalizeAllInputs()
-            const tx = signedPsbt.extractTransaction()
-            const txHex = tx.toHex();
-
-            const txHash = await rpcClient.call<string[], string>('sendrawtransaction', [txHex]);
 
             if (txHash) {
                 setSwapTransaction(swapId, BackendTransactionStatus.Pending, txHash);

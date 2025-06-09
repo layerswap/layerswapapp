@@ -48,12 +48,12 @@ function selectUtxos(utxos: Utxo[], target: bigint): { selected: Utxo[]; total: 
 }
 
 export async function buildPsbt({
-  amount,         // sats to send
-  depositAddress, // where funds go
-  userAddress,    // change address
-  memo,           // OP_RETURN data
-  version,        // 'mainnet' | 'testnet'
-  rpcClient,      // for estimateFee
+  amount,         
+  depositAddress, 
+  userAddress,    
+  memo,           
+  version,        
+  rpcClient,      
 }: TransactionBuilderParams) {
   const network = version === 'testnet' ? networks.testnet : networks.bitcoin
 
