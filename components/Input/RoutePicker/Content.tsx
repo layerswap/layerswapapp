@@ -44,7 +44,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
         <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         <RouteTokenSwitch showTokens={showTokens} setShowTokens={setShowTokens} />
         <LayoutGroup>
-            <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll px-3 h-full" ref={parentRef}>
+            <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full" ref={parentRef}>
                 <div className="relative"  >
                     <Accordion type="multiple" value={openValues}>
                         <div>
@@ -98,7 +98,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
 const SearchComponent = ({ searchQuery, setSearchQuery }: { searchQuery: string, setSearchQuery: (query: string) => void }) => {
     const { isDesktop } = useWindowDimensions();
 
-    return <div className="flex items-center bg-secondary-500 rounded-lg px-2 mb-2 ml-3">
+    return <div className="flex items-center bg-secondary-500 rounded-lg px-2 mb-2">
         <Search className="w-6 h-6 mr-2 text-primary-text-placeholder" />
         <input
             value={searchQuery}
