@@ -245,7 +245,7 @@ export const GroupedTokenHeader = ({
 
     return (
         <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7">
-            <SelectItem.Logo imgSrc={token.logo} altText={`${token.symbol} logo`} className="rounded-full" />
+            <SelectItem.Logo imgSrc={token.logo} altText={`${token.symbol} logo`} className="svsvsvs rounded-full" />
             <SelectItem.Title className="py-3">
                 <>
                     <span>{token.symbol}</span>
@@ -292,12 +292,10 @@ export const GroupedHeader = ({
             token: t.token,
             networkLogo: t.route.logo
         }));
-    console.log("tokensWithMeta", tokensWithBalance);
-    const firstRoute = tokensWithMeta[0]?.route;
 
     return (
         <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7">
-            <SelectItem.Logo imgSrc={firstRoute?.logo} altText={`${firstRoute?.display_name} logo`} className="rounded-md" />
+            <SelectItem.Logo imgSrc={item?.items?.[0]?.route?.token?.logo} altText={`${item?.symbol} logo`} className="rounded-full" />
             <SelectItem.Title className="py-3">
                 <>
                     <span>{item.symbol}</span>

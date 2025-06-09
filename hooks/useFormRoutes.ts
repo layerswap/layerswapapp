@@ -7,7 +7,7 @@ import { NetworkRoute } from "../Models/Network";
 import { useEffect, useMemo, useState } from "react";
 import { useSettingsState } from "../context/settings";
 import { Exchange } from "../Models/Exchange";
-import { NetworkElement, RowElement, NetworkTokenElement, _Route, _RoutesGroup, ExchangeTokenElement, ExchangeElement, TitleElement, GroupedTokenElement } from "../Models/Route";
+import { NetworkElement, RowElement, NetworkTokenElement, _Route, _RoutesGroup, ExchangeTokenElement, ExchangeElement, TitleElement, GroupedTokenElement, GroupTokensResult } from "../Models/Route";
 import useAllBalances from "./useAllBalances";
 import { NetworkBalance } from "../Models/Balance";
 
@@ -29,7 +29,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const balances = useAllBalances({ direction })
 
     const routeElements = useMemo(() => groupRoutes(networkRoutes, exchangesRoutes, direction, balances, search), [networkRoutes, exchangesRoutes, balances, direction, search])
-    const tokenElements = useMemo(() => groupTokens(networkRoutes, exchangesRoutes), [networkRoutes, exchangesRoutes]);
+    const tokenElements = useMemo(() => groupTokens(networkRoutes, exchangesRoutes, search), [networkRoutes, exchangesRoutes, search]);
 
     const selectedRoute = useMemo(() => resolveSelectedRoute(values, direction), [values, direction])
     const selectedToken = useMemo(() => resolveSelectedToken(values, direction), [values, direction])
@@ -106,7 +106,7 @@ function resolvePopularRoutes(routes: NetworkRoute[], direction: SwapDirection) 
 function groupRoutes(networkRoutes: NetworkRoute[], exchangesRoutes: ({ cex: true } & Exchange)[], direction: SwapDirection, balances: Record<string, NetworkBalance> | null, search?: string): RowElement[] {
     if (search) {
         const networks = networkRoutes.filter(r => r.name.toLowerCase().includes(search.toLowerCase())).map((r): NetworkElement => ({ type: 'network', route: { ...r, cex: false } })).sort((a, b) => (balances?.[a.route.name]?.totalInUSD || 0) - (balances?.[b.route.name]?.totalInUSD || 0))
-        const networkrksTitle: TitleElement[] = networks.length > 0 ? [{
+        const networksTitle: TitleElement[] = networks.length > 0 ? [{
             type: 'group_title',
             text: "Networks"
         }] : []
@@ -125,7 +125,7 @@ function groupRoutes(networkRoutes: NetworkRoute[], exchangesRoutes: ({ cex: tru
         }] : []
 
         return [
-            ...networkrksTitle,
+            ...networksTitle,
             ...networks,
             ...tokensTitle,
             ...networktokens,
@@ -168,20 +168,55 @@ function groupRoutes(networkRoutes: NetworkRoute[], exchangesRoutes: ({ cex: tru
 
 function groupTokens(
     networkRoutes: NetworkRoute[],
-    exchangeRoutes: (Exchange & { cex: true })[]
-): GroupedTokenElement[] {
+    exchangeRoutes: (Exchange & { cex: true })[],
+    search?: string
+): GroupTokensResult {
+    if (search) {
+        const lowered = search.toLowerCase();
+
+        const networks: NetworkElement[] = networkRoutes
+            .filter(r => r.name.toLowerCase().includes(lowered))
+            .map(r => ({ type: 'network', route: { ...r, cex: false } }));
+
+        const exchanges: ExchangeElement[] = exchangeRoutes
+            .filter(r => r.name.toLowerCase().includes(lowered))
+            .map(r => ({ type: 'exchange', route: { ...r, cex: true } }));
+
+        const networkTokens: NetworkTokenElement[] = networkRoutes.flatMap(r =>
+            (r.tokens || [])
+                .filter(t => t.symbol.toLowerCase().includes(lowered))
+                .map(t => ({
+                    type: 'network_token',
+                    route: { token: t, route: { ...r, cex: false } }
+                }))
+        );
+
+        const exchangeTokens: ExchangeTokenElement[] = exchangeRoutes.flatMap(r =>
+            (r.token_groups || [])
+                .filter(t => t.symbol.toLowerCase().includes(lowered))
+                .map(t => ({
+                    type: 'exchange_token',
+                    route: { token: t, route: { ...r, cex: true } }
+                }))
+        );
+
+        return [
+            ...networks,
+            ...networkTokens,
+            ...exchangeTokens,
+            ...exchanges,
+        ];
+    }
+
     const tokenMap: Record<string, (NetworkTokenElement | ExchangeTokenElement)[]> = {};
 
     for (const network of networkRoutes) {
         for (const token of network.tokens || []) {
             const item: NetworkTokenElement = {
                 type: 'network_token',
-                route: {
-                    token,
-                    route: { ...network, cex: false },
-                },
+                route: { token, route: { ...network, cex: false } },
             };
-            if (!tokenMap[token.symbol]) tokenMap[token.symbol] = [];
+            tokenMap[token.symbol] = tokenMap[token.symbol] || [];
             tokenMap[token.symbol].push(item);
         }
     }
@@ -190,12 +225,9 @@ function groupTokens(
         for (const token of exchange.token_groups || []) {
             const item: ExchangeTokenElement = {
                 type: 'exchange_token',
-                route: {
-                    token,
-                    route: { ...exchange, cex: true },
-                },
+                route: { token, route: { ...exchange, cex: true } },
             };
-            if (!tokenMap[token.symbol]) tokenMap[token.symbol] = [];
+            tokenMap[token.symbol] = tokenMap[token.symbol] || [];
             tokenMap[token.symbol].push(item);
         }
     }
@@ -206,6 +238,7 @@ function groupTokens(
         items,
     }));
 }
+
 
 function resolveSelectedRoute(values: SwapFormValues, direction: SwapDirection): NetworkRoute | Exchange | undefined {
     const { from, to, fromExchange, toExchange } = values

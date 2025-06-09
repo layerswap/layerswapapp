@@ -43,6 +43,7 @@ export type RowElement = {}
         | TitleElement
         | GroupedTokenElement)
 
+export type GroupTokensResult = (GroupedTokenElement | NetworkElement | ExchangeElement | NetworkTokenElement | ExchangeTokenElement)[];
 
 
 export type _Route =
