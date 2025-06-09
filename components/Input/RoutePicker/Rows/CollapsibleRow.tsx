@@ -16,7 +16,7 @@ import {
 } from "../../../../Models/Route";
 import { SwapDirection } from "../../../DTOs/SwapFormValues";
 import { ResolveCEXCurrencyOrder, ResolveCurrencyOrder } from "../../../../lib/sorting";
-import { CurrencySelectItemDisplay, RouteSelectItemDisplay } from "../Routes";
+import { CurrencySelectItemDisplay, GroupedHeader, GroupedTokenHeader, RouteSelectItemDisplay } from "../Routes";
 
 type GenericAccordionRowProps = {
   item: NetworkElement | ExchangeElement | GroupedTokenElement;
@@ -108,6 +108,9 @@ export const CollapsibleRow = ({
     headerRef.current?.scrollIntoView({ block: "start", inline: "start" });
   };
 
+  const firstChild = isGrouped ? (item as GroupedTokenElement).items[0] : undefined;
+  const isGroupedNetwork = isGrouped && !firstChild?.route.route.cex;
+
   return (
     <motion.div layout="position">
       <AccordionItem value={groupName}>
@@ -119,10 +122,14 @@ export const CollapsibleRow = ({
             }`}
         >
           <AccordionTrigger>
-            {isGrouped ? (
-              <div className="px-4 py-3 text-primary-text font-medium">
-                {groupName}
-              </div>
+            {isGroupedNetwork ? (
+              <GroupedHeader
+                item={item as GroupedTokenElement}
+                direction={direction}
+                allbalancesLoaded={allbalancesLoaded}
+              />
+            ) : isGrouped ? (
+              <GroupedTokenHeader item={item as GroupedTokenElement} />
             ) : (
               <RouteSelectItemDisplay
                 item={(item as NetworkElement | ExchangeElement).route}
@@ -140,20 +147,18 @@ export const CollapsibleRow = ({
               onClick={stickyToggle}
               className="cursor-pointer bg-secondary-700 hover:bg-secondary-600 relative pb-1"
             >
-              <AccordionTrigger>
-                {isGrouped ? (
-                  <div className="px-4 py-3 text-primary-text font-medium">
-                    {groupName}
-                  </div>
-                ) : (
-                  <RouteSelectItemDisplay
-                    item={(item as NetworkElement | ExchangeElement).route}
-                    selected={false}
-                    direction={direction}
-                    allbalancesLoaded={allbalancesLoaded}
-                  />
-                )}
-              </AccordionTrigger>
+              {isGrouped ? (
+                <GroupedTokenHeader
+                  item={item as GroupedTokenElement}
+                />
+              ) : (
+                <RouteSelectItemDisplay
+                  item={(item as NetworkElement | ExchangeElement).route}
+                  selected={false}
+                  direction={direction}
+                  allbalancesLoaded={allbalancesLoaded}
+                />
+              )}
             </div>
           </ReactPortal>
         )}
@@ -179,6 +184,7 @@ export const CollapsibleRow = ({
                       selected={isSelected}
                       route={route}
                       direction={direction}
+                      isGroupedToken={isGrouped}
                     />
                   </div>
                 );

@@ -5,7 +5,7 @@ import { truncateDecimals } from "../../../utils/RoundDecimals";
 import Image from 'next/image'
 import { SelectItem } from "../../../Select/CommandNew/SelectItem/Index";
 import { Exchange } from "../../../../Models/Exchange";
-import { Route, RouteToken } from "../../../../Models/Route";
+import { GroupedTokenElement, Route, RouteToken } from "../../../../Models/Route";
 import { ChevronDown } from "lucide-react";
 import RoutePickerIcon from "../../../icons/RoutePickerPlaceholder";
 import { useBalance } from "../../../../lib/balances/providers/useBalance";
@@ -16,24 +16,87 @@ type TokenItemProps = {
     selected: boolean;
     direction: SwapDirection;
     allbalancesLoaded: boolean;
-}
-
+    isGroupedToken?: boolean;
+};
 export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
-    const { item, route, direction, allbalancesLoaded } = props
+    const { item, route, direction, allbalancesLoaded, isGroupedToken } = props
 
-    return <SelectItem>
-        <SelectItem.Logo
-            imgSrc={item.logo}
-            altText={`${item.symbol} logo`}
-            className="rounded-full"
-        />
-        {
-            route.cex ?
-                <SelectItem.DetailedTitle title={item.symbol} secondary={route.display_name} />
-                :
-                <NetworkTokenTitle item={item as NetworkRouteToken} route={route} direction={direction} allbalancesLoaded={allbalancesLoaded} />
+    if (isGroupedToken) {
+        if (!route.cex) {
+            const routeToken = item as NetworkRouteToken;
+            const activeWallet = useWallet(route as NetworkRoute, direction === "from" ? "withdrawal" : "autofil")?.provider?.activeWallet;
+            const { balances } = useBalance(activeWallet?.address, route as NetworkRoute);
+            const tokenbalance = balances?.find(b => b.token === routeToken.symbol);
+            const formatted_balance_amount = tokenbalance?.amount ? truncateDecimals(tokenbalance.amount, routeToken.precision) : 0;
+            const balanceAmountInUsd = (routeToken?.price_in_usd ?? 0 * formatted_balance_amount).toFixed(2);
+
+            return (
+                <SelectItem>
+                    <SelectItem.Logo
+                        imgSrc={route.logo}
+                        altText={`${route.display_name} logo`}
+                        className="rounded-md"
+                    />
+                    <SelectItem.DetailedTitle
+                        title={route.display_name}
+                        secondary={routeToken.symbol}
+                        secondaryLogoSrc={routeToken.logo}
+                    >
+                        {
+                            (allbalancesLoaded && tokenbalance && Number(formatted_balance_amount) > 0) ? (
+                                <span className="text-sm text-secondary-text text-right my-auto leading-4 font-medium">
+                                    <div className="text-primary-text">
+                                        {formatted_balance_amount.toFixed(routeToken.precision)}
+                                    </div>
+                                    <div>${balanceAmountInUsd}</div>
+                                </span>
+                            ) : <></>
+                        }
+                    </SelectItem.DetailedTitle>
+                </SelectItem>
+            );
+        } else {
+            return (
+                <SelectItem>
+                    <SelectItem.Logo
+                        imgSrc={route.logo}
+                        altText={`${route.display_name} logo`}
+                        className="rounded-md"
+                    />
+                    <SelectItem.DetailedTitle
+                        title={route.display_name}
+                        secondary={item.symbol}
+                        secondaryLogoSrc={item.logo}
+                    />
+                </SelectItem>
+            );
         }
-    </SelectItem>
+    }
+
+    return (
+        <SelectItem>
+            <SelectItem.Logo
+                imgSrc={item.logo}
+                altText={`${item.symbol} logo`}
+                className={route.cex ? "rounded-md" : "rounded-full"}
+            />
+            {
+                route.cex ? (
+                    <SelectItem.DetailedTitle
+                        title={route.display_name}
+                        secondary={item.symbol}
+                    />
+                ) : (
+                    <NetworkTokenTitle
+                        item={item as NetworkRouteToken}
+                        route={route}
+                        direction={direction}
+                        allbalancesLoaded={allbalancesLoaded}
+                    />
+                )
+            }
+        </SelectItem>
+    )
 }
 type NetworkTokenItemProps = {
     route: NetworkRoute;
@@ -97,7 +160,7 @@ const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
 
     return (
         <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7">
-            <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} />
+            <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} className="rounded-md" />
             <SelectItem.Title className="py-3" >
                 <>
                     <span>{item.display_name}</span>
@@ -150,7 +213,7 @@ const ExchangeRouteSelectItemDisplay = (props: ExchangeRouteItemProps) => {
 
     return (
         <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative">
-            <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} />
+            <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} className="rounded-md" />
             <SelectItem.Title className="py-3" >
                 <>
                     <span>{item.display_name}</span>
@@ -171,6 +234,101 @@ type SelectedCurrencyDisplayProps = {
     } | undefined;
     placeholder: string;
 }
+
+export const GroupedTokenHeader = ({
+    item,
+}: {
+    item: GroupedTokenElement,
+}) => {
+    const first = item.items[0];
+    const token = first.route.token;
+
+    return (
+        <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7">
+            <SelectItem.Logo imgSrc={token.logo} altText={`${token.symbol} logo`} className="rounded-full" />
+            <SelectItem.Title className="py-3">
+                <>
+                    <span>{token.symbol}</span>
+                    <ChevronDown
+                        className="!w-3.5 !h-3.5 absolute right-2 bottom-4 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
+                        aria-hidden="true"
+                    />
+                </>
+            </SelectItem.Title>
+        </SelectItem>
+    );
+};
+
+export const GroupedHeader = ({
+    item,
+    direction,
+    allbalancesLoaded
+}: {
+    item: GroupedTokenElement,
+    direction: SwapDirection,
+    allbalancesLoaded: boolean
+}) => {
+    const tokensWithMeta = item.items
+        .filter(el => !el.route.route.cex)
+        .map(el => {
+            const route = el.route.route as NetworkRoute;
+            const wallet = useWallet(route, direction === "from" ? "withdrawal" : "autofil");
+            const address = wallet?.provider?.activeWallet?.address;
+            const { balances, totalInUSD } = useBalance(address, route);
+            const token = el.route.token;
+            const tokenBalance = balances?.find(b => b.token === token.symbol);
+            return {
+                token,
+                route,
+                totalInUSD,
+                tokenBalance,
+            };
+        });
+
+    const totalUsdSum = tokensWithMeta.reduce((sum, t) => sum + (t.totalInUSD || 0), 0);
+    const tokensWithBalance = tokensWithMeta
+        .filter(t => Number(t.tokenBalance?.amount) > 0)
+        .map(t => ({
+            token: t.token,
+            networkLogo: t.route.logo
+        }));
+    console.log("tokensWithMeta", tokensWithBalance);
+    const firstRoute = tokensWithMeta[0]?.route;
+
+    return (
+        <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7">
+            <SelectItem.Logo imgSrc={firstRoute?.logo} altText={`${firstRoute?.display_name} logo`} className="rounded-md" />
+            <SelectItem.Title className="py-3">
+                <>
+                    <span>{item.symbol}</span>
+                    {
+                        Number(totalUsdSum) > 0 && allbalancesLoaded &&
+                        <div className={`${tokensWithBalance.length > 0 ? "flex flex-col space-y-0.5" : ""}`}>
+                            <span className="text-secondary-text text-sm leading-4 font-medium">${totalUsdSum.toFixed(2)}</span>
+                            {tokensWithBalance.length > 0 &&
+                                <div className="flex justify-end items-stretch w-full relative">
+                                    {tokensWithBalance.map((t, index) => (
+                                        <div key={`${t.token.symbol}-${index}`} className="w-3.5 absolute" style={{ right: `${index * 20}%` }}>
+                                            <Image
+                                                src={t.networkLogo}
+                                                alt={`${t.token.symbol} logo`}
+                                                height="16"
+                                                width="16"
+                                                loading="eager"
+                                                fetchPriority='high'
+                                                className="rounded-[4px] object-contain"
+                                            />
+                                        </div>
+                                    ))}
+                                </div>}
+                        </div>
+                    }
+                    <ChevronDown className="!w-3.5 !h-3.5 absolute right-2 bottom-4 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100" />
+                </>
+            </SelectItem.Title>
+        </SelectItem>
+    );
+};
 
 export const SelectedCurrencyDisplay = (props: SelectedCurrencyDisplayProps) => {
     const { value, placeholder } = props
