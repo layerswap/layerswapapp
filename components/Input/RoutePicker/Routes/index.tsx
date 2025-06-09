@@ -53,6 +53,7 @@ export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
                     title={route.display_name}
                     secondary={routeToken.symbol}
                     secondaryLogoSrc={routeToken.logo}
+                    logoClassName="rounded-full"
                 >
                     {(allbalancesLoaded && tokenbalance && Number(formatted_balance_amount) > 0) ? (
                         <span className="text-sm text-secondary-text text-right my-auto leading-4 font-medium">

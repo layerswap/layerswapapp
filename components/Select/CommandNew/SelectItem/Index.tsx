@@ -54,9 +54,10 @@ type SelectItemDetailedTitleProps = {
     title: string;
     secondary: string | JSX.Element | JSX.Element[];
     secondaryLogoSrc?: string;
+    logoClassName?: string;
 }
 
-const DetailedTitle = ({ children, className, title, secondary, secondaryLogoSrc }: SelectItemDetailedTitleProps) => {
+const DetailedTitle = ({ children, className, title, secondary, secondaryLogoSrc, logoClassName }: SelectItemDetailedTitleProps) => {
     return <Title className={`py-2 ${className}`}>
         <>
             <div className="grid gap-0 leading-5 align-middle space-y-0.5 font-medium">
@@ -68,7 +69,7 @@ const DetailedTitle = ({ children, className, title, secondary, secondaryLogoSrc
                         height="36"
                         width="36"
                         loading="eager"
-                        className='h-4 w-4 object-contain rounded-[4px]'
+                        className={`h-4 w-4 object-contain rounded-[4px] ${logoClassName}`}
                     />}
                     <span className="text-secondary-text text-xs whitespace-nowrap">
                         {secondary}
