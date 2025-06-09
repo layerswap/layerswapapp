@@ -132,14 +132,3 @@ export const NetworksButtonTrigger = () => {
         </div>
     );
 }
-/*
-<div className="flex items-center space-x-1.5">
-                                        <img
-                                            src={logo}
-                                            alt="Project logo"
-                                            loading="eager"
-                                            className=" rounded-sm w-6 h-6"
-                                        />
-                                        <p>{display_name}</p>
-                                    </div>
-*/

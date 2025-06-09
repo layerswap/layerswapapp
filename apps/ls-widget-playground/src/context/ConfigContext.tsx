@@ -14,6 +14,8 @@ interface ContextType {
     themeName: string | undefined;
     featuredNetwork: featuredNetworkType | undefined;
     widgetRenderKey: number;
+    customEvmSwitch: boolean;
+    updateCustomEvmSwitch: (val: boolean) => void;
     updateFeaturedNetwork: <K extends keyof featuredNetworkType>(prop: K, value: featuredNetworkType[K]) => void;
     updateTheme: <K extends keyof ThemeData> (prop: K, value: ThemeData[K]) => void;
     updateWholeTheme: (themeData: ThemeData, themeName: string) => void
@@ -26,6 +28,7 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
     const [themeData, setThemeData] = useState<{ theme: ThemeData | undefined, themeName?: string | undefined } | undefined>({ theme: THEME_COLORS['default'], themeName: 'default' });
     const [featuredNetwork, setFeaturedNetwork] = useState<featuredNetworkType | undefined>({ initialDirection: 'to' });
     const [widgetRenderKey, setWidgetRenderKey] = useState(0);
+    const [customEvmSwitch, setCustomEvmSwitch] = useState(false);
 
     const bumpWidgetKey = () => {
         setWidgetRenderKey(prev => prev + 1);
@@ -42,6 +45,10 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
             bumpWidgetKey();
         }
     };
+
+    function updateCustomEvmSwitch(val: boolean) {
+        setCustomEvmSwitch(val);
+    }
 
     function updateWholeTheme(themeData: ThemeData, themeName: string) {
         setThemeData({ theme: themeData, themeName })
@@ -73,7 +80,7 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <WidgetContext.Provider value={{ themeData: themeData?.theme, themeName: themeData?.themeName, featuredNetwork, widgetRenderKey, updateTheme, updateWholeTheme, updateFeaturedNetwork, resetData }}>
+        <WidgetContext.Provider value={{ themeData: themeData?.theme, themeName: themeData?.themeName, featuredNetwork, widgetRenderKey, customEvmSwitch, updateTheme, updateWholeTheme, updateFeaturedNetwork, resetData, updateCustomEvmSwitch }}>
             {children}
         </WidgetContext.Provider>
     );

@@ -1936,10 +1936,10 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@layerswap/widget@0.1.17-beta.3":
-  version "0.1.17-beta.3"
-  resolved "https://registry.yarnpkg.com/@layerswap/widget/-/widget-0.1.17-beta.3.tgz#53713c6ecf5f68de6611a5d08029f4c8befcd8be"
-  integrity sha512-h9P1XMoXqS6wSAiRHhZe+Tr7trtMQMUVPjq2tgupO2LoqIlWMs6sQGl/VWsFSCZjbqkkKkJwZoQRDuwYpm7rGw==
+"@layerswap/widget@^0.1.16":
+  version "0.1.16"
+  resolved "https://registry.yarnpkg.com/@layerswap/widget/-/widget-0.1.16.tgz#c3cc22daf2cd96ca23b7b4df3bb5b0f0a139fe68"
+  integrity sha512-T4u0M1OpAHJ527BETM4tn7qLmDA+t/dKiWQ+4MgQ7LEtFsEjTGXz0F9NLFAlGR1zMgy0XTojlaRm/0POgAO4fw==
   dependencies:
     "@headlessui/react" "^2.1.1"
     "@metamask/jazzicon" "^2.0.0"
