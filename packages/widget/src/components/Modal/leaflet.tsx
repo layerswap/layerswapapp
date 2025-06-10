@@ -25,7 +25,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
     const mobileModalRef = useRef<HTMLDivElement>(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 40 };
-    const { isMobile } = useWindowDimensions()
+    const { isMobileWithPortal: isMobile } = useWindowDimensions()
 
     const handleDragEnd = useCallback(async (_, info) => {
         const offset = info.offset.y;

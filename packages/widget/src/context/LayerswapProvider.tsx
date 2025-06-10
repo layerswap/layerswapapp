@@ -10,14 +10,14 @@ import ErrorFallback from "../components/ErrorFallback";
 import QueryProvider from "./query";
 import { THEME_COLORS, ThemeData } from "../Models/Theme";
 import { TooltipProvider } from "../components/shadcn/tooltip";
-import ColorSchema from "../components/ColorSchema";
 import { AsyncModalProvider } from "./asyncModal";
 import WalletsProviders from "../components/Wallet/WalletProviders";
 import { IntercomProvider } from 'react-use-intercom';
 import AppSettings from "../lib/AppSettings";
 import { getSettings } from "../helpers/getSettings";
-import WidgetLoading from "../components/WidgetLoading";
+import { WidgetLoading } from "../components/WidgetLoading";
 import LayerSwapApiClient from "../lib/layerSwapApiClient";
+import ColorSchema from "../components/ColorSchema";
 
 export type LayerswapContextProps = {
     children?: JSX.Element | JSX.Element[];
@@ -36,12 +36,12 @@ export type LayerswapContextProps = {
 }
 
 const INTERCOM_APP_ID = 'h5zisg78'
-export const LayerswapProvider: FC<LayerswapContextProps> = ({ children, settings: _settings, themeData, apiKey, integrator, version, walletConnect }) => {
+const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, settings: _settings, themeData, apiKey, integrator, version, walletConnect }) => {
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
 
     AppSettings.ApiVersion = version
     AppSettings.Integrator = integrator
-    AppSettings.ThemeData = themeData
+    AppSettings.ThemeData = { ...THEME_COLORS['default'], ...themeData }
     LayerSwapApiClient.apiKey = apiKey
 
     useEffect(() => {
@@ -55,44 +55,47 @@ export const LayerswapProvider: FC<LayerswapContextProps> = ({ children, setting
     }, [])
 
     const settings = _settings || fetchedSettings
-    if (!settings) {
-        return <>{
-            themeData &&
-            <ColorSchema themeData={themeData} />
-        }
-            <WidgetLoading />
-        </>
-    }
+    if (!settings) return <WidgetLoading />
 
     let appSettings = new LayerSwapAppSettings(settings)
 
-    themeData = themeData || THEME_COLORS.default
+    themeData = { ...THEME_COLORS['default'], ...themeData }
 
     return (
+        <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
+            <QueryProvider query={{}}>
+                <SettingsProvider data={appSettings}>
+                    <AuthProvider>
+                        <TooltipProvider delayDuration={500}>
+                            <ErrorBoundary FallbackComponent={ErrorFallback} >
+                                <ThemeWrapper>
+                                    <WalletsProviders themeData={themeData}>
+                                        <AsyncModalProvider>
+                                            {children}
+                                        </AsyncModalProvider>
+                                    </WalletsProviders>
+                                </ThemeWrapper>
+                            </ErrorBoundary>
+                        </TooltipProvider>
+                    </AuthProvider>
+                </SettingsProvider >
+            </QueryProvider >
+        </IntercomProvider>
+    )
+}
+
+export const LayerswapProvider: typeof LayerswapProviderComponent = (props) => {
+    return (
         <>
-            {
-                themeData &&
-                <ColorSchema themeData={themeData} />
-            }
-            <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
-                <QueryProvider query={{}}>
-                    <SettingsProvider data={appSettings}>
-                        <AuthProvider>
-                            <TooltipProvider delayDuration={500}>
-                                <ErrorBoundary FallbackComponent={ErrorFallback} >
-                                    <ThemeWrapper>
-                                        <WalletsProviders themeData={themeData}>
-                                            <AsyncModalProvider>
-                                                {children}
-                                            </AsyncModalProvider>
-                                        </WalletsProviders>
-                                    </ThemeWrapper>
-                                </ErrorBoundary>
-                            </TooltipProvider>
-                        </AuthProvider>
-                    </SettingsProvider >
-                </QueryProvider >
-            </IntercomProvider>
+            <ColorSchema themeData={props.themeData} />
+            <div
+                style={{ backgroundColor: 'transparent' }}
+                className="layerswap-styles">
+                <LayerswapProviderComponent  {...props}>
+                    {props.children}
+                </LayerswapProviderComponent>
+            </div>
         </>
+
     )
 }

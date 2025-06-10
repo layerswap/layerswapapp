@@ -10,7 +10,7 @@
     "declarationDir": "dist",
     "outDir": "dist",
     "resolveJsonModule": true,
-    "esModuleInterop": true 
+    "esModuleInterop": true
   },
   "include": [
     "src",

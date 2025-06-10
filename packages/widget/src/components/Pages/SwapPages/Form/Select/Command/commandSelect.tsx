@@ -36,7 +36,7 @@ export class SelectMenuItemGroup {
 }
 
 export default function CommandSelect({ values, setValue, show, setShow, searchHint, valueGrouper, isLoading, modalHeight = 'full', modalContent, header }: CommandSelectProps) {
-    const { isDesktop, isMobile, windowSize } = useWindowDimensions();
+    const { isDesktop, isMobileWithPortal, windowSize } = useWindowDimensions();
 
     let groups: SelectMenuItemGroup[] = valueGrouper(values);
     const handleSelectValue = useCallback((item: ISelectMenuItem) => {
@@ -56,7 +56,7 @@ export default function CommandSelect({ values, setValue, show, setShow, searchH
         >
             <VaulDrawer.Snap
                 id='item-1'
-                style={{ height: isMobile && windowSize.height ? `${(windowSize.height * 0.8).toFixed()}px` : '' }}
+                style={{ height: isMobileWithPortal && windowSize.height ? `${(windowSize.height * 0.8).toFixed()}px` : '' }}
                 fullheight={isDesktop}
             >
                 <CommandWrapper>

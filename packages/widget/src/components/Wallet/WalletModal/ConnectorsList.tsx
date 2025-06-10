@@ -18,7 +18,7 @@ import LayerSwapLogoSmall from "../../Icons/layerSwapLogoSmall";
 
 
 const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
-    const { isMobile } = useWindowDimensions()
+    const { isMobileWithPortal: isMobile } = useWindowDimensions()
     const { providers } = useWallet();
     const { setSelectedConnector, selectedProvider, setSelectedProvider, selectedConnector } = useConnectModal()
     let [recentConnectors, setRecentConnectors] = usePersistedState<({ providerName?: string, connectorName?: string }[])>([], 'recentConnectors', 'localStorage');

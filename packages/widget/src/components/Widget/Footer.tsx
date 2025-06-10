@@ -46,7 +46,7 @@ const Comp = ({ children, hidden, sticky = true }: FooterProps) => {
                     }}
                     custom={{ direction: -1, width: 100 }}
                     variants={variants}
-                    className={`text-primary-text text-base mt-3        
+                    className={`text-primary-text text-base        
                         max-sm:fixed
                         max-sm:inset-x-0
                         max-sm:bottom-0 
@@ -77,7 +77,7 @@ const Footer = ({ children, hidden, sticky }: FooterProps) => {
     const isFooterVisible = LayerSwapApiClient.apiKey !== AppSettings.LayerswapApiKeys['mainnet'] &&
         LayerSwapApiClient.apiKey !== AppSettings.LayerswapApiKeys['testnet']
 
-    const isFooterSticky = AppSettings.ThemeData?.footerSticky ?? false
+    const isFooterSticky = (AppSettings.ThemeData?.enablePortal && AppSettings.ThemeData?.enablePortal == true) ?? false
 
     return (
         <Comp hidden={hidden} sticky={isFooterSticky ? sticky : false}>

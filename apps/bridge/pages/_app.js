@@ -1,13 +1,14 @@
-import '../styles/globals.css'
-import '../styles/dialog-transition.css'
-import '../styles/manual-trasnfer-svg.css'
-import '../styles/vaul.css'
 import { useRouter } from "next/router";
 import { IntercomProvider } from 'react-use-intercom';
 import { SWRConfig } from 'swr'
 import DatadogInit from "../components/datadog-init";
 import ProgressBar from "@badrap/bar-of-progress";
 import Router from "next/router";
+import "@layerswap/widget/index.css"
+import "../styles/globals.css";
+import "../styles/vaul.css";
+import "../styles/manual-transfer-svg.css";
+import "../styles/dialog-transition.css";
 
 const progress = new ProgressBar({
   size: 2,
