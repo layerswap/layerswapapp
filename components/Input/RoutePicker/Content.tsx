@@ -41,7 +41,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
     })
     const items = virtualizer.getVirtualItems()
 
-    return <div className="py-3 overflow-y-auto flex flex-col h-full z-40  pb-6" >
+    return <div className="py-3 overflow-y-auto flex flex-col h-full z-40" >
         <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         <RouteTokenSwitch showTokens={showTokens} setShowTokens={setShowTokens} />
         <LayoutGroup>
