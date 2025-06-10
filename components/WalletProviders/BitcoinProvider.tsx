@@ -32,7 +32,7 @@ function createDefaultBigmiConfig(network?: NetworkWithTokens) {
         xverse({ chainId: btcChainId }),
         unisat({ chainId: btcChainId }),
         ctrl({ chainId: btcChainId }),
-        okx({ chainId: btcChainId }),
+        // okx({ chainId: btcChainId }),
         leather({ chainId: btcChainId }),
         onekey({ chainId: btcChainId }),
     ]
