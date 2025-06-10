@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { Route, RouteToken, RowElement } from "../../../Models/Route";
+import { RowElement } from "../../../Models/Route";
 import useWindowDimensions from "../../../hooks/useWindowDimensions";
 import { SwapDirection } from "../../DTOs/SwapFormValues";
 import { useVirtualizer } from "../../../lib/virtual";
@@ -9,10 +9,11 @@ import Row from "./Rows";
 import { LayoutGroup, motion } from "framer-motion";
 import FilledX from "../../icons/FilledX";
 import RouteTokenSwitch from "./RouteTokenSwitch";
+import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
 
 
 type ContentProps = {
-    onSelect: (route: Route, token: RouteToken) => Promise<void> | void;
+    onSelect: (route: NetworkRoute, token: NetworkRouteToken) => Promise<void> | void;
     searchQuery: string;
     setSearchQuery: (query: string) => void;
     rowElements: RowElement[];

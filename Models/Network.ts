@@ -1,5 +1,4 @@
 import { Refuel } from "../lib/layerSwapApiClient";
-import { ExchangeToken } from "./Exchange";
 
 export enum NetworkType {
     EVM = "evm",

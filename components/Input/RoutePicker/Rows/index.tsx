@@ -1,8 +1,9 @@
 import { RefObject } from "react";
-import { Route, RouteToken, RowElement, GroupedTokenElement } from "../../../../Models/Route";
+import { RowElement, GroupedTokenElement } from "../../../../Models/Route";
 import { SwapDirection } from "../../../DTOs/SwapFormValues";
 import { CurrencySelectItemDisplay } from "../Routes";
 import { CollapsibleRow } from "./CollapsibleRow";
+import { NetworkRoute, NetworkRouteToken } from "../../../../Models/Network";
 
 type Props = {
     item: RowElement;
@@ -10,7 +11,7 @@ type Props = {
     selectedToken: string | undefined;
     direction: SwapDirection;
     toggleContent: (itemName: string) => void;
-    onSelect: (route: Route, token: RouteToken) => void;
+    onSelect: (route: NetworkRoute, token: NetworkRouteToken) => void;
     openValues: string[];
     scrollContainerRef: RefObject<HTMLDivElement>;
     allbalancesLoaded: boolean;
@@ -27,10 +28,10 @@ export default function Row({
     allbalancesLoaded,
     scrollContainerRef,
 }: Props) {
-    if (item.type === "network" || item.type === "exchange" || item.type === "grouped_token") {
+    if (item.type === "network" || item.type === "grouped_token") {
         return (
             <CollapsibleRow
-                item={item as GroupedTokenElement & { type: "network" | "exchange" }}
+                item={item as GroupedTokenElement & { type: "network" }}
                 direction={direction}
                 selectedRoute={selectedRoute}
                 selectedToken={selectedToken}
@@ -43,7 +44,7 @@ export default function Row({
         );
     }
 
-    if (item.type === "network_token" || item.type === "exchange_token") {
+    if (item.type === "network_token") {
         const token = item.route.token;
         const route = item.route.route;
         const isSelected = selectedRoute === route.name && selectedToken === token.symbol;
