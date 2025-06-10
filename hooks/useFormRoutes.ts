@@ -135,15 +135,24 @@ function groupRoutes(networkRoutes: NetworkRoute[], exchangesRoutes: ({ cex: tru
         ]
     }
 
-    const popularRoutes = resolvePopularRoutes(networkRoutes, direction)
+    const popularRoutes = direction === 'to' ? resolvePopularRoutes(networkRoutes, direction) : []
 
-    const popularNetworks = networkRoutes.filter(r => popularRoutes?.includes(r.name)).map((r): NetworkElement => ({ type: 'network', route: { ...r, cex: false } })).sort((a, b) => (balances?.[b.route.name]?.totalInUSD || 0) - (balances?.[a.route.name]?.totalInUSD || 0))
-    const popularesTitle: TitleElement[] = popularNetworks.length > 0 ? [{
+    const popularNetworks: NetworkElement[] = direction === 'to'
+        ? networkRoutes
+            .filter(r => resolvePopularRoutes(networkRoutes, direction)?.includes(r.name))
+            .map((r): NetworkElement => ({ type: 'network', route: { ...r, cex: false } }))
+            .sort((a, b) => (balances?.[b.route.name]?.totalInUSD || 0) - (balances?.[a.route.name]?.totalInUSD || 0))
+        : []
+
+    const popularesTitle: TitleElement[] = direction === 'to' && popularNetworks.length > 0 ? [{
         type: 'group_title',
         text: "Popular"
     }] : []
 
-    const networks = networkRoutes.filter(r => !popularRoutes?.includes(r.name)).map((r): NetworkElement => ({ type: 'network', route: { ...r, cex: false } })).sort((a, b) => (balances?.[b.route.name]?.totalInUSD || 0) - (balances?.[a.route.name]?.totalInUSD || 0))
+    const unsortedNetworks = networkRoutes.filter(r => !popularRoutes?.includes(r.name)).map((r): NetworkElement => ({ type: 'network', route: { ...r, cex: false } }));
+    const networks = direction === 'to'
+        ? unsortedNetworks
+        : unsortedNetworks.sort((a, b) => (balances?.[b.route.name]?.totalInUSD || 0) - (balances?.[a.route.name]?.totalInUSD || 0));
     const networksTitle: TitleElement[] = networks.length > 0 ? [{
         type: 'group_title',
         text: "All Networks"

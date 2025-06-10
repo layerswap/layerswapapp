@@ -18,71 +18,24 @@ type TokenItemProps = {
     allbalancesLoaded: boolean;
     isGroupedToken?: boolean;
 };
+
 export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
-    const { item, route, direction, allbalancesLoaded, isGroupedToken } = props;
-    const routeToken = item as NetworkRouteToken;
+    const { item, route, direction, allbalancesLoaded } = props
 
-    const walletData = useWallet(
-        route as NetworkRoute,
-        direction === "from" ? "withdrawal" : "autofil"
-    );
-    const activeWallet = walletData?.provider?.activeWallet;
-
-    const { balances } = useBalance(
-        activeWallet?.address,
-        route as NetworkRoute
-    );
-
-    const tokenbalance = balances?.find(b => b.token === routeToken.symbol);
-    const formatted_balance_amount = tokenbalance
-        ? truncateDecimals(tokenbalance.amount, routeToken.precision)
-        : 0;
-    const balanceAmountInUsd = (
-        (routeToken.price_in_usd ?? 0) * Number(formatted_balance_amount)
-    ).toFixed(2);
-
-    if (isGroupedToken && !route.cex) {
-        return (
-            <SelectItem>
-                <SelectItem.Logo
-                    imgSrc={route.logo}
-                    altText={`${route.display_name} logo`}
-                    className="rounded-md"
-                />
-                <SelectItem.DetailedTitle
-                    title={route.display_name}
-                    secondary={routeToken.symbol}
-                    secondaryLogoSrc={routeToken.logo}
-                    logoClassName="rounded-full"
-                >
-                    {(allbalancesLoaded && tokenbalance && Number(formatted_balance_amount) > 0) ? (
-                        <span className="text-sm text-secondary-text text-right my-auto leading-4 font-medium">
-                            <div className="text-primary-text">
-                                {Number(formatted_balance_amount).toFixed(routeToken.precision)}
-                            </div>
-                            <div>${balanceAmountInUsd}</div>
-                        </span>
-                    ) : <></>}
-                </SelectItem.DetailedTitle>
-            </SelectItem>
-        );
-    }
-
-    return (
-        <SelectItem>
-            <SelectItem.Logo
-                imgSrc={item.logo}
-                altText={`${route.display_name} logo`}
-                className="rounded-full"
-            />
-            <SelectItem.DetailedTitle
-                title={item.symbol}
-                secondary={route.display_name}
-                secondaryLogoSrc={route.logo}
-            />
-        </SelectItem>
-    );
-};
+    return <SelectItem>
+        <SelectItem.Logo
+            imgSrc={item.logo}
+            altText={`${item.symbol} logo`}
+            className="rounded-full"
+        />
+        {
+            route.cex ?
+                <SelectItem.DetailedTitle title={item.symbol} secondary={route.display_name} />
+                :
+                <NetworkTokenTitle item={item as NetworkRouteToken} route={route} direction={direction} allbalancesLoaded={allbalancesLoaded} />
+        }
+    </SelectItem>
+}
 
 type NetworkTokenItemProps = {
     route: NetworkRoute;
