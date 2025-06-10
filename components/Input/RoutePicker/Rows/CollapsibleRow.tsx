@@ -117,8 +117,8 @@ export const CollapsibleRow = ({
             {isGrouped ? (
               <GroupedTokenHeader
                 item={item as GroupedTokenElement}
-                //direction={direction}
-                //allbalancesLoaded={allbalancesLoaded}
+                direction={direction}
+                allbalancesLoaded={allbalancesLoaded}
               />
             ) : (
               <RouteSelectItemDisplay
@@ -140,8 +140,8 @@ export const CollapsibleRow = ({
               {isGrouped ? (
                 <GroupedTokenHeader
                   item={item as GroupedTokenElement}
-                  //direction={direction}
-                  //allbalancesLoaded={allbalancesLoaded}
+                  direction={direction}
+                  allbalancesLoaded={allbalancesLoaded}
                 />
               ) : (
                 <RouteSelectItemDisplay
