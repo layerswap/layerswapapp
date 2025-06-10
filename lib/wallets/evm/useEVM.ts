@@ -75,8 +75,10 @@ export default function useEVM(): WalletProvider {
         }
     }
 
-    const connectWallet = async ({ connector: internalConnector }: { connector: InternalConnector }) => {
+    const connectWallet = async (props?: { connector?: InternalConnector }) => {
         try {
+            const internalConnector = props?.connector;
+            if (!internalConnector) return;
             const connector = availableWalletsForConnect.find(w => w.id === internalConnector.id) as InternalConnector & LSConnector
             if (!connector) throw new Error("Connector not found")
             const Icon = connector.icon || resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
@@ -313,6 +315,14 @@ const resolveSupportedNetworks = (supportedNetworks: string[], connectorId: stri
                 KnownInternalNames.Networks.BaseMainnet,
                 KnownInternalNames.Networks.BNBChainMainnet,
                 KnownInternalNames.Networks.ArbitrumMainnet
+            ]
+        },
+        {
+            id: "app.phantom",
+            supportedNetworks: [
+                KnownInternalNames.Networks.EthereumMainnet,
+                KnownInternalNames.Networks.BaseMainnet,
+                KnownInternalNames.Networks.PolygonMainnet,
             ]
         }
     ]
