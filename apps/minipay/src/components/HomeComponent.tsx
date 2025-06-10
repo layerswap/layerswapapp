@@ -13,7 +13,6 @@ const queryClient = new QueryClient()
 export function HomeComponent({ settings }: { settings: LayerSwapSettings | undefined }) {
     return (
         <div className='max-w-xl mx-auto'>
-
             <WagmiProvider config={config}>
                 <QueryClientProvider client={queryClient}>
                     <Component settings={settings} />
