@@ -314,6 +314,15 @@ const resolveSupportedNetworks = (supportedNetworks: string[], connectorId: stri
                 KnownInternalNames.Networks.BNBChainMainnet,
                 KnownInternalNames.Networks.ArbitrumMainnet
             ]
+        },
+        {
+            // id: "phantom"
+            id: "app.phantom",
+            supportedNetworks: [
+                KnownInternalNames.Networks.EthereumMainnet,
+                KnownInternalNames.Networks.BaseMainnet,
+                KnownInternalNames.Networks.PolygonMainnet,
+            ]
         }
     ]
 
