@@ -194,6 +194,10 @@ export default class KnownInternalNames {
 
         public static readonly SoneiumMainnet: string = "SONEIUM_MAINNET"
 
+        public static readonly BitcoinMainnet: string = "BITCOIN_MAINNET"
+
+        public static readonly BitcoinTestnet: string = "BITCOIN_TESTNET"
+
     }
 
     static Currencies = class {

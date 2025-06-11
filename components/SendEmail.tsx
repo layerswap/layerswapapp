@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { useAuthDataUpdate, useAuthState } from '../context/authContext';
 import { useTimerState } from '../context/timerContext';
 import TokenService from '../lib/TokenService';
-import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
+import LayerSwapAuthApiClient from '../lib/apiClients/userAuthApiClient';
 import SubmitButton from './buttons/submitButton';
 import { Widget } from './Widget/Index';
 

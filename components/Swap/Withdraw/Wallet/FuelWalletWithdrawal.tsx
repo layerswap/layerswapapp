@@ -1,5 +1,5 @@
 import { FC, useCallback, useEffect, useState } from 'react'
-import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { BackendTransactionStatus } from '../../../../lib/apiClients/layerSwapApiClient';
 import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
 import WalletIcon from '../../../icons/WalletIcon';
