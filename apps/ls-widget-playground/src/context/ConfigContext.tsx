@@ -15,6 +15,10 @@ interface ContextType {
     featuredNetwork: featuredNetworkType | undefined;
     widgetRenderKey: number;
     customEvmSwitch: boolean;
+    showLoading: boolean;
+    showPanel: boolean;
+    updateShowPanel: (val: boolean) => void;
+    updateShowLoading: (val: boolean) => void;
     updateCustomEvmSwitch: (val: boolean) => void;
     updateFeaturedNetwork: <K extends keyof featuredNetworkType>(prop: K, value: featuredNetworkType[K]) => void;
     updateTheme: <K extends keyof ThemeData> (prop: K, value: ThemeData[K]) => void;
@@ -29,6 +33,8 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
     const [featuredNetwork, setFeaturedNetwork] = useState<featuredNetworkType | undefined>({ initialDirection: 'to' });
     const [widgetRenderKey, setWidgetRenderKey] = useState(0);
     const [customEvmSwitch, setCustomEvmSwitch] = useState(false);
+    const [showLoading, setShowLoading] = useState(false);
+    const [showPanel, setShowPanel] = useState(true);
 
     const bumpWidgetKey = () => {
         setWidgetRenderKey(prev => prev + 1);
@@ -36,7 +42,7 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
 
     useEffect(() => {
         bumpWidgetKey()
-    }, [featuredNetwork?.network, featuredNetwork?.initialDirection, customEvmSwitch])
+    }, [featuredNetwork?.network, featuredNetwork?.initialDirection, customEvmSwitch, showLoading])
 
     const resetData = () => {
         setThemeData({ theme: THEME_COLORS['default'], themeName: 'default' });
@@ -45,7 +51,16 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
             bumpWidgetKey();
         }
         setCustomEvmSwitch(false);
+        setShowLoading(false);
     };
+
+    function updateShowPanel(val: boolean) {
+        setShowPanel(val);
+    }
+
+    function updateShowLoading(val: boolean) {
+        setShowLoading(val);
+    }
 
     function updateCustomEvmSwitch(val: boolean) {
         setCustomEvmSwitch(val);
@@ -81,7 +96,10 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <WidgetContext.Provider value={{ themeData: themeData?.theme, themeName: themeData?.themeName, featuredNetwork, widgetRenderKey, customEvmSwitch, updateTheme, updateWholeTheme, updateFeaturedNetwork, resetData, updateCustomEvmSwitch }}>
+        <WidgetContext.Provider value={{
+            themeData: themeData?.theme, themeName: themeData?.themeName, featuredNetwork, widgetRenderKey, customEvmSwitch, showLoading, showPanel,
+            updateTheme, updateWholeTheme, updateFeaturedNetwork, resetData, updateCustomEvmSwitch, updateShowLoading, updateShowPanel,
+        }}>
             {children}
         </WidgetContext.Provider>
     );

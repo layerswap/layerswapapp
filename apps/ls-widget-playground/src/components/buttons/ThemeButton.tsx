@@ -216,7 +216,7 @@ const THEME_COLORS: { [key: string]: ThemeData } = {
         backdrop: "0, 0, 0",
         placeholderText: '255, 255, 255',
         actionButtonText: '0, 0, 0',
-        buttonTextColor: '0, 0, 0',
+        buttonTextColor: '255, 255, 255',
         logo: '0, 255, 0',
         borderRadius: 'small',
         primary: {
@@ -255,7 +255,7 @@ const THEME_COLORS: { [key: string]: ThemeData } = {
         backdrop: "10, 0, 20",
         placeholderText: "255, 120, 230",
         actionButtonText: "0, 255, 180",
-        buttonTextColor: "0, 0, 0",
+        buttonTextColor: "0, 255, 180",
         logo: "255, 45, 200",
         borderRadius: "small",
         primary: {
@@ -294,7 +294,7 @@ const THEME_COLORS: { [key: string]: ThemeData } = {
         backdrop: "5, 5, 10",
         placeholderText: "150, 150, 200",
         actionButtonText: "0, 200, 255",
-        buttonTextColor: "0, 0, 0",
+        buttonTextColor: "0, 255, 255",
         logo: "80, 0, 255",
         borderRadius: "small",
         primary: {

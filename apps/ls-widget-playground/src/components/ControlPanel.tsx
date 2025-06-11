@@ -1,7 +1,7 @@
 "use client";
 import {
-    CardRadiusButton, NetworksButton, ResetButton, CloseButton, ColorsContent, ThemeButton, ManageExternallyButton,
-    ColorsTrigger, CardRadiusButtonTrigger, ThemeButtonTrigger, NetworksButtonTrigger, ManageExternallyTriger
+    CardRadiusButton, NetworksButton, ResetButton, CloseButton, ColorsContent, ThemeButton, ManageExternallyButton, LoadingButton,
+    ColorsTrigger, CardRadiusButtonTrigger, ThemeButtonTrigger, NetworksButtonTrigger, ManageExternallyTriger, LoadingButtonTrigger,
 } from "./buttons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import clsx from "clsx";
@@ -37,13 +37,17 @@ const accordionElements = [
         trigger: <ManageExternallyTriger />,
         content: <ManageExternallyButton />
     },
+    {
+        trigger: <LoadingButtonTrigger />,
+        content: <LoadingButton />
+    },
 ]
 
 export function ControlPanel() {
     const [activeTab, setActiveTab] = useState('design')
 
     return (
-        <div className="text-primary-text w-[600px] min-h-screen bg-secondary-800  overflow-y-auto h-full styled-scroll">
+        <div className="text-primary-text w-[450px] min-h-screen bg-secondary-800  overflow-y-auto h-full styled-scroll">
             <div className="flex items-center justify-between h-16 p-6 shrink-0 sticky top-0 bg-secondary-800 z-20">
                 <h1 className="text-2xl ">Layerswap Widget</h1>
                 <div className='flex gap-4 justify-end'>

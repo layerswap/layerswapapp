@@ -1,6 +1,6 @@
 "use client";
 import { FC, ReactNode } from 'react';
-import { LayerswapProvider, Swap, WalletHooksProvider } from '@layerswap/widget';
+import { LayerswapProvider, Swap, WalletHooksProvider, WidgetLoading } from '@layerswap/widget';
 import { useWidgetContext } from '@/context/ConfigContext';
 import { useSettingsState } from '@/context/settings';
 import { DynamicContextProvider } from "@dynamic-labs/sdk-react-core";
@@ -21,7 +21,7 @@ const config = createConfig({
 const queryClient = new QueryClient();
 
 const LayerswapWidget: FC = () => {
-    const { widgetRenderKey, themeData, featuredNetwork } = useWidgetContext();
+    const { widgetRenderKey, themeData, featuredNetwork, showLoading } = useWidgetContext();
     const settings = useSettingsState();
     return (
         <DynamicContextProvider
@@ -43,19 +43,20 @@ const LayerswapWidget: FC = () => {
                         <WagmiProvider config={config}>
                             <QueryClientProvider client={queryClient}>
                                 <CutsomHooks>
-                                    <Swap
-                                        featuredNetwork={
-                                            featuredNetwork &&
-                                                featuredNetwork.initialDirection &&
-                                                featuredNetwork.network ?
-                                                {
-                                                    initialDirection: featuredNetwork.initialDirection,
-                                                    network: featuredNetwork.network,
-                                                    oppositeDirectionOverrides: featuredNetwork.oppositeDirectionOverrides,
-                                                }
-                                                : undefined
-                                        }
-                                    />
+                                    {showLoading ? <WidgetLoading />
+                                        : <Swap
+                                            featuredNetwork={
+                                                featuredNetwork &&
+                                                    featuredNetwork.initialDirection &&
+                                                    featuredNetwork.network ?
+                                                    {
+                                                        initialDirection: featuredNetwork.initialDirection,
+                                                        network: featuredNetwork.network,
+                                                        oppositeDirectionOverrides: featuredNetwork.oppositeDirectionOverrides,
+                                                    }
+                                                    : undefined
+                                            }
+                                        />}
                                 </CutsomHooks>
                             </QueryClientProvider>
                         </WagmiProvider>
