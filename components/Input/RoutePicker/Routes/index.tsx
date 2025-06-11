@@ -8,6 +8,8 @@ import { GroupedTokenElement } from "../../../../Models/Route";
 import { ChevronDown } from "lucide-react";
 import RoutePickerIcon from "../../../icons/RoutePickerPlaceholder";
 import { useBalance } from "../../../../lib/balances/providers/useBalance";
+import useAllBalances from "../../../../hooks/useAllBalances";
+import { useBalanceStore } from "../../../../stores/balanceStore";
 
 type TokenItemProps = {
     route: NetworkRoute;
@@ -155,28 +157,7 @@ export const GroupedTokenHeader = ({
 }) => {
     const tokens = item.items;
 
-    const networks = [...new Set(tokens.map(({ route }) => route.route.name))];
-
-    const networkRoutes = Object.fromEntries(
-        tokens.map(({ route }) => [route.route.name, route.route])
-    );
-
-    const wallets = Object.fromEntries(
-        networks.map(name => {
-            const networkRoute = networkRoutes[name];
-            const { provider } = useWallet(networkRoute, direction === "from" ? "withdrawal" : "autofil");
-            return [name, provider?.activeWallet];
-        })
-    );
-
-    const balancesMap = Object.fromEntries(
-        networks.map(name => {
-            const networkRoute = networkRoutes[name];
-            const wallet = wallets[name];
-            const { balances } = useBalance(wallet?.address, networkRoute);
-            return [name, balances ?? []];
-        })
-    );
+    const allBalances = useBalanceStore(s => s.allBalances)
 
     const networksWithBalance: NetworkRoute[] = Array.from(
         new Map(
@@ -185,8 +166,8 @@ export const GroupedTokenHeader = ({
                     const tokenSymbol = route.token.symbol;
                     const networkRoute = route.route;
 
-                    const balances = balancesMap[networkRoute.name];
-                    const balanceEntry = balances?.find(
+                    const networkBalances = allBalances?.[networkRoute.name];
+                    const balanceEntry = networkBalances?.balances?.find(
                         (b) => b.token === tokenSymbol && b.amount > 0
                     );
 
@@ -201,8 +182,8 @@ export const GroupedTokenHeader = ({
         const networkName = route.route.name;
         const price = route.token.price_in_usd;
 
-        const balances = balancesMap[networkName];
-        const balanceEntry = balances?.find(
+        const networkBalances = allBalances?.[networkName];
+        const balanceEntry = networkBalances?.balances?.find(
             (b) => b.token === tokenSymbol
         );
 

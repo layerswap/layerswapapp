@@ -3,11 +3,11 @@ import { SwapDirection, SwapFormValues } from "../components/DTOs/SwapFormValues
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../helpers/routes";
 import LayerSwapApiClient from "../lib/layerSwapApiClient";
 import { ApiResponse } from "../Models/ApiResponse";
-import { NetworkRoute } from "../Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "../Models/Network";
 import { useEffect, useMemo, useState } from "react";
 import { useSettingsState } from "../context/settings";
 import { Exchange } from "../Models/Exchange";
-import { NetworkElement, RowElement, NetworkTokenElement, _Route, _RoutesGroup, TitleElement, GroupTokensResult } from "../Models/Route";
+import { NetworkElement, RowElement, NetworkTokenElement, _Route, _RoutesGroup, TitleElement, GroupTokensResult, GroupedTokenElement } from "../Models/Route";
 import useAllBalances from "./useAllBalances";
 import { NetworkBalance } from "../Models/Balance";
 
@@ -28,8 +28,14 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const balances = useAllBalances({ direction })
 
     const routeElements = useMemo(() => groupRoutes(networkRoutes, direction, balances, search), [networkRoutes, balances, direction, search])
-    const tokenElements = useMemo(() => groupTokens(networkRoutes, search), [networkRoutes, search]);
-
+    const tokenElements = useMemo(() => {
+        const grouped = groupTokens(networkRoutes, balances, search);
+        if (!search && balances) {
+            return sortGroupedTokensByBalance(grouped as GroupedTokenElement[], balances);
+        }
+        return grouped;
+    }, [networkRoutes, balances, search]);
+    
     const selectedRoute = useMemo(() => resolveSelectedRoute(values, direction), [values, direction])
     const selectedToken = useMemo(() => resolveSelectedToken(values, direction), [values, direction])
     const allbalancesLoaded = useMemo(() => !!balances, [balances])
@@ -156,6 +162,7 @@ function groupRoutes(networkRoutes: NetworkRoute[], direction: SwapDirection, ba
 
 function groupTokens(
     networkRoutes: NetworkRoute[],
+    balances: Record<string, NetworkBalance> | null,
     search?: string
 ): GroupTokensResult {
     if (search) {
@@ -200,6 +207,40 @@ function groupTokens(
     }));
 }
 
+function getTokenBalanceUSD(route: NetworkRoute, token: NetworkRouteToken, balances: Record<string, NetworkBalance>): number {
+    const netBalance = balances?.[route.name]?.balances || [];
+    const match = netBalance.find(b => b.token === token.symbol);
+    if (!match || match.amount === 0) return 0;
+
+    const amountNormalized = match.amount / Math.pow(10, token.decimals);
+    return amountNormalized * token.price_in_usd;
+}
+
+function sortGroupedTokensByBalance(
+    tokenElements: GroupedTokenElement[],
+    balances: Record<string, NetworkBalance>
+): GroupedTokenElement[] {
+    const sorted = tokenElements.map(group => {
+        const itemsWithBalance = group.items.map(item => {
+            const usdValue = getTokenBalanceUSD(item.route.route, item.route.token, balances);
+            return { ...item, usdValue };
+        });
+
+        itemsWithBalance.sort((a, b) => b.usdValue - a.usdValue);
+
+        const totalUSD = itemsWithBalance.reduce((sum, item) => sum + item.usdValue, 0);
+
+        return {
+            ...group,
+            items: itemsWithBalance,
+            totalUSD
+        };
+    });
+
+    sorted.sort((a, b) => b.totalUSD - a.totalUSD);
+
+    return sorted.map(({ totalUSD, ...rest }) => rest);
+}
 
 function resolveSelectedRoute(values: SwapFormValues, direction: SwapDirection): NetworkRoute | undefined {
     const { from, to } = values

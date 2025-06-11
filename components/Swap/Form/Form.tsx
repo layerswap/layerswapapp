@@ -24,7 +24,6 @@ import DestinationPicker from "../../Input/DestinationPicker";
 import CexNetworkPicker from "../../Input/CexNetworkPicker";
 import FormButton from "../FormButton";
 import { AmountFocusProvider } from "../../../context/amountFocusContext";
-import useAllBalances from "../../../hooks/useAllBalances";
 
 type Props = {
     partner?: Partner,
