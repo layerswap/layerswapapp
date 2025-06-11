@@ -12,6 +12,7 @@ interface RecommendedFeeResponse {
     minimumFee: number
 }
 
+//TODO implement
 export class BitcoinGasProvider {
     supportsNetwork(network: Network): boolean {
         return KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) || KnownInternalNames.Networks.BitcoinTestnet.includes(network.name)
@@ -22,9 +23,7 @@ export class BitcoinGasProvider {
         if (!network?.token) throw new Error("No native token provided")
 
         try {
-            const recommendedFees = await fetchRecommendedFees(network.node_url);
-
-            return Number((formatAmount(Number(recommendedFees.economyFee), network.token.decimals) * 2).toFixed(network.token.decimals))
+              return
 
         } catch (e) {
             console.log(e)
