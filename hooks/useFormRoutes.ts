@@ -19,9 +19,7 @@ type Props = {
 export default function useFormRoutes({ direction, values }: Props, search?: string) {
     const { networkRoutes, isLoading: networkRoutesLoading } = useNetworkRoutes({ direction, values })
 
-    const allRoutes = useMemo(() => {
-        return [...networkRoutes]
-    }, [networkRoutes])
+    const allRoutes = useMemo(() => networkRoutes, [networkRoutes])
 
     const isLoading = networkRoutesLoading
 
@@ -35,7 +33,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         }
         return grouped;
     }, [networkRoutes, balances, search]);
-    
+
     const selectedRoute = useMemo(() => resolveSelectedRoute(values, direction), [values, direction])
     const selectedToken = useMemo(() => resolveSelectedToken(values, direction), [values, direction])
     const allbalancesLoaded = useMemo(() => !!balances, [balances])
@@ -143,7 +141,19 @@ function groupRoutes(networkRoutes: NetworkRoute[], direction: SwapDirection, ba
         text: "Popular"
     }] : []
 
-    const unsortedNetworks = networkRoutes.filter(r => !popularRoutes?.includes(r.name)).map((r): NetworkElement => ({ type: 'network', route: { ...r } }));
+    const unsortedNetworks = networkRoutes
+        .filter(r => !popularRoutes?.includes(r.name))
+        .map((r): NetworkElement => {
+            const sortedTokens = direction == 'from' ? sortNetworkTokensByBalance(r, balances) : r.tokens
+            return {
+                type: 'network',
+                route: {
+                    ...r,
+                    tokens: sortedTokens,
+                }
+            }
+
+        });
     const networks = direction === 'to'
         ? unsortedNetworks
         : unsortedNetworks.sort((a, b) => (balances?.[b.route.name]?.totalInUSD || 0) - (balances?.[a.route.name]?.totalInUSD || 0));
@@ -206,13 +216,24 @@ function groupTokens(
     }));
 }
 
+function sortNetworkTokensByBalance(
+    route: NetworkRoute,
+    balances: Record<string, NetworkBalance> | null
+): NetworkRouteToken[] {
+    return [...(route.tokens || [])].sort((a, b) => {
+        const balA = getTokenBalanceUSD(route, a, balances || {});
+        const balB = getTokenBalanceUSD(route, b, balances || {});
+
+        return balB - balA;
+    });
+}
+
 function getTokenBalanceUSD(route: NetworkRoute, token: NetworkRouteToken, balances: Record<string, NetworkBalance>): number {
     const netBalance = balances?.[route.name]?.balances || [];
     const match = netBalance.find(b => b.token === token.symbol);
     if (!match || match.amount === 0) return 0;
 
-    const amountNormalized = match.amount / Math.pow(10, token.decimals);
-    return amountNormalized * token.price_in_usd;
+    return match.amount * token.price_in_usd;
 }
 
 function sortGroupedTokensByBalance(

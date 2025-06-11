@@ -12,7 +12,6 @@ import {
   GroupedTokenElement,
 } from "../../../../Models/Route";
 import { SwapDirection } from "../../../DTOs/SwapFormValues";
-import { ResolveCurrencyOrder } from "../../../../lib/sorting";
 import { CurrencySelectItemDisplay, GroupedTokenHeader, RouteSelectItemDisplay } from "../Routes";
 import { NetworkRoute, NetworkRouteToken } from "../../../../Models/Network";
 
@@ -27,10 +26,6 @@ type GenericAccordionRowProps = {
   scrollContainerRef: RefObject<HTMLDivElement>;
   allbalancesLoaded: boolean;
 };
-
-function getSortedRouteTokens(route: NetworkRoute) {
-  return route.tokens?.sort((a, b) => ResolveCurrencyOrder(a) - ResolveCurrencyOrder(b));
-}
 
 export const CollapsibleRow = ({
   item,
@@ -62,8 +57,7 @@ export const CollapsibleRow = ({
     }));
   } else {
     const route = (item as NetworkElement).route;
-    const sortedTokens = getSortedRouteTokens(route) || [];
-    childrenList = sortedTokens.map((t) => ({
+    childrenList = route.tokens.map((t) => ({
       token: t,
       route: route as NetworkRoute,
     }));

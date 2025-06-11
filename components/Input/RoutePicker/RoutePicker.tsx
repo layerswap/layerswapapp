@@ -19,8 +19,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const { allRoutes, isLoading, routeElements, tokenElements, selectedRoute, selectedToken, allbalancesLoaded } = useFormRoutes({ direction, values }, searchQuery)
     const currencyFieldName = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const [showTokens, setShowTokens] = useState(false);
-    console.log(tokenElements, "tokenElements")
-    console.log(routeElements, "routeElements")
+
     useEffect(() => {
 
         if (!selectedRoute || !selectedToken || !allRoutes) return
