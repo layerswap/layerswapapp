@@ -1,6 +1,6 @@
 import { FC } from "react";
-import { Token } from "../../../Models/Network";
-import { Quote } from "../../../lib/layerSwapApiClient";
+import { Token } from "@/Models/Network";
+import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 
 type ReceiveAmountProps = {
     destination_token: Token | undefined;

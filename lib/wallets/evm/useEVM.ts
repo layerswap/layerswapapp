@@ -95,8 +95,10 @@ export default function useEVM(): WalletProvider {
             })
     }, [allConnectors, fetchedWallets, filterConnectors])
 
-    const connectWallet = useCallback(async ({ connector: internalConnector }: { connector: InternalConnector }) => {
+    const connectWallet = useCallback(async (props: { connector: InternalConnector }) => {
         try {
+            const internalConnector = props?.connector;
+            if (!internalConnector) return;
             const connector = availableWalletsForConnect.find(w => w.id === internalConnector.id) as InternalConnector & LSConnector
             if (!connector) throw new Error("Connector not found")
             const Icon = connector.icon || resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
@@ -154,7 +156,7 @@ export default function useEVM(): WalletProvider {
                 throw new Error(e.message || e);
             }
         }
-    }, [availableWalletsForConnect, disconnectAsync, networks, asSourceSupportedNetworks, autofillSupportedNetworks, withdrawalSupportedNetworks, name, config, setSelectedConnector])
+    }, [availableWalletsForConnect, disconnectAsync, networks, asSourceSupportedNetworks, autofillSupportedNetworks, withdrawalSupportedNetworks, name, config])
 
     const resolvedConnectors: Wallet[] = useMemo(() => {
         const connections = getConnections(config)
@@ -311,8 +313,17 @@ const resolveSupportedNetworks = (supportedNetworks: string[], connectorId: stri
                 KnownInternalNames.Networks.RoninMainnet,
                 KnownInternalNames.Networks.EthereumMainnet,
                 KnownInternalNames.Networks.PolygonMainnet,
+                KnownInternalNames.Networks.BaseMainnet,
                 KnownInternalNames.Networks.BNBChainMainnet,
                 KnownInternalNames.Networks.ArbitrumMainnet
+            ]
+        },
+        {
+            id: "app.phantom",
+            supportedNetworks: [
+                KnownInternalNames.Networks.EthereumMainnet,
+                KnownInternalNames.Networks.BaseMainnet,
+                KnownInternalNames.Networks.PolygonMainnet,
             ]
         }
     ]
@@ -340,7 +351,6 @@ async function attemptGetAccount(config, maxAttempts = 5) {
 
     return getAccount(config);
 }
-
 function dedupePreferInjected(arr: Connector<CreateConnectorFn>[]) {
     // Group items by id
     const groups = arr.reduce((acc, obj) => {

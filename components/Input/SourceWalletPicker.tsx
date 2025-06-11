@@ -90,7 +90,7 @@ const Component: FC = () => {
                     </div>
                 </div>
                 :
-                <div className="rounded-lg pl-2 flex items-center space-x-2 text-sm leading-4">
+                <div className="rounded-lg flex items-center space-x-2 text-sm leading-4">
                     {
                         selectedWallet && selectedSourceAccount?.address && <>
                             <div onClick={handleWalletChange} className="rounded-lg flex space-x-1 items-center py-0.5 pl-2 cursor-pointer">

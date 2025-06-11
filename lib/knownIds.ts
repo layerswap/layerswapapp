@@ -249,6 +249,9 @@ export default class KnownInternalNames {
         public static readonly SeiMainnet: string = "SEI_MAINNET";
         
         public static readonly GravityMainnet: string = "GRAVITY_MAINNET";
+        public static readonly BitcoinMainnet: string = "BITCOIN_MAINNET"
+
+        public static readonly BitcoinTestnet: string = "BITCOIN_TESTNET"
 
     }
 

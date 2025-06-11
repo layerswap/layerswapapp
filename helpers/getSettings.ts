@@ -1,4 +1,4 @@
-import LayerSwapApiClient from "../lib/layerSwapApiClient";
+import LayerSwapApiClient from "../lib/apiClients/layerSwapApiClient";
 import { getThemeData } from "./settingsHelper";
 
 export async function getServerSideProps(context) {
