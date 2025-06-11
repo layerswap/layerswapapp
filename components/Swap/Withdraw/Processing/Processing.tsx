@@ -201,7 +201,7 @@ const Processing: FC<Props> = ({ swapResponse }) => {
                 description: null
             },
             complete: {
-                name: `${swapOutputTransaction?.amount.toFixed(swap.destination_token.decimals)} ${swap?.destination_token.symbol} was sent to your address`,
+                name: `${swapOutputTransaction?.amount && truncateDecimals(swapOutputTransaction?.amount, swap.destination_token.decimals)} ${swap?.destination_token.symbol} was sent to your address`,
                 description: swapOutputTransaction ? <div className="flex flex-col">
                     <div className='flex items-center space-x-1'>
                         <span>Transaction: </span>
