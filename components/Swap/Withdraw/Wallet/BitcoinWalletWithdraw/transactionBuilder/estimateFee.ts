@@ -1,12 +1,29 @@
 import { JsonRpcClient } from '@/lib/apiClients/jsonRpcClient';
+import axios from 'axios';
 import { Psbt } from 'bitcoinjs-lib'
 
 export const estimateFee = async (psbt: Psbt, rpcClient: JsonRpcClient, version: 'testnet' | 'mainnet') => {
-    const feeRate = await rpcClient.call<any[], { blocks: number, feerate: number }>('estimatesmartfee', [6, "CONSERVATIVE"])
-    const satsPerVbyte = feeRate.feerate * 1e8 / 1000
+    const recommendedFee = await fetchRecommendedFee(version)
+    const satsPerVbyte = recommendedFee.fastestFee
 
     const fee = calculateFee(psbt.txInputs.length, psbt.txOutputs.length, satsPerVbyte);
     return fee
+}
+
+type RecommendedFeeResponse = {
+    fastestFee: number,
+    halfHourFee: number,
+    hourFee: number,
+    economyFee: number,
+    minimumFee: number
+}
+
+async function fetchRecommendedFee(
+    version: 'mainnet' | 'testnet',
+): Promise<RecommendedFeeResponse> {
+    const base = `https://mempool.space${version === 'testnet' ? '/testnet' : ''}`
+    const { data } = await axios.get<RecommendedFeeResponse>(`${base}/api/v1/fees/recommended`)
+    return data
 }
 
 function calculateFee(numInputs: number, numOutputs: number, feePerByte: number) {

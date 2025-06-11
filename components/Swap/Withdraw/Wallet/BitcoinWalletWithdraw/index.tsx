@@ -43,7 +43,7 @@ const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddre
     }, [provider])
 
     const rpcClient = useMemo(() => {
-        return network && new JsonRpcClient(isTestnet ? 'https://bitcoin-testnet-rpc.publicnode.com' : network.node_url);
+        return network && new JsonRpcClient(network.node_url);
     }, [network]);
 
     const handleTransfer = useCallback(async () => {
