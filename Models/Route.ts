@@ -6,7 +6,7 @@ export type NetworkElement = {
     route: NetworkRoute;
 }
 export type NetworkTokenElement = {
-    type: 'network_token';
+    type: 'network_token' | 'top_token';
     route: {
         token: NetworkRouteToken;
         route: NetworkRoute

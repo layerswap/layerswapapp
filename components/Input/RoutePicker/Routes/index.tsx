@@ -55,7 +55,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
                     <div className="text-primary-text"> {formatted_balance_amount.toFixed(item.precision)}</div>
                     {Number(tokenbalance?.amount) > 0 && <div>${balanceAmountInUsd}</div>}
                 </span>
-            ) : <></>}
+            ) : <div className="px-0.5">-</div>}
     </SelectItem.DetailedTitle>
 }
 
@@ -99,7 +99,7 @@ const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                 <>
                     <span>{item.display_name}</span>
                     {
-                        Number(totalInUSD) >= 0 && allbalancesLoaded &&
+                        Number(totalInUSD) >= 0 && allbalancesLoaded ? (
                         <div className={`${filteredNetworkTokens?.length > 0 ? "flex flex-col space-y-0.5" : ""}`}>
                             <span className="text-secondary-text text-sm leading-4 font-medium">{<span>${totalInUSD?.toFixed(2)}</span>}</span>
                             {filteredNetworkTokens?.length > 0
@@ -126,7 +126,7 @@ const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                                         )}
                                     </div>
                                 ) : null}
-                        </div>
+                        </div>) : <div className="px-0.5">-</div>
                     }
                     <ChevronDown
                         className="!w-3.5 !h-3.5 absolute right-2 bottom-4 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"

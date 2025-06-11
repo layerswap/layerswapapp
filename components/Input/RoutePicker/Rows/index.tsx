@@ -44,13 +44,13 @@ export default function Row({
         );
     }
 
-    if (item.type === "network_token") {
+    if (item.type === "network_token" || item.type === "top_token") {
         const token = item.route.token;
         const route = item.route.route;
         const isSelected = selectedRoute === route.name && selectedToken === token.symbol;
 
         return (
-            <div className={`pl-5 cursor-pointer hover:bg-secondary-300 ${isSelected ? "bg-secondary-300" : ""} outline-none disabled:cursor-not-allowed`} onClick={() => onSelect(route, token)} >
+            <div className={`${item.type === "top_token" ? "" : "pl-5"} cursor-pointer hover:bg-secondary-300 ${isSelected ? "bg-secondary-300" : ""} outline-none disabled:cursor-not-allowed`} onClick={() => onSelect(route, token)} >
                 <CurrencySelectItemDisplay
                     allbalancesLoaded={allbalancesLoaded}
                     item={token}

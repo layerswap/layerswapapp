@@ -25,14 +25,39 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
 
     const balances = useAllBalances({ direction })
 
-    const routeElements = useMemo(() => groupRoutes(networkRoutes, direction, balances, search), [networkRoutes, balances, direction, search])
+    const topTokens = useMemo(() => getTopTokens(networkRoutes, balances), [networkRoutes, balances]);
+
+    const routeElements = useMemo(() => {
+        const grouped = groupRoutes(networkRoutes, direction, balances, search);
+        if (topTokens.length > 0 && !search) {
+            return [
+                { type: 'group_title', text: 'Top Assets' } as TitleElement,
+                ...topTokens,
+                ...grouped,
+            ];
+        }
+        return grouped;
+    }, [networkRoutes, balances, direction, search, topTokens]);
+
     const tokenElements = useMemo(() => {
         const grouped = groupTokens(networkRoutes, search);
         if (!search && balances) {
-            return sortGroupedTokensByBalance(grouped as GroupedTokenElement[], balances);
+            const sorted = sortGroupedTokensByBalance(grouped as GroupedTokenElement[], balances);
+
+            if (topTokens.length > 0) {
+                return [
+                    { type: 'group_title', text: 'Top Assets' } as TitleElement,
+                    ...topTokens,
+                    ...sorted
+                ];
+            }
+            return [
+                { type: 'group_title', text: 'All' } as TitleElement,
+                ...sorted
+            ];
         }
         return grouped;
-    }, [networkRoutes, balances, search]);
+    }, [networkRoutes, balances, search, topTokens]);
 
     const selectedRoute = useMemo(() => resolveSelectedRoute(values, direction), [values, direction])
     const selectedToken = useMemo(() => resolveSelectedToken(values, direction), [values, direction])
@@ -260,6 +285,39 @@ function sortGroupedTokensByBalance(
     sorted.sort((a, b) => b.totalUSD - a.totalUSD);
 
     return sorted.map(({ totalUSD, ...rest }) => rest);
+}
+
+function getTopTokens(
+    networkRoutes: NetworkRoute[],
+    balances: Record<string, NetworkBalance> | null,
+    limit = 4
+): NetworkTokenElement[] {
+    if (!balances) return [];
+
+    const tokens: {
+        element: NetworkTokenElement,
+        usdValue: number
+    }[] = [];
+
+    for (const route of networkRoutes) {
+        for (const token of route.tokens || []) {
+            const usdValue = getTokenBalanceUSD(route, token, balances);
+            if (usdValue > 0) {
+                tokens.push({
+                    element: {
+                        type: 'top_token',
+                        route: { token, route }
+                    },
+                    usdValue
+                });
+            }
+        }
+    }
+
+    return tokens
+        .sort((a, b) => b.usdValue - a.usdValue)
+        .slice(0, limit)
+        .map(t => t.element);
 }
 
 function resolveSelectedRoute(values: SwapFormValues, direction: SwapDirection): NetworkRoute | undefined {
