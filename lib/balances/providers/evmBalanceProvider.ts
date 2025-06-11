@@ -91,12 +91,12 @@ export class EVMBalanceProvider {
 
             const tokenContracts = network.tokens?.filter(a => a.contract).map(a => a.contract as `0x${string}`)
 
-            const balances: any = await publicClient.readContract({
+            const balances = await publicClient.readContract({
                 address: contract?.address,
                 abi: BalanceGetterAbi,
                 functionName: 'getBalances',
                 args: [address as `0x${string}`, tokenContracts]
-            })
+            }) as [string[], number[]]
 
             const resolvedERC20Balances = network.tokens.filter(t => t.contract)?.map((token, index) => {
                 const amount = balances[1][index]
@@ -115,7 +115,7 @@ export class EVMBalanceProvider {
             const nativeTokenResolvedBalance = network.token ? {
                 network: network.name,
                 token: network.token?.symbol,
-                amount: formatAmount(nativeTokenBalance, network.token?.decimals),
+                amount: nativeTokenBalance ? formatAmount(nativeTokenBalance, network.token?.decimals) : 0,
                 request_time: new Date().toJSON(),
                 decimals: network.token?.decimals,
                 isNativeCurrency: true,
