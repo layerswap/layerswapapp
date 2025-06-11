@@ -6,7 +6,7 @@ import { useAccount } from 'wagmi';
 import { useSettingsState } from '../../../../../context/settings';
 import KnownInternalNames from '../../../../../lib/knownIds';
 import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
-import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
+import { BackendTransactionStatus } from '../../../../../lib/apiClients/layerSwapApiClient';
 import { useEthersSigner } from '../../../../../lib/ethersToViem/ethers';
 import toast from 'react-hot-toast';
 import WalletIcon from '../../../../icons/WalletIcon';

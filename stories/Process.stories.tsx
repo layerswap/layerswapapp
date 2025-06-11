@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { SwapItem, BackendTransactionStatus, TransactionType, SwapResponse } from '../lib/layerSwapApiClient';
+import { SwapItem, BackendTransactionStatus, TransactionType, SwapResponse } from '../lib/apiClients/layerSwapApiClient';
 import { SwapStatus } from '../Models/SwapStatus';
 import { SwapData, SwapDataStateContext, SwapDataUpdateContext } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';

@@ -1,5 +1,5 @@
 {
-  "count": 532,
+  "count": 531,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -32033,35 +32033,41 @@
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.companyname.swaptobe&hl=vi",
         "browser": null,
-        "chrome": null,
+        "chrome": "https://",
         "edge": null,
         "firefox": null,
-        "ios": null,
-        "linux": null,
-        "mac": null,
+        "ios": "https://apps.apple.com/us/app/pione-wallet/id6738914833",
+        "linux": "",
+        "mac": "https://apps.apple.com/us/app/pione-wallet/id6738914833",
         "opera": null,
         "safari": null,
-        "windows": null
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Mobile Wallets",
       "chains": [
-        "eip155:1"
+        "eip155:1",
+        "eip155:56"
       ],
-      "description": "com.companyname.swaptobe",
+      "description": "Pione Wallet helps you manage your assets securely.\nExplore the world of global decentralized finance with Pione Wallet.",
       "desktop": {
-        "native": "tobewallet://",
-        "universal": null
+        "native": "",
+        "universal": ""
       },
-      "homepage": "https://testnet.tobechain.net/testnet/faucet/",
+      "homepage": "https://pionewallet.com/",
       "id": "e5276850a2559a0fd4eb37207e3c9325cfb20b84ebb28a2d6ad5ade43a2a77bd",
-      "image_id": "ccfadd90-2fe4-41c0-4762-32e1cf9b2700",
+      "image_id": "d3ab5013-f497-4857-d169-4e666db89a00",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/ccfadd90-2fe4-41c0-4762-32e1cf9b2700?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/ccfadd90-2fe4-41c0-4762-32e1cf9b2700?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/ccfadd90-2fe4-41c0-4762-32e1cf9b2700?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/d3ab5013-f497-4857-d169-4e666db89a00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/d3ab5013-f497-4857-d169-4e666db89a00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/d3ab5013-f497-4857-d169-4e666db89a00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
-      "injected": null,
+      "injected": [
+        {
+          "injected_id": "isPioneWallet",
+          "namespace": "eip155"
+        }
+      ],
       "metadata": {
         "colors": {
           "primary": null,
@@ -32070,11 +32076,11 @@
         "shortName": "TBC"
       },
       "mobile": {
-        "native": "tobewallet://",
-        "universal": null
+        "native": "pionewallet://",
+        "universal": ""
       },
-      "name": "TobeWallet",
-      "rdns": "com.companyname.swaptobe",
+      "name": "PioneWallet",
+      "rdns": "com.pionewallet",
       "sdks": [
         "sign_v1",
         "sign_v2",
@@ -35671,67 +35677,6 @@
         "2"
       ]
     },
-    "ff771deda39152ddb76add14a8eb17564af6bf2765bb1298a69a062723608298": {
-      "app": {
-        "android": "https://play.google.com/store/apps/details?id=com.metapro.app&hl=en&gl=US",
-        "browser": null,
-        "chrome": null,
-        "edge": null,
-        "firefox": null,
-        "ios": "https://apps.apple.com/us/app/metapro-wallet/id1628087356",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
-      },
-      "app_type": "wallet",
-      "category": "Mobile Wallets",
-      "chains": [
-        "eip155:1",
-        "eip155:137",
-        "eip155:42161",
-        "eip155:56",
-        "eip155:8453"
-      ],
-      "description": "First choice web3 gaming non-custodial wallet. Manage your games and assets!",
-      "desktop": {
-        "native": "",
-        "universal": null
-      },
-      "homepage": "https://wallet.metapro.one",
-      "id": "ff771deda39152ddb76add14a8eb17564af6bf2765bb1298a69a062723608298",
-      "image_id": "20775b9e-c38f-4173-509f-896a84593b00",
-      "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/20775b9e-c38f-4173-509f-896a84593b00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/20775b9e-c38f-4173-509f-896a84593b00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/20775b9e-c38f-4173-509f-896a84593b00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
-      },
-      "injected": null,
-      "metadata": {
-        "colors": {
-          "primary": "#141E2F",
-          "secondary": "#7763F6"
-        },
-        "shortName": "metapro"
-      },
-      "mobile": {
-        "native": "metapro://",
-        "universal": null
-      },
-      "name": "metapro wallet",
-      "rdns": null,
-      "sdks": [
-        "sign_v1",
-        "sign_v2"
-      ],
-      "slug": "metapro-wallet",
-      "updatedAt": "2024-05-14T17:39:08.62223+00:00",
-      "versions": [
-        "1",
-        "2"
-      ]
-    },
     "ff97af0ad5fca162553ebbd76f2564b7f7b04569c131e972b75bbff2dc13c1a9": {
       "app": {
         "android": null,
@@ -35797,5 +35742,5 @@
       ]
     }
   },
-  "total": 532
+  "total": 531
 }
