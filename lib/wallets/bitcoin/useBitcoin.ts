@@ -135,7 +135,9 @@ export default function useBitcoin(): WalletProvider {
         })()
     }, [connectors])
 
-    const provider = {
+    const providerIcon = networks.find(n => commonSupportedNetworks.some(name => name === n.name))?.logo
+
+    const provider: WalletProvider = {
         connectWallet,
         disconnectWallets,
         connectedWallets: resolvedWallet ? [resolvedWallet] : [],
@@ -146,6 +148,7 @@ export default function useBitcoin(): WalletProvider {
         asSourceSupportedNetworks: commonSupportedNetworks,
         name,
         id,
+        providerIcon
     }
 
     return provider
