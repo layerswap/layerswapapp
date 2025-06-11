@@ -31,7 +31,7 @@ function createDefaultBigmiConfig(network?: NetworkWithTokens) {
         phantom({ chainId: btcChainId }),
         xverse({ chainId: btcChainId }),
         unisat({ chainId: btcChainId }),
-        ctrl({ chainId: btcChainId }),
+        // ctrl({ chainId: btcChainId }),
         // okx({ chainId: btcChainId }),
         leather({ chainId: btcChainId }),
         onekey({ chainId: btcChainId }),
