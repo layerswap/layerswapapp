@@ -14,13 +14,15 @@ import useFuel from "../lib/wallets/fuel/useFuel";
 import useTron from "../lib/wallets/tron/useTron";
 import useParadex from "../lib/wallets/paradex/useParadex";
 import useSVM from "../lib/wallets/solana/useSVM";
+import useBitcoin from "../lib/wallets/bitcoin/useBitcoin";
 
 const WalletProvidersContext = createContext<WalletProvider[]>([]);
 
 export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     const { networks } = useSettingsState();
     const { goBack, onFinish, open, setOpen, selectedConnector } = useConnectModal()
-    
+
+    const bitcoin = useBitcoin()
     const evm = useEVM();
     const starknet = useStarknet();
     const imtblX = useImtblX();
@@ -32,7 +34,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
 
     const providers = useMemo(() => {
         const allProviders: WalletProvider[] = [
-            evm, starknet, svm, ton, fuel, tron, paradex, imtblX
+            bitcoin, evm, starknet, svm, ton, fuel, tron, paradex, imtblX
         ];
 
         return allProviders.filter(provider =>
@@ -42,7 +44,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
                 provider.asSourceSupportedNetworks?.includes(net.name)
             )
         );
-    }, [networks, evm, starknet, svm, ton, fuel, tron, paradex, imtblX]);
+    }, [networks, bitcoin, evm, starknet, svm, ton, fuel, tron, paradex, imtblX]);
 
     return (
         <WalletProvidersContext.Provider value={providers}>

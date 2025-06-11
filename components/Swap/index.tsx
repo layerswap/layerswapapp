@@ -3,7 +3,7 @@ import { Widget } from '../Widget/Index';
 import { useSwapDataState } from '../../context/swap';
 import Withdraw from './Withdraw';
 import Processing from './Withdraw/Processing';
-import { BackendTransactionStatus, TransactionType } from '../../lib/layerSwapApiClient';
+import { BackendTransactionStatus, TransactionType } from '../../lib/apiClients/layerSwapApiClient';
 import { SwapStatus } from '../../Models/SwapStatus';
 
 type Props = {

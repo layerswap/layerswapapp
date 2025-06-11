@@ -9,7 +9,7 @@ import { ActivationTokenPicker } from './ActivationTokentPicker';
 import { useActivationData, useLoopringAccount, useLoopringTokens } from './hooks';
 import { LoopringAPI } from '../../../../../lib/loopring/LoopringAPI';
 import { ChainId, UnlockedAccount } from '../../../../../lib/loopring/defs';
-import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
+import { BackendTransactionStatus } from '../../../../../lib/apiClients/layerSwapApiClient';
 import { WithdrawPageProps } from '../WalletTransferContent';
 import { useConfig } from 'wagmi'
 import AppSettings from '../../../../../lib/AppSettings';

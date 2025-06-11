@@ -5,7 +5,7 @@ import * as zksync from 'zksync';
 import { utils } from 'ethers';
 import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { BackendTransactionStatus } from '../../../../lib/apiClients/layerSwapApiClient';
 import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
 import { useSettingsState } from '../../../../context/settings';
 import { useAccount } from 'wagmi';
