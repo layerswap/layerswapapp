@@ -29,7 +29,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
 
     const routeElements = useMemo(() => groupRoutes(networkRoutes, direction, balances, search), [networkRoutes, balances, direction, search])
     const tokenElements = useMemo(() => {
-        const grouped = groupTokens(networkRoutes, balances, search);
+        const grouped = groupTokens(networkRoutes, search);
         if (!search && balances) {
             return sortGroupedTokensByBalance(grouped as GroupedTokenElement[], balances);
         }
@@ -162,7 +162,6 @@ function groupRoutes(networkRoutes: NetworkRoute[], direction: SwapDirection, ba
 
 function groupTokens(
     networkRoutes: NetworkRoute[],
-    balances: Record<string, NetworkBalance> | null,
     search?: string
 ): GroupTokensResult {
     if (search) {
