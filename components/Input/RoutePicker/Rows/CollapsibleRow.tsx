@@ -12,7 +12,7 @@ import {
   GroupedTokenElement,
 } from "../../../../Models/Route";
 import { SwapDirection } from "../../../DTOs/SwapFormValues";
-import { CurrencySelectItemDisplay, GroupedTokenHeader, RouteSelectItemDisplay } from "../Routes";
+import { CurrencySelectItemDisplay, GroupedTokenHeader, NetworkRouteSelectItemDisplay } from "../Routes";
 import { NetworkRoute, NetworkRouteToken } from "../../../../Models/Network";
 
 type GenericAccordionRowProps = {
@@ -113,13 +113,15 @@ export const CollapsibleRow = ({
                 item={item as GroupedTokenElement}
                 direction={direction}
                 allbalancesLoaded={allbalancesLoaded}
+                hideTokenImages={isOpen}
               />
             ) : (
-              <RouteSelectItemDisplay
+              <NetworkRouteSelectItemDisplay
                 item={(item as NetworkElement).route}
                 selected={false}
                 direction={direction}
                 allbalancesLoaded={allbalancesLoaded}
+                hideTokenImages={isOpen}
               />
             )}
           </AccordionTrigger>
@@ -136,13 +138,15 @@ export const CollapsibleRow = ({
                   item={item as GroupedTokenElement}
                   direction={direction}
                   allbalancesLoaded={allbalancesLoaded}
+                  hideTokenImages={isOpen}
                 />
               ) : (
-                <RouteSelectItemDisplay
+                <NetworkRouteSelectItemDisplay
                   item={(item as NetworkElement).route}
                   selected={false}
                   direction={direction}
                   allbalancesLoaded={allbalancesLoaded}
+                  hideTokenImages={isOpen}
                 />
               )}
             </div>

@@ -59,29 +59,16 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     </SelectItem.DetailedTitle>
 }
 
-
-type RouteItemProps = {
-    item: NetworkRoute;
-    selected: boolean;
-    direction: SwapDirection;
-    allbalancesLoaded: boolean;
-}
-
-export const RouteSelectItemDisplay = (props: RouteItemProps) => {
-    const { item, selected, direction, allbalancesLoaded } = props
-
-    return <NetworkRouteSelectItemDisplay item={item} selected={selected} direction={direction} allbalancesLoaded={allbalancesLoaded} />
-}
-
 type NetworkRouteItemProps = {
     item: NetworkRoute;
     selected: boolean;
     direction: SwapDirection;
     allbalancesLoaded: boolean;
+    hideTokenImages?: boolean;
 }
 
-const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
-    const { item, direction, allbalancesLoaded } = props
+export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
+    const { item, direction, allbalancesLoaded, hideTokenImages } = props
     const { provider } = useWallet(item, direction === "from" ? "withdrawal" : "autofil")
     const activeWallet = provider?.activeWallet
 
@@ -98,15 +85,18 @@ const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
             <SelectItem.Title className="py-3" >
                 <>
                     <span>{item.display_name}</span>
-                    {
+                    {!hideTokenImages ? (
                         Number(totalInUSD) >= 0 && allbalancesLoaded ? (
-                            <div className={`${filteredNetworkTokens?.length > 0 ? "flex flex-col space-y-0.5" : ""}`}>
-                                <span className="text-secondary-text text-sm leading-4 font-medium">${totalInUSD?.toFixed(2)}</span>
+                            <div className={filteredNetworkTokens?.length > 0 ? "flex flex-col space-y-0.5" : ""}>
+                                <span className="text-secondary-text text-sm leading-4 font-medium">
+                                    ${totalInUSD?.toFixed(2)}
+                                </span>
+
                                 {filteredNetworkTokens?.length > 0 && (
                                     <div className="flex justify-end items-center -space-x-2 relative h-4">
-                                        {filteredNetworkTokens.slice(0, 3).map((t) => (
+                                        {filteredNetworkTokens.slice(0, 3).map((t, index) => (
                                             <Image
-                                                key={t.symbol}
+                                                key={`${t.symbol}-${index}`}
                                                 src={t.logo}
                                                 alt={`${t.symbol} logo`}
                                                 height="16"
@@ -127,7 +117,7 @@ const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                         ) : (
                             <div className="px-0.5">-</div>
                         )
-                    }
+                    ) : null}
                     <ChevronDown
                         className="!w-3.5 !h-3.5 absolute right-2 bottom-4 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
                         aria-hidden="true"
@@ -149,11 +139,13 @@ type SelectedCurrencyDisplayProps = {
 export const GroupedTokenHeader = ({
     item,
     direction,
-    allbalancesLoaded
+    allbalancesLoaded,
+    hideTokenImages
 }: {
     item: GroupedTokenElement;
     direction: SwapDirection;
     allbalancesLoaded: boolean;
+    hideTokenImages?: boolean;
 }) => {
     const tokens = item.items;
 
@@ -203,36 +195,39 @@ export const GroupedTokenHeader = ({
             <SelectItem.Title className="py-3">
                 <>
                     <span>{mainToken.symbol}</span>
-                    {Number(totalInUSD) >= 0 && allbalancesLoaded && (
-                        <div className={`${networksWithBalance.length > 0 ? "flex flex-col space-y-0.5" : ""}`}>
-                            <span className="text-secondary-text text-sm leading-4 font-medium">
-                                ${totalInUSD.toFixed(2)}
-                            </span>
+                    {!hideTokenImages ? (
+                        Number(totalInUSD) >= 0 && allbalancesLoaded ? (
+                            <div className={networksWithBalance.length > 0 ? "flex flex-col space-y-0.5" : ""}>
+                                <span className="text-secondary-text text-sm leading-4 font-medium">
+                                    ${totalInUSD.toFixed(2)}
+                                </span>
 
-                            {networksWithBalance.length > 0 && (
-                                <div className="flex justify-end items-center -space-x-1.5 relative h-4">
-                                    {networksWithBalance.slice(0, 3).map((t, index) => (
-                                        <Image
-                                            src={t.logo}
-                                            alt={`${t.display_name} logo`}
-                                            height="16"
-                                            width="16"
-                                            loading="eager"
-                                            fetchPriority="high"
-                                            className="rounded-full object-contain"
-                                        />
-                                    ))}
-                                    {networksWithBalance.length > 3 && (
-                                        <div className="w-4 h-4 bg-secondary-600 text-primary-text text-[10px] rounded-full flex items-center justify-center border-2 border-background">
-                                            +{networksWithBalance.length - 3}
-                                        </div>
-                                    )}
-
-                                </div>
-                            )}
-                        </div>
-                    )}
-
+                                {networksWithBalance.length > 0 && (
+                                    <div className="flex justify-end items-center -space-x-1.5 relative h-4">
+                                        {networksWithBalance.slice(0, 3).map((t, index) => (
+                                            <Image
+                                                key={`${t.display_name}-${index}`}
+                                                src={t.logo}
+                                                alt={`${t.display_name} logo`}
+                                                height="16"
+                                                width="16"
+                                                loading="eager"
+                                                fetchPriority="high"
+                                                className="rounded-full object-contain"
+                                            />
+                                        ))}
+                                        {networksWithBalance.length > 3 && (
+                                            <div className="w-4 h-4 bg-secondary-600 text-primary-text text-[10px] rounded-full flex items-center justify-center border-2 border-background">
+                                                +{networksWithBalance.length - 3}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="px-0.5">-</div>
+                        )
+                    ) : null}
                     <ChevronDown
                         className="!w-3.5 !h-3.5 absolute right-2 bottom-4 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
                         aria-hidden="true"
