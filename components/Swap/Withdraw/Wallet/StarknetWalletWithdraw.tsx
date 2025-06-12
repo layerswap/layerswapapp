@@ -1,14 +1,13 @@
 import { FC, useCallback, useState } from 'react'
-import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
-import { useAuthState } from '../../../../context/authContext';
-import useWallet from '../../../../hooks/useWallet';
-import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import WalletIcon from '../../../icons/WalletIcon';
+import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
+import { useAuthState } from '@/context/authContext';
+import useWallet from '@/hooks/useWallet';
+import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
+import WalletIcon from '@/components/icons/WalletIcon';
 import { WithdrawPageProps } from './WalletTransferContent';
 import { ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
 import TransactionMessages from '../messages/TransactionMessages';
 import { datadogRum } from '@datadog/browser-rum';
-
 
 const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, callData, swapId }) => {
     const [error, setError] = useState<string | undefined>()

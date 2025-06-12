@@ -26,12 +26,12 @@ const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: TokenBalance, 
         && walletBalance.amount > minAllowedAmount
         && !(maxAllowedAmount && (walletBalance.amount > (maxAllowedAmount + networkGas)))
     )
-    const gasToReserveFormatted = mightBeOutOfGas ? truncateDecimals(networkGas, values?.fromCurrency?.precision) : 0
+    const gasToReserveFormatted = mightBeOutOfGas ? truncateDecimals(networkGas, values?.fromCurrency?.precision) : ''
 
     return (
         <>
             {
-                mightBeOutOfGas && gasToReserveFormatted > 0 &&
+                mightBeOutOfGas && gasToReserveFormatted &&
                 (
                     (Number(walletBalance.amount) < Number(networkGas)) ?
                         <WarningMessage messageType="warning" className="mt-4">
@@ -46,7 +46,7 @@ const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: TokenBalance, 
                                     You might not be able to complete the transaction.
                                 </div>
                                 <div onClick={() => onSubmit(walletBalance, networkGas)} className="cursor-pointer border-b border-dotted border-primary-text w-fit hover:text-primary hover:border-primary text-primary-text">
-                                    <span>Reserve</span> <span>{gasToReserveFormatted.toFixed(values.fromCurrency?.precision)}</span> <span>{values?.fromCurrency?.symbol}</span> <span>for gas.</span>
+                                    <span>Reserve</span> <span>{gasToReserveFormatted}</span> <span>{values?.fromCurrency?.symbol}</span> <span>for gas.</span>
                                 </div>
                             </div>
                         </WarningMessage>

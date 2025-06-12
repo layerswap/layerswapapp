@@ -50,8 +50,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                                     position: 'relative',
                                 }}
                             >
-                                <div className="sticky top-0 z-50" id="sticky_accordion_header">
-                                </div>
+                                <div className="sticky top-0 z-50" id="sticky_accordion_header" />
                                 <div
                                     style={{
                                         position: 'absolute',
