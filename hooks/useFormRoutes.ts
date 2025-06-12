@@ -137,11 +137,11 @@ function sortGroupedTokensByBalance(
 ): GroupedTokenElement[] {
     return tokenElements
         .map(group => {
-            const items = group.items.map(item => ({
+            const items = group?.items?.map(item => ({
                 ...item,
                 usdValue: getTokenBalanceUSD(item.route.route, item.route.token, balances),
             })).sort((a, b) => b.usdValue - a.usdValue);
-            const totalUSD = items.reduce((sum, i) => sum + i.usdValue, 0);
+            const totalUSD = items?.reduce((sum, i) => sum + i.usdValue, 0);
             return { ...group, items, totalUSD };
         })
         .sort((a, b) => b.totalUSD - a.totalUSD)
@@ -228,11 +228,13 @@ function groupTokens(routes: NetworkRoute[], search?: string): GroupTokensResult
         }
     }
 
-    return Object.entries(tokenMap).map(([symbol, items]) => ({
+    const groupedTokens: GroupedTokenElement[] = Object.entries(tokenMap).map(([symbol, items]) => ({
         type: 'grouped_token',
         symbol,
         items,
     }));
+
+    return [Titles.allTokens, ...groupedTokens];
 }
 
 // ---------- Sorting ----------
