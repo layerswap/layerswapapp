@@ -1,19 +1,19 @@
-import { useAccount, useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
+import { useAccount, useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector, WagmiContext } from "wagmi"
 import { NetworkType, NetworkWithTokens } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
-import { useMemo } from "react"
+import { useCallback, useEffect, useMemo, useRef } from "react"
 import { CreateConnectorFn, getAccount, getConnections } from '@wagmi/core'
 import { isMobile } from "../../isMobile"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
-import { LSConnector } from "../connectors/EthereumProvider"
+import { LSConnector } from "../connectors/types"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useConnectModal } from "../../../components/WalletModal"
-import { explicitInjectedproviderDetected } from "../connectors/getInjectedConnector"
-import walletsData from "../../../public/walletsData.json"
+import { explicitInjectedProviderDetected } from "../connectors/explicitInjectedProviderDetected"
 import sleep from "../utils/sleep"
+import { useEvmConnectors } from "../../../context/evmConnectorsContext"
 
 const ethereumNames = [KnownInternalNames.Networks.EthereumMainnet, KnownInternalNames.Networks.EthereumSepolia]
 const immutableZKEvm = [KnownInternalNames.Networks.ImmutableZkEVM]
@@ -49,7 +49,11 @@ export default function useEVM(): WalletProvider {
     const config = useConfig()
     const { connectAsync } = useConnect();
 
+    const pendingResolve = useRef<((c: InternalConnector & LSConnector) => void) | undefined>()
+    const pendingId = useRef<string>()
+
     const { setSelectedConnector } = useConnectModal()
+    const { walletConnectConnectors, addWalletConnectWallet } = useEvmConnectors()
 
     const disconnectWallet = async (connectorName: string) => {
 
@@ -75,10 +79,26 @@ export default function useEVM(): WalletProvider {
         }
     }
 
-    const connectWallet = async ({ connector: internalConnector }: { connector: InternalConnector }) => {
+    const connectWallet = useCallback(async ({ connector: internalConnector }: { connector: InternalConnector }) => {
         try {
-            const connector = availableWalletsForConnect.find(w => w.id === internalConnector.id) as InternalConnector & LSConnector
-            if (!connector) throw new Error("Connector not found")
+            let connector = availableFeaturedWalletsForConnect.find(w => w.id === internalConnector.id) as InternalConnector & LSConnector
+            if (!connector) {
+                const walletConnectConnector = walletConnectConnectors.find(w => w.id === internalConnector.id)
+                if (!walletConnectConnector) throw new Error("Connector not found")
+                await addWalletConnectWallet(walletConnectConnector)
+
+                connector = await new Promise<InternalConnector & LSConnector>((res, rej) => {
+                    pendingId.current = walletConnectConnector.id
+                    pendingResolve.current = res
+                    setTimeout(() => {
+                        if (pendingResolve.current) {
+                            pendingResolve.current = undefined
+                            rej(new Error("Timed out waiting for new connector"))
+                        }
+                    }, 1000)
+                })
+
+            }
             const Icon = connector.icon || resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
             const base64Icon = typeof Icon == 'string' ? Icon : convertSvgComponentToBase64(Icon)
             setSelectedConnector({ ...connector, icon: base64Icon })
@@ -134,7 +154,7 @@ export default function useEVM(): WalletProvider {
                 throw new Error(e.message || e);
             }
         }
-    }
+    }, [activeConnectors, disconnectAsync, config, networks, asSourceSupportedNetworks, autofillSupportedNetworks, withdrawalSupportedNetworks, name, addWalletConnectWallet])
 
     const resolvedConnectors: Wallet[] = useMemo(() => {
         const connections = getConnections(config)
@@ -173,16 +193,14 @@ export default function useEVM(): WalletProvider {
     }
 
 
-    const activeBrowserWallet = explicitInjectedproviderDetected() && allConnectors.filter(c => c.id !== "com.immutable.passport" && c.type === "injected").length === 1
+    const activeBrowserWallet = explicitInjectedProviderDetected() && allConnectors.filter(c => c.id !== "com.immutable.passport" && c.type === "injected").length === 1
     const filterConnectors = wallet => ((wallet.id === "injected" ? activeBrowserWallet : true))
 
-    const fetchedWallets = useMemo(() => Object.values(walletsData.listings), [])
-
     {/* //TODO: refactor ordering */ }
-    const availableWalletsForConnect: InternalConnector[] = useMemo(() => {
+    const availableFeaturedWalletsForConnect: InternalConnector[] = useMemo(() => {
         return dedupePreferInjected(allConnectors.filter(filterConnectors))
             .map(w => {
-                const isWalletConnectSupported = fetchedWallets.some(w2 => w2.name.toLowerCase().includes(w.name.toLowerCase()) && (w2.mobile.universal || w2.mobile.native || w2.desktop.native || w2.desktop.universal)) || w.name === "WalletConnect"
+                const isWalletConnectSupported = walletConnectConnectors.some(w2 => w2.name.toLowerCase().includes(w.name.toLowerCase()) && (w2.mobile.universal || w2.mobile.native || w2?.desktop?.native || w2?.desktop?.universal)) || w.name === "WalletConnect"
                 return {
                     ...w,
                     order: resolveWalletConnectorIndex(w.id),
@@ -190,9 +208,18 @@ export default function useEVM(): WalletProvider {
                     isMobileSupported: isWalletConnectSupported
                 }
             })
-    }, [allConnectors, fetchedWallets])
+    }, [allConnectors, walletConnectConnectors])
 
-    const provider = {
+    useEffect(() => {
+        if (!pendingResolve.current) return
+        const found = availableFeaturedWalletsForConnect.find(c => c.id === pendingId.current)
+        if (found) {
+            pendingResolve.current(found as any)
+            pendingResolve.current = undefined
+        }
+    }, [availableFeaturedWalletsForConnect, pendingId.current, pendingResolve.current])
+
+    const provider: WalletProvider = {
         connectWallet,
         disconnectWallets,
         switchAccount,
@@ -202,7 +229,8 @@ export default function useEVM(): WalletProvider {
         autofillSupportedNetworks,
         withdrawalSupportedNetworks,
         asSourceSupportedNetworks,
-        availableWalletsForConnect: availableWalletsForConnect,
+        availableWalletsForConnect: availableFeaturedWalletsForConnect,
+        availableHiddenWalletsForConnect: walletConnectConnectors,
         name,
         id,
         providerIcon: networks.find(n => ethereumNames.some(name => name === n.name))?.logo
