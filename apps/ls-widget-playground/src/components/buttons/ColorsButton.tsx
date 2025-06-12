@@ -43,7 +43,7 @@ export function ColorsContent() {
     const { themeData } = useWidgetContext();
     const editColors = useMemo(() => getColors(themeData), [themeData]);
     return editColors?.map(({ displayName, value, id }) => (
-        <div key={id} className="my-1 rounded-xl p-2 bg-secondary-600  flex items-center justify-between gap-4">
+        <div key={id} className="tw-my-1 tw-rounded-xl tw-p-2 tw-bg-secondary-600 tw-flex tw-items-center tw-justify-between tw-gap-4">
             <span>{displayName}</span>
             <ColorBox rgbColor={value!} colorKey={id} />
         </div>
@@ -57,15 +57,15 @@ export const ColorsTrigger = () => {
     const editColors = useMemo(() => getColors(themeData), [themeData]);
 
     return (
-        <div className="flex justify-between w-full">
+        <div className="tw-flex tw-justify-between tw-w-full">
             <label>
                 Colors
             </label>
-            <div className="flex justify-end ">
+            <div className="tw-flex tw-justify-end">
                 {editColors?.map(({ value, id }) => (
                     <div key={id}
                         style={{ backgroundColor: tinycolor(`rgb(${value})`).toRgbString() }}
-                        className="w-2.5 h-full"
+                        className="tw-w-2.5 tw-h-full"
                     ></div>
                 ))}
             </div>

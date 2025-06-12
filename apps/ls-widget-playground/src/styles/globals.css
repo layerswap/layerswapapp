@@ -17,7 +17,7 @@
   }
 
   .styled-scroll {
-    @apply scrollbar:w-1.5 scrollbar:h-1.5 scrollbar:bg-secondary-500 scrollbar-thumb:rounded scrollbar-thumb:bg-slate-500/50;
+    @apply scrollbar:tw-w-1.5 scrollbar:tw-h-1.5 scrollbar:tw-bg-secondary-500 scrollbar-thumb:tw-rounded scrollbar-thumb:tw-bg-slate-500/50;
   }
 
   .rdxCommandList {
@@ -28,7 +28,7 @@
 @layer base {
 
   body {
-    @apply bg-secondary-900 sm:bg-secondary-950;
+    @apply tw-bg-secondary-900 sm:tw-bg-secondary-950;
   }
 
   /* On iOS disabled inputs have default opacitiy */

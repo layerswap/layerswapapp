@@ -49,23 +49,23 @@ export function MultiSelect({
 
     return (
         <Popover open={open} onOpenChange={setOpen} >
-            <PopoverTrigger className="flex w-full items-center justify-between truncate !rounded-xl bg-secondary-700 text-base text-primary-text placeholder:text-secondary-text">
+            <PopoverTrigger className="tw-flex tw-w-full tw-items-center tw-justify-between tw-truncate !tw-rounded-xl tw-bg-secondary-700 tw-text-base tw-text-primary-text placeholder:tw-text-secondary-text">
                 <p
                     className={cn(
-                        "text-left overflow-hidden rounded-xl",
-                        !selectedLabels && " text-secondary-text"
+                        "tw-text-left tw-overflow-hidden tw-rounded-xl",
+                        !selectedLabels && " tw-text-secondary-text"
                     )}
                     title={selectedLabels}
                 >
                     {selectedLabels || placeholder}
                 </p>
-                <ChevronDownIcon className="ml-2 h-4 w-4 opacity-50 shrink-0" />
+                <ChevronDownIcon className="tw-ml-2 tw-h-4 tw-w-4 tw-opacity-50 tw-shrink-0" />
             </PopoverTrigger>
             <PopoverContent
-                className="z-50 mt-2 max-h-[300px] !max-w-[400px] overflow-y-auto w-full rounded-md bg-secondary-700 p-2 text-secondary-text shadow-md ring-1 ring-secondary-500 styled-scroll"
+                className="tw-z-50 tw-mt-2 tw-max-h-[300px] !tw-max-w-[400px] tw-overflow-y-auto tw-w-full tw-rounded-md tw-bg-secondary-700 tw-p-2 tw-text-secondary-text tw-shadow-md tw-ring-1 tw-ring-secondary-500 styled-scroll"
                 align="start"
             >
-                <div className="space-y-1 overflow-y-auto">
+                <div className="tw-space-y-1 tw-overflow-y-auto">
                     {options.map((opt) => {
                         const selected = value.includes(opt.value);
                         return (
@@ -74,22 +74,22 @@ export function MultiSelect({
                                 type="button"
                                 onClick={() => toggleOption(opt.value)}
                                 className={cn(
-                                    "flex w-full items-center justify-between rounded-md border px-3 py-2 text-sm transition-colors",
-                                    "border-secondary-500 bg-secondary-600 text-secondary-text",
-                                    selected && "border-primary text-primary-text"
+                                    "tw-flex tw-w-full tw-items-center tw-justify-between tw-rounded-md tw-border tw-px-3 tw-py-2 tw-text-sm tw-transition-colors",
+                                    "tw-border-secondary-500 tw-bg-secondary-600 tw-text-secondary-text",
+                                    selected && "tw-border-primary tw-text-primary-text"
                                 )}
                             >
-                                <div className="flex items-center gap-2">
+                                <div className="tw-flex tw-items-center tw-gap-2">
                                     {opt.icon && (
                                         <img
                                             src={opt.icon}
                                             alt="icon"
-                                            className="h-5 w-5 rounded-sm"
+                                            className="tw-h-5 tw-w-5 tw-rounded-sm"
                                         />
                                     )}
                                     <span>{opt.label}</span>
                                 </div>
-                                {selected && <CheckIcon className="h-4 w-4 text-primary" />}
+                                {selected && <CheckIcon className="tw-h-4 tw-w-4 tw-text-primary" />}
                             </button>
                         );
                     })}

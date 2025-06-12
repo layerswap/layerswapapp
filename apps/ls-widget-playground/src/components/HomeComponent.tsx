@@ -8,11 +8,11 @@ import clsx from 'clsx';
 export function HomeComponent() {
     const { showPanel, updateShowPanel } = useWidgetContext();
     return (
-        <div className='flex h-screen w-full overflow-hidden'>
+        <div className="tw-flex tw-h-screen tw-w-full tw-overflow-hidden">
             <div
                 className={clsx(
-                    'absolute left-0 top-0 h-full z-20 transition-transform duration-300 ease-in-out',
-                    showPanel ? 'translate-x-0' : '-translate-x-full'
+                    'tw-absolute tw-left-0 tw-top-0 tw-h-full tw-z-20 tw-transition-transform tw-duration-300 tw-ease-in-out',
+                    showPanel ? 'tw-translate-x-0' : '-tw-translate-x-full'
                 )}
             >
                 <ControlPanel />
@@ -20,13 +20,13 @@ export function HomeComponent() {
             {!showPanel && (
                 <PanelLeft
                     onClick={() => updateShowPanel(true)}
-                    className="absolute top-4 left-4 z-15 bg-transparent hover:bg-primary-500 transition-colors text-primary-text w-10 h-auto p-1.5 rounded-full"
+                    className="tw-absolute tw-top-4 tw-left-4 tw-z-15 tw-bg-transparent hover:tw-bg-primary-500 tw-transition-colors tw-text-primary-text tw-w-10 tw-h-auto tw-p-1.5 tw-rounded-full"
                 />
             )}
             <div
                 className={clsx(
-                    'flex-1 transition-all duration-300 ease-in-out',
-                    showPanel ? 'ml-[600px]' : 'ml-0'
+                    'tw-flex-1 tw-transition-all tw-duration-300 tw-ease-in-out',
+                    showPanel ? 'tw-ml-[600px]' : 'tw-ml-0'
                 )}
             >
                 <LayerswapWidget />

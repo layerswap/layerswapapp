@@ -37,14 +37,14 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "flex w-full items-center justify-between rounded-md border bg-transparent p-3  text-base bg-secondary-700 placeholder:text-secondary-text focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50 border-secondary-500 dark:text-primary-text",
+        "tw-flex tw-w-full tw-items-center tw-justify-between tw-rounded-md tw-border tw-bg-transparent tw-p-3  tw-text-base tw-bg-secondary-700 placeholder:tw-text-secondary-text focus:tw-outline-none focus:tw-ring-0 disabled:tw-cursor-not-allowed disabled:tw-opacity-50 tw-border-secondary-500 dark:tw-text-primary-text",
         className
       )}
       {...props}
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <ChevronDownIcon className="fill-currenttext-muted-foreground pointer-events-none size-4 shrink-0 translate-y-0.5 transition-transform duration-200  dark:text-secondary-text placeholder:text-secondary-text" />
+        <ChevronDownIcon className="tw-fill-currenttext-muted-foreground tw-pointer-events-none tw-size-4 tw-shrink-0 tw-translate-y-0.5 tw-transition-transform tw-duration-200  dark:tw-text-secondary-text placeholder:tw-text-secondary-text" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   )
@@ -61,9 +61,9 @@ function SelectContent({
       <SelectPrimitive.Content
         data-slot="select-content"
         className={cn(
-          "animate-in fade-in-80 relative z-50 min-w-[8rem] overflow-hidden rounded-md shadow-md ring-1 ring-secondary-500 bg-secondary-700 text-secondary-text ",
+          "tw-animate-in tw-fade-in-80 tw-relative tw-z-50 tw-min-w-[8rem] tw-overflow-hidden tw-rounded-md tw-shadow-md tw-ring-1 tw-ring-secondary-500 tw-bg-secondary-700 tw-text-secondary-text ",
           position === "popper" &&
-          "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
+          "data-[side=bottom]:tw-translate-y-1 data-[side=left]:-tw-translate-x-1 data-[side=right]:tw-translate-x-1 data-[side=top]:-tw-translate-y-1",
           className
         )}
         position={position}
@@ -72,9 +72,9 @@ function SelectContent({
         <SelectScrollUpButton />
         <SelectPrimitive.Viewport
           className={cn(
-            "p-1",
+            "tw-p-1",
             position === "popper" &&
-            "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1"
+            "tw-h-[var(--radix-select-trigger-height)] tw-w-full tw-min-w-[var(--radix-select-trigger-width)] tw-scroll-my-1"
           )}
         >
           {children}
@@ -92,7 +92,7 @@ function SelectLabel({
   return (
     <SelectPrimitive.Label
       data-slot="select-label"
-      className={cn("py-1.5 pr-2 pl-8 text-base font-semibold text-primary-text-muted", className)}
+      className={cn("tw-py-1.5 tw-pr-2 tw-pl-8 tw-text-base tw-font-semibold tw-text-primary-text-muted", className)}
       {...props}
     />
   )
@@ -107,14 +107,14 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "relative flex cursor-default select-none items-center rounded-sm p-3  pl-8 text-base outline-none focus:bg-slate-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-secondary-500",
+        "tw-relative tw-flex tw-cursor-default tw-select-none tw-items-center tw-rounded-sm tw-p-3  tw-pl-8 tw-text-base tw-outline-none focus:tw-bg-slate-100 data-[disabled]:tw-pointer-events-none data-[disabled]:tw-opacity-50 dark:focus:tw-bg-secondary-500",
         className
       )}
       {...props}
     >
-      <span className="absolute left-2 flex  w-3.5 items-center justify-center">
+      <span className="tw-absolute tw-left-2 tw-flex  tw-w-3.5 tw-items-center tw-justify-center">
         <SelectPrimitive.ItemIndicator>
-          <CheckIcon className="size-4 text-primary" />
+          <CheckIcon className="tw-size-4 tw-text-primary" />
         </SelectPrimitive.ItemIndicator>
       </span>
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
@@ -129,7 +129,7 @@ function SelectSeparator({
   return (
     <SelectPrimitive.Separator
       data-slot="select-separator"
-      className={cn("-mx-1 my-1 h-px bg-slate-100 dark:bg-slate-700", className)}
+      className={cn("-tw-mx-1 tw-my-1 tw-h-px tw-bg-slate-100 dark:tw-bg-slate-700", className)}
       {...props}
     />
   )
@@ -143,12 +143,12 @@ function SelectScrollUpButton({
     <SelectPrimitive.ScrollUpButton
       data-slot="select-scroll-up-button"
       className={cn(
-        "flex cursor-default items-center justify-center py-1",
+        "tw-flex tw-cursor-default tw-items-center tw-justify-center tw-py-1",
         className
       )}
       {...props}
     >
-      <ChevronUpIcon className="size-4" />
+      <ChevronUpIcon className="tw-size-4" />
     </SelectPrimitive.ScrollUpButton>
   )
 }
@@ -161,12 +161,12 @@ function SelectScrollDownButton({
     <SelectPrimitive.ScrollDownButton
       data-slot="select-scroll-down-button"
       className={cn(
-        "flex cursor-default items-center justify-center py-1",
+        "tw-flex tw-cursor-default tw-items-center tw-justify-center tw-py-1",
         className
       )}
       {...props}
     >
-      <ChevronDownIcon className="size-4" />
+      <ChevronDownIcon className="tw-size-4" />
     </SelectPrimitive.ScrollDownButton>
   )
 }

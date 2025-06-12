@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 function Accordion({
   ...props
 }: React.ComponentProps<typeof AccordionPrimitive.Root>) {
-  return <AccordionPrimitive.Root data-slot="accordion"  {...props} className={cn("rounded-md border bg-transparent  border-secondary-500 dark:text-primary-text bg-secondary-700 placeholder:text-secondary-text ", props.className)} />
+  return <AccordionPrimitive.Root data-slot="accordion"  {...props} className={cn("tw-rounded-md tw-border tw-bg-transparent  tw-border-secondary-500 tw-dark:text-primary-text tw-bg-secondary-700 placeholder:tw-text-secondary-text ", props.className)} />
 }
 
 function AccordionItem({
@@ -31,11 +31,11 @@ function AccordionTrigger({
   ...props
 }: React.ComponentProps<typeof AccordionPrimitive.Trigger>) {
   return (
-    <AccordionPrimitive.Header className="flex ">
+    <AccordionPrimitive.Header className="tw-flex">
       <AccordionPrimitive.Trigger
         data-slot="accordion-trigger"
         className={cn(
-          "focus-visible:border-ring focus-visible:ring-ring/50 flex flex-1 rounded-md  bg-transparent  border-secondary-500 dark:text-primary-text bg-secondary-700 placeholder:text-secondary-text items-start justify-between gap-4 p-3 text-left text-base  transition-all outline-none  focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&[data-state=open]>svg]:rotate-180",
+          "focus-visible:tw-border-ring focus-visible:tw-ring-ring/50 tw-flex tw-flex-1 tw-rounded-md  tw-bg-transparent  tw-border-secondary-500 dark:tw-text-primary-text tw-bg-secondary-700 placeholder:tw-text-secondary-text tw-items-start tw-justify-between tw-gap-4 tw-p-3 tw-text-left tw-text-base  tw-transition-all tw-outline-none  focus-visible:tw-ring-[3px] disabled:tw-pointer-events-none disabled:tw-opacity-50 [&[data-state=open]>svg]:tw-rotate-180",
           className
         )}
         {...props}
@@ -55,7 +55,7 @@ function AccordionContent({
   return (
     <AccordionPrimitive.Content
       data-slot="accordion-content"
-      className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden text-sm"
+      className="data-[state=closed]:tw-animate-accordion-up data-[state=open]:tw-animate-accordion-down tw-overflow-hidden tw-text-sm"
       {...props}
     >
       <div className={cn("pt-0", className)}>{children}</div>

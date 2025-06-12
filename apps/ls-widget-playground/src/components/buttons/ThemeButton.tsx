@@ -2,7 +2,6 @@
 import { useWidgetContext } from "@/context/ConfigContext";
 import { ThemeData } from '@layerswap/widget';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select"
-import { useState } from "react";
 
 const THEME_OPTIONS: { value: string, label: string }[] = [
     { value: "default", label: "Default" },
@@ -25,12 +24,12 @@ export function ThemeButton() {
     };
 
     return (
-        <div className="w-full flex gap-2 alling-items-center justify-center">
+        <div className="tw-w-full tw-flex tw-gap-2 tw-alling-items-center tw-justify-center">
             <Select value={themeName} onValueChange={handleClick}>
-                <SelectTrigger className="flex gap-2 w-full border-none bg-secondary-600">
+                <SelectTrigger className="tw-flex tw-gap-2 tw-w-full tw-border-none tw-bg-secondary-600">
                     <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="max-h-[300px]">
+                <SelectContent className="tw-max-h-[300px]">
                     <SelectGroup>
                         {THEME_OPTIONS.map(({ value, label }) => (
                             <SelectItem key={value} value={value as string}>
@@ -47,11 +46,11 @@ export function ThemeButton() {
 export const ThemeButtonTrigger = () => {
     const { themeName } = useWidgetContext();
     return (
-        <div className="flex justify-between w-full">
+        <div className="tw-flex tw-justify-between tw-w-full">
             <label>
                 Base theme
             </label>
-            <label className="capitalize">
+            <label className="tw-capitalize">
                 {themeName}
             </label>
         </div>

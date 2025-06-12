@@ -45,11 +45,11 @@ export function ColorBox({ rgbColor, colorKey }: ColorPickerProps) {
     }
 
     return (
-        <div className=" relative inline-block">
+        <div className="tw- tw-relative tw-inline-block">
             <Popover>
                 <PopoverTrigger asChild>
                     <div
-                        className="w-24 h-10 rounded-lg flex items-center justify-center text-sm cursor-pointer "
+                        className="tw-w-24 tw-h-10 tw-rounded-lg tw-flex tw-items-center tw-justify-center tw-text-sm tw-cursor-pointer"
                         style={{ backgroundColor: hexColor, color: textColor }}
                     >
                         {hexColor}
@@ -57,7 +57,7 @@ export function ColorBox({ rgbColor, colorKey }: ColorPickerProps) {
                 </PopoverTrigger>
                 <PopoverContent>
                     <Sketch
-                        className="!bg-transparent !border-0 !outline-none !shadow-none"
+                        className="!tw-bg-transparent !tw-border-0 !tw-outline-none !tw-shadow-none"
                         color={hexColor}
                         onChange={(col) => { handleColorChange(col.rgb) }}
                     />

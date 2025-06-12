@@ -40,20 +40,20 @@ export function NetworksButton() {
     return (
         <div >
             <Select value={network ?? ""} onValueChange={(val) => { updateFeaturedNetwork("network", val); }}>
-                <SelectTrigger className="w-full rounded-xl p-3 bg-secondary-600">
+                <SelectTrigger className="tw-w-full tw-rounded-xl tw-p-3 tw-bg-secondary-600">
                     <SelectValue placeholder="Networks" />
                 </SelectTrigger>
-                <SelectContent className="max-h-[300px] overflow-y-auto">
+                <SelectContent className="tw-max-h-[300px] tw-overflow-y-auto">
                     <SelectGroup>
                         {(initialDirection === 'from' ? mergedSource : mergedDestination)
                             .map(({ display_name, logo, name }, index) => (
                                 <SelectItem key={index} value={name as string} >
-                                    <div className="flex items-center space-x-1.5">
+                                    <div className="tw-flex tw-items-center tw-space-x-1.5">
                                         <img
                                             src={logo}
                                             alt="Project logo"
                                             loading="eager"
-                                            className=" rounded-sm w-6 h-6"
+                                            className="tw-rounded-sm tw-w-6 tw-h-6"
                                         />
                                         <p>{display_name}</p>
                                     </div>
@@ -62,13 +62,13 @@ export function NetworksButton() {
                     </SelectGroup>
                 </SelectContent>
             </Select>
-            <div className="my-1 rounded-xl p-3 bg-secondary-600  flex items-center justify-between gap-1 h-12">
+            <div className="tw-my-1 tw-rounded-xl tw-p-3 tw-bg-secondary-600 tw-flex tw-items-center tw-justify-between tw-gap-1 tw-h-12">
                 {
                     DirectionValues.map((v, index) => (
                         <button
                             key={index}
-                            className={clsx('rounded-xl transition-colors gap-1 place-self-center w-full py-2', {
-                                'bg-primary-500': initialDirection === v.value,
+                            className={clsx('tw-rounded-xl tw-transition-colors tw-gap-1 tw-place-self-center tw-w-full tw-py-2', {
+                                'tw-bg-primary-500': initialDirection === v.value,
                             })}
                             onClick={() => { updateFeaturedNetwork("initialDirection", v.value as 'from' | 'to') }}
                         >
@@ -77,10 +77,10 @@ export function NetworksButton() {
                     ))
                 }
             </div>
-            <Accordion type="multiple" className=" bg-secondary-600 rounded-xl">
-                <AccordionItem value="oppositeNetworks" className="bg-secondary-600 rounded-xl">
-                    <AccordionTrigger className="w-full !rounded-xl p-3 bg-secondary-600">Opposite direction filtration</AccordionTrigger>
-                    <AccordionContent className="bg-secondary-600 pb-3">
+            <Accordion type="multiple" className=" tw-bg-secondary-600 tw-rounded-xl">
+                <AccordionItem value="oppositeNetworks" className="tw-bg-secondary-600 tw-rounded-xl">
+                    <AccordionTrigger className="tw-w-full !tw-rounded-xl p-3 tw-bg-secondary-600">Opposite direction filtration</AccordionTrigger>
+                    <AccordionContent className="tw-bg-secondary-600 tw-pb-3">
                         <CustomRadioGroup value={radioValue} onChange={(val) => val !== "custom" && updateFeaturedNetwork("oppositeDirectionOverrides", val === "none" ? undefined : val as "onlyNetworks" | "onlyExchanges")}>
                             <CustomRadioGroup.Item value="none">None</CustomRadioGroup.Item>
                             <CustomRadioGroup.Item value="onlyNetworks">Only networks</CustomRadioGroup.Item>
@@ -113,18 +113,18 @@ export const NetworksButtonTrigger = () => {
     const network = networks.find(n => n.name == featuredNetwork?.network)
 
     return (
-        <div className="flex justify-between w-full">
+        <div className="tw-flex tw-justify-between tw-w-full">
             <label>
                 Featured network
             </label>
             {
                 network &&
-                <div className="flex items-center space-x-1.5">
+                <div className="tw-flex tw-items-center tw-space-x-1.5">
                     <img
                         src={network?.logo}
                         alt="Project logo"
                         loading="eager"
-                        className=" rounded-md w-6 h-6"
+                        className="tw-rounded-md tw-w-6 tw-h-6"
                     />
                     <p> {network?.display_name}</p>
                 </div>

@@ -32,8 +32,8 @@ const LayerswapWidget: FC = () => {
         >
             <div
                 key={widgetRenderKey}
-                className="flex items-center justify-center min-h-screen w-full place-self-center">
-                <div className='w-full h-full max-w-lg border-2 border-secondary-700 rounded-xl'>
+                className="tw-flex tw-items-center tw-justify-center tw-min-h-screen tw-w-full tw-place-self-center">
+                <div className="tw-w-full tw-h-full tw-max-w-lg tw-border-2 tw-border-secondary-700 tw-rounded-xl">
                     <LayerswapProvider
                         apiKey={process.env.NEXT_PUBLIC_LAYERSWAP_API_KEY as string}
                         integrator="test"

@@ -47,24 +47,22 @@ export function ControlPanel() {
     const [activeTab, setActiveTab] = useState('design')
 
     return (
-        <div className="text-primary-text w-[450px] min-h-screen bg-secondary-800  overflow-y-auto h-full styled-scroll">
-            <div className="flex items-center justify-between h-16 p-6 shrink-0 sticky top-0 bg-secondary-800 z-20">
-                <h1 className="text-2xl ">Layerswap Widget</h1>
-                <div className='flex gap-4 justify-end'>
+        <div className="tw-text-primary-text tw-w-[450px] tw-min-h-screen tw-bg-secondary-800  tw-overflow-y-auto tw-h-full tw-styled-scroll">
+            <div className="tw-flex tw-items-center tw-justify-between tw-h-16 tw-p-6 tw-shrink-0 tw-sticky tw-top-0 tw-bg-secondary-800 tw-z-20">
+                <h1 className="tw-text-2xl">Layerswap Widget</h1>
+                <div className="tw-flex tw-gap-4 tw-justify-end">
                     <ResetButton />
                     <CloseButton />
                 </div>
             </div>
-            <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="design" className="my-4 space-y-6 p-6 pt-0">
-                <TabsList className="flex items-center bg-secondary-600">
+            <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="design" className="tw-my-4 tw-space-y-6 tw-p-6 tw-pt-0">
+                <TabsList className="tw-flex tw-items-center tw-bg-secondary-600">
                     {
                         tabValues.map((v, index) => (
                             <TabsTrigger
                                 key={index}
                                 value={v.value}
-                                className={clsx('bg-transparent transition-colors gap-1 place-self-center w-full py-2', {
-                                    'bg-primary-500': activeTab == v.value,
-                                })}
+                                className={'tw-bg-transparent tw-transition-colors tw-gap-1 tw-place-self-center tw-w-full tw-py-2'}
                             >
                                 {v.component}
                             </TabsTrigger>
@@ -72,11 +70,11 @@ export function ControlPanel() {
                     }
                 </TabsList>
                 <TabsContent value="design">
-                    <Accordion collapsible type="single" className="flex flex-col gap-2 w-full border-none bg-transparent">
+                    <Accordion collapsible type="single" className="tw-flex tw-flex-col tw-gap-2 tw-w-full tw-border-none tw-bg-transparent">
                         {
                             accordionElements.map((item, index) => (
-                                <AccordionItem key={index} value={`item-${index}`} className="bg-secondary-700 rounded-xl p-2">
-                                    <AccordionTrigger className="flex justify-normal gap-2 overflow-hidden">
+                                <AccordionItem key={index} value={`item-${index}`} className="tw-bg-secondary-700 tw-rounded-xl tw-p-2">
+                                    <AccordionTrigger className="tw-flex tw-justify-normal tw-gap-2 tw-overflow-hidden">
                                         {item.trigger}
                                     </AccordionTrigger>
                                     <AccordionContent>

@@ -12,9 +12,9 @@ export function CardRadiusButton() {
     };
 
     return (
-        <div className="w-full flex gap-2 alling-items-center justify-center">
+        <div className="tw-w-full tw-flex tw-gap-2 tw-alling-items-center tw-justify-center">
             <Select value={themeData?.borderRadius} onValueChange={handleClick}>
-                <SelectTrigger className="flex gap-2 w-full border-none bg-secondary-600">
+                <SelectTrigger className="tw-flex tw-gap-2 tw-w-full tw-border-none tw-bg-secondary-600">
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -34,11 +34,11 @@ export function CardRadiusButton() {
 export const CardRadiusButtonTrigger = () => {
     const { themeData } = useWidgetContext();
     return (
-        <div className="flex justify-between w-full">
+        <div className="tw-flex tw-justify-between tw-w-full">
             <label>
                 Border radius
             </label>
-            <label className="capitalize">
+            <label className="tw-capitalize">
                 {themeData?.borderRadius}
             </label>
         </div>

@@ -23,18 +23,18 @@ export function CodeSegment() {
     };
 
     return (
-        <div className="relative w-full overflow-hidden rounded-tl-xl rounded-md border bg-transparent bg-secondary-700  border-secondary-500 ">
+        <div className="tw-relative tw-w-full tw-overflow-hidden tw-rounded-tl-xl tw-rounded-md tw-border tw-bg-transparent tw-bg-secondary-700 tw- tw-border-secondary-500">
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <Files className="absolute right-4 top-4 z-10 rounded-full bg-secondary-500  text-base text-white transition hover:bg-primary-500 p-1.5 h-8 w-auto hover:cursor-pointer" onClick={handleCopy} />
+                    <Files className="tw-absolute tw-right-4 tw-top-4 tw-z-10 tw-rounded-full tw-bg-secondary-500  tw-text-base tw-text-white tw-transition hover:tw-bg-primary-500 tw-p-1.5 tw-h-8 tw-w-auto hover:tw-cursor-pointer" onClick={handleCopy} />
                 </TooltipTrigger>
                 <TooltipContent >
                     <p>{copied ? "Copied!" : "Copy"}</p>
                 </TooltipContent>
             </Tooltip>
-            <div className="px-6 pb-14 pt-6">
+            <div className="tw-px-6 tw-pb-14 tw-pt-6">
                 <pre>
-                    <code className='language-javascript styled-scroll'>
+                    <code className="tw-language-javascript styled-scroll">
                         {data}
                     </code>
                 </pre>

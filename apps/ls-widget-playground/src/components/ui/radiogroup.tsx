@@ -18,7 +18,7 @@ export interface RadioGroupProps extends Omit<React.HTMLAttributes<HTMLDivElemen
 function RadioGroup({ value, onChange, className, ...props }: RadioGroupProps) {
     return (
         <RadioGroupContext.Provider value={{ value, onChange }}>
-            <div className={cn("space-y-1", className)} {...props} />
+            <div className={cn("tw-space-y-1", className)} {...props} />
         </RadioGroupContext.Provider>
     );
 }
@@ -40,15 +40,15 @@ function RadioGroupItem({ value, children, className, ...props }: RadioGroupItem
             type="button"
             onClick={() => context.onChange(value)}
             className={cn(
-                "relative flex w-full cursor-pointer justify-start items-center rounded-md border p-3 text-base transition-colors bg-transparent bg-secondary-700",
-                "text-secondary-text border-secondary-500",
-                isChecked && "bg-secondary-700 text-primary-text border-primary  justify-between",
+                "tw-relative tw-flex tw-w-full tw-cursor-pointer tw-justify-start tw-items-center tw-rounded-md tw-border tw-p-3 tw-text-base tw-transition-colors tw-bg-transparent tw-bg-secondary-700",
+                "tw-text-secondary-text tw-border-secondary-500",
+                isChecked && "tw-bg-secondary-700 tw-text-primary-text tw-border-primary  tw-justify-between",
                 className
             )}
             {...props}
         >
             {children}
-            {isChecked && <CheckIcon className="h-4 w-4 text-primary shrink-0" />}
+            {isChecked && <CheckIcon className="tw-h-4 tw-w-4 tw-text-primary tw-shrink-0" />}
         </button>
     );
 }
@@ -58,7 +58,7 @@ interface RadioGroupContentProps extends React.HTMLAttributes<HTMLDivElement> { 
 function RadioGroupContent({ className, ...props }: RadioGroupContentProps) {
     return (
         <div
-            className={cn("rounded-md border border-secondary-500 bg-secondary-700 p-2", className)}
+            className={cn("tw-rounded-md border tw-border-secondary-500 tw-bg-secondary-700 p-2", className)}
             {...props}
         />
     );
