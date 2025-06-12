@@ -148,7 +148,7 @@ export default function useParadex(): WalletProvider {
         const providers = [evmProvider, starknetProvider]
         const paradexProvider = providers.find(p => p?.connectedWallets?.find(w => w.id === wallet.id))
         const paradexWallet = paradexProvider?.connectedWallets?.find(w => w.id === wallet.id)
-        
+
         if (paradexProvider?.switchAccount && paradexWallet && wallet.metadata?.l1Address)
             paradexProvider.switchAccount(paradexWallet, wallet.metadata?.l1Address)
         if (paradexProvider?.name)
@@ -164,7 +164,7 @@ export default function useParadex(): WalletProvider {
         }
     }, [evmProvider.activeWallet, starknetProvider.activeWallet, selectedProvider])
 
-    const provider = {
+    const provider: WalletProvider = {
         connectWallet,
         switchAccount,
         connectedWallets,

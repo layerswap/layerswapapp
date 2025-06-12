@@ -48,7 +48,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const connect = async (connector: InternalConnector, provider: WalletProvider) => {
         try {
             setConnectionError(undefined)
-            if (connector.isMultiChain) {
+            if (connector?.isMultiChain) {
                 setSelectedMultiChainConnector(connector)
                 return setShowEcosystemSelection(true)
             }
@@ -95,10 +95,12 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const filteredProviders = providers.filter(p => !p.hideFromList)
     const featuredProviders = selectedProvider ? [selectedProvider] : filteredProviders
 
-    const allConnectors = featuredProviders.filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0).map((provider) =>
-        provider.availableWalletsForConnect?.filter(v => (isFocused || searchValue) ? (searchValue ? v.name.toLowerCase().includes(searchValue?.toLowerCase()) : false) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat()
+    const allFeaturedConnectors = useMemo(() => featuredProviders.filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0).map((provider) =>
+        provider.availableWalletsForConnect?.filter(v => (isFocused || searchValue) ? (searchValue ? v.name.toLowerCase().includes(searchValue?.toLowerCase()) : false) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat(), [featuredProviders, searchValue, isFocused])
+    const allHiddenConnectors = useMemo(() => featuredProviders.filter(g => g.availableHiddenWalletsForConnect && g.availableHiddenWalletsForConnect?.length > 0).map((provider) =>
+        provider.availableHiddenWalletsForConnect?.filter(v => (isFocused || searchValue) ? (searchValue ? v.name.toLowerCase().includes(searchValue?.toLowerCase()) : false) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat(), [featuredProviders, searchValue, isFocused])
 
-    const resolvedConnectors: InternalConnector[] = useMemo(() => removeDuplicatesWithKey(allConnectors, 'name'), [allConnectors])
+    const allConnectors: InternalConnector[] = useMemo(() => removeDuplicatesWithKey([...allFeaturedConnectors, ...(searchValue ? allHiddenConnectors : [])].sort((a, b) => (a?.type && b?.type ? a.type.localeCompare(b.type) : 0) + ((a?.order || 0) - (b?.order || 0))), 'name'), [allFeaturedConnectors, allHiddenConnectors, searchValue])
 
     if (selectedConnector?.qr?.state) {
         const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
@@ -143,11 +145,11 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     }
 
     if (selectedConnector) {
-        const connector = allConnectors.find(c => c?.name === selectedConnector.name)
+        const connector = allFeaturedConnectors.find(c => c?.name === selectedConnector.name)
         const provider = featuredProviders.find(p => p.name === connector?.providerName)
         return <LoadingConnect
             isMobile={isMobile}
-            onRetry={() => { connect(connector!, provider!) }}
+            onRetry={() => { (connector && provider) && connect(connector, provider) }}
             selectedConnector={selectedConnector}
             connectionError={connectionError}
         />
@@ -164,9 +166,11 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                             onChange={(e) => setSearchValue(e.target.value)}
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setIsFocused(false)}
-                            placeholder="Search wallet"
+                            placeholder={allHiddenConnectors.length > 300 ? "Search through 400+ wallets..." : "Search wallet"}
                             autoComplete="off"
-                            className="placeholder:text-primary-text-placeholder border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-10 bg-transparent text-base outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
+                            className={clsx("placeholder:text-primary-text-placeholder border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-10 bg-transparent text-base outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
+                                { 'placeholder:invisible': isFocused }
+                            )}
                         />
                         {
                             searchValue &&
@@ -194,7 +198,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 >
                     <div className='grid grid-cols-2 gap-2'>
                         {
-                            resolvedConnectors.sort((a, b) => a.type && b.type ? a.type.localeCompare(b.type) : 0)?.map(item => {
+                            allConnectors?.map(item => {
                                 const provider = featuredProviders.find(p => p.name === item.providerName)
                                 const isRecent = recentConnectors?.some(v => v.connectorName === item.name)
                                 return (
@@ -215,7 +219,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 selectedMultiChainConnector &&
                 <MultichainConnectorModal
                     selectedConnector={selectedMultiChainConnector}
-                    allConnectors={allConnectors as InternalConnector[]}
+                    allConnectors={allFeaturedConnectors as InternalConnector[]}
                     providers={featuredProviders}
                     showEcosystemSelection={showEcosystemSeletion}
                     setShowEcosystemSelection={setShowEcosystemSelection}

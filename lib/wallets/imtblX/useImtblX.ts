@@ -72,7 +72,7 @@ export default function useImtblX(): WalletProvider {
         icon: logo,
     }]
 
-    const provider = {
+    const provider: WalletProvider = {
         connectedWallets: getWallet(),
         activeWallet: wallet,
         connectWallet,
