@@ -97,7 +97,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                                     ${totalInUSD?.toFixed(2)}
                                 </span>
 
-                                {showTokenLogos && (
+                                {showTokenLogos ? (
                                     <div className="flex justify-end items-center -space-x-2 relative h-4">
                                         {filteredNetworkTokens.slice(0, 3).map((t, index) => (
                                             <Image
@@ -117,7 +117,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                                             </div>
                                         )}
                                     </div>
-                                )}
+                                ) : <></>}
                             </div>
                         ) : (
                             <span className="px-0.5">-</span>
