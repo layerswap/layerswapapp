@@ -105,8 +105,8 @@ function useroutes({ direction, values }: Props) {
 // ---------- Token Helpers ----------
 
 function getTokenBalanceUSD(route: NetworkRoute, token: NetworkRouteToken, balances: Record<string, NetworkBalance>): number {
-    const netBalance = balances?.[route.name]?.balances || [];
-    const match = netBalance.find(b => b.token === token.symbol);
+    const networkBalance = balances?.[route.name]?.balances || [];
+    const match = networkBalance.find(b => b.token === token.symbol);
     return match && match.amount > 0 ? match.amount * token.price_in_usd : 0;
 }
 

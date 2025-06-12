@@ -31,7 +31,7 @@ export default function Row({
     if (item.type === "network" || item.type === "grouped_token") {
         return (
             <CollapsibleRow
-                item={item as GroupedTokenElement & { type: "network" }}
+                item={item}
                 direction={direction}
                 selectedRoute={selectedRoute}
                 selectedToken={selectedToken}

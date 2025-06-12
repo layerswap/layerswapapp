@@ -100,33 +100,33 @@ const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                     <span>{item.display_name}</span>
                     {
                         Number(totalInUSD) >= 0 && allbalancesLoaded ? (
-                        <div className={`${filteredNetworkTokens?.length > 0 ? "flex flex-col space-y-0.5" : ""}`}>
-                            <span className="text-secondary-text text-sm leading-4 font-medium">{<span>${totalInUSD?.toFixed(2)}</span>}</span>
-                            {filteredNetworkTokens?.length > 0
-                                ? (
-                                    <div className="flex justify-end items-stretch w-full relative">
-                                        {filteredNetworkTokens?.map(
-                                            (t, index) => (
-                                                <div
-                                                    key={t.symbol}
-                                                    className="w-3.5 absolute"
-                                                    style={{ right: `${index * 20}%` }}
-                                                >
-                                                    <Image
-                                                        src={t.logo}
-                                                        alt={`${t.symbol} logo`}
-                                                        height="16"
-                                                        width="16"
-                                                        loading="eager"
-                                                        fetchPriority='high'
-                                                        className="rounded-full object-contain"
-                                                    />
-                                                </div>
-                                            )
+                            <div className={`${filteredNetworkTokens?.length > 0 ? "flex flex-col space-y-0.5" : ""}`}>
+                                <span className="text-secondary-text text-sm leading-4 font-medium">${totalInUSD?.toFixed(2)}</span>
+                                {filteredNetworkTokens?.length > 0 && (
+                                    <div className="flex justify-end items-center -space-x-2 relative h-4">
+                                        {filteredNetworkTokens.slice(0, 3).map((t) => (
+                                            <Image
+                                                key={t.symbol}
+                                                src={t.logo}
+                                                alt={`${t.symbol} logo`}
+                                                height="16"
+                                                width="16"
+                                                loading="eager"
+                                                fetchPriority="high"
+                                                className="rounded-full object-contain"
+                                            />
+                                        ))}
+                                        {filteredNetworkTokens.length > 3 && (
+                                            <div className="w-4 h-4 bg-secondary-600 text-primary-text text-[10px] rounded-full flex items-center justify-center border-2 border-background">
+                                                +{filteredNetworkTokens.length - 3}
+                                            </div>
                                         )}
                                     </div>
-                                ) : null}
-                        </div>) : <div className="px-0.5">-</div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="px-0.5">-</div>
+                        )
                     }
                     <ChevronDown
                         className="!w-3.5 !h-3.5 absolute right-2 bottom-4 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
@@ -210,24 +210,24 @@ export const GroupedTokenHeader = ({
                             </span>
 
                             {networksWithBalance.length > 0 && (
-                                <div className="flex justify-end items-stretch w-full relative">
-                                    {networksWithBalance.map((t, index) => (
-                                        <div
-                                            key={t.name}
-                                            className="w-3.5 absolute"
-                                            style={{ right: `${index * 20}%` }}
-                                        >
-                                            <Image
-                                                src={t.logo}
-                                                alt={`${t.display_name} logo`}
-                                                height="16"
-                                                width="16"
-                                                loading="eager"
-                                                fetchPriority="high"
-                                                className="rounded-full object-contain"
-                                            />
-                                        </div>
+                                <div className="flex justify-end items-center -space-x-1.5 relative h-4">
+                                    {networksWithBalance.slice(0, 3).map((t, index) => (
+                                        <Image
+                                            src={t.logo}
+                                            alt={`${t.display_name} logo`}
+                                            height="16"
+                                            width="16"
+                                            loading="eager"
+                                            fetchPriority="high"
+                                            className="rounded-full object-contain"
+                                        />
                                     ))}
+                                    {networksWithBalance.length > 3 && (
+                                        <div className="w-4 h-4 bg-secondary-600 text-primary-text text-[10px] rounded-full flex items-center justify-center border-2 border-background">
+                                            +{networksWithBalance.length - 3}
+                                        </div>
+                                    )}
+
                                 </div>
                             )}
                         </div>
