@@ -47,7 +47,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const tokenbalance = balances?.find(b => b.token === item.symbol)
     const formatted_balance_amount = tokenbalance?.amount ? truncateDecimals(tokenbalance?.amount, item.precision) : 0
     const balanceAmountInUsd = (item?.price_in_usd * formatted_balance_amount).toFixed(2)
-   
+
     return <SelectItem.DetailedTitle title={item.symbol} secondary={route.display_name} secondaryLogoSrc={route.logo}>
         {balances ? (
             (allbalancesLoaded && tokenbalance && Number(formatted_balance_amount) > 0) ? (
@@ -55,7 +55,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
                     <div className="text-primary-text"> {formatted_balance_amount.toFixed(item.precision)}</div>
                     {Number(tokenbalance?.amount) > 0 && <div>${balanceAmountInUsd}</div>}
                 </span>
-            ) : <div className="px-0.5">-</div>)
+            ) : <span className="px-0.5">-</span>)
             : undefined}
     </SelectItem.DetailedTitle>
 }
@@ -69,31 +69,35 @@ type NetworkRouteItemProps = {
 }
 
 export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
-    const { item, direction, allbalancesLoaded, hideTokenImages } = props
-    const { provider } = useWallet(item, direction === "from" ? "withdrawal" : "autofil")
-    const activeWallet = provider?.activeWallet
+    const { item, direction, allbalancesLoaded, hideTokenImages } = props;
+    const { provider } = useWallet(item, direction === "from" ? "withdrawal" : "autofil");
+    const activeWallet = provider?.activeWallet;
 
-    const { balances, totalInUSD } = useBalance(activeWallet?.address, item)
-    const tokensWithBalance = balances?.filter(b => b.amount > 0)
-        ?.map(b => b.token);
+    const { balances, totalInUSD } = useBalance(activeWallet?.address, item);
+
+    const tokensWithBalance = balances?.filter(b => b.amount > 0)?.map(b => b.token);
     const filteredNetworkTokens = item?.tokens?.filter(token =>
         tokensWithBalance?.includes(token.symbol)
     );
 
+    const hasLoadedBalances = allbalancesLoaded && Number(totalInUSD) >= 0;
+    const showTokenLogos = hasLoadedBalances && filteredNetworkTokens?.length;
+
     return (
         <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7">
             <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} className="rounded-md" />
-            <SelectItem.Title className="py-3" >
+            <SelectItem.Title className="py-3">
                 <>
                     <span>{item.display_name}</span>
-                    {!hideTokenImages && balances ? (
-                        Number(totalInUSD) >= 0 && allbalancesLoaded ? (
-                            <div className={filteredNetworkTokens?.length > 0 ? "flex flex-col space-y-0.5" : ""}>
+
+                    {!hideTokenImages && balances && (
+                        hasLoadedBalances ? (
+                            <div className={showTokenLogos ? "flex flex-col space-y-0.5" : ""}>
                                 <span className="text-secondary-text text-sm leading-4 font-medium">
                                     ${totalInUSD?.toFixed(2)}
                                 </span>
 
-                                {filteredNetworkTokens?.length > 0 && (
+                                {showTokenLogos && (
                                     <div className="flex justify-end items-center -space-x-2 relative h-4">
                                         {filteredNetworkTokens.slice(0, 3).map((t, index) => (
                                             <Image
@@ -109,16 +113,17 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                                         ))}
                                         {filteredNetworkTokens.length > 3 && (
                                             <div className="w-4 h-4 bg-secondary-600 text-primary-text text-[10px] rounded-full flex items-center justify-center border-2 border-background">
-                                                +{filteredNetworkTokens.length - 3}
+                                                <span>+{filteredNetworkTokens.length - 3}</span>
                                             </div>
                                         )}
                                     </div>
                                 )}
                             </div>
                         ) : (
-                            <div className="px-0.5">-</div>
+                            <span className="px-0.5">-</span>
                         )
-                    ) : null}
+                    )}
+
                     <ChevronDown
                         className="!w-3.5 !h-3.5 absolute right-2 bottom-4 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
                         aria-hidden="true"
@@ -126,8 +131,8 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                 </>
             </SelectItem.Title>
         </SelectItem>
-    )
-}
+    );
+};
 
 type SelectedCurrencyDisplayProps = {
     value: {
@@ -185,6 +190,8 @@ export const GroupedTokenHeader = ({
     }, 0);
 
     const mainToken = tokens[0]?.route.token;
+    const hasLoadedBalances = allbalancesLoaded && Number(totalInUSD) >= 0;
+    const showNetworkIcons = hasLoadedBalances && networksWithBalance.length > 0;
 
     return (
         <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7">
@@ -196,20 +203,21 @@ export const GroupedTokenHeader = ({
             <SelectItem.Title className="py-3">
                 <>
                     <span>{mainToken.symbol}</span>
-                    {!hideTokenImages && allBalances ? (
-                        Number(totalInUSD) >= 0 && allbalancesLoaded ? (
-                            <div className={networksWithBalance.length > 0 ? "flex flex-col space-y-0.5" : ""}>
+
+                    {!hideTokenImages && allBalances && (
+                        hasLoadedBalances ? (
+                            <div className={showNetworkIcons ? "flex flex-col space-y-0.5" : ""}>
                                 <span className="text-secondary-text text-sm leading-4 font-medium">
                                     ${totalInUSD.toFixed(2)}
                                 </span>
 
-                                {networksWithBalance.length > 0 && (
+                                {showNetworkIcons && (
                                     <div className="flex justify-end items-center -space-x-1.5 relative h-4">
-                                        {networksWithBalance.slice(0, 3).map((t, index) => (
+                                        {networksWithBalance.slice(0, 3).map((network, index) => (
                                             <Image
-                                                key={`${t.display_name}-${index}`}
-                                                src={t.logo}
-                                                alt={`${t.display_name} logo`}
+                                                key={`${network.display_name}-${index}`}
+                                                src={network.logo}
+                                                alt={`${network.display_name} logo`}
                                                 height="16"
                                                 width="16"
                                                 loading="eager"
@@ -219,7 +227,7 @@ export const GroupedTokenHeader = ({
                                         ))}
                                         {networksWithBalance.length > 3 && (
                                             <div className="w-4 h-4 bg-secondary-600 text-primary-text text-[10px] rounded-full flex items-center justify-center border-2 border-background">
-                                                +{networksWithBalance.length - 3}
+                                                <span>+{networksWithBalance.length - 3}</span>
                                             </div>
                                         )}
                                     </div>
@@ -228,7 +236,8 @@ export const GroupedTokenHeader = ({
                         ) : (
                             <div className="px-0.5">-</div>
                         )
-                    ) : null}
+                    )}
+
                     <ChevronDown
                         className="!w-3.5 !h-3.5 absolute right-2 bottom-4 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
                         aria-hidden="true"
