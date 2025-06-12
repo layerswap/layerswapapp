@@ -393,7 +393,7 @@ const MultichainConnectorModal: FC<MultichainConnectorModalProps> = ({ selectedC
                                         setShowEcosystemSelection(false);
                                         await connect(connector!, provider!)
                                     }}
-                                    className="w-full h-fit flex items-center gap-3 bg-secondary-700 hover:bg-secondary-500 transition-colors duration-200 rounded-xl p-3"
+                                    className="w-full h-fit flex items-center gap-3 bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl p-3"
                                 >
                                     {
                                         provider?.providerIcon &&

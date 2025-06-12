@@ -101,7 +101,7 @@ const CexNetworkPicker: FC<{ direction: SwapDirection, partner: Partner | undefi
                                 addressItem ? <>
                                     <AddressButton addressItem={addressItem} network={selectedNetwork} disabled={disabled} />
                                 </>
-                                    : <div className=" justify-center w-full pl-3 pr-2 py-2 bg-secondary-600 items-center flex font-light space-x-2 mx-auto rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 ">
+                                    : <div className=" justify-center w-full pl-3 pr-2 py-2 bg-secondary-500 items-center flex font-light space-x-2 mx-auto rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 ">
                                         <PlusIcon className="stroke-1" /> <span>Destination Address</span>
                                     </div>
                             }
@@ -127,7 +127,7 @@ const ExchangeNetwork = (props: ExchangeNetworkProps) => {
     const tokenItemRef = React.useRef<HTMLDivElement>(null);
 
     return <CommandItem
-        className="border-l border-secondary-500 aria-selected:bg-secondary-700 aria-selected:text-primary-text hover:bg-secondary-700 relative"
+        className="aria-selected:bg-secondary-400 aria-selected:text-primary-text rounded-lg bg-secondary-500 hover:bg-secondary-400 relative mt-1.5"
         value={`${route.display_name} ${token.symbol} ##`}
         key={token.symbol}
         onSelect={() => { onSelect(route, token) }}

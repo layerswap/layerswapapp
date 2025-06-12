@@ -64,7 +64,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
                     }
                 </span>
             </div>
-            <div className="bg-secondary-700 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
+            <div className="bg-secondary-500 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-500 hover:border-secondary-400 transition duration-200">
                 {!campaignIsEnded &&
                     <BackgroundField header={<span className="flex justify-between"><span className="flex items-center"><span>Pending Earnings&nbsp;</span><ClickTooltip text={`${campaign.token.symbol} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
                         <div className="flex justify-between w-full text-2xl">

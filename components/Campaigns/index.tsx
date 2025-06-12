@@ -30,7 +30,7 @@ const Rewards = () => {
                     <div className="space-y-5 h-full text-primary-text">
                         <div className="space-y-2">
                             <p className="font-bold text-left leading-5">Campaigns</p>
-                            <div className="bg-secondary-700 border border-secondary-700 hover:border-secondary-500 transition duration-200 rounded-lg shadow-lg">
+                            <div className="bg-secondary-500 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-500 hover:border-secondary-400 transition duration-200">
                                 <div className="p-3 space-y-4">
                                     {
                                         activeCampaigns.length > 0 ?
@@ -52,7 +52,7 @@ const Rewards = () => {
                             inactiveCampaigns.length > 0 &&
                             <div className="space-y-2">
                                 <p className="font-bold text-left leading-5">Old campaigns</p>
-                                <div className="bg-secondary-700 border border-secondary-700 hover:border-secondary-500 transition duration-200 rounded-lg shadow-lg">
+                                <div className="bg-secondary-500 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-500 hover:border-secondary-400 transition duration-200">
                                     <div className="p-3 dpsv flex flex-col space-y-4">
                                         {inactiveCampaigns?.map(c =>
                                             <CampaignItem

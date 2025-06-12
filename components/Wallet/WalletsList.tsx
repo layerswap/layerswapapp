@@ -42,7 +42,7 @@ const WalletsList: FC<Props> = (props) => {
 
     return (
         <div className="space-y-3">
-            <button type='button' onClick={connectWallet} className="w-full flex justify-center p-2 bg-secondary-700 rounded-md hover:bg-secondary-600">
+            <button type='button' onClick={connectWallet} className="w-full flex justify-center p-2 bg-secondary-500 rounded-md hover:bg-secondary-400">
                 <div className="flex items-center text-secondary-text gap-1 px-3 py-1">
                     <Plus className="h-4 w-4" />
                     <span className="text-sm">
@@ -93,8 +93,8 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
         <div {...props} className="rounded-md outline-hidden text-primary-tex">
             <div
                 onClick={() => (selectable && wallet.addresses.length == 1 && onWalletSelect) && onWalletSelect(wallet, wallet.address)}
-                className={clsx('w-full relative items-center justify-between gap-2 flex rounded-lg outline-hidden bg-secondary-700 text-primary-text p-3 group/addressItem', {
-                    'hover:bg-secondary-600 cursor-pointer': selectable && wallet.addresses.length == 1,
+                className={clsx('w-full relative items-center justify-between gap-2 flex rounded-lg outline-hidden bg-secondary-500 text-primary-text p-3 group/addressItem', {
+                    'hover:bg-secondary-400 cursor-pointer': selectable && wallet.addresses.length == 1,
                     'bg-secondary-800 py-2': wallet.addresses.length > 1
                 })}>
 
@@ -170,7 +170,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                     !selectable &&
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <button type="button" onClick={wallet.disconnect} className="text-xs text-secondary-text hover:text-primary-text rounded-full p-1.5 bg-secondary-700 hover:bg-secondary-950 transition-colors duration-200 ">
+                            <button type="button" onClick={wallet.disconnect} className="text-xs text-secondary-text hover:text-primary-text rounded-full p-1.5 bg-secondary-700 hover:bg-secondary-700 transition-colors duration-200 ">
                                 <Power className="h-3.5 w-3.5" />
                             </button>
                         </TooltipTrigger>

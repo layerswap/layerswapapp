@@ -237,7 +237,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                     </div>
                     <span className="group-has-[.input-wide]:hidden ml-2 flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0 max-w-3/5">
                         <span className="leading-5">{token.symbol}</span>
-                        <span className="text-secondary-text text-sm leading-4 truncate whitespace-nowrap">
+                        <span className="text-secondary-text text-sm leading-4 truncate whitespace-nowrap max-w-[120px]">
                             {route.display_name}
                         </span>
                     </span>

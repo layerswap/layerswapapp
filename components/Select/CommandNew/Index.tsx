@@ -41,7 +41,7 @@ export const SelectorContent = (props: SelectContentProps) => {
     return <Modal height={modalHeight} show={isOpen} setShow={setIsOpen} modalId='comandSelect'>
         {header ? <div className="absolute top-4 left-8 text-lg text-secondary-text font-semibold">
             <div>{header}</div>
-        </div> : <div></div>}
+        </div> : <></>}
         {isOpen ?
             <div className="h-full">
                 {modalContent}
