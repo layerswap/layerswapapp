@@ -10,6 +10,7 @@ import { WalletProvidersProvider } from "../../context/walletProviders";
 import { WalletModalProvider } from "../WalletModal";
 import FuelProviderWrapper from "./FuelProvider";
 import { EvmConnectorsProvider } from "../../context/evmConnectorsContext";
+import { BitcoinProvider } from "./BitcoinProvider";
 
 const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], basePath: string, themeData: ThemeData, appName: string | undefined }> = ({ children, basePath, themeData, appName }) => {
     return (
@@ -21,11 +22,13 @@ const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], basePath: st
                             <Wagmi>
                                 <FuelProviderWrapper>
                                     <ImtblPassportProvider>
-                                        <WalletModalProvider>
-                                            <WalletProvidersProvider>
-                                                {children}
-                                            </WalletProvidersProvider>
-                                        </WalletModalProvider>
+                                        <BitcoinProvider>
+                                            <WalletModalProvider>
+                                                <WalletProvidersProvider>
+                                                    {children}
+                                                </WalletProvidersProvider>
+                                            </WalletModalProvider>
+                                        </BitcoinProvider>
                                     </ImtblPassportProvider>
                                 </FuelProviderWrapper>
                             </Wagmi>

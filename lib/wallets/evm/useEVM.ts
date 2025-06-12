@@ -79,8 +79,10 @@ export default function useEVM(): WalletProvider {
         }
     }
 
-    const connectWallet = useCallback(async ({ connector: internalConnector }: { connector: InternalConnector }) => {
+    const connectWallet = useCallback(async (props?: { connector?: InternalConnector }) => {
         try {
+            const internalConnector = props?.connector;
+            if (!internalConnector) return;
             let connector = availableFeaturedWalletsForConnect.find(w => w.id === internalConnector.id) as InternalConnector & LSConnector
             if (!connector) {
                 const walletConnectConnector = walletConnectConnectors.find(w => w.id === internalConnector.id)
@@ -338,8 +340,17 @@ const resolveSupportedNetworks = (supportedNetworks: string[], connectorId: stri
                 KnownInternalNames.Networks.RoninMainnet,
                 KnownInternalNames.Networks.EthereumMainnet,
                 KnownInternalNames.Networks.PolygonMainnet,
+                KnownInternalNames.Networks.BaseMainnet,
                 KnownInternalNames.Networks.BNBChainMainnet,
                 KnownInternalNames.Networks.ArbitrumMainnet
+            ]
+        },
+        {
+            id: "app.phantom",
+            supportedNetworks: [
+                KnownInternalNames.Networks.EthereumMainnet,
+                KnownInternalNames.Networks.BaseMainnet,
+                KnownInternalNames.Networks.PolygonMainnet,
             ]
         }
     ]

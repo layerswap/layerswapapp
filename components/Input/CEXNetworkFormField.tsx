@@ -4,7 +4,7 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { SelectMenuItem } from "../Select/Shared/Props/selectMenuItem";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
-import LayerSwapApiClient from "../../lib/layerSwapApiClient";
+import LayerSwapApiClient from "../../lib/apiClients/layerSwapApiClient";
 import shortenAddress from "../utils/ShortenAddress";
 import Link from "next/link";
 import CommandSelectWrapper from "../Select/Command/CommandSelectWrapper";

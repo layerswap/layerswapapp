@@ -2,7 +2,7 @@ import axios from 'axios';
 import { NextApiRequest, NextApiResponse } from 'next'
 import { validateSignature } from '../../helpers/validateSignature';
 import { parseJwt } from '../../lib/jwtParser';
-import LayerSwapApiClient from '../../lib/layerSwapApiClient';
+import LayerSwapApiClient from '../../lib/apiClients/layerSwapApiClient';
 import { AuthConnectResponse } from '../../Models/LayerSwapAuth';
 import { QueryParams } from '../../Models/QueryParams';
 

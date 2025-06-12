@@ -3,7 +3,7 @@ import { useSwapDataState } from '../../../context/swap';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../context/authContext';
 import { SwapStatus } from '../../../Models/SwapStatus';
-import { SwapItem } from '../../../lib/layerSwapApiClient';
+import { SwapItem } from '../../../lib/apiClients/layerSwapApiClient';
 import { TrackEvent } from '../../../pages/_document';
 import QuestionIcon from '../../icons/Question';
 import Link from 'next/link';

@@ -54,8 +54,6 @@ const Component: FC = () => {
         }
     }, [values.depositMethod, defaultWallet?.address, availableWallets.length])
 
-
-
     const handleWalletChange = () => {
         setOpenModal(true)
     }
@@ -92,10 +90,10 @@ const Component: FC = () => {
                     </div>
                 </div>
                 :
-                <div className="rounded-lg bg-secondary-800 pl-2 flex items-center space-x-2 text-sm leading-4">
+                <div className="rounded-lg bg-secondary-800 flex items-center space-x-2 text-sm leading-4">
                     {
                         selectedWallet && selectedSourceAccount?.address && <>
-                            <div><Balance values={values} direction="from" /></div>
+                            <Balance values={values} direction="from" />
                             <div onClick={handleWalletChange} className="rounded-lg bg-secondary-500 flex space-x-1 items-center py-0.5 pl-2 pr-1 cursor-pointer">
                                 <div className="inline-flex items-center relative p-0.5">
                                     <selectedWallet.icon className="w-5 h-5" />
