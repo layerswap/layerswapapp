@@ -1,8 +1,8 @@
 
-import { InitializeAuthInstance } from "./axiosInterceptor"
+import { InitializeAuthInstance } from "../axiosInterceptor"
 import axios, { AxiosInstance } from "axios";
-import { ApiResponse } from "../Models/ApiResponse";
-import TokenService from "./TokenService";
+import { ApiResponse } from "../../Models/ApiResponse";
+import TokenService from "../TokenService";
 import { EstimateFee } from "starknet";
 
 export default class InternalApiClient {

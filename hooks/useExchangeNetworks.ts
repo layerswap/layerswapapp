@@ -1,10 +1,10 @@
 import useSWR from "swr";
-import { SwapDirection, SwapFormValues } from "../components/DTOs/SwapFormValues";
-import { resolveExchangeHistoricalNetworksURL } from "../helpers/routes";
-import LayerSwapApiClient from "../lib/layerSwapApiClient";
-import { ApiResponse } from "../Models/ApiResponse";
-import { ExchangeNetwork } from "../Models/Exchange";
-import { use, useMemo } from "react";
+import { SwapDirection, SwapFormValues } from "@/components/DTOs/SwapFormValues";
+import { resolveExchangeHistoricalNetworksURL } from "@/helpers/routes";
+import { ApiResponse } from "@/Models/ApiResponse";
+import { ExchangeNetwork } from "@/Models/Exchange";
+import { useMemo } from "react";
+import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 
 type Props = {
     direction: SwapDirection;

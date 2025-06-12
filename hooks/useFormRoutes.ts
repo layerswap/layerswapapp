@@ -1,24 +1,14 @@
 import useSWR from "swr";
 import { useEffect, useMemo, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../components/DTOs/SwapFormValues";
-import LayerSwapApiClient from "../lib/layerSwapApiClient";
 import { ApiResponse } from "../Models/ApiResponse";
 import { NetworkRoute, NetworkRouteToken } from "../Models/Network";
 import { useSettingsState } from "../context/settings";
-import { Exchange } from "../Models/Exchange";
-import {
-    NetworkElement,
-    RowElement,
-    NetworkTokenElement,
-    _Route,
-    GroupedTokenElement,
-    TitleElement,
-    GroupTokensResult
-} from "../Models/Route";
-import useAllBalances from "./useAllBalances";
 import { NetworkBalance } from "../Models/Balance";
 import { resolveNetworkRoutesURL } from "../helpers/routes";
-
+import { NetworkElement, RowElement, NetworkTokenElement, _Route, _RoutesGroup, TitleElement, GroupedTokenElement, GroupTokensResult } from "../Models/Route";
+import useAllBalances from "./useAllBalances";
+import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 
 const Titles = {
     topAssets: { type: 'group_title', text: 'Top Assets' } as TitleElement,

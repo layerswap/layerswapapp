@@ -152,6 +152,8 @@ const SwapForm: FC<Props> = ({ partner }) => {
 
         if (changeDestinationAddress) {
             newVales.destination_address = selectedSourceAccount?.address
+        } else {
+            newVales.destination_address = oldDestinationWalletIsNotCompatible ? undefined : values.destination_address
         }
 
         setValues(newVales, true);
