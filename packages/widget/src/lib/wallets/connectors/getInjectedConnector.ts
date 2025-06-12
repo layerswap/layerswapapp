@@ -1,14 +1,14 @@
 import { createConnector } from 'wagmi';
 import { injected } from '@wagmi/connectors';
-import { WalletProviderFlags, WindowProvider, CreateConnector, WalletDetailsParams } from './EthereumProvider';
+import { WalletProviderFlags, CreateConnector, WalletDetailsParams } from './EthereumProvider';
 // import type { CreateConnector, WalletDetailsParams } from './Wallet';
 
 /*
- * Returns the explicit window provider that matches the flag and the flag is true
- */
+* Returns the explicit window provider that matches the flag and the flag is true
+*/
 function getExplicitInjectedProvider(flag: WalletProviderFlags) {
     const _window =
-        typeof window !== 'undefined' ? (window as WindowProvider) : undefined;
+        typeof window !== 'undefined' ? (window as any) : undefined;
     if (typeof _window === 'undefined' || typeof _window.ethereum === 'undefined')
         return;
     const providers = _window.ethereum.providers;
@@ -22,15 +22,15 @@ function getExplicitInjectedProvider(flag: WalletProviderFlags) {
 
 export function explicitInjectedproviderDetected() {
     const _window =
-        typeof window !== 'undefined' ? (window as WindowProvider) : undefined;
+        typeof window !== 'undefined' ? (window as any) : undefined;
     if (typeof _window === 'undefined' || typeof _window.ethereum === 'undefined')
         return false;
     return !!_window.ethereum;
 }
 
 /*
- * Gets the `window.namespace` window provider if it exists
- */
+* Gets the `window.namespace` window provider if it exists
+*/
 function getWindowProviderNamespace(namespace: string) {
     const providerSearch = (provider: any, namespace: string): any => {
         const [property, ...path] = namespace.split('.');
@@ -44,8 +44,8 @@ function getWindowProviderNamespace(namespace: string) {
 }
 
 /*
- * Checks if the explict provider or window ethereum exists
- */
+* Checks if the explict provider or window ethereum exists
+*/
 export function hasInjectedProvider({
     flag,
     namespace,
@@ -61,8 +61,8 @@ export function hasInjectedProvider({
 }
 
 /*
- * Returns an injected provider that favors the flag match, but falls back to window.ethereum
- */
+* Returns an injected provider that favors the flag match, but falls back to window.ethereum
+*/
 function getInjectedProvider({
     flag,
     namespace,
@@ -71,7 +71,7 @@ function getInjectedProvider({
     namespace?: string;
 }) {
     const _window =
-        typeof window !== 'undefined' ? (window as WindowProvider) : undefined;
+        typeof window !== 'undefined' ? (window as any) : undefined;
     if (typeof _window === 'undefined') return;
     if (namespace) {
         // prefer custom eip1193 namespaces
