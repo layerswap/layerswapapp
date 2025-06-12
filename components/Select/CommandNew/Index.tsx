@@ -8,7 +8,7 @@ type SelectorProps = {
     isOpen: boolean
 }
 
-const SelectorContext = createContext<SelectorProps>({ isOpen: false, setIsOpen: () => { } });
+export const SelectorContext = createContext<SelectorProps>({ isOpen: false, setIsOpen: () => { } });
 
 export const Selector = ({ children }) => {
     const [isOpen, setIsOpen] = useState(false);
