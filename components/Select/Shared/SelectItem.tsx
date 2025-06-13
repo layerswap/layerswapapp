@@ -1,3 +1,4 @@
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { ISelectMenuItem } from "./Props/selectMenuItem";
 import Image from 'next/image';
 
@@ -10,7 +11,7 @@ export default function SelectItem({ item, underline }: { item: ISelectMenuItem,
                 </div>
                 <div className={`h-8 w-8 shrink-0 relative`}>
                     {item.imgSrc && (
-                        <Image
+                        <ImageWithFallback
                             src={item.imgSrc}
                             alt="Project Logo"
                             height="40"

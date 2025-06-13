@@ -12,6 +12,7 @@ import { Exchange } from "../../../Models/Exchange";
 import Link from "next/link";
 import CopyButton from "../../buttons/copyButton";
 import useWindowDimensions from "../../../hooks/useWindowDimensions";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 const ManualTransfer: FC = () => {
     const { swapResponse, depositActionsResponse } = useSwapDataState()
@@ -132,7 +133,7 @@ const TransferInvoice: FC<{ deposit_address?: string }> = ({ deposit_address }) 
                     <div className="shrink-0 h-7 w-7 relative">
                         {
                             source_token &&
-                            <Image
+                            <ImageWithFallback
                                 src={source_token.logo}
                                 alt="From Logo"
                                 height="60"
@@ -175,7 +176,7 @@ const ExchangeNetworkPicker: FC<{ onChange?: (exchnage: Exchange) => void }> = (
         <span>Network:</span>
         {/* {exchangeAssets?.length === 1 ? */}
         <div className='flex space-x-1 items-center w-fit font-semibold text-primary-text'>
-            <Image alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={swap?.swap.source_network.logo || ''}></Image>
+            <ImageWithFallback alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={swap?.swap.source_network.logo || ''} />
             <span>{swap?.swap.source_network.display_name}</span>
         </div>
         {/* :
@@ -192,7 +193,7 @@ const ExchangeNetworkPicker: FC<{ onChange?: (exchnage: Exchange) => void }> = (
                                     <div className="shrink-0 h-5 w-5 relative">
                                         {
                                             sn.network &&
-                                            <Image
+                                            <ImageWithFallback
                                                 src={resolveImgSrc(sn.network)}
                                                 alt="From Logo"
                                                 height="60"

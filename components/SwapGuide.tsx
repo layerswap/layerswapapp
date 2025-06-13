@@ -4,6 +4,7 @@ import secondNetworkGuidePic from './../public/images/withdrawGuideImages/02Netw
 import secondExchangeGuideGuidePic from './../public/images/withdrawGuideImages/02Exchange.png'
 import thirdGuidePic from './../public/images/withdrawGuideImages/03.png'
 import { SwapItem } from '../lib/apiClients/layerSwapApiClient'
+import { ImageWithFallback } from './Common/ImageWithFallback'
 
 const SwapGuide = ({ swap }: { swap: SwapItem }) => {
     return (
@@ -15,19 +16,19 @@ const SwapGuide = ({ swap }: { swap: SwapItem }) => {
                     <div className='space-y-3'>
                         <p><span className='text-primary'>.01</span><span>&nbsp;Copy the Deposit Address, or scan the QR code</span></p>
                         <div className='border-2 border-secondary-400 rounded-xl p-2 bg-secondary-500'>
-                            <Image src={firstGuidePic} className='w-full rounded-xl' alt={''} />
+                            <ImageWithFallback src={firstGuidePic} className='w-full rounded-xl' alt={''} />
                         </div>
                     </div>
                     <div className='space-y-3'>
                         <p><span className='text-primary'>.02</span><span>&nbsp;Send&nbsp;</span><span className='text-primary-text'>{swap?.destination_token.symbol}</span><span>&nbsp;to that address from your&nbsp;</span><span>{swap?.source_exchange ? 'exchange account' : 'wallet'}</span></p>
                         <div className='border-2 border-secondary-400 rounded-xl p-2 bg-secondary-500'>
-                            <Image src={swap?.source_exchange ? secondExchangeGuideGuidePic : secondNetworkGuidePic} className='w-full rounded-xl' alt={''} />
+                            <ImageWithFallback src={swap?.source_exchange ? secondExchangeGuideGuidePic : secondNetworkGuidePic} className='w-full rounded-xl' alt={''} />
                         </div>
                     </div>
                     {swap?.source_exchange && <div className='space-y-3'>
                         <p><span className='text-primary'>.03</span><span>&nbsp;Make sure to send via one of the supported networks</span></p>
                         <div className='border-2 border-secondary-400 rounded-xl p-2 bg-secondary-500'>
-                            <Image src={thirdGuidePic} className='w-full rounded-xl' alt={''} />
+                            <ImageWithFallback src={thirdGuidePic} className='w-full rounded-xl' alt={''} />
                         </div>
                     </div>}
                 </div>

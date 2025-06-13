@@ -11,6 +11,7 @@ import { truncateDecimals } from "../../utils/RoundDecimals"
 import AddressIcon from "../../AddressIcon";
 import Modal from "../../modal/modal";
 import Link from "next/link";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback"
 
 type Props = {
     campaign: Campaign
@@ -123,7 +124,7 @@ const LeaderbordComponent: FC<{
                                             <div className="flex items-center space-x-1">
                                                 <span>+</span>
                                                 <div className="h-3.5 w-3.5 relative">
-                                                    <Image
+                                                    <ImageWithFallback
                                                         src={network?.logo || ''}
                                                         alt="Address Logo"
                                                         height="40"

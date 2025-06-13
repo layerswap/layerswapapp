@@ -11,6 +11,7 @@ import useCopyClipboard from "../../../../hooks/useCopyClipboard";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../../shadcn/tooltip";
 import { Wallet } from "../../../../Models/WalletProvider";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 type Props = {
     addressItem: AddressItem;
@@ -62,7 +63,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
                 {
                     (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) ? (
                         partner?.logo && (
-                            <Image
+                            <ImageWithFallback
                                 alt="Partner logo"
                                 className="rounded-md object-contain"
                                 src={partner.logo}

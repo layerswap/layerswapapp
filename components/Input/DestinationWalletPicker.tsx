@@ -5,6 +5,7 @@ import { AddressGroup, AddressItem, AddressTriggerProps } from "./Address/Addres
 import { Partner } from "../../Models/Partner";
 import AddressIcon from "../AddressIcon";
 import { Wallet } from "../../Models/WalletProvider";
+import { ImageWithFallback } from "../Common/ImageWithFallback";
 
 
 const Component = (props: AddressTriggerProps) => {
@@ -28,7 +29,7 @@ const Component = (props: AddressTriggerProps) => {
                 </>
                 }
             </div >
-        }   
+        }
     </>
 }
 type AdderssIconprops = {
@@ -42,7 +43,7 @@ const ResolvedIcon = (props: AdderssIconprops) => {
         return <div className="rounded-lg bg-secondary-700 pl-2 flex items-center space-x-2 text-sm leading-4">
             {
                 partner?.logo &&
-                <Image
+                <ImageWithFallback
                     alt="Partner logo"
                     className='rounded-md object-contain'
                     src={partner.logo}

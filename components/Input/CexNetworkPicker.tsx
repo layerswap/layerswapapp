@@ -160,7 +160,7 @@ export const SelectedNetworkDisplay = (props: SelectedNetworkDisplayProps) => {
     //     {
     //         token?.logo && network?.logo &&
     //         <div className='inline-flex items-center relative'>
-    //             <Image
+    //             <ImageWithFallback
     //                 src={network.logo}
     //                 alt="Token Logo"
     //                 height="36"
@@ -169,7 +169,7 @@ export const SelectedNetworkDisplay = (props: SelectedNetworkDisplayProps) => {
     //                 fetchPriority='high'
     //                 className="rounded-full object-contain"
     //             />
-    //             <Image
+    //             <ImageWithFallback
     //                 src={token.logo}
     //                 alt="Route Logo"
     //                 height="20"

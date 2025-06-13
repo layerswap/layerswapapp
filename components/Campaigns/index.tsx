@@ -7,6 +7,7 @@ import useSWR from 'swr'
 import Image from "next/image";
 import LinkWrapper from "../LinkWraapper";
 import { Widget } from "../Widget/Index";
+import { ImageWithFallback } from "../Common/ImageWithFallback";
 
 const Rewards = () => {
 
@@ -85,7 +86,7 @@ const CampaignItem: FC<CampaignProps> = ({ campaign }) => {
         className="flex justify-between items-center">
         <span className="flex items-center gap-1 hover:opacity-70 active:scale-90 duration-200 transition-all">
             <span className="h-5 w-5 relative">
-                {(campaign.logo_url || campaign.network.logo) && <Image
+                {(campaign.logo_url || campaign.network.logo) && <ImageWithFallback
                     src={(campaign.logo_url || campaign.network.logo) as string}
                     alt="Project Logo"
                     height="40"

@@ -1,5 +1,6 @@
 import Image from 'next/image'
 import { FC } from 'react'
+import { ImageWithFallback } from './Common/ImageWithFallback';
 type Props = {
   imageUrls: string[]
 }
@@ -10,7 +11,7 @@ const AvatarGroup: FC<Props> = (({ imageUrls }) => {
       <div className="isolate flex -space-x-1 overflow-hidden p-1">
         {imageUrls.map(x => {
           return (
-            <Image
+            <ImageWithFallback
               key={x}
               className="relative z-30 inline-block h-5 w-5 rounded-full ring-2 ring-secondary-600"
               src={x}

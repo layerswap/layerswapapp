@@ -13,6 +13,7 @@ import { addressFormat } from "../../../lib/address/formatter";
 import { ExtendedAddress } from "../../Input/Address/AddressPicker/AddressWithIcon";
 import { isValidAddress } from "../../../lib/address/validator";
 import shortenAddress from "../../utils/ShortenAddress";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 type SwapInfoProps = {
     sourceCurrency: Token,
@@ -65,9 +66,9 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                     <div className="flex items-center gap-3">
                         {
                             sourceExchange ?
-                                <Image src={sourceExchange.logo} alt={sourceExchange.display_name} width={32} height={32} className="rounded-lg" />
+                                <ImageWithFallback src={sourceExchange.logo} alt={sourceExchange.display_name} width={32} height={32} className="rounded-lg" />
                                 : source ?
-                                    <Image src={source.logo} alt={source.display_name} width={32} height={32} className="rounded-lg" />
+                                    <ImageWithFallback src={source.logo} alt={source.display_name} width={32} height={32} className="rounded-lg" />
                                     :
                                     null
                         }
@@ -100,9 +101,9 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                     <div className="flex items-center gap-3">
                         {
                             destExchange ?
-                                <Image src={destExchange.logo} alt={destExchange.display_name} width={32} height={32} className="rounded-lg" />
+                                <ImageWithFallback src={destExchange.logo} alt={destExchange.display_name} width={32} height={32} className="rounded-lg" />
                                 : destination ?
-                                    <Image src={destination.logo} alt={destination.display_name} width={32} height={32} className="rounded-lg" />
+                                    <ImageWithFallback src={destination.logo} alt={destination.display_name} width={32} height={32} className="rounded-lg" />
                                     :
                                     null
                         }

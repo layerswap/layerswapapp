@@ -10,6 +10,7 @@ import ClickTooltip from "../../Tooltips/ClickTooltip"
 import shortenAddress from "../../utils/ShortenAddress"
 import { Progress } from "../../ProgressBar";
 import useWallet from "../../../hooks/useWallet";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 type Props = {
     campaign: Campaign
@@ -70,7 +71,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
                         <div className="flex justify-between w-full text-2xl">
                             <div className="flex items-center space-x-1">
                                 <div className="h-5 w-5 relative">
-                                    <Image
+                                    <ImageWithFallback
                                         src={campaign.token?.logo || ''}
                                         alt="Project Logo"
                                         height="40"
@@ -95,7 +96,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
                     <div className="flex justify-between w-full text-slate-300 text-2xl">
                         <div className="flex items-center space-x-1">
                             <div className="h-5 w-5 relative">
-                                <Image
+                                <ImageWithFallback
                                     src={campaign.token?.logo || ''}
                                     alt="Project Logo"
                                     height="40"

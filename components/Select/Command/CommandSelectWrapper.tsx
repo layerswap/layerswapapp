@@ -4,6 +4,7 @@ import { ChevronDown } from 'lucide-react'
 import { ISelectMenuItem, SelectMenuItem } from '../Shared/Props/selectMenuItem'
 import CommandSelect, { SelectMenuItemGroup } from './commandSelect'
 import { LeafletHeight } from '../../modal/leaflet'
+import { ImageWithFallback } from '@/components/Common/ImageWithFallback'
 
 type CommandSelectWrapperProps = {
     setValue: (value: ISelectMenuItem) => void;
@@ -61,7 +62,7 @@ export default function CommandSelectWrapper<T>({
                         {
                             value?.imgSrc && <div className="flex items-center">
                                 <div className="shrink-0 h-6 w-6 relative">
-                                    <Image
+                                    <ImageWithFallback
                                         src={value.imgSrc}
                                         alt="Project Logo"
                                         height="40"

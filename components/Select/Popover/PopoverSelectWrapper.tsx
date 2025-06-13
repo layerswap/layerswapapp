@@ -4,6 +4,7 @@ import { ChevronDown } from 'lucide-react'
 import { ISelectMenuItem, SelectMenuItem } from '../Shared/Props/selectMenuItem'
 import { Popover, PopoverContent, PopoverTrigger } from '../../shadcn/popover'
 import PopoverSelect from './PopoverSelect'
+import { ImageWithFallback } from '@/components/Common/ImageWithFallback'
 
 type PopoverSelectWrapper = {
     setValue: (value: ISelectMenuItem) => void;
@@ -40,7 +41,7 @@ export default function PopoverSelectWrapper<T>({
                                 <span className="flex items-center text-xs md:text-base">
                                     <div className="shrink-0 h-6 w-6 relative">
                                         {
-                                            value.imgSrc && <Image
+                                            value.imgSrc && <ImageWithFallback
                                                 src={value.imgSrc}
                                                 alt="Project Logo"
                                                 fetchPriority='high'
@@ -103,7 +104,7 @@ const LockedAsset = ({ value }: { value: ISelectMenuItem }) => {
                 <span className="flex items-center text-xs md:text-base">
                     <div className="shrink-0 h-6 w-6 relative">
                         {
-                            value?.imgSrc && <Image
+                            value?.imgSrc && <ImageWithFallback
                                 src={value?.imgSrc}
                                 alt="Project Logo"
                                 fetchPriority='high'

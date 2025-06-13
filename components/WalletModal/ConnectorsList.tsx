@@ -16,6 +16,7 @@ import { usePersistedState } from "../../hooks/usePersistedState";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
 import { Checkbox } from "../shadcn/checkbox";
+import { ImageWithFallback } from "../Common/ImageWithFallback";
 
 const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { isMobile } = useWindowDimensions()
@@ -397,7 +398,7 @@ const MultichainConnectorModal: FC<MultichainConnectorModalProps> = ({ selectedC
                                 >
                                     {
                                         provider?.providerIcon &&
-                                        <Image
+                                        <ImageWithFallback
                                             className="w-8 h-8 rounded-md"
                                             width={30}
                                             height={30}

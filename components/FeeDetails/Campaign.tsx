@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Network } from "../../Models/Network"
 import FeeDetails from "./FeeDetailsComponent"
 import useSWRNftBalance from "../../lib/nft/useSWRNftBalance";
+import { ImageWithFallback } from "../Common/ImageWithFallback"
 
 type CampaignProps = {
     destination: Network,
@@ -68,15 +69,15 @@ const CampaignDisplay: FC<CampaignDisplayProps> = ({ campaign, reward, destinati
             <div className='flex items-center text-primary-buttonTextColor'>
                 <p>{token?.symbol} reward</p>
                 <ClickTooltip text={<span className="text-start!">
-                    {reward.campaign_type === "for_nft_holders" 
-                        ? "The amount of reward that you'll earn as an NFT holder." 
+                    {reward.campaign_type === "for_nft_holders"
+                        ? "The amount of reward that you'll earn as an NFT holder."
                         : "The amount of reward that you'll earn."}
                 </span>} />
             </div>
             <div className="flex items-center space-x-1 text-secondary-text">
                 <p>{reward.amount}</p>
                 <div className="h-5 w-5 relative">
-                    <Image
+                    <ImageWithFallback
                         src={token?.logo || ''}
                         alt="Project Logo"
                         height="40"

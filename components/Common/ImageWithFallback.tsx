@@ -1,9 +1,22 @@
 import Image, { ImageProps } from "next/image";
-import React, { forwardRef } from "react";
+import React, { forwardRef, useState } from "react";
 
-export const ImageWithFallback = forwardRef<HTMLImageElement, ImageProps>((props, ref) => {
+const fallbackImage = '/images/logo_placeholder.png';
+
+export const ImageWithFallback = forwardRef<HTMLImageElement, ImageProps>(({ src, ...props }, ref) => {
+    const [imgSrc, setImgSrc] = useState(src);
+
+    const handleErrpr = () => {
+        setImgSrc(fallbackImage)
+    }
+
     return <Image
         {...props}
+        alt={props.alt || 'ImageWithFallback'}
         ref={ref}
+        src={imgSrc}
+        onError={handleErrpr}
+        placeholder="blur"
+        blurDataURL={fallbackImage}
     />;
 });

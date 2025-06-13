@@ -23,6 +23,7 @@ import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
 import VaulDrawer from '../modal/vaulModal';
 import { Popover, PopoverContent, PopoverTrigger } from '../shadcn/popover';
+import { ImageWithFallback } from '../Common/ImageWithFallback';
 
 type Props = {
     swapResponse: SwapResponse
@@ -94,7 +95,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             <p className='text-xs font-normal text-secondary-text pl-1'>From</p>
                             <div className="flex items-center justify-between w-full">
                                 <div className="flex items-center gap-3">
-                                    <Image
+                                    <ImageWithFallback
                                         src={source_exchange?.logo || source.logo}
                                         alt={source_exchange?.display_name || source.display_name}
                                         width={32}
@@ -136,7 +137,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             <div className='flex flex-row space-x-2'>
                                 <div className='flex flex-col gap-1 justify-start items-center w-fit ml-2.5'>
                                     <div className="w-0.5 h-2.5 bg-[#d9d9d9] rounded-xs" />
-                                    <Image
+                                    <ImageWithFallback
                                         src={source_exchange ? source_network?.logo : destination_network?.logo}
                                         alt={source_exchange ? source_network?.display_name : destination_network?.display_name}
                                         width={24}
@@ -154,7 +155,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             <p className='text-xs font-normal text-secondary-text pl-1'>To</p>
                             <div className="flex items-center justify-between w-full ">
                                 <div className="flex items-center gap-3">
-                                    <Image
+                                    <ImageWithFallback
                                         src={destination_exchange?.logo || destination.logo}
                                         alt={destination_exchange?.display_name || destination.display_name}
                                         width={32}
