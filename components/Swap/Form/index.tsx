@@ -21,7 +21,6 @@ import { resolvePersistantQueryParams } from "../../../helpers/querryHelper";
 import { useQueryState } from "../../../context/query";
 import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/apiClients/userAuthApiClient";
-import Image from 'next/image';
 import { ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useFee } from "../../../context/feeContext";
@@ -36,6 +35,7 @@ import { useAddressesStore } from "../../../stores/addressesStore";
 import { useAsyncModal } from "../../../context/asyncModal";
 import { ValidationProvider } from "../../../context/validationErrorContext";
 import { TrackEvent } from "../../../pages/_document";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -284,14 +284,14 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                 className="flex items-center bg-secondary-600 rounded-r-lg">
                 <div className="text-primary-text flex px-3 p-2 items-center space-x-2">
                     <div className="shrink-0 h-5 w-5 relative">
-                        {source_exchange ? <Image
+                        {source_exchange ? <ImageWithFallback
                             src={source_exchange.logo}
                             alt="From Logo"
                             height="60"
                             width="60"
                             className="rounded-md object-contain"
                         /> : source_network ?
-                            <Image
+                            <ImageWithFallback
                                 src={source_network.logo}
                                 alt="From Logo"
                                 height="60"
@@ -302,14 +302,14 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                     </div>
                     <ChevronRight className="block h-4 w-4 mx-1" />
                     <div className="shrink-0 h-5 w-5 relative block">
-                        {destination_exchange ? <Image
+                        {destination_exchange ? <ImageWithFallback
                             src={destination_exchange.logo}
                             alt="To Logo"
                             height="60"
                             width="60"
                             className="rounded-md object-contain"
                         /> : destination_network ?
-                            <Image
+                            <ImageWithFallback
                                 src={destination_network.logo}
                                 alt="To Logo"
                                 height="60"

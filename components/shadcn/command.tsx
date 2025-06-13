@@ -35,7 +35,7 @@ const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
 >(({ className, children, ...props }, ref) => (
-  <div className="relative z-0 flex items-center mt-1 mb-2 pl-3" cmdk-input-wrapper="">
+  <div className="relative z-0 flex items-center mt-1 mb-2" cmdk-input-wrapper="">
     <div className="absolute">{children}</div>
     <CommandPrimitive.Input placeholder=" " ref={ref} id="floating_standard"
       {...props} className={classNames(
@@ -53,7 +53,7 @@ const CommandList = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <CommandPrimitive.List
     ref={ref}
-    className={classNames("overflow-y-auto styled-scroll-no-bg rdxCommandList overflow-x-hidden pl-1.5", className)}
+    className={classNames("overflow-y-auto styled-scroll-no-bg rdxCommandList overflow-x-hidden", className)}
     {...props}
   />
 ))

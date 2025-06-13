@@ -144,7 +144,7 @@ const Component: FC = () => {
                         </div>
                         <button
                             onClick={() => handleSelectWallet()}
-                            className={clsx('w-full relative flex items-center justify-between gap-2 rounded-lg outline-none bg-secondary-700 p-3 py-4 text-secondary-text hover:bg-secondary-600 cursor-pointer order-1', {
+                            className={clsx('w-full relative flex items-center justify-between gap-2 rounded-lg outline-none bg-secondary-500 p-3 py-4 text-secondary-text hover:bg-secondary-400 cursor-pointer order-1', {
                                 'order-3': values.depositMethod !== 'deposit_address',
                             })}
                         >
