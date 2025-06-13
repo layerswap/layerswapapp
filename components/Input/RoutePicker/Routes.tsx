@@ -164,44 +164,6 @@ const ExchangeRouteSelectItemDisplay = (props: ExchangeRouteItemProps) => {
     )
 }
 
-type SelectedCurrencyDisplayProps = {
-    value: {
-        logo: string
-        symbol: string
-    } | undefined;
-    placeholder: string;
-}
-
-export const SelectedCurrencyDisplay = (props: SelectedCurrencyDisplayProps) => {
-    const { value, placeholder } = props
-    return <span className='flex flex-col text-left items-center text-xs md:text-base'>
-        {
-            value?.logo && <div className="flex items-center">
-                <div className="shrink-0 h-6 w-6 relative">
-                    <ImageWithFallback
-                        src={value.logo}
-                        alt="Project Logo"
-                        height="40"
-                        width="40"
-                        loading="eager"
-                        fetchPriority='high'
-                        className="rounded-full object-contain"
-                    />
-                </div>
-            </div>
-        }
-        {value ?
-            <span className="ml-3 flex font-medium flex-auto space-x-1 text-primary-buttonTextColor items-center">
-                {value.symbol}
-            </span>
-            :
-            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
-                {placeholder}
-            </span>
-        }
-    </span>
-}
-
 type SelectedRouteDisplayProps = {
     route?: NetworkRoute | Exchange;
     token?: RouteToken;
@@ -258,7 +220,7 @@ const SelectedRoutePlaceholder = ({ placeholder }: { placeholder: string }) => (
             <RoutePickerIcon className="w-7 h-7" />
         </div>
         <span className="group-has-[.input-wide]:hidden flex text-secondary-text text-base font-normal leading-5 flex-auto items-center max-w-2/3">
-            <span className="ml-2">{placeholder}</span>
+            <span className="ml-2 text-xs sm:text-base">{placeholder}</span>
         </span>
     </>
 )

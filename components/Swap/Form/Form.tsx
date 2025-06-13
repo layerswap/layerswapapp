@@ -85,8 +85,8 @@ const SwapForm: FC<Props> = ({ partner }) => {
     const shouldConnectWallet = (sourceWalletNetwork && values.from?.deposit_methods?.includes('wallet') && values.depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!values.from && !values.fromExchange && !wallets.length && values.depositMethod !== 'deposit_address')
 
     return <AmountFocusProvider>
-        <Widget className="sm:min-h-[450px] h-full">
-            <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
+        <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
+            <Widget className="sm:min-h-[450px] h-full space-y-[110px]">
                 <Widget.Content>
                     <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
                         {
@@ -139,8 +139,8 @@ const SwapForm: FC<Props> = ({ partner }) => {
                         partner={partner}
                     />
                 </Widget.Footer>
-            </Form>
-        </Widget>
+            </Widget>
+        </Form>
     </AmountFocusProvider>
 }
 
@@ -168,7 +168,6 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: (values: React
         from: source,
         fromExchange,
         toExchange,
-        currencyGroup,
     } = values
 
     const sourceCanBeSwapped = !source ? true : (destinationRoutes?.some(l => l.name === source?.name && l.tokens.some(t => t.symbol === fromCurrency?.symbol && t.status === 'active')) ?? false)

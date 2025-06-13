@@ -149,7 +149,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         placeholderText: '118, 128, 147',
         actionButtonText: '220, 2, 90',
         buttonTextColor: '228, 229, 240',
-        logo: '255, 0, 147',
+        logo: '255, 50, 114',
         footerLogo: 'none',
         primary: {
             DEFAULT: '228, 37, 117',
@@ -177,7 +177,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             '600': '18, 25, 41',
             '700': '14, 21, 36',
             '800': '11, 17, 31',
-            '900': '6, 10, 20',
+            '900': '7, 12, 23',
             '950': '11, 17, 35',
             'text': '163, 173, 194',
         },
