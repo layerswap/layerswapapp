@@ -34,7 +34,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     return (
         <>
             {
-                (network && token && truncatedBalance) &&
+                (network && token && truncatedBalance) ?
                 <motion.div
                     layoutId="affect"
                     className="in-has-[.input-wide]:absolute in-has-[.input-wide]:rounded-lg in-has-[.input-wide]:mt-1 in-has-[.input-wide]:px-1.5 in-has-[.input-wide]:w-full 
@@ -43,6 +43,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
                 >
                     <span>{truncatedBalance}</span>
                 </motion.div>
+                : null
             }
         </>
     )

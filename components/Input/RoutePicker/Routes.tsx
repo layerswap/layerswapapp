@@ -1,13 +1,13 @@
-import { NetworkRoute, NetworkRouteToken } from "../../../../Models/Network";
-import useWallet from "../../../../hooks/useWallet";
-import { SwapDirection } from "../../../DTOs/SwapFormValues";
-import { truncateDecimals } from "../../../utils/RoundDecimals";
-import { SelectItem } from "../../../Select/CommandNew/SelectItem/Index";
-import { Exchange } from "../../../../Models/Exchange";
-import { Route, RouteToken } from "../../../../Models/Route";
+import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
+import useWallet from "../../../hooks/useWallet";
+import { SwapDirection } from "../../DTOs/SwapFormValues";
+import { truncateDecimals } from "../../utils/RoundDecimals";
+import { SelectItem } from "../../Select/CommandNew/SelectItem/Index";
+import { Exchange } from "../../../Models/Exchange";
+import { Route, RouteToken } from "../../../Models/Route";
 import { ChevronDown } from "lucide-react";
-import RoutePickerIcon from "../../../icons/RoutePickerPlaceholder";
-import { useBalance } from "../../../../lib/balances/providers/useBalance";
+import RoutePickerIcon from "../../icons/RoutePickerPlaceholder";
+import { useBalance } from "../../../lib/balances/providers/useBalance";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 type TokenItemProps = {
@@ -237,7 +237,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                     </div>
                     <span className="group-has-[.input-wide]:hidden ml-2 flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0 max-w-3/5">
                         <span className="leading-5">{token.symbol}</span>
-                        <span className="text-secondary-text text-sm leading-4 truncate whitespace-nowrap max-w-[120px]">
+                        <span className="text-secondary-text text-sm leading-4 truncate whitespace-nowrap max-w-[60px] sm:max-w-[100px]">
                             {route.display_name}
                         </span>
                     </span>

@@ -7,6 +7,8 @@ import { Search } from "lucide-react";
 import { Accordion } from "../../shadcn/accordion";
 import Row from "./Rows";
 import { LayoutGroup, motion } from "framer-motion";
+import useWallet from "@/hooks/useWallet";
+import ConnectWalletButton from "../../Common/ConnectWalletButton";
 
 
 type ContentProps = {
@@ -22,6 +24,7 @@ type ContentProps = {
 export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, allbalancesLoaded }: ContentProps) => {
     const parentRef = useRef<HTMLDivElement>(null)
     const [openValues, setOpenValues] = useState<string[]>(selectedRoute ? [selectedRoute] : [])
+    const { wallets } = useWallet()
 
     const toggleAccordionItem = (value: string) => {
         setOpenValues((prev) =>
@@ -40,6 +43,13 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
         <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         <LayoutGroup>
             <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full" ref={parentRef}>
+                {
+                    wallets.length === 0 && direction === 'from' &&
+                    <ConnectWalletButton
+                        descriptionText="Connect your wallet to browse your assets and choose easier"
+                        className="w-full my-2.5"
+                    />
+                }
                 <div className="relative"  >
                     <Accordion type="multiple" value={openValues}>
                         <div>
