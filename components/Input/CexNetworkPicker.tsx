@@ -40,7 +40,7 @@ const CexNetworkPicker: FC<{ direction: SwapDirection, partner: Partner | undefi
     const header = direction === 'from' ? 'Withdrawal network' : 'Deposit details'
 
     return (
-        <div className="p-3 rounded-lg bg-secondary-700 border border-secondary-500 space-y-2">
+        <div className="p-3 rounded-lg bg-secondary-500  space-y-2">
             <label className="font-semibold flex justify-between text-secondary-text text-xs">
                 <div className="flex space-x-1">
                     <span>{header}</span>
@@ -101,7 +101,7 @@ const CexNetworkPicker: FC<{ direction: SwapDirection, partner: Partner | undefi
                                 addressItem ? <>
                                     <AddressButton addressItem={addressItem} network={selectedNetwork} disabled={disabled} />
                                 </>
-                                    : <div className=" justify-center w-full pl-3 pr-2 py-2 bg-secondary-500 items-center flex font-light space-x-2 mx-auto rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 ">
+                                    : <div className=" justify-center w-full pl-3 pr-2 py-2 bg-secondary-400 items-center flex font-light space-x-2 mx-auto rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 ">
                                         <PlusIcon className="stroke-1" /> <span>Destination Address</span>
                                     </div>
                             }
