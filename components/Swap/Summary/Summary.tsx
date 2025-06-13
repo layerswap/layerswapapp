@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Fuel } from "lucide-react";
 import { FC } from "react";
 import { truncateDecimals } from "../../utils/RoundDecimals";

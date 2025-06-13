@@ -1,6 +1,5 @@
 import { FC, useState, Fragment } from 'react'
 import LayerSwapApiClient, { SwapResponse, TransactionType } from '../../lib/apiClients/layerSwapApiClient';
-import Image from 'next/image'
 import shortenAddress, { shortenEmail } from '../utils/ShortenAddress';
 import CopyButton from '../buttons/copyButton';
 import StatusIcon from './StatusIcons';

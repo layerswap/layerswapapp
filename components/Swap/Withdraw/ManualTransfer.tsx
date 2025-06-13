@@ -1,6 +1,5 @@
 import { FC, useCallback } from "react"
 import { ArrowLeftRight } from "lucide-react"
-import Image from 'next/image';
 import { useSwapDataState } from "../../../context/swap";
 import KnownInternalNames from "../../../lib/knownIds";
 import BackgroundField from "../../backgroundField";

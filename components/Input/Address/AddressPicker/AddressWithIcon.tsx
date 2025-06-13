@@ -3,7 +3,6 @@ import { AddressGroup, AddressItem } from ".";
 import AddressIcon from "../../../AddressIcon";
 import shortenAddress from "../../../utils/ShortenAddress";
 import { History, ExternalLink, Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, Power } from "lucide-react";
-import Image from "next/image";
 import { Partner } from "../../../../Models/Partner";
 import { Network } from "../../../../Models/Network";
 import { Popover, PopoverContent, PopoverTrigger } from "../../../shadcn/popover";

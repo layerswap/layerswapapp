@@ -1,6 +1,5 @@
 import { Info } from "lucide-react";
 import { NetworkRoute, Token } from "../../../../Models/Network";
-import Image from "next/image";
 import { Exchange } from "../../../../Models/Exchange";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 

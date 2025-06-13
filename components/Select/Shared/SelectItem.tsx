@@ -1,6 +1,5 @@
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { ISelectMenuItem } from "./Props/selectMenuItem";
-import Image from 'next/image';
 
 export default function SelectItem({ item, underline }: { item: ISelectMenuItem, underline?: boolean }) {
     return (

@@ -1,5 +1,4 @@
 import shortenAddress from "../utils/ShortenAddress";
-import Image from "next/image";
 import { ChevronDown } from "lucide-react";
 import { AddressGroup, AddressItem, AddressTriggerProps } from "./Address/AddressPicker";
 import { Partner } from "../../Models/Partner";

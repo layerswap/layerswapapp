@@ -4,7 +4,6 @@ import { ApiResponse } from "../../Models/ApiResponse";
 import LayerSwapApiClient, { Campaign } from "../../lib/apiClients/layerSwapApiClient";
 import SpinIcon from "../icons/spinIcon";
 import useSWR from 'swr'
-import Image from "next/image";
 import LinkWrapper from "../LinkWraapper";
 import { Widget } from "../Widget/Index";
 import { ImageWithFallback } from "../Common/ImageWithFallback";

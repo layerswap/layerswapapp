@@ -1,4 +1,3 @@
-import Image from 'next/image';
 import { FeeData, useLoopringTokens } from './hooks';
 import { ISelectMenuItem } from '../../../../Select/Shared/Props/selectMenuItem';
 import formatAmount from '../../../../../lib/formatAmount';

@@ -11,7 +11,6 @@ import useWindowDimensions from "../../hooks/useWindowDimensions";
 import Connector from "./Connector";
 import { removeDuplicatesWithKey } from "./utils";
 import VaulDrawer from "../modal/vaulModal";
-import Image from "next/image";
 import { usePersistedState } from "../../hooks/usePersistedState";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";

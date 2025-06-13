@@ -1,5 +1,4 @@
 import { FC } from "react";
-import Image from 'next/image'
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { useFormikContext } from "formik";
 import { ImageWithFallback } from "../Common/ImageWithFallback";

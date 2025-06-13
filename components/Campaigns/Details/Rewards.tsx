@@ -1,5 +1,4 @@
 import { FC } from "react"
-import Image from 'next/image'
 import BackgroundField from "../../backgroundField";
 import { Clock } from "lucide-react"
 import LayerSwapApiClient, { Campaign, Reward, RewardPayout } from "../../../lib/apiClients/layerSwapApiClient"

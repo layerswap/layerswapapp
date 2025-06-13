@@ -3,7 +3,6 @@ import LayerSwapApiClient, { Campaign, QuoteReward } from "../../lib/apiClients/
 import useSWR from "swr"
 import { ApiResponse } from "../../Models/ApiResponse"
 import ClickTooltip from "../Tooltips/ClickTooltip"
-import Image from 'next/image';
 import { Network } from "../../Models/Network"
 import FeeDetails from "./FeeDetailsComponent"
 import useSWRNftBalance from "../../lib/nft/useSWRNftBalance";

@@ -1,4 +1,3 @@
-import Image from 'next/image'
 import firstGuidePic from './../public/images/withdrawGuideImages/01.png'
 import secondNetworkGuidePic from './../public/images/withdrawGuideImages/02Network.png'
 import secondExchangeGuideGuidePic from './../public/images/withdrawGuideImages/02Exchange.png'

@@ -12,7 +12,6 @@ import { truncateDecimals } from "../utils/RoundDecimals";
 import useSWRBalance from "../../lib/balances/useSWRBalance";
 import { useSettingsState } from "../../context/settings";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
-import Image from 'next/image'
 import { ImageWithFallback } from "../Common/ImageWithFallback";
 
 type Props = {

@@ -2,7 +2,6 @@ import { NetworkRoute, NetworkRouteToken } from "../../../../Models/Network";
 import useWallet from "../../../../hooks/useWallet";
 import { SwapDirection } from "../../../DTOs/SwapFormValues";
 import { truncateDecimals } from "../../../utils/RoundDecimals";
-import Image from 'next/image'
 import { SelectItem } from "../../../Select/CommandNew/SelectItem/Index";
 import { Exchange } from "../../../../Models/Exchange";
 import { Route, RouteToken } from "../../../../Models/Route";

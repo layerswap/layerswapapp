@@ -2,7 +2,6 @@
 import useSWR from "swr"
 import LayerSwapApiClient, { SwapResponse, TransactionType } from "../../lib/apiClients/layerSwapApiClient"
 import { ApiResponse } from "../../Models/ApiResponse"
-import Image from 'next/image';
 import { useQueryState } from "../../context/query"
 import { Partner } from "../../Models/Partner"
 import { addressEnding, shortenEmail } from "../utils/ShortenAddress"
