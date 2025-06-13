@@ -12,7 +12,7 @@ import { truncateDecimals } from "../utils/RoundDecimals";
 import useSWRBalance from "../../lib/balances/useSWRBalance";
 import { useSettingsState } from "../../context/settings";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
-import Image from 'next/image'
+import { ImageWithFallback } from "../Common/ImageWithFallback";
 
 type Props = {
     selectable?: boolean;
@@ -109,7 +109,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                             />
                             {
                                 wallet?.networkIcon && <div className="h-5 w-5 absolute -right-1 -bottom-1">
-                                    <Image
+                                    <ImageWithFallback
                                         src={wallet?.networkIcon || ''}
                                         alt="Wallet default network icon"
                                         height="40"
@@ -170,7 +170,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                     !selectable &&
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <button type="button" onClick={wallet.disconnect} className="text-xs text-secondary-text hover:text-primary-text rounded-full p-1.5 bg-secondary-700 hover:bg-secondary-950 transition-colors duration-200 ">
+                            <button type="button" onClick={wallet.disconnect} className="text-xs text-secondary-text hover:text-primary-text rounded-full p-1.5 bg-secondary-700 transition-colors duration-200 ">
                                 <Power className="h-3.5 w-3.5" />
                             </button>
                         </TooltipTrigger>
