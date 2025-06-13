@@ -1,4 +1,4 @@
-import { Form, useFormikContext } from "formik";
+import { Form, FormikErrors, useFormikContext } from "formik";
 import { FC, useCallback, useEffect } from "react";
 import React from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
@@ -24,6 +24,8 @@ import DestinationPicker from "../../Input/DestinationPicker";
 import CexNetworkPicker from "../../Input/CexNetworkPicker";
 import FormButton from "../FormButton";
 import { AmountFocusProvider } from "../../../context/amountFocusContext";
+import { WalletProvider } from "@/Models/WalletProvider";
+import { QueryParams } from "@/Models/QueryParams";
 
 type Props = {
     partner?: Partner,
@@ -41,8 +43,6 @@ const SwapForm: FC<Props> = ({ partner }) => {
     } = useFormikContext<SwapFormValues>();
     const {
         to: destination,
-        fromCurrency,
-        toCurrency,
         from: source,
         fromExchange,
         toExchange,
@@ -50,16 +50,13 @@ const SwapForm: FC<Props> = ({ partner }) => {
     } = values
 
     const { selectedSourceAccount } = useSwapDataState()
-    const { setSelectedSourceAccount } = useSwapDataUpdate()
     const { providers, wallets } = useWallet()
     const { minAllowedAmount, valuesChanger } = useFee()
     const toAsset = values.toCurrency
     const fromAsset = values.fromCurrency
 
     const { validationMessage } = useValidationContext();
-
     const query = useQueryState();
-    let valuesSwapperDisabled = false;
 
     const actionDisplayName = query?.actionButtonText || "Swap now"
 
@@ -74,23 +71,105 @@ const SwapForm: FC<Props> = ({ partner }) => {
     }, [toAsset, destination, source, fromAsset, currencyGroup])
 
     useEffect(() => {
-        (async () => {
-            (await import("../../Input/Address")).default
-        })()
-    }, [destination])
-
-    useEffect(() => {
         if (values.refuel && minAllowedAmount && (Number(values.amount) < minAllowedAmount)) {
             setFieldValue('amount', minAllowedAmount)
         }
     }, [values.refuel, destination, minAllowedAmount])
 
+    const handleReserveGas = useCallback((walletBalance: TokenBalance, networkGas: number) => {
+        if (walletBalance && networkGas)
+            setFieldValue('amount', walletBalance?.amount - networkGas)
+    }, [values.amount])
+
+    const sourceWalletNetwork = values.fromExchange ? undefined : values.from
+    const shouldConnectWallet = (sourceWalletNetwork && values.from?.deposit_methods?.includes('wallet') && values.depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!values.from && !values.fromExchange && !wallets.length && values.depositMethod !== 'deposit_address')
+
+    return <AmountFocusProvider>
+        <Widget className="sm:min-h-[450px] h-full">
+            <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
+                <Widget.Content>
+                    <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
+                        {
+                            !(query?.hideFrom && values?.from) &&
+                            <SourcePicker />
+                        }
+                        {
+                            !query?.hideFrom && !query?.hideTo &&
+                            <ValueSwapperButton
+                                values={values}
+                                setValues={setValues}
+                                providers={providers}
+                                query={query}
+                            />
+                        }
+                        {
+                            !(query?.hideTo && values?.to) &&
+                            <DestinationPicker partner={partner} />
+                        }
+                    </div>
+                    {
+                        (((fromExchange && destination) || (toExchange && source)) && currencyGroup)
+                            ? <div className="mb-6 leading-4">
+                                <ResizablePanel>
+                                    <CexNetworkPicker direction={fromExchange ? 'from' : 'to'} partner={partner} />
+                                </ResizablePanel>
+                            </div>
+                            : <></>
+                    }
+                    <div className="w-full">
+                        {
+                            validationMessage
+                                ? <ValidationError />
+                                : <FeeDetailsComponent values={values} />
+                        }
+                        {
+                            values.amount &&
+                            <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                        }
+                    </div>
+                </Widget.Content>
+                <Widget.Footer>
+                    <FormButton
+                        shouldConnectWallet={shouldConnectWallet}
+                        values={values}
+                        isValid={isValid}
+                        errors={errors}
+                        isSubmitting={isSubmitting}
+                        actionDisplayName={actionDisplayName}
+                        partner={partner}
+                    />
+                </Widget.Footer>
+            </Form>
+        </Widget>
+    </AmountFocusProvider>
+}
+
+const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: (values: React.SetStateAction<SwapFormValues>, shouldValidate?: boolean) => Promise<void | FormikErrors<SwapFormValues>>, providers: WalletProvider[], query: QueryParams }> = ({ values, setValues, providers, query }) => {
     const [animate, cycle] = useCycle(
         { rotate: 0 },
         { rotate: 180 }
     );
-    const { sourceExchanges, destinationExchanges, destinationRoutes, sourceRoutes } = useSettingsState();
+    const { selectedSourceAccount } = useSwapDataState()
+    const { setSelectedSourceAccount } = useSwapDataUpdate()
 
+    let valuesSwapperDisabled = false;
+
+    const {
+        destinationExchanges,
+        sourceExchanges,
+        sourceRoutes,
+        destinationRoutes,
+    } = useSettingsState()
+
+    const {
+        to: destination,
+        fromCurrency,
+        toCurrency,
+        from: source,
+        fromExchange,
+        toExchange,
+        currencyGroup,
+    } = values
 
     const sourceCanBeSwapped = !source ? true : (destinationRoutes?.some(l => l.name === source?.name && l.tokens.some(t => t.symbol === fromCurrency?.symbol && t.status === 'active')) ?? false)
     const destinationCanBeSwapped = !destination ? true : (sourceRoutes?.some(l => l.name === destination?.name && l.tokens.some(t => t.symbol === toCurrency?.symbol && t.status === 'active')) ?? false)
@@ -174,76 +253,22 @@ const SwapForm: FC<Props> = ({ partner }) => {
         }
     }, [values, sourceRoutes, destinationRoutes, sourceCanBeSwapped, destinationExchanges, selectedSourceAccount])
 
-    const handleReserveGas = useCallback((walletBalance: TokenBalance, networkGas: number) => {
-        if (walletBalance && networkGas)
-            setFieldValue('amount', walletBalance?.amount - networkGas)
-    }, [values.amount])
-
-    const sourceWalletNetwork = values.fromExchange ? undefined : values.from
-    const shouldConnectWallet = (sourceWalletNetwork && values.from?.deposit_methods?.includes('wallet') && values.depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!values.from && !values.fromExchange && !wallets.length && values.depositMethod !== 'deposit_address')
-
-    return <AmountFocusProvider>
-        <Widget className="sm:min-h-[450px] h-full">
-            <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
-                <Widget.Content>
-                    <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
-                        {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full bg-secondary-500 rounded-2xl">
-                            <SourcePicker />
-                        </div>}
-                        {!query?.hideFrom && !query?.hideTo &&
-                            <button
-                                type="button"
-                                aria-label="Reverse the source and destination"
-                                disabled={valuesSwapperDisabled}
-                                onClick={valuesSwapper}
-                                className="hover:text-primary absolute right-[calc(50%-16px)] top-[132px] z-10 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none">
-                                <motion.div
-                                    animate={animate}
-                                    transition={{ duration: 0.3 }}
-                                    onTap={() => !valuesSwapperDisabled && cycle()}
-                                >
-                                    <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-300 rounded-lg disabled:opacity-30")} />
-                                </motion.div>
-                            </button>}
-                        {!(query?.hideTo && values?.to) && <div className="flex flex-col w-full bg-secondary-500 rounded-xl">
-                            <DestinationPicker partner={partner} />
-                        </div>}
-                    </div>
-                    {
-                        (((fromExchange && destination) || (toExchange && source)) && currencyGroup) ?
-                            <div className="mb-6 leading-4">
-                                <ResizablePanel>
-                                    <CexNetworkPicker direction={fromExchange ? 'from' : 'to'} partner={partner} />
-                                </ResizablePanel>
-                            </div>
-                            : <></>
-                    }
-                    <div className="w-full">
-                        {validationMessage ?
-                            <ValidationError />
-                            :
-                            <FeeDetailsComponent values={values} />
-                        }
-                        {
-                            values.amount &&
-                            <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
-                        }
-                    </div>
-                </Widget.Content>
-                <Widget.Footer>
-                    <FormButton
-                        shouldConnectWallet={shouldConnectWallet}
-                        values={values}
-                        isValid={isValid}
-                        errors={errors}
-                        isSubmitting={isSubmitting}
-                        actionDisplayName={actionDisplayName}
-                        partner={partner}
-                    />
-                </Widget.Footer>
-            </Form>
-        </Widget>
-    </AmountFocusProvider>
+    return (
+        <button
+            type="button"
+            aria-label="Reverse the source and destination"
+            disabled={valuesSwapperDisabled}
+            onClick={valuesSwapper}
+            className="hover:text-primary absolute right-[calc(50%-16px)] top-[144px] z-10 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none">
+            <motion.div
+                animate={animate}
+                transition={{ duration: 0.3 }}
+                onTap={() => !valuesSwapperDisabled && cycle()}
+            >
+                <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-300 rounded-lg disabled:opacity-30")} />
+            </motion.div>
+        </button>
+    )
 }
 
 export default SwapForm

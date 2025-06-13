@@ -1,15 +1,14 @@
-import { NetworkRoute, NetworkRouteToken } from "../../../../Models/Network";
-import useWallet from "../../../../hooks/useWallet";
-import { SwapDirection } from "../../../DTOs/SwapFormValues";
-import { truncateDecimals } from "../../../utils/RoundDecimals";
-import Image from 'next/image'
-import { SelectItem } from "../../../Select/CommandNew/SelectItem/Index";
-import { GroupedTokenElement } from "../../../../Models/Route";
+import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
+import useWallet from "../../../hooks/useWallet";
+import { SwapDirection } from "../../DTOs/SwapFormValues";
+import { truncateDecimals } from "../../utils/RoundDecimals";
+import { SelectItem } from "../../Select/CommandNew/SelectItem/Index";
 import { ChevronDown } from "lucide-react";
-import RoutePickerIcon from "../../../icons/RoutePickerPlaceholder";
-import { useBalance } from "../../../../lib/balances/providers/useBalance";
-import useAllBalances from "../../../../hooks/useAllBalances";
-import { useBalanceStore } from "../../../../stores/balanceStore";
+import RoutePickerIcon from "../../icons/RoutePickerPlaceholder";
+import { useBalance } from "../../../lib/balances/providers/useBalance";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
+import { GroupedTokenElement } from "@/Models/Route";
+import { useBalanceStore } from "@/stores/balanceStore";
 
 type TokenItemProps = {
     route: NetworkRoute;
@@ -98,14 +97,13 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                                 {showTokenLogos ? (
                                     <div className="flex justify-end items-center -space-x-2 relative h-4">
                                         {filteredNetworkTokens.slice(0, 3).map((t, index) => (
-                                            <Image
-                                                key={`${t.symbol}-${index}`}
+                                            <ImageWithFallback
                                                 src={t.logo}
                                                 alt={`${t.symbol} logo`}
                                                 height="16"
                                                 width="16"
                                                 loading="eager"
-                                                fetchPriority="high"
+                                                fetchPriority='high'
                                                 className="rounded-full object-contain"
                                             />
                                         ))}
@@ -212,7 +210,7 @@ export const GroupedTokenHeader = ({
                                 {showNetworkIcons && (
                                     <div className="flex justify-end items-center -space-x-1.5 relative h-4">
                                         {networksWithBalance.slice(0, 3).map((network, index) => (
-                                            <Image
+                                            <ImageWithFallback
                                                 key={`${network.display_name}-${index}`}
                                                 src={network.logo}
                                                 alt={`${network.display_name} logo`}
@@ -253,7 +251,7 @@ export const SelectedCurrencyDisplay = (props: SelectedCurrencyDisplayProps) => 
         {
             value?.logo && <div className="flex items-center">
                 <div className="shrink-0 h-6 w-6 relative">
-                    <Image
+                    <ImageWithFallback
                         src={value.logo}
                         alt="Project Logo"
                         height="40"
@@ -291,7 +289,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
             {showContent ? (
                 <>
                     <div className="inline-flex items-center relative shrink-0">
-                        <Image
+                        <ImageWithFallback
                             src={token.logo}
                             alt="Token Logo"
                             height="20"
@@ -300,7 +298,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                             fetchPriority="high"
                             className="rounded-full object-contain"
                         />
-                        <Image
+                        <ImageWithFallback
                             src={route.logo}
                             alt="Route Logo"
                             height="14"
@@ -312,7 +310,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                     </div>
                     <span className="group-has-[.input-wide]:hidden ml-2 flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0 max-w-3/5">
                         <span className="leading-5">{token.symbol}</span>
-                        <span className="text-secondary-text text-sm leading-4 truncate whitespace-nowrap">
+                        <span className="text-secondary-text text-sm leading-4 truncate whitespace-nowrap max-w-[60px] sm:max-w-[100px]">
                             {route.display_name}
                         </span>
                     </span>

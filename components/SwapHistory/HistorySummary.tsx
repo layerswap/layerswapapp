@@ -2,7 +2,6 @@
 import useSWR from "swr"
 import LayerSwapApiClient, { SwapResponse, TransactionType } from "../../lib/apiClients/layerSwapApiClient"
 import { ApiResponse } from "../../Models/ApiResponse"
-import Image from 'next/image';
 import { useQueryState } from "../../context/query"
 import { Partner } from "../../Models/Partner"
 import { addressEnding, shortenEmail } from "../utils/ShortenAddress"
@@ -15,6 +14,7 @@ import AddressIcon from "../AddressIcon";
 import { addressFormat } from "../../lib/address/formatter";
 import { SwapStatus } from "../../Models/SwapStatus";
 import { Wallet } from "../../Models/WalletProvider";
+import { ImageWithFallback } from "../Common/ImageWithFallback";
 
 type SwapInfoProps = {
     className?: string,
@@ -74,7 +74,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                         <div className="col-span-1 h-11 w-11 relative min-w-11">
                             {
                                 source &&
-                                <Image
+                                <ImageWithFallback
                                     src={source.logo}
                                     alt={source.display_name}
                                     width={28}
@@ -83,7 +83,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                             }
                             {
                                 destination &&
-                                <Image
+                                <ImageWithFallback
                                     src={destination.logo}
                                     alt={destination.display_name}
                                     width={28}
@@ -95,7 +95,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                         <div className="w-11 h-11 col-span-1">
                             {
                                 source &&
-                                <Image
+                                <ImageWithFallback
                                     src={source.logo}
                                     alt={source.display_name}
                                     width={44}

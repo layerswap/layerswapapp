@@ -8,6 +8,7 @@ import useFormRoutes from "../../../hooks/useFormRoutes";
 import Balance from "../Amount/Balance";
 import { Content } from "./Content";
 import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
+import PickerWalletConnect from "./RouterPickerWalletConnect";
 
 const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -48,7 +49,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 <SelectorTrigger disabled={false}>
                     <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select Token" />
                 </SelectorTrigger>
-                <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search">
+                <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search" header={<PickerWalletConnect />}>
                     {({ closeModal }) => (
                         <Content
                             key={String(showTokens)}
@@ -66,7 +67,8 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                     )}
                 </SelectorContent>
             </Selector>
-            {direction === 'from' &&
+            {
+                direction === 'from' &&
                 <Balance values={values} direction="from" />
             }
         </div>

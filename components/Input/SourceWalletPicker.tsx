@@ -80,7 +80,7 @@ const Component: FC = () => {
         {
             values.depositMethod === 'deposit_address' ?
                 <div className="flex items-center space-x-2 text-sm leading-4">
-                    <div onClick={handleWalletChange} className="rounded-md bg-secondary-500 flex space-x-1 items-center py-0.5 pl-2 pr-1 cursor-pointer">
+                    <div onClick={handleWalletChange} className="rounded-md bg-secondary-500 flex space-x-1 items-center  cursor-pointer">
                         <div className="text-secondary-text">
                             Manual Transfer
                         </div>
@@ -93,8 +93,8 @@ const Component: FC = () => {
                 <div className="rounded-lg flex items-center space-x-2 text-sm leading-4">
                     {
                         selectedWallet && selectedSourceAccount?.address && <>
-                            <div onClick={handleWalletChange} className="rounded-lg flex space-x-1 items-center py-0.5 pl-2 cursor-pointer">
-                                <div className="inline-flex items-center relative p-0.5">
+                            <div onClick={handleWalletChange} className="rounded-lg flex space-x-1 items-center cursor-pointer">
+                                <div className="inline-flex items-center relative px-0.5">
                                     <selectedWallet.icon className="w-5 h-5" />
                                 </div>
                                 <div className="text-primary-text">
@@ -144,7 +144,7 @@ const Component: FC = () => {
                         </div>
                         <button
                             onClick={() => handleSelectWallet()}
-                            className={clsx('w-full relative flex items-center justify-between gap-2 rounded-lg outline-none bg-secondary-700 p-3 py-4 text-secondary-text hover:bg-secondary-600 cursor-pointer order-1', {
+                            className={clsx('w-full relative flex items-center justify-between gap-2 rounded-lg outline-none bg-secondary-500 p-3 py-4 text-secondary-text hover:bg-secondary-400 cursor-pointer order-1', {
                                 'order-3': values.depositMethod !== 'deposit_address',
                             })}
                         >
