@@ -1,8 +1,8 @@
 import { RefreshCw } from "lucide-react";
-import { ResolveConnectorIcon } from "../../../../icons/ConnectorIcons";
+import { ResolveConnectorIcon } from "../icons/ConnectorIcons";
 import { FC, useState } from "react";
-import { Wallet, WalletProvider } from "../../../../../Models/WalletProvider";
-import { useConnectModal } from "../../../../WalletModal";
+import { Wallet, WalletProvider } from "../../Models/WalletProvider";
+import { useConnectModal } from "../WalletModal";
 import { classNames } from "@/components/utils/classNames";
 
 interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> {

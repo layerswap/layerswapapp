@@ -8,7 +8,7 @@ import useWallet from "../../../../hooks/useWallet";
 import { addressFormat } from "../../../../lib/address/formatter";
 import ManualAddressInput from "./ManualAddressInput";
 import Modal from "../../../modal/modal";
-import ConnectWalletButton from "./ConnectedWallets/ConnectWalletButton";
+import ConnectWalletButton from "../../../Common/ConnectWalletButton";
 import ExchangeNote from "./ExchangeNote";
 import { Network, NetworkType, NetworkRoute } from "../../../../Models/Network";
 import { Exchange } from "../../../../Models/Exchange";

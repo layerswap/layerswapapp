@@ -9,7 +9,6 @@ import { useSwapDataState } from "../../../context/swap";
 import { resolveMacAllowedAmount } from "./helpers";
 import { useAmountFocus } from "../../../context/amountFocusContext";
 import useWindowDimensions from "../../../hooks/useWindowDimensions";
-import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 
@@ -51,8 +50,10 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         }
     }, [requestedAmountInUsd, fee]);
 
+    const fromCurrencyPriceInUsd = fee?.quote.source_token?.price_in_usd || fromCurrency?.price_in_usd;
+
     useEffect(() => {
-        if (fee && amount) updateRequestedAmountInUsd(Number(amount), fee.quote.source_token?.price_in_usd)
+        if (fee && amount) updateRequestedAmountInUsd(Number(amount), fromCurrencyPriceInUsd)
     }, [amount, fromCurrency, fee])
 
     const updateFocusedFontSize = useCallback((value: string) => {
@@ -97,7 +98,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     className={`${isAmountFocused ? `${focusedFontSize}` : "text-[28px]"} text-primary-text px-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal`}
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
-                        updateRequestedAmountInUsd(parseFloat(e.target.value), fee?.quote.source_token?.price_in_usd);
+                        updateRequestedAmountInUsd(parseFloat(e.target.value), fromCurrencyPriceInUsd);
                         updateFocusedFontSize(e.target.value);
                     }}
                 />

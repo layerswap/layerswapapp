@@ -8,7 +8,7 @@ import { Accordion } from "../../shadcn/accordion";
 import Row from "./Rows";
 import { LayoutGroup, motion } from "framer-motion";
 import useWallet from "@/hooks/useWallet";
-import ConnectWalletButton from "../Address/AddressPicker/ConnectedWallets/ConnectWalletButton";
+import ConnectWalletButton from "../../Common/ConnectWalletButton";
 
 
 type ContentProps = {
