@@ -38,7 +38,7 @@ const SourcePicker = () => {
                         <AmountField />
                     </motion.div>
                     <motion.div
-                        layout
+                        // layout
                         transition={{ duration: 0.25, ease: 'easeInOut' }}
                         className="col-span-3 group-has-[.input-wide]:col-span-2 flex items-center self-start justify-end"
                     >

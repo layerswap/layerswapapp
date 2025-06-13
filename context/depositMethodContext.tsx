@@ -33,7 +33,7 @@ export const DepositMethodProvider: FC<Props> = ({ children, onRedirect, canRedi
         canRedirect,
         setShowModal,
         redirect
-    }), [])
+    }), [showModal, canRedirect]);
 
     return (
         <DepositMethodContext.Provider value={contextValue}>

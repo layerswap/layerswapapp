@@ -7,6 +7,8 @@ import { Search } from "lucide-react";
 import { Accordion } from "../../shadcn/accordion";
 import Row from "./Rows";
 import { LayoutGroup, motion } from "framer-motion";
+import useWallet from "@/hooks/useWallet";
+import ConnectWalletButton from "../Address/AddressPicker/ConnectedWallets/ConnectWalletButton";
 
 
 type ContentProps = {
@@ -22,6 +24,7 @@ type ContentProps = {
 export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, allbalancesLoaded }: ContentProps) => {
     const parentRef = useRef<HTMLDivElement>(null)
     const [openValues, setOpenValues] = useState<string[]>(selectedRoute ? [selectedRoute] : [])
+    const { wallets } = useWallet()
 
     const toggleAccordionItem = (value: string) => {
         setOpenValues((prev) =>
@@ -39,7 +42,14 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
     return <div className="py-3 overflow-y-auto flex flex-col h-full z-40  pb-6" >
         <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
         <LayoutGroup>
-            <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll px-3 h-full" ref={parentRef}>
+            <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full" ref={parentRef}>
+                {
+                    wallets.length === 0 && direction === 'from' &&
+                    <ConnectWalletButton
+                        descriptionText="Connect your wallet to browse your assets and choose easier"
+                        className="w-full my-2.5"
+                    />
+                }
                 <div className="relative"  >
                     <Accordion type="multiple" value={openValues}>
                         <div>
@@ -93,7 +103,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
 const SearchComponent = ({ searchQuery, setSearchQuery }: { searchQuery: string, setSearchQuery: (query: string) => void }) => {
     const { isDesktop } = useWindowDimensions();
 
-    return <div className="flex items-center bg-secondary-500 rounded-lg px-2 mb-2 mr-4 ml-3">
+    return <div className="flex items-center bg-secondary-500 rounded-lg px-2 mb-2">
         <Search className="w-6 h-6 mr-2 text-primary-text-placeholder" />
         <input
             value={searchQuery}

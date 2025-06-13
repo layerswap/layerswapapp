@@ -9,7 +9,7 @@ import { useSwapDataState } from "../../../context/swap";
 import { resolveMacAllowedAmount } from "./helpers";
 import { useAmountFocus } from "../../../context/amountFocusContext";
 import useWindowDimensions from "../../../hooks/useWindowDimensions";
-import { motion } from "framer-motion";
+import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 
@@ -25,8 +25,8 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { selectedSourceAccount } = useSwapDataState()
     const sourceAddress = selectedSourceAccount?.address
 
-    const { balances, isBalanceLoading } = useSWRBalance(sourceAddress, from)
-    const { gas, isGasLoading } = useSWRGas(sourceAddress, from, fromCurrency)
+    const { balances } = useSWRBalance(sourceAddress, from)
+    const { gas } = useSWRGas(sourceAddress, from, fromCurrency)
     const gasAmount = gas || 0;
     const native_currency = from?.token
 
@@ -43,18 +43,17 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const diasbled = Boolean((fromExchange && !toCurrency) || (toExchange && !fromCurrency))
 
-    const updateRequestedAmountInUsd = useCallback((requestedAmount: number, fee) => {
-        if (fee?.quote.source_token?.price_in_usd && !isNaN(requestedAmount)) {
-            setRequestedAmountInUsd((fee?.quote.source_token?.price_in_usd * requestedAmount).toFixed(2));
-        } else {
+    const updateRequestedAmountInUsd = useCallback((requestedAmount: number, price_in_usd: number | undefined) => {
+        if (price_in_usd && !isNaN(requestedAmount)) {
+            setRequestedAmountInUsd((price_in_usd * requestedAmount).toFixed(2));
+        } else if (isNaN(requestedAmount) || requestedAmount <= 0) {
             setRequestedAmountInUsd(undefined);
         }
     }, [requestedAmountInUsd, fee]);
 
     useEffect(() => {
-        if (isFeeLoading) setRequestedAmountInUsd(undefined)
-        else if (fee && amount) updateRequestedAmountInUsd(Number(amount), fee)
-    }, [amount, fromCurrency, fee, isFeeLoading])
+        if (fee && amount) updateRequestedAmountInUsd(Number(amount), fee.quote.source_token?.price_in_usd)
+    }, [amount, fromCurrency, fee])
 
     const updateFocusedFontSize = useCallback((value: string) => {
         if (!isAmountFocused) return;
@@ -78,10 +77,10 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         }
 
         setFocusedFontSize(size);
-    }, [isAmountFocused, isDesktop, focusedFontSize]);
+    }, [isAmountFocused, isDesktop]);
 
     return (<>
-        <motion.div layout="size" className={`flex flex-col w-full bg-secondary-500 rounded-lg peer ${isAmountFocused ? "input-wide" : ""
+        <div className={`flex flex-col w-full bg-secondary-500 rounded-lg peer ${isAmountFocused ? "input-wide" : ""
             }`}>
             <div className="relative w-full">
                 <NumericInput
@@ -98,7 +97,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     className={`${isAmountFocused ? `${focusedFontSize}` : "text-[28px]"} text-primary-text px-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal`}
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
-                        updateRequestedAmountInUsd(parseFloat(e.target.value), fee);
+                        updateRequestedAmountInUsd(parseFloat(e.target.value), fee?.quote.source_token?.price_in_usd);
                         updateFocusedFontSize(e.target.value);
                     }}
                 />
@@ -106,7 +105,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     {`$${requestedAmountInUsd ?? 0}`}
                 </span>
             </div>
-        </motion.div >
+        </div >
     </>)
 });
 
