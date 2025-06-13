@@ -81,8 +81,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     }, [isAmountFocused, isDesktop]);
 
     return (<>
-        <div className={`flex flex-col w-full bg-secondary-500 rounded-lg peer ${isAmountFocused ? "input-wide" : ""
-            }`}>
+        <div className={`flex flex-col w-full bg-secondary-500 rounded-lg peer ${isAmountFocused ? "input-wide" : ""}`}>
             <div className="relative w-full">
                 <NumericInput
                     disabled={diasbled}
@@ -95,14 +94,14 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     precision={fromCurrency?.precision}
                     onFocus={() => setIsAmountFocused(true)}
                     onBlur={() => { setIsAmountFocused(false) }}
-                    className={`${isAmountFocused ? `${focusedFontSize}` : "text-[28px]"} text-primary-text px-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal`}
+                    className={`${isAmountFocused ? `${focusedFontSize}` : "text-[28px]"} text-primary-text placeholder:!text-primary-text pl-0 pr-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal`}
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value), fromCurrencyPriceInUsd);
                         updateFocusedFontSize(e.target.value);
                     }}
                 />
-                <span className="text-base leading-5 font-medium px-2 text-secondary-text">
+                <span className="text-base leading-5 font-medium text-secondary-text">
                     {`$${requestedAmountInUsd ?? 0}`}
                 </span>
             </div>
