@@ -1,6 +1,6 @@
 import useWallet from "./useWallet"
 import { useSettingsState } from "../context/settings"
-import { getKey, useBalanceStore } from "../stores/balanceStore"
+import { useBalanceStore } from "../stores/balanceStore"
 import { SwapDirection } from "../components/DTOs/SwapFormValues"
 import { useEffect, useMemo } from "react"
 import { NetworkWithTokens } from "../Models/Network"

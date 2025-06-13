@@ -26,8 +26,6 @@ export class EVMGasProvider implements Provider {
 
         try {
 
-            if (network.metadata.zks_paymaster_contract) return 0
-
             const { createPublicClient, http } = await import("viem")
             const resolveNetworkChain = (await import("../../resolveChain")).default
             const publicClient = createPublicClient({

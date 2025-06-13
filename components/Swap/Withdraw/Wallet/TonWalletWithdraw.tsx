@@ -7,7 +7,7 @@ import { WithdrawPageProps } from './WalletTransferContent';
 import { useTonConnectUI } from '@tonconnect/ui-react';
 import { Address, JettonMaster, beginCell, toNano } from '@ton/ton'
 import { Token } from '../../../../Models/Network';
-import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { BackendTransactionStatus } from '../../../../lib/apiClients/layerSwapApiClient';
 import tonClient from '../../../../lib/wallets/ton/client';
 import { ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
 import TransactionMessages from '../messages/TransactionMessages';

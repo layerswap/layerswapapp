@@ -1,18 +1,22 @@
-import { useCallback, useRef, useState } from "react";
-import { Route, RouteToken, RowElement } from "../../../Models/Route";
+import { useContext, useEffect, useRef, useState } from "react";
+import { RowElement } from "../../../Models/Route";
 import useWindowDimensions from "../../../hooks/useWindowDimensions";
 import { SwapDirection } from "../../DTOs/SwapFormValues";
 import { useVirtualizer } from "../../../lib/virtual";
-import { Search, CircleX } from "lucide-react";
+import { Search } from "lucide-react";
 import { Accordion } from "../../shadcn/accordion";
 import Row from "./Rows";
 import { LayoutGroup, motion } from "framer-motion";
 import FilledX from "../../icons/FilledX";
 import RouteTokenSwitch from "./RouteTokenSwitch";
+import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
+import { SelectorContext } from "../../Select/CommandNew/Index";
+import useWallet from "@/hooks/useWallet";
+import ConnectWalletButton from "../../Common/ConnectWalletButton";
 
 
 type ContentProps = {
-    onSelect: (route: Route, token: RouteToken) => Promise<void> | void;
+    onSelect: (route: NetworkRoute, token: NetworkRouteToken) => Promise<void> | void;
     searchQuery: string;
     setSearchQuery: (query: string) => void;
     rowElements: RowElement[];
@@ -26,6 +30,8 @@ type ContentProps = {
 export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, allbalancesLoaded, setShowTokens, showTokens }: ContentProps) => {
     const parentRef = useRef<HTMLDivElement>(null)
     const [openValues, setOpenValues] = useState<string[]>(selectedRoute ? [selectedRoute] : [])
+    const { isOpen } = useContext(SelectorContext);
+    const { wallets } = useWallet()
 
     const toggleAccordionItem = (value: string) => {
         setOpenValues((prev) =>
@@ -40,11 +46,18 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
     })
     const items = virtualizer.getVirtualItems()
 
-    return <div className="py-3 overflow-y-auto flex flex-col h-full z-40  pb-6" >
-        <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+    return <div className="py-3 overflow-y-auto flex flex-col h-full z-40" >
+        <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={isOpen} />
         <RouteTokenSwitch showTokens={showTokens} setShowTokens={setShowTokens} />
         <LayoutGroup>
             <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full" ref={parentRef}>
+                {
+                    wallets.length === 0 && direction === 'from' &&
+                    <ConnectWalletButton
+                        descriptionText="Connect your wallet to browse your assets and choose easier"
+                        className="w-full my-2.5"
+                    />
+                }
                 <div className="relative"  >
                     <Accordion type="multiple" value={openValues}>
                         <div>
@@ -95,12 +108,20 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
     </div >
 }
 
-const SearchComponent = ({ searchQuery, setSearchQuery }: { searchQuery: string, setSearchQuery: (query: string) => void }) => {
+const SearchComponent = ({ searchQuery, setSearchQuery, isOpen }: { searchQuery: string, setSearchQuery: (query: string) => void, isOpen?: boolean }) => {
     const { isDesktop } = useWindowDimensions();
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (isOpen && inputRef.current) {
+            inputRef.current.focus();
+        }
+    }, [isOpen]);
 
     return <div className="flex items-center bg-secondary-500 rounded-lg px-2 mb-2">
         <Search className="w-6 h-6 mr-2 text-primary-text-placeholder" />
         <input
+            ref={inputRef}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             autoFocus={isDesktop}

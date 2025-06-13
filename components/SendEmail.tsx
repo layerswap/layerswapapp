@@ -1,12 +1,11 @@
-import { Disclosure } from '@headlessui/react';
-import { Album, ChevronDown, Mail, ScrollText, User } from 'lucide-react';
+import { Album, Mail, ScrollText, User } from 'lucide-react';
 import { Field, Form, Formik, FormikErrors } from 'formik';
 import { FC, useCallback } from 'react'
 import toast from 'react-hot-toast';
 import { useAuthDataUpdate, useAuthState } from '../context/authContext';
 import { useTimerState } from '../context/timerContext';
 import TokenService from '../lib/TokenService';
-import LayerSwapAuthApiClient from '../lib/userAuthApiClient';
+import LayerSwapAuthApiClient from '../lib/apiClients/userAuthApiClient';
 import SubmitButton from './buttons/submitButton';
 import { Widget } from './Widget/Index';
 

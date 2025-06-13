@@ -1,5 +1,4 @@
-import { Refuel } from "../lib/layerSwapApiClient";
-import { ExchangeToken } from "./Exchange";
+import { Refuel } from "../lib/apiClients/layerSwapApiClient";
 
 export enum NetworkType {
     EVM = "evm",
@@ -10,6 +9,7 @@ export enum NetworkType {
     ZkSyncLite = "zksynclite",
     TON = 'ton',
     Fuel = 'fuel',
+    Bitcoin = 'bitcoin',
 }
 
 export class Network {

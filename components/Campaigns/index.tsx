@@ -1,12 +1,12 @@
 import { Gift } from "lucide-react";
 import { FC } from "react";
 import { ApiResponse } from "../../Models/ApiResponse";
-import LayerSwapApiClient, { Campaign } from "../../lib/layerSwapApiClient";
+import LayerSwapApiClient, { Campaign } from "../../lib/apiClients/layerSwapApiClient";
 import SpinIcon from "../icons/spinIcon";
 import useSWR from 'swr'
-import Image from "next/image";
 import LinkWrapper from "../LinkWraapper";
 import { Widget } from "../Widget/Index";
+import { ImageWithFallback } from "../Common/ImageWithFallback";
 
 const Rewards = () => {
 
@@ -30,7 +30,7 @@ const Rewards = () => {
                     <div className="space-y-5 h-full text-primary-text">
                         <div className="space-y-2">
                             <p className="font-bold text-left leading-5">Campaigns</p>
-                            <div className="bg-secondary-700 border border-secondary-700 hover:border-secondary-500 transition duration-200 rounded-lg shadow-lg">
+                            <div className="bg-secondary-500 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-500 hover:border-secondary-400 transition duration-200">
                                 <div className="p-3 space-y-4">
                                     {
                                         activeCampaigns.length > 0 ?
@@ -52,7 +52,7 @@ const Rewards = () => {
                             inactiveCampaigns.length > 0 &&
                             <div className="space-y-2">
                                 <p className="font-bold text-left leading-5">Old campaigns</p>
-                                <div className="bg-secondary-700 border border-secondary-700 hover:border-secondary-500 transition duration-200 rounded-lg shadow-lg">
+                                <div className="bg-secondary-500 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-500 hover:border-secondary-400 transition duration-200">
                                     <div className="p-3 dpsv flex flex-col space-y-4">
                                         {inactiveCampaigns?.map(c =>
                                             <CampaignItem
@@ -85,7 +85,7 @@ const CampaignItem: FC<CampaignProps> = ({ campaign }) => {
         className="flex justify-between items-center">
         <span className="flex items-center gap-1 hover:opacity-70 active:scale-90 duration-200 transition-all">
             <span className="h-5 w-5 relative">
-                {(campaign.logo_url || campaign.network.logo) && <Image
+                {(campaign.logo_url || campaign.network.logo) && <ImageWithFallback
                     src={(campaign.logo_url || campaign.network.logo) as string}
                     alt="Project Logo"
                     height="40"

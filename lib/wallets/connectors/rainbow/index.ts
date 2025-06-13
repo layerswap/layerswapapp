@@ -118,6 +118,7 @@ export function walletConnect(parameters: WalletConnectParameters) {
       name: 'Rainbow',
       rdns: 'rainbow.wc',
       deepLink: 'rainbow://wc',
+      icon: 'https://explorer-api.walletconnect.com/v3/logo/md/7a33d7f1-3d12-4b5c-f3ee-5cd83cb1b500?projectId=34357d3c125c2bcf2ce2bc3309d98715',
       resolveURI: (uri: string) => {
         return isAndroid()
           ? uri

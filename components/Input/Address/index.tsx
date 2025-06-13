@@ -5,7 +5,7 @@ import { Partner } from "../../../Models/Partner"
 import AddressPicker, { AddressTriggerProps } from "./AddressPicker"
 import useSWR from "swr"
 import { ApiResponse } from "../../../Models/ApiResponse"
-import LayerSwapApiClient, { AddressBookItem } from "../../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { AddressBookItem } from "../../../lib/apiClients/layerSwapApiClient"
 import { useAuthState } from "../../../context/authContext"
 
 type AddressProps = {
@@ -18,7 +18,6 @@ const Address = ({ partner, children }: AddressProps) => {
         values,
     } = useFormikContext<SwapFormValues>();
     const { authData } = useAuthState()
-
 
     const layerswapApiClient = new LayerSwapApiClient()
     const address_book_endpoint = authData?.access_token ? `/internal/recent_addresses` : null

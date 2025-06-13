@@ -1,8 +1,7 @@
 
 import useSWR from "swr"
-import LayerSwapApiClient, { SwapResponse, TransactionType } from "../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { SwapResponse, TransactionType } from "../../lib/apiClients/layerSwapApiClient"
 import { ApiResponse } from "../../Models/ApiResponse"
-import Image from 'next/image';
 import { useQueryState } from "../../context/query"
 import { Partner } from "../../Models/Partner"
 import { addressEnding, shortenEmail } from "../utils/ShortenAddress"
@@ -10,11 +9,12 @@ import KnownInternalNames from "../../lib/knownIds"
 import { ChevronRightIcon } from 'lucide-react'
 import StatusIcon from "./StatusIcons"
 import { FC } from "react"
-import { findIndexOfFirstNonZeroAfterComma, truncateDecimalsToFloor } from "../utils/RoundDecimals";
+import { findIndexOfFirstNonZeroAfterComma, truncateDecimals, truncateDecimalsToFloor } from "../utils/RoundDecimals";
 import AddressIcon from "../AddressIcon";
 import { addressFormat } from "../../lib/address/formatter";
 import { SwapStatus } from "../../Models/SwapStatus";
 import { Wallet } from "../../Models/WalletProvider";
+import { ImageWithFallback } from "../Common/ImageWithFallback";
 
 type SwapInfoProps = {
     className?: string,
@@ -74,7 +74,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                         <div className="col-span-1 h-11 w-11 relative min-w-11">
                             {
                                 source &&
-                                <Image
+                                <ImageWithFallback
                                     src={source.logo}
                                     alt={source.display_name}
                                     width={28}
@@ -83,7 +83,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                             }
                             {
                                 destination &&
-                                <Image
+                                <ImageWithFallback
                                     src={destination.logo}
                                     alt={destination.display_name}
                                     width={28}
@@ -95,7 +95,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                         <div className="w-11 h-11 col-span-1">
                             {
                                 source &&
-                                <Image
+                                <ImageWithFallback
                                     src={source.logo}
                                     alt={source.display_name}
                                     width={44}
@@ -178,16 +178,16 @@ const HistorySummary: FC<SwapInfoProps> = ({
 
 const smartDecimalTruncate = (value: number, price_in_usd: number) => {
     let decimals = findIndexOfFirstNonZeroAfterComma((0.01 / Number(price_in_usd.toFixed()))) || 0
-    let truncatedAmount = truncateDecimalsToFloor(value, decimals)
+    let truncatedAmount = truncateDecimals(value, decimals)
 
-    if (truncatedAmount === 0) {
-        while (truncatedAmount === 0) {
+    if (truncatedAmount === "0") {
+        while (truncatedAmount === "0") {
             decimals += 1
-            truncatedAmount = truncateDecimalsToFloor(value, decimals)
+            truncatedAmount = truncateDecimals(value, decimals)
         }
     }
 
-    return truncateDecimalsToFloor(value, decimals)
+    return truncateDecimals(value, decimals)
 }
 
 

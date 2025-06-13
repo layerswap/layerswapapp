@@ -1,7 +1,7 @@
 import { FC } from "react";
-import Image from 'next/image'
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { useFormikContext } from "formik";
+import { ImageWithFallback } from "../Common/ImageWithFallback";
 
 type Props = {
     direction: "from" | "to",
@@ -33,7 +33,7 @@ const TransferCEX: FC<Props> = ({ direction }) => {
             </div>
             <div className="relative flex items-center space-x-2 py-2">
                 <div className="shrink-0 h-6 w-6 relative">
-                    {sourceLogo && <Image
+                    {sourceLogo && <ImageWithFallback
                         src={sourceLogo!}
                         alt="Project Logo"
                         height="40"
@@ -44,7 +44,7 @@ const TransferCEX: FC<Props> = ({ direction }) => {
                 </div>
                 <div className="w-full h-[2px] bg-primary-text-placeholder my-2 line line-left" />
                 <div className="shrink-0 h-8 w-8 relative">
-                    {exchangeNetwork ? <Image
+                    {exchangeNetwork ? <ImageWithFallback
                         src={exchangeNetwork.logo}
                         alt="Project Logo"
                         height="40"
@@ -57,7 +57,7 @@ const TransferCEX: FC<Props> = ({ direction }) => {
                 </div>
                 <div className="w-full h-[2px] bg-primary-text-placeholder my-2 line line-right" />
                 <div className="shrink-0 h-6 w-6 relative">
-                    {destinationLogo && <Image
+                    {destinationLogo && <ImageWithFallback
                         src={destinationLogo!}
                         alt="Project Logo"
                         height="40"

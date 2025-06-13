@@ -2,6 +2,7 @@ import { NetworkBalance } from "../../Models/Balance";
 import { IBalanceProvider } from "../../Models/BalanceProvider";
 import { NetworkWithTokens } from "../../Models/Network";
 import { truncateDecimals } from "../../components/utils/RoundDecimals";
+import { BitcoinBalanceProvider } from "./providers/bitcoinBalanceProvider";
 import { EVMBalanceProvider } from "./providers/evmBalanceProvider";
 import { FuelBalanceProvider } from "./providers/fuelBalanceProvider";
 import { ImmutableXBalanceProvider } from "./providers/immutableXBalanceProvider";
@@ -11,7 +12,7 @@ import { QueryBalanceProvider } from "./providers/queryBalanceProvider";
 import { SolanaBalanceProvider } from "./providers/solanaBalanceProvider";
 import { StarknetBalanceProvider } from "./providers/starknetBalanceProvider";
 import { TonBalanceProvider } from "./providers/tonBalanceProvider";
-import { TronBalanceProvider } from "./providers/tronBalanceResolver";
+import { TronBalanceProvider } from "./providers/tronBalanceProvider";
 import { ZkSyncBalanceProvider } from "./providers/zkSyncBalanceProvider";
 
 export class BalanceResolver {
@@ -27,7 +28,8 @@ export class BalanceResolver {
         new TonBalanceProvider(),
         new ZkSyncBalanceProvider(),
         new TronBalanceProvider(),
-        new ParadexBalanceProvider()
+        new ParadexBalanceProvider(),
+        new BitcoinBalanceProvider()
     ];
 
     async getBalance(network: NetworkWithTokens, address?: string,): Promise<NetworkBalance> {

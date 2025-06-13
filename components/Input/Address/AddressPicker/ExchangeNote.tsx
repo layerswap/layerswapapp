@@ -1,7 +1,7 @@
 import { Info } from "lucide-react";
 import { NetworkRoute, Token } from "../../../../Models/Network";
-import Image from "next/image";
 import { Exchange } from "../../../../Models/Exchange";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 
 const ExchangeNote = ({ destinationAsset, destinationExchange, destination }: { destinationAsset: Token | undefined, destinationExchange: Exchange, destination: NetworkRoute | undefined }) => {
@@ -20,7 +20,7 @@ const ExchangeNote = ({ destinationAsset, destinationExchange, destination }: { 
                     <span>Select</span>
                     <span className="inline-block mx-1">
                         <span className='flex gap-1 items-baseline text-sm '>
-                            <Image src={destinationAsset.logo}
+                            <ImageWithFallback src={destinationAsset.logo}
                                 alt="Project Logo"
                                 height="15"
                                 width="15"
@@ -35,7 +35,7 @@ const ExchangeNote = ({ destinationAsset, destinationExchange, destination }: { 
                     <span>Select</span>
                     <span className="inline-block mx-1">
                         <span className='flex gap-1 items-baseline text-sm '>
-                            <Image src={destination?.logo || ''}
+                            <ImageWithFallback src={destination?.logo || ''}
                                 alt="Project Logo"
                                 height="15"
                                 width="15"

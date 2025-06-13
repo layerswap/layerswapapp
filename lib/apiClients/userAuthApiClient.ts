@@ -1,5 +1,5 @@
 import axios from "axios";
-import { AuthGetCodeResponse, AuthConnectResponse } from "../Models/LayerSwapAuth";
+import { AuthGetCodeResponse, AuthConnectResponse } from "../../Models/LayerSwapAuth";
 
 export default class LayerSwapAuthApiClient {
     static identityBaseEndpoint: string = getIdentityBasePath()

@@ -12,9 +12,9 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     const token = direction === 'from' ? fromCurrency : toCurrency
     const network = direction === 'from' ? from : to
     const address = direction === 'from' ? selectedSourceAccount?.address : destination_address
-    const { balances, isBalanceLoading, isError } = useSWRBalance(address, network)
+    const { balances, isBalanceLoading } = useSWRBalance(address, network)
     const tokenBalance = balances?.find(b => b?.network === from?.name && b?.token === token?.symbol)
-    const truncatedBalance = tokenBalance?.amount && truncateDecimals(tokenBalance?.amount, token?.precision)
+    const truncatedBalance = tokenBalance?.amount !== undefined ? truncateDecimals(tokenBalance?.amount, token?.precision) : ''
 
     const previouslySelectedSource = useRef(from);
 
@@ -34,17 +34,16 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     return (
         <>
             {
-                (network && token && network) &&
-
-                (truncatedBalance !== undefined && !isNaN(truncatedBalance)) &&
+                (network && token && truncatedBalance) ?
                 <motion.div
                     layoutId="affect"
                     className="in-has-[.input-wide]:absolute in-has-[.input-wide]:rounded-lg in-has-[.input-wide]:mt-1 in-has-[.input-wide]:px-1.5 in-has-[.input-wide]:w-full 
                                   in-has-[.input-wide]:py-0.5 in-has-[.input-wide]:m-auto in-has-[.input-wide]:text-xs in-has-[.input-wide]:text-primary-text-placeholder in-has-[.input-wide]:-bottom-6
                                   w-4/5 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs text-primary-text-placeholder"
                 >
-                    <span>{truncatedBalance > 0 ? Number(truncatedBalance.toFixed(token?.precision)).toString() : truncatedBalance}</span>
+                    <span>{truncatedBalance}</span>
                 </motion.div>
+                : null
             }
         </>
     )

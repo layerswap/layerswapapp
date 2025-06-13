@@ -24,7 +24,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
         return connectedWallets;
     }, [walletProviders, network]);
 
-    const getProvider = useCallback(() => (network: Network, purpose: WalletPurpose) => {
+    const getProvider = useCallback((network: Network, purpose: WalletPurpose) => {
         return network && resolveProvider(network, walletProviders, purpose)
     }, [walletProviders, purpose]);
 
@@ -55,7 +55,7 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletPr
     }
 
     if (provider?.isNotAvailableCondition) {
-
+        const availableWalletsForConnect = provider.availableWalletsForConnect?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name) : true)
         const resolvedProvider = {
             ...provider,
             connectedWallets: provider.connectedWallets?.map(wallet => {
@@ -68,7 +68,7 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletPr
                 ...provider.activeWallet,
                 isNotAvailable: (network?.name) ? provider.isNotAvailableCondition(provider.activeWallet.id, network?.name) : false,
             } : undefined,
-            availableWalletsForConnect: provider.availableWalletsForConnect?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name) : true)
+            availableWalletsForConnect
         }
         return resolvedProvider
 

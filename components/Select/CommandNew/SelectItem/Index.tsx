@@ -1,3 +1,4 @@
+import { ImageWithFallback } from '@/components/Common/ImageWithFallback';
 import Image from 'next/image'
 
 type SelectItemWrapperProps = {
@@ -19,7 +20,7 @@ type SeelctItemLogoProps = {
 const Logo = ({ imgSrc, altText, className = 'rounded-md' }: SeelctItemLogoProps) => {
     return <div className="shrink-0 relative h-9 w-9">
         {imgSrc ? <div className='inline-flex items-center relative'>
-            <Image
+            <ImageWithFallback
                 src={imgSrc}
                 alt={altText}
                 height="36"
@@ -63,7 +64,7 @@ const DetailedTitle = ({ children, className, title, secondary, secondaryLogoSrc
             <div className="grid gap-0 leading-5 align-middle space-y-0.5 font-medium">
                 <span className="align-middle">{title}</span>
                 <div className="flex items-center space-x-1 align-middle" >
-                    {secondaryLogoSrc && <Image
+                    {secondaryLogoSrc && <ImageWithFallback
                         src={secondaryLogoSrc}
                         alt={title}
                         height="36"

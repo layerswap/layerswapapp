@@ -1,10 +1,10 @@
-import Image from 'next/image';
 import { FeeData, useLoopringTokens } from './hooks';
 import { ISelectMenuItem } from '../../../../Select/Shared/Props/selectMenuItem';
 import formatAmount from '../../../../../lib/formatAmount';
 import { useEffect, useState } from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '../../../../shadcn/select';
 import { UserBalanceInfo } from '../../../../../lib/loopring/defs';
+import { ImageWithFallback } from '@/components/Common/ImageWithFallback';
 
 export const ActivationTokenPicker = ({ availableBalances, defaultValue, onChange, feeData }: { availableBalances: UserBalanceInfo[] | undefined, defaultValue: UserBalanceInfo | undefined, feeData: FeeData | undefined, onChange: (v: string | undefined) => void }) => {
     const { tokens } = useLoopringTokens()
@@ -72,7 +72,7 @@ export const ActivationTokenPicker = ({ availableBalances, defaultValue, onChang
                                             <div className="shrink-0 h-5 w-5 relative">
                                                 {
                                                     cv &&
-                                                    <Image
+                                                    <ImageWithFallback
                                                         src={cv.imgSrc}
                                                         alt="From Logo"
                                                         height="60"

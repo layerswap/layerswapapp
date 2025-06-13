@@ -1,9 +1,5 @@
-import { Context, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { ChevronLeft } from 'lucide-react';
-import IconButton from '../buttons/iconButton';
-import VaulDrawer from '../modal/vaulModal';
+import { Context, createContext, useCallback, useContext, useMemo, useState } from 'react'
 import { InternalConnector, Wallet, WalletProvider } from '../../Models/WalletProvider';
-import ConnectorsList from './ConnectorsList';
 
 export type WalletModalConnector = InternalConnector & {
     qr?: ({
@@ -15,13 +11,17 @@ export type WalletModalConnector = InternalConnector & {
     });
 }
 
+export type ModalWalletProvider = WalletProvider & {
+    isSelectedFromFilter?: boolean;
+}
+
 type SharedType = { provider?: WalletProvider, connectCallback: (value: Wallet | undefined) => void }
 
 type ConnectModalContextType = {
     connect: ({ provider, connectCallback }: SharedType) => void;
     cancel: () => void;
-    selectedProvider: WalletProvider | undefined;
-    setSelectedProvider: (value: WalletProvider | undefined) => void;
+    selectedProvider: ModalWalletProvider | undefined;
+    setSelectedProvider: (value: ModalWalletProvider | undefined) => void;
     isWalletModalOpen?: boolean;
     selectedConnector: WalletModalConnector | undefined;
     setSelectedConnector: (value: WalletModalConnector | undefined) => void;
@@ -36,7 +36,7 @@ const ConnectModalContext = createContext<ConnectModalContextType | null>(null);
 export function WalletModalProvider({ children }) {
     const [connectConfig, setConnectConfig] = useState<SharedType | undefined>(undefined);
 
-    const [selectedProvider, setSelectedProvider] = useState<WalletProvider | undefined>(undefined);
+    const [selectedProvider, setSelectedProvider] = useState<ModalWalletProvider | undefined>(undefined);
     const [selectedConnector, setSelectedConnector] = useState<WalletModalConnector | undefined>(undefined);
     const [open, setOpen] = useState(false);
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);

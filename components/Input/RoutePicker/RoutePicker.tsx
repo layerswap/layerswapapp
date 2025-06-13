@@ -5,10 +5,10 @@ import { Selector, SelectorContent, SelectorTrigger } from "../../Select/Command
 import { SelectedRouteDisplay } from "./Routes";
 import React from "react";
 import useFormRoutes from "../../../hooks/useFormRoutes";
-import { Route, RouteToken } from "../../../Models/Route";
 import Balance from "../Amount/Balance";
 import { Content } from "./Content";
-
+import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
+import PickerWalletConnect from "./RouterPickerWalletConnect";
 
 const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -20,21 +20,12 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const { allRoutes, isLoading, routeElements, tokenElements, selectedRoute, selectedToken, allbalancesLoaded } = useFormRoutes({ direction, values }, searchQuery)
     const currencyFieldName = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const [showTokens, setShowTokens] = useState(false);
-    console.log(tokenElements, "tokenElements")
-    console.log(routeElements, "routeElements")
+
     useEffect(() => {
 
         if (!selectedRoute || !selectedToken || !allRoutes) return
 
         const updatedRoute = allRoutes.find(r => r.name === selectedRoute.name)
-
-        //TODO: handle cex
-        if (updatedRoute?.cex) {
-            const updatedToken = updatedRoute?.token_groups?.find(t => t.symbol === selectedToken.symbol)
-            if (updatedToken === selectedToken) return
-            setFieldValue("currencyGroup", updatedToken, true)
-            return;
-        }
 
         const updatedToken = updatedRoute?.tokens?.find(t => t.symbol === selectedToken.symbol)
 
@@ -47,20 +38,9 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     }, [selectedRoute, selectedToken, allRoutes])
 
-    const handleSelect = useCallback(async (route: Route, token: RouteToken) => {
-        if (route.cex) {
-            setFieldValue(currencyFieldName, null)
-            setFieldValue(direction, null)
-
-            setFieldValue('currencyGroup', token, true)
-            setFieldValue(`${direction}Exchange`, route, true)
-        }
-        else {
-            setFieldValue(`${direction}Exchange`, null)
-
-            setFieldValue(currencyFieldName, token, true)
-            setFieldValue(direction, route, true)
-        }
+    const handleSelect = useCallback(async (route: NetworkRoute, token: NetworkRouteToken) => {
+        setFieldValue(currencyFieldName, token, true)
+        setFieldValue(direction, route, true)
     }, [currencyFieldName, direction, values, showTokens])
 
     return (
@@ -69,10 +49,10 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 <SelectorTrigger disabled={false}>
                     <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select Token" />
                 </SelectorTrigger>
-                <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search">
+                <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search" header={<PickerWalletConnect />}>
                     {({ closeModal }) => (
                         <Content
-                            key={String(showTokens)} 
+                            key={String(showTokens)}
                             allbalancesLoaded={allbalancesLoaded}
                             onSelect={(r, t) => { handleSelect(r, t); closeModal(); }}
                             searchQuery={searchQuery}
@@ -87,7 +67,8 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                     )}
                 </SelectorContent>
             </Selector>
-            {direction === 'from' &&
+            {
+                direction === 'from' &&
                 <Balance values={values} direction="from" />
             }
         </div>

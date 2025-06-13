@@ -16,10 +16,8 @@ type AddressButtonProps = {
 }
 
 const AddressButton: FC<AddressButtonProps> = ({ openAddressModal, disabled, children }) => {
-    return <button type="button" className="w-full" disabled={disabled} onClick={openAddressModal} >
-        {
-            children
-        }
+    return <button type="button" className="w-fit" disabled={disabled} onClick={openAddressModal} >
+        {children}
     </button>
 }
 

@@ -1,10 +1,10 @@
 import shortenAddress from "../utils/ShortenAddress";
-import Image from "next/image";
 import { ChevronDown } from "lucide-react";
 import { AddressGroup, AddressItem, AddressTriggerProps } from "./Address/AddressPicker";
 import { Partner } from "../../Models/Partner";
 import AddressIcon from "../AddressIcon";
 import { Wallet } from "../../Models/WalletProvider";
+import { ImageWithFallback } from "../Common/ImageWithFallback";
 
 
 const Component = (props: AddressTriggerProps) => {
@@ -14,8 +14,8 @@ const Component = (props: AddressTriggerProps) => {
             addressItem &&
             <div className="flex items-center space-x-2 text-sm leading-4">
                 {<>
-                    <div className="rounded-lg flex space-x-1 items-center py-0.5 pl-2 cursor-pointer">
-                        <div className="inline-flex items-center relative p-0.5">
+                    <div className="rounded-lg flex space-x-1 items-center cursor-pointer">
+                        <div className="inline-flex items-center relative px-0.5">
                             <ResolvedIcon addressItem={addressItem} partner={partner} wallet={connectedWallet} />
                         </div>
                         <div className="text-primary-text">
@@ -28,7 +28,7 @@ const Component = (props: AddressTriggerProps) => {
                 </>
                 }
             </div >
-        }   
+        }
     </>
 }
 type AdderssIconprops = {
@@ -42,7 +42,7 @@ const ResolvedIcon = (props: AdderssIconprops) => {
         return <div className="rounded-lg bg-secondary-700 pl-2 flex items-center space-x-2 text-sm leading-4">
             {
                 partner?.logo &&
-                <Image
+                <ImageWithFallback
                     alt="Partner logo"
                     className='rounded-md object-contain'
                     src={partner.logo}
