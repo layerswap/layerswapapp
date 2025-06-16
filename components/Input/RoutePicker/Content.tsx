@@ -9,7 +9,7 @@ import Row from "./Rows";
 import { LayoutGroup, motion } from "framer-motion";
 import FilledX from "../../icons/FilledX";
 import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
-import { SelectorContext } from "../../Select/CommandNew/Index";
+import { useSelectorState } from "../../Select/CommandNew/Index";
 import useWallet from "@/hooks/useWallet";
 import ConnectWalletButton from "../../Common/ConnectWalletButton";
 
@@ -29,7 +29,7 @@ type ContentProps = {
 export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, allbalancesLoaded, setShowTokens, showTokens }: ContentProps) => {
     const parentRef = useRef<HTMLDivElement>(null)
     const [openValues, setOpenValues] = useState<string[]>(selectedRoute ? [selectedRoute] : [])
-    const { isOpen } = useContext(SelectorContext);
+    const { isOpen } = useSelectorState();
     const { wallets } = useWallet()
 
     const toggleAccordionItem = (value: string) => {
@@ -45,7 +45,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
     })
     const items = virtualizer.getVirtualItems()
 
-    return <div className="py-3 overflow-y-auto flex flex-col h-full z-40" >
+    return <div className="overflow-y-auto flex flex-col h-full z-40" >
         <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={isOpen} />
         <LayoutGroup>
             <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full" ref={parentRef}>

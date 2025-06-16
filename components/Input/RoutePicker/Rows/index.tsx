@@ -1,10 +1,11 @@
 import { RefObject } from "react";
-import { RowElement, GroupedTokenElement } from "../../../../Models/Route";
-import { SwapDirection } from "../../../DTOs/SwapFormValues";
+import { RowElement } from "@/Models/Route";
+import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { CurrencySelectItemDisplay } from "../Routes";
 import { CollapsibleRow } from "./CollapsibleRow";
-import { NetworkRoute, NetworkRouteToken } from "../../../../Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import RouteTokenSwitch from "../RouteTokenSwitch";
+import clsx from "clsx";
 
 type Props = {
     item: RowElement;
@@ -55,7 +56,12 @@ export default function Row({
         const isSelected = selectedRoute === route.name && selectedToken === token.symbol;
 
         return (
-            <div className={`${item.type === "top_token" ? "" : "pl-5"} cursor-pointer hover:bg-secondary-300 ${isSelected ? "bg-secondary-300" : ""} outline-none disabled:cursor-not-allowed`} onClick={() => onSelect(route, token)} >
+            <div className={clsx("cursor-pointer hover:bg-secondary-300 outline-none disabled:cursor-not-allowed",
+                {
+                    "bg-secondary-300": isSelected,
+                    "pl-5": item.type === "top_token",
+                }
+            )} onClick={() => onSelect(route, token)} >
                 <CurrencySelectItemDisplay
                     allbalancesLoaded={allbalancesLoaded}
                     item={token}

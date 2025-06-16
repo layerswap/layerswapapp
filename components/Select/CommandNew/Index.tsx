@@ -7,7 +7,7 @@ type SelectorProps = {
     isOpen: boolean
 }
 
-export const SelectorContext = createContext<SelectorProps>({ isOpen: false, setIsOpen: () => { } });
+const SelectorContext = createContext<SelectorProps>({ isOpen: false, setIsOpen: () => { } });
 
 export const Selector = ({ children }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -18,6 +18,14 @@ export const Selector = ({ children }) => {
         </SelectorContext.Provider>
     );
 };
+
+export const useSelectorState = () => {
+    const context = useContext(SelectorContext);
+    if (!context) {
+        throw new Error("useSelectorContext must be used within a SelectorProvider");
+    }
+    return context;
+}
 
 type ContentChildProps = {
     closeModal: () => void;
