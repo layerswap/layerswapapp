@@ -19,7 +19,7 @@ const RefuelToggle = dynamic(() => import("./Refuel"), {
 });
 
 export default function FeeDetailsComponent({ values }: { values: SwapFormValues }) {
-    const { toCurrency, to, refuel, toExchange, from, fromCurrency, amount, destination_address } = values || {};
+    const { toCurrency, to, toExchange, from, fromCurrency, amount, destination_address } = values || {};
     const { fee, isFeeLoading } = useFee()
     const query = useQueryState();
     const [openRefuelModal, setOpenRefuelModal] = useState<boolean>(false)

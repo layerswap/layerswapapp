@@ -55,7 +55,7 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletPr
     }
 
     if (provider?.isNotAvailableCondition) {
-
+        const availableWalletsForConnect = provider.availableWalletsForConnect?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name) : true)
         const resolvedProvider = {
             ...provider,
             connectedWallets: provider.connectedWallets?.map(wallet => {
@@ -68,7 +68,7 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletPr
                 ...provider.activeWallet,
                 isNotAvailable: (network?.name) ? provider.isNotAvailableCondition(provider.activeWallet.id, network?.name) : false,
             } : undefined,
-            availableWalletsForConnect: provider.availableWalletsForConnect?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name) : true)
+            availableWalletsForConnect
         }
         return resolvedProvider
 

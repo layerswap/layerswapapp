@@ -1,9 +1,5 @@
-import { Context, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { ChevronLeft } from 'lucide-react';
-import IconButton from '../buttons/iconButton';
-import VaulDrawer from '../modal/vaulModal';
+import { Context, createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { InternalConnector, Wallet, WalletProvider } from '../../Models/WalletProvider';
-import ConnectorsList from './ConnectorsList';
 
 export type WalletModalConnector = InternalConnector & {
     qr?: ({
@@ -15,13 +11,17 @@ export type WalletModalConnector = InternalConnector & {
     });
 }
 
+export type ModalWalletProvider = WalletProvider & {
+    isSelectedFromFilter?: boolean;
+}
+
 type SharedType = { provider?: WalletProvider, connectCallback: (value: Wallet | undefined) => void }
 
 type ConnectModalContextType = {
     connect: ({ provider, connectCallback }: SharedType) => void;
     cancel: () => void;
-    selectedProvider: WalletProvider | undefined;
-    setSelectedProvider: (value: WalletProvider | undefined) => void;
+    selectedProvider: ModalWalletProvider | undefined;
+    setSelectedProvider: (value: ModalWalletProvider | undefined) => void;
     isWalletModalOpen?: boolean;
     selectedConnector: WalletModalConnector | undefined;
     setSelectedConnector: (value: WalletModalConnector | undefined) => void;
@@ -36,12 +36,12 @@ const ConnectModalContext = createContext<ConnectModalContextType | null>(null);
 export function WalletModalProvider({ children }) {
     const [connectConfig, setConnectConfig] = useState<SharedType | undefined>(undefined);
 
-    const [selectedProvider, setSelectedProvider] = useState<WalletProvider | undefined>(undefined);
+    const [selectedProvider, setSelectedProvider] = useState<ModalWalletProvider | undefined>(undefined);
     const [selectedConnector, setSelectedConnector] = useState<WalletModalConnector | undefined>(undefined);
     const [open, setOpen] = useState(false);
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
-    const connect = useCallback(async ({ provider, connectCallback }: SharedType) => {
+    const connect = async ({ provider, connectCallback }: SharedType) => {
         if (!provider?.availableWalletsForConnect) {
             await provider?.connectWallet()
         }
@@ -49,23 +49,23 @@ export function WalletModalProvider({ children }) {
         setOpen(true)
         setConnectConfig({ provider, connectCallback });
         return;
-    }, [setSelectedProvider, setOpen, setConnectConfig]);
+    }
 
-    const cancel = useCallback(() => {
+    const cancel = () => {
         if (connectConfig) {
             connectConfig.connectCallback(undefined);
             setConnectConfig(undefined);
         }
         setOpen(false);
-    }, [connectConfig, setConnectConfig, setOpen]);
+    }
 
-    const onFinish = useCallback((connectedWallet?: Wallet | undefined) => {
+    const onFinish = (connectedWallet?: Wallet | undefined) => {
         if (connectConfig) {
             connectConfig.connectCallback(connectedWallet);
             setConnectConfig(undefined);
         }
         setOpen(false);
-    }, [connectConfig, setConnectConfig, setOpen]);
+    }
 
     const goBack = useCallback(() => {
         if (selectedConnector) {
@@ -74,10 +74,16 @@ export function WalletModalProvider({ children }) {
         }
     }, [setSelectedConnector, selectedConnector])
 
-    const value = useMemo(() => ({ connect, cancel, selectedProvider, setSelectedProvider, selectedConnector, setSelectedConnector, isWalletModalOpen, goBack, onFinish, setOpen, open }), [connect, cancel, selectedProvider, setSelectedProvider, selectedConnector, setSelectedConnector, isWalletModalOpen, goBack, onFinish, setOpen, open])
-    
+    useEffect(() => {
+        if (!open && selectedConnector) {
+            setSelectedConnector(undefined)
+            setSelectedProvider(undefined)
+        }
+        setIsWalletModalOpen(open)
+    }, [open])
+
     return (
-        <ConnectModalContext.Provider value={value}>
+        <ConnectModalContext.Provider value={{ connect, cancel, selectedProvider, setSelectedProvider, selectedConnector, setSelectedConnector, isWalletModalOpen, goBack, onFinish, setOpen, open }}>
             {children}
         </ConnectModalContext.Provider>
     )

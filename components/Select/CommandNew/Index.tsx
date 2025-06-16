@@ -1,7 +1,6 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, ReactNode, useContext, useState } from "react";
 import { LeafletHeight } from "../../modal/leaflet";
 import Modal from "../../modal/modal";
-import { motion } from "framer-motion";
 
 type SelectorProps = {
     setIsOpen: (value: boolean) => void;
@@ -25,7 +24,7 @@ type ContentChildProps = {
 }
 
 type SelectContentProps = {
-    header?: string;
+    header?: ReactNode;
     searchHint?: string;
     modalHeight?: LeafletHeight;
     modalContent?: React.ReactNode;
@@ -37,17 +36,26 @@ export const SelectorContent = (props: SelectContentProps) => {
     const { children, modalContent, header, modalHeight, searchHint, isLoading } = props
     const { isOpen, setIsOpen } = useContext(SelectorContext);
     const closeModal = () => setIsOpen(false)
-
-    return <Modal height={modalHeight} show={isOpen} setShow={setIsOpen} modalId='comandSelect'>
-        {header ? <div className="absolute top-4 left-8 text-lg text-secondary-text font-semibold">
-            <div>{header}</div>
-        </div> : <div></div>}
-        {isOpen ?
-            <div className="h-full">
-                {modalContent}
-                {children({ closeModal })}
-            </div>
-            : <></>
+    return <Modal
+        header={
+            header ?
+                <div className="flex-1 text-lg text-secondary-text font-semibold w-full flex justify-end">
+                    {header}
+                </div>
+                : <></>
+        }
+        height={modalHeight}
+        show={isOpen}
+        setShow={setIsOpen}
+        modalId='comandSelect'
+    >
+        {
+            isOpen ?
+                <div className="h-full">
+                    {modalContent}
+                    {children({ closeModal })}
+                </div>
+                : <></>
         }
     </Modal>
 }
@@ -68,7 +76,7 @@ export const SelectorTrigger = (props: SelectTriggerProps) => {
             type="button"
             onClick={openModal}
             disabled={disabled}
-            className="rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full px-2 pr-0 pl-2 bg-secondary-300 font-semibold"
+            className="rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full px-2 pr-0 bg-secondary-300 font-semibold"
         >
             {children}
         </button>

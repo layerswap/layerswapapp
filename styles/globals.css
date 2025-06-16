@@ -88,7 +88,7 @@
   }
   
   .styled-scroll {
-    @apply scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-secondary-500  scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-500/50 ;
+    @apply scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-secondary-500 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-500/50 ;
   }
   
   .rdxCommandList {
@@ -99,7 +99,7 @@
 @layer base {
 
   body {
-    @apply bg-secondary-900 sm:bg-secondary-950;
+    @apply bg-secondary-900 sm:bg-gradient-to-b to-secondary-500 from-secondary-900;
   }
 
   /* On iOS disabled inputs have default opacitiy */
@@ -112,25 +112,6 @@
 iframe body {
   display: none;
 }
-
-.light .top-backdrop {
-  display: none;
-}
-
-.top-backdrop {
-  width: 1325px;
-  height: 1164px;
-  position: absolute;
-  filter: blur(133px);
-  transform: translate(-50%, -50%) translate3d(0, 0, 0);
-  left: 50%;
-  top: -5%;
-  border-radius: 50%;
-  z-index: -1;
-  opacity: 80%;
-  background: var(--color-primary-background);
-}
-
 
 input:-webkit-autofill,
 input:-webkit-autofill:hover,

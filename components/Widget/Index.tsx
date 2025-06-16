@@ -28,8 +28,9 @@ const Widget = ({ children, className, hideMenu }: Props) => {
 
    const handleBack = router.pathname === "/" ? null : goBack
 
-   return <>
-      <div id="widget" className={`bg-secondary-700 md:shadow-card rounded-lg w-full sm:overflow-hidden relative `}>
+   return <div className="relative p-px">
+      <div className="invisible sm:visible absolute inset-0 rounded-[25px] bg-gradient-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
+      <div id="widget" className='md:shadow-lg rounded-3xl w-full sm:overflow-hidden relative bg-gradient-to-b from-secondary-700 to-secondary-700'>
          <div className="relative z-20">
             {
                AppSettings.ApiVersion === 'sandbox' &&
@@ -45,8 +46,6 @@ const Widget = ({ children, className, hideMenu }: Props) => {
             !hideMenu &&
             <HeaderWithMenu goBack={handleBack} />
          }
-         <div className='text-center text-xl text-secondary-100'>
-         </div>
          <div className="relative px-6">
             <div className="flex items-start" ref={wrapper}>
                <div className={`flex flex-nowrap grow`}>
@@ -58,7 +57,7 @@ const Widget = ({ children, className, hideMenu }: Props) => {
          </div>
          <div id="widget_root" />
       </div>
-   </>
+   </div>
 }
 
 Widget.Content = Content

@@ -1,4 +1,4 @@
-import { Dispatch, FC, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
+import { Dispatch, FC, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useWallet from "../../hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
 import { InternalConnector, Wallet, WalletProvider } from "../../Models/WalletProvider";
@@ -11,11 +11,11 @@ import useWindowDimensions from "../../hooks/useWindowDimensions";
 import Connector from "./Connector";
 import { removeDuplicatesWithKey } from "./utils";
 import VaulDrawer from "../modal/vaulModal";
-import Image from "next/image";
 import { usePersistedState } from "../../hooks/usePersistedState";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
 import { Checkbox } from "../shadcn/checkbox";
+import { ImageWithFallback } from "../Common/ImageWithFallback";
 
 const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { isMobile } = useWindowDimensions()
@@ -84,6 +84,12 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 setConnectionError(e.message || e.details || 'Something went wrong')
             }
         }
+    }
+
+    const handleSelectProvider = (providerName?: string) => {
+        const provider = filteredProviders.find(p => p.name === providerName)
+        if (!provider) return setSelectedProvider(undefined)
+        setSelectedProvider({ ...provider, isSelectedFromFilter: true })
     }
 
     const filteredProviders = providers.filter(p => !p.hideFromList)
@@ -169,11 +175,14 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                             </button>
                         }
                     </div>
-                    <ProviderPicker
-                        providers={filteredProviders}
-                        selectedProviderName={selectedProvider?.name}
-                        setSelectedProviderName={(v) => setSelectedProvider(filteredProviders.find(p => p.name === v))}
-                    />
+                    {
+                        (!selectedProvider || selectedProvider?.isSelectedFromFilter) &&
+                        <ProviderPicker
+                            providers={filteredProviders}
+                            selectedProviderName={selectedProvider?.name}
+                            setSelectedProviderName={handleSelectProvider}
+                        />
+                    }
                 </div>
                 <div
                     onScroll={handleScroll}
@@ -282,7 +291,7 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
             }
             {
                 connectionError &&
-                <div className={`bg-secondary-700 rounded-lg flex flex-col gap-1.5 items-center p-3 w-full absolute bottom-0`}>
+                <div className={`bg-secondary-500 rounded-lg flex flex-col gap-1.5 items-center p-3 w-full absolute bottom-0`}>
                     <div className="flex w-full gap-1 text-sm text-secondary-text justify-start">
                         <CircleX className="w-5 h-5 stroke-primary-500 mr-1 mt-0.5 flex-shrink-0" />
                         <div className='flex flex-col gap-1'>
@@ -294,7 +303,7 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
                     </div>
                     <button
                         type="button"
-                        className="flex gap-1.5 items-center justify-center bg-secondary-500 w-full text-primary-text p-4 border-none rounded-lg cursor-pointer text-sm font-medium leading-4"
+                        className="flex gap-1.5 items-center justify-center bg-secondary-400 w-full text-primary-text p-4 border-none rounded-lg cursor-pointer text-sm font-medium leading-4"
                         onClick={onRetry}
                     >
                         <RotateCw className='h-4 w-4' />
@@ -329,12 +338,15 @@ const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: st
             <PopoverContent align="end" className="min-w-40 !text-primary-text p-2 space-y-1 !bg-secondary-600 !rounded-xl">
                 {
                     values.sort().map((item, index) => (
-                        <div key={index} onClick={() => onSelect(item)} className="px-3 py-1 text-left flex items-center w-full gap-3 hover:bg-secondary-800 rounded-lg transition-colors duration-200 text-secondary-text cursor-pointer">
+                        <div key={index} className="px-3 py-1 text-left flex items-center w-full gap-3 hover:bg-secondary-800 rounded-lg transition-colors duration-200 text-secondary-text cursor-pointer">
                             <Checkbox
                                 id={item}
                                 checked={selectedProviderName === item}
+                                onClick={() => onSelect(item)}
                             />
-                            {item}
+                            <label htmlFor={item} className="w-full cursor-pointer">
+                                {item}
+                            </label>
                         </div>
                     ))
                 }
@@ -384,11 +396,11 @@ const MultichainConnectorModal: FC<MultichainConnectorModalProps> = ({ selectedC
                                         setShowEcosystemSelection(false);
                                         await connect(connector!, provider!)
                                     }}
-                                    className="w-full h-fit flex items-center gap-3 bg-secondary-700 hover:bg-secondary-500 transition-colors duration-200 rounded-xl p-3"
+                                    className="w-full h-fit flex items-center gap-3 bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl p-3"
                                 >
                                     {
                                         provider?.providerIcon &&
-                                        <Image
+                                        <ImageWithFallback
                                             className="w-8 h-8 rounded-md"
                                             width={30}
                                             height={30}

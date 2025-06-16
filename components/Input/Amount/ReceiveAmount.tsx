@@ -1,6 +1,6 @@
 import { FC } from "react";
-import { Token } from "../../../Models/Network";
-import { Quote } from "../../../lib/layerSwapApiClient";
+import { Token } from "@/Models/Network";
+import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 
 type ReceiveAmountProps = {
     destination_token: Token | undefined;
@@ -16,10 +16,10 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ source_token, destinatio
 
     return (<>
         <div className="flex flex-col min-w-0 rounded-lg font-normal border-0 text-[28px] text-primary-text w-full relative">
-            <div className="h-[36px] px-2 flex items-center justify-start w-full relative">
+            <div className="h-[48px] flex items-center justify-start w-full relative">
                 {isFeeLoading ? (
                     <div className="h-full w-full flex items-center">
-                        <div className="h-[12px] w-16 bg-gray-500 rounded-sm animate-pulse" />
+                        <div className="h-[28px] w-24 bg-gray-500 rounded-sm animate-pulse" />
                     </div>
                 ) : (
                     <div className="w-full flex items-center">
@@ -31,7 +31,7 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ source_token, destinatio
                     </div>
                 )}
             </div>
-            <span className="text-base leading-5 font-medium px-2 text-secondary-text">
+            <span className="text-base leading-5 font-medium text-secondary-text">
                 {`$${receiveAmountInUsd ?? 0}`}
             </span>
         </div>

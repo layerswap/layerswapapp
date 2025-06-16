@@ -1,15 +1,15 @@
 import useSWR from "swr";
 import { SwapDirection, SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../helpers/routes";
-import LayerSwapApiClient from "../lib/layerSwapApiClient";
 import { ApiResponse } from "../Models/ApiResponse";
 import { NetworkRoute } from "../Models/Network";
 import { useEffect, useMemo, useState } from "react";
 import { useSettingsState } from "../context/settings";
 import { Exchange } from "../Models/Exchange";
-import { NetworkElement, RowElement, NetworkTokenElement, _Route, _RoutesGroup, ExchangeTokenElement, ExchangeElement, TitleElement, GroupedTokenElement, GroupTokensResult } from "../Models/Route";
+import { NetworkElement, RowElement, NetworkTokenElement, _Route, _RoutesGroup, ExchangeTokenElement, ExchangeElement, TitleElement, GroupTokensResult } from "../Models/Route";
 import useAllBalances from "./useAllBalances";
 import { NetworkBalance } from "../Models/Balance";
+import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 
 type Props = {
     direction: SwapDirection;
