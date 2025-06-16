@@ -10,7 +10,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { mainnet } from 'viem/chains';
 import useCustomEvm from '@/hooks/useCustomEvm';
 
-const config = createConfig({
+const wagmiConfig = createConfig({
     chains: [mainnet],
     multiInjectedProviderDiscovery: false,
     transports: {
@@ -21,8 +21,9 @@ const config = createConfig({
 const queryClient = new QueryClient();
 
 const LayerswapWidget: FC = () => {
-    const { widgetRenderKey, themeData, featuredNetwork, showLoading } = useWidgetContext();
+    const { widgetRenderKey, showLoading, config } = useWidgetContext();
     const settings = useSettingsState();
+
     return (
         <DynamicContextProvider
             settings={{
@@ -37,26 +38,17 @@ const LayerswapWidget: FC = () => {
                     <LayerswapProvider
                         apiKey={process.env.NEXT_PUBLIC_LAYERSWAP_API_KEY as string}
                         integrator="test"
-                        themeData={themeData}
                         settings={settings}
+                        config={config}
                     >
-                        <WagmiProvider config={config}>
+                        <WagmiProvider config={wagmiConfig}>
                             <QueryClientProvider client={queryClient}>
                                 <CutsomHooks>
-                                    {showLoading ? <WidgetLoading />
-                                        : <Swap
-                                            featuredNetwork={
-                                                featuredNetwork &&
-                                                    featuredNetwork.initialDirection &&
-                                                    featuredNetwork.network ?
-                                                    {
-                                                        initialDirection: featuredNetwork.initialDirection,
-                                                        network: featuredNetwork.network,
-                                                        oppositeDirectionOverrides: featuredNetwork.oppositeDirectionOverrides,
-                                                    }
-                                                    : undefined
-                                            }
-                                        />}
+                                    {
+                                        showLoading
+                                            ? <WidgetLoading />
+                                            : <Swap />
+                                    }
                                 </CutsomHooks>
                             </QueryClientProvider>
                         </WagmiProvider>

@@ -74,8 +74,7 @@ export function MultiSelect({
                                 type="button"
                                 onClick={() => toggleOption(opt.value)}
                                 className={cn(
-                                    "flex w-full items-center justify-between rounded-md border px-3 py-2 text-sm transition-colors",
-                                    "border-secondary-500 bg-secondary-600 text-secondary-text",
+                                    "flex w-full items-center justify-between rounded-md border px-3 py-2 text-sm transition-colors hover:bg-secondary-500 duration-200 border-secondary-400 bg-secondary-600 text-secondary-text",
                                     selected && "border-primary text-primary-text"
                                 )}
                             >

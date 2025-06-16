@@ -1,18 +1,23 @@
 "use client";
-import { useWidgetContext } from "@/context/ConfigContext";
+import { featuredNetworkType, useWidgetContext } from "@/context/ConfigContext";
 import hljs from 'highlight.js';
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Files } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger, } from "@/components/ui/tooltip"
 
 export function CodeSegment() {
-    const { themeData } = useWidgetContext();
-    const data = themeData && formatObjectLiteral(themeData)
+    const { themeData, actionText, featuredNetwork } = useWidgetContext();
+    const data = themeData && formatObjectLiteral(themeData, actionText, featuredNetwork)
     const [copied, setCopied] = useState(false);
+    const codeRef = useRef<HTMLElement>(null);
 
     useEffect(() => {
-        hljs.highlightAll();
-    }, []);
+        if (codeRef.current && data) {
+            codeRef.current.textContent = data;
+            codeRef.current.removeAttribute("data-highlighted");
+            hljs.highlightElement(codeRef.current);
+        }
+    }, [data]);
 
     const handleCopy = async () => {
         if (data) {
@@ -34,7 +39,7 @@ export function CodeSegment() {
             </Tooltip>
             <div className="px-6 pb-14 pt-6">
                 <pre>
-                    <code className='language-javascript styled-scroll'>
+                    <code ref={codeRef} className='language-javascript styled-scroll'>
                         {data}
                     </code>
                 </pre>
@@ -43,12 +48,20 @@ export function CodeSegment() {
     );
 }
 
-function formatObjectLiteral(obj: Record<string, any>, indent = 2): string {
+function formatObjectLiteral(
+    obj: Record<string, any>,
+    actionText?: string,
+    featuredNetwork?: featuredNetworkType,
+    indent = 2,
+): string {
     const space = ' '.repeat(indent);
 
     function formatValue(value: any, depth: number): string {
         if (typeof value === 'string') {
             return `"${value}"`;
+        }
+        if (Array.isArray(value)) {
+            return `[${value.map(v => formatValue(v, depth)).join(', ')}]`;
         }
         if (typeof value === 'object' && value !== null) {
             const entries = Object.entries(value)
@@ -63,5 +76,24 @@ function formatObjectLiteral(obj: Record<string, any>, indent = 2): string {
         .map(([key, value]) => `${space}${key}: ${formatValue(value, indent * 2)}`)
         .join(',\n');
 
-    return `const config = {\n${entries}\n}`;
+    const innerIndent = indent * 2;
+    const innerSpace = ' '.repeat(innerIndent);
+    const indentedEntries = entries
+        .split('\n')
+        .map(line => innerSpace + line.trim())
+        .join('\n');
+
+    let result = `const config = {\n${space}theme: {\n${indentedEntries}\n${space}},`;
+
+    if (actionText && actionText !== "Swap now") {
+        result += `\n\n${space}actionText: "${actionText}",`;
+    }
+
+    if (featuredNetwork?.network) {
+        result += `\n\n${space}featuredNetwork: ${formatValue(featuredNetwork, indent * 2)}`;
+    }
+
+    result += `\n}`;
+
+    return result;
 }

@@ -31,17 +31,23 @@ export function ColorBox({ rgbColor, colorKey }: ColorPickerProps) {
     const textColor = isDarkColor(rgbColor) ? 'white' : 'black';
 
     const handleColorChange = ({ b, g, r }: RgbColor) => {
-        const group = colorKey.startsWith("primary") ? "primary" : "secondary";
-        const rawKey = colorKey.replace(group, "").trim() || "DEFAULT";
         const rgbString = `${r}, ${g}, ${b}`;
-        if (!themeData) return;
-        const currentGroup = themeData[group];
-        const updatedGroup = {
-            ...currentGroup,
-            [rawKey]: rgbString,
-        };
 
-        updateTheme(group as keyof ThemeData, updatedGroup as any)
+        if (!themeData) return;
+
+        if (colorKey.startsWith('primary') || colorKey.startsWith('secondary')) {
+            const group = colorKey.startsWith('primary') ? 'primary' : 'secondary';
+            const rawKey = colorKey.replace(group, "").trim() || "DEFAULT";
+            const currentGroup = themeData[group];
+            const updatedGroup = {
+                ...currentGroup,
+                [rawKey]: rgbString,
+            };
+
+            updateTheme(group as keyof ThemeData, updatedGroup as any);
+        } else {
+            updateTheme(colorKey as keyof ThemeData, rgbString);
+        }
     }
 
     return (

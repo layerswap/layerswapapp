@@ -10,20 +10,10 @@ import { SwapFormValues } from './SwapFormValues';
 import { useSettingsState } from '../../../../context/settings';
 import AppSettings from '../../../../lib/AppSettings';
 
-type SwapProps = {
-  formValues?: SwapFormValues,
-  featuredNetwork?: {
-    initialDirection: 'from' | 'to',
-    network: string,
-    oppositeDirectionOverrides?: 'onlyNetworks' | 'onlyExchanges' | string[]
-  }
-}
-
-export const Swap: FC<SwapProps> = (props) => {
-  const { formValues, featuredNetwork } = props;
+export const Swap: FC<{ formValues?: SwapFormValues }> = ({ formValues }) => {
   const settings = useSettingsState()
 
-  AppSettings.FeaturedNetwork = featuredNetwork
+  const featuredNetwork = AppSettings.FeaturedNetwork;
 
   const overriddenFormValues = useMemo(() => {
     const updatedFormValues = { ...formValues };

@@ -40,7 +40,7 @@ export function NetworksButton() {
     return (
         <div >
             <Select value={network ?? ""} onValueChange={(val) => { updateFeaturedNetwork("network", val); }}>
-                <SelectTrigger className="w-full rounded-xl p-3 bg-secondary-600">
+                <SelectTrigger className="w-full rounded-xl p-3 bg-secondary-600 hover:bg-secondary-500 transition-colors duration-200">
                     <SelectValue placeholder="Networks" />
                 </SelectTrigger>
                 <SelectContent className="max-h-[300px] overflow-y-auto">
@@ -62,7 +62,7 @@ export function NetworksButton() {
                     </SelectGroup>
                 </SelectContent>
             </Select>
-            <div className="my-1 rounded-xl p-3 bg-secondary-600  flex items-center justify-between gap-1 h-12">
+            <div className="my-1 rounded-xl py-3 px-2 bg-secondary-600  flex items-center justify-between gap-1 h-12 hover:bg-secondary-500 transition-colors duration-200">
                 {
                     DirectionValues.map((v, index) => (
                         <button
@@ -79,8 +79,8 @@ export function NetworksButton() {
             </div>
             <Accordion type="multiple" className=" bg-secondary-600 rounded-xl">
                 <AccordionItem value="oppositeNetworks" className="bg-secondary-600 rounded-xl">
-                    <AccordionTrigger className="w-full !rounded-xl p-3 bg-secondary-600">Opposite direction filtration</AccordionTrigger>
-                    <AccordionContent className="bg-secondary-600 pb-3">
+                    <AccordionTrigger className="w-full !rounded-xl p-3 bg-secondary-600 data-[state=closed]:hover:bg-secondary-500 transition-colors duration-200">Opposite direction filtration</AccordionTrigger>
+                    <AccordionContent className="bg-secondary-600 pb-3 ">
                         <CustomRadioGroup value={radioValue} onChange={(val) => val !== "custom" && updateFeaturedNetwork("oppositeDirectionOverrides", val === "none" ? undefined : val as "onlyNetworks" | "onlyExchanges")}>
                             <CustomRadioGroup.Item value="none">None</CustomRadioGroup.Item>
                             <CustomRadioGroup.Item value="onlyNetworks">Only networks</CustomRadioGroup.Item>

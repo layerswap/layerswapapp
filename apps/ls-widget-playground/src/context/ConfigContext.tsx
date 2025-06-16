@@ -1,6 +1,6 @@
 "use client";
-import { Context, createContext, useContext, useEffect, useState } from 'react';
-import { ThemeData, THEME_COLORS } from '@layerswap/widget';
+import { Context, createContext, Dispatch, SetStateAction, useContext, useEffect, useMemo, useState } from 'react';
+import { ThemeData, THEME_COLORS, LayerswapWidgetConfig } from '@layerswap/widget';
 
 
 export interface featuredNetworkType {
@@ -17,12 +17,18 @@ interface ContextType {
     customEvmSwitch: boolean;
     showLoading: boolean;
     showPanel: boolean;
+    actionText: string;
+    config: LayerswapWidgetConfig;
+    updateActionText: (val: string) => void;
     updateShowPanel: (val: boolean) => void;
     updateShowLoading: (val: boolean) => void;
     updateCustomEvmSwitch: (val: boolean) => void;
     updateFeaturedNetwork: <K extends keyof featuredNetworkType>(prop: K, value: featuredNetworkType[K]) => void;
     updateTheme: <K extends keyof ThemeData> (prop: K, value: ThemeData[K]) => void;
-    updateWholeTheme: (themeData: ThemeData, themeName: string) => void
+    updateWholeTheme: Dispatch<SetStateAction<{
+        theme: ThemeData | undefined;
+        themeName?: string | undefined;
+    } | undefined>>
     resetData: () => void;
 }
 
@@ -35,6 +41,7 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
     const [customEvmSwitch, setCustomEvmSwitch] = useState(false);
     const [showLoading, setShowLoading] = useState(false);
     const [showPanel, setShowPanel] = useState(true);
+    const [actionText, setActionText] = useState('');
 
     const bumpWidgetKey = () => {
         setWidgetRenderKey(prev => prev + 1);
@@ -52,23 +59,8 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
         }
         setCustomEvmSwitch(false);
         setShowLoading(false);
+        setActionText('Swap now');
     };
-
-    function updateShowPanel(val: boolean) {
-        setShowPanel(val);
-    }
-
-    function updateShowLoading(val: boolean) {
-        setShowLoading(val);
-    }
-
-    function updateCustomEvmSwitch(val: boolean) {
-        setCustomEvmSwitch(val);
-    }
-
-    function updateWholeTheme(themeData: ThemeData, themeName: string) {
-        setThemeData({ theme: themeData, themeName })
-    }
 
     function updateTheme<K extends keyof ThemeData>(
         prop: K,
@@ -95,10 +87,24 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
         }));
     };
 
+    const config: LayerswapWidgetConfig = useMemo(() => {
+        return {
+            theme: themeData,
+            featuredNetwork: (featuredNetwork?.initialDirection && featuredNetwork?.network
+                ? {
+                    initialDirection: featuredNetwork.initialDirection,
+                    network: featuredNetwork.network,
+                    oppositeDirectionOverrides: featuredNetwork.oppositeDirectionOverrides,
+                }
+                : undefined),
+            actionText
+        }
+    }, [themeData, featuredNetwork, actionText])
+
     return (
         <WidgetContext.Provider value={{
-            themeData: themeData?.theme, themeName: themeData?.themeName, featuredNetwork, widgetRenderKey, customEvmSwitch, showLoading, showPanel,
-            updateTheme, updateWholeTheme, updateFeaturedNetwork, resetData, updateCustomEvmSwitch, updateShowLoading, updateShowPanel,
+            themeData: themeData?.theme, themeName: themeData?.themeName, featuredNetwork, widgetRenderKey, customEvmSwitch, showLoading, showPanel, actionText, config,
+            updateTheme, updateWholeTheme: setThemeData, updateFeaturedNetwork, resetData, updateCustomEvmSwitch: setCustomEvmSwitch, updateShowLoading: setShowLoading, updateShowPanel: setShowPanel, updateActionText: setActionText,
         }}>
             {children}
         </WidgetContext.Provider>

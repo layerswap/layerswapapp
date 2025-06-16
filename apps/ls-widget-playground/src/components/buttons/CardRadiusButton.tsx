@@ -14,7 +14,7 @@ export function CardRadiusButton() {
     return (
         <div className="w-full flex gap-2 alling-items-center justify-center">
             <Select value={themeData?.borderRadius} onValueChange={handleClick}>
-                <SelectTrigger className="flex gap-2 w-full border-none bg-secondary-600">
+                <SelectTrigger className="flex gap-2 w-full border-none bg-secondary-600 hover:bg-secondary-500 transition-colors duration-200">
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -38,7 +38,7 @@ export const CardRadiusButtonTrigger = () => {
             <label>
                 Border radius
             </label>
-            <label className="capitalize">
+            <label className="capitalize text-secondary-text">
                 {themeData?.borderRadius}
             </label>
         </div>

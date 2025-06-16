@@ -22,6 +22,7 @@ import useWallet from "../../../../hooks/useWallet";
 import { useSettingsState } from "../../../../context/settings";
 import FormButton from "./SecondaryComponents/FormButton";
 import ReserveGasNote from "./SecondaryComponents/ReserveGasNote";
+import AppSettings from "../../../../lib/AppSettings";
 
 type Props = {
     partner?: Partner,
@@ -55,7 +56,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
     const query = useQueryState();
     let valuesSwapperDisabled = false;
 
-    const actionDisplayName = query?.actionButtonText || "Swap now"
+    const actionDisplayName = AppSettings.ActionButtonDisplayText || query?.actionButtonText || "Swap now"
 
     useEffect(() => {
         valuesChanger(values)

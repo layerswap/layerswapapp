@@ -18,7 +18,7 @@ export interface RadioGroupProps extends Omit<React.HTMLAttributes<HTMLDivElemen
 function RadioGroup({ value, onChange, className, ...props }: RadioGroupProps) {
     return (
         <RadioGroupContext.Provider value={{ value, onChange }}>
-            <div className={cn("space-y-1", className)} {...props} />
+            <div className={cn("space-y-1 px-2", className)} {...props} />
         </RadioGroupContext.Provider>
     );
 }
@@ -40,9 +40,9 @@ function RadioGroupItem({ value, children, className, ...props }: RadioGroupItem
             type="button"
             onClick={() => context.onChange(value)}
             className={cn(
-                "relative flex w-full cursor-pointer justify-start items-center rounded-md border p-3 text-base transition-colors bg-transparent bg-secondary-700",
+                "relative flex w-full cursor-pointer justify-start items-center rounded-md border py-3 px-2 text-base bg-transparent bg-secondary-700 hover:border-primary transition-colors duration-200",
                 "text-secondary-text border-secondary-500",
-                isChecked && "bg-secondary-700 text-primary-text border-primary  justify-between",
+                isChecked && "bg-secondary-700 text-primary-text justify-between",
                 className
             )}
             {...props}

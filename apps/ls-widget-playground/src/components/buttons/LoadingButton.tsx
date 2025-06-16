@@ -11,7 +11,7 @@ export function LoadingButton() {
     const { showLoading, updateShowLoading } = useWidgetContext();
 
     return (
-        <div className="my-1 rounded-xl p-3 bg-secondary-600  flex items-center justify-between gap-1 h-12">
+        <div className="my-1 rounded-xl py-3 px-2 bg-secondary-600  flex items-center justify-between gap-1 h-12 hover:bg-secondary-500 transition-colors duration-200">
             {
                 ManageValues.map((v, index) => (
                     <button
@@ -37,7 +37,7 @@ export const LoadingButtonTrigger = () => {
             <label>
                 Preview loading
             </label>
-            <div className="flex items-center space-x-1.5">
+            <div className="flex items-center space-x-1.5 text-secondary-text">
                 <p>{showLoading ? "On" : "Off"}</p>
             </div>
         </div>

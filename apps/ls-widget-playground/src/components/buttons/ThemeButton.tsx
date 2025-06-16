@@ -2,16 +2,15 @@
 import { useWidgetContext } from "@/context/ConfigContext";
 import { ThemeData } from '@layerswap/widget';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select"
-import { useState } from "react";
 
 const THEME_OPTIONS: { value: string, label: string }[] = [
     { value: "default", label: "Default" },
     { value: "light", label: "Light" },
-    { value: "warmBeige", label: "Warm beige" },
+    { value: "beige", label: "Warm beige" },
     { value: "black", label: "Black and white" },
     { value: "terminal", label: "Terminal" },
     { value: "cyberpunk", label: "Cyberpunk" },
-    { value: "voidWalker", label: "Void walker" },
+    { value: "void", label: "Void Walker" },
 ]
 type ThemeKey = typeof THEME_OPTIONS[number]["value"];
 export function ThemeButton() {
@@ -20,14 +19,14 @@ export function ThemeButton() {
     const handleClick = (value: ThemeKey) => {
         const newTheme = THEME_COLORS[value];
         if (newTheme) {
-            updateWholeTheme(newTheme, value);
+            updateWholeTheme({ theme: newTheme, themeName: value });
         }
     };
 
     return (
         <div className="w-full flex gap-2 alling-items-center justify-center">
             <Select value={themeName} onValueChange={handleClick}>
-                <SelectTrigger className="flex gap-2 w-full border-none bg-secondary-600">
+                <SelectTrigger className="flex gap-2 w-full border-none bg-secondary-600 hover:bg-secondary-500 transition-colors duration-200">
                     <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="max-h-[300px]">
@@ -51,7 +50,7 @@ export const ThemeButtonTrigger = () => {
             <label>
                 Base theme
             </label>
-            <label className="capitalize">
+            <label className="capitalize text-secondary-text">
                 {themeName}
             </label>
         </div>
@@ -134,7 +133,7 @@ const THEME_COLORS: { [key: string]: ThemeData } = {
         },
     },
 
-    "warmBeige": {
+    "beige": {
         backdrop: "255, 248, 240",
         placeholderText: "120, 100, 80",
         actionButtonText: "60, 50, 40",
@@ -290,7 +289,7 @@ const THEME_COLORS: { [key: string]: ThemeData } = {
         },
     },
 
-    "voidWalker": {
+    "void": {
         backdrop: "5, 5, 10",
         placeholderText: "150, 150, 200",
         actionButtonText: "0, 200, 255",
