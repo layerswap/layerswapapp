@@ -44,20 +44,23 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const activeAddress = provider?.activeWallet
     const { balances } = useBalance(activeAddress?.address, route)
     const tokenbalance = balances?.find(b => b.token === item.symbol)
-    const formatted_balance_amount = tokenbalance?.amount ? truncateDecimals(tokenbalance?.amount, item.precision) : ''
+    const formatted_balance_amount = (tokenbalance?.amount || tokenbalance?.amount === 0) ? truncateDecimals(tokenbalance?.amount, item.precision) : ''
     const balanceAmountInUsd = (item?.price_in_usd * Number(formatted_balance_amount)).toFixed(2)
-
+    if (route.name === "ZKSYNC_MAINNET") {
+        console.log("balances ",balances)
+        console.log("totalInUSD ",balanceAmountInUsd)
+    }
     return <SelectItem.DetailedTitle
         title={item.symbol}
         secondary={route.display_name}
         secondaryLogoSrc={route.logo}
     >
-        {(allbalancesLoaded && tokenbalance && Number(formatted_balance_amount) > 0) ? (
+        {(allbalancesLoaded && tokenbalance && Number(formatted_balance_amount) >= 0) ? (
             <span className="text-sm text-secondary-text text-right my-auto leading-4 font-medium">
                 <div className="text-primary-text">
                     {formatted_balance_amount}
                 </div>
-                {Number(tokenbalance?.amount) > 0 && (
+                {Number(tokenbalance?.amount) >= 0 && (
                     <div>${balanceAmountInUsd}</div>
                 )}
             </span>
@@ -175,7 +178,7 @@ export const GroupedTokenHeader = ({
 
                     const networkBalances = allBalances?.[networkRoute.name];
                     const balanceEntry = networkBalances?.balances?.find(
-                        (b) => b.token === tokenSymbol && b.amount > 0
+                        (b) => b.token === tokenSymbol && b.amount >= 0
                     );
 
                     return balanceEntry ? [networkRoute.name, networkRoute] as const : null;
@@ -194,7 +197,7 @@ export const GroupedTokenHeader = ({
             (b) => b.token === tokenSymbol
         );
 
-        if (!balanceEntry || balanceEntry.amount <= 0) return sum;
+        if (!balanceEntry) return sum;
         return sum + balanceEntry.amount * price;
     }, 0);
 
