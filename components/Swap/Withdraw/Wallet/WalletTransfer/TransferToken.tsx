@@ -64,7 +64,7 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
 
     useEffect(() => {
         try {
-            if (transaction?.data) {
+            if (transaction?.data && swapId) {
                 setSwapTransaction(swapId, BackendTransactionStatus.Pending, transaction.data as `0x${string}`)
             }
         }

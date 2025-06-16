@@ -1,5 +1,5 @@
 import { Form, FormikErrors, useFormikContext } from "formik";
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect, useRef } from "react";
 import React from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
@@ -8,7 +8,6 @@ import { ArrowUpDown } from 'lucide-react'
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
 import { useQueryState } from "../../../context/query";
-import FeeDetailsComponent from "../../FeeDetails";
 import { useQuote } from "../../../context/feeContext";
 import dynamic from "next/dynamic";
 import { TokenBalance } from "../../../Models/Balance";
@@ -26,6 +25,9 @@ import FormButton from "../FormButton";
 import { AmountFocusProvider } from "../../../context/amountFocusContext";
 import { WalletProvider } from "@/Models/WalletProvider";
 import { QueryParams } from "@/Models/QueryParams";
+import QuoteDetails from "../../FeeDetails";
+import { useRouter } from "next/router";
+import { debounce } from "lodash";
 
 type Props = {
     partner?: Partner,
@@ -86,62 +88,121 @@ const SwapForm: FC<Props> = ({ partner }) => {
 
     return <AmountFocusProvider>
         <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
-            <Widget className="sm:min-h-[450px] h-full space-y-[110px]">
+            <UrlQuerySync fieldMapping={{ from: 'name', to: 'name', fromCurrency: 'symbol', toCurrency: 'symbol', currencyGroup: 'symbol', fromExchange: 'name', toExchange: 'name' }} excludeFields={['refuel']} />
+            <Widget className="sm:min-h-[450px] h-full">
                 <Widget.Content>
-                    <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
-                        {
-                            !(query?.hideFrom && values?.from) &&
-                            <SourcePicker />
-                        }
-                        {
-                            !query?.hideFrom && !query?.hideTo &&
-                            <ValueSwapperButton
-                                values={values}
-                                setValues={setValues}
-                                providers={providers}
-                                query={query}
-                            />
-                        }
-                        {
-                            !(query?.hideTo && values?.to) &&
-                            <DestinationPicker partner={partner} />
-                        }
-                    </div>
-                    {
-                        (((fromExchange && destination) || (toExchange && source)) && currencyGroup)
-                            ? <div className="mb-6 leading-4">
-                                <ResizablePanel>
-                                    <CexNetworkPicker direction={fromExchange ? 'from' : 'to'} partner={partner} />
-                                </ResizablePanel>
+                    <div className="w-full h-[440px] flex flex-col justify-between">
+                        <div>
+                            <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
+                                {
+                                    !(query?.hideFrom && values?.from) &&
+                                    <SourcePicker />
+                                }
+                                {
+                                    !query?.hideFrom && !query?.hideTo &&
+                                    <ValueSwapperButton
+                                        values={values}
+                                        setValues={setValues}
+                                        providers={providers}
+                                        query={query}
+                                    />
+                                }
+                                {
+                                    !(query?.hideTo && values?.to) &&
+                                    <DestinationPicker partner={partner} />
+                                }
                             </div>
-                            : <></>
-                    }
-                    <div className="w-full">
-                        {
-                            validationMessage
-                                ? <ValidationError />
-                                : <FeeDetailsComponent values={values} />
-                        }
-                        {
-                            values.amount &&
-                            <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
-                        }
+                            {
+                                (((fromExchange && destination) || (toExchange && source)) && currencyGroup)
+                                    ? <div className="mb-6 leading-4">
+                                        <ResizablePanel>
+                                            <CexNetworkPicker direction={fromExchange ? 'from' : 'to'} partner={partner} />
+                                        </ResizablePanel>
+                                    </div>
+                                    : <></>
+                            }
+                            <div className="w-full">
+                                {
+                                    values.amount &&
+                                    <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                                }
+                            </div>
+                        </div>
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
-                    <FormButton
-                        shouldConnectWallet={shouldConnectWallet}
-                        values={values}
-                        isValid={isValid}
-                        errors={errors}
-                        isSubmitting={isSubmitting}
-                        actionDisplayName={actionDisplayName}
-                        partner={partner}
-                    />
+                    <div className="space-y-3">
+                        {
+                            validationMessage
+                                ? <ValidationError />
+                                : <QuoteDetails values={values} />
+                        }
+                        <FormButton
+                            shouldConnectWallet={shouldConnectWallet}
+                            values={values}
+                            isValid={isValid}
+                            errors={errors}
+                            isSubmitting={isSubmitting}
+                            actionDisplayName={actionDisplayName}
+                            partner={partner}
+                        />
+                    </div>
                 </Widget.Footer>
             </Widget>
         </Form>
     </AmountFocusProvider>
+}
+
+type FieldMapping = Record<string, string>
+
+interface UrlSyncProps {
+    /** For each object key, the nested property to store in the query */
+    fieldMapping?: FieldMapping
+    /** List of form keys to skip entirely when syncing */
+    excludeFields?: string[]
+    /** Debounce delay in milliseconds */
+    debounceMs?: number
+}
+
+function UrlQuerySync({
+    fieldMapping = {},
+    excludeFields = [],
+    debounceMs = 200,
+}: UrlSyncProps) {
+    const { values } = useFormikContext<Record<string, any>>()
+    // Debounced replaceState to batch rapid changes
+    const replaceRef = useRef(
+        debounce((next: Record<string, string>) => {
+            const params = new URLSearchParams(next).toString()
+            const newUrl = `${window.location.pathname}${params ? '?' + params : ''}`
+            window.history.replaceState(null, '', newUrl)
+        }, debounceMs)
+    ).current
+
+    useEffect(() => {
+        const next: Record<string, string> = {}
+
+        Object.entries(values).forEach(([key, val]) => {
+            // 1) Skip excluded fields
+            if (excludeFields.includes(key)) return
+            // 2) If mapping exists and value is object, pull mapped prop
+            if (fieldMapping[key] && typeof val === 'object' && val != null) {
+                const prop = fieldMapping[key]
+                if (prop in val && val[prop] != null) {
+                    next[key] = String(val[prop])
+                }
+            }
+            // 3) Primitives: string/number/boolean
+            else if (['string', 'number', 'boolean'].includes(typeof val)) {
+                if (val !== '' && val != null) next[key] = String(val)
+            }
+            // Other objects without mapping: skip
+        })
+
+        replaceRef(next)
+    }, [values, fieldMapping, excludeFields, replaceRef])
+
+    return null
 }
 
 const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: (values: React.SetStateAction<SwapFormValues>, shouldValidate?: boolean) => Promise<void | FormikErrors<SwapFormValues>>, providers: WalletProvider[], query: QueryParams }> = ({ values, setValues, providers, query }) => {

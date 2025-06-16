@@ -11,6 +11,6 @@ const Content = ({ children, center }: ContetProps) => {
                 </div>
             </div>
         </div>
-        : <div className='space-y-3 py-3'>{children}</div>
+        : <div>{children}</div>
 }
 export default Content

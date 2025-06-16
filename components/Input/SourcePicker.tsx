@@ -1,5 +1,5 @@
 import SourceWalletPicker from "./SourceWalletPicker";
-import RoutePicker from "./RoutePicker/RoutePicker";
+import RoutePicker from "./RoutePicker";
 import AmountField from "./Amount";
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";

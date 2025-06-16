@@ -40,11 +40,6 @@ const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
             console.error(e.message)
         }
     }, [swapId])
-    if (!swapId || !sequenceNumber) return
-
-    const hexed_sequence_number = sequenceNumber?.toString(16)
-    const sequence_number_even = (hexed_sequence_number?.length % 2 > 0 ? `0${hexed_sequence_number}` : hexed_sequence_number)
-
 
     if ((source_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() || destination_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase())
         && (selectedSourceAccount?.address && destination_address && selectedSourceAccount?.address.toLowerCase() !== destination_address?.toLowerCase())) {
@@ -64,7 +59,6 @@ const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
     else {
         return <TransferTokenButton
             swapId={swapId}
-            sequenceNumber={sequence_number_even}
             amount={amount}
             chainId={networkChainId}
             depositAddress={depositAddress as `0x${string}`}

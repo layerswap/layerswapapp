@@ -1,5 +1,5 @@
 import { PlusIcon } from "lucide-react";
-import RoutePicker from "./RoutePicker/RoutePicker";
+import RoutePicker from "./RoutePicker";
 import Address from "./Address";
 import DestinationWalletPicker from "./DestinationWalletPicker";
 import { useFormikContext } from "formik";
@@ -26,16 +26,18 @@ const DestinationPicker = (props: Props) => {
     const showAddDestinationAddress = !destination_address && !toExchange && to && ((from && autofilProvider?.id !== withdrawalProvider?.id) || depositMethod === 'deposit_address')
 
     return <div className='flex flex-col w-full bg-secondary-500 rounded-2xl py-4.5 px-4 space-y-8'>
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center h-[20px]">
             <label htmlFor="To" className="block font-medium text-secondary-text text-sm w-30">
                 Receive at
             </label>
-            {
-                !toExchange &&
-                <Address partner={partner}>
-                    {({ destination, disabled, addressItem, connectedWallet, partner }) => <DestinationWalletPicker destination={destination} disabled={disabled} addressItem={addressItem} connectedWallet={connectedWallet} partner={partner} />}
-                </Address>
-            }
+            <div className="w-fit">
+                {
+                    !toExchange &&
+                    <Address partner={partner}>
+                        {({ destination, disabled, addressItem, connectedWallet, partner }) => <DestinationWalletPicker destination={destination} disabled={disabled} addressItem={addressItem} connectedWallet={connectedWallet} partner={partner} />}
+                    </Address>
+                }
+            </div>
         </div>
         <div className="rounded-xl items-center space-y-2">
             <div className="grid grid-cols-8 gap-2">

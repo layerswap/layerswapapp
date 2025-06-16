@@ -4,7 +4,7 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { useQuote } from "../../context/feeContext";
 import AverageCompletionTime from "../Common/AverageCompletionTime";
 
-const DetailedEstimates: FC = () => {
+export const DetailedEstimates: FC = () => {
 
     const { values } = useFormikContext<SwapFormValues>();
     const { fromCurrency } = values;
@@ -59,5 +59,3 @@ const DetailedEstimates: FC = () => {
         </div>
     </div>
 }
-
-export default DetailedEstimates
