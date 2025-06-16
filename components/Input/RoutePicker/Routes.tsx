@@ -46,10 +46,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const tokenbalance = balances?.find(b => b.token === item.symbol)
     const formatted_balance_amount = (tokenbalance?.amount || tokenbalance?.amount === 0) ? truncateDecimals(tokenbalance?.amount, item.precision) : ''
     const balanceAmountInUsd = (item?.price_in_usd * Number(formatted_balance_amount)).toFixed(2)
-    if (route.name === "ZKSYNC_MAINNET") {
-        console.log("balances ",balances)
-        console.log("totalInUSD ",balanceAmountInUsd)
-    }
+
     return <SelectItem.DetailedTitle
         title={item.symbol}
         secondary={route.display_name}
