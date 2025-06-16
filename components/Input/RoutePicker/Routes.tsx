@@ -98,6 +98,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                                     <div className="flex justify-end items-center -space-x-2 relative h-4">
                                         {filteredNetworkTokens.slice(0, 3).map((t, index) => (
                                             <ImageWithFallback
+                                                key={`${t.symbol}-${index}`}
                                                 src={t.logo}
                                                 alt={`${t.symbol} logo`}
                                                 height="16"
