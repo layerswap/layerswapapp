@@ -4,6 +4,7 @@ import { SwapDirection } from "../../../DTOs/SwapFormValues";
 import { CurrencySelectItemDisplay } from "../Routes";
 import { CollapsibleRow } from "./CollapsibleRow";
 import { NetworkRoute, NetworkRouteToken } from "../../../../Models/Network";
+import RouteTokenSwitch from "../RouteTokenSwitch";
 
 type Props = {
     item: RowElement;
@@ -15,6 +16,8 @@ type Props = {
     openValues: string[];
     scrollContainerRef: RefObject<HTMLDivElement>;
     allbalancesLoaded: boolean;
+    showTokens: boolean;
+    setShowTokens: (val: boolean) => void;
 };
 
 export default function Row({
@@ -27,6 +30,8 @@ export default function Row({
     openValues,
     allbalancesLoaded,
     scrollContainerRef,
+    showTokens,
+    setShowTokens,
 }: Props) {
     if (item.type === "network" || item.type === "grouped_token") {
         return (
@@ -64,8 +69,13 @@ export default function Row({
 
     if (item.type === "group_title") {
         return (
-            <div className="text-primary-text-placeholder text-base font-medium leading-5 mb-2 px-3 sticky top-0 z-50" style={{ position: "sticky", top: 0, transform: "none" }} >
+            <div className="text-primary-text-placeholder text-base font-medium leading-5 mb-2 pl-3 sticky top-0 z-50 flex items-center" style={{ position: "sticky", top: 0, transform: "none" }} >
                 {item.text}
+                {item.text.toLowerCase().includes("all") && (
+                    <div className="ml-auto">
+                        <RouteTokenSwitch showTokens={showTokens} setShowTokens={setShowTokens} />
+                    </div>
+                )}
             </div>
         );
     }

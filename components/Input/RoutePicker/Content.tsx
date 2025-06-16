@@ -8,7 +8,6 @@ import { Accordion } from "../../shadcn/accordion";
 import Row from "./Rows";
 import { LayoutGroup, motion } from "framer-motion";
 import FilledX from "../../icons/FilledX";
-import RouteTokenSwitch from "./RouteTokenSwitch";
 import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
 import { SelectorContext } from "../../Select/CommandNew/Index";
 import useWallet from "@/hooks/useWallet";
@@ -48,7 +47,6 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
 
     return <div className="py-3 overflow-y-auto flex flex-col h-full z-40" >
         <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={isOpen} />
-        <RouteTokenSwitch showTokens={showTokens} setShowTokens={setShowTokens} />
         <LayoutGroup>
             <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full" ref={parentRef}>
                 {
@@ -95,6 +93,8 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                                                 selectedRoute={selectedRoute}
                                                 selectedToken={selectedToken}
                                                 toggleContent={toggleAccordionItem}
+                                                showTokens={showTokens}
+                                                setShowTokens={setShowTokens}
                                             />
                                         </div>
                                     })}

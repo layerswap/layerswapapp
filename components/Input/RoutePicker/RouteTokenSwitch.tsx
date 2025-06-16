@@ -11,7 +11,7 @@ interface RouteTokenSwitchProps {
 
 const RouteTokenSwitch: FC<RouteTokenSwitchProps> = ({ showTokens, setShowTokens }) => {
     return (
-        <div className="flex justify-end mb-2">
+        <div className="flex justify-end">
             <div className="relative flex items-center bg-secondary-500 rounded-lg p-1">
                 <motion.div
                     layout

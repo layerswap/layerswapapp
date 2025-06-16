@@ -121,7 +121,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                                             />
                                         ))}
                                         {filteredNetworkTokens.length > 3 && (
-                                            <div className="w-4 h-4 bg-secondary-600 text-primary-text text-[10px] rounded-full flex items-center justify-center border-2 border-background">
+                                            <div className="w-4 h-4 bg-secondary-600 text-primary-text text-[8px] rounded-full flex items-center justify-center border-2 border-background">
                                                 <span>+{filteredNetworkTokens.length - 3}</span>
                                             </div>
                                         )}
@@ -235,7 +235,7 @@ export const GroupedTokenHeader = ({
                                             />
                                         ))}
                                         {networksWithBalance.length > 3 && (
-                                            <div className="w-4 h-4 bg-secondary-600 text-primary-text text-[10px] rounded-full flex items-center justify-center border-2 border-background">
+                                            <div className="w-4 h-4 bg-secondary-600 text-primary-text text-[8px] rounded-full flex items-center justify-center border-2 border-background">
                                                 <span>+{networksWithBalance.length - 3}</span>
                                             </div>
                                         )}
