@@ -47,13 +47,25 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const formatted_balance_amount = tokenbalance?.amount ? truncateDecimals(tokenbalance?.amount, item.precision) : ''
     const balanceAmountInUsd = (item?.price_in_usd * Number(formatted_balance_amount)).toFixed(2)
 
-    return <SelectItem.DetailedTitle title={item.symbol} secondary={route.display_name} secondaryLogoSrc={route.logo}>
+    return <SelectItem.DetailedTitle
+        title={item.symbol}
+        secondary={route.display_name}
+        secondaryLogoSrc={route.logo}
+    >
         {(allbalancesLoaded && tokenbalance && Number(formatted_balance_amount) > 0) ? (
             <span className="text-sm text-secondary-text text-right my-auto leading-4 font-medium">
-                <div className="text-primary-text"> {formatted_balance_amount}</div>
-                {Number(tokenbalance?.amount) > 0 && <div>${balanceAmountInUsd}</div>}
+                <div className="text-primary-text">
+                    {formatted_balance_amount}
+                </div>
+                {Number(tokenbalance?.amount) > 0 && (
+                    <div>${balanceAmountInUsd}</div>
+                )}
             </span>
-        ) : <span className="px-0.5">-</span>}
+        ) : balances ? (
+            <span className="px-0.5">-</span>
+        ) : (
+            <></>
+        )}
     </SelectItem.DetailedTitle>
 }
 
@@ -116,9 +128,9 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                                     </div>
                                 ) : <></>}
                             </div>
-                        ) : (
+                        ) : balances ? (
                             <span className="px-0.5">-</span>
-                        )
+                        ) : <></>
                     )}
 
                     <ChevronDown
@@ -230,9 +242,9 @@ export const GroupedTokenHeader = ({
                                     </div>
                                 )}
                             </div>
-                        ) : (
+                        ) : allBalances ? (
                             <div className="px-0.5">-</div>
-                        )
+                        ) : <></>
                     )}
 
                     <ChevronDown

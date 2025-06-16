@@ -175,7 +175,8 @@ function groupRoutes(routes: NetworkRoute[], direction: SwapDirection, balances:
             return { type: 'network', route: { ...r, tokens: sortedTokens } } as NetworkElement
         });
 
-    const sortedNetworks = direction === 'to' ? unsortedNetworks
+    const sortedNetworks = direction === 'to'
+        ? unsortedNetworks.sort((a, b) => a.route.display_name.localeCompare(b.route.display_name))
         : unsortedNetworks.sort((a, b) => (balances?.[b.route.name]?.totalInUSD || 0) - (balances?.[a.route.name]?.totalInUSD || 0));
 
     return [
