@@ -7,7 +7,7 @@ import { roundDecimals, truncateDecimals } from '../utils/RoundDecimals';
 import SubmitButton from '../buttons/submitButton';
 import SecondaryButton from '../buttons/secondaryButton';
 import { useFormikContext } from 'formik';
-import { useFee } from '../../context/feeContext';
+import { useQuote } from '../../context/feeContext';
 import useSWRBalance from '../../lib/balances/useSWRBalance';
 import { useSwapDataState } from '../../context/swap';
 
@@ -24,7 +24,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
 
     const { to, toCurrency, refuel, destination_address } = values || {};
 
-    const { fee } = useFee()
+    const { quote: fee } = useQuote()
 
     const nativeAsset = to?.token
     const token_usd_price = fee?.quote?.destination_network?.token?.price_in_usd || nativeAsset?.price_in_usd

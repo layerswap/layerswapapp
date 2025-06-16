@@ -9,7 +9,6 @@ import { motion } from "framer-motion";
 import { useDepositMethod } from "../../../context/depositMethodContext";
 import { useQueryState } from "../../../context/query";
 import KnownInternalNames from "../../../lib/knownIds";
-import { useSwapDataUpdate } from "../../../context/swap";
 
 const variants = {
     open: { rotate: 180 },
@@ -26,7 +25,6 @@ const depositMethods = [
         display_name: 'Deposit address'
     }
 ]
-
 
 const DepositMethodComponent: FC = () => {
     const {
@@ -81,7 +79,7 @@ const DepositMethodComponent: FC = () => {
                         animate={showModal ? "open" : "closed"}
                         variants={variants}
                     >
-                        <ChevronDown className=" w-4 h-4 " />
+                        <ChevronDown className="w-4 h-4" />
                     </motion.div>
                 </PopoverTrigger>
                 <PopoverContent className='ml-2 mt-1 space-y-1 text-sm p-2 max-w border-none rounded-xl bg-secondary-800 max-w-72 md:max-w-96' align="start">
@@ -152,7 +150,6 @@ const DepositMethod: FC<DespositMethodItemProps> = ({
                     }
                 </div>
             </div>
-
         </div>
     )
 }

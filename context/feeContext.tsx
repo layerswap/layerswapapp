@@ -4,20 +4,20 @@ import LayerSwapApiClient, { Quote } from '../lib/apiClients/layerSwapApiClient'
 import useSWR from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
 
-const FeeStateContext = createContext<ContextType | null>(null);
+const QuoteStateContext = createContext<ContextType | null>(null);
 
 type ContextType = {
     minAllowedAmount: number | undefined,
     maxAllowedAmount: number | undefined,
-    fee: Quote | undefined,
+    quote: Quote | undefined,
     mutateFee: () => void,
     mutateLimits: () => void,
     valuesChanger: (values: SwapFormValues) => void,
-    isFeeLoading: boolean,
+    isQuoteLoading: boolean,
     updatePolling: (value: boolean) => void
 }
 
-export function FeeProvider({ children }) {
+export function QuoteProvider({ children }) {
 
     const [values, setValues] = useState<SwapFormValues>()
     const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod } = values || {}
@@ -57,28 +57,28 @@ export function FeeProvider({ children }) {
     const quoteURL = (from && fromCurrency?.status === "active" && to && toCurrency?.status === "active" && debouncedAmount && depositMethod) ?
         `/quote?source_network=${from?.name}&source_token=${fromCurrency?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}&amount=${debouncedAmount}&refuel=${!!refuel}&use_deposit_address=${use_deposit_address}` : null
 
-    const { data: lsFee, mutate: mutateFee, isLoading: isFeeLoading, error: lsFeeError } = useSWR<ApiResponse<Quote>>(quoteURL, apiClient.fetcher, {
+    const { data: quote, mutate: mutateFee, isLoading: isQuoteLoading, error: lsFeeError } = useSWR<ApiResponse<Quote>>(quoteURL, apiClient.fetcher, {
         refreshInterval: poll ? 42000 : 0,
     })
 
     return (
-        <FeeStateContext.Provider value={{
+        <QuoteStateContext.Provider value={{
             minAllowedAmount: amountRange?.data?.min_amount,
             maxAllowedAmount: amountRange?.data?.max_amount,
-            fee: lsFee?.data,
+            quote: quote?.data,
             mutateFee,
             mutateLimits,
             valuesChanger,
-            isFeeLoading,
+            isQuoteLoading,
             updatePolling
         }}>
             {children}
-        </FeeStateContext.Provider>
+        </QuoteStateContext.Provider>
     )
 }
 
-export function useFee() {
-    const data = useContext(FeeStateContext);
+export function useQuote() {
+    const data = useContext(QuoteStateContext);
 
     if (data === null) {
         throw new Error('useFee must be used within a FeeProvider');

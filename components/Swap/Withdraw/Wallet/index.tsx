@@ -10,7 +10,7 @@ const WalletTransferWrapper = () => {
     const transfer_action = depositActionsResponse?.find(a => true)
     const { fee_token } = transfer_action || {}
 
-    return <div className='border-secondary-300 rounded-md border bg-secondary-500 p-3'>
+    return <div className='rounded-md bg-secondary-500 p-3'>
         {
             source_network && fee_token && selectedSourceAccount &&
             <NetworkGas address={selectedSourceAccount.address} network={source_network} token={fee_token} />

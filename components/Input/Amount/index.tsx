@@ -2,7 +2,7 @@ import { useFormikContext } from "formik";
 import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import NumericInput from "../NumericInput";
-import { useFee } from "../../../context/feeContext";
+import { useQuote } from "../../../context/feeContext";
 import useSWRGas from "../../../lib/gases/useSWRGas";
 import useSWRBalance from "../../../lib/balances/useSWRBalance";
 import { useSwapDataState } from "../../../context/swap";
@@ -15,7 +15,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
     const { fromCurrency, from, to, amount, toCurrency, fromExchange, toExchange } = values || {};
-    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fee, isFeeLoading } = useFee()
+    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, quote: fee, isQuoteLoading: isFeeLoading } = useQuote()
     const { isDesktop } = useWindowDimensions();
 
     const { isAmountFocused, setIsAmountFocused } = useAmountFocus()

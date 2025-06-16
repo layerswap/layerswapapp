@@ -1,14 +1,14 @@
 import { FC } from "react";
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { useFee } from "../../context/feeContext";
+import { useQuote } from "../../context/feeContext";
 import AverageCompletionTime from "../Common/AverageCompletionTime";
 
 const DetailedEstimates: FC = () => {
 
     const { values } = useFormikContext<SwapFormValues>();
     const { fromCurrency } = values;
-    const { fee, isFeeLoading } = useFee()
+    const { quote: fee, isQuoteLoading: isFeeLoading } = useQuote()
 
     const fee_amount = fee?.quote.total_fee
 

@@ -194,7 +194,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                             width="14"
                             loading="eager"
                             fetchPriority="high"
-                            className="h-3.5 w-3.5 absolute -right-1.5 -bottom-1.5 object-contain rounded-md border-1 border-secondary-300"
+                            className="h-3.5 w-3.5 absolute -right-1.5 -bottom-1.5 object-contain rounded border-1 border-secondary-300"
                         />
                     </div>
                     <span className="group-has-[.input-wide]:hidden ml-2 flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0 max-w-3/5">

@@ -44,7 +44,7 @@ const SwapDetails: FC<Props> = ({ type }) => {
                 {
                     ((swapStatus === SwapStatus.UserTransferPending
                         && !(swapInputTransaction || storedWalletTransaction))) ?
-                        <Withdraw />
+                        <Withdraw type={type} />
                         :
                         <>
                             <Processing />
@@ -70,7 +70,6 @@ const Container = ({ type, children }: Props & {
         return <div className="w-full flex flex-col justify-between h-full space-y-5 text-secondary-text">
             {children}
         </div>
-
 }
 
 export default SwapDetails

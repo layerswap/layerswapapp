@@ -4,19 +4,19 @@ import { TimerProvider } from '../context/timerContext';
 import SwapForm from "./Swap/Form"
 import { SWRConfig, mutate } from 'swr';
 import { SwapStatus } from '../Models/SwapStatus';
-import { FeeProvider } from '../context/feeContext';
+import { QuoteProvider } from '../context/feeContext';
 
 const Swap: FC = () => {
   return (
     <div className="text-primary-text">
       <SWRConfig value={{ use: [updatePendingCount] }}>
-        <SwapDataProvider >
-          <TimerProvider>
-            <FeeProvider>
+        <QuoteProvider>
+          <SwapDataProvider>
+            <TimerProvider>
               <SwapForm />
-            </FeeProvider>
-          </TimerProvider>
-        </SwapDataProvider >
+            </TimerProvider>
+          </SwapDataProvider>
+        </QuoteProvider>
       </SWRConfig>
     </div >
   )

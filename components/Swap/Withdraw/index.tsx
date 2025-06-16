@@ -9,7 +9,7 @@ import { useQueryState } from '../../../context/query';
 import { Widget } from '../../Widget/Index';
 import WalletTransferContent from './WalletTransferContent';
 
-const Withdraw: FC = () => {
+const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
     const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
     const { appName, signature } = useQueryState()
@@ -50,7 +50,7 @@ const Withdraw: FC = () => {
             <Widget.Content>
                 <div className="w-full flex flex-col justify-between  text-secondary-text">
                     <div className='grid grid-cols-1 gap-4 '>
-                        <div className="bg-secondary-500 rounded-lg px-3 py-4 border border-secondary-300 w-full relative z-10 space-y-4">
+                        <div className="bg-secondary-500 rounded-lg px-3 py-4 w-full relative z-10 space-y-4">
                             <SwapSummary />
                         </div>
                         <span>
@@ -61,7 +61,7 @@ const Withdraw: FC = () => {
             </Widget.Content>
             {
                 withdraw?.footer &&
-                <Widget.Footer sticky={true}>
+                <Widget.Footer sticky={type == 'widget'}>
                     {withdraw?.footer}
                 </Widget.Footer>
             }

@@ -9,7 +9,7 @@ import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
 import { useQueryState } from "../../../context/query";
 import FeeDetailsComponent from "../../FeeDetails";
-import { useFee } from "../../../context/feeContext";
+import { useQuote } from "../../../context/feeContext";
 import dynamic from "next/dynamic";
 import { TokenBalance } from "../../../Models/Balance";
 import ResizablePanel from "../../ResizablePanel";
@@ -51,7 +51,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
 
     const { selectedSourceAccount } = useSwapDataState()
     const { providers, wallets } = useWallet()
-    const { minAllowedAmount, valuesChanger } = useFee()
+    const { minAllowedAmount, valuesChanger } = useQuote()
     const toAsset = values.toCurrency
     const fromAsset = values.fromCurrency
 

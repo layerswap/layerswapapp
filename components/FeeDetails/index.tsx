@@ -1,7 +1,7 @@
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import { ReceiveAmounts } from './ReceiveAmounts';
 import DetailedEstimates from './DetailedEstimates';
-import { useFee } from '../../context/feeContext';
+import { useQuote } from '../../context/feeContext';
 import FeeDetails from './FeeDetailsComponent';
 import { useQueryState } from '../../context/query';
 import ResizablePanel from '../ResizablePanel';
@@ -20,7 +20,7 @@ const RefuelToggle = dynamic(() => import("./Refuel"), {
 
 export default function FeeDetailsComponent({ values }: { values: SwapFormValues }) {
     const { toCurrency, to, toExchange, from, fromCurrency, amount, destination_address } = values || {};
-    const { fee, isFeeLoading } = useFee()
+    const { quote, isQuoteLoading } = useQuote()
     const query = useQueryState();
     const [openRefuelModal, setOpenRefuelModal] = useState<boolean>(false)
 
@@ -37,7 +37,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                         <RefuelToggle onButtonClick={() => setOpenRefuelModal(true)} />
                     }
                     {
-                        (fee || isFeeLoading) && fromCurrency && toCurrency &&
+                        (quote || isQuoteLoading) && fromCurrency && toCurrency &&
                         <FeeDetails.Item>
                             <DetailedEstimates />
                         </FeeDetails.Item>
@@ -48,7 +48,7 @@ export default function FeeDetailsComponent({ values }: { values: SwapFormValues
                         destination_address &&
                         <Campaign
                             destination={values.to}
-                            reward={fee?.reward}
+                            reward={quote?.reward}
                             destinationAddress={destination_address}
                         />
                     }

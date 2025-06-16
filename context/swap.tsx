@@ -1,7 +1,7 @@
 import { Context, useCallback, useEffect, useState, createContext, useContext } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction } from '../lib/apiClients/layerSwapApiClient';
-import { useRouter } from 'next/router';
+import { NextRouter, useRouter } from 'next/router';
 import { QueryParams } from '../Models/QueryParams';
 import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
@@ -11,6 +11,9 @@ import { ResolvePollingInterval } from '../components/utils/SwapStatus';
 import { Wallet, WalletProvider } from '../Models/WalletProvider';
 import useWallet from '../hooks/useWallet';
 import { Network } from '../Models/Network';
+import { resolvePersistantQueryParams } from '../helpers/querryHelper';
+import { useQuote } from './feeContext';
+import { SwapStatus } from '../Models/SwapStatus';
 
 export const SwapDataStateContext = createContext<SwapData>({
     codeRequested: false,
@@ -32,6 +35,8 @@ export type UpdateInterface = {
     setWithdrawType: (value: WithdrawType) => void
     setSwapId: (value: string) => void
     setSelectedSourceAccount: (value: { wallet: Wallet, address: string } | undefined) => void
+    setSwapPath: (swapId: string, router: NextRouter) => void,
+    removeSwapPath: (router: NextRouter) => void
 }
 
 export type SwapData = {
@@ -52,13 +57,32 @@ export function SwapDataProvider({ children }) {
     const router = useRouter();
     const { providers } = useWallet()
     const [swapId, setSwapId] = useState<string | undefined>(router.query.swapId?.toString())
-    
+    const [selectedSourceAccount, setSelectedSourceAccount] = useState<{ wallet: Wallet, address: string } | undefined>()
+    const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
+
+    const { quote: quoteData } = useQuote()
+    const { quote } = quoteData || {}
+
+    // const swapDataFromQuote: SwapResponse = quote && {
+    //     ...quoteData,
+    //     swap: {
+    //         status: SwapStatus.Created,
+    //         source_network: quote.source_network,
+    //         destination_network: quote?.destination_network,
+    //         source_token: quote?.source_token,
+    //         destination_token: quote?.destination_token,
+    //         amount: quote?.,
+    //         destination_address: "",
+    //         use_deposit_address: false,
+    //         refuel: false,
+    //         source_address: selectedSourceAccount?.address || undefined
+    //     }
+    // }
+
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `/swaps/${swapId}?exclude_deposit_actions=true`
     const [interval, setInterval] = useState(0)
     const { data: swapData, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
-
-    const [selectedSourceAccount, setSelectedSourceAccount] = useState<{ wallet: Wallet, address: string } | undefined>()
 
     const handleChangeSelectedSourceAccount = (props: { wallet: Wallet, address: string } | undefined) => {
         if (!props) {
@@ -87,10 +111,8 @@ export function SwapDataProvider({ children }) {
     const { data: depositActions } = useSWR<ApiResponse<DepositAction[]>>(swapData ? deposit_actions_endpoint : null, layerswapApiClient.fetcher)
 
     const depositActionsResponse = depositActions?.data
-
-    const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
-
     const swapStatus = swapResponse?.swap.status;
+
     useEffect(() => {
         if (swapStatus)
             setInterval(ResolvePollingInterval(swapStatus))
@@ -160,7 +182,9 @@ export function SwapDataProvider({ children }) {
         setDepositAddressIsFromAccount: setDepositAddressIsFromAccount,
         setWithdrawType,
         setSwapId,
-        setSelectedSourceAccount: handleChangeSelectedSourceAccount
+        setSelectedSourceAccount: handleChangeSelectedSourceAccount,
+        setSwapPath,
+        removeSwapPath
     };
     return (
         <SwapDataStateContext.Provider value={{
@@ -201,4 +225,33 @@ export function useSwapDataUpdate() {
 const WalletIsSupportedForSource = ({ providers, sourceNetwork, sourceWallet }: { providers: WalletProvider[] | undefined, sourceWallet: Wallet | undefined, sourceNetwork: Network | undefined }) => {
     const isSupported = sourceWallet && providers?.find(p => p.name === sourceWallet.providerName)?.asSourceSupportedNetworks?.some(n => n === sourceNetwork?.name) || false
     return isSupported
+}
+
+const setSwapPath = (swapId: string, router: NextRouter) => {
+    //TODO: as path should be without basepath and host
+    const basePath = router?.basePath || ""
+    var swapURL = window.location.protocol + "//"
+        + window.location.host + `${basePath}/swap/${swapId}`;
+    const params = resolvePersistantQueryParams(router.query)
+    if (params && Object.keys(params).length) {
+        const search = new URLSearchParams(params as any);
+        if (search)
+            swapURL += `?${search}`
+    }
+
+    window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
+}
+
+const removeSwapPath = (router: NextRouter) => {
+    const basePath = router?.basePath || ""
+    let homeURL = window.location.protocol + "//"
+        + window.location.host + basePath
+
+    const params = resolvePersistantQueryParams(router.query)
+    if (params && Object.keys(params).length) {
+        const search = new URLSearchParams(params as any);
+        if (search)
+            homeURL += `?${search}`
+    }
+    window.history.replaceState({ ...window.history.state, as: router.asPath, url: homeURL }, '', homeURL);
 }

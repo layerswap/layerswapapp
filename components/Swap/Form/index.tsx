@@ -12,18 +12,17 @@ import LayerSwapApiClient from "../../../lib/apiClients/layerSwapApiClient";
 import Modal from "../../modal/modal";
 import SwapForm from "./Form";
 import useSWR from "swr";
-import { NextRouter, useRouter } from "next/router";
+import { useRouter } from "next/router";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
 import { UserType, useAuthDataUpdate } from "../../../context/authContext";
 import { ApiError, LSAPIKnownErrorCode } from "../../../Models/ApiError";
-import { resolvePersistantQueryParams } from "../../../helpers/querryHelper";
 import { useQueryState } from "../../../context/query";
 import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/apiClients/userAuthApiClient";
 import { ChevronRight } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { useFee } from "../../../context/feeContext";
+import { useQuote } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
 import useWallet from "../../../hooks/useWallet";
 import { DepositMethodProvider } from "../../../context/depositMethodContext";
@@ -68,7 +67,7 @@ export default function Form() {
 
     const settings = useSettingsState();
     const query = useQueryState()
-    const { createSwap, setSwapId } = useSwapDataUpdate()
+    const { createSwap, setSwapId, setSwapPath, removeSwapPath } = useSwapDataUpdate()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.appName && `/internal/apps?name=${query?.appName}`, layerswapApiClient.fetcher)
@@ -76,7 +75,7 @@ export default function Form() {
 
     const { swapResponse, selectedSourceAccount } = useSwapDataState()
     const { swap } = swapResponse || {}
-    const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useFee()
+    const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useQuote()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         const { destination_address, to, from, amount, toCurrency, fromCurrency, fromExchange, toExchange, currencyGroup, depositMethod } = values
@@ -168,12 +167,6 @@ export default function Form() {
             }
         }
     }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getProvider])
-
-    const destAddress: string = query?.destAddress as string;
-
-    const isPartnerAddress = partner && destAddress;
-
-    const isPartnerWallet = isPartnerAddress && partner?.is_wallet;
 
     const initialValues: SwapFormValues = swapResponse ? generateSwapInitialValuesFromSwap(swapResponse, settings)
         : generateSwapInitialValues(settings, query)
@@ -278,10 +271,11 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
         <motion.div
             onClick={onClick}
             initial="rest" whileHover="hover" animate="rest"
-            className="relative bg-secondary-600 rounded-r-lg">
+            className="bg-secondary-400 rounded-r-lg"
+            >
             <motion.div
                 variants={textMotion}
-                className="flex items-center bg-secondary-600 rounded-r-lg">
+                className="flex items-center bg-secondary-400 rounded-r-lg">
                 <div className="text-primary-text flex px-3 p-2 items-center space-x-2">
                     <div className="shrink-0 h-5 w-5 relative">
                         {source_exchange ? <ImageWithFallback
@@ -322,33 +316,4 @@ const PendingSwap = ({ onClick }: { onClick: () => void }) => {
             </motion.div>
         </motion.div>
     </motion.div>
-}
-
-const setSwapPath = (swapId: string, router: NextRouter) => {
-    //TODO: as path should be without basepath and host
-    const basePath = router?.basePath || ""
-    var swapURL = window.location.protocol + "//"
-        + window.location.host + `${basePath}/swap/${swapId}`;
-    const params = resolvePersistantQueryParams(router.query)
-    if (params && Object.keys(params).length) {
-        const search = new URLSearchParams(params as any);
-        if (search)
-            swapURL += `?${search}`
-    }
-
-    window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
-}
-
-const removeSwapPath = (router: NextRouter) => {
-    const basePath = router?.basePath || ""
-    let homeURL = window.location.protocol + "//"
-        + window.location.host + basePath
-
-    const params = resolvePersistantQueryParams(router.query)
-    if (params && Object.keys(params).length) {
-        const search = new URLSearchParams(params as any);
-        if (search)
-            homeURL += `?${search}`
-    }
-    window.history.replaceState({ ...window.history.state, as: router.asPath, url: homeURL }, '', homeURL);
 }
