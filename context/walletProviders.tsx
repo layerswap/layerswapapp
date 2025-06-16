@@ -15,11 +15,13 @@ import useTron from "../lib/wallets/tron/useTron";
 import useParadex from "../lib/wallets/paradex/useParadex";
 import useSVM from "../lib/wallets/solana/useSVM";
 import useBitcoin from "../lib/wallets/bitcoin/useBitcoin";
+import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 
 const WalletProvidersContext = createContext<WalletProvider[]>([]);
 
 export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     const { networks } = useSettingsState();
+    const isMobilePlatform = isMobile();
     const { goBack, onFinish, open, setOpen, selectedConnector } = useConnectModal()
 
     const bitcoin = useBitcoin()
@@ -36,15 +38,16 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
         const allProviders: WalletProvider[] = [
             bitcoin, evm, starknet, svm, ton, fuel, tron, paradex, imtblX
         ];
+        const filteredProviders = allProviders.filter(provider => isMobilePlatform ? !provider.unsupportedPlatforms?.includes('mobile') : !provider.unsupportedPlatforms?.includes('desktop'));
 
-        return allProviders.filter(provider =>
+        return filteredProviders.filter(provider =>
             networks.some(net =>
                 provider.autofillSupportedNetworks?.includes(net.name) ||
                 provider.withdrawalSupportedNetworks?.includes(net.name) ||
                 provider.asSourceSupportedNetworks?.includes(net.name)
             )
         );
-    }, [networks, bitcoin, evm, starknet, svm, ton, fuel, tron, paradex, imtblX]);
+    }, [networks, bitcoin, evm, starknet, svm, ton, fuel, tron, paradex, imtblX, isMobilePlatform]);
 
     return (
         <WalletProvidersContext.Provider value={providers}>

@@ -58,4 +58,5 @@ export type WalletProvider = {
     name: string,
     id: string,
     providerIcon?: string,
+    unsupportedPlatforms?: string[],
 }

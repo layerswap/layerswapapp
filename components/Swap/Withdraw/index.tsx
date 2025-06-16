@@ -16,11 +16,8 @@ const Withdraw: FC = () => {
 
     const sourceIsImmutableX = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
         || swap?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
-    const sourceIsArbitrumOne = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
-        || swap?.source_network.name === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
 
     const isImtblMarketplace = (signature && appName === "imxMarketplace" && sourceIsImmutableX)
-    const sourceIsSynquote = appName === "ea7df14a1597407f9f755f05e25bab42" && sourceIsArbitrumOne
 
     let withdraw: {
         content?: JSX.Element | JSX.Element[],
@@ -39,7 +36,7 @@ const Withdraw: FC = () => {
         }
     }
 
-    if (isImtblMarketplace || sourceIsSynquote) {
+    if (isImtblMarketplace) {
         withdraw = {
             content: <External />
         }

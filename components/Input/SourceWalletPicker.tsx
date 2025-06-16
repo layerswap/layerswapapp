@@ -79,16 +79,22 @@ const Component: FC = () => {
     return <>
         {
             values.depositMethod === 'deposit_address' ?
-                <div className="flex items-center space-x-2 text-sm leading-4">
-                    <div onClick={handleWalletChange} className="rounded-md bg-secondary-500 flex space-x-1 items-center py-0.5 pl-2 pr-1 cursor-pointer">
-                        <div className="text-secondary-text">
+                (
+                    provider
+                        ? <div className="flex items-center space-x-2 text-sm leading-4">
+                            <div onClick={handleWalletChange} className="rounded-md bg-secondary-500 flex space-x-1 items-center py-0.5 pl-2 pr-1 cursor-pointer">
+                                <div className="text-secondary-text">
+                                    Manual Transfer
+                                </div>
+                                <div className="w-5 h-5 items-center flex">
+                                    <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                                </div>
+                            </div>
+                        </div>
+                        : <div className="text-secondary-text rounded-md bg-secondary-500 flex space-x-1 items-center py-0.5 px-2 text-sm">
                             Manual Transfer
                         </div>
-                        <div className="w-5 h-5 items-center flex">
-                            <ChevronDown className="h-4 w-4" aria-hidden="true" />
-                        </div>
-                    </div>
-                </div>
+                )
                 :
                 <div className="rounded-lg bg-secondary-800 flex items-center space-x-2 text-sm leading-4">
                     {
