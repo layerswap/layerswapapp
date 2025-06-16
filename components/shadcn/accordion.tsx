@@ -42,6 +42,7 @@ const AccordionContent = React.forwardRef<
     <AccordionPrimitive.Content
         ref={ref}
         className={classNames(
+            "AccordionContent",
             className
         )}
         {...props}

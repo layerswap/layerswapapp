@@ -6,7 +6,6 @@ import AddressIcon from "../AddressIcon";
 import { Wallet } from "../../Models/WalletProvider";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
 
-
 const Component = (props: AddressTriggerProps) => {
     const { addressItem, connectedWallet, partner } = props
     return <>

@@ -9,7 +9,6 @@ import { motion } from "framer-motion";
 import { useDepositMethod } from "../../../context/depositMethodContext";
 import { useQueryState } from "../../../context/query";
 import KnownInternalNames from "../../../lib/knownIds";
-import { useSwapDataUpdate } from "../../../context/swap";
 
 const variants = {
     open: { rotate: 180 },

@@ -16,7 +16,6 @@ export const ImageWithFallback = forwardRef<HTMLImageElement, ImageProps>(({ src
         ref={ref}
         src={imgSrc}
         onError={handleErrpr}
-        placeholder="blur"
         blurDataURL={fallbackImage}
     />;
 });

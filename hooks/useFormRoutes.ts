@@ -4,10 +4,10 @@ import { SwapDirection, SwapFormValues } from "../components/DTOs/SwapFormValues
 import { ApiResponse } from "../Models/ApiResponse";
 import { NetworkRoute, NetworkRouteToken } from "../Models/Network";
 import { useSettingsState } from "../context/settings";
+import { NetworkElement, RowElement, NetworkTokenElement, _Route, _RoutesGroup, TitleElement, GroupTokensResult, GroupedTokenElement } from "../Models/Route";
+import useAllBalances from "./useAllBalances";
 import { NetworkBalance } from "../Models/Balance";
 import { resolveNetworkRoutesURL } from "../helpers/routes";
-import { NetworkElement, RowElement, NetworkTokenElement, _Route, _RoutesGroup, TitleElement, GroupedTokenElement, GroupTokensResult } from "../Models/Route";
-import useAllBalances from "./useAllBalances";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 
 const Titles = {

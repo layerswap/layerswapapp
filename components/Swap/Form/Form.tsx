@@ -8,7 +8,7 @@ import { ArrowUpDown } from 'lucide-react'
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
 import { useQueryState } from "../../../context/query";
-import FeeDetailsComponent from "../../FeeDetails";
+import QuoteDetails from "../../FeeDetails";
 import { useFee } from "../../../context/feeContext";
 import dynamic from "next/dynamic";
 import { TokenBalance } from "../../../Models/Balance";
@@ -86,58 +86,64 @@ const SwapForm: FC<Props> = ({ partner }) => {
 
     return <AmountFocusProvider>
         <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
-            <Widget className="sm:min-h-[450px] h-full space-y-[110px]">
+            <Widget className="sm:min-h-[450px] h-full">
                 <Widget.Content>
-                    <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
-                        {
-                            !(query?.hideFrom && values?.from) &&
-                            <SourcePicker />
-                        }
-                        {
-                            !query?.hideFrom && !query?.hideTo &&
-                            <ValueSwapperButton
-                                values={values}
-                                setValues={setValues}
-                                providers={providers}
-                                query={query}
-                            />
-                        }
-                        {
-                            !(query?.hideTo && values?.to) &&
-                            <DestinationPicker partner={partner} />
-                        }
-                    </div>
-                    {
-                        (((fromExchange && destination) || (toExchange && source)) && currencyGroup)
-                            ? <div className="mb-6 leading-4">
-                                <ResizablePanel>
-                                    <CexNetworkPicker direction={fromExchange ? 'from' : 'to'} partner={partner} />
-                                </ResizablePanel>
+                    <div className="w-full h-[440px] flex flex-col justify-between">
+                        <div>
+                            <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
+                                {
+                                    !(query?.hideFrom && values?.from) &&
+                                    <SourcePicker />
+                                }
+                                {
+                                    !query?.hideFrom && !query?.hideTo &&
+                                    <ValueSwapperButton
+                                        values={values}
+                                        setValues={setValues}
+                                        providers={providers}
+                                        query={query}
+                                    />
+                                }
+                                {
+                                    !(query?.hideTo && values?.to) &&
+                                    <DestinationPicker partner={partner} />
+                                }
                             </div>
-                            : <></>
-                    }
-                    <div className="w-full">
-                        {
-                            validationMessage
-                                ? <ValidationError />
-                                : <FeeDetailsComponent values={values} />
-                        }
-                        {
-                            values.amount &&
-                            <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
-                        }
+                            {
+                                (((fromExchange && destination) || (toExchange && source)) && currencyGroup)
+                                    ? <div className="mb-6 leading-4">
+                                        <ResizablePanel>
+                                            <CexNetworkPicker direction={fromExchange ? 'from' : 'to'} partner={partner} />
+                                        </ResizablePanel>
+                                    </div>
+                                    : <></>
+                            }
+                            <div className="w-full">
+                                {
+                                    values.amount &&
+                                    <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                                }
+                            </div>
+                        </div>
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
-                    <FormButton
-                        shouldConnectWallet={shouldConnectWallet}
-                        values={values}
-                        isValid={isValid}
-                        errors={errors}
-                        isSubmitting={isSubmitting}
-                        actionDisplayName={actionDisplayName}
-                        partner={partner}
-                    />
+                    <div className="space-y-3">
+                        {
+                            validationMessage
+                                ? <ValidationError />
+                                : <QuoteDetails values={values} />
+                        }
+                        <FormButton
+                            shouldConnectWallet={shouldConnectWallet}
+                            values={values}
+                            isValid={isValid}
+                            errors={errors}
+                            isSubmitting={isSubmitting}
+                            actionDisplayName={actionDisplayName}
+                            partner={partner}
+                        />
+                    </div>
                 </Widget.Footer>
             </Widget>
         </Form>
