@@ -89,7 +89,7 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
 
     const config: LayerswapWidgetConfig = useMemo(() => {
         return {
-            theme: themeData,
+            theme: themeData?.theme,
             featuredNetwork: (featuredNetwork?.initialDirection && featuredNetwork?.network
                 ? {
                     initialDirection: featuredNetwork.initialDirection,
@@ -100,6 +100,8 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
             actionText
         }
     }, [themeData, featuredNetwork, actionText])
+
+    console.log("config", config)
 
     return (
         <WidgetContext.Provider value={{

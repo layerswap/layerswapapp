@@ -20,7 +20,7 @@ import LayerSwapApiClient from "../lib/layerSwapApiClient";
 import ColorSchema from "../components/ColorSchema";
 
 export type LayerswapWidgetConfig = {
-    themeData?: ThemeData | null
+    theme?: ThemeData | null
     featuredNetwork?: {
         initialDirection: 'from' | 'to',
         network: string,
@@ -51,7 +51,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
 
     AppSettings.ApiVersion = version
     AppSettings.Integrator = integrator
-    AppSettings.ThemeData = { ...THEME_COLORS['default'], ...config?.themeData }
+    AppSettings.ThemeData = { ...THEME_COLORS['default'], ...config?.theme }
     AppSettings.ActionButtonDisplayText = config?.actionText
     AppSettings.FeaturedNetwork = config?.featuredNetwork
     LayerSwapApiClient.apiKey = apiKey
@@ -71,7 +71,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
 
     let appSettings = new LayerSwapAppSettings(settings)
 
-    const themeData = { ...THEME_COLORS['default'], ...config?.themeData }
+    const themeData = { ...THEME_COLORS['default'], ...config?.theme }
 
     return (
         <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
@@ -99,7 +99,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
 export const LayerswapProvider: typeof LayerswapProviderComponent = (props) => {
     return (
         <>
-            <ColorSchema themeData={props.config?.themeData} />
+            <ColorSchema themeData={props.config?.theme} />
             <div
                 style={{ backgroundColor: 'transparent' }}
                 className="layerswap-styles">
