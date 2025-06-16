@@ -1,4 +1,4 @@
-import { Dispatch, FC, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
+import { Dispatch, FC, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useWallet from "../../hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
 import { InternalConnector, Wallet, WalletProvider } from "../../Models/WalletProvider";
@@ -338,12 +338,15 @@ const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: st
             <PopoverContent align="end" className="min-w-40 !text-primary-text p-2 space-y-1 !bg-secondary-600 !rounded-xl">
                 {
                     values.sort().map((item, index) => (
-                        <div key={index} onClick={() => onSelect(item)} className="px-3 py-1 text-left flex items-center w-full gap-3 hover:bg-secondary-800 rounded-lg transition-colors duration-200 text-secondary-text cursor-pointer">
+                        <div key={index} className="px-3 py-1 text-left flex items-center w-full gap-3 hover:bg-secondary-800 rounded-lg transition-colors duration-200 text-secondary-text cursor-pointer">
                             <Checkbox
                                 id={item}
                                 checked={selectedProviderName === item}
+                                onClick={() => onSelect(item)}
                             />
-                            {item}
+                            <label htmlFor={item} className="w-full cursor-pointer">
+                                {item}
+                            </label>
                         </div>
                     ))
                 }

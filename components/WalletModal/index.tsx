@@ -1,4 +1,4 @@
-import { Context, createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { Context, createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { InternalConnector, Wallet, WalletProvider } from '../../Models/WalletProvider';
 
 export type WalletModalConnector = InternalConnector & {
@@ -41,7 +41,7 @@ export function WalletModalProvider({ children }) {
     const [open, setOpen] = useState(false);
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
-    const connect = useCallback(async ({ provider, connectCallback }: SharedType) => {
+    const connect = async ({ provider, connectCallback }: SharedType) => {
         if (!provider?.availableWalletsForConnect) {
             await provider?.connectWallet()
         }
@@ -49,23 +49,23 @@ export function WalletModalProvider({ children }) {
         setOpen(true)
         setConnectConfig({ provider, connectCallback });
         return;
-    }, [setSelectedProvider, setOpen, setConnectConfig]);
+    }
 
-    const cancel = useCallback(() => {
+    const cancel = () => {
         if (connectConfig) {
             connectConfig.connectCallback(undefined);
             setConnectConfig(undefined);
         }
         setOpen(false);
-    }, [connectConfig, setConnectConfig, setOpen]);
+    }
 
-    const onFinish = useCallback((connectedWallet?: Wallet | undefined) => {
+    const onFinish = (connectedWallet?: Wallet | undefined) => {
         if (connectConfig) {
             connectConfig.connectCallback(connectedWallet);
             setConnectConfig(undefined);
         }
         setOpen(false);
-    }, [connectConfig, setConnectConfig, setOpen]);
+    }
 
     const goBack = useCallback(() => {
         if (selectedConnector) {
@@ -74,10 +74,16 @@ export function WalletModalProvider({ children }) {
         }
     }, [setSelectedConnector, selectedConnector])
 
-    const value = useMemo(() => ({ connect, cancel, selectedProvider, setSelectedProvider, selectedConnector, setSelectedConnector, isWalletModalOpen, goBack, onFinish, setOpen, open }), [connect, cancel, selectedProvider, setSelectedProvider, selectedConnector, setSelectedConnector, isWalletModalOpen, goBack, onFinish, setOpen, open])
-    
+    useEffect(() => {
+        if (!open && selectedConnector) {
+            setSelectedConnector(undefined)
+            setSelectedProvider(undefined)
+        }
+        setIsWalletModalOpen(open)
+    }, [open])
+
     return (
-        <ConnectModalContext.Provider value={value}>
+        <ConnectModalContext.Provider value={{ connect, cancel, selectedProvider, setSelectedProvider, selectedConnector, setSelectedConnector, isWalletModalOpen, goBack, onFinish, setOpen, open }}>
             {children}
         </ConnectModalContext.Provider>
     )

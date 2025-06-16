@@ -331,7 +331,7 @@ const SelectedRoutePlaceholder = ({ placeholder }: { placeholder: string }) => (
             <RoutePickerIcon className="w-7 h-7" />
         </div>
         <span className="group-has-[.input-wide]:hidden flex text-secondary-text text-base font-normal leading-5 flex-auto items-center max-w-2/3">
-            <span className="ml-2">{placeholder}</span>
+            <span className="ml-2 text-xs sm:text-base">{placeholder}</span>
         </span>
     </>
 )
