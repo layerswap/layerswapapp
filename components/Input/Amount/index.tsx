@@ -7,8 +7,6 @@ import useSWRGas from "../../../lib/gases/useSWRGas";
 import useSWRBalance from "../../../lib/balances/useSWRBalance";
 import { useSwapDataState } from "../../../context/swap";
 import { resolveMacAllowedAmount } from "./helpers";
-import { useAmountFocus } from "../../../context/amountFocusContext";
-import useWindowDimensions from "../../../hooks/useWindowDimensions";
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 
@@ -16,10 +14,6 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
     const { fromCurrency, from, to, amount, toCurrency, fromExchange, toExchange } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, quote: fee, isQuoteLoading: isFeeLoading } = useQuote()
-    const { isDesktop } = useWindowDimensions();
-
-    const { isAmountFocused, setIsAmountFocused } = useAmountFocus()
-    const [focusedFontSize, setFocusedFontSize] = useState("text-[48px]");
 
     const { selectedSourceAccount } = useSwapDataState()
     const sourceAddress = selectedSourceAccount?.address
@@ -56,32 +50,9 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         if (fee && amount) updateRequestedAmountInUsd(Number(amount), fromCurrencyPriceInUsd)
     }, [amount, fromCurrency, fee])
 
-    const updateFocusedFontSize = useCallback((value: string) => {
-        if (!isAmountFocused) return;
-
-        const cleanValue = value.replace(/[^0-9.]/g, "");
-        const length = cleanValue.length;
-
-        let size = "text-[48px]";
-
-        if (isDesktop) {
-            if (length >= 16) size = "text-[28px]";
-            else if (length >= 14) size = "text-[30px]";
-            else if (length >= 12) size = "text-[36px]";
-            else if (length >= 9) size = "text-[40px]";
-        } else {
-            if (length >= 16) size = "text-[24px]";
-            else if (length >= 14) size = "text-[26px]";
-            else if (length >= 12) size = "text-[30px]";
-            else if (length >= 10) size = "text-[36px]";
-            else if (length >= 8) size = "text-[40px]";
-        }
-
-        setFocusedFontSize(size);
-    }, [isAmountFocused, isDesktop]);
 
     return (<>
-        <div className={`flex flex-col w-full bg-secondary-500 rounded-lg peer ${isAmountFocused ? "input-wide" : ""}`}>
+        <div className={`flex flex-col w-full bg-secondary-500 rounded-lg`}>
             <div className="relative w-full">
                 <NumericInput
                     disabled={diasbled}
@@ -92,13 +63,10 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     name={name}
                     ref={amountRef}
                     precision={fromCurrency?.precision}
-                    onFocus={() => setIsAmountFocused(true)}
-                    onBlur={() => { setIsAmountFocused(false) }}
-                    className={`${isAmountFocused ? `${focusedFontSize}` : "text-[28px]"} text-primary-text placeholder:!text-primary-text pl-0 pr-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal`}
+                    className={"text-[28px] text-primary-text placeholder:!text-primary-text pl-0 pr-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal"}
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value), fromCurrencyPriceInUsd);
-                        updateFocusedFontSize(e.target.value);
                     }}
                 />
                 <span className="text-base leading-5 font-medium text-secondary-text">

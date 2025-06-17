@@ -71,7 +71,7 @@ export const SelectorTrigger = (props: SelectTriggerProps) => {
     function openModal() {
         setIsOpen(true)
     }
-    return <div className="shadow-sm/30 rounded-lg flex items-center relative w-full group-has-[.input-wide]:w-fit z-10 self-end ">
+    return <div className="shadow-sm/30 rounded-lg flex items-center relative w-full z-10 self-end ">
         <button
             type="button"
             onClick={openModal}

@@ -2,7 +2,7 @@ import { Formik, FormikProps } from "formik";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSettingsState } from "../../../context/settings";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
+import { UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import React from "react";
 import ConnectNetwork from "../../ConnectNetwork";
 import toast from "react-hot-toast";
@@ -12,16 +12,15 @@ import LayerSwapApiClient from "../../../lib/apiClients/layerSwapApiClient";
 import Modal from "../../modal/modal";
 import SwapForm from "./Form";
 import useSWR from "swr";
-import { useRouter } from "next/router";
+import { NextRouter, useRouter } from "next/router";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { Partner } from "../../../Models/Partner";
-import { UserType, useAuthDataUpdate } from "../../../context/authContext";
+import { UpdateAuthInterface, UserType, useAuthDataUpdate } from "../../../context/authContext";
 import { ApiError, LSAPIKnownErrorCode } from "../../../Models/ApiError";
 import { useQueryState } from "../../../context/query";
 import TokenService from "../../../lib/TokenService";
 import LayerSwapAuthApiClient from "../../../lib/apiClients/userAuthApiClient";
-import { ChevronRight } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import { useQuote } from "../../../context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
 import useWallet from "../../../hooks/useWallet";
@@ -34,7 +33,8 @@ import { useAddressesStore } from "../../../stores/addressesStore";
 import { useAsyncModal } from "../../../context/asyncModal";
 import { ValidationProvider } from "../../../context/validationErrorContext";
 import { TrackEvent } from "../../../pages/_document";
-import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
+import { PendingSwap } from "./PendingSwap";
+import { QueryParams } from "@/Models/QueryParams";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -100,71 +100,27 @@ export default function Form() {
             }
         }
         try {
-            const accessToken = TokenService.getAuthData()?.access_token
-            if (!accessToken) {
-                try {
-                    var apiClient = new LayerSwapAuthApiClient();
-                    const res = await apiClient.guestConnectAsync()
-                    updateAuthData(res)
-                    setUserType(UserType.GuestUser)
-                }
-                catch (error) {
-                    toast.error(error.response?.data?.error || error.message)
-                    return;
-                }
-            }
-            const swapId = await createSwap(values, query, partner);
-            window.safary?.track({
-                eventType: 'swap',
-                eventName: 'swap_created',
-                parameters: {
-                    custom_str_1_label: "from",
-                    custom_str_1_value: fromExchange?.display_name || from?.display_name!,
-                    custom_str_2_label: "to",
-                    walletAddress: (fromExchange || depositMethod !== 'wallet') ? '' : selectedSourceAccount?.address!,
-                    custom_str_2_value: toExchange?.display_name || to?.display_name!,
-                    fromCurrency: fromExchange ? currencyGroup?.symbol! : fromCurrency?.symbol!,
-                    toCurrency: toExchange ? currencyGroup?.symbol! : toCurrency?.symbol!,
-                    fromAmount: amount!,
-                    toAmount: amount!
-                }
+            await submit({
+                values,
+                query,
+                partner,
+                router,
+                selectedSourceAccount,
+                minAllowedAmount,
+                mutateLimits,
+                setSwapId,
+                setSwapPath,
+                createSwap,
+                setShowSwapModal: handleShowSwapModal,
+                pollFee,
+                updateAuthData,
+                setUserType,
+                setNetworkToConnect,
+                setShowConnectNetworkModal
             })
-            plausible(TrackEvent.SwapInitiated)
-            setSwapId(swapId)
-            pollFee(false)
-            setSwapPath(swapId, router)
-            setShowSwapModal(true)
         }
         catch (error) {
-            mutateLimits()
-            const data: ApiError = error?.response?.data?.error
-            if (data?.code === LSAPIKnownErrorCode.BLACKLISTED_ADDRESS) {
-                toast.error("You can't transfer to that address. Please double check.")
-            }
-            else if (data?.code === LSAPIKnownErrorCode.INVALID_ADDRESS_ERROR) {
-                toast.error(`Enter a valid ${values.to?.display_name} address`)
-            }
-            else if (data?.code === LSAPIKnownErrorCode.UNACTIVATED_ADDRESS_ERROR && values.to) {
-                setNetworkToConnect({
-                    DisplayName: values.to.display_name,
-                    AppURL: data.metadata.ActivationUrl
-                })
-                setShowConnectNetworkModal(true);
-            } else if (data?.code === LSAPIKnownErrorCode.NETWORK_CURRENCY_DAILY_LIMIT_REACHED) {
-                const time = data.metadata.RemainingLimitPeriod?.split(':');
-                const hours = Number(time[0])
-                const minutes = Number(time[1])
-                const remainingTime = `${hours > 0 ? `${hours.toFixed()} ${(hours > 1 ? 'hours' : 'hour')}` : ''} ${minutes > 0 ? `${minutes.toFixed()} ${(minutes > 1 ? 'minutes' : 'minute')}` : ''}`
-
-                if (minAllowedAmount && data.metadata.AvailableTransactionAmount > minAllowedAmount) {
-                    toast.error(`Daily limit of ${values.fromCurrency?.symbol} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromCurrency?.symbol} or retry in ${remainingTime}.`)
-                } else {
-                    toast.error(`Daily limit of ${values.fromCurrency?.symbol} transfers from ${values.from?.display_name} is reached. Please retry in ${remainingTime}.`)
-                }
-            }
-            else {
-                toast.error(data?.message || error?.message)
-            }
+            toast.error(error?.message)
         }
     }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getProvider])
 
@@ -228,92 +184,93 @@ export default function Form() {
     </DepositMethodProvider >
 }
 
-const textMotion = {
-    rest: {
-        color: "grey",
-        x: 0,
-        transition: {
-            duration: 0.4,
-            type: "tween",
-            ease: "easeIn"
+type SubmitProps = {
+    values: SwapFormValues;
+    query: QueryParams;
+    partner?: Partner;
+    router: NextRouter;
+    minAllowedAmount?: number;
+    selectedSourceAccount: ReturnType<typeof useSwapDataState>['selectedSourceAccount'];
+    setSwapId: UpdateSwapInterface['setSwapId'];
+    setSwapPath: UpdateSwapInterface['setSwapPath'];
+    createSwap: UpdateSwapInterface['createSwap'];
+    setShowSwapModal: (value: boolean) => void;
+    pollFee: (value: boolean) => void;
+    updateAuthData: UpdateAuthInterface['updateAuthData'];
+    setUserType: UpdateAuthInterface['setUserType'];
+    setNetworkToConnect: (value: NetworkToConnect) => void;
+    setShowConnectNetworkModal: (value: boolean) => void;
+    mutateLimits: () => void;
+}
+
+const submit = async ({ query, values, partner, router, selectedSourceAccount, minAllowedAmount, setSwapId, setShowSwapModal, setSwapPath, pollFee, createSwap, setUserType, updateAuthData, setNetworkToConnect, setShowConnectNetworkModal, mutateLimits }: SubmitProps) => {
+    try {
+        const { to, from, amount, toCurrency, fromCurrency, fromExchange, toExchange, currencyGroup, depositMethod } = values
+
+        const accessToken = TokenService.getAuthData()?.access_token
+        if (!accessToken) {
+            try {
+                var apiClient = new LayerSwapAuthApiClient();
+                const res = await apiClient.guestConnectAsync()
+                updateAuthData(res)
+                setUserType(UserType.GuestUser)
+            }
+            catch (error) {
+                toast.error(error.response?.data?.error || error.message)
+                return;
+            }
         }
-    },
-    hover: {
-        color: "blue",
-        x: 30,
-        transition: {
-            duration: 0.4,
-            type: "tween",
-            ease: "easeOut"
+        const swapId = await createSwap(values, query, partner);
+        window.safary?.track({
+            eventType: 'swap',
+            eventName: 'swap_created',
+            parameters: {
+                custom_str_1_label: "from",
+                custom_str_1_value: fromExchange?.display_name || from?.display_name!,
+                custom_str_2_label: "to",
+                walletAddress: (fromExchange || depositMethod !== 'wallet') ? '' : selectedSourceAccount?.address!,
+                custom_str_2_value: toExchange?.display_name || to?.display_name!,
+                fromCurrency: fromExchange ? currencyGroup?.symbol! : fromCurrency?.symbol!,
+                toCurrency: toExchange ? currencyGroup?.symbol! : toCurrency?.symbol!,
+                fromAmount: amount!,
+                toAmount: amount!
+            }
+        })
+        plausible(TrackEvent.SwapInitiated)
+        setSwapId(swapId)
+        pollFee(false)
+        setSwapPath(swapId, router)
+        setShowSwapModal(true)
+    }
+    catch (error) {
+        mutateLimits()
+        const data: ApiError = error?.response?.data?.error
+        if (data?.code === LSAPIKnownErrorCode.BLACKLISTED_ADDRESS) {
+            throw new Error("You can't transfer to that address. Please double check.")
+        }
+        else if (data?.code === LSAPIKnownErrorCode.INVALID_ADDRESS_ERROR) {
+            throw new Error(`Enter a valid ${values.to?.display_name} address`)
+        }
+        else if (data?.code === LSAPIKnownErrorCode.UNACTIVATED_ADDRESS_ERROR && values.to) {
+            setNetworkToConnect({
+                DisplayName: values.to.display_name,
+                AppURL: data.metadata.ActivationUrl
+            })
+            setShowConnectNetworkModal(true);
+        } else if (data?.code === LSAPIKnownErrorCode.NETWORK_CURRENCY_DAILY_LIMIT_REACHED) {
+            const time = data.metadata.RemainingLimitPeriod?.split(':');
+            const hours = Number(time[0])
+            const minutes = Number(time[1])
+            const remainingTime = `${hours > 0 ? `${hours.toFixed()} ${(hours > 1 ? 'hours' : 'hour')}` : ''} ${minutes > 0 ? `${minutes.toFixed()} ${(minutes > 1 ? 'minutes' : 'minute')}` : ''}`
+
+            if (minAllowedAmount && data.metadata.AvailableTransactionAmount > minAllowedAmount) {
+                throw new Error(`Daily limit of ${values.fromCurrency?.symbol} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromCurrency?.symbol} or retry in ${remainingTime}.`)
+            } else {
+                throw new Error(`Daily limit of ${values.fromCurrency?.symbol} transfers from ${values.from?.display_name} is reached. Please retry in ${remainingTime}.`)
+            }
+        }
+        else {
+            throw new Error(data?.message || error?.message)
         }
     }
-};
-
-const PendingSwap = ({ onClick }: { onClick: () => void }) => {
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
-    const {
-        destination_exchange,
-        source_exchange,
-        source_network,
-        destination_network
-    } = swap || {}
-
-    if (!swap)
-        return <></>
-
-    return <motion.div
-        initial={{ y: 10, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: -10, opacity: 0 }}
-        transition={{ duration: 0.2 }}
-    >
-        <motion.div
-            onClick={onClick}
-            initial="rest" whileHover="hover" animate="rest"
-            className="bg-secondary-400 rounded-r-lg"
-            >
-            <motion.div
-                variants={textMotion}
-                className="flex items-center bg-secondary-400 rounded-r-lg">
-                <div className="text-primary-text flex px-3 p-2 items-center space-x-2">
-                    <div className="shrink-0 h-5 w-5 relative">
-                        {source_exchange ? <ImageWithFallback
-                            src={source_exchange.logo}
-                            alt="From Logo"
-                            height="60"
-                            width="60"
-                            className="rounded-md object-contain"
-                        /> : source_network ?
-                            <ImageWithFallback
-                                src={source_network.logo}
-                                alt="From Logo"
-                                height="60"
-                                width="60"
-                                className="rounded-md object-contain"
-                            /> : null
-                        }
-                    </div>
-                    <ChevronRight className="block h-4 w-4 mx-1" />
-                    <div className="shrink-0 h-5 w-5 relative block">
-                        {destination_exchange ? <ImageWithFallback
-                            src={destination_exchange.logo}
-                            alt="To Logo"
-                            height="60"
-                            width="60"
-                            className="rounded-md object-contain"
-                        /> : destination_network ?
-                            <ImageWithFallback
-                                src={destination_network.logo}
-                                alt="To Logo"
-                                height="60"
-                                width="60"
-                                className="rounded-md object-contain"
-                            /> : null
-                        }
-                    </div>
-                </div>
-            </motion.div>
-        </motion.div>
-    </motion.div>
 }

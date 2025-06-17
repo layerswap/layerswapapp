@@ -35,15 +35,12 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
         <>
             {
                 (network && token && truncatedBalance) ?
-                <motion.div
-                    layoutId="affect"
-                    className="in-has-[.input-wide]:absolute in-has-[.input-wide]:rounded-lg in-has-[.input-wide]:mt-1 in-has-[.input-wide]:px-1.5 in-has-[.input-wide]:w-full 
-                                  in-has-[.input-wide]:py-0.5 in-has-[.input-wide]:m-auto in-has-[.input-wide]:text-xs in-has-[.input-wide]:text-primary-text-placeholder in-has-[.input-wide]:-bottom-6
-                                  w-4/5 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs text-primary-text-placeholder"
-                >
-                    <span>{truncatedBalance}</span>
-                </motion.div>
-                : null
+                    <motion.div
+                        layoutId="affect"
+                        className="w-4/5 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs text-primary-text-placeholder">
+                        <span>{truncatedBalance}</span>
+                    </motion.div>
+                    : null
             }
         </>
     )

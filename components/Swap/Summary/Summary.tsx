@@ -145,7 +145,7 @@ const RouteTokenPair: FC<{ route: { logo: string, display_name: string }, networ
                     className="absolute -right-1.5 -bottom-1.5 object-contain rounded-md border-1 border-secondary-300"
                 />
             </div>
-            <div className="group-has-[.input-wide]:hidden flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0">
+            <div className="flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0">
                 <span className="leading-4">{token.symbol}</span>
                 <div className="flex items-center gap-1 leading-3 text-sm">
                     <p className="text-secondary-text text-sm truncate whitespace-nowrap">

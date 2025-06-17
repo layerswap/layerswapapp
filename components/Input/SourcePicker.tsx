@@ -32,13 +32,13 @@ const SourcePicker = () => {
                     <motion.div
                         layout
                         transition={{ duration: 0.25, ease: 'easeInOut' }}
-                        className="col-span-5 group-has-[.input-wide]:col-span-6"
+                        className="col-span-5"
                     >
                         <AmountField />
                     </motion.div>
                     <motion.div
                         transition={{ duration: 0.25, ease: 'easeInOut' }}
-                        className="col-span-3 group-has-[.input-wide]:col-span-2 flex items-center self-start justify-end"
+                        className="col-span-3 flex items-center self-start justify-end"
                     >
                         <RoutePicker direction="from" />
                     </motion.div>

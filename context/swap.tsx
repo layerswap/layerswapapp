@@ -26,9 +26,9 @@ export const SwapDataStateContext = createContext<SwapData>({
     depositActionsResponse: undefined,
 });
 
-export const SwapDataUpdateContext = createContext<UpdateInterface | null>(null);
+export const SwapDataUpdateContext = createContext<UpdateSwapInterface | null>(null);
 
-export type UpdateInterface = {
+export type UpdateSwapInterface = {
     createSwap: (values: SwapFormValues, query: QueryParams, partner?: Partner) => Promise<string>,
     setCodeRequested: (codeSubmitted: boolean) => void;
     setInterval: (value: number) => void,
@@ -165,7 +165,7 @@ export function SwapDataProvider({ children }) {
         return swapId;
     }, [selectedSourceAccount])
 
-    const updateFns: UpdateInterface = {
+    const updateFns: UpdateSwapInterface = {
         createSwap: createSwap,
         setCodeRequested: setCodeRequested,
         setInterval: setInterval,
@@ -205,7 +205,7 @@ export function useSwapDataState() {
 }
 
 export function useSwapDataUpdate() {
-    const updateFns = useContext<UpdateInterface>(SwapDataUpdateContext as Context<UpdateInterface>);
+    const updateFns = useContext<UpdateSwapInterface>(SwapDataUpdateContext as Context<UpdateSwapInterface>);
     if (updateFns === undefined) {
         throw new Error('useSwapDataUpdate must be used within a SwapDataProvider');
     }
