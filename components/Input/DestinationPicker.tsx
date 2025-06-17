@@ -15,7 +15,7 @@ type Props = {
 
 const DestinationPicker = (props: Props) => {
     const { partner } = props;
-    const { values: { toExchange, fromExchange, destination_address, to, from, depositMethod, fromCurrency, toCurrency } } = useFormikContext<SwapFormValues>();
+    const { values: { toExchange, fromExchange, destination_address, to, from, depositMethod, fromAsset: fromCurrency, toAsset: toCurrency } } = useFormikContext<SwapFormValues>();
     const { quote: fee, isQuoteLoading: isFeeLoading } = useQuote()
     const sourceWalletNetwork = fromExchange ? undefined : from
     const destinationWalletNetwork = toExchange ? undefined : to

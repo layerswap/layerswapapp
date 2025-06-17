@@ -10,7 +10,7 @@ import { LayoutGroup, motion } from "framer-motion";
 const SourcePicker = () => {
     const { values } = useFormikContext<SwapFormValues>();
 
-    const { fromCurrency, from, to } = values || {};
+    const { fromAsset: fromCurrency, from, to } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuote()
 
     return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl py-4.5 px-4 space-y-8">

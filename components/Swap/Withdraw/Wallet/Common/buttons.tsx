@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import WalletMessage from "../../messages/Message";
 import { useConnectModal } from "../../../../WalletModal";
+import { Network } from "@/Models/Network";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapResponse } = useSwapDataState()
@@ -64,24 +65,44 @@ export const ChangeNetworkMessage: FC<{ data: ActionData, network: string }> = (
     }
 }
 
-export const ChangeNetworkButton: FC<{ chainId: number, network: string }> = ({ chainId, network }) => {
-    const { switchChain, error, isPending, isError } = useSwitchChain();
+type ChangeNetworkProps = {
+    chainId: number | string,
+    network: Network,
+}
 
-    const clickHandler = useCallback(() => {
-        return switchChain({ chainId })
-    }, [switchChain, chainId])
+export const ChangeNetworkButton: FC<ChangeNetworkProps> = (props) => {
+    const { chainId, network } = props
+    const { provider } = useWallet(network, 'withdrawal')
+    const [error, setError] = useState<Error | null>(null)
+    const [isPending, setIsPending] = useState(false)
+
+    const { selectedSourceAccount } = useSwapDataState()
+
+    const clickHandler = useCallback(async () => {
+        try {
+            setIsPending(true)
+            if (!provider) throw new Error(`No provider from ${network?.name}`)
+            if (!provider.switchChain) throw new Error(`No switchChain from ${network?.name}`)
+            if (!selectedSourceAccount?.wallet) throw new Error(`No selectedSourceAccount from ${network?.name}`)
+
+            return await provider.switchChain(selectedSourceAccount?.wallet, chainId)
+        } catch (e) {
+            setError(e)
+        } finally {
+            setIsPending(false)
+        }
+
+    }, [provider, chainId])
 
     return <>
-        {
-            <ChangeNetworkMessage
-                data={{
-                    isPending: isPending,
-                    isError: isError,
-                    error
-                }}
-                network={network}
-            />
-        }
+        <ChangeNetworkMessage
+            data={{
+                isPending: isPending,
+                isError: !!error,
+                error
+            }}
+            network={network.display_name}
+        />
         {
             !isPending &&
             <ButtonWrapper
@@ -104,21 +125,24 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
     const { swap } = swapResponse || {}
     const { source_network } = swap || {}
 
-    return <div className="flex flex-col text-primary-text text-base space-y-2">
-        <SubmitButton
-            text_align='center'
-            buttonStyle='filled'
-            size="medium"
-            type="button"
-            {...props}
-        >
-            {props.children}
-        </SubmitButton>
+    return <>
+        <div className="flex flex-col text-primary-text text-base space-y-2">
+            <SubmitButton
+                text_align='center'
+                buttonStyle='filled'
+                size="medium"
+                type="button"
+                {...props}
+            >
+                {props.children}
+            </SubmitButton>
+        </div>
         {
             source_network?.deposit_methods?.some(m => m === 'deposit_address') &&
             <ManualTransferNote />
         }
-    </div>
+    </>
+
 }
 
 type ButtonWrapperProps = ComponentProps<typeof ButtonWrapper>;

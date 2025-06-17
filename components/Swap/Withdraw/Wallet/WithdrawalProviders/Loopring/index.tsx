@@ -2,20 +2,20 @@ import { ArrowLeftRight, Lock } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useAccount } from 'wagmi';
-import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from '../WalletTransfer/buttons';
-import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
-import SignatureIcon from '../../../../icons/SignatureIcon';
+import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { ActivationTokenPicker } from './ActivationTokentPicker';
 import { useActivationData, useLoopringAccount, useLoopringTokens } from './hooks';
-import { LoopringAPI } from '../../../../../lib/loopring/LoopringAPI';
-import { ChainId, UnlockedAccount } from '../../../../../lib/loopring/defs';
-import { BackendTransactionStatus } from '../../../../../lib/apiClients/layerSwapApiClient';
-import { WithdrawPageProps } from '../WalletTransferContent';
+import { LoopringAPI } from '@/lib/loopring/LoopringAPI';
+import { ChainId, UnlockedAccount } from '@/lib/loopring/defs';
+import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
 import { useConfig } from 'wagmi'
-import AppSettings from '../../../../../lib/AppSettings';
-import WalletMessage from '../../messages/Message';
+import AppSettings from '@/lib/AppSettings';
+import { WithdrawPageProps } from '../../Common/sharedTypes';
+import WalletMessage from '../../../messages/Message';
+import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from '../../Common/buttons';
+import SignatureIcon from '@/components/icons/SignatureIcon';
 
-const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId, callData, depositAddress, amount }) => {
+export const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId, callData, depositAddress, amount }) => {
     const [loading, setLoading] = useState(false);
     const [transferDone, setTransferDone] = useState<boolean>();
     const [activationPubKey, setActivationPubKey] = useState<{ x: string; y: string }>()
@@ -135,7 +135,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
         return (
             <ChangeNetworkButton
                 chainId={Number(walletChainId)}
-                network={network?.display_name}
+                network={network}
             />
         )
     }
@@ -184,5 +184,3 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
         </>
     )
 }
-
-export default LoopringWalletWithdraw

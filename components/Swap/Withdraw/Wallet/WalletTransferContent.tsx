@@ -1,18 +1,11 @@
 import { FC, useMemo } from "react";
-import { useSwapDataState } from "../../../../context/swap";
-import KnownInternalNames from "../../../../lib/knownIds";
-import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep";
-import StarknetWalletWithdrawStep from "./StarknetWalletWithdraw";
-import EVMWalletWithdrawal from "./WalletTransfer";
-import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw";
-import LoopringWalletWithdraw from "./Loopring";
-import { Network, NetworkType, Token } from "../../../../Models/Network";
-import TonWalletWithdrawStep from "./TonWalletWithdraw";
-import ParadexWalletWithdrawStep from "./paradex/index";
-import FuelWalletWithdrawStep from "./FuelWalletWithdrawal";
-import TronWalletWithdraw from "./TronWalletWithdraw";
-import SVMWalletWithdrawStep from "./SVMWalletWithdraw";
-import BitcoinWalletWithdrawStep from "./BitcoinWalletWithdraw";
+import { useSwapDataState } from "@/context/swap";
+import KnownInternalNames from "@/lib/knownIds";
+import { NetworkType } from "@/Models/Network";
+import {
+    ImtblxWalletWithdrawStep, BitcoinWalletWithdrawStep, EVMWalletWithdrawal, FuelWalletWithdrawStep, LoopringWalletWithdraw, ParadexWalletWithdraw, SVMWalletWithdrawStep, StarknetWalletWithdrawStep, TonWalletWithdrawStep, TronWalletWithdraw, ZkSyncWalletWithdrawStep
+} from "./WithdrawalProviders";
+
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 export const WalletTransferContent: FC = () => {
@@ -64,7 +57,7 @@ export const WalletTransferContent: FC = () => {
                 KnownInternalNames.Networks.ParadexMainnet,
                 KnownInternalNames.Networks.ParadexTestnet
             ],
-            component: ParadexWalletWithdrawStep
+            component: ParadexWalletWithdraw
         },
         {
             supportedNetworks: [
@@ -124,15 +117,3 @@ export const WalletTransferContent: FC = () => {
         }
     </>;
 };
-
-
-export type WithdrawPageProps = {
-    depositAddress?: string
-    amount?: number
-    swapId?: string
-    userDestinationAddress?: string
-    sequenceNumber?: number
-    network?: Network
-    token?: Token
-    callData?: string
-}

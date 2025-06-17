@@ -169,7 +169,7 @@ function resolveSelectedRoute(values: SwapFormValues, direction: SwapDirection):
     return direction === 'from' ? fromExchange || from : toExchange || to;
 }
 function resolveSelectedToken(values: SwapFormValues, direction: SwapDirection) {
-    const { fromCurrency, toCurrency, fromExchange, toExchange } = values
+    const { fromAsset: fromCurrency, toAsset: toCurrency, fromExchange, toExchange } = values
     //TODO: might need model refactoring as for now we just assume if exchange is selected then token is curencyGroup
     if ((direction === 'from' && fromExchange) || (direction === 'to' && toExchange)) {
         return values.currencyGroup

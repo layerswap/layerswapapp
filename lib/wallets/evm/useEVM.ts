@@ -190,6 +190,19 @@ export default function useEVM(): WalletProvider {
         if (!account)
             throw new Error("Account not found")
     }, [config, switchAccountAsync])
+
+    const switchChain = async (wallet: Wallet, chainId: string | number) => {
+        const connector = getConnections(config).find(c => c.connector.name === wallet.id)?.connector
+        if (!connector)
+            throw new Error("Connector not found")
+
+        if (connector?.switchChain) {
+            await connector.switchChain({ chainId: Number(chainId) });
+        } else {
+            throw new Error("Switch chain method is not available on the connector");
+        }
+    }
+
     const activeWallet = useMemo(() => resolvedConnectors.find(w => w.isActive), [resolvedConnectors])
     const providerIcon = useMemo(() => networks.find(n => ethereumNames.some(name => name === n.name))?.logo, [networks])
 
@@ -198,6 +211,7 @@ export default function useEVM(): WalletProvider {
             connectWallet,
             disconnectWallets,
             switchAccount,
+            switchChain,
             isNotAvailableCondition: isNotAvailable,
             connectedWallets: resolvedConnectors,
             activeWallet,

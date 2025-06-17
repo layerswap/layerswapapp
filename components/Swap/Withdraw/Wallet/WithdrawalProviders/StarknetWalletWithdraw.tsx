@@ -4,12 +4,12 @@ import { useAuthState } from '@/context/authContext';
 import useWallet from '@/hooks/useWallet';
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import WalletIcon from '@/components/icons/WalletIcon';
-import { WithdrawPageProps } from './WalletTransferContent';
-import { ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
-import TransactionMessages from '../messages/TransactionMessages';
+import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
+import TransactionMessages from '../../messages/TransactionMessages';
 import { datadogRum } from '@datadog/browser-rum';
+import { WithdrawPageProps } from '../Common/sharedTypes';
 
-const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, callData, swapId }) => {
+export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, callData, swapId }) => {
     const [error, setError] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
@@ -94,5 +94,3 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
     }
     else return <></>
 }
-
-export default StarknetWalletWithdrawStep;

@@ -1,21 +1,21 @@
 import { FC, useCallback, useEffect, useState } from 'react'
-import { BackendTransactionStatus } from '../../../../lib/apiClients/layerSwapApiClient';
-import useWallet from '../../../../hooks/useWallet';
-import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import WalletIcon from '../../../icons/WalletIcon';
-import { WithdrawPageProps } from './WalletTransferContent';
-import { ButtonWrapper, ChangeNetworkMessage, ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
+import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
+import useWallet from '@/hooks/useWallet';
+import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
+import WalletIcon from '@/components/icons/WalletIcon';
+import { ButtonWrapper, ChangeNetworkMessage, ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import {
     useSelectNetwork,
     useFuel,
     useNetwork,
 } from '@fuels/react';
-import { useSwapDataState } from '../../../../context/swap';
+import { useSwapDataState } from '@/context/swap';
 import { datadogRum } from '@datadog/browser-rum';
 import { coinQuantityfy, CoinQuantityLike, Provider, ScriptTransactionRequest } from 'fuels';
-import TransactionMessages from '../messages/TransactionMessages';
+import { WithdrawPageProps } from '../Common/sharedTypes';
+import TransactionMessages from '../../messages/TransactionMessages';
 
-const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, amount, depositAddress, sequenceNumber, token }) => {
+export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, amount, depositAddress, sequenceNumber, token }) => {
     const [loading, setLoading] = useState(false);
     const [buttonClicked, setButtonClicked] = useState(false)
     const [error, setError] = useState<string | undefined>()
@@ -177,5 +177,3 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
     }
     else return <></>
 }
-
-export default FuelWalletWithdrawStep;

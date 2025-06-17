@@ -1,18 +1,18 @@
 import { FC } from 'react'
-import useWallet from '../../../../../hooks/useWallet';
-import { WithdrawPageProps } from '../WalletTransferContent';
-import { useSettingsState } from '../../../../../context/settings';
-import KnownInternalNames from '../../../../../lib/knownIds';
+import useWallet from '@/hooks/useWallet';
+import { useSettingsState } from '@/context/settings';
+import KnownInternalNames from '@/lib/knownIds';
 import Evm from './Evm';
 import Starknet from './Starknet';
-import { useWalletStore } from '../../../../../stores/walletStore';
-import { useSwapDataState, useSwapDataUpdate } from '../../../../../context/swap';
-import { Wallet } from '../../../../../Models/WalletProvider';
-import SubmitButton from '../../../../buttons/submitButton';
+import { useWalletStore } from '@/stores/walletStore';
+import { useSwapDataState, useSwapDataUpdate } from '@/context/swap';
+import { Wallet } from '@/Models/WalletProvider';
+import SubmitButton from '@/components/buttons/submitButton';
 import { WalletIcon } from 'lucide-react';
-import { useConnectModal } from '../../../../WalletModal';
+import { WithdrawPageProps } from '../../Common/sharedTypes';
+import { useConnectModal } from '@/components/WalletModal';
 
-const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ amount, token, callData, swapId }) => {
+export const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ amount, token, callData, swapId }) => {
 
     const { networks } = useSettingsState();
     const l1Network = networks.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
@@ -62,5 +62,3 @@ const ConnectWalletModal = () => {
         Connect a wallet
     </SubmitButton>
 }
-
-export default ParadexWalletWithdraw;

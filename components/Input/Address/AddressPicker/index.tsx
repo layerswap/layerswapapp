@@ -64,7 +64,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         setFieldValue
     } = useFormikContext<SwapFormValues>();
     const query = useQueryState()
-    const { destination_address, to: destination, toExchange: destinationExchange, toCurrency: destinationAsset } = values
+    const { destination_address, to: destination, toExchange: destinationExchange, toAsset: destinationAsset } = values
     const groupedAddresses = useAddressesStore(state => state.addresses)
     const setAddresses = useAddressesStore(state => state.setAddresses)
     const { selectedSourceAccount } = useSwapDataState()

@@ -34,7 +34,7 @@ export const PendingSwap = ({ onClick }: { onClick: () => void }) => {
         destination_network
     } = swap || {}
 
-    if (!swap)
+    if (!swap?.id)
         return <></>
 
     return <motion.div

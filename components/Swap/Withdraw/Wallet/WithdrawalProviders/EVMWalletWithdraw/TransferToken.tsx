@@ -1,22 +1,21 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import {
     useAccount,
-    useConfig,
     useSendTransaction
 } from "wagmi";
 import { parseEther } from 'viem'
-import SubmitButton from "../../../../buttons/submitButton";
-import { BackendTransactionStatus } from "../../../../../lib/apiClients/layerSwapApiClient";
-import WalletIcon from "../../../../icons/WalletIcon";
-import Modal from '../../../../modal/modal';
-import MessageComponent from "../../../../MessageComponent";
-import { BaseTransferButtonProps } from "./sharedTypes";
-import TransactionMessage from "./transactionMessage";
-import { SendTransactionButton } from "./buttons";
-import { useSwapTransactionStore } from "../../../../../stores/swapTransactionStore";
-import { useSwapDataState } from "../../../../../context/swap";
+import SubmitButton from "@/components/buttons/submitButton";
+import { BackendTransactionStatus } from "@/lib/apiClients/layerSwapApiClient";
+import WalletIcon from "@/components/icons/WalletIcon";
+import Modal from '@/components/modal/modal';
+import MessageComponent from "@/components/MessageComponent";
+import { BaseTransferButtonProps } from "../../Common/sharedTypes";
+import TransactionMessage from "../../Common/transactionMessage";
+import { SendTransactionButton } from "../../Common/buttons";
+import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
+import { useSwapDataState } from "@/context/swap";
 import { datadogRum } from "@datadog/browser-rum";
-import { isMobile } from "../../../../../lib/openLink";
+import { isMobile } from "@/lib/openLink";
 
 const TransferTokenButton: FC<BaseTransferButtonProps> = ({
     depositAddress,
@@ -73,8 +72,7 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
             console.error(e.message)
         }
     }, [transaction?.data, swapId])
-    const [clientChain, setClientChain] = useState<number | undefined>()
-    const [connection, setConnection] = useState<any>()
+
     const clickHandler = useCallback(async () => {
         setButtonClicked(true)
         try {
@@ -119,15 +117,12 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
             />
         }
         {
-            !transaction.isPending && <>
-                <SendTransactionButton
-                    onClick={clickHandler}
-                    isSubmitting={!depositAddress}
-                    isDisabled={!depositAddress}
-                    icon={<WalletIcon className="stroke-2 w-6 h-6" />}
-                    error={isError && buttonClicked}
-                />
-            </>
+            !transaction.isPending &&
+            <SendTransactionButton
+                onClick={clickHandler}
+                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
+                error={isError && buttonClicked}
+            />
         }
         <Modal
             height="80%"
@@ -145,7 +140,7 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
                     </div>
                 </div>
                 <div className="text-base">
-                    You have requested swap with {amount}
+                    <span>You have requested swap with</span> <span>{amount}</span>
                 </div>
                 <MessageComponent.Buttons>
                     <div className="flex flex-row text-primary-text text-base space-x-2">

@@ -1,20 +1,19 @@
 import { FC, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
-import { PublishedSwapTransactions } from "../../../../../lib/apiClients/layerSwapApiClient";
-import { ChangeNetworkButton, ConnectWalletButton } from "./buttons";
+import { PublishedSwapTransactions } from "@/lib/apiClients/layerSwapApiClient";
+import { ChangeNetworkButton, ConnectWalletButton } from "../../Common/buttons";
 import TransferTokenButton from "./TransferToken";
-import { WithdrawPageProps } from "../WalletTransferContent";
-import useWallet from "../../../../../hooks/useWallet";
-import { useSwapDataState } from "../../../../../context/swap";
-import TransactionMessages from "../../messages/TransactionMessages";
-import { useQueryState } from "../../../../../context/query";
+import useWallet from "@/hooks/useWallet";
+import { useSwapDataState } from "@/context/swap";
+import TransactionMessages from "../../../messages/TransactionMessages";
+import { useQueryState } from "@/context/query";
+import { WithdrawPageProps } from "../../Common/sharedTypes";
 
-const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
+export const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
     network,
     depositAddress,
     userDestinationAddress,
     amount,
-    sequenceNumber,
     swapId,
 }) => {
     const { swapResponse, selectedSourceAccount } = useSwapDataState()
@@ -53,7 +52,7 @@ const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
     else if (activeChain?.id !== networkChainId && network) {
         return <ChangeNetworkButton
             chainId={networkChainId}
-            network={network.display_name}
+            network={network}
         />
     }
     else {
@@ -67,5 +66,3 @@ const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
         />
     }
 }
-
-export default EVMWalletWithdrawal

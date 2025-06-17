@@ -1,15 +1,14 @@
 import { WalletIcon } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
-import useWallet from '../../../../../hooks/useWallet';
-import { WithdrawPageProps } from '../WalletTransferContent';
-import * as Paradex from "../../../../../lib/wallets/paradex/lib";
-import { useSettingsState } from '../../../../../context/settings';
-import KnownInternalNames from '../../../../../lib/knownIds';
-import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
-import { BackendTransactionStatus } from '../../../../../lib/apiClients/layerSwapApiClient';
+import useWallet from '@/hooks/useWallet';
+import { useSettingsState } from '@/context/settings';
+import KnownInternalNames from '@/lib/knownIds';
+import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
+import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
 import toast from 'react-hot-toast';
-import SubmitButton from '../../../../buttons/submitButton';
-import { AuthorizeStarknet } from '../../../../../lib/wallets/paradex/Authorize/Starknet';
+import { AuthorizeStarknet } from '@/lib/wallets/paradex/Authorize/Starknet';
+import { WithdrawPageProps } from '../../Common/sharedTypes';
+import { SendTransactionButton } from '../../Common/buttons';
 
 const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swapId }) => {
 
@@ -69,13 +68,13 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swa
                 wallet &&
                 <div className="flex flex-row
                     text-primary-text text-base space-x-2">
-                    <SubmitButton
+                    <SendTransactionButton
                         isDisabled={!!(loading || !callData)}
                         isSubmitting={!!(loading)}
                         onClick={handleTransfer}
                         icon={<WalletIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
                         Send from Starknet wallet
-                    </SubmitButton>
+                    </SendTransactionButton>
                 </div>
             }
         </div >

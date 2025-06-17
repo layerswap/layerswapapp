@@ -12,7 +12,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const { values, handleChange } = useFormikContext<SwapFormValues>();
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
-    const { fromCurrency, from, to, amount, toCurrency, fromExchange, toExchange } = values || {};
+    const { fromAsset: fromCurrency, from, to, amount, toAsset: toCurrency, fromExchange, toExchange } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, quote: fee, isQuoteLoading: isFeeLoading } = useQuote()
 
     const { selectedSourceAccount } = useSwapDataState()

@@ -1,5 +1,5 @@
-import { useSwapDataState } from "../../../../context/swap"
-import NetworkGas from "./WalletTransfer/networkGas"
+import { useSwapDataState } from "@/context/swap"
+import NetworkGas from "./Common/networkGas"
 import { WalletTransferContent } from "./WalletTransferContent"
 
 const WalletTransferWrapper = () => {

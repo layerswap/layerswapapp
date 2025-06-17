@@ -25,9 +25,8 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, descriptionText, 
 
     return <button
         {...rest}
-        typeof="button"
-        onClick={handleConnect}
         type="button"
+        onClick={handleConnect}
         className={classNames(`py-5 px-6 bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl ${isLoading && 'cursor-progress opacity-80'}`, rest.className)}
     >
         <div className="flex flex-row justify-between gap-9 items-stretch">

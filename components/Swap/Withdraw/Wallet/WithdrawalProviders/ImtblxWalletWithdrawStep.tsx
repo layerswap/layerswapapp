@@ -1,15 +1,15 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
-import { BackendTransactionStatus } from '../../../../lib/apiClients/layerSwapApiClient';
-import WarningMessage from '../../../WarningMessage';
-import GuideLink from '../../../guideLink';
-import useWallet from '../../../../hooks/useWallet';
-import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import { WithdrawPageProps } from './WalletTransferContent';
-import { ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
+import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
+import GuideLink from '@/components/guideLink';
+import useWallet from '@/hooks/useWallet';
+import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
+import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
+import { WithdrawPageProps } from '../Common/sharedTypes';
+import WarningMessage from '@/components/WarningMessage';
 
-const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId }) => {
+export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId }) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
     const { setSwapTransaction } = useSwapTransactionStore();
@@ -22,7 +22,7 @@ const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
             return
         setLoading(true)
         try {
-            const ImtblClient = (await import('../../../../lib/imtbl')).default;
+            const ImtblClient = (await import('@/lib/imtbl')).default;
             const imtblClient = new ImtblClient(network?.name)
 
             if (!token) {
@@ -70,6 +70,3 @@ const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
         </>
     )
 }
-
-
-export default ImtblxWalletWithdrawStep;

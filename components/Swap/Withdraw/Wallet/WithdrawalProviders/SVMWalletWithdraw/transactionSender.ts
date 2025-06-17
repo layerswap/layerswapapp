@@ -4,8 +4,8 @@ import {
     TransactionExpiredBlockheightExceededError,
     VersionedTransactionResponse,
 } from "@solana/web3.js";
-import { retry } from "../../../../../lib/retry";
-import sleep from "../../../../../lib/wallets/utils/sleep";
+import { retry } from "@/lib/retry";
+import sleep from "@/lib/wallets/utils/sleep";
 
 type TransactionSenderAndConfirmationWaiterArgs = {
     connection: Connection;

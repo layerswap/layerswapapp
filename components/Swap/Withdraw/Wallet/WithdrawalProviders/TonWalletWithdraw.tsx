@@ -1,20 +1,20 @@
 import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
-import useWallet from '../../../../hooks/useWallet';
-import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import WalletIcon from '../../../icons/WalletIcon';
-import { WithdrawPageProps } from './WalletTransferContent';
+import useWallet from '@/hooks/useWallet';
+import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
+import WalletIcon from '@/components/icons/WalletIcon';
 import { useTonConnectUI } from '@tonconnect/ui-react';
 import { Address, JettonMaster, beginCell, toNano } from '@ton/ton'
-import { Token } from '../../../../Models/Network';
-import { BackendTransactionStatus } from '../../../../lib/apiClients/layerSwapApiClient';
-import tonClient from '../../../../lib/wallets/ton/client';
-import { ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
-import TransactionMessages from '../messages/TransactionMessages';
+import { Token } from '@/Models/Network';
+import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
+import tonClient from '@/lib/wallets/ton/client';
 import { datadogRum } from '@datadog/browser-rum';
-import { useConnectModal } from '../../../WalletModal';
+import { WithdrawPageProps } from '../Common/sharedTypes';
+import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
+import TransactionMessages from '../../messages/TransactionMessages';
+import { useConnectModal } from '@/components/WalletModal';
 
-const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {
+export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {
     const [loading, setLoading] = useState(false);
     const { connect } = useConnectModal()
     const { provider } = useWallet(network, 'withdrawal');
@@ -161,6 +161,3 @@ const transactionBuilder = async (amount: number, token: Token, depositAddress: 
         return tx
     }
 }
-
-
-export default TonWalletWithdrawStep;

@@ -17,7 +17,7 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick }) => {
         values,
         setFieldValue
     } = useFormikContext<SwapFormValues>();
-    const { toCurrency, to, destination_address, refuel } = values
+    const { toAsset: toCurrency, to, destination_address, refuel } = values
 
     const { balances } = useSWRBalance(destination_address, to)
 

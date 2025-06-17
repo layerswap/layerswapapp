@@ -1,16 +1,16 @@
 import { FC, useState } from 'react'
-import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from '../WalletTransfer/buttons';
-import useWallet from '../../../../../hooks/useWallet';
-import { WithdrawPageProps } from '../WalletTransferContent';
+import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from '../../Common/buttons';
 import { useAccount } from 'wagmi';
-import { useSettingsState } from '../../../../../context/settings';
-import KnownInternalNames from '../../../../../lib/knownIds';
-import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
-import { BackendTransactionStatus } from '../../../../../lib/apiClients/layerSwapApiClient';
-import { useEthersSigner } from '../../../../../lib/ethersToViem/ethers';
+import { useSettingsState } from '@/context/settings';
+import KnownInternalNames from '@/lib/knownIds';
+import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
+import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
+import { useEthersSigner } from '@/lib/ethersToViem/ethers';
 import toast from 'react-hot-toast';
-import WalletIcon from '../../../../icons/WalletIcon';
-import AuhorizeEthereum from '../../../../../lib/wallets/paradex/Authorize/Ethereum';
+import AuhorizeEthereum from '@/lib/wallets/paradex/Authorize/Ethereum';
+import useWallet from '@/hooks/useWallet';
+import WalletIcon from '@/components/icons/WalletIcon';
+import { WithdrawPageProps } from '../../Common/sharedTypes';
 
 const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, token, callData, swapId }) => {
 
@@ -61,15 +61,15 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, token, callD
         return (
             <ChangeNetworkButton
                 chainId={Number(l1Network?.chain_id)}
-                network={l1Network?.display_name}
+                network={l1Network}
             />
         )
     }
 
     return (
-        <ButtonWrapper isDisabled={!!(loading || !ethersSigner || !callData)} isSubmitting={!!(loading || !ethersSigner || !callData)} onClick={handleTransfer} icon={<WalletIcon className="h-5 w-5 stroke-2" aria-hidden="true" />} >
+        <SendTransactionButton isDisabled={!!(loading || !ethersSigner || !callData)} isSubmitting={!!(loading || !ethersSigner || !callData)} onClick={handleTransfer} icon={<WalletIcon className="h-5 w-5 stroke-2" aria-hidden="true" />} >
             Send from EVM wallet
-        </ButtonWrapper>
+        </SendTransactionButton>
     )
 }
 export default ParadexWalletWithdrawStep;

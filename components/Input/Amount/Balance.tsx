@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
-    const { to, fromCurrency, toCurrency, from, destination_address } = values
+    const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, destination_address } = values
     const { selectedSourceAccount } = useSwapDataState()
     const token = direction === 'from' ? fromCurrency : toCurrency
     const network = direction === 'from' ? from : to

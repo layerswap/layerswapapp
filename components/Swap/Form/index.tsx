@@ -41,12 +41,12 @@ type NetworkToConnect = {
     AppURL: string;
 }
 const SwapDetails = dynamicWithRetries(() => import(".."),
-    <div className="w-full h-[450px]">
+    <div className="w-full h-[400px]">
         <div className="animate-pulse flex space-x-4">
             <div className="flex-1 space-y-6 py-1">
-                <div className="h-32 bg-secondary-700 rounded-lg"></div>
-                <div className="h-40 bg-secondary-700 rounded-lg"></div>
-                <div className="h-12 bg-secondary-700 rounded-lg"></div>
+                <div className="h-32 bg-secondary-500 rounded-lg"></div>
+                <div className="h-40 bg-secondary-500 rounded-lg"></div>
+                <div className="h-12 bg-secondary-500 rounded-lg"></div>
             </div>
         </div>
     </div>
@@ -78,7 +78,7 @@ export default function Form() {
     const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useQuote()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
-        const { destination_address, to, from, amount, toCurrency, fromCurrency, fromExchange, toExchange, currencyGroup, depositMethod } = values
+        const { destination_address, to } = values
 
         if (to &&
             destination_address &&
@@ -100,12 +100,11 @@ export default function Form() {
             }
         }
         try {
-            await submit({
+            await handleCreateSwap({
                 values,
                 query,
                 partner,
                 router,
-                selectedSourceAccount,
                 minAllowedAmount,
                 mutateLimits,
                 setSwapId,
@@ -190,7 +189,6 @@ type SubmitProps = {
     partner?: Partner;
     router: NextRouter;
     minAllowedAmount?: number;
-    selectedSourceAccount: ReturnType<typeof useSwapDataState>['selectedSourceAccount'];
     setSwapId: UpdateSwapInterface['setSwapId'];
     setSwapPath: UpdateSwapInterface['setSwapPath'];
     createSwap: UpdateSwapInterface['createSwap'];
@@ -203,10 +201,13 @@ type SubmitProps = {
     mutateLimits: () => void;
 }
 
-const submit = async ({ query, values, partner, router, selectedSourceAccount, minAllowedAmount, setSwapId, setShowSwapModal, setSwapPath, pollFee, createSwap, setUserType, updateAuthData, setNetworkToConnect, setShowConnectNetworkModal, mutateLimits }: SubmitProps) => {
-    try {
-        const { to, from, amount, toCurrency, fromCurrency, fromExchange, toExchange, currencyGroup, depositMethod } = values
+const handleCreateSwap = async ({ query, values, partner, router, minAllowedAmount, setSwapId, setShowSwapModal, setSwapPath, pollFee, createSwap, setUserType, updateAuthData, setNetworkToConnect, setShowConnectNetworkModal, mutateLimits }: SubmitProps) => {
+    if (values.depositMethod == 'wallet') {
+        setShowSwapModal(true)
+        return
+    }
 
+    try {
         const accessToken = TokenService.getAuthData()?.access_token
         if (!accessToken) {
             try {
@@ -221,21 +222,6 @@ const submit = async ({ query, values, partner, router, selectedSourceAccount, m
             }
         }
         const swapId = await createSwap(values, query, partner);
-        window.safary?.track({
-            eventType: 'swap',
-            eventName: 'swap_created',
-            parameters: {
-                custom_str_1_label: "from",
-                custom_str_1_value: fromExchange?.display_name || from?.display_name!,
-                custom_str_2_label: "to",
-                walletAddress: (fromExchange || depositMethod !== 'wallet') ? '' : selectedSourceAccount?.address!,
-                custom_str_2_value: toExchange?.display_name || to?.display_name!,
-                fromCurrency: fromExchange ? currencyGroup?.symbol! : fromCurrency?.symbol!,
-                toCurrency: toExchange ? currencyGroup?.symbol! : toCurrency?.symbol!,
-                fromAmount: amount!,
-                toAmount: amount!
-            }
-        })
         plausible(TrackEvent.SwapInitiated)
         setSwapId(swapId)
         pollFee(false)
@@ -264,9 +250,9 @@ const submit = async ({ query, values, partner, router, selectedSourceAccount, m
             const remainingTime = `${hours > 0 ? `${hours.toFixed()} ${(hours > 1 ? 'hours' : 'hour')}` : ''} ${minutes > 0 ? `${minutes.toFixed()} ${(minutes > 1 ? 'minutes' : 'minute')}` : ''}`
 
             if (minAllowedAmount && data.metadata.AvailableTransactionAmount > minAllowedAmount) {
-                throw new Error(`Daily limit of ${values.fromCurrency?.symbol} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromCurrency?.symbol} or retry in ${remainingTime}.`)
+                throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromAsset?.symbol} or retry in ${remainingTime}.`)
             } else {
-                throw new Error(`Daily limit of ${values.fromCurrency?.symbol} transfers from ${values.from?.display_name} is reached. Please retry in ${remainingTime}.`)
+                throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please retry in ${remainingTime}.`)
             }
         }
         else {

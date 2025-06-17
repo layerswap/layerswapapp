@@ -1,20 +1,20 @@
 import { FC, useCallback, useMemo, useState } from 'react'
 import toast from 'react-hot-toast';
-import useWallet from '../../../../../hooks/useWallet';
-import { useSwapTransactionStore } from '../.././../../../stores/swapTransactionStore';
-import WalletIcon from '../../../../icons/WalletIcon';
-import { WithdrawPageProps } from '../WalletTransferContent';
-import { ConnectWalletButton, SendTransactionButton } from '../WalletTransfer/buttons';
-import TransactionMessages from '../../messages/TransactionMessages';
+import useWallet from '@/hooks/useWallet';
+import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
+import WalletIcon from '@/components/icons/WalletIcon';
+import { ConnectWalletButton, SendTransactionButton } from '../../Common/buttons';
 import { datadogRum } from '@datadog/browser-rum';
-import { useConnectModal } from '../../../../WalletModal';
 import { useAccount, useConfig } from '@bigmi/react';
-import { BackendTransactionStatus } from '../../../../../lib/apiClients/layerSwapApiClient';
-import KnownInternalNames from '../../../../../lib/knownIds';
-import { JsonRpcClient } from '../../../../../lib/apiClients/jsonRpcClient';
+import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
+import KnownInternalNames from '@/lib/knownIds';
+import { JsonRpcClient } from '@/lib/apiClients/jsonRpcClient';
 import { sendTransaction } from './sendTransaction';
+import { useConnectModal } from '@/components/WalletModal';
+import { WithdrawPageProps } from '../../Common/sharedTypes';
+import TransactionMessages from '../../../messages/TransactionMessages';
 
-const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {
+export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {
     const [loading, setLoading] = useState(false);
     const { connect } = useConnectModal()
     const { provider } = useWallet(network, 'withdrawal');
@@ -114,5 +114,3 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
     }
     else return <></>
 }
-
-export default BitcoinWalletWithdrawStep;

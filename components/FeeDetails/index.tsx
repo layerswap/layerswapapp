@@ -23,7 +23,7 @@ const RefuelToggle = dynamic(() => import("./Refuel"), {
 });
 
 export default function QuoteDetails({ values }: { values: SwapFormValues }) {
-    const { toCurrency, to, toExchange, from, fromCurrency, amount, destination_address } = values || {};
+    const { toAsset: toCurrency, to, toExchange, from, fromAsset: fromCurrency, amount, destination_address } = values || {};
     const { quote, isQuoteLoading } = useQuote()
     const query = useQueryState();
     const [openRefuelModal, setOpenRefuelModal] = useState<boolean>(false)
@@ -73,7 +73,7 @@ export default function QuoteDetails({ values }: { values: SwapFormValues }) {
                                         }
                                         {
                                             values.to &&
-                                            values.toCurrency &&
+                                            values.toAsset &&
                                             destination_address &&
                                             <Campaign
                                                 destination={values.to}

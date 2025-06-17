@@ -20,7 +20,7 @@ type ContextType = {
 export function QuoteProvider({ children }) {
 
     const [values, setValues] = useState<SwapFormValues>()
-    const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod } = values || {}
+    const { fromAsset: fromCurrency, toAsset: toCurrency, from, to, amount, refuel, depositMethod } = values || {}
     const [debouncedAmount, setDebouncedAmount] = useState(amount);
     const [poll, updatePolling] = useState(true)
 

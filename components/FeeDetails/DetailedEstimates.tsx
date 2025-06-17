@@ -7,7 +7,7 @@ import AverageCompletionTime from "../Common/AverageCompletionTime";
 export const DetailedEstimates: FC = () => {
 
     const { values } = useFormikContext<SwapFormValues>();
-    const { fromCurrency } = values;
+    const { fromAsset: fromCurrency } = values;
     const { quote: fee, isQuoteLoading: isFeeLoading } = useQuote()
 
     const fee_amount = fee?.quote.total_fee
