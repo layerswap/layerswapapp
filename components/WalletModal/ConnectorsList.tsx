@@ -152,7 +152,6 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             connectionError={connectionError}
         />
     }
-    console.log('Recent connectors:', recentConnectors);
     return (
         <>
             <div className="text-primary-text space-y-3">
