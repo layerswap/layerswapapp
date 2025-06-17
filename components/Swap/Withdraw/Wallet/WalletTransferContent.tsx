@@ -9,7 +9,7 @@ import {
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 export const WalletTransferContent: FC = () => {
-    const { swapResponse, depositActionsResponse } = useSwapDataState();
+    const { swapResponse } = useSwapDataState();
     const { swap } = swapResponse || {};
     const { source_network } = swap || {};
     const source_network_internal_name = source_network?.name;
@@ -97,22 +97,13 @@ export const WalletTransferContent: FC = () => {
         page.supportedNetworks.includes(source_network_internal_name)
     )?.component;
 
-    const depositAddress = depositActionsResponse?.find(da => true)?.to_address;
-    const amount = depositActionsResponse?.find(da => true)?.amount || 0;
-    const callData = depositActionsResponse?.find(da => true)?.call_data;
-
     return <>
         {
             swap && WithdrawalComponent &&
             <WithdrawalComponent
-                callData={callData}
-                sequenceNumber={swap?.metadata.sequence_number}
                 swapId={swap.id}
                 network={swap.source_network}
                 token={swap.source_token}
-                depositAddress={depositAddress}
-                userDestinationAddress={swap.destination_address}
-                amount={amount}
             />
         }
     </>;

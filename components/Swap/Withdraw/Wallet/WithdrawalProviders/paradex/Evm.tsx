@@ -10,9 +10,9 @@ import toast from 'react-hot-toast';
 import AuhorizeEthereum from '@/lib/wallets/paradex/Authorize/Ethereum';
 import useWallet from '@/hooks/useWallet';
 import WalletIcon from '@/components/icons/WalletIcon';
-import { WithdrawPageProps } from '../../Common/sharedTypes';
+import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 
-const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, token, callData, swapId }) => {
+const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ token }) => {
 
     const [loading, setLoading] = useState(false)
 
@@ -28,7 +28,7 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, token, callD
 
     const ethersSigner = useEthersSigner()
 
-    const handleTransfer = async () => {
+    const handleTransfer = async ({ amount, callData, swapId }: TransferProps) => {
         if (!token || !amount || !callData || !swapId || !ethersSigner) return
 
         setLoading(true)
@@ -67,7 +67,7 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, token, callD
     }
 
     return (
-        <SendTransactionButton isDisabled={!!(loading || !ethersSigner || !callData)} isSubmitting={!!(loading || !ethersSigner || !callData)} onClick={handleTransfer} icon={<WalletIcon className="h-5 w-5 stroke-2" aria-hidden="true" />} >
+        <SendTransactionButton isDisabled={!!(loading || !ethersSigner)} isSubmitting={!!(loading || !ethersSigner)} onClick={handleTransfer} icon={<WalletIcon className="h-5 w-5 stroke-2" aria-hidden="true" />} >
             Send from EVM wallet
         </SendTransactionButton>
     )

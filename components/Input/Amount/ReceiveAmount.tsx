@@ -1,6 +1,7 @@
 import { FC } from "react";
 import { Token } from "@/Models/Network";
 import { Quote } from "@/lib/apiClients/layerSwapApiClient";
+import { truncateDecimals } from "@/components/utils/RoundDecimals";
 
 type ReceiveAmountProps = {
     destination_token: Token | undefined;
@@ -10,7 +11,7 @@ type ReceiveAmountProps = {
 }
 export const ReceiveAmount: FC<ReceiveAmountProps> = ({ source_token, destination_token, fee, isFeeLoading }) => {
     const receive_amount = fee?.quote.receive_amount
-    const parsedReceiveAmount = parseFloat(receive_amount?.toFixed(destination_token?.precision) || "")
+    const parsedReceiveAmount = receive_amount && truncateDecimals(receive_amount, destination_token?.decimals)
 
     const receiveAmountInUsd = receive_amount && destination_token && fee.quote?.destination_token?.price_in_usd ? (receive_amount * fee.quote.destination_token.price_in_usd).toFixed(2) : undefined
 
@@ -23,7 +24,7 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ source_token, destinatio
                     </div>
                 ) : (
                     <div className="w-full flex items-center">
-                        {source_token && destination_token && parsedReceiveAmount > 0 ? (
+                        {source_token && destination_token && Number(parsedReceiveAmount) > 0 ? (
                             <p>{parsedReceiveAmount}</p>
                         ) : (
                             <span>0</span>

@@ -11,10 +11,10 @@ import KnownInternalNames from '@/lib/knownIds';
 import { JsonRpcClient } from '@/lib/apiClients/jsonRpcClient';
 import { sendTransaction } from './sendTransaction';
 import { useConnectModal } from '@/components/WalletModal';
-import { WithdrawPageProps } from '../../Common/sharedTypes';
+import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import TransactionMessages from '../../../messages/TransactionMessages';
 
-export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {
+export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }) => {
     const [loading, setLoading] = useState(false);
     const { connect } = useConnectModal()
     const { provider } = useWallet(network, 'withdrawal');
@@ -22,7 +22,7 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depos
     const [transactionErrorMessage, setTransactionErrorMessage] = useState<string | undefined>(undefined)
     const { connector } = useAccount()
     const wallet = provider?.activeWallet
-    const dataLoading = !amount || !depositAddress || !network || !token || !swapId || !callData
+    const dataLoading = !network || !token
     const isTestnet = network?.name === KnownInternalNames.Networks.BitcoinTestnet;
 
     const config = useConfig()
@@ -46,12 +46,12 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depos
         return network && new JsonRpcClient(network.node_url);
     }, [network]);
 
-    const handleTransfer = useCallback(async () => {
+    const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setTransactionErrorMessage(undefined)
 
         try {
             setLoading(true)
-            if (!amount || !depositAddress || !network || !token || !swapId || !callData || !wallet || !connector || !rpcClient) {
+            if (!amount || !depositAddress || !network || !token || !callData || !wallet || !connector || !rpcClient) {
                 throw new Error('Missing required parameters for transfer');
             }
 
@@ -66,7 +66,7 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depos
                 publicClient
             });
 
-            if (txHash) {
+            if (txHash && swapId) {
                 setSwapTransaction(swapId, BackendTransactionStatus.Pending, txHash);
             }
 
@@ -77,7 +77,7 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depos
         finally {
             setLoading(false)
         }
-    }, [swapId, depositAddress, network, token, amount, callData, wallet, connector, rpcClient, isTestnet])
+    }, [network, token, wallet, connector, rpcClient, isTestnet])
 
     if (!wallet) {
         return <ConnectWalletButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} />

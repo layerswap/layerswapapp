@@ -29,13 +29,13 @@ export const SwapDataStateContext = createContext<SwapData>({
 export const SwapDataUpdateContext = createContext<UpdateSwapInterface | null>(null);
 
 export type UpdateSwapInterface = {
-    createSwap: (values: SwapFormValues, query: QueryParams, partner?: Partner) => Promise<string>,
+    createSwap: (values: SwapFormValues, query: QueryParams, partner?: Partner) => Promise<SwapResponse>,
     setCodeRequested: (codeSubmitted: boolean) => void;
     setInterval: (value: number) => void,
     mutateSwap: KeyedMutator<ApiResponse<SwapResponse>>
     setDepositAddressIsFromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
-    setSwapId: (value: string) => void
+    setSwapId: (value: string | undefined) => void
     setSelectedSourceAccount: (value: { wallet: Wallet, address: string } | undefined) => void
     setSwapPath: (swapId: string, router: NextRouter) => void,
     removeSwapPath: (router: NextRouter) => void
@@ -158,8 +158,8 @@ export function SwapDataProvider({ children }) {
             throw swapResponse?.error
         }
 
-        const swapId = swapResponse?.data?.swap.id;
-        if (!swapId)
+        const swap = swapResponse?.data;
+        if (!swap?.swap.id)
             throw new Error("Could not create swap")
 
         window.safary?.track({
@@ -178,7 +178,7 @@ export function SwapDataProvider({ children }) {
             }
         })
 
-        return swapId;
+        return swap;
     }, [selectedSourceAccount])
 
     const updateFns: UpdateSwapInterface = {

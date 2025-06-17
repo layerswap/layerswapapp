@@ -7,9 +7,9 @@ import WalletIcon from '@/components/icons/WalletIcon';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import TransactionMessages from '../../messages/TransactionMessages';
 import { datadogRum } from '@datadog/browser-rum';
-import { WithdrawPageProps } from '../Common/sharedTypes';
+import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 
-export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, callData, swapId }) => {
+export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, }) => {
     const [error, setError] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
@@ -19,7 +19,7 @@ export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, tok
 
     const wallet = provider?.activeWallet
 
-    const handleTransfer = useCallback(async () => {
+    const handleTransfer = useCallback(async ({ callData, swapId }: TransferProps) => {
         if (!swapId || !token) {
             return
         }
@@ -46,7 +46,7 @@ export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, tok
         finally {
             setLoading(false)
         }
-    }, [wallet, swapId, network, userId, token, callData])
+    }, [wallet, network, userId, token])
 
     if (!wallet) {
         return <ConnectWalletButton />

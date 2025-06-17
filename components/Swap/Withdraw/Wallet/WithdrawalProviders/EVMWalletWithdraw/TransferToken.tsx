@@ -9,7 +9,7 @@ import { BackendTransactionStatus } from "@/lib/apiClients/layerSwapApiClient";
 import WalletIcon from "@/components/icons/WalletIcon";
 import Modal from '@/components/modal/modal';
 import MessageComponent from "@/components/MessageComponent";
-import { BaseTransferButtonProps } from "../../Common/sharedTypes";
+import { TransferProps, WithdrawPageProps } from "../../Common/sharedTypes";
 import TransactionMessage from "../../Common/transactionMessage";
 import { SendTransactionButton } from "../../Common/buttons";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
@@ -17,9 +17,7 @@ import { useSwapDataState } from "@/context/swap";
 import { datadogRum } from "@datadog/browser-rum";
 import { isMobile } from "@/lib/openLink";
 
-const TransferTokenButton: FC<BaseTransferButtonProps> = ({
-    depositAddress,
-    amount,
+const TransferTokenButton: FC<{ savedTransactionHash?: string, swapId?: string, chainId?: number }> = ({
     savedTransactionHash,
     swapId,
     chainId
@@ -33,33 +31,8 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
 
     const { address } = useAccount();
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { depositActionsResponse } = useSwapDataState()
 
-    const callData = depositActionsResponse?.find(da => true)?.call_data as `0x${string}` | undefined
     const transaction = useSendTransaction()
-
-    useEffect(() => {
-        (async () => {
-            if (selectedSourceAccount?.address && depositAddress) {
-                try {
-                    //TODO: somehow does not work for none active accounts
-                    // const gasEstimate = await publicClient.estimateGas({
-                    //     account: selectedSourceAccount.address as `0x${string}`,
-                    //     to: depositAddress,
-                    //     data: callData,
-                    // })
-                    // setEstimatedGas(gasEstimate)
-                }
-                catch (e) {
-                    const error = e;
-                    error.name = `EstimateGasError`;
-                    error.cause = error;
-                    datadogRum.addError(error);
-                    console.error(e)
-                }
-            }
-        })()
-    }, [selectedSourceAccount?.address, callData, depositAddress, amount])
 
     useEffect(() => {
         try {
@@ -73,7 +46,7 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
         }
     }, [transaction?.data, swapId])
 
-    const clickHandler = useCallback(async () => {
+    const clickHandler = useCallback(async ({ amount, callData, depositAddress, sequenceNumber, swapId, userDestinationAddress }: TransferProps) => {
         setButtonClicked(true)
         try {
             if (!depositAddress)
@@ -86,10 +59,10 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
                 throw new Error('No selected account')
             const tx = {
                 chainId,
-                to: depositAddress,
+                to: depositAddress as `0x${string}`,
                 value: parseEther(amount?.toString()),
                 gas: estimatedGas,
-                data: callData,
+                data: callData as `0x${string}`,
                 account: selectedSourceAccount.address as `0x${string}`
             }
             if (isMobile() && selectedSourceAccount.wallet.metadata?.deepLink) {
@@ -103,7 +76,7 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
             error.cause = e
             datadogRum.addError(error);
         }
-    }, [transaction, estimatedGas, depositAddress, amount, callData, chainId])
+    }, [transaction, estimatedGas, chainId])
 
     const isError = transaction.isError
     return <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
@@ -124,7 +97,7 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
                 error={isError && buttonClicked}
             />
         }
-        <Modal
+        {/* <Modal
             height="80%"
             show={openChangeAmount}
             setShow={setOpenChangeAmount}
@@ -157,7 +130,7 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
                     </div>
                 </MessageComponent.Buttons>
             </MessageComponent>
-        </Modal>
+        </Modal> */}
     </div>
 }
 

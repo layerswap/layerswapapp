@@ -100,6 +100,19 @@ export default function Form() {
             }
         }
         try {
+            const accessToken = TokenService.getAuthData()?.access_token
+            if (!accessToken) {
+                try {
+                    var apiClient = new LayerSwapAuthApiClient();
+                    const res = await apiClient.guestConnectAsync()
+                    updateAuthData(res)
+                    setUserType(UserType.GuestUser)
+                }
+                catch (error) {
+                    toast.error(error.response?.data?.error || error.message)
+                    return;
+                }
+            }
             await handleCreateSwap({
                 values,
                 query,
@@ -133,7 +146,7 @@ export default function Form() {
     const handleShowSwapModal = useCallback((value: boolean) => {
         pollFee(!value)
         setShowSwapModal(value)
-        value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
+        if (swap?.id) value ? setSwapPath(swap?.id, router) : removeSwapPath(router)
     }, [router, swap])
 
     const validator = useMemo(() => MainStepValidation({ minAllowedAmount, maxAllowedAmount, sourceAddress: selectedSourceAccount?.address, sameAccountNetwork: query.sameAccountNetwork }), [minAllowedAmount, maxAllowedAmount, selectedSourceAccount, query.sameAccountNetwork])
@@ -203,25 +216,14 @@ type SubmitProps = {
 
 const handleCreateSwap = async ({ query, values, partner, router, minAllowedAmount, setSwapId, setShowSwapModal, setSwapPath, pollFee, createSwap, setUserType, updateAuthData, setNetworkToConnect, setShowConnectNetworkModal, mutateLimits }: SubmitProps) => {
     if (values.depositMethod == 'wallet') {
+        setSwapId(undefined)
         setShowSwapModal(true)
         return
     }
 
     try {
-        const accessToken = TokenService.getAuthData()?.access_token
-        if (!accessToken) {
-            try {
-                var apiClient = new LayerSwapAuthApiClient();
-                const res = await apiClient.guestConnectAsync()
-                updateAuthData(res)
-                setUserType(UserType.GuestUser)
-            }
-            catch (error) {
-                toast.error(error.response?.data?.error || error.message)
-                return;
-            }
-        }
-        const swapId = await createSwap(values, query, partner);
+        const swapData = await createSwap(values, query, partner);
+        const swapId = swapData?.swap?.id;
         plausible(TrackEvent.SwapInitiated)
         setSwapId(swapId)
         pollFee(false)

@@ -7,10 +7,10 @@ import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
 import toast from 'react-hot-toast';
 import { AuthorizeStarknet } from '@/lib/wallets/paradex/Authorize/Starknet';
-import { WithdrawPageProps } from '../../Common/sharedTypes';
+import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import { SendTransactionButton } from '../../Common/buttons';
 
-const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swapId }) => {
+const StarknetComponent: FC<WithdrawPageProps> = ({ token }) => {
 
     const [loading, setLoading] = useState(false)
 
@@ -22,7 +22,7 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swa
     const { provider } = useWallet(starknet, 'withdrawal')
     const wallet = provider?.activeWallet
 
-    const handleTransfer = useCallback(async () => {
+    const handleTransfer = useCallback(async ({ amount, callData, swapId }: TransferProps) => {
         if (!swapId || !token) {
             return
         }
@@ -59,7 +59,7 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swa
                 toast(e.message)
         }
         setLoading(false)
-    }, [wallet?.address, swapId, starknet, token, callData, amount])
+    }, [wallet?.address, starknet, token])
 
 
     return (
@@ -69,7 +69,7 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ amount, token, callData, swa
                 <div className="flex flex-row
                     text-primary-text text-base space-x-2">
                     <SendTransactionButton
-                        isDisabled={!!(loading || !callData)}
+                        isDisabled={!!(loading)}
                         isSubmitting={!!(loading)}
                         onClick={handleTransfer}
                         icon={<WalletIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >

@@ -11,10 +11,7 @@ import { WithdrawPageProps } from "../../Common/sharedTypes";
 
 export const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
     network,
-    depositAddress,
-    userDestinationAddress,
-    amount,
-    swapId,
+    swapId
 }) => {
     const { swapResponse, selectedSourceAccount } = useSwapDataState()
     const { source_network, destination_network, destination_address } = swapResponse?.swap || {}
@@ -28,6 +25,7 @@ export const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
 
     useEffect(() => {
+        if (!swapId) return;
         try {
             const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
             const hash = data?.[swapId!]?.hash
@@ -58,10 +56,7 @@ export const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
     else {
         return <TransferTokenButton
             swapId={swapId}
-            amount={amount}
             chainId={networkChainId}
-            depositAddress={depositAddress as `0x${string}`}
-            userDestinationAddress={userDestinationAddress as `0x${string}`}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
         />
     }

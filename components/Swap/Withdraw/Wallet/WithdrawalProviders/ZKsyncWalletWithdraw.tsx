@@ -15,9 +15,9 @@ import formatAmount from '@/lib/formatAmount';
 import useWallet from '@/hooks/useWallet';
 import Link from 'next/link';
 import KnownInternalNames from '@/lib/knownIds';
-import { WithdrawPageProps } from '../Common/sharedTypes';
+import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 
-export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, sequenceNumber, swapId }) => {
+export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }) => {
     const [loading, setLoading] = useState(false);
     const [syncWallet, setSyncWallet] = useState<zksync.Wallet | null>();
     const [accountIsActivated, setAccountIsActivated] = useState(false);
@@ -95,7 +95,7 @@ export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, deposi
         }
     }, [syncWallet, token])
 
-    const handleTransfer = useCallback(async () => {
+    const handleTransfer = useCallback(async ({ amount, depositAddress, sequenceNumber, swapId }: TransferProps) => {
 
         if (!swapId || !syncWallet || !depositAddress || !token || !sequenceNumber || !amount) return
 
@@ -121,7 +121,7 @@ export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, deposi
         finally {
             setLoading(false)
         }
-    }, [syncWallet, swapId, depositAddress, token, amount, sequenceNumber])
+    }, [syncWallet, token])
 
     if (wallet && wallet?.id?.toLowerCase() === 'argent') return (
         <div className="rounded-md bg-secondary-800 p-4">

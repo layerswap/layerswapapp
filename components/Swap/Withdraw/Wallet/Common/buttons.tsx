@@ -1,16 +1,18 @@
 import { ComponentProps, FC, useCallback, useState } from "react";
-import { useSwitchChain } from "wagmi";
-import WalletIcon from "../../../../icons/WalletIcon";
-import { ActionData } from "./sharedTypes";
-import SubmitButton, { SubmitButtonProps } from "../../../../buttons/submitButton";
-import useWallet from "../../../../../hooks/useWallet";
-import { useSwapDataState } from "../../../../../context/swap";
+import WalletIcon from "@/components/icons/WalletIcon";
+import { ActionData, TransferProps } from "./sharedTypes";
+import SubmitButton, { SubmitButtonProps } from "@/components/buttons/submitButton";
+import useWallet from "@/components/../hooks/useWallet";
+import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import ManualTransferNote from "./manualTransferNote";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import WalletMessage from "../../messages/Message";
-import { useConnectModal } from "../../../../WalletModal";
-import { Network } from "@/Models/Network";
+import { useConnectModal } from "@/components/WalletModal";
+import { Network, NetworkRoute } from "@/Models/Network";
+import { useQueryState } from "@/context/query";
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
+import { useRouter } from "next/router";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapResponse } = useSwapDataState()
@@ -146,25 +148,80 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
 }
 
 type ButtonWrapperProps = ComponentProps<typeof ButtonWrapper>;
-type SendFromWalletButtonProps = ButtonWrapperProps & {
+type SendFromWalletButtonProps = Omit<ButtonWrapperProps, 'onClick'> & {
     error?: boolean;
+    onClick: (props: TransferProps) => Promise<void>
 };
 
 export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
+    error,
+    onClick,
     ...props
 }) => {
+    const [loading, setLoading] = useState(false)
+    const { createSwap, setSwapId, setSwapPath } = useSwapDataUpdate()
+    const { swapResponse } = useSwapDataState()
+    const { swap } = swapResponse || {}
+    const router = useRouter()
+    const query = useQueryState()
 
-    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-        window.safary?.track({
-            eventName: 'click',
-            eventType: 'send_from_wallet',
-        })
-        props.onClick && props.onClick(e)
+    const handleClick = async () => {
+
+        try {
+            setSwapId(undefined)
+            setLoading(true)
+            window.safary?.track({
+                eventName: 'click',
+                eventType: 'send_from_wallet',
+            })
+
+            const swapValues: SwapFormValues = {
+                amount: swap?.requested_amount.toString(),
+                from: swap?.source_network as NetworkRoute,
+                to: swap?.destination_network as NetworkRoute,
+                fromAsset: swap?.source_token,
+                toAsset: swap?.destination_token,
+                refuel: !!swapResponse?.refuel,
+                destination_address: swap?.destination_address,
+                depositMethod: 'wallet',
+            }
+
+            const swapData = await createSwap(swapValues, query);
+            const swapId = swapData?.swap?.id;
+            if(!swapId) {
+                throw new Error('Swap ID is undefined');
+            }
+            setSwapId(swapId)
+            setSwapPath(swapId, router)
+
+            const depositAction = swapData?.deposit_actions && swapData?.deposit_actions[0];
+
+            const transferProps: TransferProps = {
+                amount: swap?.requested_amount,
+                callData: depositAction?.call_data,
+                depositAddress: depositAction?.to_address,
+                sequenceNumber: swap?.metadata.sequence_number,
+                swapId: swapId,
+                userDestinationAddress: swap?.destination_address
+            }
+
+            await onClick(transferProps)
+        }
+        catch (e) {
+            console.log('Error in SendTransactionButton:', e)
+            throw new Error(e)
+        }
+        finally {
+            setLoading(false)
+        }
+
     }
 
     return <ButtonWrapper
+        {...props}
+        isSubmitting={props.isSubmitting || loading}
         onClick={handleClick}
-        {...props}>
-        {props.error ? 'Try again' : 'Send from wallet'}
+    >
+        {error ? 'Try again' : 'Send from wallet'}
     </ButtonWrapper>
 }

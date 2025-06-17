@@ -9,12 +9,12 @@ import { Token } from '@/Models/Network';
 import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
 import tonClient from '@/lib/wallets/ton/client';
 import { datadogRum } from '@datadog/browser-rum';
-import { WithdrawPageProps } from '../Common/sharedTypes';
+import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import TransactionMessages from '../../messages/TransactionMessages';
 import { useConnectModal } from '@/components/WalletModal';
 
-export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {
+export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }) => {
     const [loading, setLoading] = useState(false);
     const { connect } = useConnectModal()
     const { provider } = useWallet(network, 'withdrawal');
@@ -38,12 +38,13 @@ export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAd
         }
     }, [provider])
 
-    const handleTransfer = useCallback(async () => {
+    const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setLoading(true)
         setTransactionErrorMessage(undefined)
         if (!swapId || !depositAddress || !token || !wallet?.address || !callData || amount === undefined) {
             setLoading(false)
-            return toast('Something went wrong, please try again.')
+            toast('Something went wrong, please try again.')
+            return
         }
 
         try {
@@ -62,7 +63,7 @@ export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAd
         finally {
             setLoading(false)
         }
-    }, [swapId, depositAddress, network, token, amount, callData])
+    }, [network, token, tonConnectUI])
 
     if (!wallet) {
         return <ConnectWalletButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} />

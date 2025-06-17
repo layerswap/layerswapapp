@@ -10,12 +10,12 @@ import useSWRBalance from '@/lib/balances/useSWRBalance';
 import { useSettingsState } from '@/context/settings';
 import { datadogRum } from '@datadog/browser-rum';
 import { transactionSenderAndConfirmationWaiter } from './transactionSender';
-import { WithdrawPageProps } from '../../Common/sharedTypes';
+import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../../Common/buttons';
 import TransactionMessages from '../../../messages/TransactionMessages';
 import WalletMessage from '../../../messages/Message';
 
-export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, token, amount }) => {
+export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | undefined>()
     const [insufficientTokens, setInsufficientTokens] = useState<string[]>([])
@@ -33,7 +33,7 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData
     const networkWithTokens = networks.find(n => n.name === networkName)
     const { balances } = useSWRBalance(wallet?.address, networkWithTokens)
 
-    const handleTransfer = useCallback(async () => {
+    const handleTransfer = useCallback(async ({ amount, callData, swapId }: TransferProps) => {
         setLoading(true)
         setError(undefined)
         try {
@@ -88,7 +88,7 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData
         finally {
             setLoading(false)
         }
-    }, [swapId, callData, walletPublicKey, signTransaction, network])
+    }, [walletPublicKey, signTransaction, network])
 
     if (!wallet || !walletPublicKey) {
         return <ConnectWalletButton />
@@ -103,7 +103,7 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData
             />
             {
                 wallet && !loading &&
-                <SendTransactionButton isDisabled={!!loading || !callData} isSubmitting={!!loading || !callData} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} error={!!error} />
+                <SendTransactionButton isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} error={!!error} />
             }
         </div>
     )

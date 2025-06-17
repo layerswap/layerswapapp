@@ -9,12 +9,12 @@ import { TronWeb } from 'tronweb'
 import useSWRGas from '@/lib/gases/useSWRGas';
 import { ContractParamter, Transaction, TransferContract } from 'tronweb/lib/esm/types';
 import { Token } from '@/Models/Network';
-import { WithdrawPageProps } from '../Common/sharedTypes';
+import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import TransactionMessages from '../../messages/TransactionMessages';
 import WalletIcon from '@/components/icons/WalletIcon';
 
-export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ network, callData, swapId, token, amount, depositAddress }) => {
+export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ network, token }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | undefined>()
 
@@ -32,7 +32,7 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ network, callData, s
 
     const { gas, isGasLoading } = useSWRGas(walletAddress, networkWithTokens, token)
 
-    const handleTransfer = useCallback(async () => {
+    const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setError(undefined)
         setLoading(true)
         try {
@@ -67,7 +67,7 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ network, callData, s
         finally {
             setLoading(false)
         }
-    }, [swapId, callData, walletAddress, signTransaction, network, gas, depositAddress, amount, token])
+    }, [walletAddress, signTransaction, network, gas, token])
 
     if (!wallet || !walletAddress) {
         return <ConnectWalletButton />

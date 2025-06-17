@@ -6,10 +6,10 @@ import GuideLink from '@/components/guideLink';
 import useWallet from '@/hooks/useWallet';
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
-import { WithdrawPageProps } from '../Common/sharedTypes';
+import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import WarningMessage from '@/components/WarningMessage';
 
-export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId }) => {
+export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
     const { setSwapTransaction } = useSwapTransactionStore();
@@ -17,7 +17,7 @@ export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, deposi
     const { provider } = useWallet(network, 'withdrawal')
     const imxAccount = provider?.activeWallet
 
-    const handleTransfer = useCallback(async () => {
+    const handleTransfer = useCallback(async ({ amount, depositAddress, swapId }: TransferProps) => {
         if (!network || !depositAddress || !amount)
             return
         setLoading(true)
@@ -45,7 +45,7 @@ export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, deposi
                 toast(e.message)
         }
         setLoading(false)
-    }, [imxAccount, swapId, network, depositAddress, token, amount])
+    }, [imxAccount, network, token,])
 
     if (!imxAccount) {
         return <ConnectWalletButton icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} />
@@ -63,7 +63,7 @@ export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, deposi
                     </WarningMessage>
                     {
                         imxAccount &&
-                        <SendTransactionButton isDisabled={!!(loading || transferDone) || !depositAddress} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} />
+                        <SendTransactionButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} />
                     }
                 </div>
             </div>

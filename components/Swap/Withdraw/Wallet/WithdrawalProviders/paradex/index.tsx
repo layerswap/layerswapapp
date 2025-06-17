@@ -12,7 +12,7 @@ import { WalletIcon } from 'lucide-react';
 import { WithdrawPageProps } from '../../Common/sharedTypes';
 import { useConnectModal } from '@/components/WalletModal';
 
-export const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ amount, token, callData, swapId }) => {
+export const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ token }) => {
 
     const { networks } = useSettingsState();
     const l1Network = networks.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
@@ -25,10 +25,10 @@ export const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ amount, token, ca
     const starknetWallet = starknetProvider?.activeWallet
 
     if (selectedProvider === evmProvider?.name && evmWallet) {
-        return <Evm amount={amount} callData={callData} token={token} swapId={swapId} />
+        return <Evm token={token} />
     }
     if (selectedProvider === starknetProvider?.name && starknetWallet) {
-        return <Starknet amount={amount} callData={callData} token={token} swapId={swapId} />
+        return <Starknet token={token} />
     }
 
     return <ConnectWalletModal />

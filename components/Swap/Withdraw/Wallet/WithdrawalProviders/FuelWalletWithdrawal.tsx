@@ -12,10 +12,10 @@ import {
 import { useSwapDataState } from '@/context/swap';
 import { datadogRum } from '@datadog/browser-rum';
 import { coinQuantityfy, CoinQuantityLike, Provider, ScriptTransactionRequest } from 'fuels';
-import { WithdrawPageProps } from '../Common/sharedTypes';
+import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import TransactionMessages from '../../messages/TransactionMessages';
 
-export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, amount, depositAddress, sequenceNumber, token }) => {
+export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }) => {
     const [loading, setLoading] = useState(false);
     const [buttonClicked, setButtonClicked] = useState(false)
     const [error, setError] = useState<string | undefined>()
@@ -38,7 +38,7 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callDat
         }
     }, [selectedSourceAccount, provider?.activeWallet])
 
-    const handleTransfer = useCallback(async () => {
+    const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setButtonClicked(true)
         setError(undefined)
         try {
@@ -91,7 +91,7 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callDat
         finally {
             setLoading(false)
         }
-    }, [swapId, amount, depositAddress, network, selectedSourceAccount, token, sequenceNumber, fuel])
+    }, [network, selectedSourceAccount, token, fuel])
 
     if (!provider?.activeWallet) {
         return <ConnectWalletButton />
