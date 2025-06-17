@@ -71,7 +71,26 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             })
 
             if (result && connector && provider) {
-                setRecentConnectors((prev) => [{ providerName: provider.name, connectorName: connector.name }, ...(prev?.filter(v => v.connectorName !== connector.name) || [])].slice(0, 3))
+                setRecentConnectors((prev) => {
+                    const next = [{ providerName: provider.name, connectorName: connector.name }];
+                    const counts = new Map<string, number>();
+                    counts.set(provider.name, 1);
+
+                    (prev || []).forEach(item => {
+                        if (
+                            item.providerName &&
+                            item.connectorName &&
+                            !(item.providerName === provider.name && item.connectorName === connector.name)
+                        ) {
+                            const count = counts.get(item.providerName) ?? 0;
+                            if (count < 3) {
+                                next.push({ providerName: item.providerName, connectorName: item.connectorName });
+                                counts.set(item.providerName, count + 1);
+                            }
+                        }
+                    });
+                    return next;
+                })
                 onFinish(result)
             }
             setSelectedConnector(undefined)
@@ -194,11 +213,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                     <div className='grid grid-cols-2 gap-2'>
                         {
                             resolvedConnectors.sort((a, b) => {
-                                const getIndex = (c: typeof a) => {
-                                    const idx = recentConnectors?.findIndex(v => v.connectorName === c.name);
-                                    return idx === -1 ? Infinity : idx;
-                                };
-                                return getIndex(a) - getIndex(b);
+                                return getIndex(a, recentConnectors) - getIndex(b, recentConnectors);
                             }).map(item => {
                                 const provider = featuredProviders.find(p => p.name === item.providerName)
                                 const isRecent = recentConnectors?.some(v => v.connectorName === item.name)
@@ -422,4 +437,10 @@ const MultichainConnectorModal: FC<MultichainConnectorModalProps> = ({ selectedC
         </VaulDrawer>
     )
 }
+
+function getIndex(c: { name: string }, recentConnectors: { connectorName?: string }[]) {
+    const idx = recentConnectors?.findIndex(v => v.connectorName === c.name);
+    return idx === -1 ? Infinity : idx;
+}
+
 export default ConnectorsLsit
