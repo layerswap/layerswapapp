@@ -3,52 +3,49 @@ import { motion } from "framer-motion";
 import TokenIcon from "../../icons/TokenIcon";
 import { Globe } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
+import clsx from "clsx";
 
 interface RouteTokenSwitchProps {
     showTokens: boolean;
     setShowTokens: (val: boolean) => void;
 }
 
+const switchValues = [
+    { value: false, id: 'network', label: "Group by Network", icon: Globe },
+    { value: true, id: 'token', label: "Group by Token", icon: TokenIcon },
+]
+
 const RouteTokenSwitch: FC<RouteTokenSwitchProps> = ({ showTokens, setShowTokens }) => {
+
+    const activeTab = switchValues.find(item => item.value === showTokens)?.id || switchValues[0].id;
+
     return (
         <div className="flex justify-end">
             <div className="relative flex items-center bg-secondary-500 rounded-lg p-1">
-                <motion.div
-                    layout
-                    className="absolute top-1 left-1 bottom-1 w-[48px] rounded-lg bg-secondary-200"
-                    animate={{ x: showTokens ? 53.5 : 1.5 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                />
-                <Tooltip>
-                    <TooltipTrigger>
-                        <button
-                            className="z-10 flex items-center justify-center rounded-2xl px-4 py-1 relative"
-                            onClick={() => setShowTokens(false)}
-                        >
-                            <Globe
-                                className={`${showTokens ? "text-primary-text-placeholder" : "text-primary-text"} h-5 w-5`}
-                            />
-                        </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>Group by Network</p>
-                    </TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                    <TooltipTrigger>
-                        <button
-                            className="z-10 flex items-center justify-center rounded-2xl px-4 py-1 relative"
-                            onClick={() => setShowTokens(true)}
-                        >
-                            <TokenIcon
-                                className={`${showTokens ? "text-primary-text" : "text-primary-text-placeholder"} h-5 w-5`}
-                            />
-                        </button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>Group by Token</p>
-                    </TooltipContent>
-                </Tooltip>
+                {
+                    switchValues.map((item, index) => (
+                        <Tooltip key={index}>
+                            <TooltipTrigger
+                                onClick={() => { setShowTokens(item.value); }}
+                                className="z-10 flex items-center justify-center rounded-2xl px-4 py-1 relative">
+                                {activeTab === item.id && (
+                                    <motion.span
+                                        layoutId="bubble"
+                                        className="absolute inset-0 z-10 rounded-md bg-secondary-300 mix-blend-color"
+                                        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                                    />
+                                )}
+                                <item.icon
+                                    className={clsx("text-primary-text-placeholder h-5 w-5", {
+                                        "!text-primary-text": activeTab === item.id,
+                                    })}
+                                />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>{item.label}</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    ))}
             </div>
         </div>
     );

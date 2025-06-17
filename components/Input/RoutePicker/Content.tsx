@@ -13,7 +13,6 @@ import { useSelectorState } from "../../Select/CommandNew/Index";
 import useWallet from "@/hooks/useWallet";
 import ConnectWalletButton from "../../Common/ConnectWalletButton";
 
-
 type ContentProps = {
     onSelect: (route: NetworkRoute, token: NetworkRouteToken) => Promise<void> | void;
     searchQuery: string;

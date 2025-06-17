@@ -75,13 +75,16 @@ export default function Row({
 
     if (item.type === "group_title") {
         return (
-            <div className="text-primary-text-placeholder text-base font-medium leading-5 mb-2 pl-3 sticky top-0 z-50 flex items-center" style={{ position: "sticky", top: 0, transform: "none" }} >
-                {item.text}
-                {item.text.toLowerCase().includes("all") && (
+            <div className="text-primary-text-placeholder text-base font-medium leading-5 pl-1 sticky top-0 z-50 flex items-baseline" style={{ position: "sticky", top: 0, transform: "none" }} >
+                <p>
+                    {item.text}
+                </p>
+                {
+                    item.text.toLowerCase().includes("all") &&
                     <div className="ml-auto">
                         <RouteTokenSwitch showTokens={showTokens} setShowTokens={setShowTokens} />
                     </div>
-                )}
+                }
             </div>
         );
     }

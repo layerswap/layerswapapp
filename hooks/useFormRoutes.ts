@@ -10,13 +10,13 @@ import { NetworkBalance } from "../Models/Balance";
 import { resolveNetworkRoutesURL } from "../helpers/routes";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 
-const Titles = {
-    topAssets: { type: 'group_title', text: 'Top Assets' } as TitleElement,
-    allNetworks: { type: 'group_title', text: 'All Networks' } as TitleElement,
-    popular: { type: 'group_title', text: 'Popular' } as TitleElement,
-    networks: { type: 'group_title', text: 'Networks' } as TitleElement,
-    tokens: { type: 'group_title', text: 'Tokens' } as TitleElement,
-    allTokens: { type: 'group_title', text: 'All' } as TitleElement,
+const Titles: { [name: string]: TitleElement } = {
+    topAssets: { type: 'group_title', text: 'Top Assets' },
+    allNetworks: { type: 'group_title', text: 'All Networks' },
+    popular: { type: 'group_title', text: 'Popular' },
+    networks: { type: 'group_title', text: 'Networks' },
+    tokens: { type: 'group_title', text: 'Tokens' },
+    allTokens: { type: 'group_title', text: 'All' },
 };
 
 type Props = {
@@ -25,7 +25,7 @@ type Props = {
 };
 
 export default function useFormRoutes({ direction, values }: Props, search?: string) {
-    const { routes, isLoading: routesLoading } = useroutes({ direction, values });
+    const { routes, isLoading: routesLoading } = useRoutes({ direction, values });
     const balances = useAllBalances({ direction });
 
     const topTokens = useMemo(() => getTopTokens(routes, balances), [routes, balances]);
@@ -84,7 +84,7 @@ function useRoutesData<T extends object>(url: string, defaultData: T[], fetcher:
     return { routes, isLoading };
 }
 
-function useroutes({ direction, values }: Props) {
+function useRoutes({ direction, values }: Props) {
     const { sourceRoutes, destinationRoutes } = useSettingsState();
     const apiClient = new LayerSwapApiClient();
     const url = useMemo(() => resolveNetworkRoutesURL(direction, values), [direction, values]);
