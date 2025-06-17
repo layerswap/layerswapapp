@@ -9,6 +9,7 @@ import Balance from "../Amount/Balance";
 import { Content } from "./Content";
 import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
 import PickerWalletConnect from "./RouterPickerWalletConnect";
+import { useRouteTokenSwitchStore } from "@/stores/routeTokenSwitchStore";
 
 const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -19,8 +20,8 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const [searchQuery, setSearchQuery] = useState("")
     const { allRoutes, isLoading, routeElements, tokenElements, selectedRoute, selectedToken, allbalancesLoaded } = useFormRoutes({ direction, values }, searchQuery)
     const currencyFieldName = direction === 'from' ? 'fromCurrency' : 'toCurrency';
-    const [showTokens, setShowTokens] = useState(false);
-
+    const showTokens = useRouteTokenSwitchStore((s) => s.showTokens)
+    
     useEffect(() => {
 
         if (!selectedRoute || !selectedToken || !allRoutes) return
@@ -61,8 +62,6 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                             direction={direction}
                             selectedRoute={selectedRoute?.name}
                             selectedToken={selectedToken?.symbol}
-                            showTokens={showTokens}
-                            setShowTokens={setShowTokens}
                         />
                     )}
                 </SelectorContent>

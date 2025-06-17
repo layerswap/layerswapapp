@@ -22,10 +22,8 @@ type ContentProps = {
     selectedToken: string | undefined;
     direction: SwapDirection;
     allbalancesLoaded: boolean;
-    showTokens: boolean;
-    setShowTokens: (val: boolean) => void;
 }
-export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, allbalancesLoaded, setShowTokens, showTokens }: ContentProps) => {
+export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, allbalancesLoaded }: ContentProps) => {
     const parentRef = useRef<HTMLDivElement>(null)
     const [openValues, setOpenValues] = useState<string[]>(selectedRoute ? [selectedRoute] : [])
     const { isOpen } = useSelectorState();
@@ -92,8 +90,6 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                                                 selectedRoute={selectedRoute}
                                                 selectedToken={selectedToken}
                                                 toggleContent={toggleAccordionItem}
-                                                showTokens={showTokens}
-                                                setShowTokens={setShowTokens}
                                             />
                                         </div>
                                     })}

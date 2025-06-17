@@ -4,19 +4,17 @@ import TokenIcon from "../../icons/TokenIcon";
 import { Globe } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import clsx from "clsx";
-
-interface RouteTokenSwitchProps {
-    showTokens: boolean;
-    setShowTokens: (val: boolean) => void;
-}
+import { useRouteTokenSwitchStore } from "@/stores/routeTokenSwitchStore";
 
 const switchValues = [
     { value: false, id: 'network', label: "Group by Network", icon: Globe },
     { value: true, id: 'token', label: "Group by Token", icon: TokenIcon },
 ]
 
-const RouteTokenSwitch: FC<RouteTokenSwitchProps> = ({ showTokens, setShowTokens }) => {
+const RouteTokenSwitch: FC = () => {
 
+    const showTokens = useRouteTokenSwitchStore((s) => s.showTokens)
+    const setShowTokens = useRouteTokenSwitchStore((s) => s.setShowTokens)
     const activeTab = switchValues.find(item => item.value === showTokens)?.id || switchValues[0].id;
 
     return (

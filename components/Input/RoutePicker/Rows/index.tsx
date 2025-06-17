@@ -17,8 +17,6 @@ type Props = {
     openValues: string[];
     scrollContainerRef: RefObject<HTMLDivElement>;
     allbalancesLoaded: boolean;
-    showTokens: boolean;
-    setShowTokens: (val: boolean) => void;
 };
 
 export default function Row({
@@ -31,8 +29,6 @@ export default function Row({
     openValues,
     allbalancesLoaded,
     scrollContainerRef,
-    showTokens,
-    setShowTokens,
 }: Props) {
     if (item.type === "network" || item.type === "grouped_token") {
         return (
@@ -82,7 +78,7 @@ export default function Row({
                 {
                     item.text.toLowerCase().includes("all") &&
                     <div className="ml-auto">
-                        <RouteTokenSwitch showTokens={showTokens} setShowTokens={setShowTokens} />
+                        <RouteTokenSwitch />
                     </div>
                 }
             </div>
