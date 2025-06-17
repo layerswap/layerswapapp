@@ -30,14 +30,15 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const balances = useAllBalances({ direction });
 
     const topTokens = useMemo(() => getTopTokens(routes, balances), [routes, balances]);
+    const sortedRoutes = useMemo(() => sortRoutes(routes, direction, balances), [routes, direction, balances]);
 
     const routeElements = useMemo(() => {
-        const grouped = groupRoutes(routes, direction, balances, search);
+        const grouped = groupRoutes(sortedRoutes, direction, balances, search);
         if (topTokens.length > 0 && !search) {
             return [Titles.topAssets, ...topTokens, ...grouped];
         }
         return grouped;
-    }, [routes, balances, direction, search, topTokens]);
+    }, [sortedRoutes, balances, direction, search, topTokens]);
 
     const tokenElements = useMemo(() => {
         const grouped = groupTokens(routes, search);
@@ -101,101 +102,71 @@ function getTokenBalanceUSD(route: NetworkRoute, token: NetworkRouteToken, balan
     return match && match.amount > 0 ? match.amount * token.price_in_usd : 0;
 }
 
-function getTopTokens(
-    routes: NetworkRoute[],
-    balances: Record<string, NetworkBalance> | null,
-    limit = 4
-): NetworkTokenElement[] {
+function getTopTokens(routes: NetworkRoute[], balances: Record<string, NetworkBalance> | null, limit = 4): NetworkTokenElement[] {
     if (!balances) return [];
-    const tokens = routes.flatMap(route =>
+    return routes.flatMap(route =>
         (route.tokens || []).map(token => {
             const usdValue = getTokenBalanceUSD(route, token, balances);
             return usdValue > 0 ? { token, route, usdValue } : null;
         }).filter(Boolean) as { token: NetworkRouteToken, route: NetworkRoute, usdValue: number }[]
-    );
-    return tokens
+    )
         .sort((a, b) => b.usdValue - a.usdValue)
         .slice(0, limit)
-        .map(({ token, route }) => ({
-            type: 'top_token',
-            route: { token, route }
-        }));
+        .map(({ token, route }) => ({ type: 'top_token', route: { token, route } }));
 }
 
-function sortGroupedTokensByBalance(
-    tokenElements: GroupedTokenElement[],
-    balances: Record<string, NetworkBalance>
-): GroupedTokenElement[] {
-    return tokenElements
-        .map(group => {
-            const items = group?.items?.map(item => ({
-                ...item,
-                usdValue: getTokenBalanceUSD(item.route.route, item.route.token, balances),
-            })).sort((a, b) => b.usdValue - a.usdValue);
-            const totalUSD = items?.reduce((sum, i) => sum + i.usdValue, 0);
-            return { ...group, items, totalUSD };
-        })
-        .sort((a, b) => b.totalUSD - a.totalUSD)
-        .map(({ totalUSD, ...rest }) => rest);
+function sortRoutes(routes: NetworkRoute[], direction: SwapDirection, balances: Record<string, NetworkBalance> | null): NetworkRoute[] {
+    const sorted = [...routes];
+    if (direction !== 'to' && balances) {
+        sorted.sort((a, b) => (balances?.[b.name]?.totalInUSD || 0) - (balances?.[a.name]?.totalInUSD || 0));
+    } else {
+        sorted.sort((a, b) => a.display_name.localeCompare(b.display_name));
+    }
+    return sorted;
+}
+
+function sortGroupedTokensByBalance(tokenElements: GroupedTokenElement[], balances: Record<string, NetworkBalance>): GroupedTokenElement[] {
+    return tokenElements.map(group => {
+        const items = group?.items?.map(item => ({
+            ...item,
+            usdValue: getTokenBalanceUSD(item.route.route, item.route.token, balances),
+        })).sort((a, b) => b.usdValue - a.usdValue);
+        const totalUSD = items?.reduce((sum, i) => sum + i.usdValue, 0);
+        return { ...group, items, totalUSD };
+    })
+    .sort((a, b) => b.totalUSD - a.totalUSD)
+    .map(({ totalUSD, ...rest }) => rest);
 }
 
 // ---------- Route Grouping ----------
 
 function groupRoutes(routes: NetworkRoute[], direction: SwapDirection, balances: Record<string, NetworkBalance> | null, search?: string): RowElement[] {
     if (search) {
-        const networks = routes
-            .filter(r => r.name.toLowerCase().includes(search.toLowerCase()))
-            .map(r => ({ type: 'network', route: { ...r } } as NetworkElement))
-            .sort((a, b) => (balances?.[b.route.name]?.totalInUSD || 0) - (balances?.[a.route.name]?.totalInUSD || 0));
+        const networks = routes.filter(r => r.name.toLowerCase().includes(search.toLowerCase()))
+            .map(r => ({ type: 'network', route: r }) as NetworkElement);
+
         const networkTokens = routes.flatMap(r =>
-            (r.tokens || [])
-                .filter(t => t.symbol.toLowerCase().includes(search.toLowerCase()))
-                .map(t => ({ type: 'network_token', route: { token: t, route: { ...r } } } as NetworkTokenElement))
+            (r.tokens || []).filter(t => t.symbol.toLowerCase().includes(search.toLowerCase()))
+                .map(t => ({ type: 'network_token', route: { token: t, route: r } }) as NetworkTokenElement)
         );
+
         return [
             ...(networks.length ? [Titles.networks, ...networks] : []),
             ...(networkTokens.length ? [Titles.tokens, ...networkTokens] : [])
         ];
     }
 
-    const popularRoutes = direction === 'to'
-        ? resolvePopularRoutes(routes, direction)
-        : [];
+    const popularRoutes = resolvePopularRoutes(routes, direction);
+    const popularNetworks = direction === 'to' ? routes
+        .filter(r => popularRoutes.includes(r.name))
+        .map(r => ({ type: 'network', route: r }) as NetworkElement) : [];
 
-    const popularNetworks = direction === 'to'
-        ? routes
-            .filter(r => popularRoutes.includes(r.name))
-            .map(r => ({ type: 'network', route: { ...r } } as NetworkElement))
-            .sort((a, b) => (balances?.[b.route.name]?.totalInUSD || 0) - (balances?.[a.route.name]?.totalInUSD || 0))
-        : [];
-
-    const unsortedNetworks = routes
-        .filter(r => !popularRoutes.includes(r.name))
-        .map(r => {
-            const sortedTokens = direction === 'from' ? sortNetworkTokensByBalance(r, balances) : r.tokens;
-            return { type: 'network', route: { ...r, tokens: sortedTokens } } as NetworkElement
-        });
-
-    const sortedNetworks = unsortedNetworks.sort((a, b) => {
-        if (direction !== 'to' && balances) {
-            return (balances[b.route.name]?.totalInUSD || 0) - (balances[a.route.name]?.totalInUSD || 0);
-        }
-        return a.route.display_name.localeCompare(b.route.display_name);
-    });
+    const remaining = routes.map(r => ({ type: 'network', route: direction === 'from' ? { ...r, tokens: sortNetworkTokensByBalance(r, balances) } : r }) as NetworkElement);
 
     return [
         ...(popularNetworks.length ? [Titles.popular, ...popularNetworks] : []),
-        ...(sortedNetworks.length ? [Titles.allNetworks, ...sortedNetworks] : [])
+        ...(remaining.length ? [Titles.allNetworks, ...remaining] : [])
     ];
-}
-
-function resolvePopularRoutes(routes: NetworkRoute[], direction: SwapDirection) {
-    return routes.filter(r => r.tokens?.some(t => t.status === 'active'))
-        .sort((a, b) => (direction === "from"
-            ? (a.source_rank ?? 0) - (b.source_rank ?? 0)
-            : (a.destination_rank ?? 0) - (b.destination_rank ?? 0)))
-        .slice(0, 5)
-        .map(r => r.name);
 }
 
 // ---------- Token Grouping ----------
@@ -232,6 +203,8 @@ function groupTokens(routes: NetworkRoute[], search?: string): GroupTokensResult
     return [Titles.allTokens, ...groupedTokens];
 }
 
+
+
 // ---------- Sorting ----------
 
 function sortNetworkTokensByBalance(route: NetworkRoute, balances: Record<string, NetworkBalance> | null): NetworkRouteToken[] {
@@ -250,6 +223,14 @@ function resolveSelectedToken(values: SwapFormValues, direction: SwapDirection) 
     return direction === 'from' ? values.fromCurrency : values.toCurrency;
 }
 
+function resolvePopularRoutes(routes: NetworkRoute[], direction: SwapDirection) {
+    return routes.filter(r => r.tokens?.some(t => t.status === 'active'))
+        .sort((a, b) => (direction === "from"
+            ? (a.source_rank ?? 0) - (b.source_rank ?? 0)
+            : (a.destination_rank ?? 0) - (b.destination_rank ?? 0)))
+        .slice(0, 5)
+        .map(r => r.name);
+}
 
 // ---------- Exchange ----------
 
