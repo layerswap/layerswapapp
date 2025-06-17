@@ -7,8 +7,9 @@ import { useSettingsState } from "../context/settings";
 import { NetworkElement, RowElement, NetworkTokenElement, _Route, _RoutesGroup, TitleElement, GroupTokensResult, GroupedTokenElement } from "../Models/Route";
 import useAllBalances from "./useAllBalances";
 import { NetworkBalance } from "../Models/Balance";
-import { resolveNetworkRoutesURL } from "../helpers/routes";
+import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../helpers/routes";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
+import { Exchange } from "@/Models/Exchange";
 
 const Titles: { [name: string]: TitleElement } = {
     topAssets: { type: 'group_title', text: 'Top Assets' },
@@ -247,4 +248,29 @@ function resolveSelectedRoute(values: SwapFormValues, direction: SwapDirection):
 
 function resolveSelectedToken(values: SwapFormValues, direction: SwapDirection) {
     return direction === 'from' ? values.fromCurrency : values.toCurrency;
+}
+
+
+// ---------- Exchange ----------
+
+function useExchangeRoutes({ direction, values }: Props) {
+    const { sourceExchanges, destinationExchanges } = useSettingsState();
+
+    const apiClient = new LayerSwapApiClient()
+    const exchangeRoutesURL = useMemo(() => resolveExchangesURLForSelectedToken(direction, values), [direction, values])
+    const {
+        data: apiResponse,
+        isLoading,
+    } = useSWR<ApiResponse<Exchange[]>>(exchangeRoutesURL, apiClient.fetcher, { keepPreviousData: true, dedupingInterval: 10000 })
+
+    const defaultData = (direction === 'from' ? sourceExchanges : destinationExchanges) || []
+    const [exchangesRoutes, setExchangesData] = useState<Exchange[]>(defaultData)
+
+    useEffect(() => {
+        if (!isLoading && apiResponse?.data) setExchangesData(apiResponse.data)
+    }, [apiResponse])
+
+    const res = useMemo(() => exchangesRoutes.map(r => ({ ...r, cex: true } as { cex: true } & Exchange)), [exchangesRoutes])
+
+    return useMemo(() => ({ exchangesRoutes: res, isLoading }), [res, isLoading])
 }
