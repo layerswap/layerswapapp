@@ -212,9 +212,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 >
                     <div className='grid grid-cols-2 gap-2'>
                         {
-                            resolvedConnectors.sort((a, b) => {
-                                return getIndex(a, recentConnectors) - getIndex(b, recentConnectors);
-                            }).map(item => {
+                            resolvedConnectors.sort((a, b) => sortRecentConnectors(a, b, recentConnectors)).map(item => {
                                 const provider = featuredProviders.find(p => p.name === item.providerName)
                                 const isRecent = recentConnectors?.some(v => v.connectorName === item.name)
                                 return (
@@ -438,9 +436,20 @@ const MultichainConnectorModal: FC<MultichainConnectorModalProps> = ({ selectedC
     )
 }
 
-function getIndex(c: { name: string }, recentConnectors: { connectorName?: string }[]) {
-    const idx = recentConnectors?.findIndex(v => v.connectorName === c.name);
-    return idx === -1 ? Infinity : idx;
+function sortRecentConnectors(a: { name: string, type?: string }, b: { name: string, type?: string }, recentConnectors: { connectorName?: string }[]) {
+    function getIndex(c: { name: string }) {
+        const idx = recentConnectors?.findIndex(v => v.connectorName === c.name);
+        return idx === -1 ? Infinity : idx;
+    }
+    const indexA = getIndex(a);
+    const indexB = getIndex(b);
+    if (indexA !== indexB) {
+        return indexA - indexB;
+    }
+    if (a.type && b.type) {
+        return a.type.localeCompare(b.type);
+    }
+    return 0;
 }
 
 export default ConnectorsLsit
