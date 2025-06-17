@@ -2,10 +2,8 @@ import { SwapFormValues } from '../DTOs/SwapFormValues';
 import { DetailedEstimates } from './DetailedEstimates';
 import { useQuote } from '../../context/feeContext';
 import FeeDetails from './FeeDetailsComponent';
-import { useQueryState } from '../../context/query';
 import ResizablePanel from '../ResizablePanel';
 import { FC, useState } from 'react';
-import dynamic from 'next/dynamic';
 import DepositMethod from './DepositMethod';
 import Campaign from './Campaign';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
@@ -14,21 +12,10 @@ import { ChevronDown, Clock } from 'lucide-react';
 import { Quote } from '@/lib/apiClients/layerSwapApiClient';
 import AverageCompletionTime from '../Common/AverageCompletionTime';
 
-const RefuelModal = dynamic(() => import("./RefuelModal"), {
-    loading: () => <></>,
-});
-
-const RefuelToggle = dynamic(() => import("./Refuel"), {
-    loading: () => <></>,
-});
-
 export default function QuoteDetails({ values }: { values: SwapFormValues }) {
-    const { toCurrency, to, toExchange, from, fromCurrency, amount, destination_address } = values || {};
+    const { toCurrency, to, from, fromCurrency, destination_address } = values || {};
     const { quote, isQuoteLoading } = useQuote()
-    const query = useQueryState();
-    const [openRefuelModal, setOpenRefuelModal] = useState<boolean>(false)
     const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(false);
-
 
     return (
         <>
@@ -62,10 +49,6 @@ export default function QuoteDetails({ values }: { values: SwapFormValues }) {
                                 <ResizablePanel>
                                     <FeeDetails>
                                         {
-                                            toCurrency?.refuel && !query.hideRefuel && !toExchange &&
-                                            <RefuelToggle onButtonClick={() => setOpenRefuelModal(true)} />
-                                        }
-                                        {
                                             (quote || isQuoteLoading) && fromCurrency && toCurrency &&
                                             <FeeDetails.Item>
                                                 <DetailedEstimates />
@@ -85,7 +68,6 @@ export default function QuoteDetails({ values }: { values: SwapFormValues }) {
                                     </FeeDetails>
                                 </ResizablePanel>
 
-                                <RefuelModal openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} />
                             </div>
                         </AccordionContent>
                     </AccordionItem>

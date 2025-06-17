@@ -1,5 +1,5 @@
 import { Form, FormikErrors, useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useRef } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import React from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "../../../Models/Partner";
@@ -35,6 +35,14 @@ const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
     loading: () => <></>,
 });
 
+const RefuelModal = dynamic(() => import("@/components/FeeDetails/RefuelModal"), {
+    loading: () => <></>,
+});
+
+const RefuelToggle = dynamic(() => import("@/components/FeeDetails/Refuel"), {
+    loading: () => <></>,
+});
+
 const SwapForm: FC<Props> = ({ partner }) => {
     const {
         values,
@@ -59,6 +67,8 @@ const SwapForm: FC<Props> = ({ partner }) => {
     const query = useQueryState();
 
     const actionDisplayName = query?.actionButtonText || "Swap now"
+
+    const [openRefuelModal, setOpenRefuelModal] = useState<boolean>(false)
 
     useEffect(() => {
         valuesChanger(values)
@@ -128,6 +138,12 @@ const SwapForm: FC<Props> = ({ partner }) => {
                             }
                         </div>
                     </div>
+                    <div>
+                        {
+                            values.toCurrency?.refuel && !query.hideRefuel && !toExchange &&
+                            <RefuelToggle onButtonClick={() => setOpenRefuelModal(true)} />
+                        }
+                    </div>
                 </div>
             </Widget.Content>
             <Widget.Footer>
@@ -148,6 +164,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                     />
                 </div>
             </Widget.Footer>
+            <RefuelModal openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} />
         </Widget>
     </Form>
 }
