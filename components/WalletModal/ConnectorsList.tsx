@@ -71,7 +71,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             })
 
             if (result && connector && provider) {
-                setRecentConnectors((prev) => [...(prev?.filter(v => v.providerName !== provider.name) || []), { providerName: provider.name, connectorName: connector.name }])
+                setRecentConnectors((prev) => [{ providerName: provider.name, connectorName: connector.name }, ...(prev?.filter(v => v.connectorName !== connector.name) || [])].slice(0, 3))
                 onFinish(result)
             }
             setSelectedConnector(undefined)
@@ -152,7 +152,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             connectionError={connectionError}
         />
     }
-
+    console.log('Recent connectors:', recentConnectors);
     return (
         <>
             <div className="text-primary-text space-y-3">
@@ -194,7 +194,13 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 >
                     <div className='grid grid-cols-2 gap-2'>
                         {
-                            resolvedConnectors.sort((a, b) => a.type && b.type ? a.type.localeCompare(b.type) : 0)?.map(item => {
+                            resolvedConnectors.sort((a, b) => {
+                                const getIndex = (c: typeof a) => {
+                                    const idx = recentConnectors?.findIndex(v => v.connectorName === c.name);
+                                    return idx === -1 ? Infinity : idx;
+                                };
+                                return getIndex(a) - getIndex(b);
+                            }).map(item => {
                                 const provider = featuredProviders.find(p => p.name === item.providerName)
                                 const isRecent = recentConnectors?.some(v => v.connectorName === item.name)
                                 return (
