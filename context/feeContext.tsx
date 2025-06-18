@@ -81,7 +81,7 @@ export function useQuote() {
     const data = useContext(QuoteStateContext);
 
     if (data === null) {
-        throw new Error('useFee must be used within a FeeProvider');
+        throw new Error('useQuote must be used within a QuoteProvider');
     }
 
     return data;
