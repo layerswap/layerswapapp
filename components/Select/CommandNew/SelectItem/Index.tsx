@@ -19,7 +19,7 @@ type SeelctItemLogoProps = {
 }
 const Logo = ({ imgSrc, altText, className = 'rounded-md' }: SeelctItemLogoProps) => {
     return <div className="shrink-0 relative h-9 w-9">
-        {imgSrc ? <div className='inline-flex items-center relative'>
+        {imgSrc ? <div className='inline-flex relative'>
             <ImageWithFallback
                 src={imgSrc}
                 alt={altText}

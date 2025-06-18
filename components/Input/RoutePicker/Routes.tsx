@@ -99,42 +99,40 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                 <>
                     <span>{item.display_name}</span>
 
-                    {!hideTokenImages && (
-                        hasLoadedBalances ? (
-                            <div className={showTokenLogos ? "flex flex-col space-y-0.5" : ""}>
-                                <span className="text-secondary-text text-sm leading-4 font-medium">
-                                    ${totalInUSD?.toFixed(2)}
-                                </span>
+                    {hasLoadedBalances ? (
+                        <div className={`${showTokenLogos ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "invisible" : "visible"}`}>
+                            <span className="text-secondary-text text-sm leading-4 font-medium">
+                                ${totalInUSD?.toFixed(2)}
+                            </span>
 
-                                {showTokenLogos ? (
-                                    <div className="flex justify-end items-center -space-x-2 relative h-4">
-                                        {filteredNetworkTokens.slice(0, 3).map((t, index) => (
-                                            <ImageWithFallback
-                                                key={`${t.symbol}-${index}`}
-                                                src={t.logo}
-                                                alt={`${t.symbol} logo`}
-                                                height="16"
-                                                width="16"
-                                                loading="eager"
-                                                fetchPriority='high'
-                                                className="rounded-full object-contain"
-                                            />
-                                        ))}
-                                        {filteredNetworkTokens.length > 3 && (
-                                            <div className="w-4 h-4 bg-secondary-600 text-primary-text text-[8px] rounded-full flex items-center justify-center border-2 border-background">
-                                                <span>+{filteredNetworkTokens.length - 3}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                ) : <></>}
-                            </div>
-                        ) : balances ? (
-                            <span className="px-0.5">-</span>
-                        ) : <></>
-                    )}
+                            {showTokenLogos ? (
+                                <div className="flex justify-end items-center -space-x-2 relative h-4">
+                                    {filteredNetworkTokens.slice(0, 3).map((t, index) => (
+                                        <ImageWithFallback
+                                            key={`${t.symbol}-${index}`}
+                                            src={t.logo}
+                                            alt={`${t.symbol} logo`}
+                                            height="16"
+                                            width="16"
+                                            loading="eager"
+                                            fetchPriority='high'
+                                            className="rounded-full object-contain"
+                                        />
+                                    ))}
+                                    {filteredNetworkTokens.length > 3 && (
+                                        <div className="w-4 h-4 bg-secondary-600 text-primary-text text-[8px] rounded-full flex items-center justify-center border-2 border-background">
+                                            <span>+{filteredNetworkTokens.length - 3}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : <></>}
+                        </div>
+                    ) : balances ? (
+                        <span className="px-0.5">-</span>
+                    ) : <></>}
 
                     <ChevronDown
-                        className="!w-3.5 !h-3.5 absolute right-2 bottom-4 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
+                        className="!w-3.5 !h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
                         aria-hidden="true"
                     />
                 </>
@@ -209,46 +207,44 @@ export const GroupedTokenHeader = ({
                 altText={`${mainToken.symbol} logo`}
                 className="rounded-full"
             />
-            <SelectItem.Title className="py-3">
+            <SelectItem.Title className="py-3 flex items-center">
                 <>
                     <span>{mainToken.symbol}</span>
 
-                    {!hideTokenImages && allBalances && (
-                        hasLoadedBalances ? (
-                            <div className={showNetworkIcons ? "flex flex-col space-y-0.5" : ""}>
-                                <span className="text-secondary-text text-sm leading-4 font-medium">
-                                    ${totalInUSD.toFixed(2)}
-                                </span>
+                    {hasLoadedBalances ? (
+                        <div className={`${showNetworkIcons ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "invisible" : "visible"}`}>
+                            <span className="text-secondary-text text-sm leading-4 font-medium">
+                                ${totalInUSD.toFixed(2)}
+                            </span>
 
-                                {showNetworkIcons && (
-                                    <div className="flex justify-end items-center -space-x-1.5 relative h-4">
-                                        {networksWithBalance.slice(0, 3).map((network, index) => (
-                                            <ImageWithFallback
-                                                key={`${network.display_name}-${index}`}
-                                                src={network.logo}
-                                                alt={`${network.display_name} logo`}
-                                                height="16"
-                                                width="16"
-                                                loading="eager"
-                                                fetchPriority="high"
-                                                className="rounded-full object-contain"
-                                            />
-                                        ))}
-                                        {networksWithBalance.length > 3 && (
-                                            <div className="w-4 h-4 bg-secondary-600 text-primary-text text-[8px] rounded-full flex items-center justify-center border-2 border-background">
-                                                <span>+{networksWithBalance.length - 3}</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        ) : allBalances ? (
-                            <div className="px-0.5">-</div>
-                        ) : <></>
-                    )}
+                            {showNetworkIcons && (
+                                <div className="flex justify-end items-center -space-x-1.5 relative h-4">
+                                    {networksWithBalance.slice(0, 3).map((network, index) => (
+                                        <ImageWithFallback
+                                            key={`${network.display_name}-${index}`}
+                                            src={network.logo}
+                                            alt={`${network.display_name} logo`}
+                                            height="16"
+                                            width="16"
+                                            loading="eager"
+                                            fetchPriority="high"
+                                            className="rounded-full object-contain"
+                                        />
+                                    ))}
+                                    {networksWithBalance.length > 3 && (
+                                        <div className="w-4 h-4 bg-secondary-600 text-primary-text text-[8px] rounded-full flex items-center justify-center border-2 border-background">
+                                            <span>+{networksWithBalance.length - 3}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    ) : allBalances ? (
+                        <div className="px-0.5">-</div>
+                    ) : <></>}
 
                     <ChevronDown
-                        className="!w-3.5 !h-3.5 absolute right-2 bottom-4 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
+                        className="!w-3.5 !h-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-secondary-text transition-opacity duration-200 opacity-0 group-hover/item:opacity-100"
                         aria-hidden="true"
                     />
                 </>
