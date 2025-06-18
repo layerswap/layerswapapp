@@ -117,11 +117,12 @@ function getTopTokens(routes: NetworkRoute[], balances: Record<string, NetworkBa
 
 function sortRoutes(routes: NetworkRoute[], direction: SwapDirection, balances: Record<string, NetworkBalance> | null): NetworkRoute[] {
     const sorted = [...routes];
-    if (direction !== 'to' && balances) {
-        sorted.sort((a, b) => (balances?.[b.name]?.totalInUSD || 0) - (balances?.[a.name]?.totalInUSD || 0));
-    } else {
-        sorted.sort((a, b) => a.display_name.localeCompare(b.display_name));
-    }
+
+    sorted.sort((a, b) => (direction !== 'to' && balances)
+        ? (balances?.[b.name]?.totalInUSD || 0) - (balances?.[a.name]?.totalInUSD || 0)
+        : a.display_name.localeCompare(b.display_name)
+    )
+
     return sorted;
 }
 
@@ -134,8 +135,8 @@ function sortGroupedTokensByBalance(tokenElements: GroupedTokenElement[], balanc
         const totalUSD = items?.reduce((sum, i) => sum + i.usdValue, 0);
         return { ...group, items, totalUSD };
     })
-    .sort((a, b) => b.totalUSD - a.totalUSD)
-    .map(({ totalUSD, ...rest }) => rest);
+        .sort((a, b) => b.totalUSD - a.totalUSD)
+        .map(({ totalUSD, ...rest }) => rest);
 }
 
 // ---------- Route Grouping ----------
