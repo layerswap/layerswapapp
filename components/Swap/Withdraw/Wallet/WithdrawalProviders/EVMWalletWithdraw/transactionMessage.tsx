@@ -1,9 +1,9 @@
 import { FC } from "react"
-import resolveError from "./resolveError"
-import { ActionData } from "./sharedTypes"
+import { ActionData } from "../../Common/sharedTypes"
 import { BaseError } from 'viem'
 import { datadogRum } from '@datadog/browser-rum';
-import TransactionMessages from "../../messages/TransactionMessages";
+import TransactionMessages from "../../../messages/TransactionMessages";
+import resolveError from "./resolveError";
 
 type TransactionMessageProps = {
     wait?: ActionData,

@@ -1,12 +1,10 @@
 import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
 import useWallet from '@/hooks/useWallet';
-import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import WalletIcon from '@/components/icons/WalletIcon';
 import { useTonConnectUI } from '@tonconnect/ui-react';
 import { Address, JettonMaster, beginCell, toNano } from '@ton/ton'
 import { Token } from '@/Models/Network';
-import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
 import tonClient from '@/lib/wallets/ton/client';
 import { datadogRum } from '@datadog/browser-rum';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
@@ -18,7 +16,6 @@ export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token })
     const [loading, setLoading] = useState(false);
     const { connect } = useConnectModal()
     const { provider } = useWallet(network, 'withdrawal');
-    const { setSwapTransaction } = useSwapTransactionStore();
     const [tonConnectUI] = useTonConnectUI();
     const [transactionErrorMessage, setTransactionErrorMessage] = useState<string | undefined>(undefined)
 
@@ -53,7 +50,7 @@ export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token })
             const res = await tonConnectUI.sendTransaction(transaction)
 
             if (res) {
-                setSwapTransaction(swapId, BackendTransactionStatus.Pending, res.boc);
+                return res.boc
             }
 
         }

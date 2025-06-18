@@ -4,8 +4,6 @@ import toast from 'react-hot-toast';
 import * as zksync from 'zksync';
 import { utils } from 'ethers';
 import { useEthersSigner } from '@/lib/ethersToViem/ethers';
-import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
-import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
 import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import { useSettingsState } from '@/context/settings';
 import { useAccount } from 'wagmi';
@@ -23,7 +21,6 @@ export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token
     const [accountIsActivated, setAccountIsActivated] = useState(false);
     const [activationFee, setActivationFee] = useState<({ feeInAsset: number, feeInUsd: number } | undefined)>(undefined);
 
-    const { setSwapTransaction } = useSwapTransactionStore();
     const { chain } = useAccount();
     const signer = useEthersSigner();
 
@@ -109,7 +106,8 @@ export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token
             });
 
             if (tf?.txHash) {
-                setSwapTransaction(swapId, BackendTransactionStatus.Pending, tf?.txHash?.replace('sync-tx:', '0x'));
+                const txHash = tf?.txHash?.replace('sync-tx:', '0x');
+                return txHash;
             }
         }
         catch (e) {

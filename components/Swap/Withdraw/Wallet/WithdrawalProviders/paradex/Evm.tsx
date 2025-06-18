@@ -3,8 +3,6 @@ import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from 
 import { useAccount } from 'wagmi';
 import { useSettingsState } from '@/context/settings';
 import KnownInternalNames from '@/lib/knownIds';
-import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
-import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
 import { useEthersSigner } from '@/lib/ethersToViem/ethers';
 import toast from 'react-hot-toast';
 import AuhorizeEthereum from '@/lib/wallets/paradex/Authorize/Ethereum';
@@ -18,8 +16,6 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ token }) => {
 
     const { networks } = useSettingsState();
     const l1Network = networks.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
-
-    const { setSwapTransaction } = useSwapTransactionStore();
 
     const { provider } = useWallet(l1Network, 'withdrawal')
     const { chain } = useAccount();
@@ -40,7 +36,7 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ token }) => {
             const res = await account.execute(JSON.parse(callData || ""), undefined, { maxFee: '1000000000000000' });
 
             if (res.transaction_hash) {
-                setSwapTransaction(swapId, BackendTransactionStatus.Pending, res.transaction_hash);
+                return res.transaction_hash
             }
         } catch (e) {
             if (e.message.includes('Contract not found')) {

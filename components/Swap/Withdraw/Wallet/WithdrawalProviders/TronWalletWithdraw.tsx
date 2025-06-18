@@ -1,8 +1,6 @@
 import { FC, useCallback, useState } from 'react'
-import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
 import useWallet from '@/hooks/useWallet';
 import { useWallet as useTronWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
-import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { useSettingsState } from '@/context/settings';
 import { datadogRum } from '@datadog/browser-rum';
 import { TronWeb } from 'tronweb'
@@ -19,7 +17,6 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ network, token }) =>
     const [error, setError] = useState<string | undefined>()
 
     const { provider } = useWallet(network, 'withdrawal');
-    const { setSwapTransaction } = useSwapTransactionStore();
 
     const wallet = provider?.activeWallet
     const { wallet: tronWallet, signTransaction } = useTronWallet();
@@ -52,7 +49,7 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ network, token }) =>
             const res = await tronWeb.trx.sendRawTransaction(signature)
 
             if (signature && res.result) {
-                setSwapTransaction(swapId, BackendTransactionStatus.Pending, signature.txID);
+                return signature.txID
             } else {
                 throw new Error(res.code.toString())
             }

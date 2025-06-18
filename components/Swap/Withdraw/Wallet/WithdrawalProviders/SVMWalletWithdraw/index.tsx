@@ -73,9 +73,7 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token })
                 signTransaction
             );
 
-            if (signature) {
-                setSwapTransaction(swapId, BackendTransactionStatus.Pending, signature);
-            }
+            return signature;
 
         }
         catch (e) {

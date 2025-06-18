@@ -1,10 +1,8 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
-import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
 import GuideLink from '@/components/guideLink';
 import useWallet from '@/hooks/useWallet';
-import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import WarningMessage from '@/components/WarningMessage';
@@ -12,7 +10,6 @@ import WarningMessage from '@/components/WarningMessage';
 export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { setSwapTransaction } = useSwapTransactionStore();
 
     const { provider } = useWallet(network, 'withdrawal')
     const imxAccount = provider?.activeWallet
@@ -36,8 +33,8 @@ export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token
                 toast(transactionRes.message)
             }
             else if (transactionRes && swapId) {
-                setSwapTransaction(swapId, BackendTransactionStatus.Pending, transactionRes.txId.toString());
                 setTransferDone(true)
+                return transactionRes.txId.toString()
             }
         }
         catch (e) {

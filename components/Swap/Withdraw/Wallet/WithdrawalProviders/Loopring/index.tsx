@@ -2,12 +2,10 @@ import { ArrowLeftRight, Lock } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useAccount } from 'wagmi';
-import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import { ActivationTokenPicker } from './ActivationTokentPicker';
 import { useActivationData, useLoopringAccount, useLoopringTokens } from './hooks';
 import { LoopringAPI } from '@/lib/loopring/LoopringAPI';
 import { ChainId, UnlockedAccount } from '@/lib/loopring/defs';
-import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
 import { useConfig } from 'wagmi'
 import AppSettings from '@/lib/AppSettings';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
@@ -21,7 +19,6 @@ export const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, 
     const [activationPubKey, setActivationPubKey] = useState<{ x: string; y: string }>()
     const [selectedActivationAsset, setSelectedActivationAsset] = useState<string>()
 
-    const { setSwapTransaction } = useSwapTransactionStore();
     const { isConnected, address: fromAddress, chain } = useAccount();
     const { account: accInfo, isLoading: loadingAccount, noAccount, mutate: refetchAccount } = useLoopringAccount({ address: fromAddress })
     const { availableBalances, defaultValue, loading: activationDataIsLoading, feeData } = useActivationData(accInfo?.accountId)
@@ -89,8 +86,8 @@ export const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, 
                 unlockedAccount
             }, config)
             if (transferResult.hash) {
-                setSwapTransaction(swapId, BackendTransactionStatus.Pending, transferResult.hash);
                 setTransferDone(true)
+                return transferResult.hash
             }
             else {
                 toast(transferResult.resultInfo?.message || "Unexpected error.")

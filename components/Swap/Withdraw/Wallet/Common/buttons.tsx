@@ -13,6 +13,8 @@ import { Network, NetworkRoute } from "@/Models/Network";
 import { useQueryState } from "@/context/query";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { useRouter } from "next/router";
+import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
+import { BackendTransactionStatus } from "@/lib/apiClients/layerSwapApiClient";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapResponse } = useSwapDataState()
@@ -150,7 +152,7 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
 type ButtonWrapperProps = ComponentProps<typeof ButtonWrapper>;
 type SendFromWalletButtonProps = Omit<ButtonWrapperProps, 'onClick'> & {
     error?: boolean;
-    onClick: (props: TransferProps) => Promise<void>
+    onClick: (props: TransferProps) => Promise<string | undefined>
 };
 
 export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
@@ -160,6 +162,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 }) => {
     const [loading, setLoading] = useState(false)
     const { createSwap, setSwapId, setSwapPath } = useSwapDataUpdate()
+    const { setSwapTransaction } = useSwapTransactionStore();
     const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
     const router = useRouter()
@@ -188,11 +191,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
             const swapData = await createSwap(swapValues, query);
             const swapId = swapData?.swap?.id;
-            if(!swapId) {
+            if (!swapId) {
                 throw new Error('Swap ID is undefined');
             }
-            setSwapId(swapId)
-            setSwapPath(swapId, router)
 
             const depositAction = swapData?.deposit_actions && swapData?.deposit_actions[0];
 
@@ -205,7 +206,14 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 userDestinationAddress: swap?.destination_address
             }
 
-            await onClick(transferProps)
+            const hash = await onClick(transferProps)
+
+            if (hash) {
+                setSwapId(swapId)
+                setSwapTransaction(swapId, BackendTransactionStatus.Pending, hash);
+                setSwapPath(swapId, router)
+            }
+
         }
         catch (e) {
             console.log('Error in SendTransactionButton:', e)

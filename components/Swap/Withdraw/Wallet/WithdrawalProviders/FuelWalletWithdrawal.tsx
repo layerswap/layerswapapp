@@ -1,7 +1,5 @@
 import { FC, useCallback, useEffect, useState } from 'react'
-import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
 import useWallet from '@/hooks/useWallet';
-import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import WalletIcon from '@/components/icons/WalletIcon';
 import { ButtonWrapper, ChangeNetworkMessage, ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import {
@@ -19,8 +17,6 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }
     const [loading, setLoading] = useState(false);
     const [buttonClicked, setButtonClicked] = useState(false)
     const [error, setError] = useState<string | undefined>()
-
-    const { setSwapTransaction } = useSwapTransactionStore()
 
     const { provider } = useWallet(network, 'withdrawal');
 
@@ -73,7 +69,9 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }
 
             const transactionResponse = await fuelWallet.sendTransaction(scriptTransaction);
 
-            if (swapId && transactionResponse) setSwapTransaction(swapId, BackendTransactionStatus.Completed, transactionResponse.id)
+            if (swapId && transactionResponse) {
+                return transactionResponse.id;
+            }
 
         }
         catch (e) {

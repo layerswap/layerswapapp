@@ -1,6 +1,5 @@
 import { BaseError, InsufficientFundsError, EstimateGasExecutionError, UserRejectedRequestError } from 'viem'
 
-
 type ResolvedError = "insufficient_funds" | "transaction_rejected"
 
 const resolveError = (error: BaseError): ResolvedError | undefined => {

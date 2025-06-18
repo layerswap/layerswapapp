@@ -3,8 +3,6 @@ import { FC, useCallback, useState } from 'react'
 import useWallet from '@/hooks/useWallet';
 import { useSettingsState } from '@/context/settings';
 import KnownInternalNames from '@/lib/knownIds';
-import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
-import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
 import toast from 'react-hot-toast';
 import { AuthorizeStarknet } from '@/lib/wallets/paradex/Authorize/Starknet';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
@@ -16,8 +14,6 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ token }) => {
 
     const { networks } = useSettingsState();
     const starknet = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetGoerli || n.name === KnownInternalNames.Networks.StarkNetSepolia);
-
-    const { setSwapTransaction } = useSwapTransactionStore();
 
     const { provider } = useWallet(starknet, 'withdrawal')
     const wallet = provider?.activeWallet
@@ -47,7 +43,7 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ token }) => {
                 const res = await paradexAccount.execute(parsedCallData, undefined, { maxFee: '1000000000000000' });
 
                 if (res.transaction_hash) {
-                    setSwapTransaction(swapId, BackendTransactionStatus.Pending, res.transaction_hash);
+                    return res.transaction_hash
                 }
             }
             catch (e) {

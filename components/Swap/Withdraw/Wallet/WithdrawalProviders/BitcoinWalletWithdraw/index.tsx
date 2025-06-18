@@ -1,12 +1,10 @@
 import { FC, useCallback, useMemo, useState } from 'react'
 import toast from 'react-hot-toast';
 import useWallet from '@/hooks/useWallet';
-import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import WalletIcon from '@/components/icons/WalletIcon';
 import { ConnectWalletButton, SendTransactionButton } from '../../Common/buttons';
 import { datadogRum } from '@datadog/browser-rum';
 import { useAccount, useConfig } from '@bigmi/react';
-import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
 import KnownInternalNames from '@/lib/knownIds';
 import { JsonRpcClient } from '@/lib/apiClients/jsonRpcClient';
 import { sendTransaction } from './sendTransaction';
@@ -18,7 +16,6 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, toke
     const [loading, setLoading] = useState(false);
     const { connect } = useConnectModal()
     const { provider } = useWallet(network, 'withdrawal');
-    const { setSwapTransaction } = useSwapTransactionStore();
     const [transactionErrorMessage, setTransactionErrorMessage] = useState<string | undefined>(undefined)
     const { connector } = useAccount()
     const wallet = provider?.activeWallet
@@ -66,9 +63,7 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, toke
                 publicClient
             });
 
-            if (txHash && swapId) {
-                setSwapTransaction(swapId, BackendTransactionStatus.Pending, txHash);
-            }
+            return txHash;
 
         }
         catch (e) {
