@@ -4,7 +4,6 @@ import Summary from "./Summary"
 import { TransactionType } from "../../../lib/apiClients/layerSwapApiClient"
 import { shortenEmail } from "../../utils/ShortenAddress"
 import KnownInternalNames from "../../../lib/knownIds"
-import useWallet from "../../../hooks/useWallet"
 import { useQueryState } from "../../../context/query"
 
 const SwapSummary: FC = () => {

@@ -59,69 +59,72 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
 
     return (
-        <div className="font-normal flex flex-col w-full relative z-10 space-y-3">
-            <div className="w-full grid grid-cols-10">
-                <div className="col-span-7">
-                    <RouteTokenPair
-                        route={sourceExchange || source}
-                        exchange={sourceExchange}
-                        network={from}
-                        token={sourceCurrency}
-                        address={sourceAccountAddress}
-                    />
+        <div className="bg-secondary-500 rounded-2xl px-3 py-4 w-full relative z-10 space-y-4">
+
+            <div className="font-normal flex flex-col w-full relative z-10 space-y-3">
+                <div className="w-full grid grid-cols-10">
+                    <div className="col-span-7">
+                        <RouteTokenPair
+                            route={sourceExchange || source}
+                            exchange={sourceExchange}
+                            network={from}
+                            token={sourceCurrency}
+                            address={sourceAccountAddress}
+                        />
+                    </div>
+                    <div className="flex flex-col col-start-8 col-span-3 items-end">
+                        {
+                            requestedAmount &&
+                            <p className="text-primary-text text-sm">{truncateDecimals(requestedAmount, sourceCurrency.precision)} {sourceCurrency.symbol}</p>
+                        }
+                        <p className="text-secondary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
+                    </div>
                 </div>
-                <div className="flex flex-col col-start-8 col-span-3 items-end">
+                <div className="relative text-secondary-text">
+                    <hr className="border border-secondary-400 w-full rounded-full" />
+                    <ArrowDown className="absolute left-1/2 -translate-x-1/2 top-[-10px] h-6 w-6 p-1 bg-secondary-400 rounded-md text-secondary-text" />
+                </div>
+                <div className="w-full grid grid-cols-10">
+                    <div className="col-span-7">
+                        <RouteTokenPair
+                            route={destExchange || destination}
+                            exchange={destExchange}
+                            network={to}
+                            token={destinationCurrency}
+                            address={destAddress}
+                        />
+                    </div>
                     {
-                        requestedAmount &&
-                        <p className="text-primary-text text-sm">{truncateDecimals(requestedAmount, sourceCurrency.precision)} {sourceCurrency.symbol}</p>
+                        receiveAmount != undefined ?
+                            <div className="flex flex-col justify-end items-end w-full col-start-8 col-span-3">
+                                <p className="text-primary-text text-sm">{truncateDecimals(receiveAmount, destinationCurrency.precision)} {destinationCurrency.symbol}</p>
+                                <p className="text-secondary-text text-sm">${receiveAmountInUsd}</p>
+                            </div>
+                            :
+                            <div className="flex flex-col justify-end">
+                                <div className="h-[10px] my-[5px] w-20 animate-pulse rounded-sm bg-gray-500" />
+                                <div className="h-[10px] my-[5px] w-10 animate-pulse rounded-sm bg-gray-500 ml-auto" />
+                            </div>
                     }
-                    <p className="text-secondary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
-                </div>
-            </div>
-            <div className="relative text-secondary-text">
-                <hr className="border border-secondary-400 w-full rounded-full" />
-                <ArrowDown className="absolute left-1/2 -translate-x-1/2 top-[-10px] h-6 w-6 p-1 bg-secondary-400 rounded-md text-secondary-text" />
-            </div>
-            <div className="w-full grid grid-cols-10">
-                <div className="col-span-7">
-                    <RouteTokenPair
-                        route={destExchange || destination}
-                        exchange={destExchange}
-                        network={to}
-                        token={destinationCurrency}
-                        address={destAddress}
-                    />
                 </div>
                 {
-                    receiveAmount != undefined ?
-                        <div className="flex flex-col justify-end items-end w-full col-start-8 col-span-3">
-                            <p className="text-primary-text text-sm">{truncateDecimals(receiveAmount, destinationCurrency.precision)} {destinationCurrency.symbol}</p>
-                            <p className="text-secondary-text text-sm">${receiveAmountInUsd}</p>
+                    (!!refuel != undefined && nativeCurrency) ?
+                        <div className="flex items-center justify-between w-full ">
+                            <div className='flex items-center gap-3 text-sm'>
+                                <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-lg p-2 bg-primary/20">
+                                    <Fuel className="h-5 w-5 text-primary" aria-hidden="true" />
+                                </span>
+                                <p>Refuel</p>
+                            </div>
+                            <div className="flex flex-col items-end">
+                                <p className="text-primary-text text-sm">{truncatedRefuelAmount} {nativeCurrency?.symbol}</p>
+                                <p className="text-secondary-text text-sm flex justify-end">${refuelAmountInUsd}</p>
+                            </div>
                         </div>
                         :
-                        <div className="flex flex-col justify-end">
-                            <div className="h-[10px] my-[5px] w-20 animate-pulse rounded-sm bg-gray-500" />
-                            <div className="h-[10px] my-[5px] w-10 animate-pulse rounded-sm bg-gray-500 ml-auto" />
-                        </div>
+                        <></>
                 }
             </div>
-            {
-                (!!refuel != undefined && nativeCurrency) ?
-                    <div className="flex items-center justify-between w-full ">
-                        <div className='flex items-center gap-3 text-sm'>
-                            <span className="relative z-10 flex h-8 w-8 items-center justify-center rounded-lg p-2 bg-primary/20">
-                                <Fuel className="h-5 w-5 text-primary" aria-hidden="true" />
-                            </span>
-                            <p>Refuel</p>
-                        </div>
-                        <div className="flex flex-col items-end">
-                            <p className="text-primary-text text-sm">{truncatedRefuelAmount} {nativeCurrency?.symbol}</p>
-                            <p className="text-secondary-text text-sm flex justify-end">${refuelAmountInUsd}</p>
-                        </div>
-                    </div>
-                    :
-                    <></>
-            }
         </div>
     )
 }
