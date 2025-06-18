@@ -1,8 +1,8 @@
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { useEffect, useRef } from "react";
-import { truncateDecimals } from "../../utils/RoundDecimals";
-import { useSwapDataState } from "../../../context/swap";
-import useSWRBalance from "../../../lib/balances/useSWRBalance";
+import { truncateDecimals } from "@/components/utils/RoundDecimals";
+import { useSwapDataState } from "@/context/swap";
+import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { motion } from "framer-motion";
 
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {

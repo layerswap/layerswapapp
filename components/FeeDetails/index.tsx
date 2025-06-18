@@ -41,7 +41,7 @@ export default function QuoteDetails({ values }: { values: SwapFormValues }) {
                 <Accordion type='single' collapsible className='w-full' value={isAccordionOpen ? 'quote' : ''} onValueChange={(value) => { setIsAccordionOpen(value === 'quote') }}>
                     <AccordionItem value='quote' className='bg-secondary-500 rounded-xl'>
                         <AccordionTrigger className={clsx(
-                            'p-4 w-full rounded-xl flex items-center justify-between transition-colors duration-200',
+                            'p-4 w-full rounded-xl flex items-center justify-between transition-colors duration-200 hover:bg-secondary-400',
                             {
                                 'bg-secondary-500': !isAccordionOpen,
                                 'bg-secondary-400': isAccordionOpen,

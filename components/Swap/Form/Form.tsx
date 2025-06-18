@@ -91,7 +91,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
         />
         <Widget className="sm:min-h-[450px] h-full">
             <Widget.Content>
-                <div className="w-full h-[440px] flex flex-col justify-between">
+                <div className="w-full min-h-[79svh] sm:min-h-[460px] flex flex-col justify-between">
                     <div>
                         <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
                             {
@@ -128,25 +128,23 @@ const SwapForm: FC<Props> = ({ partner }) => {
                             }
                         </div>
                     </div>
-                </div>
-            </Widget.Content>
-            <Widget.Footer>
-                <div className="space-y-3">
                     {
                         validationMessage
                             ? <ValidationError />
                             : <QuoteDetails values={values} />
                     }
-                    <FormButton
-                        shouldConnectWallet={shouldConnectWallet}
-                        values={values}
-                        isValid={isValid}
-                        errors={errors}
-                        isSubmitting={isSubmitting}
-                        actionDisplayName={actionDisplayName}
-                        partner={partner}
-                    />
                 </div>
+            </Widget.Content>
+            <Widget.Footer>
+                <FormButton
+                    shouldConnectWallet={shouldConnectWallet}
+                    values={values}
+                    isValid={isValid}
+                    errors={errors}
+                    isSubmitting={isSubmitting}
+                    actionDisplayName={actionDisplayName}
+                    partner={partner}
+                />
             </Widget.Footer>
         </Widget>
     </Form>
@@ -155,8 +153,8 @@ const SwapForm: FC<Props> = ({ partner }) => {
 
 const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: (values: React.SetStateAction<SwapFormValues>, shouldValidate?: boolean) => Promise<void | FormikErrors<SwapFormValues>>, providers: WalletProvider[], query: QueryParams }> = ({ values, setValues, providers, query }) => {
     const [animate, cycle] = useCycle(
-        { rotate: 0 },
-        { rotate: 180 }
+        { rotateX: 0 },
+        { rotateX: 180 }
     );
     const { selectedSourceAccount } = useSwapDataState()
     const { setSelectedSourceAccount } = useSwapDataUpdate()

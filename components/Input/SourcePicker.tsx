@@ -18,7 +18,9 @@ const SourcePicker = () => {
             <label htmlFor="From" className="block font-medium text-secondary-text text-sm">
                 Send from
             </label>
-            <SourceWalletPicker />
+            <div className="hover:bg-secondary-400 rounded-lg p-1.5 -m-1.5">
+                <SourceWalletPicker />
+            </div>
         </div>
         <div className="relative">
             {

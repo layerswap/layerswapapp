@@ -80,7 +80,7 @@ const Component: FC = () => {
         {
             values.depositMethod === 'deposit_address' ?
                 <div className="flex items-center space-x-2 text-sm leading-4">
-                    <div onClick={handleWalletChange} className="rounded-md bg-secondary-500 flex space-x-1 items-center  cursor-pointer">
+                    <div onClick={handleWalletChange} className="flex space-x-1 items-center cursor-pointer">
                         <div className="text-secondary-text">
                             Manual Transfer
                         </div>

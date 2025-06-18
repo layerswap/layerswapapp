@@ -90,6 +90,4 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     )
 };
 
-
-
 export default RoutePicker

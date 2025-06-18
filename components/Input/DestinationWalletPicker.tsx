@@ -11,22 +11,19 @@ const Component = (props: AddressTriggerProps) => {
     return <>
         {
             addressItem &&
-            <div className="flex items-center space-x-2 text-sm leading-4">
-                {<>
-                    <div className="rounded-lg flex space-x-1 items-center cursor-pointer">
-                        <div className="inline-flex items-center relative px-0.5">
-                            <ResolvedIcon addressItem={addressItem} partner={partner} wallet={connectedWallet} />
-                        </div>
-                        <div className="text-primary-text">
-                            {shortenAddress(addressItem.address)}
-                        </div>
-                        <div className="w-5 h-5 items-center flex">
-                            <ChevronDown className="h-4 w-4" aria-hidden="true" />
-                        </div>
+            <div className="flex items-center space-x-2 text-sm leading-4 hover:bg-secondary-400 rounded-lg p-1.5 -m-1.5">
+                <div className="rounded-lg flex space-x-1 items-center cursor-pointer">
+                    <div className="inline-flex items-center relative px-0.5">
+                        <ResolvedIcon addressItem={addressItem} partner={partner} wallet={connectedWallet} />
                     </div>
-                </>
-                }
-            </div >
+                    <div className="text-primary-text">
+                        {shortenAddress(addressItem.address)}
+                    </div>
+                    <div className="w-5 h-5 items-center flex">
+                        <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                    </div>
+                </div>
+            </div>
         }
     </>
 }
