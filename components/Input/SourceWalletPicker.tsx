@@ -84,7 +84,7 @@ const Component: FC = () => {
                         <div className="text-secondary-text">
                             Manual Transfer
                         </div>
-                        <div className="w-5 h-5 items-center flex">
+                        <div className="w-4 h-4 items-center flex text-primary-text">
                             <ChevronDown className="h-4 w-4" aria-hidden="true" />
                         </div>
                     </div>
@@ -95,12 +95,12 @@ const Component: FC = () => {
                         selectedWallet && selectedSourceAccount?.address && <>
                             <div onClick={handleWalletChange} className="rounded-lg flex space-x-1 items-center cursor-pointer">
                                 <div className="inline-flex items-center relative px-0.5">
-                                    <selectedWallet.icon className="w-5 h-5" />
+                                    <selectedWallet.icon className="w-4 h-4" />
                                 </div>
-                                <div className="text-primary-text">
+                                <div className="text-secondary-text">
                                     {shortenAddress(selectedSourceAccount.address)}
                                 </div>
-                                <div className="w-5 h-5 items-center flex">
+                                <div className="w-4 h-4 items-center flex text-primary-text">
                                     <ChevronDown className="h-4 w-4" aria-hidden="true" />
                                 </div>
                             </div>
