@@ -6,7 +6,7 @@ export function roundDecimals(value: number, decimals: number) {
 }
 
 export function truncateDecimals(value: number, decimals = 0) {
-    if (value == 0) return 0;
+    if (value == 0) return '0';
 
     const factor = Math.pow(10, decimals);
     const truncated = Math.trunc(value * factor) / factor;
