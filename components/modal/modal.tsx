@@ -32,7 +32,7 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
         <>
             {isDesktop && (
                 <ReactPortal wrapperId="widget_root">
-                    <AnimatePresence>
+                    <AnimatePresence onExitComplete={() => setDelayedShow(false)}>
                         {delayedShow &&
                             <Leaflet
                                 key={modalId}
@@ -53,7 +53,7 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
                 </ReactPortal>
             )}
             {isMobile && (
-                <AnimatePresence>
+                <AnimatePresence onExitComplete={() => setDelayedShow(false)}>
                     {delayedShow &&
                         <Leaflet
                             position="fixed"
