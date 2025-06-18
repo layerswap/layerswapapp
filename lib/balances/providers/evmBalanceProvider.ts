@@ -76,7 +76,7 @@ export class EVMBalanceProvider {
     }
 
     contractGetBalances = async (address: string, chain: Chain, network: NetworkWithTokens): Promise<TokenBalance[] | null> => {
-        if (!network) return null
+        if (!network) throw new Error("Network is required for contract get balances")
 
         try {
 
@@ -127,7 +127,7 @@ export class EVMBalanceProvider {
         }
         catch (e) {
             console.log(e)
-            return null
+            throw new Error(e)
         }
     }
 
