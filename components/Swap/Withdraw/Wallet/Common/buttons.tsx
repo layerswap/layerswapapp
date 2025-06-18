@@ -15,6 +15,7 @@ import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { useRouter } from "next/router";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { BackendTransactionStatus } from "@/lib/apiClients/layerSwapApiClient";
+import { useQuote } from "@/context/feeContext";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapResponse } = useSwapDataState()
@@ -140,11 +141,11 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
             >
                 {props.children}
             </SubmitButton>
+            {
+                source_network?.deposit_methods?.some(m => m === 'deposit_address') &&
+                <ManualTransferNote />
+            }
         </div>
-        {
-            source_network?.deposit_methods?.some(m => m === 'deposit_address') &&
-            <ManualTransferNote />
-        }
     </>
 
 }
@@ -163,6 +164,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const [loading, setLoading] = useState(false)
     const { createSwap, setSwapId, setSwapPath } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
+    const { updatePolling, isQuoteLoading } = useQuote()
     const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
     const router = useRouter()
@@ -209,6 +211,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             const hash = await onClick(transferProps)
 
             if (hash) {
+                updatePolling(false);
                 setSwapId(swapId)
                 setSwapTransaction(swapId, BackendTransactionStatus.Pending, hash);
                 setSwapPath(swapId, router)
@@ -227,7 +230,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
     return <ButtonWrapper
         {...props}
-        isSubmitting={props.isSubmitting || loading}
+        isSubmitting={props.isSubmitting || loading || isQuoteLoading}
         onClick={handleClick}
     >
         {error ? 'Try again' : 'Send from wallet'}

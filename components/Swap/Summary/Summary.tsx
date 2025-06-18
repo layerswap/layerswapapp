@@ -60,15 +60,17 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
 
     return (
         <div className="font-normal flex flex-col w-full relative z-10 space-y-3">
-            <div className="flex items-center justify-between w-full">
-                <RouteTokenPair
-                    route={sourceExchange || source}
-                    exchange={sourceExchange}
-                    network={from}
-                    token={sourceCurrency}
-                    address={sourceAccountAddress}
-                />
-                <div className="flex flex-col flex-1/3 items-end">
+            <div className="w-full grid grid-cols-10">
+                <div className="col-span-7">
+                    <RouteTokenPair
+                        route={sourceExchange || source}
+                        exchange={sourceExchange}
+                        network={from}
+                        token={sourceCurrency}
+                        address={sourceAccountAddress}
+                    />
+                </div>
+                <div className="flex flex-col col-start-8 col-span-3 items-end">
                     {
                         requestedAmount &&
                         <p className="text-primary-text text-sm">{truncateDecimals(requestedAmount, sourceCurrency.precision)} {sourceCurrency.symbol}</p>
@@ -80,17 +82,19 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                 <hr className="border border-secondary-400 w-full rounded-full" />
                 <ArrowDown className="absolute left-1/2 -translate-x-1/2 top-[-10px] h-6 w-6 p-1 bg-secondary-400 rounded-md text-secondary-text" />
             </div>
-            <div className="flex items-center justify-between  w-full ">
-                <RouteTokenPair
-                    route={destExchange || destination}
-                    exchange={destExchange}
-                    network={to}
-                    token={destinationCurrency}
-                    address={destAddress}
-                />
+            <div className="w-full grid grid-cols-10">
+                <div className="col-span-7">
+                    <RouteTokenPair
+                        route={destExchange || destination}
+                        exchange={destExchange}
+                        network={to}
+                        token={destinationCurrency}
+                        address={destAddress}
+                    />
+                </div>
                 {
                     receiveAmount != undefined ?
-                        <div className="flex flex-col justify-end items-end w-full flex-1/3">
+                        <div className="flex flex-col justify-end items-end w-full col-start-8 col-span-3">
                             <p className="text-primary-text text-sm">{truncateDecimals(receiveAmount, destinationCurrency.precision)} {destinationCurrency.symbol}</p>
                             <p className="text-secondary-text text-sm">${receiveAmountInUsd}</p>
                         </div>
@@ -145,7 +149,7 @@ const RouteTokenPair: FC<{ route: { logo: string, display_name: string }, networ
                     className="absolute -right-1.5 -bottom-1.5 object-contain rounded-md border-1 border-secondary-300"
                 />
             </div>
-            <div className="flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0">
+            <div className="flex flex-col font-medium text-primary-buttonTextColor overflow-hidden">
                 <span className="leading-4">{token.symbol}</span>
                 <div className="flex items-center gap-1 leading-3 text-sm">
                     <p className="text-secondary-text text-sm truncate whitespace-nowrap">

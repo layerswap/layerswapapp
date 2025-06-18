@@ -144,9 +144,11 @@ export default function Form() {
     }, [minAllowedAmount, maxAllowedAmount, selectedSourceAccount]);
 
     const handleShowSwapModal = useCallback((value: boolean) => {
-        pollFee(!value)
         setShowSwapModal(value)
-        if (swap?.id) value ? setSwapPath(swap?.id, router) : removeSwapPath(router)
+        if (swap?.id) {
+            pollFee(!value)
+            value ? setSwapPath(swap?.id, router) : removeSwapPath(router)
+        }
     }, [router, swap])
 
     const validator = useMemo(() => MainStepValidation({ minAllowedAmount, maxAllowedAmount, sourceAddress: selectedSourceAccount?.address, sameAccountNetwork: query.sameAccountNetwork }), [minAllowedAmount, maxAllowedAmount, selectedSourceAccount, query.sameAccountNetwork])
@@ -217,6 +219,7 @@ type SubmitProps = {
 const handleCreateSwap = async ({ query, values, partner, router, minAllowedAmount, setSwapId, setShowSwapModal, setSwapPath, pollFee, createSwap, setUserType, updateAuthData, setNetworkToConnect, setShowConnectNetworkModal, mutateLimits }: SubmitProps) => {
     if (values.depositMethod == 'wallet') {
         setSwapId(undefined)
+        pollFee(true)
         setShowSwapModal(true)
         return
     }
