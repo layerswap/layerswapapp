@@ -55,7 +55,6 @@ export const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
     }
     else {
         return <TransferTokenButton
-            swapId={swapId}
             chainId={networkChainId}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
         />
