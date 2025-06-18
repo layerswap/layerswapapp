@@ -1,4 +1,3 @@
-import { AnimatePresence } from "framer-motion";
 import React, { Dispatch, ReactNode, SetStateAction, useEffect, useRef, useState } from "react";
 import { FC } from "react"
 import useWindowDimensions from "../../hooks/useWindowDimensions";
