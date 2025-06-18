@@ -42,7 +42,7 @@ type SelectItemTitleProps = {
 const Title = ({ children, className }: SelectItemTitleProps) => {
     return <div className={`flex justify-between w-full items-center ${className}`}>
         <div className="flex items-center pb-0.5 text-base w-full">
-            <div className="flex justify-between w-full">
+            <div className="flex justify-between w-full items-center">
                 {children}
             </div>
         </div>

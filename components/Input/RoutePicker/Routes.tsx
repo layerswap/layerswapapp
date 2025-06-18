@@ -93,14 +93,14 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const showTokenLogos = hasLoadedBalances && filteredNetworkTokens?.length;
 
     return (
-        <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7">
+        <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7 py-2">
             <SelectItem.Logo imgSrc={item.logo} altText={`${item.display_name} logo`} className="rounded-md" />
-            <SelectItem.Title className="py-3">
+            <SelectItem.Title>
                 <>
                     <span>{item.display_name}</span>
 
                     {hasLoadedBalances ? (
-                        <div className={`${showTokenLogos ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "invisible" : "visible"}`}>
+                        <div className={`${showTokenLogos ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "hidden" : ""}`}>
                             <span className="text-secondary-text text-sm leading-4 font-medium">
                                 ${totalInUSD?.toFixed(2)}
                             </span>
@@ -201,13 +201,13 @@ export const GroupedTokenHeader = ({
     const showNetworkIcons = hasLoadedBalances && networksWithBalance.length > 0;
 
     return (
-        <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7">
+        <SelectItem className="bg-secondary-500 group rounded-xl hover:bg-secondary-400 group/item relative pr-7 py-2">
             <SelectItem.Logo
                 imgSrc={mainToken.logo}
                 altText={`${mainToken.symbol} logo`}
                 className="rounded-full"
             />
-            <SelectItem.Title className="py-3 flex items-center">
+            <SelectItem.Title>
                 <>
                     <span>{mainToken.symbol}</span>
 
