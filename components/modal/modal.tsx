@@ -18,7 +18,7 @@ export interface ModalProps {
     walletComp?: React.ReactNode;
 }
 
-const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader, show, setShow, modalId, onClose, walletComp  }) => {
+const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader, show, setShow, modalId, onClose, walletComp }) => {
     const { isMobile, isDesktop } = useWindowDimensions()
     const mobileModalRef = useRef(null)
     //Fixes draggebles closing
@@ -32,46 +32,40 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
         <>
             {isDesktop && (
                 <ReactPortal wrapperId="widget_root">
-                    <AnimatePresence onExitComplete={() => setDelayedShow(false)}>
-                        {delayedShow &&
-                            <Leaflet
-                                key={modalId}
-                                position="absolute"
-                                height={height ?? 'full'}
-                                show={delayedShow}
-                                setShow={setShow}
-                                title={header}
-                                description={subHeader}
-                                className={className}
-                                onClose={onClose}
-                                walletComp={walletComp}
-                            >
-                                {children}
-                            </Leaflet>
-                        }
-                    </AnimatePresence>
-                </ReactPortal>
-            )}
-            {isMobile && (
-                <AnimatePresence onExitComplete={() => setDelayedShow(false)}>
                     {delayedShow &&
                         <Leaflet
-                            position="fixed"
-                            height={height == 'full' ? '80%' : height == 'fit' ? 'fit' : (height == '80%' || height == '90%') ? height : 'full'}
-                            ref={mobileModalRef}
+                            key={modalId}
+                            position="absolute"
+                            height={height ?? 'full'}
                             show={delayedShow}
                             setShow={setShow}
                             title={header}
                             description={subHeader}
                             className={className}
-                            key={modalId}
                             onClose={onClose}
                             walletComp={walletComp}
                         >
                             {children}
                         </Leaflet>
                     }
-                </AnimatePresence>
+                </ReactPortal>
+            )}
+            {isMobile && delayedShow && (
+                <Leaflet
+                    position="fixed"
+                    height={height == 'full' ? '80%' : height == 'fit' ? 'fit' : (height == '80%' || height == '90%') ? height : 'full'}
+                    ref={mobileModalRef}
+                    show={delayedShow}
+                    setShow={setShow}
+                    title={header}
+                    description={subHeader}
+                    className={className}
+                    key={modalId}
+                    onClose={onClose}
+                    walletComp={walletComp}
+                >
+                    {children}
+                </Leaflet>
             )}
         </>
     )
