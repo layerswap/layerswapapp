@@ -21,27 +21,28 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const { allRoutes, isLoading, routeElements, tokenElements, selectedRoute, selectedToken, allbalancesLoaded } = useFormRoutes({ direction, values }, searchQuery)
     const currencyFieldName = direction === 'from' ? 'fromCurrency' : 'toCurrency';
     const showTokens = useRouteTokenSwitchStore((s) => s.showTokens)
-    
+
     useEffect(() => {
+        const updateValues = async () => {
+            if (!selectedRoute || !selectedToken || !allRoutes) return;
 
-        if (!selectedRoute || !selectedToken || !allRoutes) return
+            const updatedRoute = allRoutes.find(r => r.name === selectedRoute.name);
+            const updatedToken = updatedRoute?.tokens?.find(t => t.symbol === selectedToken.symbol);
 
-        const updatedRoute = allRoutes.find(r => r.name === selectedRoute.name)
+            if (updatedToken === selectedToken) return;
 
-        const updatedToken = updatedRoute?.tokens?.find(t => t.symbol === selectedToken.symbol)
+            if (updatedRoute && updatedToken) {
+                await setFieldValue(currencyFieldName, updatedToken, true);
+                await setFieldValue(direction, updatedRoute, true);
+            }
+        };
 
-        if (updatedToken === selectedToken) return
-
-        if (updatedRoute && updatedToken) {
-            setFieldValue(currencyFieldName, updatedToken, true)
-            setFieldValue(direction, updatedRoute, true)
-        }
-
-    }, [selectedRoute, selectedToken, allRoutes])
+        updateValues();
+    }, [selectedRoute, selectedToken, allRoutes, selectedToken]);
 
     const handleSelect = useCallback(async (route: NetworkRoute, token: NetworkRouteToken) => {
-        setFieldValue(currencyFieldName, token, true)
-        setFieldValue(direction, route, true)
+        await setFieldValue(currencyFieldName, token, true)
+        await setFieldValue(direction, route, true)
     }, [currencyFieldName, direction, values, showTokens])
 
     return (

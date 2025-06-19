@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useMemo } from 'react';
 import { ReactNode } from 'react';
 import { Info, RouteOff } from 'lucide-react';
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
@@ -6,7 +6,6 @@ import { useFormikContext } from 'formik';
 import { useQueryState } from './query';
 import { useSettingsState } from './settings';
 import { useSwapDataState } from './swap';
-import KnownInternalNames from '../lib/knownIds';
 
 interface ValidationDetails {
     title?: string;
