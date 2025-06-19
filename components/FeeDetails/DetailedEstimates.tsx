@@ -1,61 +1,134 @@
-import { FC } from "react";
-import { useFormikContext } from "formik";
-import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { useQuote } from "../../context/feeContext";
+import { FC, SVGProps } from "react";
 import AverageCompletionTime from "../Common/AverageCompletionTime";
+import { Tooltip, TooltipContent, TooltipTrigger, } from "../../components/shadcn/tooltip"
+import { truncateDecimals } from "../utils/RoundDecimals";
+import useSWRGas from "@/lib/gases/useSWRGas";
+import useWallet from "@/hooks/useWallet";
+import GasIcon from '../icons/GasIcon';
+import Clock from '../icons/Clock';
+import FeeIcon from "../icons/FeeIcon";
+import { Quote } from '@/lib/apiClients/layerSwapApiClient';
+import { QuoteDetailsProps } from ".";
 
-export const DetailedEstimates: FC = () => {
+export const DetailedEstimates: FC<QuoteDetailsProps> = ({ quote, isQuoteLoading, values }) => {
 
-    const { values } = useFormikContext<SwapFormValues>();
-    const { fromAsset: fromCurrency } = values;
-    const { quote: fee, isQuoteLoading: isFeeLoading } = useQuote()
+    const { from, fromAsset } = values;
+    const { provider } = useWallet(values.from, 'withdrawal')
+    const wallet = provider?.activeWallet
+    const { gas, isGasLoading } = useSWRGas(wallet?.address, from, fromAsset)
 
-    const fee_amount = fee?.quote.total_fee
+    const displayLsFee = quote?.total_fee !== undefined ? truncateDecimals(quote.total_fee, fromAsset?.decimals) : undefined
+    const currencyName = fromAsset?.symbol || ""
+    const lsFeeAmountInUsd = quote?.total_fee_in_usd
+    const gasFeeInUsd = (quote?.source_network?.token && gas) ? gas * quote?.source_network?.token?.price_in_usd : null;
+    const displayLsFeeInUsd = lsFeeAmountInUsd ? (lsFeeAmountInUsd < 0.01 ? '<$0.01' : `$${lsFeeAmountInUsd?.toFixed(2)}`) : null
+    const displayGasFeeInUsd = gasFeeInUsd ? (gasFeeInUsd < 0.01 ? '<$0.01' : `$${gasFeeInUsd?.toFixed(2)}`) : null
 
-    const parsedFee = fee && parseFloat(Number(fee_amount).toFixed(fromCurrency?.precision))
-    const currencyName = fromCurrency?.symbol || " "
-    const feeAmountInUsd = fee?.quote.total_fee_in_usd
-
-    const displayFee = parsedFee?.toFixed(fromCurrency?.precision)
-    const displayFeeInUsd = feeAmountInUsd ? (feeAmountInUsd < 0.01 ? '<$0.01' : `$${feeAmountInUsd?.toFixed(2)}`) : null
-
-    return <div className="flex flex-col w-full gap-2">
+    return <div className="flex flex-col w-full gap-2 divide-y divide-secondary-300">
         {
-            fee && fee.quote.avg_completion_time !== '00:00:00' ?
-                <div className="flex justify-between w-full items-center">
-                    <div className="flex items-baseline w-full justify-between gap-1">
-                        <label className="inline-flex items-center text-left text-primary-buttonTextColor">
-                            Estimated time
-                        </label>
-                        <div className="text-right text-secondary-text">
-                            <AverageCompletionTime avgCompletionTime={fee.quote.avg_completion_time} />
+            detailsElements.map((item) => {
+                const showElement = item.showCondition ? item.showCondition(gas) : true
+                const Icon = item.icon
+                if (!showElement) return null
+
+                return (
+                    <div key={item.name} className="flex items-center w-full justify-between gap-1 pb-2 px-1">
+                        <div className="inline-flex items-center text-left text-secondary-text gap-1 pr-4">
+                            <div className="w-5">
+                                <Icon className="place-self-center" />
+                            </div>
+                            <label>
+                                {item.name}
+                            </label>
+                        </div>
+                        <div className="text-right text-primary-text">
+                            {item.content({ gas, currencyName, displayGasFeeInUsd, quote, displayLsFee, displayLsFeeInUsd, isGasLoading, isQuoteLoading })}
                         </div>
                     </div>
-                </div>
-                :
-                <></>
+                )
+            })
         }
-        <div className="flex justify-between w-full items-center">
-            <div className="flex items-baseline w-full justify-between gap-1">
-                <label className="inline-flex items-center text-left text-primary-buttonTextColor">
-                    Fee
-                </label>
-                <div className="text-right text-secondary-text ">
-                    {isFeeLoading ? (
-                        <div className='h-[10px] w-16 inline-flex bg-gray-500 rounded-xs animate-pulse' />
-                    ) : (
-                        <div>
-                            <span>{displayFee || '-'} </span>
-                            <span>{parsedFee ? currencyName : ''}</span>
-                            {displayFeeInUsd !== undefined && (
-                                <span className="text-xs ml-1 font-medium">
-                                    ({displayFeeInUsd})
-                                </span>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
     </div>
 }
+
+
+type DetailsContentProps = {
+    gas: number | undefined
+    currencyName: string
+    displayGasFeeInUsd: string | null
+    displayLsFee: string | undefined
+    displayLsFeeInUsd: string | null
+    quote: Quote["quote"] | undefined
+    isQuoteLoading: boolean
+    isGasLoading: boolean
+}
+
+type DetailedElement = {
+    name: string
+    icon: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    content: (props: DetailsContentProps) => JSX.Element
+    showCondition?: (gas: number | undefined) => boolean
+}
+
+const detailsElements: DetailedElement[] = [
+    {
+        name: 'Gas Fee',
+        icon: GasIcon,
+        showCondition: (gas) => { return gas !== undefined },
+        content: ({ gas, currencyName, displayGasFeeInUsd, isGasLoading }) => {
+            return isGasLoading ? (
+                <div className='h-[10px] w-16 inline-flex bg-gray-500 rounded-xs animate-pulse' />
+            ) : <div>
+                <Tooltip delayDuration={100}>
+                    <TooltipTrigger asChild>
+                        {gas !== undefined && (
+                            <span className="text-sm ml-1 font-small">
+                                {displayGasFeeInUsd}
+                            </span>
+                        )}
+                    </TooltipTrigger>
+                    <TooltipContent className="!bg-secondary-300 !border-secondary-300 !text-primart-text">
+                        <span>{gas || '-'} </span>
+                        <span>{gas ? currencyName : ''}</span>
+                    </TooltipContent>
+                </Tooltip>
+            </div>
+        }
+    },
+    {
+        name: 'Layerswap Fee',
+        icon: FeeIcon,
+        content: ({ displayLsFeeInUsd, displayLsFee, currencyName, isQuoteLoading }) => {
+            return isQuoteLoading ? (
+                <div className='h-[10px] w-16 inline-flex bg-gray-500 rounded-xs animate-pulse' />
+            ) : <div>
+                <Tooltip delayDuration={100}>
+                    <TooltipTrigger asChild>
+                        {displayLsFeeInUsd !== undefined && (
+                            <span className="text-sm ml-1 font-small">
+                                {displayLsFeeInUsd}
+                            </span>
+                        )}
+                    </TooltipTrigger>
+                    <TooltipContent className="!bg-secondary-300 !border-secondary-300 !text-primart-text">
+                        <span>{displayLsFee || '-'} </span>
+                        <span>{displayLsFee ? currencyName : ''}</span>
+                    </TooltipContent>
+                </Tooltip>
+            </div>
+        }
+    },
+    {
+        name: 'Estimated time',
+        icon: Clock,
+        content: ({ quote }) => {
+            return quote && quote.avg_completion_time !== '00:00:00' ?
+                <div>
+                    <AverageCompletionTime avgCompletionTime={quote.avg_completion_time} />
+                </div>
+                : (
+                    <div className='h-[10px] w-16 inline-flex bg-gray-500 rounded-xs animate-pulse' />
+                )
+        }
+    },
+]

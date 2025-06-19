@@ -1,5 +1,5 @@
 import { Form, FormikErrors, useFormikContext } from "formik";
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import React from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Partner } from "@/Models/Partner";
@@ -35,6 +35,14 @@ const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
     loading: () => <></>,
 });
 
+const RefuelModal = dynamic(() => import("@/components/FeeDetails/RefuelModal"), {
+    loading: () => <></>,
+});
+
+const RefuelToggle = dynamic(() => import("@/components/FeeDetails/Refuel"), {
+    loading: () => <></>,
+});
+
 const SwapForm: FC<Props> = ({ partner }) => {
     const {
         values,
@@ -51,7 +59,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
 
     const { selectedSourceAccount } = useSwapDataState()
     const { providers, wallets } = useWallet()
-    const { minAllowedAmount, valuesChanger } = useQuote()
+    const { minAllowedAmount, valuesChanger, isQuoteLoading, quote } = useQuote()
     const toAsset = values.toAsset
     const fromAsset = values.fromAsset
 
@@ -59,6 +67,8 @@ const SwapForm: FC<Props> = ({ partner }) => {
     const query = useQueryState();
 
     const actionDisplayName = query?.actionButtonText || "Swap now"
+
+    const [openRefuelModal, setOpenRefuelModal] = useState<boolean>(false)
 
     useEffect(() => {
         valuesChanger(values)
@@ -128,11 +138,17 @@ const SwapForm: FC<Props> = ({ partner }) => {
                             }
                         </div>
                     </div>
-                    {
-                        validationMessage
-                            ? <ValidationError />
-                            : <QuoteDetails values={values} />
-                    }
+                    <div className="space-y-3">
+                        {
+                            values.toAsset?.refuel && !query.hideRefuel && !toExchange &&
+                            <RefuelToggle onButtonClick={() => setOpenRefuelModal(true)} />
+                        }
+                        {
+                            validationMessage
+                                ? <ValidationError />
+                                : <QuoteDetails values={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                        }
+                    </div>
                 </div>
             </Widget.Content>
             <Widget.Footer>
@@ -146,6 +162,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                     partner={partner}
                 />
             </Widget.Footer>
+            <RefuelModal openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} />
         </Widget>
     </Form>
 }
