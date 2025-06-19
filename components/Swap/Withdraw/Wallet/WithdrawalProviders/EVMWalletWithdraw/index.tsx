@@ -1,21 +1,17 @@
 import { FC, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
-import { PublishedSwapTransactions } from "../../../../../lib/apiClients/layerSwapApiClient";
-import { ChangeNetworkButton, ConnectWalletButton } from "./buttons";
+import { PublishedSwapTransactions } from "@/lib/apiClients/layerSwapApiClient";
+import { ChangeNetworkButton, ConnectWalletButton } from "../../Common/buttons";
 import TransferTokenButton from "./TransferToken";
-import { WithdrawPageProps } from "../WalletTransferContent";
-import useWallet from "../../../../../hooks/useWallet";
-import { useSwapDataState } from "../../../../../context/swap";
-import TransactionMessages from "../../messages/TransactionMessages";
-import { useQueryState } from "../../../../../context/query";
+import useWallet from "@/hooks/useWallet";
+import { useSwapDataState } from "@/context/swap";
+import TransactionMessages from "../../../messages/TransactionMessages";
+import { useQueryState } from "@/context/query";
+import { WithdrawPageProps } from "../../Common/sharedTypes";
 
-const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
+export const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
     network,
-    depositAddress,
-    userDestinationAddress,
-    amount,
-    sequenceNumber,
-    swapId,
+    swapId
 }) => {
     const { swapResponse, selectedSourceAccount } = useSwapDataState()
     const { source_network, destination_network, destination_address } = swapResponse?.swap || {}
@@ -29,6 +25,7 @@ const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
 
     useEffect(() => {
+        if (!swapId) return;
         try {
             const data: PublishedSwapTransactions = JSON.parse(localStorage.getItem('swapTransactions') || "{}")
             const hash = data?.[swapId!]?.hash
@@ -53,19 +50,13 @@ const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
     else if (activeChain?.id !== networkChainId && network) {
         return <ChangeNetworkButton
             chainId={networkChainId}
-            network={network.display_name}
+            network={network}
         />
     }
     else {
         return <TransferTokenButton
-            swapId={swapId}
-            amount={amount}
             chainId={networkChainId}
-            depositAddress={depositAddress as `0x${string}`}
-            userDestinationAddress={userDestinationAddress as `0x${string}`}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
         />
     }
 }
-
-export default EVMWalletWithdrawal

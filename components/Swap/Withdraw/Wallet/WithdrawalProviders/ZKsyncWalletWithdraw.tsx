@@ -3,27 +3,24 @@ import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import * as zksync from 'zksync';
 import { utils } from 'ethers';
-import { useEthersSigner } from '../../../../lib/ethersToViem/ethers';
-import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import { BackendTransactionStatus } from '../../../../lib/apiClients/layerSwapApiClient';
-import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
-import { useSettingsState } from '../../../../context/settings';
+import { useEthersSigner } from '@/lib/ethersToViem/ethers';
+import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
+import { useSettingsState } from '@/context/settings';
 import { useAccount } from 'wagmi';
-import ClickTooltip from '../../../Tooltips/ClickTooltip';
-import SignatureIcon from '../../../icons/SignatureIcon';
-import formatAmount from '../../../../lib/formatAmount';
-import useWallet from '../../../../hooks/useWallet';
+import ClickTooltip from '@/components/Tooltips/ClickTooltip';
+import SignatureIcon from '@/components/icons/SignatureIcon';
+import formatAmount from '@/lib/formatAmount';
+import useWallet from '@/hooks/useWallet';
 import Link from 'next/link';
-import KnownInternalNames from '../../../../lib/knownIds';
-import { WithdrawPageProps } from './WalletTransferContent';
+import KnownInternalNames from '@/lib/knownIds';
+import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 
-const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, sequenceNumber, swapId }) => {
+export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }) => {
     const [loading, setLoading] = useState(false);
     const [syncWallet, setSyncWallet] = useState<zksync.Wallet | null>();
     const [accountIsActivated, setAccountIsActivated] = useState(false);
     const [activationFee, setActivationFee] = useState<({ feeInAsset: number, feeInUsd: number } | undefined)>(undefined);
 
-    const { setSwapTransaction } = useSwapTransactionStore();
     const { chain } = useAccount();
     const signer = useEthersSigner();
 
@@ -95,7 +92,7 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
         }
     }, [syncWallet, token])
 
-    const handleTransfer = useCallback(async () => {
+    const handleTransfer = useCallback(async ({ amount, depositAddress, sequenceNumber, swapId }: TransferProps) => {
 
         if (!swapId || !syncWallet || !depositAddress || !token || !sequenceNumber || !amount) return
 
@@ -109,7 +106,8 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
             });
 
             if (tf?.txHash) {
-                setSwapTransaction(swapId, BackendTransactionStatus.Pending, tf?.txHash?.replace('sync-tx:', '0x'));
+                const txHash = tf?.txHash?.replace('sync-tx:', '0x');
+                return txHash;
             }
         }
         catch (e) {
@@ -121,7 +119,7 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
         finally {
             setLoading(false)
         }
-    }, [syncWallet, swapId, depositAddress, token, amount, sequenceNumber])
+    }, [syncWallet, token])
 
     if (wallet && wallet?.id?.toLowerCase() === 'argent') return (
         <div className="rounded-md bg-secondary-800 p-4">
@@ -147,7 +145,7 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
         return (
             <ChangeNetworkButton
                 chainId={Number(l1Network?.chain_id)}
-                network={l1Network?.display_name}
+                network={l1Network}
             />
         )
     }
@@ -202,4 +200,3 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
         </>
     )
 }
-export default ZkSyncWalletWithdrawStep;

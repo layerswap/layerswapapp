@@ -1,24 +1,24 @@
 import { useFormikContext } from "formik";
 import { FC, forwardRef, useCallback, useEffect, useRef, useState } from "react";
-import { AddressBookItem } from "../../../../lib/apiClients/layerSwapApiClient";
-import { SwapFormValues } from "../../../DTOs/SwapFormValues";
-import { isValidAddress } from "../../../../lib/address/validator";
-import { Partner } from "../../../../Models/Partner";
-import useWallet from "../../../../hooks/useWallet";
-import { addressFormat } from "../../../../lib/address/formatter";
+import { AddressBookItem } from "@/lib/apiClients/layerSwapApiClient";
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
+import { isValidAddress } from "@/lib/address/validator";
+import { Partner } from "@/Models/Partner";
+import useWallet from "@/hooks/useWallet";
+import { addressFormat } from "@/lib/address/formatter";
 import ManualAddressInput from "./ManualAddressInput";
-import Modal from "../../../modal/modal";
-import ConnectWalletButton from "../../../Common/ConnectWalletButton";
+import Modal from "@/components/modal/modal";
+import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
 import ExchangeNote from "./ExchangeNote";
-import { Network, NetworkType, NetworkRoute } from "../../../../Models/Network";
-import { Exchange } from "../../../../Models/Exchange";
+import { Network, NetworkType, NetworkRoute } from "@/Models/Network";
+import { Exchange } from "@/Models/Exchange";
 import AddressBook from "./AddressBook";
 import AddressButton from "./AddressButton";
-import { useQueryState } from "../../../../context/query";
-import { useAddressesStore } from "../../../../stores/addressesStore";
+import { useQueryState } from "@/context/query";
+import { useAddressesStore } from "@/stores/addressesStore";
 import ConnectedWallets from "./ConnectedWallets";
-import { useSwapDataState } from "../../../../context/swap";
-import { Wallet } from "../../../../Models/WalletProvider";
+import { useSwapDataState } from "@/context/swap";
+import { Wallet } from "@/Models/WalletProvider";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
@@ -64,7 +64,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         setFieldValue
     } = useFormikContext<SwapFormValues>();
     const query = useQueryState()
-    const { destination_address, to: destination, toExchange: destinationExchange, toCurrency: destinationAsset } = values
+    const { destination_address, to: destination, toExchange: destinationExchange, toAsset: destinationAsset } = values
     const groupedAddresses = useAddressesStore(state => state.addresses)
     const setAddresses = useAddressesStore(state => state.setAddresses)
     const { selectedSourceAccount } = useSwapDataState()

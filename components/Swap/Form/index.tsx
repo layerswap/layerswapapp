@@ -1,38 +1,38 @@
 import { Formik, FormikProps } from "formik";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSettingsState } from "../../../context/settings";
+import { useSettingsState } from "@/context/settings";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import { UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
+import { UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import React from "react";
 import ConnectNetwork from "../../ConnectNetwork";
 import toast from "react-hot-toast";
-import MainStepValidation from "../../../lib/mainStepValidator";
-import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "../../../lib/generateSwapInitialValues";
-import LayerSwapApiClient from "../../../lib/apiClients/layerSwapApiClient";
+import MainStepValidation from "@/lib/mainStepValidator";
+import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/lib/generateSwapInitialValues";
+import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 import Modal from "../../modal/modal";
 import SwapForm from "./Form";
 import useSWR from "swr";
 import { NextRouter, useRouter } from "next/router";
-import { ApiResponse } from "../../../Models/ApiResponse";
-import { Partner } from "../../../Models/Partner";
-import { UpdateAuthInterface, UserType, useAuthDataUpdate } from "../../../context/authContext";
-import { ApiError, LSAPIKnownErrorCode } from "../../../Models/ApiError";
-import { useQueryState } from "../../../context/query";
-import TokenService from "../../../lib/TokenService";
-import LayerSwapAuthApiClient from "../../../lib/apiClients/userAuthApiClient";
+import { ApiResponse } from "@/Models/ApiResponse";
+import { Partner } from "@/Models/Partner";
+import { UpdateAuthInterface, UserType, useAuthDataUpdate } from "@/context/authContext";
+import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
+import { useQueryState } from "@/context/query";
+import TokenService from "@/lib/TokenService";
+import LayerSwapAuthApiClient from "@/lib/apiClients/userAuthApiClient";
 import { AnimatePresence } from "framer-motion";
-import { useQuote } from "../../../context/feeContext";
+import { useQuote } from "@/context/feeContext";
 import ResizablePanel from "../../ResizablePanel";
-import useWallet from "../../../hooks/useWallet";
-import { DepositMethodProvider } from "../../../context/depositMethodContext";
-import { dynamicWithRetries } from "../../../lib/dynamicWithRetries";
+import useWallet from "@/hooks/useWallet";
+import { DepositMethodProvider } from "@/context/depositMethodContext";
+import { dynamicWithRetries } from "@/lib/dynamicWithRetries";
 import AddressNote from "../../Input/Address/AddressNote";
-import { addressFormat } from "../../../lib/address/formatter";
+import { addressFormat } from "@/lib/address/formatter";
 import { AddressGroup } from "../../Input/Address/AddressPicker";
-import { useAddressesStore } from "../../../stores/addressesStore";
-import { useAsyncModal } from "../../../context/asyncModal";
-import { ValidationProvider } from "../../../context/validationErrorContext";
-import { TrackEvent } from "../../../pages/_document";
+import { useAddressesStore } from "@/stores/addressesStore";
+import { useAsyncModal } from "@/context/asyncModal";
+import { ValidationProvider } from "@/context/validationErrorContext";
+import { TrackEvent } from "@/pages/_document";
 import { PendingSwap } from "./PendingSwap";
 import { QueryParams } from "@/Models/QueryParams";
 
@@ -41,12 +41,12 @@ type NetworkToConnect = {
     AppURL: string;
 }
 const SwapDetails = dynamicWithRetries(() => import(".."),
-    <div className="w-full h-[450px]">
+    <div className="w-full h-[400px]">
         <div className="animate-pulse flex space-x-4">
             <div className="flex-1 space-y-6 py-1">
-                <div className="h-32 bg-secondary-700 rounded-lg"></div>
-                <div className="h-40 bg-secondary-700 rounded-lg"></div>
-                <div className="h-12 bg-secondary-700 rounded-lg"></div>
+                <div className="h-32 bg-secondary-500 rounded-lg"></div>
+                <div className="h-40 bg-secondary-500 rounded-lg"></div>
+                <div className="h-12 bg-secondary-500 rounded-lg"></div>
             </div>
         </div>
     </div>
@@ -78,7 +78,7 @@ export default function Form() {
     const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useQuote()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
-        const { destination_address, to, from, amount, toCurrency, fromCurrency, fromExchange, toExchange, currencyGroup, depositMethod } = values
+        const { destination_address, to } = values
 
         if (to &&
             destination_address &&
@@ -100,12 +100,24 @@ export default function Form() {
             }
         }
         try {
-            await submit({
+            const accessToken = TokenService.getAuthData()?.access_token
+            if (!accessToken) {
+                try {
+                    var apiClient = new LayerSwapAuthApiClient();
+                    const res = await apiClient.guestConnectAsync()
+                    updateAuthData(res)
+                    setUserType(UserType.GuestUser)
+                }
+                catch (error) {
+                    toast.error(error.response?.data?.error || error.message)
+                    return;
+                }
+            }
+            await handleCreateSwap({
                 values,
                 query,
                 partner,
                 router,
-                selectedSourceAccount,
                 minAllowedAmount,
                 mutateLimits,
                 setSwapId,
@@ -132,9 +144,11 @@ export default function Form() {
     }, [minAllowedAmount, maxAllowedAmount, selectedSourceAccount]);
 
     const handleShowSwapModal = useCallback((value: boolean) => {
-        pollFee(!value)
         setShowSwapModal(value)
-        value && swap?.id ? setSwapPath(swap?.id, router) : removeSwapPath(router)
+        if (swap?.id) {
+            pollFee(!value)
+            value ? setSwapPath(swap?.id, router) : removeSwapPath(router)
+        }
     }, [router, swap])
 
     const validator = useMemo(() => MainStepValidation({ minAllowedAmount, maxAllowedAmount, sourceAddress: selectedSourceAccount?.address, sameAccountNetwork: query.sameAccountNetwork }), [minAllowedAmount, maxAllowedAmount, selectedSourceAccount, query.sameAccountNetwork])
@@ -190,7 +204,6 @@ type SubmitProps = {
     partner?: Partner;
     router: NextRouter;
     minAllowedAmount?: number;
-    selectedSourceAccount: ReturnType<typeof useSwapDataState>['selectedSourceAccount'];
     setSwapId: UpdateSwapInterface['setSwapId'];
     setSwapPath: UpdateSwapInterface['setSwapPath'];
     createSwap: UpdateSwapInterface['createSwap'];
@@ -203,39 +216,17 @@ type SubmitProps = {
     mutateLimits: () => void;
 }
 
-const submit = async ({ query, values, partner, router, selectedSourceAccount, minAllowedAmount, setSwapId, setShowSwapModal, setSwapPath, pollFee, createSwap, setUserType, updateAuthData, setNetworkToConnect, setShowConnectNetworkModal, mutateLimits }: SubmitProps) => {
-    try {
-        const { to, from, amount, toCurrency, fromCurrency, fromExchange, toExchange, currencyGroup, depositMethod } = values
+const handleCreateSwap = async ({ query, values, partner, router, minAllowedAmount, setSwapId, setShowSwapModal, setSwapPath, pollFee, createSwap, setUserType, updateAuthData, setNetworkToConnect, setShowConnectNetworkModal, mutateLimits }: SubmitProps) => {
+    if (values.depositMethod == 'wallet') {
+        setSwapId(undefined)
+        pollFee(true)
+        setShowSwapModal(true)
+        return
+    }
 
-        const accessToken = TokenService.getAuthData()?.access_token
-        if (!accessToken) {
-            try {
-                var apiClient = new LayerSwapAuthApiClient();
-                const res = await apiClient.guestConnectAsync()
-                updateAuthData(res)
-                setUserType(UserType.GuestUser)
-            }
-            catch (error) {
-                toast.error(error.response?.data?.error || error.message)
-                return;
-            }
-        }
-        const swapId = await createSwap(values, query, partner);
-        window.safary?.track({
-            eventType: 'swap',
-            eventName: 'swap_created',
-            parameters: {
-                custom_str_1_label: "from",
-                custom_str_1_value: fromExchange?.display_name || from?.display_name!,
-                custom_str_2_label: "to",
-                walletAddress: (fromExchange || depositMethod !== 'wallet') ? '' : selectedSourceAccount?.address!,
-                custom_str_2_value: toExchange?.display_name || to?.display_name!,
-                fromCurrency: fromExchange ? currencyGroup?.symbol! : fromCurrency?.symbol!,
-                toCurrency: toExchange ? currencyGroup?.symbol! : toCurrency?.symbol!,
-                fromAmount: amount!,
-                toAmount: amount!
-            }
-        })
+    try {
+        const swapData = await createSwap(values, query, partner);
+        const swapId = swapData?.swap?.id;
         plausible(TrackEvent.SwapInitiated)
         setSwapId(swapId)
         pollFee(false)
@@ -264,9 +255,9 @@ const submit = async ({ query, values, partner, router, selectedSourceAccount, m
             const remainingTime = `${hours > 0 ? `${hours.toFixed()} ${(hours > 1 ? 'hours' : 'hour')}` : ''} ${minutes > 0 ? `${minutes.toFixed()} ${(minutes > 1 ? 'minutes' : 'minute')}` : ''}`
 
             if (minAllowedAmount && data.metadata.AvailableTransactionAmount > minAllowedAmount) {
-                throw new Error(`Daily limit of ${values.fromCurrency?.symbol} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromCurrency?.symbol} or retry in ${remainingTime}.`)
+                throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromAsset?.symbol} or retry in ${remainingTime}.`)
             } else {
-                throw new Error(`Daily limit of ${values.fromCurrency?.symbol} transfers from ${values.from?.display_name} is reached. Please retry in ${remainingTime}.`)
+                throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please retry in ${remainingTime}.`)
             }
         }
         else {

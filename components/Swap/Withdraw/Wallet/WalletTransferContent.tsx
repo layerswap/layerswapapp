@@ -1,22 +1,15 @@
 import { FC, useMemo } from "react";
-import { useSwapDataState } from "../../../../context/swap";
-import KnownInternalNames from "../../../../lib/knownIds";
-import ImtblxWalletWithdrawStep from "./ImtblxWalletWithdrawStep";
-import StarknetWalletWithdrawStep from "./StarknetWalletWithdraw";
-import EVMWalletWithdrawal from "./WalletTransfer";
-import ZkSyncWalletWithdrawStep from "./ZKsyncWalletWithdraw";
-import LoopringWalletWithdraw from "./Loopring";
-import { Network, NetworkType, Token } from "../../../../Models/Network";
-import TonWalletWithdrawStep from "./TonWalletWithdraw";
-import ParadexWalletWithdrawStep from "./paradex/index";
-import FuelWalletWithdrawStep from "./FuelWalletWithdrawal";
-import TronWalletWithdraw from "./TronWalletWithdraw";
-import SVMWalletWithdrawStep from "./SVMWalletWithdraw";
-import BitcoinWalletWithdrawStep from "./BitcoinWalletWithdraw";
+import { useSwapDataState } from "@/context/swap";
+import KnownInternalNames from "@/lib/knownIds";
+import { NetworkType } from "@/Models/Network";
+import {
+    ImtblxWalletWithdrawStep, BitcoinWalletWithdrawStep, EVMWalletWithdrawal, FuelWalletWithdrawStep, LoopringWalletWithdraw, ParadexWalletWithdraw, SVMWalletWithdrawStep, StarknetWalletWithdrawStep, TonWalletWithdrawStep, TronWalletWithdraw, ZkSyncWalletWithdrawStep
+} from "./WithdrawalProviders";
+
 
 //TODO have separate components for evm and none_evm as others are sweepless anyway
 export const WalletTransferContent: FC = () => {
-    const { swapResponse, depositActionsResponse } = useSwapDataState();
+    const { swapResponse } = useSwapDataState();
     const { swap } = swapResponse || {};
     const { source_network } = swap || {};
     const source_network_internal_name = source_network?.name;
@@ -64,7 +57,7 @@ export const WalletTransferContent: FC = () => {
                 KnownInternalNames.Networks.ParadexMainnet,
                 KnownInternalNames.Networks.ParadexTestnet
             ],
-            component: ParadexWalletWithdrawStep
+            component: ParadexWalletWithdraw
         },
         {
             supportedNetworks: [
@@ -104,35 +97,14 @@ export const WalletTransferContent: FC = () => {
         page.supportedNetworks.includes(source_network_internal_name)
     )?.component;
 
-    const depositAddress = depositActionsResponse?.find(da => true)?.to_address;
-    const amount = depositActionsResponse?.find(da => true)?.amount || 0;
-    const callData = depositActionsResponse?.find(da => true)?.call_data;
-
     return <>
         {
             swap && WithdrawalComponent &&
             <WithdrawalComponent
-                callData={callData}
-                sequenceNumber={swap?.metadata.sequence_number}
                 swapId={swap.id}
                 network={swap.source_network}
                 token={swap.source_token}
-                depositAddress={depositAddress}
-                userDestinationAddress={swap.destination_address}
-                amount={amount}
             />
         }
     </>;
 };
-
-
-export type WithdrawPageProps = {
-    depositAddress?: string
-    amount?: number
-    swapId?: string
-    userDestinationAddress?: string
-    sequenceNumber?: number
-    network?: Network
-    token?: Token
-    callData?: string
-}

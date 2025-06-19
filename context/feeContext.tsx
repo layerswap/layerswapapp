@@ -20,7 +20,7 @@ type ContextType = {
 export function QuoteProvider({ children }) {
 
     const [values, setValues] = useState<SwapFormValues>()
-    const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod } = values || {}
+    const { fromAsset: fromCurrency, toAsset: toCurrency, from, to, amount, refuel, depositMethod } = values || {}
     const [debouncedAmount, setDebouncedAmount] = useState(amount);
     const [poll, updatePolling] = useState(true)
 
@@ -81,7 +81,7 @@ export function useQuote() {
     const data = useContext(QuoteStateContext);
 
     if (data === null) {
-        throw new Error('useFee must be used within a FeeProvider');
+        throw new Error('useQuote must be used within a QuoteProvider');
     }
 
     return data;

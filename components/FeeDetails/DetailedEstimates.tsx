@@ -14,13 +14,13 @@ import { Quote } from '@/lib/apiClients/layerSwapApiClient';
 export const DetailedEstimates: FC<DetailedEstimatesProps> = ({ quote, isQuoteLoading }) => {
 
     const { values } = useFormikContext<SwapFormValues>();
-    const { fromCurrency } = values;
+    const { from, fromAsset } = values;
     const { provider } = useWallet(values.from, 'withdrawal')
     const wallet = provider?.activeWallet
-    const { gas, isGasLoading } = useSWRGas(wallet?.address, values.from, values.fromCurrency)
+    const { gas, isGasLoading } = useSWRGas(wallet?.address, from, fromAsset)
 
-    const displayLsFee = quote?.total_fee !== undefined ? truncateDecimals(quote.total_fee, fromCurrency?.decimals) : undefined
-    const currencyName = fromCurrency?.symbol || " "
+    const displayLsFee = quote?.total_fee !== undefined ? truncateDecimals(quote.total_fee, fromAsset?.decimals) : undefined
+    const currencyName = fromAsset?.symbol || " "
     const lsFeeAmountInUsd = quote?.total_fee_in_usd
     const gasFeeInUsd = (quote?.source_network?.token && gas) ? gas * quote?.source_network?.token?.price_in_usd : null;
     const displayLsFeeInUsd = lsFeeAmountInUsd ? (lsFeeAmountInUsd < 0.01 ? '<$0.01' : `$${lsFeeAmountInUsd?.toFixed(2)}`) : null

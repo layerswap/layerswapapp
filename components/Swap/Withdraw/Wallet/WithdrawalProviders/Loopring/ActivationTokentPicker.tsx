@@ -1,9 +1,9 @@
 import { FeeData, useLoopringTokens } from './hooks';
-import { ISelectMenuItem } from '../../../../Select/Shared/Props/selectMenuItem';
-import formatAmount from '../../../../../lib/formatAmount';
+import { ISelectMenuItem } from '@/components/Select/Shared/Props/selectMenuItem';
+import formatAmount from '@/lib/formatAmount';
 import { useEffect, useState } from 'react';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '../../../../shadcn/select';
-import { UserBalanceInfo } from '../../../../../lib/loopring/defs';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/shadcn/select';
+import { UserBalanceInfo } from '@/lib/loopring/defs';
 import { ImageWithFallback } from '@/components/Common/ImageWithFallback';
 
 export const ActivationTokenPicker = ({ availableBalances, defaultValue, onChange, feeData }: { availableBalances: UserBalanceInfo[] | undefined, defaultValue: UserBalanceInfo | undefined, feeData: FeeData | undefined, onChange: (v: string | undefined) => void }) => {

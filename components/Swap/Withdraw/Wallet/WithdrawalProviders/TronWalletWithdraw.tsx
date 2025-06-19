@@ -1,25 +1,22 @@
 import { FC, useCallback, useState } from 'react'
-import { BackendTransactionStatus } from '../../../../lib/apiClients/layerSwapApiClient';
-import useWallet from '../../../../hooks/useWallet';
+import useWallet from '@/hooks/useWallet';
 import { useWallet as useTronWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
-import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import WalletIcon from '../../../icons/WalletIcon';
-import { WithdrawPageProps } from './WalletTransferContent';
-import { ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
-import { useSettingsState } from '../../../../context/settings';
-import TransactionMessages from '../messages/TransactionMessages';
+import { useSettingsState } from '@/context/settings';
 import { datadogRum } from '@datadog/browser-rum';
 import { TronWeb } from 'tronweb'
-import useSWRGas from '../../../../lib/gases/useSWRGas';
+import useSWRGas from '@/lib/gases/useSWRGas';
 import { ContractParamter, Transaction, TransferContract } from 'tronweb/lib/esm/types';
-import { Token } from '../../../../Models/Network';
+import { Token } from '@/Models/Network';
+import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
+import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
+import TransactionMessages from '../../messages/TransactionMessages';
+import WalletIcon from '@/components/icons/WalletIcon';
 
-const TronWalletWithdraw: FC<WithdrawPageProps> = ({ network, callData, swapId, token, amount, depositAddress }) => {
+export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ network, token }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | undefined>()
 
     const { provider } = useWallet(network, 'withdrawal');
-    const { setSwapTransaction } = useSwapTransactionStore();
 
     const wallet = provider?.activeWallet
     const { wallet: tronWallet, signTransaction } = useTronWallet();
@@ -32,7 +29,7 @@ const TronWalletWithdraw: FC<WithdrawPageProps> = ({ network, callData, swapId, 
 
     const { gas, isGasLoading } = useSWRGas(walletAddress, networkWithTokens, token)
 
-    const handleTransfer = useCallback(async () => {
+    const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setError(undefined)
         setLoading(true)
         try {
@@ -52,7 +49,7 @@ const TronWalletWithdraw: FC<WithdrawPageProps> = ({ network, callData, swapId, 
             const res = await tronWeb.trx.sendRawTransaction(signature)
 
             if (signature && res.result) {
-                setSwapTransaction(swapId, BackendTransactionStatus.Pending, signature.txID);
+                return signature.txID
             } else {
                 throw new Error(res.code.toString())
             }
@@ -67,7 +64,7 @@ const TronWalletWithdraw: FC<WithdrawPageProps> = ({ network, callData, swapId, 
         finally {
             setLoading(false)
         }
-    }, [swapId, callData, walletAddress, signTransaction, network, gas, depositAddress, amount, token])
+    }, [walletAddress, signTransaction, network, gas, token])
 
     if (!wallet || !walletAddress) {
         return <ConnectWalletButton />
@@ -137,5 +134,3 @@ const buildInitialTransaction = async (props: BuildIniitialTransactionProps): Pr
     )).transaction
 
 }
-
-export default TronWalletWithdraw;

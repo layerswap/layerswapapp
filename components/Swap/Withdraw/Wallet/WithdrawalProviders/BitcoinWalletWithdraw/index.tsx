@@ -1,28 +1,25 @@
 import { FC, useCallback, useMemo, useState } from 'react'
 import toast from 'react-hot-toast';
-import useWallet from '../../../../../hooks/useWallet';
-import { useSwapTransactionStore } from '../.././../../../stores/swapTransactionStore';
-import WalletIcon from '../../../../icons/WalletIcon';
-import { WithdrawPageProps } from '../WalletTransferContent';
-import { ConnectWalletButton, SendTransactionButton } from '../WalletTransfer/buttons';
-import TransactionMessages from '../../messages/TransactionMessages';
+import useWallet from '@/hooks/useWallet';
+import WalletIcon from '@/components/icons/WalletIcon';
+import { ConnectWalletButton, SendTransactionButton } from '../../Common/buttons';
 import { datadogRum } from '@datadog/browser-rum';
-import { useConnectModal } from '../../../../WalletModal';
 import { useAccount, useConfig } from '@bigmi/react';
-import { BackendTransactionStatus } from '../../../../../lib/apiClients/layerSwapApiClient';
-import KnownInternalNames from '../../../../../lib/knownIds';
-import { JsonRpcClient } from '../../../../../lib/apiClients/jsonRpcClient';
+import KnownInternalNames from '@/lib/knownIds';
+import { JsonRpcClient } from '@/lib/apiClients/jsonRpcClient';
 import { sendTransaction } from './sendTransaction';
+import { useConnectModal } from '@/components/WalletModal';
+import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
+import TransactionMessages from '../../../messages/TransactionMessages';
 
-const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {
+export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }) => {
     const [loading, setLoading] = useState(false);
     const { connect } = useConnectModal()
     const { provider } = useWallet(network, 'withdrawal');
-    const { setSwapTransaction } = useSwapTransactionStore();
     const [transactionErrorMessage, setTransactionErrorMessage] = useState<string | undefined>(undefined)
     const { connector } = useAccount()
     const wallet = provider?.activeWallet
-    const dataLoading = !amount || !depositAddress || !network || !token || !swapId || !callData
+    const dataLoading = !network || !token
     const isTestnet = network?.name === KnownInternalNames.Networks.BitcoinTestnet;
 
     const config = useConfig()
@@ -46,12 +43,12 @@ const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddre
         return network && new JsonRpcClient(network.node_url);
     }, [network]);
 
-    const handleTransfer = useCallback(async () => {
+    const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setTransactionErrorMessage(undefined)
 
         try {
             setLoading(true)
-            if (!amount || !depositAddress || !network || !token || !swapId || !callData || !wallet || !connector || !rpcClient) {
+            if (!amount || !depositAddress || !network || !token || !callData || !wallet || !connector || !rpcClient) {
                 throw new Error('Missing required parameters for transfer');
             }
 
@@ -66,9 +63,7 @@ const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddre
                 publicClient
             });
 
-            if (txHash) {
-                setSwapTransaction(swapId, BackendTransactionStatus.Pending, txHash);
-            }
+            return txHash;
 
         }
         catch (e) {
@@ -77,7 +72,7 @@ const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddre
         finally {
             setLoading(false)
         }
-    }, [swapId, depositAddress, network, token, amount, callData, wallet, connector, rpcClient, isTestnet])
+    }, [network, token, wallet, connector, rpcClient, isTestnet])
 
     if (!wallet) {
         return <ConnectWalletButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} />
@@ -114,5 +109,3 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
     }
     else return <></>
 }
-
-export default BitcoinWalletWithdrawStep;

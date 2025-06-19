@@ -18,7 +18,7 @@ import GasIcon from '../icons/GasIcon';
 import Clock from '../icons/Clock';
 
 export default function QuoteDetails({ values }: { values: SwapFormValues }) {
-    const { toCurrency, to, from, fromCurrency, destination_address } = values || {};
+    const { toAsset: toCurrency, to, toExchange, from, fromAsset: fromCurrency, amount, destination_address } = values || {};
     const { quote, isQuoteLoading } = useQuote()
     const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(false);
 
@@ -33,7 +33,7 @@ export default function QuoteDetails({ values }: { values: SwapFormValues }) {
                 <Accordion type='single' collapsible className='w-full' value={isAccordionOpen ? 'quote' : ''} onValueChange={(value) => { setIsAccordionOpen(value === 'quote') }}>
                     <AccordionItem value='quote' className='bg-secondary-500 rounded-2xl'>
                         <AccordionTrigger className={clsx(
-                            'p-4 w-full rounded-2xl flex items-center justify-between transition-colors duration-200',
+                            'p-4 w-full rounded-xl flex items-center justify-between transition-colors duration-200 hover:bg-secondary-400',
                             {
                                 'bg-secondary-500': !isAccordionOpen,
                                 'bg-secondary-400': isAccordionOpen,
@@ -61,7 +61,7 @@ export default function QuoteDetails({ values }: { values: SwapFormValues }) {
                                         }
                                         {
                                             values.to &&
-                                            values.toCurrency &&
+                                            values.toAsset &&
                                             destination_address &&
                                             <Campaign
                                                 destination={values.to}
@@ -87,7 +87,7 @@ const DetailsButton: FC<{ quote?: Quote, isQuoteLoading: boolean }> = ({ quote: 
     const { values } = useFormikContext<SwapFormValues>();
     const { provider } = useWallet(values.from, 'withdrawal')
     const wallet = provider?.activeWallet
-    const { gas } = useSWRGas(wallet?.address, values.from, values.fromCurrency)
+    const { gas } = useSWRGas(wallet?.address, values.from, values.fromAsset)
     const LsFeeAmountInUsd = quoteData?.quote.total_fee_in_usd
     const gasFeeAmountInUsd = (quoteData?.quote.source_network?.token && gas) ? gas * quoteData?.quote.source_network?.token?.price_in_usd : null;
     const feeAmountInUsd = (LsFeeAmountInUsd || 0) + (gasFeeAmountInUsd || 0)

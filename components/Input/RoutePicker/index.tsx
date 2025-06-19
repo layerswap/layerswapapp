@@ -18,7 +18,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     const [searchQuery, setSearchQuery] = useState("")
     const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken, allbalancesLoaded } = useFormRoutes({ direction, values }, searchQuery)
-    const currencyFieldName = direction === 'from' ? 'fromCurrency' : 'toCurrency';
+    const currencyFieldName = direction === 'from' ? 'fromAsset' : 'toAsset';
 
     useEffect(() => {
 
@@ -89,7 +89,5 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
         </div>
     )
 };
-
-
 
 export default RoutePicker

@@ -1,21 +1,21 @@
 import { FC, useCallback, useState } from 'react'
-import { BackendTransactionStatus } from '../../../../../lib/apiClients/layerSwapApiClient';
+import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
 import { Transaction, Connection, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import useWallet from '../../../../../hooks/useWallet';
+import useWallet from '@/hooks/useWallet';
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
-import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
-import WalletIcon from '../../../../icons/WalletIcon';
-import { WithdrawPageProps } from '../WalletTransferContent';
-import { ConnectWalletButton, SendTransactionButton } from '../WalletTransfer/buttons';
-import useSWRBalance from '../../../../../lib/balances/useSWRBalance';
-import { useSettingsState } from '../../../../../context/settings';
-import WalletMessage from '../../messages/Message';
-import TransactionMessages from '../../messages/TransactionMessages';
+import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
+import WalletIcon from '@/components/icons/WalletIcon';
+import useSWRBalance from '@/lib/balances/useSWRBalance';
+import { useSettingsState } from '@/context/settings';
 import { datadogRum } from '@datadog/browser-rum';
 import { transactionSenderAndConfirmationWaiter } from './transactionSender';
+import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
+import { ConnectWalletButton, SendTransactionButton } from '../../Common/buttons';
+import TransactionMessages from '../../../messages/TransactionMessages';
+import WalletMessage from '../../../messages/Message';
 
-const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, token, amount }) => {
+export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | undefined>()
     const [insufficientTokens, setInsufficientTokens] = useState<string[]>([])
@@ -33,7 +33,7 @@ const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapI
     const networkWithTokens = networks.find(n => n.name === networkName)
     const { balances } = useSWRBalance(wallet?.address, networkWithTokens)
 
-    const handleTransfer = useCallback(async () => {
+    const handleTransfer = useCallback(async ({ amount, callData, swapId }: TransferProps) => {
         setLoading(true)
         setError(undefined)
         try {
@@ -73,9 +73,7 @@ const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapI
                 signTransaction
             );
 
-            if (signature) {
-                setSwapTransaction(swapId, BackendTransactionStatus.Pending, signature);
-            }
+            return signature;
 
         }
         catch (e) {
@@ -88,7 +86,7 @@ const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapI
         finally {
             setLoading(false)
         }
-    }, [swapId, callData, walletPublicKey, signTransaction, network])
+    }, [walletPublicKey, signTransaction, network, token])
 
     if (!wallet || !walletPublicKey) {
         return <ConnectWalletButton />
@@ -103,7 +101,7 @@ const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapI
             />
             {
                 wallet && !loading &&
-                <SendTransactionButton isDisabled={!!loading || !callData} isSubmitting={!!loading || !callData} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} error={!!error} />
+                <SendTransactionButton isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} error={!!error} />
             }
         </div>
     )
@@ -132,8 +130,6 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined, in
     }
     else return <></>
 }
-
-export default SVMWalletWithdrawStep;
 
 export const configureAndSendCurrentTransaction = async (
     transaction: Transaction,

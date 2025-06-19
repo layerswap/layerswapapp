@@ -1,13 +1,13 @@
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { useEffect, useRef } from "react";
-import { truncateDecimals } from "../../utils/RoundDecimals";
-import { useSwapDataState } from "../../../context/swap";
-import useSWRBalance from "../../../lib/balances/useSWRBalance";
+import { truncateDecimals } from "@/components/utils/RoundDecimals";
+import { useSwapDataState } from "@/context/swap";
+import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { motion } from "framer-motion";
 
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
-    const { to, fromCurrency, toCurrency, from, destination_address } = values
+    const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, destination_address } = values
     const { selectedSourceAccount } = useSwapDataState()
     const token = direction === 'from' ? fromCurrency : toCurrency
     const network = direction === 'from' ? from : to
@@ -29,7 +29,12 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     }, [to, destination_address])
 
     if (isBalanceLoading)
-        return <div className='h-[10px] w-10 inline-flex bg-gray-500 rounded-xs animate-pulse' />
+        return <motion.div
+            layoutId="affect"
+            className="w-4/5 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs text-primary-text-placeholder">
+            <div className='h-[10px] w-12 inline-flex bg-gray-500 rounded-xs animate-pulse' />
+        </motion.div>
+
 
     return (
         <>

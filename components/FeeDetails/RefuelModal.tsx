@@ -22,7 +22,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
         setFieldValue
     } = useFormikContext<SwapFormValues>();
 
-    const { to, toCurrency, refuel, destination_address } = values || {};
+    const { to, toAsset: toCurrency, refuel, destination_address } = values || {};
 
     const { quote: fee } = useQuote()
 

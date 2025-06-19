@@ -27,7 +27,7 @@ const Component: FC = () => {
     const { setSelectedSourceAccount } = useSwapDataUpdate()
     const { selectedSourceAccount } = useSwapDataState()
     const walletNetwork = values.fromExchange ? undefined : values.from
-    const source_token = values.fromCurrency
+    const source_token = values.fromAsset
     const destination_address = values.destination_address
     const { provider } = useWallet(walletNetwork, 'withdrawal')
     const { selectedConnector } = useConnectModal()
@@ -80,11 +80,11 @@ const Component: FC = () => {
         {
             values.depositMethod === 'deposit_address' ?
                 <div className="flex items-center space-x-2 text-sm leading-4">
-                    <div onClick={handleWalletChange} className="rounded-md bg-secondary-500 flex space-x-1 items-center  cursor-pointer">
+                    <div onClick={handleWalletChange} className="flex space-x-1 items-center cursor-pointer">
                         <div className="text-secondary-text">
                             Manual Transfer
                         </div>
-                        <div className="w-5 h-5 items-center flex">
+                        <div className="w-4 h-4 items-center flex text-primary-text">
                             <ChevronDown className="h-4 w-4" aria-hidden="true" />
                         </div>
                     </div>
@@ -95,12 +95,12 @@ const Component: FC = () => {
                         selectedWallet && selectedSourceAccount?.address && <>
                             <div onClick={handleWalletChange} className="rounded-lg flex space-x-1 items-center cursor-pointer">
                                 <div className="inline-flex items-center relative px-0.5">
-                                    <selectedWallet.icon className="w-5 h-5" />
+                                    <selectedWallet.icon className="w-4 h-4" />
                                 </div>
-                                <div className="text-primary-text">
+                                <div className="text-secondary-text">
                                     {shortenAddress(selectedSourceAccount.address)}
                                 </div>
-                                <div className="w-5 h-5 items-center flex">
+                                <div className="w-4 h-4 items-center flex text-primary-text">
                                     <ChevronDown className="h-4 w-4" aria-hidden="true" />
                                 </div>
                             </div>
@@ -143,6 +143,7 @@ const Component: FC = () => {
                             <hr className="border-secondary-400 w-full" />
                         </div>
                         <button
+                            type="button"
                             onClick={() => handleSelectWallet()}
                             className={clsx('w-full relative flex items-center justify-between gap-2 rounded-lg outline-none bg-secondary-500 p-3 py-4 text-secondary-text hover:bg-secondary-400 cursor-pointer order-1', {
                                 'order-3': values.depositMethod !== 'deposit_address',
@@ -226,7 +227,7 @@ export const FormSourceWalletButton: FC = () => {
         </>
 
     }
-    else if (availableWallets.length > 0 && walletNetwork && values.fromCurrency) {
+    else if (availableWallets.length > 0 && walletNetwork && values.fromAsset) {
         return <>
             <div className="w-full" onClick={handleWalletChange}>
                 <Connect />
@@ -242,7 +243,7 @@ export const FormSourceWalletButton: FC = () => {
                         provider={provider}
                         wallets={availableWallets}
                         onSelect={handleSelectWallet}
-                        token={values.fromCurrency}
+                        token={values.fromAsset}
                         network={walletNetwork}
                         selectable
                     />

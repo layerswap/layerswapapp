@@ -1,23 +1,23 @@
 import { Form, FormikErrors, useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import React from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import { Partner } from "../../../Models/Partner";
+import { Partner } from "@/Models/Partner";
 import { motion, useCycle } from "framer-motion";
 import { ArrowUpDown } from 'lucide-react'
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
-import { useQueryState } from "../../../context/query";
-import { useQuote } from "../../../context/feeContext";
+import { useQueryState } from "@/context/query";
+import { useQuote } from "@/context/feeContext";
 import dynamic from "next/dynamic";
-import { TokenBalance } from "../../../Models/Balance";
+import { TokenBalance } from "@/Models/Balance";
 import ResizablePanel from "../../ResizablePanel";
 import ValidationError from "../../validationError";
-import { Exchange, ExchangeToken } from "../../../Models/Exchange";
-import { useValidationContext } from "../../../context/validationErrorContext";
-import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
-import useWallet from "../../../hooks/useWallet";
-import { useSettingsState } from "../../../context/settings";
+import { Exchange, ExchangeToken } from "@/Models/Exchange";
+import { useValidationContext } from "@/context/validationErrorContext";
+import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
+import useWallet from "@/hooks/useWallet";
+import { useSettingsState } from "@/context/settings";
 import SourcePicker from "../../Input/SourcePicker";
 import DestinationPicker from "../../Input/DestinationPicker";
 import CexNetworkPicker from "../../Input/CexNetworkPicker";
@@ -60,8 +60,8 @@ const SwapForm: FC<Props> = ({ partner }) => {
     const { selectedSourceAccount } = useSwapDataState()
     const { providers, wallets } = useWallet()
     const { minAllowedAmount, valuesChanger } = useQuote()
-    const toAsset = values.toCurrency
-    const fromAsset = values.fromCurrency
+    const toAsset = values.toAsset
+    const fromAsset = values.fromAsset
 
     const { validationMessage } = useValidationContext();
     const query = useQueryState();
@@ -96,12 +96,12 @@ const SwapForm: FC<Props> = ({ partner }) => {
 
     return <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
         <UrlQuerySync
-            fieldMapping={{ from: 'name', to: 'name', fromCurrency: 'symbol', toCurrency: 'symbol', currencyGroup: 'symbol', fromExchange: 'name', toExchange: 'name' }}
+            fieldMapping={{ from: 'name', to: 'name', fromAsset: 'symbol', toAsset: 'symbol', currencyGroup: 'symbol', fromExchange: 'name', toExchange: 'name' }}
             excludeFields={['refuel']}
         />
         <Widget className="sm:min-h-[450px] h-full">
             <Widget.Content>
-                <div className="w-full h-[440px] flex flex-col justify-between">
+                <div className="w-full min-h-[79svh] sm:min-h-[460px] flex flex-col justify-between">
                     <div>
                         <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
                             {
@@ -138,31 +138,29 @@ const SwapForm: FC<Props> = ({ partner }) => {
                             }
                         </div>
                     </div>
-                    <div>
+                    <div className="space-y-3">
                         {
-                            values.toCurrency?.refuel && !query.hideRefuel && !toExchange &&
+                            values.toAsset?.refuel && !query.hideRefuel && !toExchange &&
                             <RefuelToggle onButtonClick={() => setOpenRefuelModal(true)} />
+                        }
+                        {
+                            validationMessage
+                                ? <ValidationError />
+                                : <QuoteDetails values={values} />
                         }
                     </div>
                 </div>
             </Widget.Content>
             <Widget.Footer>
-                <div className="space-y-3">
-                    {
-                        validationMessage
-                            ? <ValidationError />
-                            : <QuoteDetails values={values} />
-                    }
-                    <FormButton
-                        shouldConnectWallet={shouldConnectWallet}
-                        values={values}
-                        isValid={isValid}
-                        errors={errors}
-                        isSubmitting={isSubmitting}
-                        actionDisplayName={actionDisplayName}
-                        partner={partner}
-                    />
-                </div>
+                <FormButton
+                    shouldConnectWallet={shouldConnectWallet}
+                    values={values}
+                    isValid={isValid}
+                    errors={errors}
+                    isSubmitting={isSubmitting}
+                    actionDisplayName={actionDisplayName}
+                    partner={partner}
+                />
             </Widget.Footer>
             <RefuelModal openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} />
         </Widget>
@@ -172,8 +170,8 @@ const SwapForm: FC<Props> = ({ partner }) => {
 
 const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: (values: React.SetStateAction<SwapFormValues>, shouldValidate?: boolean) => Promise<void | FormikErrors<SwapFormValues>>, providers: WalletProvider[], query: QueryParams }> = ({ values, setValues, providers, query }) => {
     const [animate, cycle] = useCycle(
-        { rotate: 0 },
-        { rotate: 180 }
+        { rotateX: 0 },
+        { rotateX: 180 }
     );
     const { selectedSourceAccount } = useSwapDataState()
     const { setSelectedSourceAccount } = useSwapDataUpdate()
@@ -189,8 +187,8 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: (values: React
 
     const {
         to: destination,
-        fromCurrency,
-        toCurrency,
+        fromAsset: fromCurrency,
+        toAsset: toCurrency,
         from: source,
         fromExchange,
         toExchange,
@@ -245,8 +243,8 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: (values: React
             ...values,
             from: newFrom,
             to: newTo,
-            fromCurrency: newFromToken,
-            toCurrency: newToToken,
+            fromAsset: newFromToken,
+            toAsset: newToToken,
             toExchange: newToExchange,
             fromExchange: newFromExchange,
             currencyGroup: (fromExchange || toExchange) ? (fromExchange ? newToExchangeToken : newFromExchangeToken) : undefined,

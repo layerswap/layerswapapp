@@ -1,24 +1,21 @@
 import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
-import useWallet from '../../../../hooks/useWallet';
-import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import WalletIcon from '../../../icons/WalletIcon';
-import { WithdrawPageProps } from './WalletTransferContent';
+import useWallet from '@/hooks/useWallet';
+import WalletIcon from '@/components/icons/WalletIcon';
 import { useTonConnectUI } from '@tonconnect/ui-react';
 import { Address, JettonMaster, beginCell, toNano } from '@ton/ton'
-import { Token } from '../../../../Models/Network';
-import { BackendTransactionStatus } from '../../../../lib/apiClients/layerSwapApiClient';
-import tonClient from '../../../../lib/wallets/ton/client';
-import { ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
-import TransactionMessages from '../messages/TransactionMessages';
+import { Token } from '@/Models/Network';
+import tonClient from '@/lib/wallets/ton/client';
 import { datadogRum } from '@datadog/browser-rum';
-import { useConnectModal } from '../../../WalletModal';
+import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
+import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
+import TransactionMessages from '../../messages/TransactionMessages';
+import { useConnectModal } from '@/components/WalletModal';
 
-const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {
+export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }) => {
     const [loading, setLoading] = useState(false);
     const { connect } = useConnectModal()
     const { provider } = useWallet(network, 'withdrawal');
-    const { setSwapTransaction } = useSwapTransactionStore();
     const [tonConnectUI] = useTonConnectUI();
     const [transactionErrorMessage, setTransactionErrorMessage] = useState<string | undefined>(undefined)
 
@@ -38,12 +35,13 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
         }
     }, [provider])
 
-    const handleTransfer = useCallback(async () => {
+    const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setLoading(true)
         setTransactionErrorMessage(undefined)
         if (!swapId || !depositAddress || !token || !wallet?.address || !callData || amount === undefined) {
             setLoading(false)
-            return toast('Something went wrong, please try again.')
+            toast('Something went wrong, please try again.')
+            return
         }
 
         try {
@@ -52,7 +50,7 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
             const res = await tonConnectUI.sendTransaction(transaction)
 
             if (res) {
-                setSwapTransaction(swapId, BackendTransactionStatus.Pending, res.boc);
+                return res.boc
             }
 
         }
@@ -62,7 +60,7 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
         finally {
             setLoading(false)
         }
-    }, [swapId, depositAddress, network, token, amount, callData])
+    }, [network, token, tonConnectUI])
 
     if (!wallet) {
         return <ConnectWalletButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} />
@@ -161,6 +159,3 @@ const transactionBuilder = async (amount: number, token: Token, depositAddress: 
         return tx
     }
 }
-
-
-export default TonWalletWithdrawStep;

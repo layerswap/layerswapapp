@@ -1,28 +1,25 @@
 import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
-import { BackendTransactionStatus } from '../../../../lib/apiClients/layerSwapApiClient';
-import WarningMessage from '../../../WarningMessage';
-import GuideLink from '../../../guideLink';
-import useWallet from '../../../../hooks/useWallet';
-import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import { WithdrawPageProps } from './WalletTransferContent';
-import { ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
+import GuideLink from '@/components/guideLink';
+import useWallet from '@/hooks/useWallet';
+import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
+import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
+import WarningMessage from '@/components/WarningMessage';
 
-const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId }) => {
+export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { setSwapTransaction } = useSwapTransactionStore();
 
     const { provider } = useWallet(network, 'withdrawal')
     const imxAccount = provider?.activeWallet
 
-    const handleTransfer = useCallback(async () => {
+    const handleTransfer = useCallback(async ({ amount, depositAddress, swapId }: TransferProps) => {
         if (!network || !depositAddress || !amount)
             return
         setLoading(true)
         try {
-            const ImtblClient = (await import('../../../../lib/imtbl')).default;
+            const ImtblClient = (await import('@/lib/imtbl')).default;
             const imtblClient = new ImtblClient(network?.name)
 
             if (!token) {
@@ -36,8 +33,8 @@ const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
                 toast(transactionRes.message)
             }
             else if (transactionRes && swapId) {
-                setSwapTransaction(swapId, BackendTransactionStatus.Pending, transactionRes.txId.toString());
                 setTransferDone(true)
+                return transactionRes.txId.toString()
             }
         }
         catch (e) {
@@ -45,7 +42,7 @@ const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
                 toast(e.message)
         }
         setLoading(false)
-    }, [imxAccount, swapId, network, depositAddress, token, amount])
+    }, [imxAccount, network, token,])
 
     if (!imxAccount) {
         return <ConnectWalletButton icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} />
@@ -63,13 +60,10 @@ const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddres
                     </WarningMessage>
                     {
                         imxAccount &&
-                        <SendTransactionButton isDisabled={!!(loading || transferDone) || !depositAddress} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} />
+                        <SendTransactionButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} />
                     }
                 </div>
             </div>
         </>
     )
 }
-
-
-export default ImtblxWalletWithdrawStep;

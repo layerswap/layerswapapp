@@ -1,25 +1,22 @@
 import { FC, useCallback, useState } from 'react'
-import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
 import { useAuthState } from '@/context/authContext';
 import useWallet from '@/hooks/useWallet';
-import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import WalletIcon from '@/components/icons/WalletIcon';
-import { WithdrawPageProps } from './WalletTransferContent';
-import { ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
-import TransactionMessages from '../messages/TransactionMessages';
+import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
+import TransactionMessages from '../../messages/TransactionMessages';
 import { datadogRum } from '@datadog/browser-rum';
+import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 
-const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, callData, swapId }) => {
+export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, }) => {
     const [error, setError] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
     const { provider } = useWallet(network, 'withdrawal')
     const { userId } = useAuthState()
-    const { setSwapTransaction } = useSwapTransactionStore();
 
     const wallet = provider?.activeWallet
 
-    const handleTransfer = useCallback(async () => {
+    const handleTransfer = useCallback(async ({ callData, swapId }: TransferProps) => {
         if (!swapId || !token) {
             return
         }
@@ -32,8 +29,8 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
             const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.execute(JSON.parse(callData || "")) || {});
 
             if (transferTxHash) {
-                setSwapTransaction(swapId, BackendTransactionStatus.Completed, transferTxHash);
                 setTransferDone(true)
+                return transferTxHash
             }
             else {
                 setError('failedTransfer')
@@ -46,7 +43,7 @@ const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, cal
         finally {
             setLoading(false)
         }
-    }, [wallet, swapId, network, userId, token, callData])
+    }, [wallet, network, userId, token])
 
     if (!wallet) {
         return <ConnectWalletButton />
@@ -94,5 +91,3 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
     }
     else return <></>
 }
-
-export default StarknetWalletWithdrawStep;

@@ -29,13 +29,13 @@ export const SwapDataStateContext = createContext<SwapData>({
 export const SwapDataUpdateContext = createContext<UpdateSwapInterface | null>(null);
 
 export type UpdateSwapInterface = {
-    createSwap: (values: SwapFormValues, query: QueryParams, partner?: Partner) => Promise<string>,
+    createSwap: (values: SwapFormValues, query: QueryParams, partner?: Partner) => Promise<SwapResponse>,
     setCodeRequested: (codeSubmitted: boolean) => void;
     setInterval: (value: number) => void,
     mutateSwap: KeyedMutator<ApiResponse<SwapResponse>>
     setDepositAddressIsFromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
-    setSwapId: (value: string) => void
+    setSwapId: (value: string | undefined) => void
     setSelectedSourceAccount: (value: { wallet: Wallet, address: string } | undefined) => void
     setSwapPath: (swapId: string, router: NextRouter) => void,
     removeSwapPath: (router: NextRouter) => void
@@ -88,7 +88,7 @@ export function SwapDataProvider({ children }) {
         setSelectedSourceAccount({ wallet, address })
     }
 
-    const swapResponse = swapData?.data;
+    const swapResponse = swapData?.data || swapDataFromQuery;
 
     const sourceIsSupported = swapResponse && WalletIsSupportedForSource({
         providers: providers,
@@ -124,7 +124,7 @@ export function SwapDataProvider({ children }) {
         if (!values)
             throw new Error("No swap data")
 
-        const { to, fromCurrency, toCurrency, from, refuel, fromExchange, toExchange, depositMethod, amount, destination_address } = values
+        const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, refuel, fromExchange, toExchange, depositMethod, amount, destination_address, currencyGroup } = values
 
         if (!to || !fromCurrency || !toCurrency || !from || !amount || !destination_address || !depositMethod)
             throw new Error("Form data is missing")
@@ -158,11 +158,27 @@ export function SwapDataProvider({ children }) {
             throw swapResponse?.error
         }
 
-        const swapId = swapResponse?.data?.swap.id;
-        if (!swapId)
+        const swap = swapResponse?.data;
+        if (!swap?.swap.id)
             throw new Error("Could not create swap")
 
-        return swapId;
+        window.safary?.track({
+            eventType: 'swap',
+            eventName: 'swap_created',
+            parameters: {
+                custom_str_1_label: "from",
+                custom_str_1_value: fromExchange?.display_name || from?.display_name!,
+                custom_str_2_label: "to",
+                walletAddress: (fromExchange || depositMethod !== 'wallet') ? '' : selectedSourceAccount?.address!,
+                custom_str_2_value: toExchange?.display_name || to?.display_name!,
+                fromCurrency: fromExchange ? currencyGroup?.symbol! : fromCurrency?.symbol!,
+                toCurrency: toExchange ? currencyGroup?.symbol! : toCurrency?.symbol!,
+                fromAmount: amount!,
+                toAmount: amount!
+            }
+        })
+
+        return swap;
     }, [selectedSourceAccount])
 
     const updateFns: UpdateSwapInterface = {
@@ -227,8 +243,8 @@ const resolveSwapDataFromQuery = (settings: LayerSwapAppSettings, selectedSource
     const amount = urlParams.get('amount');
     const destination_address = urlParams.get('destination_address') || '';
     const depositMethod = urlParams.get('depositMethod') || 'wallet';
-    const fromCurrencySymbol = urlParams.get('fromCurrency');
-    const toCurrencySymbol = urlParams.get('toCurrency');
+    const fromCurrencySymbol = urlParams.get('fromAsset');
+    const toCurrencySymbol = urlParams.get('toAsset');
 
     const from = sourceRoutes.find(n => n.name === fromName);
     const to = destinationRoutes.find(n => n.name === toName);

@@ -1,26 +1,22 @@
 import { FC, useCallback, useEffect, useState } from 'react'
-import { BackendTransactionStatus } from '../../../../lib/apiClients/layerSwapApiClient';
-import useWallet from '../../../../hooks/useWallet';
-import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import WalletIcon from '../../../icons/WalletIcon';
-import { WithdrawPageProps } from './WalletTransferContent';
-import { ButtonWrapper, ChangeNetworkMessage, ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
+import useWallet from '@/hooks/useWallet';
+import WalletIcon from '@/components/icons/WalletIcon';
+import { ButtonWrapper, ChangeNetworkMessage, ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import {
     useSelectNetwork,
     useFuel,
     useNetwork,
 } from '@fuels/react';
-import { useSwapDataState } from '../../../../context/swap';
+import { useSwapDataState } from '@/context/swap';
 import { datadogRum } from '@datadog/browser-rum';
 import { coinQuantityfy, CoinQuantityLike, Provider, ScriptTransactionRequest } from 'fuels';
-import TransactionMessages from '../messages/TransactionMessages';
+import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
+import TransactionMessages from '../../messages/TransactionMessages';
 
-const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swapId, amount, depositAddress, sequenceNumber, token }) => {
+export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }) => {
     const [loading, setLoading] = useState(false);
     const [buttonClicked, setButtonClicked] = useState(false)
     const [error, setError] = useState<string | undefined>()
-
-    const { setSwapTransaction } = useSwapTransactionStore()
 
     const { provider } = useWallet(network, 'withdrawal');
 
@@ -38,7 +34,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
         }
     }, [selectedSourceAccount, provider?.activeWallet])
 
-    const handleTransfer = useCallback(async () => {
+    const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setButtonClicked(true)
         setError(undefined)
         try {
@@ -73,7 +69,9 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
 
             const transactionResponse = await fuelWallet.sendTransaction(scriptTransaction);
 
-            if (swapId && transactionResponse) setSwapTransaction(swapId, BackendTransactionStatus.Completed, transactionResponse.id)
+            if (swapId && transactionResponse) {
+                return transactionResponse.id;
+            }
 
         }
         catch (e) {
@@ -91,7 +89,7 @@ const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, callData, swap
         finally {
             setLoading(false)
         }
-    }, [swapId, amount, depositAddress, network, selectedSourceAccount, token, sequenceNumber, fuel])
+    }, [network, selectedSourceAccount, token, fuel])
 
     if (!provider?.activeWallet) {
         return <ConnectWalletButton />
@@ -177,5 +175,3 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
     }
     else return <></>
 }
-
-export default FuelWalletWithdrawStep;
