@@ -86,7 +86,7 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token })
         finally {
             setLoading(false)
         }
-    }, [walletPublicKey, signTransaction, network])
+    }, [walletPublicKey, signTransaction, network, token])
 
     if (!wallet || !walletPublicKey) {
         return <ConnectWalletButton />

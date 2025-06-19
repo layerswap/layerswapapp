@@ -211,9 +211,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             const hash = await onClick(transferProps)
 
             if (hash) {
+                setSwapTransaction(swapId, BackendTransactionStatus.Pending, hash);
                 updatePolling(false);
                 setSwapId(swapId)
-                setSwapTransaction(swapId, BackendTransactionStatus.Pending, hash);
                 setSwapPath(swapId, router)
             }
 
