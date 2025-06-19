@@ -34,7 +34,7 @@ export const DetailedEstimates: FC<DetailedEstimatesProps> = ({ quote, isQuoteLo
                 if (!showElement) return null
 
                 return (
-                    <div className="flex items-center w-full justify-between gap-1 pb-2 px-1">
+                    <div key={item.name} className="flex items-center w-full justify-between gap-1 pb-2 px-1">
                         <div className="inline-flex items-center text-left text-secondary-text gap-1 pr-4">
                             <div className="w-5">
                                 <Icon className="place-self-center" />
@@ -129,7 +129,9 @@ const detailsElements: DetailedElement[] = [
         icon: Clock,
         content: ({ quote }) => {
             return quote && quote.avg_completion_time !== '00:00:00' ?
-                <AverageCompletionTime avgCompletionTime={quote.avg_completion_time} />
+                <div>
+                    <AverageCompletionTime avgCompletionTime={quote.avg_completion_time} />
+                </div>
                 : (
                     <div className='h-[10px] w-16 inline-flex bg-gray-500 rounded-xs animate-pulse' />
                 )

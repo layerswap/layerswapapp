@@ -52,7 +52,7 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick }) => {
                         }
                         {
                             refuel &&
-                            <p className="text-secondary-text text-sm"><span>You will recieve </span><span>${quote?.refuel ? quote?.refuel?.amount_in_usd : '-'}</span><span> worth of {to?.token?.symbol}</span></p>
+                            <p className="text-secondary-text text-sm"><span>You will receive </span><span>{quote?.refuel ? `$${quote.refuel.amount_in_usd}` : '-'}</span><span> worth of {to?.token?.symbol}</span></p>
                         }
                     </button>
                     <ToggleButton value={!!refuel} onChange={handleConfirmToggleChange} />
