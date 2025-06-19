@@ -32,7 +32,6 @@ import { AddressGroup } from "../../Input/Address/AddressPicker";
 import { useAddressesStore } from "@/stores/addressesStore";
 import { useAsyncModal } from "@/context/asyncModal";
 import { ValidationProvider } from "@/context/validationErrorContext";
-import { TrackEvent } from "@/pages/_document";
 import { PendingSwap } from "./PendingSwap";
 import { QueryParams } from "@/Models/QueryParams";
 
@@ -227,7 +226,6 @@ const handleCreateSwap = async ({ query, values, partner, router, minAllowedAmou
     try {
         const swapData = await createSwap(values, query, partner);
         const swapId = swapData?.swap?.id;
-        plausible(TrackEvent.SwapInitiated)
         setSwapId(swapId)
         pollFee(false)
         setSwapPath(swapId, router)

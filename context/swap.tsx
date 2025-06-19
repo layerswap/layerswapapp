@@ -16,6 +16,7 @@ import { useQuote } from './feeContext';
 import { SwapStatus } from '../Models/SwapStatus';
 import { LayerSwapAppSettings } from '@/Models/LayerSwapAppSettings';
 import { useSettingsState } from './settings';
+import { TrackEvent } from "@/pages/_document";
 
 export const SwapDataStateContext = createContext<SwapData>({
     codeRequested: false,
@@ -177,6 +178,7 @@ export function SwapDataProvider({ children }) {
                 toAmount: amount!
             }
         })
+        plausible(TrackEvent.SwapInitiated)
 
         return swap;
     }, [selectedSourceAccount])
