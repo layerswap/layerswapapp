@@ -28,9 +28,9 @@ const Widget = ({ children, className, hideMenu }: Props) => {
 
    const handleBack = router.pathname === "/" ? null : goBack
 
-   return <div className="relative p-px">
+   return <div id="widget" className="relative p-px">
       <div className="invisible sm:visible absolute inset-0 rounded-[25px] bg-gradient-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
-      <div id="widget" className='md:shadow-lg rounded-3xl w-full sm:overflow-hidden relative bg-gradient-to-b from-secondary-700 to-secondary-700'>
+      <div  className='md:shadow-lg rounded-3xl w-full sm:overflow-hidden relative bg-gradient-to-b from-secondary-700 to-secondary-700'>
          <div className="relative z-20">
             {
                AppSettings.ApiVersion === 'sandbox' &&

@@ -9,7 +9,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { Drawer } from './vaul';
 
-type VaulDrawerProps = {
+export type VaulDrawerProps = {
     children: ReactNode;
     show: boolean;
     setShow: Dispatch<SetStateAction<boolean>>;

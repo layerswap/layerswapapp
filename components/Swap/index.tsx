@@ -39,25 +39,23 @@ const SwapDetails: FC<Props> = ({ type }) => {
     </>
 
     return (
-        <>
-            <Container type={type}>
-                {
-                    ((swapStatus === SwapStatus.UserTransferPending
-                        && !(swapInputTransaction || storedWalletTransaction))) ?
-                        <Withdraw type={type} />
-                        :
-                        <>
-                            <Processing />
-                            {
-                                storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
-                                <SubmitButton isDisabled={false} isSubmitting={false} onClick={removeStoredTransaction}>
-                                    Try again
-                                </SubmitButton>
-                            }
-                        </>
-                }
-            </Container>
-        </>
+        <Container type={type}>
+            {
+                ((swapStatus === SwapStatus.UserTransferPending
+                    && !(swapInputTransaction || storedWalletTransaction))) ?
+                    <Withdraw type={type} />
+                    :
+                    <>
+                        <Processing />
+                        {
+                            storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
+                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={removeStoredTransaction}>
+                                Try again
+                            </SubmitButton>
+                        }
+                    </>
+            }
+        </Container>
     )
 }
 

@@ -111,13 +111,11 @@ export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token
             }
         }
         catch (e) {
+            setLoading(false)
             if (e?.message) {
                 toast(e.message)
                 return
             }
-        }
-        finally {
-            setLoading(false)
         }
     }, [syncWallet, token])
 

@@ -82,8 +82,8 @@ export default function Form() {
 
         if (to &&
             destination_address &&
-            (query.destAddress) &&
-            (addressFormat(query.destAddress?.toString(), to) === addressFormat(destination_address, to)) &&
+            (query.destination_address) &&
+            (addressFormat(query.destination_address?.toString(), to) === addressFormat(destination_address, to)) &&
             !(addresses.find(a => addressFormat(a.address, to) === addressFormat(destination_address, to) && a.group !== AddressGroup.FromQuery)) && !isAddressFromQueryConfirmed) {
 
             const confirmed = await getConfirmation({

@@ -72,7 +72,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
 
     useEffect(() => {
         valuesChanger(values)
-    }, [values])
+    }, [values, values.destination_address])
 
     useEffect(() => {
         if (!source || !toAsset || !toAsset.refuel) {

@@ -55,10 +55,8 @@ export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token })
 
         }
         catch (e) {
-            setTransactionErrorMessage(e.message)
-        }
-        finally {
             setLoading(false)
+            setTransactionErrorMessage(e.message)
         }
     }, [network, token, tonConnectUI])
 
