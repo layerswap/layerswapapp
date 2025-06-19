@@ -6,7 +6,7 @@ import { NetworkRoute } from "../Models/Network";
 import { useEffect, useMemo, useState } from "react";
 import { useSettingsState } from "../context/settings";
 import { Exchange } from "../Models/Exchange";
-import { NetworkElement, RowElement, NetworkTokenElement, _Route, _RoutesGroup, ExchangeTokenElement, ExchangeElement, TitleElement } from "../Models/Route";
+import { NetworkElement, RowElement, NetworkTokenElement, ExchangeTokenElement, ExchangeElement, TitleElement } from "../Models/Route";
 import useAllBalances from "./useAllBalances";
 import { NetworkBalance } from "../Models/Balance";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
@@ -169,7 +169,7 @@ function resolveSelectedRoute(values: SwapFormValues, direction: SwapDirection):
     return direction === 'from' ? fromExchange || from : toExchange || to;
 }
 function resolveSelectedToken(values: SwapFormValues, direction: SwapDirection) {
-    const { fromCurrency, toCurrency, fromExchange, toExchange } = values
+    const { fromAsset: fromCurrency, toAsset: toCurrency, fromExchange, toExchange } = values
     //TODO: might need model refactoring as for now we just assume if exchange is selected then token is curencyGroup
     if ((direction === 'from' && fromExchange) || (direction === 'to' && toExchange)) {
         return values.currencyGroup

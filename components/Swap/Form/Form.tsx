@@ -1,37 +1,45 @@
 import { Form, FormikErrors, useFormikContext } from "formik";
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import React from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import { Partner } from "../../../Models/Partner";
+import { Partner } from "@/Models/Partner";
 import { motion, useCycle } from "framer-motion";
 import { ArrowUpDown } from 'lucide-react'
 import { Widget } from "../../Widget/Index";
 import { classNames } from "../../utils/classNames";
-import { useQueryState } from "../../../context/query";
-import QuoteDetails from "../../FeeDetails";
-import { useFee } from "../../../context/feeContext";
+import { useQueryState } from "@/context/query";
+import { useQuote } from "@/context/feeContext";
 import dynamic from "next/dynamic";
-import { TokenBalance } from "../../../Models/Balance";
+import { TokenBalance } from "@/Models/Balance";
 import ResizablePanel from "../../ResizablePanel";
 import ValidationError from "../../validationError";
-import { Exchange, ExchangeToken } from "../../../Models/Exchange";
-import { useValidationContext } from "../../../context/validationErrorContext";
-import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
-import useWallet from "../../../hooks/useWallet";
-import { useSettingsState } from "../../../context/settings";
+import { Exchange, ExchangeToken } from "@/Models/Exchange";
+import { useValidationContext } from "@/context/validationErrorContext";
+import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
+import useWallet from "@/hooks/useWallet";
+import { useSettingsState } from "@/context/settings";
 import SourcePicker from "../../Input/SourcePicker";
 import DestinationPicker from "../../Input/DestinationPicker";
 import CexNetworkPicker from "../../Input/CexNetworkPicker";
 import FormButton from "../FormButton";
-import { AmountFocusProvider } from "../../../context/amountFocusContext";
 import { WalletProvider } from "@/Models/WalletProvider";
 import { QueryParams } from "@/Models/QueryParams";
+import QuoteDetails from "../../FeeDetails";
+import { UrlQuerySync } from "./UrlQuerySync";
 
 type Props = {
     partner?: Partner,
 }
 
 const ReserveGasNote = dynamic(() => import("../../ReserveGasNote"), {
+    loading: () => <></>,
+});
+
+const RefuelModal = dynamic(() => import("@/components/FeeDetails/RefuelModal"), {
+    loading: () => <></>,
+});
+
+const RefuelToggle = dynamic(() => import("@/components/FeeDetails/Refuel"), {
     loading: () => <></>,
 });
 
@@ -51,18 +59,20 @@ const SwapForm: FC<Props> = ({ partner }) => {
 
     const { selectedSourceAccount } = useSwapDataState()
     const { providers, wallets } = useWallet()
-    const { minAllowedAmount, valuesChanger } = useFee()
-    const toAsset = values.toCurrency
-    const fromAsset = values.fromCurrency
+    const { minAllowedAmount, valuesChanger, isQuoteLoading, quote } = useQuote()
+    const toAsset = values.toAsset
+    const fromAsset = values.fromAsset
 
     const { validationMessage } = useValidationContext();
     const query = useQueryState();
 
     const actionDisplayName = query?.actionButtonText || "Swap now"
 
+    const [openRefuelModal, setOpenRefuelModal] = useState<boolean>(false)
+
     useEffect(() => {
         valuesChanger(values)
-    }, [values])
+    }, [values, values.destination_address])
 
     useEffect(() => {
         if (!source || !toAsset || !toAsset.refuel) {
@@ -84,76 +94,84 @@ const SwapForm: FC<Props> = ({ partner }) => {
     const sourceWalletNetwork = values.fromExchange ? undefined : values.from
     const shouldConnectWallet = (sourceWalletNetwork && values.from?.deposit_methods?.includes('wallet') && values.depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!values.from && !values.fromExchange && !wallets.length && values.depositMethod !== 'deposit_address')
 
-    return <AmountFocusProvider>
-        <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
-            <Widget className="sm:min-h-[450px] h-full">
-                <Widget.Content>
-                    <div className="w-full h-[440px] flex flex-col justify-between">
-                        <div>
-                            <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
-                                {
-                                    !(query?.hideFrom && values?.from) &&
-                                    <SourcePicker />
-                                }
-                                {
-                                    !query?.hideFrom && !query?.hideTo &&
-                                    <ValueSwapperButton
-                                        values={values}
-                                        setValues={setValues}
-                                        providers={providers}
-                                        query={query}
-                                    />
-                                }
-                                {
-                                    !(query?.hideTo && values?.to) &&
-                                    <DestinationPicker partner={partner} />
-                                }
-                            </div>
+    return <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
+        <UrlQuerySync
+            fieldMapping={{ from: 'name', to: 'name', fromAsset: 'symbol', toAsset: 'symbol', currencyGroup: 'symbol', fromExchange: 'name', toExchange: 'name' }}
+            excludeFields={['refuel']}
+        />
+        <Widget className="sm:min-h-[450px] h-full">
+            <Widget.Content>
+                <div className="w-full min-h-[79svh] sm:min-h-[460px] flex flex-col justify-between">
+                    <div>
+                        <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
                             {
-                                (((fromExchange && destination) || (toExchange && source)) && currencyGroup)
-                                    ? <div className="mb-6 leading-4">
-                                        <ResizablePanel>
-                                            <CexNetworkPicker direction={fromExchange ? 'from' : 'to'} partner={partner} />
-                                        </ResizablePanel>
-                                    </div>
-                                    : <></>
+                                !(query?.hideFrom && values?.from) &&
+                                <SourcePicker />
                             }
-                            <div className="w-full">
-                                {
-                                    values.amount &&
-                                    <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
-                                }
-                            </div>
+                            {
+                                !query?.hideFrom && !query?.hideTo &&
+                                <ValueSwapperButton
+                                    values={values}
+                                    setValues={setValues}
+                                    providers={providers}
+                                    query={query}
+                                />
+                            }
+                            {
+                                !(query?.hideTo && values?.to) &&
+                                <DestinationPicker partner={partner} />
+                            }
+                        </div>
+                        {
+                            (((fromExchange && destination) || (toExchange && source)) && currencyGroup)
+                                ? <div className="mb-6 leading-4">
+                                    <ResizablePanel>
+                                        <CexNetworkPicker direction={fromExchange ? 'from' : 'to'} partner={partner} />
+                                    </ResizablePanel>
+                                </div>
+                                : <></>
+                        }
+                        <div className="w-full">
+                            {
+                                values.amount &&
+                                <ReserveGasNote onSubmit={(walletBalance, networkGas) => handleReserveGas(walletBalance, networkGas)} />
+                            }
                         </div>
                     </div>
-                </Widget.Content>
-                <Widget.Footer>
                     <div className="space-y-3">
+                        {
+                            values.toAsset?.refuel && !query.hideRefuel && !toExchange &&
+                            <RefuelToggle onButtonClick={() => setOpenRefuelModal(true)} />
+                        }
                         {
                             validationMessage
                                 ? <ValidationError />
-                                : <QuoteDetails values={values} />
+                                : <QuoteDetails values={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                         }
-                        <FormButton
-                            shouldConnectWallet={shouldConnectWallet}
-                            values={values}
-                            isValid={isValid}
-                            errors={errors}
-                            isSubmitting={isSubmitting}
-                            actionDisplayName={actionDisplayName}
-                            partner={partner}
-                        />
                     </div>
-                </Widget.Footer>
-            </Widget>
-        </Form>
-    </AmountFocusProvider>
+                </div>
+            </Widget.Content>
+            <Widget.Footer>
+                <FormButton
+                    shouldConnectWallet={shouldConnectWallet}
+                    values={values}
+                    isValid={isValid}
+                    errors={errors}
+                    isSubmitting={isSubmitting}
+                    actionDisplayName={actionDisplayName}
+                    partner={partner}
+                />
+            </Widget.Footer>
+            <RefuelModal openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} />
+        </Widget>
+    </Form>
 }
+
 
 const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: (values: React.SetStateAction<SwapFormValues>, shouldValidate?: boolean) => Promise<void | FormikErrors<SwapFormValues>>, providers: WalletProvider[], query: QueryParams }> = ({ values, setValues, providers, query }) => {
     const [animate, cycle] = useCycle(
-        { rotate: 0 },
-        { rotate: 180 }
+        { rotateX: 0 },
+        { rotateX: 180 }
     );
     const { selectedSourceAccount } = useSwapDataState()
     const { setSelectedSourceAccount } = useSwapDataUpdate()
@@ -169,8 +187,8 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: (values: React
 
     const {
         to: destination,
-        fromCurrency,
-        toCurrency,
+        fromAsset: fromCurrency,
+        toAsset: toCurrency,
         from: source,
         fromExchange,
         toExchange,
@@ -225,8 +243,8 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: (values: React
             ...values,
             from: newFrom,
             to: newTo,
-            fromCurrency: newFromToken,
-            toCurrency: newToToken,
+            fromAsset: newFromToken,
+            toAsset: newToToken,
             toExchange: newToExchange,
             fromExchange: newFromExchange,
             currencyGroup: (fromExchange || toExchange) ? (fromExchange ? newToExchangeToken : newFromExchangeToken) : undefined,

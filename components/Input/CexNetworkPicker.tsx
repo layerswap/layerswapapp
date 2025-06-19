@@ -27,7 +27,7 @@ const CexNetworkPicker: FC<{ direction: SwapDirection, partner: Partner | undefi
     const { isDesktop } = useWindowDimensions();
     const { isLoading, networks } = useExchangeNetworks({ direction, values })
 
-    const currencyFieldName = direction === 'from' ? 'fromCurrency' : 'toCurrency';
+    const currencyFieldName = direction === 'from' ? 'fromAsset' : 'toAsset';
 
     const selectedNetwork = values[direction]
     const selectedToken = values[currencyFieldName]

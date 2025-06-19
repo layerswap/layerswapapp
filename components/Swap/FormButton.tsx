@@ -53,8 +53,8 @@ const FormButton = ({
 function ActionText(errors: FormikErrors<SwapFormValues>, actionDisplayName: string): string {
     return errors.from?.toString()
         || errors.to?.toString()
-        || errors.fromCurrency
-        || errors.toCurrency
+        || errors.fromAsset
+        || errors.toAsset
         || errors.currencyGroup
         || errors.amount
         || (actionDisplayName)

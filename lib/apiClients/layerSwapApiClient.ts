@@ -142,6 +142,7 @@ export type CreateSwapParams = {
 }
 
 export type SwapResponse = {
+    deposit_actions?: DepositAction[];
     swap: SwapItem;
     quote: SwapQuote
     refuel?: Refuel,
@@ -164,8 +165,8 @@ export type SwapItem = {
     destination_token: Token,
     destination_exchange?: Exchange,
     status: SwapStatus,
-    source_address: `0x${string}`,
-    destination_address: `0x${string}`,
+    source_address: string,
+    destination_address: string,
     requested_amount: number,
     use_deposit_address: boolean
     transactions: Transaction[]

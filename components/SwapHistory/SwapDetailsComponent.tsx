@@ -366,7 +366,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                 pathname: `/`,
                                 query: {
                                     amount: requested_amount,
-                                    destAddress: destination_address,
+                                    destination_address: destination_address,
                                     from: source_network?.name,
                                     to: destination_network?.name,
                                     fromAsset: source_token.symbol,

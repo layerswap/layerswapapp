@@ -290,12 +290,8 @@ const Processing: FC<Props> = ({ swapResponse }) => {
         <Widget.Content>
             <div className={`w-full min-h-[422px] space-y-5 flex flex-col justify-between text-primary-text`}>
                 <div className='space-y-5'>
-                    <div className="w-full flex flex-col h-full space-y-5">
-                        <div className="bg-secondary-500 font-normal px-3 py-4 rounded-lg flex flex-col border border-secondary-300 w-full relative z-10">
-                            <SwapSummary />
-                        </div>
-                    </div>
-                    <div className="bg-secondary-500 font-normal px-3 py-6 rounded-lg flex flex-col border border-secondary-300 w-full relative z-10 divide-y-2 divide-secondary-400 divide-dashed">
+                    <SwapSummary />
+                    <div className="bg-secondary-500 font-normal px-3 py-6 rounded-2xl flex flex-col w-full relative z-10 divide-y-2 divide-secondary-300 divide-dashed">
                         <div className='pb-4'>
                             <div className='flex flex-col gap-2 items-center'>
                                 <div className='flex items-center'>

@@ -9,6 +9,7 @@ import convertSvgComponentToBase64 from "../../../components/utils/convertSvgCom
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon"
 import KnownInternalNames from "../../knownIds"
 import { Connector, CreateConnectorFn } from "@bigmi/client"
+import { isValidAddress } from "@/lib/address/validator"
 
 const bitcoinNames = [KnownInternalNames.Networks.BitcoinMainnet, KnownInternalNames.Networks.BitcoinTestnet]
 
@@ -66,6 +67,15 @@ export default function useBitcoin(): WalletProvider {
             if (!result.accounts) throw new Error("No result from connector")
 
             const address = result.accounts[0]
+            const network = networks.find(n => commonSupportedNetworks.includes(n.name))
+            const wrongChanin = !isValidAddress(address, network)
+
+            if (address && wrongChanin) {
+                await disconnect(config, { connector })
+                const isMainnet = network?.name === KnownInternalNames.Networks.BitcoinMainnet
+                const errorMessage = `Please switch the network in your wallet to ${isMainnet ? 'Mainnet' : 'Testnet'} and click connect again`
+                throw new Error(errorMessage)
+            }
 
             const wallet = resolveWallet({
                 activeConnection: { address: address, id: connector.id },

@@ -2,7 +2,7 @@ import WarningMessage from "./WarningMessage"
 import { useFormikContext } from "formik"
 import { SwapFormValues } from "./DTOs/SwapFormValues"
 import { truncateDecimals } from "./utils/RoundDecimals"
-import { useFee } from "../context/feeContext"
+import { useQuote } from "../context/feeContext"
 import { TokenBalance } from "../Models/Balance"
 import useSWRBalance from "../lib/balances/useSWRBalance"
 import useSWRGas from "../lib/gases/useSWRGas"
@@ -12,13 +12,13 @@ const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: TokenBalance, 
     const {
         values,
     } = useFormikContext<SwapFormValues>();
-    const { minAllowedAmount, maxAllowedAmount } = useFee()
+    const { minAllowedAmount, maxAllowedAmount } = useQuote()
     const { selectedSourceAccount } = useSwapDataState()
 
     const { balances } = useSWRBalance(selectedSourceAccount?.address, values.from)
-    const { gas: networkGas } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromCurrency)
+    const { gas: networkGas } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset)
 
-    const walletBalance = selectedSourceAccount && balances?.find(b => b?.network === values?.from?.name && b?.token === values?.fromCurrency?.symbol)
+    const walletBalance = selectedSourceAccount && balances?.find(b => b?.network === values?.from?.name && b?.token === values?.fromAsset?.symbol)
 
     const mightBeOutOfGas = !!(networkGas && walletBalance?.isNativeCurrency && (Number(values.amount)
         + networkGas) > walletBalance.amount
@@ -26,7 +26,7 @@ const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: TokenBalance, 
         && walletBalance.amount > minAllowedAmount
         && !(maxAllowedAmount && (walletBalance.amount > (maxAllowedAmount + networkGas)))
     )
-    const gasToReserveFormatted = mightBeOutOfGas ? truncateDecimals(networkGas, values?.fromCurrency?.precision) : ''
+    const gasToReserveFormatted = mightBeOutOfGas ? truncateDecimals(networkGas, values?.fromAsset?.precision) : ''
 
     return (
         <>
@@ -46,7 +46,7 @@ const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: TokenBalance, 
                                     You might not be able to complete the transaction.
                                 </div>
                                 <div onClick={() => onSubmit(walletBalance, networkGas)} className="cursor-pointer border-b border-dotted border-primary-text w-fit hover:text-primary hover:border-primary text-primary-text">
-                                    <span>Reserve</span> <span>{gasToReserveFormatted}</span> <span>{values?.fromCurrency?.symbol}</span> <span>for gas.</span>
+                                    <span>Reserve</span> <span>{gasToReserveFormatted}</span> <span>{values?.fromAsset?.symbol}</span> <span>for gas.</span>
                                 </div>
                             </div>
                         </WarningMessage>

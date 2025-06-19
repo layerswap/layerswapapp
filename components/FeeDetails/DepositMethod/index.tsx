@@ -26,7 +26,6 @@ const depositMethods = [
     }
 ]
 
-
 const DepositMethodComponent: FC = () => {
     const {
         values,
@@ -73,37 +72,38 @@ const DepositMethodComponent: FC = () => {
         return null
 
     return (
-        <div className="relative w-full mb-1">
-            <Popover open={showModal} onOpenChange={setShowModal}>
-                <PopoverTrigger className="font-semibold text-secondary-text text-xs flex items-center space-x-1 p-2">
-                    <span> Transfer via </span> <span>{selectedMethod?.toLowerCase()}</span> <motion.div
-                        animate={showModal ? "open" : "closed"}
-                        variants={variants}
-                    >
-                        <ChevronDown className=" w-4 h-4 " />
-                    </motion.div>
-                </PopoverTrigger>
-                <PopoverContent className='ml-2 mt-1 space-y-1 text-sm p-2 max-w border-none rounded-xl bg-secondary-800 max-w-72 md:max-w-96' align="start">
-                    <DepositMethod
-                        onselect={handleSelect}
-                        value="wallet"
-                        icon={<WalletIcon
-                            strokeWidth={2} className="w-6 h-6" />}
-                        description="Connect your wallet and transfer instantly"
-                        title="Wallet"
-                        selectedValue={depositMethod}
-                    />
-                    <DepositMethod
-                        onselect={handleSelect}
-                        value="deposit_address"
-                        icon={<AlignLeft strokeWidth={2} className="w-6 h-6" />}
-                        description="Manually transfer to a Deposit Address generated specifically for you"
-                        title="Deposit address"
-                        selectedValue={depositMethod}
-                    />
-                </PopoverContent>
-            </Popover>
-        </div>
+        <></>
+        // <div className="relative w-full mb-1">
+        //     <Popover open={showModal} onOpenChange={setShowModal}>
+        //         <PopoverTrigger className="font-semibold text-secondary-text text-xs flex items-center space-x-1 p-2">
+        //             <span> Transfer via </span> <span>{selectedMethod?.toLowerCase()}</span> <motion.div
+        //                 animate={showModal ? "open" : "closed"}
+        //                 variants={variants}
+        //             >
+        //                 <ChevronDown className="w-4 h-4" />
+        //             </motion.div>
+        //         </PopoverTrigger>
+        //         <PopoverContent className='ml-2 mt-1 space-y-1 text-sm p-2 max-w border-none rounded-xl bg-secondary-800 max-w-72 md:max-w-96' align="start">
+        //             <DepositMethod
+        //                 onselect={handleSelect}
+        //                 value="wallet"
+        //                 icon={<WalletIcon
+        //                     strokeWidth={2} className="w-6 h-6" />}
+        //                 description="Connect your wallet and transfer instantly"
+        //                 title="Wallet"
+        //                 selectedValue={depositMethod}
+        //             />
+        //             <DepositMethod
+        //                 onselect={handleSelect}
+        //                 value="deposit_address"
+        //                 icon={<AlignLeft strokeWidth={2} className="w-6 h-6" />}
+        //                 description="Manually transfer to a Deposit Address generated specifically for you"
+        //                 title="Deposit address"
+        //                 selectedValue={depositMethod}
+        //             />
+        //         </PopoverContent>
+        //     </Popover>
+        // </div>
     )
 };
 
@@ -151,7 +151,6 @@ const DepositMethod: FC<DespositMethodItemProps> = ({
                     }
                 </div>
             </div>
-
         </div>
     )
 }

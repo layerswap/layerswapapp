@@ -181,8 +181,8 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                         <ImageWithFallback
                             src={token.logo}
                             alt="Token Logo"
-                            height="20"
-                            width="20"
+                            height="24"
+                            width="24"
                             loading="eager"
                             fetchPriority="high"
                             className="rounded-full object-contain"
@@ -190,16 +190,16 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                         <ImageWithFallback
                             src={route.logo}
                             alt="Route Logo"
-                            height="14"
-                            width="14"
+                            height="12"
+                            width="12"
                             loading="eager"
                             fetchPriority="high"
-                            className="h-3.5 w-3.5 absolute -right-1.5 -bottom-1.5 object-contain rounded-md border-1 border-secondary-300"
+                            className="h-3.5 w-3.5 absolute -right-1.5 -bottom-1.5 object-contain rounded border-1 border-secondary-300"
                         />
                     </div>
-                    <span className="group-has-[.input-wide]:hidden ml-2 flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0 max-w-3/5">
+                    <span className="ml-3 flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0 max-w-3/5">
                         <span className="leading-5">{token.symbol}</span>
-                        <span className="text-secondary-text text-sm leading-4 truncate whitespace-nowrap max-w-[60px] sm:max-w-[100px]">
+                        <span className="text-secondary-text font-normal text-sm leading-4 truncate whitespace-nowrap max-w-[60px] sm:max-w-[100px]">
                             {route.display_name}
                         </span>
                     </span>
@@ -207,7 +207,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
             ) : (
                 <SelectedRoutePlaceholder placeholder={placeholder} />
             )}
-            <span className="group-has-[.input-wide]:static absolute right-0 pr-2 pl-1 pointer-events-none text-primary-text">
+            <span className="absolute right-0 pr-2 pl-1 pointer-events-none text-primary-text">
                 <ChevronDown className="h-3.5 w-3.5 text-secondary-text" aria-hidden="true" />
             </span>
         </span>
@@ -219,8 +219,8 @@ const SelectedRoutePlaceholder = ({ placeholder }: { placeholder: string }) => (
         <div className="inline-flex items-center relative">
             <RoutePickerIcon className="w-7 h-7" />
         </div>
-        <span className="group-has-[.input-wide]:hidden flex text-secondary-text text-base font-normal leading-5 flex-auto items-center max-w-2/3">
-            <span className="ml-2 text-xs sm:text-base">{placeholder}</span>
+        <span className="flex text-secondary-text text-base font-normal leading-5 flex-auto items-center max-w-2/3">
+            <span className="ml-2 text-xs sm:text-base sm:leading-5">{placeholder}</span>
         </span>
     </>
 )
