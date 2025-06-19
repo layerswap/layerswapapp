@@ -1,6 +1,5 @@
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import { DetailedEstimates } from './DetailedEstimates';
-import { useQuote } from '../../context/feeContext';
 import FeeDetails from './FeeDetailsComponent';
 import ResizablePanel from '../ResizablePanel';
 import { FC, useState } from 'react';
@@ -9,17 +8,26 @@ import Campaign from './Campaign';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
 import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
-import { Quote } from '@/lib/apiClients/layerSwapApiClient';
+import { Quote, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 import AverageCompletionTime from '../Common/AverageCompletionTime';
 import useSWRGas from "@/lib/gases/useSWRGas";
 import useWallet from "@/hooks/useWallet";
-import { useFormikContext } from 'formik';
 import GasIcon from '../icons/GasIcon';
 import Clock from '../icons/Clock';
 
-export default function QuoteDetails({ values }: { values: SwapFormValues }) {
-    const { toAsset: toCurrency, to, toExchange, from, fromAsset: fromCurrency, amount, destination_address } = values || {};
-    const { quote, isQuoteLoading } = useQuote()
+export interface QuoteComponentProps {
+    quote: Quote | undefined
+    isQuoteLoading: boolean;
+    values: SwapFormValues
+}
+
+export interface QuoteDetailsProps extends Omit<QuoteComponentProps, 'quote'> {
+    quote: SwapQuote | undefined
+}
+
+export default function QuoteDetails({ values, quote: quoteData, isQuoteLoading }: QuoteComponentProps) {
+    const { toAsset: toCurrency, to, from, fromAsset: fromCurrency, destination_address } = values || {};
+    const { quote, reward } = quoteData || {};
     const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(false);
 
     return (
@@ -45,7 +53,7 @@ export default function QuoteDetails({ values }: { values: SwapFormValues }) {
                                         Details
                                     </p>
                                     :
-                                    <DetailsButton quote={quote} isQuoteLoading={isQuoteLoading} />
+                                    <DetailsButton quote={quote} isQuoteLoading={isQuoteLoading} values={values} />
                             }
                             <ChevronDown className='h-3.5 w-3.5 text-secondary-text' />
                         </AccordionTrigger>
@@ -56,7 +64,7 @@ export default function QuoteDetails({ values }: { values: SwapFormValues }) {
                                         {
                                             (quote || isQuoteLoading) && fromCurrency && toCurrency &&
                                             <FeeDetails.Item>
-                                                <DetailedEstimates quote={quote?.quote} isQuoteLoading={isQuoteLoading} />
+                                                <DetailedEstimates quote={quote} isQuoteLoading={isQuoteLoading} values={values} />
                                             </FeeDetails.Item>
                                         }
                                         {
@@ -65,7 +73,7 @@ export default function QuoteDetails({ values }: { values: SwapFormValues }) {
                                             destination_address &&
                                             <Campaign
                                                 destination={values.to}
-                                                reward={quote?.reward}
+                                                reward={reward}
                                                 destinationAddress={destination_address}
                                             />
                                         }
@@ -83,16 +91,15 @@ export default function QuoteDetails({ values }: { values: SwapFormValues }) {
 }
 
 
-const DetailsButton: FC<{ quote?: Quote, isQuoteLoading: boolean }> = ({ quote: quoteData, isQuoteLoading }) => {
-    const { values } = useFormikContext<SwapFormValues>();
+const DetailsButton: FC<QuoteDetailsProps> = ({ quote, isQuoteLoading, values }) => {
     const { provider } = useWallet(values.from, 'withdrawal')
     const wallet = provider?.activeWallet
     const { gas } = useSWRGas(wallet?.address, values.from, values.fromAsset)
-    const LsFeeAmountInUsd = quoteData?.quote.total_fee_in_usd
-    const gasFeeAmountInUsd = (quoteData?.quote.source_network?.token && gas) ? gas * quoteData?.quote.source_network?.token?.price_in_usd : null;
+    const LsFeeAmountInUsd = quote?.total_fee_in_usd
+    const gasFeeAmountInUsd = (quote?.source_network?.token && gas) ? gas * quote.source_network?.token?.price_in_usd : null;
     const feeAmountInUsd = (LsFeeAmountInUsd || 0) + (gasFeeAmountInUsd || 0)
     const displayFeeInUsd = feeAmountInUsd ? (feeAmountInUsd < 0.01 ? '<$0.01' : `$${feeAmountInUsd?.toFixed(2)}`) : null
-    const averageCompletionTime = quoteData?.quote.avg_completion_time;
+    const averageCompletionTime = quote?.avg_completion_time;
 
     if (isQuoteLoading) {
         return (
@@ -115,7 +122,7 @@ const DetailsButton: FC<{ quote?: Quote, isQuoteLoading: boolean }> = ({ quote: 
                 averageCompletionTime &&
                 <div className="text-right text-primary-text inline-flex items-center gap-1 pr-4">
                     <Clock />
-                    <AverageCompletionTime avgCompletionTime={quoteData.quote.avg_completion_time} />
+                    <AverageCompletionTime avgCompletionTime={quote.avg_completion_time} />
                 </div>
             }
         </div>

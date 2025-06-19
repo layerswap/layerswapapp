@@ -59,7 +59,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
 
     const { selectedSourceAccount } = useSwapDataState()
     const { providers, wallets } = useWallet()
-    const { minAllowedAmount, valuesChanger } = useQuote()
+    const { minAllowedAmount, valuesChanger, isQuoteLoading, quote } = useQuote()
     const toAsset = values.toAsset
     const fromAsset = values.fromAsset
 
@@ -146,7 +146,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                         {
                             validationMessage
                                 ? <ValidationError />
-                                : <QuoteDetails values={values} />
+                                : <QuoteDetails values={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                         }
                     </div>
                 </div>
