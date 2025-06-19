@@ -10,6 +10,7 @@ import { Content } from "./Content";
 import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
 import PickerWalletConnect from "./RouterPickerWalletConnect";
 import { useRouteTokenSwitchStore } from "@/stores/routeTokenSwitchStore";
+import { swapInProgress } from "@/components/utils/swapUtils";
 
 const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -24,7 +25,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     useEffect(() => {
         const updateValues = async () => {
-            if (!selectedRoute || !selectedToken || !allRoutes) return;
+            if (!selectedRoute || !selectedToken || !allRoutes || swapInProgress.current) return;
 
             const updatedRoute = allRoutes.find(r => r.name === selectedRoute.name);
             const updatedToken = updatedRoute?.tokens?.find(t => t.symbol === selectedToken.symbol);
@@ -41,6 +42,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     }, [selectedRoute, selectedToken, allRoutes, selectedToken]);
 
     const handleSelect = useCallback(async (route: NetworkRoute, token: NetworkRouteToken) => {
+        swapInProgress.current = false;
         await setFieldValue(currencyFieldName, token, true)
         await setFieldValue(direction, route, true)
     }, [currencyFieldName, direction, values, showTokens])

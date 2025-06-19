@@ -26,6 +26,7 @@ import FormButton from "../FormButton";
 import { AmountFocusProvider } from "../../../context/amountFocusContext";
 import { WalletProvider } from "@/Models/WalletProvider";
 import { QueryParams } from "@/Models/QueryParams";
+import { swapInProgress } from "@/components/utils/swapUtils";
 
 type Props = {
     partner?: Partner,
@@ -188,7 +189,8 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: (values: React
         valuesSwapperDisabled = true;
     }
 
-    const valuesSwapper = useCallback(() => {
+    const valuesSwapper = useCallback(async () => {
+        swapInProgress.current = true;
         let newFromExchange: Exchange | undefined
         let newToExchange: Exchange | undefined
         let newFromExchangeToken: ExchangeToken | undefined
@@ -240,7 +242,8 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: (values: React
             newVales.destination_address = oldDestinationWalletIsNotCompatible ? undefined : values.destination_address
         }
 
-        setValues(newVales, true);
+        await setValues(newVales, true);
+        swapInProgress.current = false;
 
         const changeSourceAddress = newFrom && values.depositMethod === 'wallet' && destinationProvider && (oldSourceWalletIsNotCompatible || changeDestinationAddress)
         if (changeSourceAddress && values.destination_address) {
