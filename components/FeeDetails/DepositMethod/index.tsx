@@ -1,10 +1,15 @@
 import { useFormikContext } from "formik";
 import React, { FC, useCallback, useEffect, useRef } from "react";
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import { Network } from "../../../Models/Network";
-import { useDepositMethod } from "../../../context/depositMethodContext";
-import { useQueryState } from "../../../context/query";
-import KnownInternalNames from "../../../lib/knownIds";
+import { Network } from "@/Models/Network";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
+import WalletIcon from "@/components/icons/WalletIcon";
+import { AlignLeft, ChevronDown } from "lucide-react"
+import { motion } from "framer-motion";
+import { useQueryState } from "@/context/query";
+import useWallet from "@/hooks/useWallet";
+import { WalletProvider } from "@/Models/WalletProvider";
+import { useDepositMethod } from "@/context/depositMethodContext";
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 
 const variants = {
     open: { rotate: 180 },
@@ -28,11 +33,12 @@ const DepositMethodComponent: FC = () => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const { setShowModal, showModal } = useDepositMethod()
-    const { depositMethod: defaultDepositMethod, hideDepositMethod, appName } = useQueryState()
+    const { depositMethod: defaultDepositMethod, hideDepositMethod } = useQueryState()
     const { from, depositMethod, fromExchange } = values
+    const { provider } = useWallet(from, 'withdrawal')
     const name = 'depositMethod'
 
-    const menuItems = from && GenerateDepositMethodMenuItems(from, depositMethods, appName)
+    const menuItems = from && GenerateDepositMethodMenuItems(from, depositMethods, provider)
 
     const defaultMethod = menuItems?.find(i => i.id === defaultDepositMethod)
     const menuItemsRef = useRef<DepositMethod[] | undefined>()
@@ -52,7 +58,7 @@ const DepositMethodComponent: FC = () => {
             setFieldValue(name, first, true)
             return
         }
-    }, [from, appName, fromExchange])
+    }, [from, fromExchange])
 
 
     const handleSelect = useCallback((item: string) => {
@@ -157,12 +163,9 @@ type DepositMethod = {
     display_name: string
 }
 
-function GenerateDepositMethodMenuItems(network: Network, depositMethods: DepositMethod[], appName?: string): DepositMethod[] {
+function GenerateDepositMethodMenuItems(network: Network, depositMethods: DepositMethod[], walletProvider?: WalletProvider): DepositMethod[] {
 
-    const sourceIsArbitrumOne = network.name?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
-        || network.name === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
-    const sourceIsSynquoteArbitrumOne = appName === "ea7df14a1597407f9f755f05e25bab42" && sourceIsArbitrumOne
-    if (sourceIsSynquoteArbitrumOne) {
+    if (!walletProvider) {
         return depositMethods.filter(m => m.id === 'deposit_address')
     }
 
