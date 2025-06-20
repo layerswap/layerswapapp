@@ -143,6 +143,7 @@ export default function Form() {
     }, [minAllowedAmount, maxAllowedAmount, selectedSourceAccount]);
 
     const handleShowSwapModal = useCallback((value: boolean) => {
+        debugger
         setShowSwapModal(value)
         if (swap?.id) {
             pollFee(!value)
@@ -152,7 +153,7 @@ export default function Form() {
 
     const validator = useMemo(() => MainStepValidation({ minAllowedAmount, maxAllowedAmount, sourceAddress: selectedSourceAccount?.address, sameAccountNetwork: query.sameAccountNetwork }), [minAllowedAmount, maxAllowedAmount, selectedSourceAccount, query.sameAccountNetwork])
 
-    return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
+    return <DepositMethodProvider canRedirect onRedirect={() => { debugger; handleShowSwapModal(false) }}>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence mode='wait'>
                 {
@@ -194,7 +195,7 @@ export default function Form() {
                 <SwapForm partner={partner} />
             </ValidationProvider>
         </Formik>
-    </DepositMethodProvider >
+    </DepositMethodProvider>
 }
 
 type SubmitProps = {

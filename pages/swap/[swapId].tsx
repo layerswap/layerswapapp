@@ -14,15 +14,15 @@ const SwapDetails = ({ settings, themeData, apiKey }: InferGetServerSidePropsTyp
 
   return (<>
     <Layout settings={settings} themeData={themeData}>
-      <QuoteProvider>
-        <SwapDataProvider >
-          <TimerProvider>
-            <DepositMethodProvider>
+      <DepositMethodProvider>
+        <QuoteProvider>
+          <SwapDataProvider >
+            <TimerProvider>
               <SwapWithdrawal />
-            </DepositMethodProvider>
-          </TimerProvider>
-        </SwapDataProvider >
-      </QuoteProvider>
+            </TimerProvider>
+          </SwapDataProvider >
+        </QuoteProvider>
+      </DepositMethodProvider>
     </Layout>
   </>)
 }
