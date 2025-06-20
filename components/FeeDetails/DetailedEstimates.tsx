@@ -49,12 +49,12 @@ const DetailedEstimates: FC = () => {
                         <div>
                             {
                                 feeDiscount > 0 ?
-                                    <span>
-                                        <span className="text-xs line-through">
-                                            {fullParsedFeeAmount || '-'} {fee_amount == 0 ? currencyName : ''}
+                                    <span className="ml-1 text-xs">
+                                        <span className="line-through">
+                                            <span>{fullParsedFeeAmount || '-'}</span> <span>{fee_amount == 0 ? currencyName : ''}</span>
                                         </span>
-                                        <span className="text-xs ml-1">
-                                            {fee_amount && fee_amount > 0 ? parsedFee : 'Free'} {fee_amount && fee_amount > 0 ? currencyName : ''}
+                                        <span className="ml-1">
+                                            <span>{fee_amount && fee_amount > 0 ? parsedFee : 'Free'}</span> <span>{fee_amount && fee_amount > 0 ? currencyName : ''}</span>
                                         </span>
                                     </span>
                                     :
