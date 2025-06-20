@@ -1,12 +1,12 @@
 import { useState } from "react"
-import { useDepositMethod } from "../../../../../context/depositMethodContext"
-import SubmitButton from "../../../../buttons/submitButton"
-import ManualTransferSVG from "../../../../icons/ManualTransferSVG"
-import Modal from "../../../../modal/modal"
+import { useDepositMethod } from "@/context/depositMethodContext"
+import SubmitButton from "@/components/buttons/submitButton"
+import ManualTransferSVG from "@/components/icons/ManualTransferSVG"
+import Modal from "@/components/modal/modal"
 import { ArrowUpRight } from "lucide-react"
 
 const ManualTransferNote = () => {
-    // const { redirect, canRedirect } = useDepositMethod()
+    const { redirect, canRedirect } = useDepositMethod()
     const [open, setOpen] = useState(false)
 
     return (
@@ -23,9 +23,9 @@ const ManualTransferNote = () => {
                     <ManualTransferSVG />
                     <div className="space-y-3">
                         {
-                            // canRedirect &&
+                            canRedirect &&
                             <SubmitButton onClick={() => {
-                                // redirect(true)
+                                redirect(true)
                                 setOpen(false)
                             }} className='text-primary' isDisabled={false} isSubmitting={false}>
                                 Take me there
