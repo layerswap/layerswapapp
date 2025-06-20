@@ -26,6 +26,7 @@ import { WalletProvider } from "@/Models/WalletProvider";
 import { QueryParams } from "@/Models/QueryParams";
 import QuoteDetails from "../../FeeDetails";
 import { UrlQuerySync } from "./UrlQuerySync";
+import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 
 type Props = {
     partner?: Partner,
@@ -95,6 +96,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
     const shouldConnectWallet = (sourceWalletNetwork && values.from?.deposit_methods?.includes('wallet') && values.depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!values.from && !values.fromExchange && !wallets.length && values.depositMethod !== 'deposit_address')
 
     return <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
+        <DepositMethodComponent />
         <UrlQuerySync
             fieldMapping={{ from: 'name', to: 'name', fromAsset: 'symbol', toAsset: 'symbol', currencyGroup: 'symbol', fromExchange: 'name', toExchange: 'name' }}
             excludeFields={['refuel']}
@@ -146,7 +148,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                         {
                             validationMessage
                                 ? <ValidationError />
-                                : <QuoteDetails values={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                                : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                         }
                     </div>
                 </div>

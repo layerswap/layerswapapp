@@ -153,7 +153,7 @@ export default function Form() {
 
     const validator = useMemo(() => MainStepValidation({ minAllowedAmount, maxAllowedAmount, sourceAddress: selectedSourceAccount?.address, sameAccountNetwork: query.sameAccountNetwork }), [minAllowedAmount, maxAllowedAmount, selectedSourceAccount, query.sameAccountNetwork])
 
-    return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
+    return <>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence mode='wait'>
                 {
@@ -192,10 +192,12 @@ export default function Form() {
             onSubmit={handleSubmit}
         >
             <ValidationProvider>
-                <SwapForm partner={partner} />
+                <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
+                    <SwapForm partner={partner} />
+                </DepositMethodProvider >
             </ValidationProvider>
         </Formik>
-    </DepositMethodProvider >
+    </>
 }
 
 type SubmitProps = {

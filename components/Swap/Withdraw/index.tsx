@@ -8,6 +8,7 @@ import External from './External';
 import { useQueryState } from '../../../context/query';
 import { Widget } from '../../Widget/Index';
 import WalletTransferContent from './WalletTransferContent';
+import { SwapQuoteDetails } from './SwapQuoteDetails';
 
 const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
     const { swapResponse } = useSwapDataState()
@@ -47,6 +48,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
                 <div className="w-full flex flex-col justify-between  text-secondary-text">
                     <div className='grid grid-cols-1 gap-4 '>
                         <SwapSummary />
+                        <SwapQuoteDetails swapResponse={swapResponse} />
                         <div>
                             {withdraw?.content}
                         </div>

@@ -1,43 +1,41 @@
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import { DetailedEstimates } from './DetailedEstimates';
-import FeeDetails from './FeeDetailsComponent';
 import ResizablePanel from '../ResizablePanel';
 import { FC, useState } from 'react';
-import DepositMethod from './DepositMethod';
-import Campaign from './Campaign';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
 import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
-import { Quote, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
+import { Quote } from '@/lib/apiClients/layerSwapApiClient';
 import AverageCompletionTime from '../Common/AverageCompletionTime';
 import useSWRGas from "@/lib/gases/useSWRGas";
 import useWallet from "@/hooks/useWallet";
 import GasIcon from '../icons/GasIcon';
 import Clock from '../icons/Clock';
+import rewardCup from '@/public/images/rewardCup.png'
+import Image from 'next/image'
+import { Network } from '@/Models/Network';
+
+export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
+    from?: Network;
+    to?: Network;
+}
 
 export interface QuoteComponentProps {
-    quote: Quote | undefined
-    isQuoteLoading: boolean;
-    values: SwapFormValues
+    quote: Quote | undefined;
+    isQuoteLoading?: boolean;
+    swapValues: SwapValues;
+    destination?: Network,
+    destinationAddress?: string;
 }
 
-export interface QuoteDetailsProps extends Omit<QuoteComponentProps, 'quote'> {
-    quote: SwapQuote | undefined
-}
-
-export default function QuoteDetails({ values, quote: quoteData, isQuoteLoading }: QuoteComponentProps) {
-    const { toAsset: toCurrency, to, from, fromAsset: fromCurrency, destination_address } = values || {};
-    const { quote, reward } = quoteData || {};
+export default function QuoteDetails({ swapValues: values, quote: quoteData, isQuoteLoading }: QuoteComponentProps) {
+    const { toAsset, to, from, fromAsset: fromCurrency, destination_address } = values || {};
     const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(false);
 
     return (
         <>
             {
-                from && to && toCurrency && fromCurrency &&
-                <DepositMethod />
-            }
-            {
-                (quote || (!quote && isQuoteLoading)) &&
+                (quoteData || (!quoteData && isQuoteLoading)) &&
                 <Accordion type='single' collapsible className='w-full' value={isAccordionOpen ? 'quote' : ''} onValueChange={(value) => { setIsAccordionOpen(value === 'quote') }}>
                     <AccordionItem value='quote' className='bg-secondary-500 rounded-2xl'>
                         <AccordionTrigger className={clsx(
@@ -53,35 +51,22 @@ export default function QuoteDetails({ values, quote: quoteData, isQuoteLoading 
                                         Details
                                     </p>
                                     :
-                                    <DetailsButton quote={quote} isQuoteLoading={isQuoteLoading} values={values} />
+                                    <DetailsButton quote={quoteData} isQuoteLoading={isQuoteLoading} swapValues={values} />
                             }
                             <ChevronDown className='h-3.5 w-3.5 text-secondary-text' />
                         </AccordionTrigger>
                         <AccordionContent className='rounded-2xl'>
-                            <div>
-                                <ResizablePanel>
-                                    <FeeDetails>
-                                        {
-                                            (quote || isQuoteLoading) && fromCurrency && toCurrency &&
-                                            <FeeDetails.Item>
-                                                <DetailedEstimates quote={quote} isQuoteLoading={isQuoteLoading} values={values} />
-                                            </FeeDetails.Item>
-                                        }
-                                        {
-                                            values.to &&
-                                            values.toAsset &&
-                                            destination_address &&
-                                            <Campaign
-                                                destination={values.to}
-                                                reward={reward}
-                                                destinationAddress={destination_address}
-                                            />
-                                        }
-
-                                    </FeeDetails>
-                                </ResizablePanel>
-
-                            </div>
+                            <ResizablePanel>
+                                {
+                                    (quoteData || isQuoteLoading) && fromCurrency && toAsset &&
+                                    <DetailedEstimates
+                                        quote={quoteData}
+                                        isQuoteLoading={isQuoteLoading}
+                                        destination={values.to}
+                                        swapValues={values}
+                                        destinationAddress={destination_address} />
+                                }
+                            </ResizablePanel>
                         </AccordionContent>
                     </AccordionItem>
                 </Accordion>
@@ -91,7 +76,8 @@ export default function QuoteDetails({ values, quote: quoteData, isQuoteLoading 
 }
 
 
-const DetailsButton: FC<QuoteDetailsProps> = ({ quote, isQuoteLoading, values }) => {
+const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoading, swapValues: values }) => {
+    const { quote, reward } = quoteData || {}
     const { provider } = useWallet(values.from, 'withdrawal')
     const wallet = provider?.activeWallet
     const { gas } = useSWRGas(wallet?.address, values.from, values.fromAsset)
@@ -99,6 +85,7 @@ const DetailsButton: FC<QuoteDetailsProps> = ({ quote, isQuoteLoading, values })
     const gasFeeAmountInUsd = (quote?.source_network?.token && gas) ? gas * quote.source_network?.token?.price_in_usd : null;
     const feeAmountInUsd = (LsFeeAmountInUsd || 0) + (gasFeeAmountInUsd || 0)
     const displayFeeInUsd = feeAmountInUsd ? (feeAmountInUsd < 0.01 ? '<$0.01' : `$${feeAmountInUsd?.toFixed(2)}`) : null
+    const displayReward = reward?.amount_in_usd ? (reward?.amount_in_usd < 0.01 ? '<$0.01' : `$${reward?.amount_in_usd?.toFixed(2)}`) : null
     const averageCompletionTime = quote?.avg_completion_time;
 
     if (isQuoteLoading) {
@@ -123,6 +110,15 @@ const DetailsButton: FC<QuoteDetailsProps> = ({ quote, isQuoteLoading, values })
                 <div className="text-right text-primary-text inline-flex items-center gap-1 pr-4">
                     <Clock />
                     <AverageCompletionTime avgCompletionTime={quote.avg_completion_time} />
+                </div>
+            }
+            {
+                reward &&
+                <div className='text-right text-primary-text inline-flex items-center gap-1 pr-4'>
+                    <Image src={rewardCup} alt="Reward" width={16} height={16} />
+                    <p>
+                        {displayReward}
+                    </p>
                 </div>
             }
         </div>
