@@ -227,6 +227,7 @@ export type SwapQuote = {
     destination_token?: Token,
     receive_amount: number,
     min_receive_amount: number,
+    fee_discount?: number
     total_fee: number,
     total_fee_in_usd: number,
     blockchain_fee: number,
