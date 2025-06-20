@@ -18,7 +18,7 @@ export class EVMGasProvider implements Provider {
 
         const chainId = Number(network?.chain_id)
 
-        if (!network || !address || !chainId || !recipientAddress) {
+        if (!network || !address || !chainId || !recipientAddress || !network.token) {
             return
         }
 
@@ -44,7 +44,7 @@ export class EVMGasProvider implements Provider {
                     from: network,
                     currency: token,
                     destination: recipientAddress as `0x${string}`,
-                    nativeToken: token
+                    nativeToken: network.token
                 }
             )
 
@@ -283,7 +283,7 @@ export default class getOptimismGas extends getEVMGas {
             account: this.account,
             gasPriceOracleAddress: this.from.metadata.evm_oracle_contract as `0x${string}`,
             gasPrice: gasPrice as any
-        }) 
+        })
 
         return fee;
     }

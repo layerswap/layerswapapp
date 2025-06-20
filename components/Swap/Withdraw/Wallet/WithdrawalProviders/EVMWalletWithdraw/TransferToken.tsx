@@ -43,6 +43,7 @@ const TransferTokenButton: FC<{ savedTransactionHash?: string, chainId?: number 
                 chainId,
                 to: depositAddress as `0x${string}`,
                 value: parseEther(amount?.toString()),
+                gas: undefined,
                 data: callData as `0x${string}`,
                 account: selectedSourceAccount.address as `0x${string}`
             }
@@ -64,7 +65,7 @@ const TransferTokenButton: FC<{ savedTransactionHash?: string, chainId?: number 
             error.cause = e
             datadogRum.addError(error);
         }
-    }, [config, chainId])
+    }, [config, chainId, selectedSourceAccount?.address])
 
     const transaction: ActionData = {
         error: error,

@@ -42,7 +42,7 @@ export const DetailedEstimates: FC<QuoteDetailsProps> = ({ quote, isQuoteLoading
                             </label>
                         </div>
                         <div className="text-right text-primary-text">
-                            {item.content({ gas, currencyName, displayGasFeeInUsd, quote, displayLsFee, displayLsFeeInUsd, isGasLoading, isQuoteLoading })}
+                            {item.content({ gas, currencyName, nativeCurrencyName: from?.token?.symbol, displayGasFeeInUsd, quote, displayLsFee, displayLsFeeInUsd, isGasLoading, isQuoteLoading })}
                         </div>
                     </div>
                 )
@@ -55,6 +55,7 @@ export const DetailedEstimates: FC<QuoteDetailsProps> = ({ quote, isQuoteLoading
 type DetailsContentProps = {
     gas: number | undefined
     currencyName: string
+    nativeCurrencyName?: string
     displayGasFeeInUsd: string | null
     displayLsFee: string | undefined
     displayLsFeeInUsd: string | null
@@ -75,7 +76,7 @@ const detailsElements: DetailedElement[] = [
         name: 'Gas Fee',
         icon: GasIcon,
         showCondition: (gas) => { return gas !== undefined },
-        content: ({ gas, currencyName, displayGasFeeInUsd, isGasLoading }) => {
+        content: ({ gas, nativeCurrencyName, displayGasFeeInUsd, isGasLoading }) => {
             return isGasLoading ? (
                 <div className='h-[10px] w-16 inline-flex bg-gray-500 rounded-xs animate-pulse' />
             ) : <div>
@@ -89,7 +90,7 @@ const detailsElements: DetailedElement[] = [
                     </TooltipTrigger>
                     <TooltipContent className="!bg-secondary-300 !border-secondary-300 !text-primart-text">
                         <span>{gas || '-'} </span>
-                        <span>{gas ? currencyName : ''}</span>
+                        <span>{gas ? nativeCurrencyName : ''}</span>
                     </TooltipContent>
                 </Tooltip>
             </div>

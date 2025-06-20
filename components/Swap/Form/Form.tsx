@@ -101,7 +101,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
         />
         <Widget className="sm:min-h-[450px] h-full">
             <Widget.Content>
-                <div className="w-full min-h-[79svh] sm:min-h-[460px] flex flex-col justify-between">
+                <div className="w-full min-h-[79svh] sm:min-h-[480px] flex flex-col justify-between">
                     <div>
                         <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
                             {
