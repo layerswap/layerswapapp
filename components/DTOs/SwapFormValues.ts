@@ -5,8 +5,8 @@ export type SwapFormValues = {
   amount?: string;
   destination_address?: string;
   //TODO: refactor
-  fromCurrency?: NetworkRouteToken & { manuallySet?: boolean };
-  toCurrency?: NetworkRouteToken & { manuallySet?: boolean };
+  fromAsset?: NetworkRouteToken & { manuallySet?: boolean };
+  toAsset?: NetworkRouteToken & { manuallySet?: boolean };
   refuel?: boolean;
   from?: NetworkRoute;
   to?: NetworkRoute;

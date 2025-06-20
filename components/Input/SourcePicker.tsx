@@ -1,24 +1,26 @@
 import SourceWalletPicker from "./SourceWalletPicker";
-import RoutePicker from "./RoutePicker/RoutePicker";
+import RoutePicker from "./RoutePicker";
 import AmountField from "./Amount";
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { useFee } from "../../context/feeContext";
+import { useQuote } from "../../context/feeContext";
 import MinMax from "./Amount/MinMax";
 import { LayoutGroup, motion } from "framer-motion";
 
 const SourcePicker = () => {
     const { values } = useFormikContext<SwapFormValues>();
 
-    const { fromCurrency, from, to } = values || {};
-    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useFee()
+    const { fromAsset: fromCurrency, from, to } = values || {};
+    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuote()
 
     return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl py-4.5 px-4 space-y-8">
         <div className="flex justify-between items-center">
             <label htmlFor="From" className="block font-medium text-secondary-text text-sm">
                 Send from
             </label>
-            <SourceWalletPicker />
+            <div className="hover:bg-secondary-400 rounded-lg p-1.5 -m-1.5">
+                <SourceWalletPicker />
+            </div>
         </div>
         <div className="relative">
             {
@@ -32,13 +34,13 @@ const SourcePicker = () => {
                     <motion.div
                         layout
                         transition={{ duration: 0.25, ease: 'easeInOut' }}
-                        className="col-span-5 group-has-[.input-wide]:col-span-6"
+                        className="col-span-5"
                     >
                         <AmountField />
                     </motion.div>
                     <motion.div
                         transition={{ duration: 0.25, ease: 'easeInOut' }}
-                        className="col-span-3 group-has-[.input-wide]:col-span-2 flex items-center self-start justify-end"
+                        className="col-span-3 flex items-center self-start justify-end"
                     >
                         <RoutePicker direction="from" />
                     </motion.div>

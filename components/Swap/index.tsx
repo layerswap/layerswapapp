@@ -39,25 +39,23 @@ const SwapDetails: FC<Props> = ({ type }) => {
     </>
 
     return (
-        <>
-            <Container type={type}>
-                {
-                    ((swapStatus === SwapStatus.UserTransferPending
-                        && !(swapInputTransaction || storedWalletTransaction))) ?
-                        <Withdraw />
-                        :
-                        <>
-                            <Processing />
-                            {
-                                storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
-                                <SubmitButton isDisabled={false} isSubmitting={false} onClick={removeStoredTransaction}>
-                                    Try again
-                                </SubmitButton>
-                            }
-                        </>
-                }
-            </Container>
-        </>
+        <Container type={type}>
+            {
+                ((swapStatus === SwapStatus.UserTransferPending
+                    && !(swapInputTransaction || storedWalletTransaction))) ?
+                    <Withdraw type={type} />
+                    :
+                    <>
+                        <Processing />
+                        {
+                            storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
+                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={removeStoredTransaction}>
+                                Try again
+                            </SubmitButton>
+                        }
+                    </>
+            }
+        </Container>
     )
 }
 
@@ -70,7 +68,6 @@ const Container = ({ type, children }: Props & {
         return <div className="w-full flex flex-col justify-between h-full space-y-5 text-secondary-text">
             {children}
         </div>
-
 }
 
 export default SwapDetails

@@ -13,11 +13,11 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount,
         if (!values.to && !values.toExchange) {
             errors.to = 'Select destination';
         }
-        if (!values.fromCurrency) {
-            errors.fromCurrency = 'Select source asset';
+        if (!values.fromAsset) {
+            errors.fromAsset = 'Select source asset';
         }
-        if (!values.toCurrency) {
-            errors.toCurrency = 'Select destination asset';
+        if (!values.toAsset) {
+            errors.toAsset = 'Select destination asset';
         }
         if (values.currencyGroup &&
             (values.fromExchange && !values.from && values.to)) {
@@ -53,10 +53,10 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount,
                 errors.destination_address = `Enter a valid ${values.to?.display_name} address`;
             }
         }
-        if (values.fromCurrency?.status === 'not_found' || values.toCurrency?.status === 'not_found' || values.currencyGroup?.status === 'not_found') {
+        if (values.fromAsset?.status === 'not_found' || values.toAsset?.status === 'not_found' || values.currencyGroup?.status === 'not_found') {
             errors.amount = `Route unavailable`;
         }
-        if (values.fromCurrency?.status === 'inactive' || values.toCurrency?.status === 'inactive' || values.currencyGroup?.status === 'inactive') {
+        if (values.fromAsset?.status === 'inactive' || values.toAsset?.status === 'inactive' || values.currencyGroup?.status === 'inactive') {
             errors.amount = `Route unavailable`;
         }
         if ((values.from?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() || values.to?.name.toLowerCase() === sameAccountNetwork?.toLowerCase())) {

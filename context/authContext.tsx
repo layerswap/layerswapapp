@@ -3,7 +3,7 @@ import { parseJwt } from '../lib/jwtParser';
 import TokenService from '../lib/TokenService';
 
 export const AuthStateContext = React.createContext<AuthState | null>({ authData: undefined, email: undefined, codeRequested: undefined, guestAuthData: undefined, tempEmail: undefined, userId: undefined, userLockedOut: false, userType: undefined });
-export const AuthDataUpdateContext = React.createContext<UpdateInterface | null>(null);
+export const AuthDataUpdateContext = React.createContext<UpdateAuthInterface | null>(null);
 
 type AuthState = {
     email?: string,
@@ -16,7 +16,7 @@ type AuthState = {
     userType?: UserType
 }
 
-export type UpdateInterface = {
+export type UpdateAuthInterface = {
     updateTempEmail: (email: string) => void,
     updateAuthData: (data: any) => void,
     getAuthData: () => (AuthData | null | undefined),
@@ -66,7 +66,7 @@ export function AuthProvider({ children }) {
         return () => document.removeEventListener('storageChange', updateDataFromLocalStorage)
     }, [])
 
-    const updateFns: UpdateInterface = {
+    const updateFns: UpdateAuthInterface = {
         updateTempEmail: useCallback((email) => {
             setTempEmail(email)
         }, []),
@@ -104,7 +104,7 @@ export function useAuthState() {
 
 
 export function useAuthDataUpdate() {
-    const updateFns = React.useContext<UpdateInterface>(AuthDataUpdateContext as Context<UpdateInterface>);
+    const updateFns = React.useContext<UpdateAuthInterface>(AuthDataUpdateContext as Context<UpdateAuthInterface>);
 
     if (updateFns === undefined) {
         throw new Error('useAuthDataUpdate must be used within a AuthDataProvider');

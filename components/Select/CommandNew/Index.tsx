@@ -79,12 +79,12 @@ export const SelectorTrigger = (props: SelectTriggerProps) => {
     function openModal() {
         setIsOpen(true)
     }
-    return <div className="shadow-sm/30 rounded-lg flex items-center relative w-full group-has-[.input-wide]:w-fit z-10 self-end ">
+    return <div className="shadow-sm/30 rounded-xl flex items-center relative w-full z-10 self-end ">
         <button
             type="button"
             onClick={openModal}
             disabled={disabled}
-            className="rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full px-2 pr-0 bg-secondary-300 font-semibold"
+            className="rounded-xl focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full px-2 pr-0 bg-secondary-300 hover:bg-secondary-200 font-semibold"
         >
             {children}
         </button>

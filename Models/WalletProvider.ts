@@ -48,6 +48,7 @@ export type WalletProvider = {
     connectWallet: (props?: { connector?: InternalConnector }) => Promise<Wallet | undefined> | undefined,
     disconnectWallets?: () => Promise<void> | undefined | void,
     switchAccount?: (connector: Wallet, address: string) => Promise<void>,
+    switchChain?: (connector: Wallet, chainId: string | number) => Promise<void>
     isNotAvailableCondition?: (connector: string, network: string) => boolean,
     availableWalletsForConnect?: InternalConnector[],
     connectedWallets: Wallet[] | undefined,
@@ -58,4 +59,5 @@ export type WalletProvider = {
     name: string,
     id: string,
     providerIcon?: string,
+    unsupportedPlatforms?: string[],
 }

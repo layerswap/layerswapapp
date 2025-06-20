@@ -2,9 +2,10 @@ import { FC } from "react";
 
 type AverageCompletionTimeProps = {
     avgCompletionTime: string | undefined
+    className?: string
 }
 
-const AverageCompletionTime: FC<AverageCompletionTimeProps> = ({ avgCompletionTime }) => {
+const AverageCompletionTime: FC<AverageCompletionTimeProps> = ({ avgCompletionTime, className }) => {
 
     if (!avgCompletionTime) return
 
@@ -13,7 +14,7 @@ const AverageCompletionTime: FC<AverageCompletionTimeProps> = ({ avgCompletionTi
     const minutes = Number(time[1])
     const seconds = Number(time[2])
 
-    return <p><span>{hours > 0 ? `${hours.toFixed()} ${(hours > 1 ? 'hours' : 'hour')}` : ''}</span> <span>{minutes > 0 ? `${minutes.toFixed()} ${(minutes > 1 ? 'minutes' : 'minute')}` : ''}</span> <span>{(seconds > 0 && minutes == 0 && hours == 0) ? `${seconds.toFixed()} seconds` : ''}</span></p>
+    return <p className={className}><span>{hours > 0 ? `${hours.toFixed()} ${(hours > 1 ? 'hours' : 'hour')}` : ''}</span> <span>{minutes > 0 ? `${minutes.toFixed()} ${(minutes > 1 ? 'minutes' : 'minute')}` : ''}</span> <span>{(seconds > 0 && minutes == 0 && hours == 0) ? `${seconds.toFixed()} seconds` : ''}</span></p>
 }
 
 export default AverageCompletionTime

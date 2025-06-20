@@ -5,7 +5,7 @@ import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { SwapResponse } from "./apiClients/layerSwapApiClient";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams): SwapFormValues {
-    const { destAddress, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, depositMethod } = queryParams
+    const { destination_address, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, depositMethod } = queryParams
     const { sourceExchanges, destinationExchanges, sourceRoutes, destinationRoutes } = settings || {}
 
     const lockedSourceCurrency = lockFromAsset ?
@@ -35,7 +35,7 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
         : destinationNetwork?.tokens
 
     let initialAddress =
-        destAddress && initialDestination && isValidAddress(destAddress, destinationNetwork) ? destAddress : "";
+        destination_address && initialDestination && isValidAddress(destination_address, destinationNetwork) ? destination_address : "";
 
     let initialSourceCurrency = filteredSourceCurrencies?.find(c => c.symbol?.toUpperCase() == fromAsset?.toUpperCase())
 
@@ -51,8 +51,8 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
         from: initialSource,
         to: initialDestination,
         amount: initialAmount,
-        fromCurrency: initialSourceCurrency,
-        toCurrency: initialDestinationCurrency,
+        fromAsset: initialSourceCurrency,
+        toAsset: initialDestinationCurrency,
         destination_address: initialAddress ? initialAddress : '',
         depositMethod: (depositMethod === "wallet" || depositMethod === "deposit_address") ? depositMethod : undefined,
     }
@@ -91,8 +91,8 @@ export function generateSwapInitialValuesFromSwap(swapResponse: SwapResponse, se
         from,
         to,
         amount: requested_amount?.toString(),
-        fromCurrency,
-        toCurrency,
+        fromAsset: fromCurrency,
+        toAsset: toCurrency,
         destination_address,
         refuel: !!refuel,
         fromExchange: source_exchange,

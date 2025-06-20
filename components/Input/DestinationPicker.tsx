@@ -1,5 +1,5 @@
 import { PlusIcon } from "lucide-react";
-import RoutePicker from "./RoutePicker/RoutePicker";
+import RoutePicker from "./RoutePicker";
 import Address from "./Address";
 import DestinationWalletPicker from "./DestinationWalletPicker";
 import { useFormikContext } from "formik";
@@ -7,7 +7,7 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { Partner } from "../../Models/Partner";
 import useWallet from "../../hooks/useWallet";
 import { ReceiveAmount } from "./Amount/ReceiveAmount";
-import { useFee } from "../../context/feeContext";
+import { useQuote } from "../../context/feeContext";
 
 type Props = {
     partner?: Partner
@@ -15,8 +15,8 @@ type Props = {
 
 const DestinationPicker = (props: Props) => {
     const { partner } = props;
-    const { values: { toExchange, fromExchange, destination_address, to, from, depositMethod, fromCurrency, toCurrency } } = useFormikContext<SwapFormValues>();
-    const { fee, isFeeLoading } = useFee()
+    const { values: { toExchange, fromExchange, destination_address, to, from, depositMethod, fromAsset: fromCurrency, toAsset: toCurrency } } = useFormikContext<SwapFormValues>();
+    const { quote: fee, isQuoteLoading: isFeeLoading } = useQuote()
     const sourceWalletNetwork = fromExchange ? undefined : from
     const destinationWalletNetwork = toExchange ? undefined : to
 

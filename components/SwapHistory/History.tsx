@@ -191,7 +191,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                     <div className="pb-3">
                                         <HistorySummary swapResponse={swap} wallets={wallets} />
                                         {collapsedPendingSwap &&
-                                            <div className="z-0 h-6 -top-4 opacity-65 shadow-lg relative bg-secondary-700 p-3 w-[95%] mx-auto font-normal space-y-3 hover:bg-secondary-600 rounded-xl overflow-hidden cursor-pointer" />}
+                                            <div className="z-0 h-6 -top-4 opacity-65 shadow-lg relative bg-secondary-500 p-3 w-[95%] mx-auto font-normal space-y-3 hover:bg-secondary-400 rounded-xl overflow-hidden cursor-pointer" />}
                                     </div>
                                 </div>
                                 {
@@ -259,7 +259,7 @@ const BlankHistory = ({ onNewTransferClick, onLogin }: BlankHistoryProps) => {
                     Transfers you make with this wallet/account will appear here after excution.
                 </p>
             </div>
-            <Link onClick={onNewTransferClick} href={"/"} className="mt-10 flex items-center gap-2 text-base text-secondary-text font-normal bg-secondary-500 hover:bg-secondary-600 py-2 px-3 rounded-lg">
+            <Link onClick={onNewTransferClick} href={"/"} className="mt-10 flex items-center gap-2 text-base text-secondary-text font-normal bg-secondary-500 hover:bg-secondary-400 py-2 px-3 rounded-lg">
                 <Plus className="w-4 h-4" />
                 <p>New Transfer</p>
             </Link>

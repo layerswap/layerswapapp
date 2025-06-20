@@ -7,19 +7,22 @@ import { TimerProvider } from '../../context/timerContext';
 import { getThemeData } from '../../helpers/settingsHelper';
 import SwapWithdrawal from '../../components/SwapWithdrawal'
 import { DepositMethodProvider } from '../../context/depositMethodContext';
+import { QuoteProvider } from '@/context/feeContext';
 
 const SwapDetails = ({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   LayerSwapApiClient.apiKey = apiKey
-  
+
   return (<>
     <Layout settings={settings} themeData={themeData}>
-      <SwapDataProvider >
-        <TimerProvider>
-          <DepositMethodProvider>
-            <SwapWithdrawal />
-          </DepositMethodProvider>
-        </TimerProvider>
-      </SwapDataProvider >
+      <DepositMethodProvider>
+        <QuoteProvider>
+          <SwapDataProvider >
+            <TimerProvider>
+              <SwapWithdrawal />
+            </TimerProvider>
+          </SwapDataProvider >
+        </QuoteProvider>
+      </DepositMethodProvider>
     </Layout>
   </>)
 }
@@ -41,7 +44,7 @@ export const getServerSideProps = async (ctx) => {
   const apiClient = new LayerSwapApiClient()
   const { data: networkData } = await apiClient.GetLSNetworksAsync()
 
-  if (!networkData ) return
+  if (!networkData) return
 
   const settings = {
     networks: networkData,

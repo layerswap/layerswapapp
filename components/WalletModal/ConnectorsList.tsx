@@ -71,7 +71,26 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             })
 
             if (result && connector && provider) {
-                setRecentConnectors((prev) => [...(prev?.filter(v => v.providerName !== provider.name) || []), { providerName: provider.name, connectorName: connector.name }])
+                setRecentConnectors((prev) => {
+                    const next = [{ providerName: provider.name, connectorName: connector.name }];
+                    const counts = new Map<string, number>();
+                    counts.set(provider.name, 1);
+
+                    (prev || []).forEach(item => {
+                        if (
+                            item.providerName &&
+                            item.connectorName &&
+                            !(item.providerName === provider.name && item.connectorName === connector.name)
+                        ) {
+                            const count = counts.get(item.providerName) ?? 0;
+                            if (count < 3) {
+                                next.push({ providerName: item.providerName, connectorName: item.connectorName });
+                                counts.set(item.providerName, count + 1);
+                            }
+                        }
+                    });
+                    return next;
+                })
                 onFinish(result)
             }
             setSelectedConnector(undefined)
@@ -152,7 +171,6 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             connectionError={connectionError}
         />
     }
-
     return (
         <>
             <div className="text-primary-text space-y-3">
@@ -194,7 +212,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 >
                     <div className='grid grid-cols-2 gap-2'>
                         {
-                            resolvedConnectors.sort((a, b) => a.type && b.type ? a.type.localeCompare(b.type) : 0)?.map(item => {
+                            resolvedConnectors.sort((a, b) => sortRecentConnectors(a, b, recentConnectors)).map(item => {
                                 const provider = featuredProviders.find(p => p.name === item.providerName)
                                 const isRecent = recentConnectors?.some(v => v.connectorName === item.name)
                                 return (
@@ -420,4 +438,21 @@ const MultichainConnectorModal: FC<MultichainConnectorModalProps> = ({ selectedC
         </VaulDrawer>
     )
 }
+
+function sortRecentConnectors(a: { name: string, type?: string }, b: { name: string, type?: string }, recentConnectors: { connectorName?: string }[]) {
+    function getIndex(c: { name: string }) {
+        const idx = recentConnectors?.findIndex(v => v.connectorName === c.name);
+        return idx === -1 ? Infinity : idx;
+    }
+    const indexA = getIndex(a);
+    const indexB = getIndex(b);
+    if (indexA !== indexB) {
+        return indexA - indexB;
+    }
+    if (a.type && b.type) {
+        return a.type.localeCompare(b.type);
+    }
+    return 0;
+}
+
 export default ConnectorsLsit

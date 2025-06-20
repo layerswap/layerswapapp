@@ -30,31 +30,3 @@ export type RowElement = {}
         | GroupedTokenElement)
 
 export type GroupTokensResult = (GroupedTokenElement | NetworkElement | NetworkTokenElement | TitleElement)[];
-
-export type _Route =
-    ({
-        route_type: 'network';
-    } & NetworkRoute)
-    | ({
-        route_type: 'token';
-    } & {
-        token: NetworkRouteToken;
-        network: NetworkRoute;
-    })
-
-export type _RoutesGroup = {
-    name: string;
-} & (
-        {
-            type: 'network';
-            routes: NetworkRoute[];
-        }
-        |
-        {
-            type: 'token'
-            routes: {
-                token: NetworkRouteToken;
-                network: NetworkRoute;
-            }[]
-        }
-    )
