@@ -13,6 +13,7 @@ type ContextType = {
     mutateFee: () => void,
     mutateLimits: () => void,
     valuesChanger: (values: SwapFormValues) => void,
+    formValues?: SwapFormValues,
     isQuoteLoading: boolean,
     updatePolling: (value: boolean) => void
 }
@@ -66,6 +67,7 @@ export function QuoteProvider({ children }) {
             minAllowedAmount: amountRange?.data?.min_amount,
             maxAllowedAmount: amountRange?.data?.max_amount,
             quote: quote?.data,
+            formValues: values,
             mutateFee,
             mutateLimits,
             valuesChanger,

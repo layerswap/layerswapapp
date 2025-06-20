@@ -67,10 +67,8 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, toke
 
         }
         catch (e) {
-            setTransactionErrorMessage(e.message)
-        }
-        finally {
             setLoading(false)
+            setTransactionErrorMessage(e.message)
         }
     }, [network, token, wallet, connector, rpcClient, isTestnet])
 

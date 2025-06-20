@@ -1,6 +1,6 @@
 import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, Quote, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
+import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, Quote } from '@/lib/apiClients/layerSwapApiClient';
 import { NextRouter, useRouter } from 'next/router';
 import { QueryParams } from '../Models/QueryParams';
 import useSWR, { KeyedMutator } from 'swr';
@@ -16,6 +16,7 @@ import { useQuote } from './feeContext';
 import { SwapStatus } from '../Models/SwapStatus';
 import { LayerSwapAppSettings } from '@/Models/LayerSwapAppSettings';
 import { useSettingsState } from './settings';
+import { TrackEvent } from "@/pages/_document";
 
 export const SwapDataStateContext = createContext<SwapData>({
     codeRequested: false,
@@ -62,13 +63,13 @@ export function SwapDataProvider({ children }) {
     const [selectedSourceAccount, setSelectedSourceAccount] = useState<{ wallet: Wallet, address: string } | undefined>()
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
     const settings = useSettingsState()
-    const { quote: quoteData } = useQuote()
+    const { quote: quoteData, formValues } = useQuote()
 
     const swapDataFromQuery = useMemo(() => {
         const selectedSourceAddress = selectedSourceAccount?.address || undefined
         if (!quoteData || !quoteData.quote || !selectedSourceAddress) return undefined
-        return resolveSwapDataFromQuery(settings, selectedSourceAddress, quoteData)
-    }, [quoteData, selectedSourceAccount?.address]);
+        return resolveSwapDataFromQuery(settings, selectedSourceAddress, quoteData, formValues?.destination_address)
+    }, [quoteData, selectedSourceAccount?.address, formValues?.destination_address]);
 
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `/swaps/${swapId}?exclude_deposit_actions=true`
@@ -177,6 +178,7 @@ export function SwapDataProvider({ children }) {
                 toAmount: amount!
             }
         })
+        plausible(TrackEvent.SwapInitiated)
 
         return swap;
     }, [selectedSourceAccount])
@@ -234,14 +236,14 @@ const WalletIsSupportedForSource = ({ providers, sourceNetwork, sourceWallet }: 
     return isSupported
 }
 
-const resolveSwapDataFromQuery = (settings: LayerSwapAppSettings, selectedSourceAddress: string, quoteData: Quote): SwapResponse | undefined => {
+const resolveSwapDataFromQuery = (settings: LayerSwapAppSettings, selectedSourceAddress: string, quoteData: Quote, destination_address?: string): SwapResponse | undefined => {
     const { quote, refuel } = quoteData || {};
     const { sourceRoutes, destinationRoutes } = settings;
     const urlParams = new URLSearchParams(window.location.search);
     const fromName = urlParams.get('from');
     const toName = urlParams.get('to');
     const amount = urlParams.get('amount');
-    const destination_address = urlParams.get('destination_address') || '';
+    const destAddress = destination_address || urlParams.get('destination_address') || '';
     const depositMethod = urlParams.get('depositMethod') || 'wallet';
     const fromCurrencySymbol = urlParams.get('fromAsset');
     const toCurrencySymbol = urlParams.get('toAsset');
@@ -263,7 +265,7 @@ const resolveSwapDataFromQuery = (settings: LayerSwapAppSettings, selectedSource
             source_token: fromCurrency,
             destination_token: toCurrency,
             requested_amount: Number(amount),
-            destination_address: destination_address,
+            destination_address: destAddress,
             use_deposit_address: depositMethod === 'deposit_address',
             source_address: selectedSourceAddress,
             transactions: [],

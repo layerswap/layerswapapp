@@ -32,7 +32,6 @@ import { AddressGroup } from "../../Input/Address/AddressPicker";
 import { useAddressesStore } from "@/stores/addressesStore";
 import { useAsyncModal } from "@/context/asyncModal";
 import { ValidationProvider } from "@/context/validationErrorContext";
-import { TrackEvent } from "@/pages/_document";
 import { PendingSwap } from "./PendingSwap";
 import { QueryParams } from "@/Models/QueryParams";
 
@@ -82,8 +81,8 @@ export default function Form() {
 
         if (to &&
             destination_address &&
-            (query.destAddress) &&
-            (addressFormat(query.destAddress?.toString(), to) === addressFormat(destination_address, to)) &&
+            (query.destination_address) &&
+            (addressFormat(query.destination_address?.toString(), to) === addressFormat(destination_address, to)) &&
             !(addresses.find(a => addressFormat(a.address, to) === addressFormat(destination_address, to) && a.group !== AddressGroup.FromQuery)) && !isAddressFromQueryConfirmed) {
 
             const confirmed = await getConfirmation({
@@ -228,7 +227,6 @@ const handleCreateSwap = async ({ query, values, partner, router, minAllowedAmou
     try {
         const swapData = await createSwap(values, query, partner);
         const swapId = swapData?.swap?.id;
-        plausible(TrackEvent.SwapInitiated)
         setSwapId(swapId)
         pollFee(false)
         setSwapPath(swapId, router)

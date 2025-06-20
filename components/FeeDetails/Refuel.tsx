@@ -48,7 +48,11 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick }) => {
                             <Info className="h-3.5 text-secondary-text hover:text-primary-buttonTextColor" aria-hidden="true" strokeWidth={2.5} />
                         </div>
                         {
-                            needRefuel &&
+                            !needRefuel && !refuel &&
+                            <p className="text-secondary-text text-sm"><span>You can get refuel on</span> <span>{to?.display_name}</span></p>
+                        }
+                        {
+                            needRefuel && !refuel &&
                             <p className="text-secondary-text text-sm"><span>You need gas on</span> <span>{to.display_name}</span></p>
                         }
                         {

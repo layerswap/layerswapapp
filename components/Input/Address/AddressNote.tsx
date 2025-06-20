@@ -31,7 +31,7 @@ const AddressNote: FC<AddressNoteModalProps> = ({ partner, values }) => {
                 </p>
             </div>
 
-            <div className="w-full rounded-lg bg-secondary-700 overflow-hidden px-4 py-3 space-y-2">
+            <div className="w-full rounded-lg bg-secondary-500 overflow-hidden px-4 py-3 space-y-2">
                 <div className="gap-4 flex relative items-center outline-hidden w-full text-primary-text">
                     <div className="flex items-center justify-between w-full">
                         <div className="text-secondary-text">

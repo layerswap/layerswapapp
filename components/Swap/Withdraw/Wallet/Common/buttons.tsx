@@ -200,7 +200,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             const depositAction = swapData?.deposit_actions && swapData?.deposit_actions[0];
 
             const transferProps: TransferProps = {
-                amount: swap?.requested_amount,
+                amount: depositAction?.amount,
                 callData: depositAction?.call_data,
                 depositAddress: depositAction?.to_address,
                 sequenceNumber: swap?.metadata.sequence_number,

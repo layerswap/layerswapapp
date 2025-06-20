@@ -149,7 +149,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         placeholderText: '118, 128, 147',
         actionButtonText: '220, 2, 90',
         buttonTextColor: '228, 229, 240',
-        logo: '255, 50, 114',
+        logo: '255, 0, 147',
         footerLogo: 'none',
         primary: {
             DEFAULT: '228, 37, 117',

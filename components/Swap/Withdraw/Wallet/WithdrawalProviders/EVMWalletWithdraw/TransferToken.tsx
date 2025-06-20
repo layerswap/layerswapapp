@@ -28,7 +28,7 @@ const TransferTokenButton: FC<{ savedTransactionHash?: string, chainId?: number 
 
     const { address } = useAccount();
 
-    const clickHandler = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
+    const clickHandler = useCallback(async ({ amount, callData, depositAddress }: TransferProps) => {
         setButtonClicked(true)
         setError(undefined)
         setLoading(true)
@@ -43,6 +43,7 @@ const TransferTokenButton: FC<{ savedTransactionHash?: string, chainId?: number 
                 chainId,
                 to: depositAddress as `0x${string}`,
                 value: parseEther(amount?.toString()),
+                gas: undefined,
                 data: callData as `0x${string}`,
                 account: selectedSourceAccount.address as `0x${string}`
             }
@@ -57,15 +58,14 @@ const TransferTokenButton: FC<{ savedTransactionHash?: string, chainId?: number 
             }
 
         } catch (e) {
+            setLoading(false)
             setError(e)
             const error = new Error(e)
             error.name = "TransferTokenError"
             error.cause = e
             datadogRum.addError(error);
-        } finally {
-            setLoading(false)
         }
-    }, [config, chainId])
+    }, [config, chainId, selectedSourceAccount?.address])
 
     const transaction: ActionData = {
         error: error,

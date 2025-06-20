@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, SVGProps } from "react";
 import AverageCompletionTime from "../Common/AverageCompletionTime";
 import { Tooltip, TooltipContent, TooltipTrigger, } from "../../components/shadcn/tooltip"
 import { truncateDecimals } from "../utils/RoundDecimals";
@@ -54,14 +54,14 @@ export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, i
                     <div key={item.name} className="flex items-center w-full justify-between gap-1 pb-2 px-1">
                         <div className="inline-flex items-center text-left text-secondary-text gap-1 pr-4">
                             <div className="w-5">
-                                {item.icon}
+                                <item.icon />
                             </div>
                             <label>
                                 {item.name}
                             </label>
                         </div>
                         <div className="text-right text-primary-text">
-                            {item.content({ gas, currencyName, displayGasFeeInUsd, quote, displayLsFee, displayLsFeeInUsd, isGasLoading, isQuoteLoading, reward })}
+                            {item.content({ gas, currencyName, nativeCurrencyName: from?.token?.symbol, displayGasFeeInUsd, quote, displayLsFee, displayLsFeeInUsd, isGasLoading, isQuoteLoading, reward })}
                         </div>
                     </div>
                 )
@@ -77,9 +77,9 @@ const RewardIcon = () => (<Image src={rewardCup} alt="Reward" width={16} height=
 const detailsElements: DetailedElement[] = [
     {
         name: 'Gas Fee',
-        icon: <GasIcon />,
+        icon: GasIcon,
         showCondition: (props) => { return props.gas !== undefined },
-        content: ({ gas, currencyName, displayGasFeeInUsd, isGasLoading }) => {
+        content: ({ gas, nativeCurrencyName, displayGasFeeInUsd, isGasLoading }) => {
             return isGasLoading ? (
                 <LoadingBar />
             ) : <div>
@@ -93,7 +93,7 @@ const detailsElements: DetailedElement[] = [
                     </TooltipTrigger>
                     <TooltipContent className="!bg-secondary-300 !border-secondary-300 !text-primart-text">
                         <span>{gas || '-'} </span>
-                        <span>{gas ? currencyName : ''}</span>
+                        <span>{gas ? nativeCurrencyName : ''}</span>
                     </TooltipContent>
                 </Tooltip>
             </div>
@@ -101,7 +101,7 @@ const detailsElements: DetailedElement[] = [
     },
     {
         name: 'Layerswap Fee',
-        icon: <FeeIcon />,
+        icon: FeeIcon,
         content: ({ displayLsFeeInUsd, displayLsFee, currencyName, isQuoteLoading }) => {
             return isQuoteLoading ? (
                 <LoadingBar />
@@ -124,7 +124,7 @@ const detailsElements: DetailedElement[] = [
     },
     {
         name: 'Estimated time',
-        icon: <Clock />,
+        icon: Clock,
         content: ({ quote }) => {
             return quote && quote.avg_completion_time !== '00:00:00' ?
                 <div>
@@ -137,7 +137,7 @@ const detailsElements: DetailedElement[] = [
     },
     {
         name: 'Reward',
-        icon: <RewardIcon />,
+        icon: RewardIcon,
         showCondition: (props) => {
             const { campaign, reward, destinationAddress, shouldCheckNFT, isLoading, error, nftBalance } = props || {}
             if (!campaign || !reward || !destinationAddress)
@@ -149,14 +149,14 @@ const detailsElements: DetailedElement[] = [
             return true
         },
         content: ({ reward }) => {
-            return reward === null ? (
+            return !reward ? (
                 <LoadingBar />
             ) : <div>
                 <Tooltip delayDuration={100}>
                     <TooltipTrigger asChild>
                         {reward?.amount_in_usd !== undefined && (
                             <span className="text-sm ml-1 font-small">
-                                ${reward.amount_in_usd}
+                                ${reward.amount_in_usd.toFixed(2)}
                             </span>
                         )}
                     </TooltipTrigger>
@@ -175,6 +175,7 @@ const detailsElements: DetailedElement[] = [
 type DetailsContentProps = {
     gas: number | undefined
     currencyName: string
+    nativeCurrencyName?: string
     displayGasFeeInUsd: string | null
     displayLsFee: string | undefined
     displayLsFeeInUsd: string | null
@@ -200,7 +201,7 @@ type ShowConditionProps = {
 
 type DetailedElement = {
     name: string
-    icon: JSX.Element
+    icon: (props: SVGProps<SVGSVGElement>) => JSX.Element
     content: (props: DetailsContentProps) => JSX.Element
     showCondition?: (props: ShowConditionProps) => boolean
 }

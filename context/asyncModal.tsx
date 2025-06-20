@@ -1,33 +1,34 @@
 import React, { Context, FC } from "react";
-import Modal, { ModalProps } from "../components/modal/modal";
 import SubmitButton from "../components/buttons/submitButton";
 import SecondaryButton from "../components/buttons/secondaryButton";
+import VaulDrawer, { VaulDrawerProps } from "@/components/modal/vaulModal";
 
 
-interface AsyncModalProps extends ModalProps {
+interface AsyncModalProps extends VaulDrawerProps {
     onConfirm: () => void;
     onDismiss: () => void;
-    content: React.ReactNode;
     submitText?: string;
     dismissText?: string;
 };
 
 
-const AsyncModal: FC<AsyncModalProps> = ({ onConfirm, onDismiss, content, submitText, dismissText, ...props }) => {
+const AsyncModal: FC<AsyncModalProps> = ({ onConfirm, onDismiss, children, submitText, dismissText, ...props }) => {
     return (
-        <Modal onClose={onDismiss} {...props}>
-            <div className="flex flex-col items-center gap-6 mt-2">
-                {content}
-                <div className="h-full w-full space-y-3">
-                    <SubmitButton type="button" onClick={onConfirm}>
-                        {submitText ?? 'Confirm'}
-                    </SubmitButton>
-                    <SecondaryButton className="w-full h-full py-3 !text-base" onClick={onDismiss}>
-                        {dismissText ?? 'Cancel'}
-                    </SecondaryButton>
+        <VaulDrawer onClose={onDismiss} {...props}>
+            <VaulDrawer.Snap id="item-1">
+                <div className="flex flex-col items-center gap-6 mt-2">
+                    {children}
+                    <div className="h-full w-full space-y-3">
+                        <SubmitButton type="button" onClick={onConfirm}>
+                            {submitText ?? 'Confirm'}
+                        </SubmitButton>
+                        <SecondaryButton className="w-full h-full py-3 !text-base" onClick={onDismiss}>
+                            {dismissText ?? 'Cancel'}
+                        </SecondaryButton>
+                    </div>
                 </div>
-            </div>
-        </Modal>
+            </VaulDrawer.Snap>
+        </VaulDrawer>
     );
 };
 
@@ -68,12 +69,12 @@ const AsyncModalProvider = ({ children }) => {
                 setShow={setDialogOpen}
                 onConfirm={onConfirm}
                 onDismiss={onDismiss}
-                content={dialogConfig?.content}
                 submitText={dialogConfig?.submitText}
                 dismissText={dialogConfig?.dismissText}
                 modalId="asyncModal"
-                height="fit"
-            />
+            >
+                {dialogConfig?.content}
+            </AsyncModal>
             {children}
         </AsyncModalContext.Provider>
     );
@@ -95,5 +96,4 @@ const useAsyncModal = () => {
     return { getConfirmation };
 };
 
-export default AsyncModal;
 export { AsyncModalProvider, useAsyncModal };

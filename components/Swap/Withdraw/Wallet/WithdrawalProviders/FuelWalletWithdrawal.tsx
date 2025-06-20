@@ -75,6 +75,7 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }
 
         }
         catch (e) {
+            setLoading(false)
             if (e?.message) {
                 setError(e.message)
                 if (e.message !== "User rejected the transaction!") {
@@ -85,9 +86,6 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }
                 }
                 return
             }
-        }
-        finally {
-            setLoading(false)
         }
     }, [network, selectedSourceAccount, token, fuel])
 

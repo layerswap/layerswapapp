@@ -51,10 +51,10 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ token }) => {
             }
         }
         catch (e) {
+            setLoading(false)
             if (e?.message)
                 toast(e.message)
         }
-        setLoading(false)
     }, [wallet?.address, starknet, token])
 
 

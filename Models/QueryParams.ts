@@ -7,10 +7,9 @@ export class PersistantQueryParams {
 
     lockFromAsset?: boolean = false;
     lockToAsset?: boolean = false;
-
+    destination_address?: string = "";
     fromAsset?: string = "";
     toAsset?: string = "";
-    destAddress?: string = "";
     hideRefuel?: boolean = false;
     hideAddress?: boolean = false;
     hideFrom?: boolean = false;
@@ -38,6 +37,7 @@ export class PersistantQueryParams {
     addressSource?: string = "";
     asset?: string = "";
     lockAsset?: boolean = false;
+    destAddress?: string = "";
 
 }
 

@@ -94,10 +94,10 @@ export const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, 
             }
         }
         catch (e) {
+            setLoading(false)
             if (e?.message)
                 toast(e.message)
         }
-        setLoading(false)
     }, [network, accInfo, unlockedAccount, token])
 
     if (noAccount) {
