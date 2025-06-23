@@ -4,7 +4,6 @@ import WalletIcon from '../../icons/WalletIcon';
 import useWallet from '../../../hooks/useWallet';
 import AddressWithIcon from '../../Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '../../Input/Address/AddressPicker';
-import { ChevronRight } from 'lucide-react';
 import { truncateDecimals } from '../../utils/RoundDecimals';
 import VaulDrawer from '../../modal/vaulModal';
 import { Wallet } from '../../../Models/WalletProvider';
@@ -68,14 +67,17 @@ const WalletTransferContent: FC = () => {
             {
                 selectedWallet &&
                 source_network &&
-                <div onClick={() => setOpenModal(true)} className="cursor-pointer group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-xs mt-1.5 text-primary-text bg-secondary-500 disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
+                <div onClick={() => setOpenModal(true)} className="cursor-pointer group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-xs mt-1.5 text-primary-text bg-secondary-500 disabled:cursor-not-allowed h-12 leading-4 font-medium w-full py-7">
                     <AddressWithIcon
                         addressItem={{ address: accountAddress, group: AddressGroup.ConnectedWallet }}
                         connectedWallet={selectedWallet}
                         network={source_network}
                         balance={(walletBalanceAmount && source_token) ? { amount: Number(walletBalanceAmount), symbol: source_token?.symbol, isLoading: isBalanceLoading } : undefined}
                     />
-                    <ChevronRight className="h-4 w-4" />
+                    <div className="flex flex-col col-start-8 col-span-3 items-end text-secondary-text text-xs">
+                        <p>Balance</p>
+                        <p>{truncateDecimals(Number(walletBalanceAmount), walletBalance?.decimals)} {walletBalance?.token}</p>
+                    </div>
                 </div>
             }
         </div>

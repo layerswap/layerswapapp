@@ -3,7 +3,6 @@ import { useDepositMethod } from "@/context/depositMethodContext"
 import SubmitButton from "@/components/buttons/submitButton"
 import ManualTransferSVG from "@/components/icons/ManualTransferSVG"
 import Modal from "@/components/modal/modal"
-import { ArrowUpRight } from "lucide-react"
 
 const ManualTransferNote = () => {
     const { redirect, canRedirect } = useDepositMethod()
@@ -11,11 +10,11 @@ const ManualTransferNote = () => {
 
     return (
         <>
-            <div className="text-xs text-center flex flex-col md:flex-row gap-1 justify-center items-center">
+            <div className="text-sm text-center flex flex-col md:flex-row gap-1 justify-center items-center">
                 <p className='text-secondary-text'>
                     Want to transfer without connecting a wallet?
                 </p>
-                <button onClick={() => setOpen(true)} type="button" className='text-primary-text no-underline hover:underline inline-flex'><span>See how</span> <ArrowUpRight className="h-4 w-4" /></button>
+                <button onClick={() => setOpen(true)} type="button" className='text-secondary-text underline hover:no-underline inline-flex'><span>See how</span></button>
             </div>
             <Modal show={open} setShow={setOpen} height="fit" header="Transfer manually" modalId="manualTransferNote">
                 <div className="mt-2 space-y-5">

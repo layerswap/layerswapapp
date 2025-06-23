@@ -4,7 +4,6 @@ import { ActionData, TransferProps } from "./sharedTypes";
 import SubmitButton, { SubmitButtonProps } from "@/components/buttons/submitButton";
 import useWallet from "@/components/../hooks/useWallet";
 import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
-import ManualTransferNote from "./manualTransferNote";
 import toast from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import WalletMessage from "../../messages/Message";
@@ -126,10 +125,6 @@ export const ChangeNetworkButton: FC<ChangeNetworkProps> = (props) => {
 export const ButtonWrapper: FC<SubmitButtonProps> = ({
     ...props
 }) => {
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
-    const { source_network } = swap || {}
-
     return <>
         <div className="flex flex-col text-primary-text text-base space-y-2">
             <SubmitButton
@@ -141,10 +136,6 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
             >
                 {props.children}
             </SubmitButton>
-            {
-                source_network?.deposit_methods?.some(m => m === 'deposit_address') &&
-                <ManualTransferNote />
-            }
         </div>
     </>
 
