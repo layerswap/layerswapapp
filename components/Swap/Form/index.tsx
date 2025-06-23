@@ -8,7 +8,7 @@ import ConnectNetwork from "../../ConnectNetwork";
 import toast from "react-hot-toast";
 import MainStepValidation from "@/lib/mainStepValidator";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/lib/generateSwapInitialValues";
-import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
+import LayerSwapApiClient, { Quote } from "@/lib/apiClients/layerSwapApiClient";
 import Modal from "../../modal/modal";
 import SwapForm from "./Form";
 import useSWR from "swr";
@@ -63,10 +63,11 @@ export default function Form() {
     const { getProvider } = useWallet()
     const addresses = useAddressesStore(state => state.addresses)
     const { getConfirmation } = useAsyncModal();
+    const { quote } = useQuote()
 
     const settings = useSettingsState();
     const query = useQueryState()
-    const { createSwap, setSwapId, setSwapPath, removeSwapPath } = useSwapDataUpdate()
+    const { createSwap, setSwapId, setSwapPath, removeSwapPath, resolveSwapDataFromQuery } = useSwapDataUpdate()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.appName && `/internal/apps?name=${query?.appName}`, layerswapApiClient.fetcher)
@@ -118,22 +119,24 @@ export default function Form() {
                 partner,
                 router,
                 minAllowedAmount,
+                quote,
+                settings,
+                selectedSourceAddress: selectedSourceAccount?.address,
                 mutateLimits,
                 setSwapId,
                 setSwapPath,
                 createSwap,
                 setShowSwapModal: handleShowSwapModal,
                 pollFee,
-                updateAuthData,
-                setUserType,
                 setNetworkToConnect,
-                setShowConnectNetworkModal
+                setShowConnectNetworkModal,
+                resolveSwapDataFromQuery,
             })
         }
         catch (error) {
             toast.error(error?.message)
         }
-    }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getProvider])
+    }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getProvider, settings, quote, selectedSourceAccount])
 
     const initialValues: SwapFormValues = swapResponse ? generateSwapInitialValuesFromSwap(swapResponse, settings)
         : generateSwapInitialValues(settings, query)
@@ -203,20 +206,23 @@ type SubmitProps = {
     partner?: Partner;
     router: NextRouter;
     minAllowedAmount?: number;
+    quote?: Quote;
+    selectedSourceAddress?: string
+    settings: ReturnType<typeof useSettingsState>;
     setSwapId: UpdateSwapInterface['setSwapId'];
     setSwapPath: UpdateSwapInterface['setSwapPath'];
     createSwap: UpdateSwapInterface['createSwap'];
+    resolveSwapDataFromQuery: UpdateSwapInterface['resolveSwapDataFromQuery'];
     setShowSwapModal: (value: boolean) => void;
     pollFee: (value: boolean) => void;
-    updateAuthData: UpdateAuthInterface['updateAuthData'];
-    setUserType: UpdateAuthInterface['setUserType'];
     setNetworkToConnect: (value: NetworkToConnect) => void;
     setShowConnectNetworkModal: (value: boolean) => void;
     mutateLimits: () => void;
 }
 
-const handleCreateSwap = async ({ query, values, partner, router, minAllowedAmount, setSwapId, setShowSwapModal, setSwapPath, pollFee, createSwap, setUserType, updateAuthData, setNetworkToConnect, setShowConnectNetworkModal, mutateLimits }: SubmitProps) => {
+const handleCreateSwap = async ({ query, values, settings, quote, partner, selectedSourceAddress, router, minAllowedAmount, setSwapId, setShowSwapModal, setSwapPath, pollFee, createSwap, setNetworkToConnect, setShowConnectNetworkModal, mutateLimits, resolveSwapDataFromQuery }: SubmitProps) => {
     if (values.depositMethod == 'wallet') {
+        quote && resolveSwapDataFromQuery(settings, selectedSourceAddress, quote, values?.destination_address)
         setSwapId(undefined)
         pollFee(true)
         setShowSwapModal(true)
