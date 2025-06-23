@@ -18,10 +18,11 @@ export default function NetworkExchangeTabs({ networkForm, exchangeForm }: Props
                 onHoverStart={() => setHovered(true)}
                 onHoverEnd={() => setHovered(false)}
                 animate={{ width: hovered ? 180 : 48 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                 className="absolute right-[95%] top-24 overflow-hidden rounded-l-lg"
+                layoutId="bubble"
+                transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
             >
-                <TabsList className="flex flex-col bg-secondary-500 h-full !pl-1.5 !pr-3 py-2 w-full space-y-1">
+                <TabsList className="flex flex-col bg-secondary-500 h-full !pl-1.5 !pr-3 py-2 w-full space-y-2">
                     <TabsTrigger value="network" className="w-full text-white flex items-center justify-start !p-1 data-[state=active]:bg-secondary-300 hover:bg-secondary-100">
                         <NetworkTabIcon className="h-6 w-6" />
                         {hovered && <span className="text-sm whitespace-nowrap">Swap</span>}
