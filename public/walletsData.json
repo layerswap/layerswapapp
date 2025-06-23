@@ -22957,18 +22957,20 @@
         "shortName": null
       },
       "mobile": {
-        "native": "",
+        "native": "nightly://",
         "universal": null
       },
       "name": "Nightly",
       "rdns": "app.nightly",
       "sdks": [
-        "sign_v1"
+        "sign_v1",
+        "sign_v2"
       ],
       "slug": "nightly",
       "updatedAt": "2024-10-09T14:58:20.475923+00:00",
       "versions": [
-        "1"
+        "1",
+        "2"
       ]
     },
     "9aa288a4c66884bec28af54056921660ebde9debd848ef03902363ed534c96d4": {
