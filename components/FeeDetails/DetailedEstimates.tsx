@@ -11,13 +11,14 @@ const DetailedEstimates: FC = () => {
     const { fee, isFeeLoading } = useFee()
 
     const feeDiscount = fee?.quote?.fee_discount || 0;
+    const feeDiscountInUsd = feeDiscount * (fee?.quote.source_token?.price_in_usd || 0);
     const fee_amount = fee?.quote.total_fee && fee.quote.total_fee - feeDiscount
     const fullFeeAmount = fee?.quote.total_fee || 0;
     const fullParsedFeeAmount = fullFeeAmount && parseFloat(Number(fullFeeAmount).toFixed(fromCurrency?.precision))
 
     const parsedFee = fee && parseFloat(Number(fee_amount).toFixed(fromCurrency?.precision))
     const currencyName = fromCurrency?.symbol || " "
-    const feeAmountInUsd = fee?.quote.total_fee_in_usd
+    const feeAmountInUsd = fee?.quote.total_fee_in_usd && (fee?.quote.total_fee_in_usd - feeDiscountInUsd)
 
     const displayFeeInUsd = feeAmountInUsd ? (feeAmountInUsd < 0.01 ? '<$0.01' : `$${feeAmountInUsd?.toFixed(2)}`) : null
 
@@ -49,7 +50,7 @@ const DetailedEstimates: FC = () => {
                         <div>
                             {
                                 feeDiscount > 0 ?
-                                    <span className="ml-1 text-xs">
+                                    <span className="ml-1">
                                         <span className="line-through">
                                             <span>{fullParsedFeeAmount || '-'}</span> <span>{fee_amount == 0 ? currencyName : ''}</span>
                                         </span>
@@ -60,7 +61,7 @@ const DetailedEstimates: FC = () => {
                                     :
                                     <span>{parsedFee || '-'} </span>
                             }
-                            <span>{parsedFee ? currencyName : ''}</span>
+                            <span>{(parsedFee && !feeDiscount) ? currencyName : ''}</span>
                             {displayFeeInUsd !== undefined && fee_amount ? (
                                 <span className="text-xs ml-1 font-medium">
                                     ({displayFeeInUsd})
