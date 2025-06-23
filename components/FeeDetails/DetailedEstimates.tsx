@@ -43,13 +43,14 @@ export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, i
     const gasFeeInUsd = (quote?.source_network?.token && gas) ? gas * quote?.source_network?.token?.price_in_usd : null;
     const displayLsFeeInUsd = lsFeeAmountInUsd ? (lsFeeAmountInUsd < 0.01 ? '<$0.01' : `$${lsFeeAmountInUsd?.toFixed(2)}`) : null
     const displayGasFeeInUsd = gasFeeInUsd ? (gasFeeInUsd < 0.01 ? '<$0.01' : `$${gasFeeInUsd?.toFixed(2)}`) : null
-
+    console.log("gas", gas)
+    console.log("gasFeeInUsd", gasFeeInUsd)
+    console.log("price_in_usd", quote?.source_network?.token?.price_in_usd)
     return <div className="flex flex-col w-full gap-2 divide-y divide-secondary-300 p-3">
         {
             detailsElements.map((item) => {
-                const showElement = item.showCondition ? item.showCondition({ gas, shouldCheckNFT, isLoading, error, nftBalance, campaign, reward, destinationAddress }) : true
+                const showElement = item.showCondition ? item.showCondition({ gasFeeInUsd, shouldCheckNFT, isLoading, error, nftBalance, campaign, reward, destinationAddress }) : true
                 if (!showElement) return null
-
                 return (
                     <div key={item.name} className="flex items-center w-full justify-between gap-1 pb-2 px-1">
                         <div className="inline-flex items-center text-left text-secondary-text gap-1 pr-4">
@@ -67,6 +68,7 @@ export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, i
                 )
             })
         }
+
     </div>
 }
 
@@ -78,7 +80,7 @@ const detailsElements: DetailedElement[] = [
     {
         name: 'Gas Fee',
         icon: GasIcon,
-        showCondition: (props) => { return props.gas !== undefined },
+        showCondition: (props) => { return props.gasFeeInUsd !== null && props.gasFeeInUsd !== undefined },
         content: ({ gas, nativeCurrencyName, displayGasFeeInUsd, isGasLoading }) => {
             return isGasLoading ? (
                 <LoadingBar />
@@ -187,7 +189,7 @@ type DetailsContentProps = {
 }
 
 type ShowConditionProps = {
-    gas?: number | undefined
+    gasFeeInUsd?: number | null
 
     shouldCheckNFT?: string | false | undefined
     isLoading?: boolean

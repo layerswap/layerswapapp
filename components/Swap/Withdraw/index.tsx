@@ -9,6 +9,7 @@ import { useQueryState } from '../../../context/query';
 import { Widget } from '../../Widget/Index';
 import WalletTransferContent from './WalletTransferContent';
 import { SwapQuoteDetails } from './SwapQuoteDetails';
+import Link from 'next/link';
 
 const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
     const { swapResponse } = useSwapDataState()
@@ -47,6 +48,11 @@ const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
             <Widget.Content>
                 <div className="w-full flex flex-col justify-between  text-secondary-text">
                     <div className='grid grid-cols-1 gap-4 '>
+                        {
+                            swap?.use_deposit_address === true ? <p className="text-md text-secondary-text">
+                                <span>Transfer assets to Layerswap’s deposit address to complete the swap.</span> <Link target="_blank" className="text-primary-text underline hover:no-underline decoration-primary-text cursor-pointer" href='https://intercom.help/layerswap/en/articles/8448449-transferring-manually'>Learn more</Link></p>
+                                : <></>
+                        }
                         <SwapSummary />
                         <SwapQuoteDetails swapResponse={swapResponse} />
                         <div>

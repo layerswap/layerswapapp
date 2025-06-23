@@ -1,4 +1,4 @@
-import { FC, useCallback } from "react"
+import { FC } from "react"
 import { ArrowLeftRight } from "lucide-react"
 import { useSwapDataState } from "../../../context/swap";
 import KnownInternalNames from "../../../lib/knownIds";
@@ -6,48 +6,21 @@ import BackgroundField from "../../backgroundField";
 import SubmitButton from "../../buttons/submitButton";
 import shortenAddress from "../../utils/ShortenAddress";
 import { isValidAddress } from "../../../lib/address/validator";
-import { useSwapDepositHintClicked } from "../../../stores/swapTransactionStore";
 import { Exchange } from "../../../Models/Exchange";
-import Link from "next/link";
-import CopyButton from "../../buttons/copyButton";
 import useWindowDimensions from "../../../hooks/useWindowDimensions";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
+import QRCodeModal from "@/components/QRCodeWallet";
+import useCopyClipboard from "@/hooks/useCopyClipboard";
 
 const ManualTransfer: FC = () => {
     const { swapResponse, depositActionsResponse } = useSwapDataState()
-
-    const { swap } = swapResponse || {}
-    const hintsStore = useSwapDepositHintClicked()
-    const hintClicked = hintsStore.swapTransactions[swap?.id || ""]
     const trasnsferACtionData = depositActionsResponse?.find(a => true)
 
     let generatedDepositAddress = trasnsferACtionData?.to_address
 
-    const handleCloseNote = useCallback(async () => {
-        if (swap)
-            hintsStore.setSwapDepositHintClicked(swap?.id)
-    }, [swap, hintsStore])
-
     return (
-        <div className='rounded-md bg-secondary-700 border border-secondary-500 w-full h-full items-center relative'>
-            <div className={!hintClicked ? "absolute w-full h-full flex flex-col items-center px-3 pb-3 text-center" : "hidden"}>
-                <div className="flex flex-col items-center justify-center h-full pb-2">
-                    <div className="max-w-xs">
-                        <p className="text-base text-primary-text">
-                            About manual transfers
-                        </p>
-                        <p className="text-xs text-secondary-text">
-                            <span>Transfer assets to Layerswap’s deposit address to complete the swap.</span> <Link target="_blank" className="text-primary underline hover:no-underline decoration-primary cursor-pointer" href='https://intercom.help/layerswap/en/articles/8448449-transferring-manually'>Learn more</Link>
-                        </p>
-                    </div>
-                </div>
-                <SubmitButton type="button" size="medium" onClick={handleCloseNote}>
-                    OK
-                </SubmitButton>
-            </div>
-            <div className={hintClicked ? "" : "invisible"}>
-                <TransferInvoice deposit_address={generatedDepositAddress} />
-            </div>
+        <div className='rounded-xl bg-secondary-500  w-full h-full items-center relative'>
+            <TransferInvoice deposit_address={generatedDepositAddress} />
         </div>
     )
 }
@@ -56,8 +29,15 @@ const TransferInvoice: FC<{ deposit_address?: string }> = ({ deposit_address }) 
     const { swapResponse: swapResponse } = useSwapDataState()
     const { swap, quote: swapQuote } = swapResponse || {}
     const { isMobile } = useWindowDimensions()
+    const [isCopied, setCopied] = useCopyClipboard()
 
     const minAllowedAmount = swapQuote?.min_receive_amount
+
+    const handleCopyClick = () => {
+        if (deposit_address) {
+            setCopied(deposit_address);
+        }
+    };
 
     const {
         source_exchange,
@@ -67,38 +47,52 @@ const TransferInvoice: FC<{ deposit_address?: string }> = ({ deposit_address }) 
     const source_network_internal_name = swap?.source_network.name
 
     //TODO pick manual transfer minAllowedAmount when its available
-    const requested_amount = Number(minAllowedAmount) > Number(swap?.requested_amount) ? minAllowedAmount : swap?.requested_amount
+    // const requested_amount = Number(minAllowedAmount) > Number(swap?.requested_amount) ? minAllowedAmount : swap?.requested_amount
 
     // const handleChangeSelectedNetwork = useCallback((n: NetworkCurrency) => {
     //     setSelectedAssetNetwork(n)
     // }, [])
 
-    return <div className='divide-y divide-secondary-500 text-primary-text h-full'>
+    return <div className='divide-y divide-secondary-300 text-primary-text h-full px-3'>
         {source_exchange && <div className={`w-full relative rounded-md px-3 py-3 shadow-xs border-secondary-700 border bg-secondary-700 flex flex-col items-center justify-center gap-2`}>
             <ExchangeNetworkPicker />
         </div>
         }
-        <div className="flex divide-x divide-secondary-500">
-            <BackgroundField Copiable={true} QRable={true} header={"Deposit address"} toCopy={deposit_address} withoutBorder>
-                <div>
-                    {
-                        deposit_address ?
-                            <p className='break-all'>
-                                {deposit_address}
-                            </p>
-                            :
-                            <div className='bg-gray-500 w-56 h-5 animate-pulse rounded-md' />
-                    }
-                    {
-                        (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
-                        <div className='flex text-xs items-center py-1 mt-1 border-2 border-secondary-300 rounded-sm border-dashed text-secondary-text'>
-                            <p>
-                                This address might not be activated. You can ignore it.
-                            </p>
+        <div className="py-3 ">
+            <p className="text-lg  text-primary-text">
+                {`Transfer ${source_token?.symbol} to`}
+            </p>
+        </div>
+        <div className="flex flex-col divide-x divide-secondary-500">
+            <div className="relative w-full">
+                <div className='w-full relative  py-3 shadow-xs border-secondary-700 rounded-xl  bg-secondary-500 space-y-2'>
+                    <div>
+                        <p className="block text-sm text-secondary-text">
+                            Deposit address
+                        </p>
+
+                        <div className="flex items-center justify-between leading-5 w-full mt-1 space-x-2">
+                            {
+                                deposit_address ?
+                                    <p className='break-all text-secondary-text space-y-2 w-3/4'>
+                                        {deposit_address}
+                                    </p>
+                                    :
+                                    <div className='bg-gray-500 w-56 h-5 animate-pulse rounded-md' />
+                            }
+                            {
+                                deposit_address &&
+                                <div className="space-x-2 flex self-start">
+                                    <QRCodeModal qrUrl={deposit_address?.toLocaleString()} iconSize={isMobile ? 20 : 16} className=' text-secondary-text bg-secondary-text/10 p-1.5 hover:text-primary-text rounded-sm' />
+                                </div>
+                            }
                         </div>
-                    }
+                    </div>
+                    <SubmitButton type="button" onClick={handleCopyClick}>
+                        {isCopied ? "Copied" : "Copy address"}
+                    </SubmitButton>
                 </div>
-            </BackgroundField>
+            </div>
         </div>
         {
             (source_network_internal_name === KnownInternalNames.Networks.LoopringMainnet || source_network_internal_name === KnownInternalNames.Networks.LoopringGoerli) &&
@@ -120,42 +114,6 @@ const TransferInvoice: FC<{ deposit_address?: string }> = ({ deposit_address }) 
                 </BackgroundField>
             </div>
         }
-
-        <div className='flex divide-x divide-secondary-500'>
-            <BackgroundField Copiable={true} toCopy={requested_amount} header={'Amount'} withoutBorder>
-                <p>
-                    {requested_amount}
-                </p>
-            </BackgroundField>
-            <BackgroundField header={'Asset'} withoutBorder Explorable={source_token?.contract != null && isValidAddress(source_token?.contract, source_network)} toExplore={source_token?.contract != null ? source_network?.account_explorer_template?.replace("{0}", source_token?.contract) : undefined}>
-                <div className="flex items-center gap-2">
-                    <div className="shrink-0 h-7 w-7 relative">
-                        {
-                            source_token &&
-                            <ImageWithFallback
-                                src={source_token.logo}
-                                alt="From Logo"
-                                height="60"
-                                width="60"
-                                className="rounded-md object-contain"
-                            />
-                        }
-                    </div>
-                    <div className="flex flex-col">
-                        <span className="font-semibold leading-4">
-                            {source_token?.symbol}
-                        </span>
-                        {source_token?.contract && isValidAddress(source_token.contract, source_network) &&
-                            <span className="text-xs text-secondary-text flex items-center leading-3">
-                                <CopyButton iconSize={isMobile ? 20 : 16} toCopy={source_token?.contract} iconClassName="hidden" className='hover:underline no-underline text-secondary-text' >
-                                    {shortenAddress(source_token?.contract)}
-                                </CopyButton>
-                            </span>
-                        }
-                    </div>
-                </div>
-            </BackgroundField>
-        </div>
     </div>
 }
 

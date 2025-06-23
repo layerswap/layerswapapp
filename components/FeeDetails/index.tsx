@@ -95,10 +95,10 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
     }
 
     return (
-        <div className='divide-x divide-primary-text-placeholder flex items-center  space-x-4'>
+        <div className='flex items-center'>
             {
                 displayFeeInUsd &&
-                <div className='inline-flex items-center gap-1 pr-4'>
+                <div className='inline-flex items-center gap-1 pr-2'>
                     <GasIcon />
                     <p>
                         {displayFeeInUsd}
@@ -107,19 +107,25 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
             }
             {
                 averageCompletionTime &&
-                <div className="text-right text-primary-text inline-flex items-center gap-1 pr-4">
-                    <Clock />
-                    <AverageCompletionTime avgCompletionTime={quote.avg_completion_time} />
-                </div>
+                <>
+                    <span className="h-4 w-[2px] bg-primary-text-placeholder mx-2" />
+                    <div className="text-right text-primary-text inline-flex items-center gap-1 px-2">
+                        <Clock />
+                        <AverageCompletionTime avgCompletionTime={quote.avg_completion_time} />
+                    </div>
+                </>
             }
             {
                 reward &&
-                <div className='text-right text-primary-text inline-flex items-center gap-1 pr-4'>
-                    <Image src={rewardCup} alt="Reward" width={16} height={16} />
-                    <p>
-                        {displayReward}
-                    </p>
-                </div>
+                <>
+                    <span className="h-4 w-[2px] bg-primary-text-placeholder mx-2" />
+                    <div className='text-right text-primary-text inline-flex items-center gap-1 px-2'>
+                        <Image src={rewardCup} alt="Reward" width={16} height={16} />
+                        <p>
+                            {displayReward}
+                        </p>
+                    </div>
+                </>
             }
         </div>
     )
