@@ -43,9 +43,6 @@ export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, i
     const gasFeeInUsd = (quote?.source_network?.token && gas) ? gas * quote?.source_network?.token?.price_in_usd : null;
     const displayLsFeeInUsd = lsFeeAmountInUsd ? (lsFeeAmountInUsd < 0.01 ? '<$0.01' : `$${lsFeeAmountInUsd?.toFixed(2)}`) : null
     const displayGasFeeInUsd = gasFeeInUsd ? (gasFeeInUsd < 0.01 ? '<$0.01' : `$${gasFeeInUsd?.toFixed(2)}`) : null
-    console.log("gas", gas)
-    console.log("gasFeeInUsd", gasFeeInUsd)
-    console.log("price_in_usd", quote?.source_network?.token?.price_in_usd)
     return <div className="flex flex-col w-full gap-2 divide-y divide-secondary-300 p-3">
         {
             detailsElements.map((item) => {
