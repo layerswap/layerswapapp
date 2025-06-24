@@ -489,9 +489,13 @@ export function walletConnect(parameters: Params) {
 }
 
 function addWC(url) {
-    if (url.endsWith("://")) {
+    if (url?.endsWith("://")) {
         return url + "wc";
-    } else {
+    } 
+    else if (url?.endsWith("/")) {
+        return url + "wc";
+    }
+    else {
         return url + "/wc";
     }
 }
