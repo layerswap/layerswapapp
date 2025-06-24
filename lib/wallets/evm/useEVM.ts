@@ -379,15 +379,19 @@ async function attemptGetAccount(config, maxAttempts = 5) {
     return getAccount(config);
 }
 function dedupePreferInjected(arr: Connector<CreateConnectorFn>[]) {
-    // Group items by id
-    const groups = arr.reduce((acc, obj) => {
-        (acc[obj.id] = acc[obj.id] || []).push(obj);
+    // Helper to strip off any prefix up to the last dot
+    const getBaseId = (id: string) => id.includes('.') ? id.split('.').pop()! : id;
+
+    // Group items by normalized base‐id
+    const groups = arr.reduce<Record<string, Connector<CreateConnectorFn>[]>>((acc, obj) => {
+        const key = getBaseId(obj.name);
+        (acc[key] = acc[key] || []).push(obj);
         return acc;
     }, {});
-    // For each id, if any item is injected, keep only those; otherwise keep all
+
+    // Within each group, if any are injected prefer them, otherwise keep all
     return Object.values(groups).flatMap(group => {
-        const groupArr = group as Connector<CreateConnectorFn>[];
-        const injected = groupArr.filter(o => o.type === 'injected');
-        return injected.length > 0 ? injected : groupArr;
+        const injected = group.filter(o => o.type === 'injected');
+        return injected.length > 0 ? injected : group;
     });
 }

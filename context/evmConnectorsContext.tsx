@@ -1,9 +1,10 @@
-import { createContext, useContext, useMemo, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { resolveConnector, resolveWallets, WalletConnectWallet } from '../lib/wallets/connectors/resolveConnectors';
 import { CreateConnectorFn } from 'wagmi';
 import { coinbaseWallet, walletConnect } from '@wagmi/connectors'
 import { browserInjected } from '../lib/wallets/connectors/browserInjected';
 import { isMobile } from '../lib/isMobile';
+import { usePersistedState } from '@/hooks/usePersistedState';
 
 type ContextType = {
     connectors: CreateConnectorFn[],
@@ -27,16 +28,32 @@ const resolveFeaturedWallets = (wallets: WalletConnectWallet[]) => {
 
 const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
 const wltcnnct_inited = walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' })
-const resolvedWalletConnectWallets = resolveWallets()
-const featuredWallets = resolveFeaturedWallets(resolvedWalletConnectWallets)
+const _walletConnectWallets = resolveWallets()
+const featuredWallets = resolveFeaturedWallets(_walletConnectWallets)
 
 export function EvmConnectorsProvider({ children }) {
+    let [recentConnectors, _] = usePersistedState<({ providerName?: string, connectorName?: string }[])>([], 'recentConnectors', 'localStorage');
     const [walletConnectWallets, setWalletConnectWallets] = useState<CreateConnectorFn[]>([])
 
     const addWalletConnectWallet = async (connector: WalletConnectWallet) => {
         const resolvedConnector = resolveConnector(connector.name)
         setWalletConnectWallets((prev) => [...prev, resolvedConnector])
     }
+
+    useEffect(() => {
+        const evmRecentConnectors = recentConnectors.filter(c => c.providerName === 'evm' && c.connectorName)
+        evmRecentConnectors.forEach(c => {
+            if (!c.connectorName || featuredWalletsIds.includes(c.connectorName.toLowerCase())) {
+                return;
+            }
+            const connector = _walletConnectWallets.find(w => w.id.toLowerCase() === c?.connectorName?.toLowerCase())
+            if (connector) addWalletConnectWallet(connector)
+        })
+    }, [recentConnectors])
+
+    const resolvedWalletConnectWallets = useMemo(() => {
+        return _walletConnectWallets.filter(w => !featuredWalletsIds.includes(w.id))
+    }, [_walletConnectWallets]);
 
     const resolvedFeaturedWallets = useMemo(() => {
         return featuredWallets.map(wallet => {
