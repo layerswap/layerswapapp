@@ -111,7 +111,7 @@ export function argent(parameters: WalletConnectParameters) {
   return createConnector<Provider, Properties, StorageItem>((config) => {
     return ({
       id: 'argent',
-      name: 'Argent',
+      name: 'Ready',
       deepLink: 'argent://wc',
       resolveURI: (uri: string) => {
         return (isAndroid() || !isMobile())
