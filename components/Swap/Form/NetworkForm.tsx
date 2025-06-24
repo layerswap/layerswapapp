@@ -1,5 +1,5 @@
-import { FC, useCallback, useEffect, useState } from "react";
-import { Form, FormikErrors, useFormikContext } from "formik";
+import { FC, useCallback, useEffect } from "react";
+import { FormikErrors, useFormikContext } from "formik";
 import { Partner } from "@/Models/Partner";
 import { useQuote } from "@/context/feeContext";
 import { TokenBalance } from "@/Models/Balance";
@@ -12,11 +12,9 @@ import SourcePicker from "@/components/Input/SourcePicker";
 import DestinationPicker from "@/components/Input/DestinationPicker";
 import CexNetworkPicker from "@/components/Input/CexNetworkPicker";
 import QuoteDetails from "@/components/FeeDetails";
-import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import dynamic from "next/dynamic";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { useQueryState } from "@/context/query";
-import { UrlQuerySync } from "./UrlQuerySync";
 import { Widget } from "@/components/Widget/Index";
 import { motion, useCycle } from "framer-motion";
 import { useSettingsState } from "@/context/settings";
@@ -31,18 +29,16 @@ import { WalletProvider } from "@/Models/WalletProvider";
 const ReserveGasNote = dynamic(() => import("@/components/ReserveGasNote"), {
     loading: () => <></>,
 });
-const RefuelModal = dynamic(() => import("@/components/FeeDetails/RefuelModal"), {
-    loading: () => <></>,
-});
 const RefuelToggle = dynamic(() => import("@/components/FeeDetails/Refuel"), {
     loading: () => <></>,
 });
 
 type Props = {
+    setOpenRefuelModal: (open: boolean) => void;
     partner?: Partner;
 };
 
-const NetworkForm: FC<Props> = ({ partner }) => {
+const NetworkForm: FC<Props> = ({ partner, setOpenRefuelModal }) => {
     const {
         values,
         setValues,
@@ -66,7 +62,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const query = useQueryState();
 
     const actionDisplayName = query?.actionButtonText || "Swap now";
-    const [openRefuelModal, setOpenRefuelModal] = useState<boolean>(false);
 
     useEffect(() => {
         valuesChanger(values);
@@ -93,74 +88,66 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const shouldConnectWallet = (sourceWalletNetwork && values.from?.deposit_methods?.includes('wallet') && values.depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!values.from && !values.fromExchange && !wallets.length && values.depositMethod !== 'deposit_address');
 
     return (
-        <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`}>
-            <DepositMethodComponent />
-            <UrlQuerySync
-                fieldMapping={{ from: 'name', to: 'name', fromAsset: 'symbol', toAsset: 'symbol', currencyGroup: 'symbol', fromExchange: 'name', toExchange: 'name' }}
-                excludeFields={['refuel']}
-            />
-            <Widget className="sm:min-h-[450px] h-full">
-                <Widget.Content>
-                    <div className="w-full min-h-[79svh] sm:min-h-[480px] flex flex-col justify-between">
-                        <div>
-                            <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
-                                {
-                                    !(query?.hideFrom && values?.from) && <SourcePicker />
-                                }
-                                {
-                                    !query?.hideFrom && !query?.hideTo &&
-                                    <ValueSwapperButton
-                                        values={values}
-                                        setValues={setValues}
-                                        providers={providers}
-                                        query={query}
-                                    />
-                                }
-                                {
-                                    !(query?.hideTo && values?.to) && <DestinationPicker partner={partner} />
-                                }
-                            </div>
+        <Widget className="sm:min-h-[450px] h-full">
+            <Widget.Content>
+                <div className="w-full min-h-[79svh] sm:min-h-[480px] flex flex-col justify-between">
+                    <div>
+                        <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
                             {
-                                (((fromExchange && destination) || (toExchange && source)) && currencyGroup) &&
-                                <div className="mb-6 leading-4">
-                                    <ResizablePanel>
-                                        <CexNetworkPicker direction={fromExchange ? 'from' : 'to'} partner={partner} />
-                                    </ResizablePanel>
-                                </div>
+                                !(query?.hideFrom && values?.from) && <SourcePicker />
                             }
-                            <div className="w-full">
-                                {values.amount &&
-                                    <ReserveGasNote onSubmit={handleReserveGas} />
-                                }
-                            </div>
+                            {
+                                !query?.hideFrom && !query?.hideTo &&
+                                <ValueSwapperButton
+                                    values={values}
+                                    setValues={setValues}
+                                    providers={providers}
+                                    query={query}
+                                />
+                            }
+                            {
+                                !(query?.hideTo && values?.to) && <DestinationPicker partner={partner} />
+                            }
                         </div>
-                        <div className="space-y-3">
-                            {
-                                values.toAsset?.refuel && !query.hideRefuel && !toExchange &&
-                                <RefuelToggle onButtonClick={() => setOpenRefuelModal(true)} />
-                            }
-                            {
-                                validationMessage
-                                    ? <ValidationError />
-                                    : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                        {
+                            (((fromExchange && destination) || (toExchange && source)) && currencyGroup) &&
+                            <div className="mb-6 leading-4">
+                                <ResizablePanel>
+                                    <CexNetworkPicker direction={fromExchange ? 'from' : 'to'} partner={partner} />
+                                </ResizablePanel>
+                            </div>
+                        }
+                        <div className="w-full">
+                            {values.amount &&
+                                <ReserveGasNote onSubmit={handleReserveGas} />
                             }
                         </div>
                     </div>
-                </Widget.Content>
-                <Widget.Footer>
-                    <FormButton
-                        shouldConnectWallet={shouldConnectWallet}
-                        values={values}
-                        isValid={isValid}
-                        errors={errors}
-                        isSubmitting={isSubmitting}
-                        actionDisplayName={actionDisplayName}
-                        partner={partner}
-                    />
-                </Widget.Footer>
-                <RefuelModal openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} />
-            </Widget>
-        </Form>
+                    <div className="space-y-3">
+                        {
+                            values.toAsset?.refuel && !query.hideRefuel && !toExchange &&
+                            <RefuelToggle onButtonClick={() => setOpenRefuelModal(true)} />
+                        }
+                        {
+                            validationMessage
+                                ? <ValidationError />
+                                : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                        }
+                    </div>
+                </div>
+            </Widget.Content>
+            <Widget.Footer>
+                <FormButton
+                    shouldConnectWallet={shouldConnectWallet}
+                    values={values}
+                    isValid={isValid}
+                    errors={errors}
+                    isSubmitting={isSubmitting}
+                    actionDisplayName={actionDisplayName}
+                    partner={partner}
+                />
+            </Widget.Footer>
+        </Widget>
     );
 };
 
