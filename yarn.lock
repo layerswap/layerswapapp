@@ -37,6 +37,11 @@
     "@jridgewell/gen-mapping" "^0.3.5"
     "@jridgewell/trace-mapping" "^0.3.24"
 
+"@argent/x-ui@^1.70.1":
+  version "1.87.0"
+  resolved "https://registry.yarnpkg.com/@argent/x-ui/-/x-ui-1.87.0.tgz#bbae58bf506b458e26f368c2d2288445f5bef40c"
+  integrity sha512-aqw0Z3+8oE2csI6qSEN2zZBcPyHvmy0WkDDdhqfwZf4KTL4zbrxRUQs0Z4/QucH6LqiCqHCrOt93sB2ecaeEBQ==
+
 "@aw-web-design/x-default-browser@1.4.126":
   version "1.4.126"
   resolved "https://registry.yarnpkg.com/@aw-web-design/x-default-browser/-/x-default-browser-1.4.126.tgz#43e4bd8f0314ed907a8718d7e862a203af79bc16"
@@ -22226,11 +22231,12 @@ starknet@^6.23.1:
     starknet-types-07 "npm:@starknet-io/types-js@^0.7.10"
     ts-mixer "^6.0.3"
 
-starknetkit@^2.10.4:
-  version "2.10.4"
-  resolved "https://registry.yarnpkg.com/starknetkit/-/starknetkit-2.10.4.tgz#b7a7e8ad83bf16f0be91a56a4f6cba4e91394a10"
-  integrity sha512-POdv8GdGzBmwgMxn+FQhGXxcc4kFY6tnCHoB/c3j5vigZO2fLVxi5tJX9nYsITRX7QzoV3yal7W5e2agJ4SFSA==
+starknetkit@^2.12.0:
+  version "2.12.0"
+  resolved "https://registry.yarnpkg.com/starknetkit/-/starknetkit-2.12.0.tgz#4da037399bc4db4de7677bd4d0e202b459e9da63"
+  integrity sha512-cgGkn6sBTUBJZddCzy9xOx3HAaReXbUWeZZND/Mczx7oAJeP40mQ4Q/1csRB+C7ChVIqCUdhukpTjvHUwzMoGg==
   dependencies:
+    "@argent/x-ui" "^1.70.1"
     "@starknet-io/get-starknet" "^4.0.6"
     "@starknet-io/get-starknet-core" "^4.0.6"
     "@starknet-io/types-js" "^0.7.10"
@@ -22242,6 +22248,8 @@ starknetkit@^2.10.4:
     eventemitter3 "^5.0.1"
     events "^3.3.0"
     lodash-es "^4.17.21"
+    react "^18.2.0"
+    react-dom "^18.2.0"
     svelte-forms "^2.3.1"
     trpc-browser "^1.3.2"
 
