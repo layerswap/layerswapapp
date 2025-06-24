@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import { resolveConnector, resolveWallets, WalletConnectWallet } from '../lib/wallets/connectors/resolveConnectors';
+import { resolveConnector, walletConnectWallets as _walletConnectWallets, WalletConnectWallet } from '../lib/wallets/connectors/resolveConnectors';
 import { CreateConnectorFn } from 'wagmi';
 import { coinbaseWallet, walletConnect } from '@wagmi/connectors'
 import { browserInjected } from '../lib/wallets/connectors/browserInjected';
@@ -19,7 +19,7 @@ export const featuredWalletsIds = [
     'argent',
     'rainbow',
     'bitkeep',
-    'okx-wallet-1',
+    'okx-wallet',
 ]
 
 const resolveFeaturedWallets = (wallets: WalletConnectWallet[]) => {
@@ -28,7 +28,6 @@ const resolveFeaturedWallets = (wallets: WalletConnectWallet[]) => {
 
 const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
 const wltcnnct_inited = walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' })
-const _walletConnectWallets = resolveWallets()
 const featuredWallets = resolveFeaturedWallets(_walletConnectWallets)
 
 export function EvmConnectorsProvider({ children }) {

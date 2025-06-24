@@ -2,7 +2,6 @@ import { walletConnect } from "./walletConnect"
 import walletsData from "@/public/walletsData.json"
 import { InternalConnector } from "@/Models/WalletProvider"
 import { resolveWalletConnectorIndex } from "../../utils/resolveWalletIcon"
-import { featuredWalletsIds } from "@/context/evmConnectorsContext"
 
 const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b'
 const wallets = Object.values(walletsData.listings)
@@ -26,12 +25,16 @@ export type WalletConnectWallet = {
     customStoragePrefix: string;
 } & InternalConnector
 
+const walletsToFilter = [
+    "5d9f1395b3a8e848684848dc4147cbd05c8d54bb737eac78fe103901fe6b01a1"
+]
+
 export const resolveWallets: () => WalletConnectWallet[] = () => {
 
     const resolvedWallets = pickLatestBy(
         wallets,
         c => c.slug
-    ).filter(w => w.mobile.native || w.mobile.universal && w.name && w.slug && featuredWalletsIds.some(fw => fw.includes(w.id.toLowerCase()))).map(wallet => {
+    ).filter(w => w.mobile.native || w.mobile.universal && w.name && w.slug && !walletsToFilter.some(wtf => wtf == w.id)).map(wallet => {
         const w = resolveWallet(wallet)
         return w
     })
@@ -39,8 +42,9 @@ export const resolveWallets: () => WalletConnectWallet[] = () => {
     return resolvedWallets;
 }
 
+
 export const resolveConnector = (name: string) => {
-    const wallet = wallets.find(w => w.name === name)
+    const wallet = wallets.find(w => w.name === name && !walletsToFilter.includes(w.id))
     const params = resolveWallet(wallet)
     return walletConnect(params as any)
 }
@@ -67,7 +71,7 @@ const resolveWallet = (wallet: any) => {
 
     return w
 }
-
+export const walletConnectWallets = resolveWallets()
 
 function pickLatestBy<T>(
     connectors: T[],

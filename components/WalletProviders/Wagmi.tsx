@@ -15,6 +15,11 @@ type Props = {
 
 const queryClient = new QueryClient()
 
+const chainsToFilter = [
+    70700,
+    70701
+]
+
 function WagmiComponent({ children }: Props) {
     const settings = useSettingsState();
     const isChain = (c: Chain | undefined): c is Chain => c != undefined
@@ -22,7 +27,9 @@ function WagmiComponent({ children }: Props) {
         .sort((a, b) => (NetworkSettings.KnownSettings[a.name]?.ChainOrder || Number(a.chain_id)) - (NetworkSettings.KnownSettings[b.name]?.ChainOrder || Number(b.chain_id)))
         .filter(net => net.type === NetworkType.EVM
             && net.node_url
-            && net.token)
+            && net.token
+            && net.chain_id && !chainsToFilter.includes(Number(net.chain_id))
+        )
         .map(resolveChain).filter(isChain) as Chain[]
 
     const transports = {}
