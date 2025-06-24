@@ -69,7 +69,6 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletPr
             availableWalletsForConnect
         }
         return resolvedProvider
-
     }
 
     return provider
