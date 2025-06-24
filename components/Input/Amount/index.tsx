@@ -8,8 +8,11 @@ import useSWRBalance from "../../../lib/balances/useSWRBalance";
 import { useSwapDataState } from "../../../context/swap";
 import { resolveMacAllowedAmount } from "./helpers";
 
-const AmountField = forwardRef(function AmountField(_, ref: any) {
+interface AmountFieldProps {
+    exchangeAmount?: boolean;
+}
 
+const AmountField = forwardRef<HTMLInputElement, AmountFieldProps>(({ exchangeAmount = false }, ref) => {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
     const { fromAsset: fromCurrency, from, to, amount, toAsset: toCurrency, fromExchange, toExchange } = values || {};
@@ -52,8 +55,8 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
 
     return (<>
-        <div className={`flex flex-col w-full bg-secondary-500 rounded-lg`}>
-            <div className="relative w-full">
+        <div className="flex flex-col w-full bg-secondary-500 rounded-lg">
+            <div className="relative w-full in-has-[.exchange-amount-field]:pb-2">
                 <NumericInput
                     disabled={diasbled}
                     placeholder={placeholder}
@@ -63,17 +66,17 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     name={name}
                     ref={amountRef}
                     precision={fromCurrency?.precision}
-                    className={"text-[28px] text-primary-text placeholder:!text-primary-text pl-0 pr-2 w-full leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal"}
+                    className="w-full text-[28px] text-primary-text placeholder:!text-primary-text leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal in-has-[.exchange-amount-field]:px-2 has-[.exchange-amount-field]:pb-2 has-[.exchange-amount-field]:pr-2 has-[.exchange-amount-field]:pl-0"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value), fromCurrencyPriceInUsd);
                     }}
                 />
-                <span className="text-base leading-5 font-medium text-secondary-text">
+                <span className="text-base leading-5 font-medium text-secondary-text in-has-[.exchange-amount-field]:px-2">
                     {`$${requestedAmountInUsd ?? 0}`}
                 </span>
             </div>
-        </div >
+        </div>
     </>)
 });
 

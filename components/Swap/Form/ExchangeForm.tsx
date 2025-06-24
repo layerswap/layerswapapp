@@ -99,7 +99,7 @@ const ExchangeForm: FC<Props> = ({ partner, setOpenRefuelModal }) => {
                                     <RoutePicker direction="to" />
                                 </div>
 
-                                <div className="hover:bg-secondary-400 bg-secondary-300 rounded-xl px-2 py-4">
+                                <div className="hover:bg-secondary-400 bg-secondary-300 rounded-xl px-2 py-3 mb-4">
                                     <SourceWalletPicker />
                                 </div>
 
@@ -108,19 +108,10 @@ const ExchangeForm: FC<Props> = ({ partner, setOpenRefuelModal }) => {
                                         Enter amount
                                     </label>
                                 </div>
-                                <div className="relative">
-                                    <AmountField />
+                                <div className="relative exchange-amount-field">
+                                    <AmountField exchangeAmount={true}/>
                                 </div>
                             </div>
-                            {/* {
-                                !query?.hideFrom && !query?.hideTo &&
-                                <ValueSwapperButton
-                                    values={values}
-                                    setValues={setValues}
-                                    providers={providers}
-                                    query={query}
-                                />
-                            } */}
                         </div>
                         {
                             (((fromExchange && destination) || (toExchange && source)) && currencyGroup) &&
