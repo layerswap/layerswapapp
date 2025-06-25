@@ -1,8 +1,8 @@
 import KnownInternalNames from "../../knownIds";
 import { useWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
-import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
+import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
-import { useSettingsState } from "../../../context/settings";
+import { useSettingsState } from "@/context/settings";
 
 export default function useTron(): WalletProvider {
     const commonSupportedNetworks = [
