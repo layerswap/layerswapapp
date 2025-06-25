@@ -75,11 +75,10 @@ const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal }) => {
                         connectedWallet={selectedWallet}
                         network={source_network}
                         onDisconnect={() => selectedWallet.disconnect()}
-                        balance={(walletBalanceAmount && source_token) ? { amount: Number(walletBalanceAmount), symbol: source_token?.symbol, isLoading: isBalanceLoading } : undefined}
                     />
                     <div className="flex flex-col col-start-8 col-span-3 items-end font-normal text-secondary-text text-xs">
                         <p>Balance</p>
-                        <p>{truncateDecimals(Number(walletBalanceAmount), walletBalance?.decimals)} {walletBalance?.token}</p>
+                        <p className='flex items-center gap-1'><span>{truncateDecimals(Number(walletBalanceAmount), walletBalance?.decimals)}</span> <span>{walletBalance?.token}</span></p>
                     </div>
                 </div>
             }

@@ -15,14 +15,13 @@ import useSWR from "swr";
 import { NextRouter, useRouter } from "next/router";
 import { ApiResponse } from "@/Models/ApiResponse";
 import { Partner } from "@/Models/Partner";
-import { UpdateAuthInterface, UserType, useAuthDataUpdate } from "@/context/authContext";
+import { UserType, useAuthDataUpdate } from "@/context/authContext";
 import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
 import { useQueryState } from "@/context/query";
 import TokenService from "@/lib/TokenService";
 import LayerSwapAuthApiClient from "@/lib/apiClients/userAuthApiClient";
 import { AnimatePresence } from "framer-motion";
 import { useQuote } from "@/context/feeContext";
-import ResizablePanel from "../../ResizablePanel";
 import useWallet from "@/hooks/useWallet";
 import { DepositMethodProvider } from "@/context/depositMethodContext";
 import { dynamicWithRetries } from "@/lib/dynamicWithRetries";
@@ -34,6 +33,7 @@ import { useAsyncModal } from "@/context/asyncModal";
 import { ValidationProvider } from "@/context/validationErrorContext";
 import { PendingSwap } from "./PendingSwap";
 import { QueryParams } from "@/Models/QueryParams";
+import VaulDrawer from "@/components/modal/vaulModal";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -177,15 +177,15 @@ export default function Form() {
                 <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
             }
         </Modal>
-        <Modal height='fit'
+        <VaulDrawer
             show={showSwapModal}
             setShow={handleShowSwapModal}
             header={`Complete the swap`}
             modalId="showSwap">
-            <ResizablePanel>
+            <VaulDrawer.Snap id="item-1">
                 <SwapDetails type="contained" />
-            </ResizablePanel>
-        </Modal>
+            </VaulDrawer.Snap>
+        </VaulDrawer>
         <Formik
             innerRef={formikRef}
             initialValues={initialValues}

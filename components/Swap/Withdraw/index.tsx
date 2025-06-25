@@ -8,13 +8,11 @@ import { useQueryState } from '../../../context/query';
 import { Widget } from '../../Widget/Index';
 import { SwapQuoteDetails } from './SwapQuoteDetails';
 import WalletTransferButton from './WalletTransferButton';
-import ManualTransferNote from './Wallet/Common/manualTransferNote';
 
 const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
     const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
     const { appName, signature } = useQueryState()
-    const { source_network } = swap || {}
     const sourceIsImmutableX = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
         || swap?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const isImtblMarketplace = (signature && appName === "imxMarketplace" && sourceIsImmutableX)
@@ -26,7 +24,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
 
     if (swap?.use_deposit_address === false) {
         withdraw = {
-            content: <WalletTransferButton />
+            footer: <WalletTransferButton />
         }
     } else if (swap?.use_deposit_address === true) {
         withdraw = {
@@ -48,16 +46,8 @@ const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
                     <div className='grid grid-cols-1 gap-3 '>
                         <SwapSummary />
                         <SwapQuoteDetails swapResponse={swapResponse} />
-                        <div>
-                            {withdraw?.content}
-                        </div>
+                        {withdraw?.content}
                     </div>
-                    {
-                        source_network?.deposit_methods?.some(m => m === 'deposit_address') &&
-                        <div className="flex justify-center">
-                            <ManualTransferNote />
-                        </div>
-                    }
                 </div>
             </Widget.Content>
             {

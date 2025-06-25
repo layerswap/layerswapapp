@@ -125,20 +125,16 @@ export const ChangeNetworkButton: FC<ChangeNetworkProps> = (props) => {
 export const ButtonWrapper: FC<SubmitButtonProps> = ({
     ...props
 }) => {
-    return <>
-        <div className="flex flex-col text-primary-text text-base space-y-2">
-            <SubmitButton
-                text_align='center'
-                buttonStyle='filled'
-                size="medium"
-                type="button"
-                {...props}
-            >
-                {props.children}
-            </SubmitButton>
-        </div>
-    </>
-
+    return <SubmitButton
+        text_align='center'
+        buttonStyle='filled'
+        size="medium"
+        type="button"
+        className="text-primary-text text-base"
+        {...props}
+    >
+        {props.children}
+    </SubmitButton>
 }
 
 type ButtonWrapperProps = ComponentProps<typeof ButtonWrapper>;
