@@ -127,7 +127,17 @@ export default function useEVM(): WalletProvider {
 
             const activeAccount = await attemptGetAccount(config)
             const connections = getConnections(config)
-            const connection = connections.find(c => c.connector.id === connector?.id)
+            let connection = connections.find(c => c.connector.id === connector?.id)
+
+            if (!connection) {
+                const address = await connector.getAccounts()
+                const chainId = await connector.getChainId()
+                connection = {
+                    accounts: address as readonly [`0x${string}`, ...`0x${string}`[]],
+                    chainId: Number(chainId),
+                    connector
+                }
+            }
 
             const wallet = ResolveWallet({
                 activeConnection: (activeAccount.connector && activeAccount.address) ? {
@@ -195,11 +205,11 @@ export default function useEVM(): WalletProvider {
     }
 
 
-    const activeBrowserWallet = explicitInjectedProviderDetected() && allConnectors.filter(c => c.id !== "com.immutable.passport" && c.type === "injected").length === 1
-    const filterConnectors = wallet => ((wallet.id === "injected" ? activeBrowserWallet : true))
-
     {/* //TODO: refactor ordering */ }
     const availableFeaturedWalletsForConnect: InternalConnector[] = useMemo(() => {
+        const activeBrowserWallet = explicitInjectedProviderDetected() && allConnectors.filter(c => c.id !== "com.immutable.passport" && c.type === "injected").length === 1
+        const filterConnectors = wallet => ((wallet.id === "injected" ? activeBrowserWallet : true))
+
         return dedupePreferInjected(allConnectors.filter(filterConnectors))
             .map(w => {
                 const isWalletConnectSupported = walletConnectConnectors.some(w2 => w2.name.toLowerCase().includes(w.name.toLowerCase()) && (w2.mobile.universal || w2.mobile.native || w2?.desktop?.native || w2?.desktop?.universal)) || w.name === "WalletConnect"
