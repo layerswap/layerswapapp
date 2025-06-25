@@ -158,7 +158,8 @@ export default function useBitcoin(): WalletProvider {
         asSourceSupportedNetworks: commonSupportedNetworks,
         name,
         id,
-        providerIcon
+        providerIcon,
+        unsupportedPlatforms: ["mobile"]
     }
 
     return provider
@@ -205,6 +206,7 @@ const resolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
         autofillSupportedNetworks: supportedNetworks.autofill,
         withdrawalSupportedNetworks: supportedNetworks.withdrawal,
         networkIcon: networks.find(n => bitcoinNames.some(name => name === n.name))?.logo,
+
     }
 
     return wallet
