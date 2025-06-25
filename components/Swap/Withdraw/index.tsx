@@ -1,5 +1,4 @@
 import { FC } from 'react'
-import WalletTransfer from './Wallet';
 import ManualTransfer from './ManualTransfer';
 import { useSwapDataState } from '../../../context/swap';
 import KnownInternalNames from '../../../lib/knownIds';
@@ -7,14 +6,13 @@ import SwapSummary from '../Summary';
 import External from './External';
 import { useQueryState } from '../../../context/query';
 import { Widget } from '../../Widget/Index';
-import WalletTransferContent from './WalletTransferContent';
 import { SwapQuoteDetails } from './SwapQuoteDetails';
+import WalletTransferButton from './WalletTransferButton';
 
 const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
     const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
     const { appName, signature } = useQueryState()
-
     const sourceIsImmutableX = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
         || swap?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const isImtblMarketplace = (signature && appName === "imxMarketplace" && sourceIsImmutableX)
@@ -26,8 +24,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
 
     if (swap?.use_deposit_address === false) {
         withdraw = {
-            content: <WalletTransferContent />,
-            footer: <WalletTransfer />
+            footer: <WalletTransferButton />
         }
     } else if (swap?.use_deposit_address === true) {
         withdraw = {
@@ -46,12 +43,10 @@ const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
         <>
             <Widget.Content>
                 <div className="w-full flex flex-col justify-between  text-secondary-text">
-                    <div className='grid grid-cols-1 gap-4 '>
+                    <div className='grid grid-cols-1 gap-3 '>
                         <SwapSummary />
                         <SwapQuoteDetails swapResponse={swapResponse} />
-                        <div>
-                            {withdraw?.content}
-                        </div>
+                        {withdraw?.content}
                     </div>
                 </div>
             </Widget.Content>

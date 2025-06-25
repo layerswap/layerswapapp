@@ -4,7 +4,6 @@ import WalletIcon from '../../icons/WalletIcon';
 import useWallet from '../../../hooks/useWallet';
 import AddressWithIcon from '../../Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '../../Input/Address/AddressPicker';
-import { ChevronRight } from 'lucide-react';
 import { truncateDecimals } from '../../utils/RoundDecimals';
 import VaulDrawer from '../../modal/vaulModal';
 import { Wallet } from '../../../Models/WalletProvider';
@@ -12,7 +11,11 @@ import useSWRBalance from '../../../lib/balances/useSWRBalance';
 import { useSettingsState } from '../../../context/settings';
 import WalletsList from '../../Wallet/WalletsList';
 
-const WalletTransferContent: FC = () => {
+type Props = {
+    openModal: boolean;
+    setOpenModal: (show: boolean) => void
+}
+const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal }) => {
     const { networks } = useSettingsState()
     const { swapResponse, selectedSourceAccount } = useSwapDataState()
     const { setSelectedSourceAccount } = useSwapDataUpdate()
@@ -21,8 +24,6 @@ const WalletTransferContent: FC = () => {
     const source_network = swap_source_network && networks.find(n => n.name === swap_source_network?.name)
     const { provider } = useWallet(source_network, 'withdrawal')
     const availableWallets = provider?.connectedWallets?.filter(c => !c.isNotAvailable) || []
-
-    const [openModal, setOpenModal] = useState(false)
 
     const changeWallet = async (wallet: Wallet, address: string) => {
         provider?.switchAccount && provider.switchAccount(wallet, address)
@@ -68,14 +69,17 @@ const WalletTransferContent: FC = () => {
             {
                 selectedWallet &&
                 source_network &&
-                <div onClick={() => setOpenModal(true)} className="cursor-pointer group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-xs mt-1.5 text-primary-text bg-secondary-500 disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
+                <div className="group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-xs mt-1.5 text-primary-text bg-secondary-500 disabled:cursor-not-allowed h-12 leading-4 font-medium w-full py-7">
                     <AddressWithIcon
                         addressItem={{ address: accountAddress, group: AddressGroup.ConnectedWallet }}
                         connectedWallet={selectedWallet}
                         network={source_network}
-                        balance={(walletBalanceAmount && source_token) ? { amount: Number(walletBalanceAmount), symbol: source_token?.symbol, isLoading: isBalanceLoading } : undefined}
+                        onDisconnect={() => selectedWallet.disconnect()}
                     />
-                    <ChevronRight className="h-4 w-4" />
+                    <div className="flex flex-col col-start-8 col-span-3 items-end font-normal text-secondary-text text-xs">
+                        <p>Balance</p>
+                        <p className='flex items-center gap-1'><span>{truncateDecimals(Number(walletBalanceAmount), walletBalance?.decimals)}</span> <span>{walletBalance?.token}</span></p>
+                    </div>
                 </div>
             }
         </div>

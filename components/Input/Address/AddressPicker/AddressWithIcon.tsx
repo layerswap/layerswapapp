@@ -18,9 +18,10 @@ type Props = {
     partner?: Partner;
     network: Network;
     balance?: { amount: number, symbol: string, isLoading: boolean } | undefined;
+    onDisconnect?: ExtendedAddressProps['onDisconnect']
 }
 
-const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, network, balance }) => {
+const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, network, balance, onDisconnect }) => {
 
     const difference_in_days = addressItem?.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(addressItem.date).getTime()) / (1000 * 3600 * 24))) : undefined
     const maxWalletNameWidth = calculateMaxWidth(String(balance?.amount));
@@ -78,7 +79,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
 
             <div className="flex flex-col items-start grow min-w-0 ml-3 text-sm">
                 <div className="flex w-full min-w-0">
-                    <ExtendedAddress address={addressItem.address} network={network} addressClassNames="font-normal" />
+                    <ExtendedAddress address={addressItem.address} network={network} onDisconnect={onDisconnect} addressClassNames="font-normal" />
                 </div>
                 <div className="text-secondary-text w-full min-w-0">
                     <div className="flex items-center gap-1 text-xs">
@@ -158,7 +159,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
                     </div>
                 </PopoverTrigger>
                 <PopoverContent className="w-full p-2 flex flex-col gap-1 items-stretch" side="top">
-                    {!isForCurrency && (<div onClick={(e) => { e.stopPropagation(), setCopied(address) }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
+                    {!isForCurrency && (<div onClick={(e) => { e.stopPropagation(), setCopied(address) }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-400 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
                         <p>
                             Copy address
                         </p>
@@ -170,7 +171,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
                     </div>)}
                     {
                         network &&
-                        <Link href={network?.account_explorer_template?.replace('{0}', address)} target="_blank" className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded-sm transition-all duartion-200 flex items-center justify-between gap-5 w-full">
+                        <Link href={network?.account_explorer_template?.replace('{0}', address)} target="_blank" className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-400 rounded-sm transition-all duartion-200 flex items-center justify-between gap-5 w-full">
                             <p>
                                 Open in explorer
                             </p>
@@ -179,7 +180,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
                     }
                     {
                         onDisconnect &&
-                        <div onClick={(e) => { e.stopPropagation(), onDisconnect() }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded-sm transition-all duartion-200 flex items-center justify-between gap-5 w-full">
+                        <div onClick={(e) => { e.stopPropagation(), onDisconnect() }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-400 rounded-sm transition-all duartion-200 flex items-center justify-between gap-5 w-full">
                             <p>
                                 Disconnect
                             </p>
