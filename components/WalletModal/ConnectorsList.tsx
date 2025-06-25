@@ -16,9 +16,9 @@ import { usePersistedState } from "../../hooks/usePersistedState";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
 import { Checkbox } from "../shadcn/checkbox";
+import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 
 const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
-    const { isMobile } = useWindowDimensions()
     const { providers } = useWallet();
     const { setSelectedConnector, selectedProvider, setSelectedProvider, selectedConnector } = useConnectModal()
     let [recentConnectors, setRecentConnectors] = usePersistedState<({ providerName?: string, connectorName?: string }[])>([], 'recentConnectors', 'localStorage');
@@ -167,7 +167,6 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         const connector = allFeaturedConnectors.find(c => c?.name === selectedConnector.name)
         const provider = featuredProviders.find(p => p.name === connector?.providerName)
         return <LoadingConnect
-            isMobile={isMobile}
             onRetry={() => { (connector && provider) && connect(connector, provider) }}
             selectedConnector={selectedConnector}
             connectionError={connectionError}
@@ -248,14 +247,16 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     )
 }
 
-const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalConnector, connectionError: string | undefined, isMobile: boolean }> = ({ onRetry, selectedConnector, connectionError, isMobile }) => {
+const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalConnector, connectionError: string | undefined }> = ({ onRetry, selectedConnector, connectionError }) => {
     const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
+    const { isMobile: isMobileSize } = useWindowDimensions()
+    const isMobilePlatform = isMobile();
 
     if (selectedConnector.installUrl) {
         return <div
             className={clsx('w-full flex flex-col justify-center items-center font-semibold relative', {
-                'h-[60vh]': isMobile,
-                'h-[360px]': !isMobile,
+                'h-[60vh]': isMobileSize,
+                'h-[360px]': !isMobileSize,
             })}
         >
             <div className="flex flex-col gap-4 items-center justify-end row-start-2 row-span-1">
@@ -278,8 +279,8 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
     return (
         <div
             className={clsx('w-full flex flex-col justify-center items-center font-semibold relative', {
-                'h-[60vh]': isMobile,
-                'h-[360px]': !isMobile,
+                'h-[60vh]': isMobileSize,
+                'h-[360px]': !isMobileSize,
                 'pb-20': connectionError
             })}
         >
@@ -305,8 +306,8 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
                     {
                         !connectionError &&
                         <div className="py-1 text-center">
-                            <p className="text-base font-medium">Click connect in your wallet popup</p>
-                            <p className="text-sm font-normal text-secondary-text">Don&apos;t see a pop up? Check your other browser windows</p>
+                            <p className="text-base font-medium">{isMobilePlatform ? 'Approve connection in your wallet' : 'Approve connection in your wallet pop-up'}</p>
+                            <p className="text-sm font-normal text-secondary-text">{isMobilePlatform ? "Don't see the request? Check your wallet app." : "Don't see a pop-up? Check your browser windows."}</p>
                         </div>
                     }
                 </div>
