@@ -152,14 +152,21 @@ function sortGroupedTokensByBalance(tokenElements: GroupedTokenElement[], balanc
 
 // ---------- Route Grouping ----------
 
-function groupRoutes(routes: NetworkRoute[], direction: SwapDirection, balances: Record<string, NetworkBalance> | null, search?: string): RowElement[] {
+function groupRoutes(
+    routes: NetworkRoute[],
+    direction: SwapDirection,
+    balances: Record<string, NetworkBalance> | null,
+    search?: string
+): RowElement[] {
     if (search) {
-        const networks = routes.filter(r => r.name.toLowerCase().includes(search.toLowerCase()))
-            .map(r => ({ type: 'network', route: r }) as NetworkElement);
+        const networks = routes.filter(r =>
+            r.name.toLowerCase().includes(search.toLowerCase())
+        ).map(r => ({ type: 'network', route: r }) as NetworkElement);
 
         const networkTokens = routes.flatMap(r =>
-            (r.tokens || []).filter(t => t.symbol.toLowerCase().includes(search.toLowerCase()))
-                .map(t => ({ type: 'network_token', route: { token: t, route: r } }) as NetworkTokenElement)
+            (r.tokens || []).filter(t =>
+                t.symbol.toLowerCase().includes(search.toLowerCase())
+            ).map(t => ({ type: 'network_token', route: { token: t, route: r } }) as NetworkTokenElement)
         );
 
         return [
@@ -169,11 +176,21 @@ function groupRoutes(routes: NetworkRoute[], direction: SwapDirection, balances:
     }
 
     const popularRoutes = resolvePopularRoutes(routes, direction);
-    const popularNetworks = direction === 'to' ? routes
-        .filter(r => popularRoutes.includes(r.name))
-        .map(r => ({ type: 'network', route: r }) as NetworkElement) : [];
 
-    const remaining = routes.map(r => ({ type: 'network', route: direction === 'from' ? { ...r, tokens: sortNetworkTokensByBalance(r, balances) } : r }) as NetworkElement);
+    const popularNetworks = direction === 'to'
+        ? routes
+            .filter(r => popularRoutes.includes(r.name))
+            .map(r => ({ type: 'network', route: r }) as NetworkElement)
+        : [];
+
+    const remaining = routes
+        .filter(r => !popularRoutes.includes(r.name))
+        .map(r => ({
+            type: 'network',
+            route: direction === 'from'
+                ? { ...r, tokens: sortNetworkTokensByBalance(r, balances) }
+                : r
+        }) as NetworkElement);
 
     return [
         ...(popularNetworks.length ? [Titles.popular, ...popularNetworks] : []),
