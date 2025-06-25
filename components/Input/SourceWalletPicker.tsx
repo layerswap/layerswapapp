@@ -98,7 +98,7 @@ const Component: FC = () => {
                 :
                 <div className="rounded-lg flex items-center space-x-2 text-sm leading-4">
                     {
-                        selectedWallet && selectedSourceAccount?.address ? <>
+                        selectedWallet && selectedSourceAccount?.address && <>
                             <div onClick={handleWalletChange} className="rounded-lg flex space-x-1 items-center cursor-pointer">
                                 <div className="inline-flex items-center relative px-0.5">
                                     <selectedWallet.icon className="w-4 h-4" />
@@ -111,17 +111,6 @@ const Component: FC = () => {
                                 </div>
                             </div>
                         </>
-                            :
-                            <>
-                                <div onClick={handleWalletChange} className="rounded-lg flex space-x-1 items-center justify-between cursor-pointer w-full">
-                                    <div className="items-center relative px-0.5">
-                                        <p className="text-base text-primary-text-muted">Enter Address</p>
-                                    </div>
-                                    <span className="absolute right-0 pr-2 pl-1 pointer-events-none text-primary-text">
-                                        <ChevronDown className="h-3.5 w-3.5 text-secondary-text" aria-hidden="true" />
-                                    </span>
-                                </div>
-                            </>
                     }
                 </div>
         }

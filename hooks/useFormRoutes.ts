@@ -4,7 +4,7 @@ import { SwapDirection, SwapFormValues } from "../components/DTOs/SwapFormValues
 import { ApiResponse } from "../Models/ApiResponse";
 import { NetworkRoute, NetworkRouteToken } from "../Models/Network";
 import { useSettingsState } from "../context/settings";
-import { NetworkElement, RowElement, NetworkTokenElement, TitleElement, GroupTokensResult, GroupedTokenElement } from "../Models/Route";
+import { NetworkElement, RowElement, NetworkTokenElement, TitleElement, GroupTokensResult, GroupedTokenElement, ExchangeElement, ExchangeTokenElement } from "../Models/Route";
 import useAllBalances from "./useAllBalances";
 import { NetworkBalance } from "../Models/Balance";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../helpers/routes";
@@ -31,12 +31,18 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
 
     const topTokens = useMemo(() => getTopTokens(routes, balances), [routes, balances]);
     const sortedRoutes = useMemo(() => sortRoutes(routes, direction, balances), [routes, direction, balances]);
+    const { exchangesRoutes, isLoading: exchangesRoutesLoading } = useExchangeRoutes({ direction, values })
 
     const routeElements = useMemo(() => {
         const grouped = groupRoutes(sortedRoutes, direction, balances, search);
         if (topTokens.length > 0 && !search) {
             return [Titles.topAssets, ...topTokens, ...grouped];
         }
+        return grouped;
+    }, [sortedRoutes, balances, direction, search, topTokens]);
+
+    const exchangeElements = useMemo(() => {
+        const grouped = groupExchanges(exchangesRoutes, search);
         return grouped;
     }, [sortedRoutes, balances, direction, search, topTokens]);
 
@@ -56,6 +62,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         allRoutes: routes,
         isLoading: routesLoading,
         routeElements,
+        exchangeElements,
         tokenElements,
         selectedRoute,
         selectedToken,
@@ -64,6 +71,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         routes,
         routesLoading,
         routeElements,
+        exchangeElements,
         tokenElements,
         selectedRoute,
         selectedToken,
@@ -168,6 +176,24 @@ function groupRoutes(routes: NetworkRoute[], direction: SwapDirection, balances:
         ...(popularNetworks.length ? [Titles.popular, ...popularNetworks] : []),
         ...(remaining.length ? [Titles.allNetworks, ...remaining] : [])
     ];
+}
+
+function groupExchanges(exchangesRoutes: ({ cex: true } & Exchange)[], search?: string): RowElement[] {
+    if (search) {
+        const exchangeTokens = exchangesRoutes.flatMap(r => r.token_groups?.filter(t => t.symbol.toLowerCase().includes(search.toLowerCase())).map((t): ExchangeTokenElement => ({ type: 'exchange_token', route: { token: t, route: { ...r, cex: true } } })) || [])
+        const exchanges = exchangesRoutes.filter(r => r.name.toLowerCase().includes(search.toLowerCase())).map((r): ExchangeElement => ({ type: 'exchange', route: { ...r, cex: true } }))
+
+        return [
+            ...exchangeTokens,
+            ...exchanges,
+        ]
+    }
+
+    const exchanges = exchangesRoutes.map((r): ExchangeElement => ({ type: 'exchange', route: { ...r, cex: true } }))
+
+    return [
+        ...exchanges,
+    ]
 }
 
 // ---------- Token Grouping ----------

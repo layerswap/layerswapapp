@@ -1,5 +1,5 @@
 import { FC, useState } from "react";
-import { Form } from "formik";
+import { Form, useFormikContext } from "formik";
 import { Partner } from "@/Models/Partner";
 import NetworkExchangeTabs from "./NetworkExchangeTabs";
 import NetworkForm from "./NetworkForm";
@@ -36,7 +36,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
             />
             <NetworkExchangeTabs
                 networkForm={<NetworkForm partner={partner} setOpenRefuelModal={setOpenRefuelModal} />}
-                exchangeForm={<ExchangeForm partner={partner} setOpenRefuelModal={setOpenRefuelModal} />}
+                exchangeForm={<ExchangeForm partner={partner} setOpenRefuelModal={setOpenRefuelModal} isExchange={true} />}
             />
             <RefuelModal openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} />
         </Form>

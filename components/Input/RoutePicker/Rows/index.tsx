@@ -16,7 +16,7 @@ type Props = {
     onSelect: (route: NetworkRoute, token: NetworkRouteToken) => void;
     openValues: string[];
     scrollContainerRef: RefObject<HTMLDivElement>;
-    allbalancesLoaded: boolean;
+    allbalancesLoaded?: boolean;
 };
 
 export default function Row({

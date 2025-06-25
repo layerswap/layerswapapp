@@ -13,7 +13,7 @@ export default function NetworkExchangeTabs({ networkForm, exchangeForm }: Props
     const [hovered, setHovered] = useState(false)
 
     return (
-        <Tabs defaultValue="network" className="relative">
+        <Tabs defaultValue="network" className="relative" >
             <motion.div
                 onHoverStart={() => setHovered(true)}
                 onHoverEnd={() => setHovered(false)}

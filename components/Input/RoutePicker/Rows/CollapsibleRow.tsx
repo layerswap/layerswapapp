@@ -10,13 +10,14 @@ import { motion } from "framer-motion";
 import {
   NetworkElement,
   GroupedTokenElement,
+  ExchangeElement,
 } from "../../../../Models/Route";
 import { SwapDirection } from "../../../DTOs/SwapFormValues";
 import { CurrencySelectItemDisplay, GroupedTokenHeader, NetworkRouteSelectItemDisplay } from "../Routes";
 import { NetworkRoute, NetworkRouteToken } from "../../../../Models/Network";
 
 type GenericAccordionRowProps = {
-  item: NetworkElement | GroupedTokenElement;
+  item: NetworkElement | GroupedTokenElement | ExchangeElement;
   direction: SwapDirection;
   onSelect: (route: NetworkRoute, token: NetworkRouteToken) => void;
   selectedRoute: string | undefined;
@@ -24,7 +25,7 @@ type GenericAccordionRowProps = {
   toggleContent: (itemName: string) => void;
   openValues?: string[];
   scrollContainerRef: RefObject<HTMLDivElement>;
-  allbalancesLoaded: boolean;
+  allbalancesLoaded?: boolean;
 };
 
 export const CollapsibleRow = ({
@@ -57,7 +58,7 @@ export const CollapsibleRow = ({
     }));
   } else {
     const route = (item as NetworkElement).route;
-    childrenList = route.tokens.map((t) => ({
+    childrenList = route?.tokens?.map((t) => ({
       token: t,
       route: route as NetworkRoute,
     }));

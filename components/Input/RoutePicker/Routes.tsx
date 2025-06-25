@@ -15,7 +15,7 @@ type TokenItemProps = {
     item: NetworkRouteToken;
     selected: boolean;
     direction: SwapDirection;
-    allbalancesLoaded: boolean;
+    allbalancesLoaded?: boolean;
     isGroupedToken?: boolean;
 };
 
@@ -36,7 +36,7 @@ type NetworkTokenItemProps = {
     route: NetworkRoute;
     item: NetworkRouteToken;
     direction: SwapDirection;
-    allbalancesLoaded: boolean;
+    allbalancesLoaded?: boolean;
 }
 export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const { item, route, direction, allbalancesLoaded } = props
@@ -73,7 +73,7 @@ type NetworkRouteItemProps = {
     item: NetworkRoute;
     selected: boolean;
     direction: SwapDirection;
-    allbalancesLoaded: boolean;
+    allbalancesLoaded?: boolean;
     hideTokenImages?: boolean;
 }
 
@@ -157,7 +157,7 @@ export const GroupedTokenHeader = ({
 }: {
     item: GroupedTokenElement;
     direction: SwapDirection;
-    allbalancesLoaded: boolean;
+    allbalancesLoaded?: boolean;
     hideTokenImages?: boolean;
 }) => {
     const tokens = item.items;
@@ -334,7 +334,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
     )
 }
 
-const SelectedRoutePlaceholder = ({ placeholder }: { placeholder: string }) => (
+export const SelectedRoutePlaceholder = ({ placeholder }: { placeholder: string }) => (
     <>
         <div className="inline-flex items-center relative">
             <RoutePickerIcon className="w-7 h-7" />

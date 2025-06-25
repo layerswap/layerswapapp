@@ -21,7 +21,7 @@ type ContentProps = {
     selectedRoute: string | undefined;
     selectedToken: string | undefined;
     direction: SwapDirection;
-    allbalancesLoaded: boolean;
+    allbalancesLoaded?: boolean;
 }
 export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, allbalancesLoaded }: ContentProps) => {
     const parentRef = useRef<HTMLDivElement>(null)
