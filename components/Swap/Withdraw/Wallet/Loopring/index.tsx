@@ -2,14 +2,14 @@ import { ArrowLeftRight, Lock } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useAccount } from 'wagmi';
-import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton } from '../WalletTransfer/buttons';
+import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from '../WalletTransfer/buttons';
 import { useSwapTransactionStore } from '../../../../../stores/swapTransactionStore';
 import SignatureIcon from '../../../../icons/SignatureIcon';
 import { ActivationTokenPicker } from './ActivationTokentPicker';
 import { useActivationData, useLoopringAccount, useLoopringTokens } from './hooks';
 import { LoopringAPI } from '../../../../../lib/loopring/LoopringAPI';
 import { ChainId, UnlockedAccount } from '../../../../../lib/loopring/defs';
-import { BackendTransactionStatus } from '../../../../../lib/layerSwapApiClient';
+import { BackendTransactionStatus } from '../../../../../lib/apiClients/layerSwapApiClient';
 import { WithdrawPageProps } from '../WalletTransferContent';
 import { useConfig } from 'wagmi'
 import AppSettings from '../../../../../lib/AppSettings';
@@ -155,9 +155,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId,
                 <div className='space-y-4'>
                     {
                         (accInfo && unlockedAccount) ?
-                            <ButtonWrapper isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} >
-                                Send from wallet
-                            </ButtonWrapper>
+                            <SendTransactionButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} />
                             :
                             <>
                                 {shouldActivate &&

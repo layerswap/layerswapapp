@@ -11,7 +11,7 @@ import { useQueryState } from "../../context/query";
 import CurrencyFormField from "./CurrencyFormField";
 import useSWR from 'swr'
 import { ApiResponse } from "../../Models/ApiResponse";
-import LayerSwapApiClient from "../../lib/layerSwapApiClient";
+import LayerSwapApiClient from "../../lib/apiClients/layerSwapApiClient";
 import { RouteNetwork } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
 import CurrencyGroupFormField from "./CEXCurrencyFormField";
@@ -61,17 +61,9 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
     } = useFormikContext<SwapFormValues>();
     const name = direction
 
-    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, destination_address, currencyGroup } = values
+    const { from, to, fromCurrency, toCurrency, fromExchange, toExchange, currencyGroup } = values
     const query = useQueryState()
     const { lockFrom, lockTo } = query
-
-    const sourceWalletNetwork = fromExchange ? undefined : values.from
-    const destinationWalletNetwork = toExchange ? undefined : values.to
-
-    const { provider: withdrawalProvider } = useWallet(sourceWalletNetwork, 'withdrawal')
-    const { provider: autofilProvider } = useWallet(destinationWalletNetwork, 'autofil')
-
-    const availableWallets = withdrawalProvider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
 
     const { sourceExchanges, destinationExchanges, destinationRoutes, sourceRoutes } = useSettingsState();
     let placeholder = "";
@@ -146,21 +138,22 @@ const NetworkFormField = forwardRef(function NetworkFormField({ direction, label
         x.id == (direction === "from" ? from : to)?.name :
         x.id == (direction === 'from' ? fromExchange : toExchange)?.name);
 
-    const handleSelect = useCallback((item: SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean }) => {
+    const handleSelect = useCallback(async (item: SelectMenuItem<RouteNetwork | Exchange> & { isExchange: boolean }) => {
         if (item.baseObject.name === value?.baseObject.name)
             return
         if (item.isExchange) {
-            setFieldValue(name, null)
-            setFieldValue(`${name}Currency`, null)
-            setFieldValue(`${name}Exchange`, item.baseObject, true)
+            await setFieldValue(name, null)
+            await setFieldValue(`${name}Currency`, null)
+            await setFieldValue(`${name}Exchange`, item.baseObject, true)
         } else {
-            setFieldValue(`${name}Exchange`, null)
-            setFieldValue(name, item.baseObject, true)
+            await setFieldValue(`${name}Exchange`, null)
+            await setFieldValue(name, item.baseObject, true)
+            await setFieldValue(direction == "from" ? "validatingSource" : "validatingDestination", false, true)
         }
     }, [name, value])
 
     const isLocked = direction === 'from' ? !!lockFrom : !!lockTo
-
+ 
     return (<div className={`${className}`}>
         <div className="flex justify-between items-center px-3 pt-2">
             <label htmlFor={name} className="block font-medium text-secondary-text text-sm pl-1 py-1">

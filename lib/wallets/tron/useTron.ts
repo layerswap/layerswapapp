@@ -2,7 +2,6 @@ import KnownInternalNames from "../../knownIds";
 import { useWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
-import { useConnectModal } from "../../../components/WalletModal";
 import { useSettingsState } from "../../../context/settings";
 
 export default function useTron(): WalletProvider {
@@ -17,8 +16,6 @@ export default function useTron(): WalletProvider {
     const id = 'tron'
     const { wallets, wallet: tronWallet, disconnect, select } = useWallet();
 
-    const { connect } = useConnectModal()
-
     const address = tronWallet?.adapter.address
 
     const wallet: Wallet | undefined = address ? {
@@ -31,7 +28,6 @@ export default function useTron(): WalletProvider {
         isActive: true,
         icon: resolveWalletConnectorIcon({ connector: name, address, iconUrl: tronWallet.adapter.icon }),
         disconnect: () => disconnectWallet(),
-        connect: () => connectWallet(),
         autofillSupportedNetworks: commonSupportedNetworks,
         withdrawalSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,
@@ -44,18 +40,7 @@ export default function useTron(): WalletProvider {
         return undefined
     }
 
-    const connectWallet = async () => {
-        try {
-            const result = await connect(provider)
-
-            return result
-        }
-        catch (e) {
-            console.log(e)
-        }
-    }
-
-    const connectConnector = async ({ connector }: { connector: InternalConnector }) => {
+    const connectWallet = async ({ connector }: { connector: InternalConnector }) => {
         const tronConnector = wallets.find(w => w.adapter.name === connector.name)
         if (!tronConnector) throw new Error('Connector not found')
         try {
@@ -73,7 +58,6 @@ export default function useTron(): WalletProvider {
                 networkIcon: network?.logo,
                 icon: resolveWalletConnectorIcon({ connector: String(connectedWallet?.adapter.name), address: connectedAddress, iconUrl: connectedWallet?.adapter.icon }),
                 disconnect,
-                connect: () => connectWallet(),
                 isActive: true,
                 addresses: [connectedAddress],
                 autofillSupportedNetworks: commonSupportedNetworks,
@@ -101,14 +85,14 @@ export default function useTron(): WalletProvider {
             id: wallet.adapter.name,
             name: wallet.adapter.name,
             icon: wallet.adapter.icon,
-            type: wallet.state !== 'NotFound' ? 'injected' : 'other'
+            type: wallet.state !== 'NotFound' ? 'injected' : 'other',
+            installUrl: wallet.state !== 'NotFound' ? undefined : wallet.adapter?.url,
         }
     })
 
     const provider = {
         connectWallet,
         disconnectWallets: disconnectWallet,
-        connectConnector,
         availableWalletsForConnect,
         activeAccountAddress: wallet?.address,
         connectedWallets: getWallet(),
@@ -118,6 +102,7 @@ export default function useTron(): WalletProvider {
         asSourceSupportedNetworks: commonSupportedNetworks,
         name,
         id,
+        providerIcon: network?.logo
     }
 
     return provider

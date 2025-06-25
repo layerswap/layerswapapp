@@ -1,6 +1,6 @@
 import { useFormikContext } from "formik";
 import { FC, forwardRef, useCallback, useEffect, useRef, useState } from "react";
-import { AddressBookItem } from "../../../../lib/layerSwapApiClient";
+import { AddressBookItem } from "../../../../lib/apiClients/layerSwapApiClient";
 import { SwapFormValues } from "../../../DTOs/SwapFormValues";
 import { isValidAddress } from "../../../../lib/address/validator";
 import { Partner } from "../../../../Models/Partner";
@@ -69,7 +69,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const setAddresses = useAddressesStore(state => state.setAddresses)
     const { selectedSourceAccount } = useSwapDataState()
     const { provider, wallets } = useWallet(destinationExchange ? undefined : destination, 'autofil')
-    const connectedWallets = provider?.connectedWallets
+    const connectedWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
     const connectedWalletskey = connectedWallets?.map(w => w.addresses.join('')).join('')
 
     const defaultWallet = provider?.connectedWallets?.sort((x, y) => (x.isActive === y.isActive) ? 0 : x.isActive ? -1 : 1).find(w => !w.isNotAvailable)
@@ -93,7 +93,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const previouslyAutofilledAddress = useRef<string | undefined>(undefined)
 
     useEffect(() => {
-
         const groupedAddresses = destination && resolveAddressGroups({ address_book, destination, destinationExchange, wallets: connectedWallets, newAddress, addressFromQuery: query.destAddress })
         if (groupedAddresses) setAddresses(groupedAddresses)
 
@@ -159,7 +158,8 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         <Modal
             header='Send To'
             height="80%"
-            show={showAddressModal} setShow={setShowAddressModal}
+            show={showAddressModal}
+            setShow={setShowAddressModal}
             modalId="address"
         >
             {/* <ResizablePanel> */}
@@ -175,7 +175,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         <ConnectWalletButton
                             provider={provider}
                             onConnect={onConnect}
-                            destination={destination}
                         />
                     }
 
@@ -209,7 +208,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         <ConnectedWallets
                             provider={provider}
                             wallets={wallets}
-                            onClick={(wallet, address) => handleSelectAddress(address)}
+                            onClick={(_, address) => handleSelectAddress(address)}
                             onConnect={onConnect}
                             destination={destination}
                             destination_address={destination_address}

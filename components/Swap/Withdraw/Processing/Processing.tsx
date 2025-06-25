@@ -4,7 +4,7 @@ import { Widget } from '../../../Widget/Index';
 import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
-import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapResponse, Transaction } from '../../../../lib/layerSwapApiClient';
+import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapResponse, Transaction } from '../../../../lib/apiClients/layerSwapApiClient';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { SwapStatus } from '../../../../Models/SwapStatus';
 import { SwapFailReasons } from '../../../../Models/RangeError';
@@ -86,6 +86,21 @@ const Processing: FC<Props> = ({ swapResponse }) => {
             datadogRum.addError(renderingError);
         }
     }, [inputTxStatus, transactionHash, swap?.id])
+
+    useEffect(() => {
+        if (swap?.status === SwapStatus.Completed || swap.status === SwapStatus.Failed) {
+            window.safary?.track({
+                eventName: "swap_status",
+                eventType: "status",
+                parameters: {
+                    custom_str_1_label: "swap_id",
+                    custom_str_1_value: swap?.id,
+                    custom_str_2_label: "status",
+                    custom_str_2_value: swap?.status,
+                }
+            })
+        }
+    }, [swap.status])
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 
@@ -186,7 +201,7 @@ const Processing: FC<Props> = ({ swapResponse }) => {
                 description: null
             },
             complete: {
-                name: `${swapOutputTransaction?.amount} ${swap?.destination_token.symbol} was sent to your address`,
+                name: `${swapOutputTransaction?.amount && truncateDecimals(swapOutputTransaction?.amount, swap.destination_token.decimals)} ${swap?.destination_token.symbol} was sent to your address`,
                 description: swapOutputTransaction ? <div className="flex flex-col">
                     <div className='flex items-center space-x-1'>
                         <span>Transaction: </span>

@@ -20,6 +20,7 @@ const WalletTransferContent: FC = () => {
     const { source_token, source_network: swap_source_network } = swap || {}
     const source_network = swap_source_network && networks.find(n => n.name === swap_source_network?.name)
     const { provider } = useWallet(source_network, 'withdrawal')
+    const availableWallets = provider?.connectedWallets?.filter(c => !c.isNotAvailable) || []
 
     const [openModal, setOpenModal] = useState(false)
 
@@ -38,14 +39,6 @@ const WalletTransferContent: FC = () => {
                 wallet: activeWallet,
                 address: activeWallet.address
             })
-        } else if (selectedSourceAccount && activeWallet && !activeWallet.addresses.some(a => a.toLowerCase() === selectedSourceAccount.address.toLowerCase())) {
-            const selectedWalletIsConnected = provider.connectedWallets?.some(w => w.addresses.some(a => a.toLowerCase() === selectedSourceAccount.address.toLowerCase()))
-            if (selectedWalletIsConnected) {
-                provider.switchAccount && provider.switchAccount(selectedSourceAccount.wallet, selectedSourceAccount.address)
-            }
-            else {
-                setSelectedSourceAccount(undefined)
-            }
         }
     }, [activeWallet?.address, setSelectedSourceAccount, provider, selectedSourceAccount?.address])
 
@@ -80,7 +73,7 @@ const WalletTransferContent: FC = () => {
                         addressItem={{ address: accountAddress, group: AddressGroup.ConnectedWallet }}
                         connectedWallet={selectedWallet}
                         network={source_network}
-                        balance={(walletBalanceAmount !== undefined && source_token) ? { amount: walletBalanceAmount, symbol: source_token?.symbol, isLoading: isBalanceLoading } : undefined}
+                        balance={(walletBalanceAmount && source_token) ? { amount: Number(walletBalanceAmount), symbol: source_token?.symbol, isLoading: isBalanceLoading } : undefined}
                     />
                     <ChevronRight className="h-4 w-4" />
                 </div>
@@ -90,7 +83,7 @@ const WalletTransferContent: FC = () => {
             source_network &&
             source_token &&
             provider &&
-            provider.connectedWallets &&
+            availableWallets &&
             <VaulDrawer
                 show={openModal}
                 setShow={setOpenModal}
@@ -103,7 +96,7 @@ const WalletTransferContent: FC = () => {
                         token={source_token}
                         onSelect={changeWallet}
                         selectable
-                        wallets={provider.connectedWallets}
+                        wallets={availableWallets}
                         provider={provider}
                     />
                 </VaulDrawer.Snap>

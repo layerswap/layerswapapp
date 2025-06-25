@@ -1,13 +1,13 @@
-import { SwapStatus } from "../Models/SwapStatus";
-import AppSettings from "./AppSettings";
-import { InitializeUnauthInstance, InitializeAuthInstance } from "./axiosInterceptor"
+import { SwapStatus } from "../../Models/SwapStatus";
+import AppSettings from "../AppSettings";
+import { InitializeUnauthInstance, InitializeAuthInstance } from "../axiosInterceptor"
 import { v4 as uuidv4 } from 'uuid';
 import { AxiosInstance, Method } from "axios";
-import { AuthRefreshFailedError } from "./Errors/AuthRefreshFailedError";
-import { ApiResponse, EmptyApiResponse } from "../Models/ApiResponse";
+import { AuthRefreshFailedError } from "../Errors/AuthRefreshFailedError";
+import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse";
 import LayerSwapAuthApiClient from "./userAuthApiClient";
-import { NetworkWithTokens, Network, Token } from "../Models/Network";
-import { Exchange } from "../Models/Exchange";
+import { NetworkWithTokens, Network, Token } from "../../Models/Network";
+import { Exchange } from "../../Models/Exchange";
 import { datadogRum } from '@datadog/browser-rum';
 
 export default class LayerSwapApiClient {
@@ -227,6 +227,7 @@ export type SwapQuote = {
     destination_token?: Token,
     receive_amount: number,
     min_receive_amount: number,
+    fee_discount?: number
     total_fee: number,
     total_fee_in_usd: number,
     blockchain_fee: number,

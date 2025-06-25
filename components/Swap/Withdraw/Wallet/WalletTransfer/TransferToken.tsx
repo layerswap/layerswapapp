@@ -6,13 +6,13 @@ import {
 } from "wagmi";
 import { parseEther } from 'viem'
 import SubmitButton from "../../../../buttons/submitButton";
-import { BackendTransactionStatus } from "../../../../../lib/layerSwapApiClient";
+import { BackendTransactionStatus } from "../../../../../lib/apiClients/layerSwapApiClient";
 import WalletIcon from "../../../../icons/WalletIcon";
 import Modal from '../../../../modal/modal';
 import MessageComponent from "../../../../MessageComponent";
 import { BaseTransferButtonProps } from "./sharedTypes";
 import TransactionMessage from "./transactionMessage";
-import { ButtonWrapper } from "./buttons";
+import { SendTransactionButton } from "./buttons";
 import { useSwapTransactionStore } from "../../../../../stores/swapTransactionStore";
 import { useSwapDataState } from "../../../../../context/swap";
 import { datadogRum } from "@datadog/browser-rum";
@@ -120,15 +120,13 @@ const TransferTokenButton: FC<BaseTransferButtonProps> = ({
         }
         {
             !transaction.isPending && <>
-                <ButtonWrapper
+                <SendTransactionButton
                     onClick={clickHandler}
                     isSubmitting={!depositAddress}
                     isDisabled={!depositAddress}
                     icon={<WalletIcon className="stroke-2 w-6 h-6" />}
-                >
-                    {(isError && buttonClicked) ? <span>Try again</span>
-                        : <span>Send from wallet</span>}
-                </ButtonWrapper>
+                    error={isError && buttonClicked}
+                />
             </>
         }
         <Modal

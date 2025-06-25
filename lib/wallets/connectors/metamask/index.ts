@@ -18,7 +18,6 @@ import {
   getAddress,
   numberToHex,
 } from 'viem'
-import { getInjectedConnector, hasInjectedProvider } from '../getInjectedConnector'
 import { isAndroid, isIOS } from '../utils/isMobile'
 
 type WalletConnectConnector = Connector & {
@@ -75,9 +74,7 @@ export type WalletConnectParameters = Compute<
 >
 
 export function metaMask(parameters: WalletConnectParameters) {
-  const isMetaMaskInjected = hasInjectedProvider({ flag: 'isMetaMask' });
-  const shouldUseWalletConnect = !isMetaMaskInjected;
-  return shouldUseWalletConnect ? walletConnect(parameters) : getInjectedConnector({ flag: 'isMetaMask' })({ id: 'metaMaskSDK', name: 'My Metamask' });
+  return walletConnect(parameters);
 }
 
 walletConnect.type = 'metamask' as const
@@ -121,7 +118,7 @@ export function walletConnect(parameters: WalletConnectParameters) {
   return createConnector<Provider, Properties, StorageItem>((config) => ({
     id: 'io.metamask',
     name: 'MetaMask',
-    rdns: 'io.metamask',
+    rdns: 'io.metamask.wc',
     type: walletConnect.type,
     deepLink: 'metamask://wc',
     resolveURI: (uri: string) => {

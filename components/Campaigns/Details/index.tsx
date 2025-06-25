@@ -2,7 +2,7 @@ import { useRouter } from "next/router"
 import { FC, useCallback } from "react"
 import Image from 'next/image'
 import { Gift } from "lucide-react"
-import LayerSwapApiClient, { Campaign } from "../../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { Campaign } from "../../../lib/apiClients/layerSwapApiClient"
 import useSWR from "swr"
 import { ApiResponse } from "../../../Models/ApiResponse"
 import SubmitButton from "../../buttons/submitButton";
@@ -13,6 +13,7 @@ import Leaderboard from "./Leaderboard"
 import Rewards from "./Rewards";
 import SpinIcon from "../../icons/spinIcon"
 import useWallet from "../../../hooks/useWallet"
+import { useConnectModal } from "../../WalletModal"
 
 function CampaignDetails() {
     const router = useRouter();
@@ -24,9 +25,10 @@ function CampaignDetails() {
     const network = campaign?.network
 
     const { provider } = useWallet(network, 'autofil')
+    const { connect } = useConnectModal()
 
     const handleConnect = useCallback(async () => {
-        await provider?.connectWallet()
+        await connect(provider)
     }, [provider, network])
 
     const wallet = provider?.activeWallet
@@ -86,9 +88,9 @@ type BriefInformationProps = {
 }
 const BriefInformation: FC<BriefInformationProps> = ({ campaign }) =>
     <p className="text-secondary-text text-base">
-        {campaign.description ? 
+        {campaign.description ?
             campaign.description
-            : 
+            :
             <>
                 <span>You can earn $</span>
                 <span>{campaign?.token.symbol}</span>

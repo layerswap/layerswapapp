@@ -1,5 +1,4 @@
 import { FC, useCallback, useState } from 'react'
-import SubmitButton from '../../../buttons/submitButton';
 import toast from 'react-hot-toast';
 import useWallet from '../../../../hooks/useWallet';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
@@ -8,14 +7,16 @@ import { WithdrawPageProps } from './WalletTransferContent';
 import { useTonConnectUI } from '@tonconnect/ui-react';
 import { Address, JettonMaster, beginCell, toNano } from '@ton/ton'
 import { Token } from '../../../../Models/Network';
-import { BackendTransactionStatus } from '../../../../lib/layerSwapApiClient';
+import { BackendTransactionStatus } from '../../../../lib/apiClients/layerSwapApiClient';
 import tonClient from '../../../../lib/wallets/ton/client';
-import { ConnectWalletButton } from './WalletTransfer/buttons';
+import { ConnectWalletButton, SendTransactionButton } from './WalletTransfer/buttons';
 import TransactionMessages from '../messages/TransactionMessages';
 import { datadogRum } from '@datadog/browser-rum';
+import { useConnectModal } from '../../../WalletModal';
 
 const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, network, token, swapId, callData }) => {
     const [loading, setLoading] = useState(false);
+    const { connect } = useConnectModal()
     const { provider } = useWallet(network, 'withdrawal');
     const { setSwapTransaction } = useSwapTransactionStore();
     const [tonConnectUI] = useTonConnectUI();
@@ -27,7 +28,7 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
         setLoading(true)
         setTransactionErrorMessage(undefined)
         try {
-            await provider?.connectWallet()
+            await connect(provider)
         }
         catch (e) {
             toast(e.message)
@@ -75,9 +76,7 @@ const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ amount, depositAddress, 
             }
             {
                 !loading &&
-                <SubmitButton isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} >
-                    {transactionErrorMessage ? 'Try again' : 'Send from wallet'}
-                </SubmitButton>
+                <SendTransactionButton isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} error={!!transactionErrorMessage} />
             }
         </div>
     )

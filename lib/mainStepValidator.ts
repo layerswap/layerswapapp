@@ -20,11 +20,11 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount,
             errors.toCurrency = 'Select destination asset';
         }
         if (values.currencyGroup &&
-            (values.fromExchange && !values.from)) {
+            (values.fromExchange && !values.from && values.to)) {
             errors.from = 'Select withdrawal network';
         }
         if (values.currencyGroup &&
-            values.toExchange && !values.to) {
+            values.toExchange && !values.to && values.from) {
             errors.to = 'Select deposit network';
         }
         if (values.fromExchange && !values.currencyGroup) {

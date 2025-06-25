@@ -9,7 +9,7 @@ import { Exchange, ExchangeToken } from "../../Models/Exchange";
 import { resolveExchangesURLForSelectedToken } from "../../helpers/routes";
 import { ApiResponse } from "../../Models/ApiResponse";
 import useSWR from "swr";
-import LayerSwapApiClient from "../../lib/layerSwapApiClient";
+import LayerSwapApiClient from "../../lib/apiClients/layerSwapApiClient";
 import RouteIcon from "./RouteIcon";
 import { useSettingsState } from "../../context/settings";
 
@@ -60,7 +60,7 @@ const CurrencyGroupFormField: FC<{ direction: SwapDirection }> = ({ direction })
     useEffect(() => {
         const currency = direction === 'from' ? toCurrency : fromCurrency
         const value = availableAssetGroups?.find(r => r.symbol === currency?.symbol && r.status === 'active')
-        
+
         if (!value || currencyGroup?.manuallySet)
             return
 

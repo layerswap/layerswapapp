@@ -1,6 +1,6 @@
 import { FC, useState } from "react"
 import Image from 'next/image'
-import LayerSwapApiClient, { Campaign, Leaderboard, Reward } from "../../../lib/layerSwapApiClient"
+import LayerSwapApiClient, { Campaign, Leaderboard, Reward } from "../../../lib/apiClients/layerSwapApiClient"
 import { RewardsComponentLeaderboardSceleton } from "../../Sceletons"
 import useSWR from "swr"
 import { ApiResponse } from "../../../Models/ApiResponse"
