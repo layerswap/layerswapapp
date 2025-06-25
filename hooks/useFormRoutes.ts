@@ -27,11 +27,12 @@ type Props = {
 
 export default function useFormRoutes({ direction, values }: Props, search?: string) {
     const { routes, isLoading: routesLoading } = useRoutes({ direction, values });
+    const { exchangesRoutes, isLoading: exchangesRoutesLoading } = useExchangeRoutes({ direction, values })
+
     const balances = useAllBalances({ direction });
 
     const topTokens = useMemo(() => getTopTokens(routes, balances), [routes, balances]);
     const sortedRoutes = useMemo(() => sortRoutes(routes, direction, balances), [routes, direction, balances]);
-    const { exchangesRoutes, isLoading: exchangesRoutesLoading } = useExchangeRoutes({ direction, values })
 
     const routeElements = useMemo(() => {
         const grouped = groupRoutes(sortedRoutes, direction, balances, search);
@@ -63,6 +64,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         isLoading: routesLoading,
         routeElements,
         exchangeElements,
+        exchangesRoutesLoading,
         tokenElements,
         selectedRoute,
         selectedToken,
@@ -72,6 +74,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         routesLoading,
         routeElements,
         exchangeElements,
+        exchangesRoutesLoading,
         tokenElements,
         selectedRoute,
         selectedToken,

@@ -23,7 +23,7 @@ const CexNetworkPicker: FC<{ direction: SwapDirection, partner?: Partner | undef
     } = useFormikContext<SwapFormValues>();
 
     const { isDesktop } = useWindowDimensions();
-    const { exchangeElements, isLoading } = useFormRoutes({ direction, values }, "")
+    const { exchangeElements, exchangesRoutesLoading: isLoading } = useFormRoutes({ direction, values }, "")
 
     const handleSelect = useCallback(async (network: Exchange) => {
         setFieldValue(direction, network, true)
