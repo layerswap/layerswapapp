@@ -1,5 +1,5 @@
 {
-  "count": 541,
+  "count": 546,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -7390,6 +7390,64 @@
       ],
       "slug": "bonuz-social-id",
       "updatedAt": "2024-05-15T00:55:08.665821+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "2c69b45f625add0acd3354df4ab757067143b7f54b937311966f55be60a89c41": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.gayawalletmobapp&pcampaignid=web_share&pli=1",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "https://apps.apple.com/pk/app/gaya-wallet/id6741714278",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "description": "Gaya Wallet is a secure, non-custodial multichain wallet for Solana & Ethereum. Manage assets, swap tokens, and stay in full control.",
+      "desktop": {
+        "native": "",
+        "universal": null
+      },
+      "homepage": "https://gayawallet.com",
+      "id": "2c69b45f625add0acd3354df4ab757067143b7f54b937311966f55be60a89c41",
+      "image_id": "67e7c918-8cf2-4781-0a10-e7e6f4c48900",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/67e7c918-8cf2-4781-0a10-e7e6f4c48900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/67e7c918-8cf2-4781-0a10-e7e6f4c48900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/67e7c918-8cf2-4781-0a10-e7e6f4c48900?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": "https://gayawallet.com"
+      },
+      "name": "Gaya Wallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "gaya-wallet",
+      "updatedAt": "2025-06-25T09:29:47.934225+00:00",
       "versions": [
         "1",
         "2"
@@ -26580,6 +26638,71 @@
         "2"
       ]
     },
+    "b7e38da65a3a7c01c9f18c896407f9d8ee0252ab65b26a564405d846b8b8b15d": {
+      "app": {
+        "android": null,
+        "browser": "https://bitdogwallet.com/",
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": null,
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:137",
+        "eip155:25",
+        "eip155:42161",
+        "eip155:42220",
+        "eip155:43114",
+        "eip155:56",
+        "eip155:8453"
+      ],
+      "description": "BitDog Wallet is PWA based multi chain web3 wallet.",
+      "desktop": {
+        "native": "",
+        "universal": "https://bitdogwallet.com/"
+      },
+      "homepage": "https://bit-dog.com/",
+      "id": "b7e38da65a3a7c01c9f18c896407f9d8ee0252ab65b26a564405d846b8b8b15d",
+      "image_id": "9b2d118f-1de7-4742-bdcc-cac8d1557100",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/9b2d118f-1de7-4742-bdcc-cac8d1557100?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/9b2d118f-1de7-4742-bdcc-cac8d1557100?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/9b2d118f-1de7-4742-bdcc-cac8d1557100?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": null
+      },
+      "name": "BitDog Wallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "bitdog-wallet",
+      "updatedAt": "2025-06-25T09:48:57.52747+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "b823fb0d7228ef8e3c0bc9607df9ed79dae2ab3a2811d33f22ade4f573c18232": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.defiwalletmobile",
@@ -27490,7 +27613,7 @@
     "bec3c4be910f31b01e051525996b8dca85a60a616dba2a756728d5ddeecd6136": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.revelator.originalworks",
-        "browser": "https://wallet.revelator.com/",
+        "browser": "",
         "chrome": null,
         "edge": null,
         "firefox": null,
@@ -27511,7 +27634,7 @@
       "description": "Access music royalties & unlock web3",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://wallet.revelator.com/",
       "id": "bec3c4be910f31b01e051525996b8dca85a60a616dba2a756728d5ddeecd6136",
@@ -27531,7 +27654,7 @@
       },
       "mobile": {
         "native": "revelatorwallet://",
-        "universal": null
+        "universal": ""
       },
       "name": "Revelator Wallet",
       "rdns": null,
@@ -31285,6 +31408,65 @@
         "1"
       ]
     },
+    "d9f5432e932c6fad8e19a0cea9d4a3372a84aed16e98a52e6655dd2821a63404": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=xyz.joeywallet",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "https://apps.apple.com/us/app/joey-wallet/id6745415911",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "xrpl:0",
+        "xrpl:1",
+        "xrpl:2"
+      ],
+      "description": "Joey Wallet is a secure, self-custody cryptocurrency wallet and gateway to Web3 decentralized applications (dApps) on the XRP Ledger (XRPL).",
+      "desktop": {
+        "native": "",
+        "universal": null
+      },
+      "homepage": "https://joeywallet.xyz/",
+      "id": "d9f5432e932c6fad8e19a0cea9d4a3372a84aed16e98a52e6655dd2821a63404",
+      "image_id": "eefe45e8-0a5e-421c-29d0-fd8191e7e600",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/eefe45e8-0a5e-421c-29d0-fd8191e7e600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/eefe45e8-0a5e-421c-29d0-fd8191e7e600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/eefe45e8-0a5e-421c-29d0-fd8191e7e600?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "joey://settings/wallet-connect",
+        "universal": null
+      },
+      "name": "Joey Wallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "joey-wallet",
+      "updatedAt": "2025-06-24T15:25:01.940628+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "dacf9f750e579e7aa93a752117fb3870a5bfc2e967441b477cef5e6f1458e33d": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.tokoin.wallet",
@@ -32766,6 +32948,63 @@
       "updatedAt": "2022-06-28T15:02:40.704034+00:00",
       "versions": [
         "1"
+      ]
+    },
+    "e2cc2f336ac3875c0d9dec09c76242b860cb82c2fc6ad7312f410e00c3d226e4": {
+      "app": {
+        "android": null,
+        "browser": "https://app.shyft.tech",
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": null,
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1"
+      ],
+      "description": "The official wallet of Lumia",
+      "desktop": {
+        "native": "",
+        "universal": "https://app.shyft.tech"
+      },
+      "homepage": "https://shyft.tech",
+      "id": "e2cc2f336ac3875c0d9dec09c76242b860cb82c2fc6ad7312f410e00c3d226e4",
+      "image_id": "0753fccd-eceb-4d89-b708-79fc9be6a900",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/0753fccd-eceb-4d89-b708-79fc9be6a900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/0753fccd-eceb-4d89-b708-79fc9be6a900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/0753fccd-eceb-4d89-b708-79fc9be6a900?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": null
+      },
+      "name": "Shyft Wallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "shyft-wallet",
+      "updatedAt": "2025-06-25T11:25:07.295435+00:00",
+      "versions": [
+        "1",
+        "2"
       ]
     },
     "e3787ea98d014ca77e2c3794db97c02ef8bcb39347705f5e79502a55434a1ecf": {
@@ -35513,6 +35752,63 @@
         "2"
       ]
     },
+    "f92b6491e9cccaec7dca667d61c012816629e7e759392c55d3f523a90ec1a584": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.nslab.purewalletp&pli=1",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "https://apps.apple.com/us/app/purewallet/id6738949168?platform=iphone",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1"
+      ],
+      "description": "PureWallet enables offline crypto transactions with zero fees, instant speed, and secure cold storage. Trade anywhere—no internet needed!",
+      "desktop": {
+        "native": "",
+        "universal": null
+      },
+      "homepage": "https://purechain.com",
+      "id": "f92b6491e9cccaec7dca667d61c012816629e7e759392c55d3f523a90ec1a584",
+      "image_id": "ea64c6aa-13aa-440f-f503-0013acb37800",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/ea64c6aa-13aa-440f-f503-0013acb37800?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/ea64c6aa-13aa-440f-f503-0013acb37800?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/ea64c6aa-13aa-440f-f503-0013acb37800?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "purewalletp://",
+        "universal": "https://purewallet.ai/api"
+      },
+      "name": "PureWallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "purewallet",
+      "updatedAt": "2025-06-25T10:39:01.915652+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "f94a60403cdffa9a521dd12f9ec1004a887755c62ecf7bb4e9b8ee6806c26b58": {
       "app": {
         "android": "https://wallet.uvtoken.com/static/download/android/uvtoken.apk",
@@ -36849,5 +37145,5 @@
       ]
     }
   },
-  "total": 541
+  "total": 546
 }
