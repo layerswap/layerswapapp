@@ -1,6 +1,7 @@
 import {
   RefObject,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -48,21 +49,21 @@ export const CollapsibleRow = ({
     route: NetworkRoute;
   };
 
-  let childrenList: ChildWrapper[] | undefined;
-
-  if (isGrouped) {
-    const grouped = item as GroupedTokenElement;
-    childrenList = grouped.items.map((el) => ({
-      token: el.route.token,
-      route: el.route.route,
-    }));
-  } else {
-    const route = (item as NetworkElement).route;
-    childrenList = route?.tokens?.map((t) => ({
-      token: t,
-      route: route as NetworkRoute,
-    }));
-  }
+  const childrenList: ChildWrapper[] | undefined = useMemo(() => {
+    if (isGrouped) {
+      const grouped = item as GroupedTokenElement;
+      return grouped.items.map((el) => ({
+        token: el.route.token,
+        route: el.route.route,
+      }));
+    } else {
+      const route = (item as NetworkElement).route;
+      return route.tokens.map((t) => ({
+        token: t,
+        route: route as NetworkRoute,
+      }));
+    }
+  }, [item])
 
   const [isSticky, setSticky] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
