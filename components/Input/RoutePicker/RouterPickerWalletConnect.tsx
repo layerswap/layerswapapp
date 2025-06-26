@@ -28,7 +28,7 @@ const PickerWalletConnect: FC = () => {
         <VaulDrawer
             show={openModal}
             setShow={setOpenModal}
-            header={`Send from`}
+            header={`Select wallet`}
             modalId="connectedWallets"
         >
             <VaulDrawer.Snap id="item-1" className="space-y-1 pb-6">
@@ -143,7 +143,7 @@ const WalletsList: FC<Props> = (props) => {
         <div className="space-y-3">
             {
                 wallets.length > 0 &&
-                <div className="flex flex-col justify-start gap-2 bg-secondary-500 rounded-xl">
+                <div className="flex flex-col justify-start gap-2 rounded-xl">
                     {
                         wallets.map((wallet, index) => <WalletItem
                             key={`${index}${wallet.providerName}`}
