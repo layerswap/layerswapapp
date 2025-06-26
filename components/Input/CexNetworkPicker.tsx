@@ -31,7 +31,7 @@ const CexNetworkPicker: FC<{ direction: SwapDirection, partner?: Partner | undef
 
     return (
         <div className="rounded-lg space-y-2">
-            <div className="relative">
+            <div className="relative mb-2">
                 <Selector>
                     <SelectorTrigger disabled={false}>
                         <SelectedNetworkDisplay network={values.fromExchange} placeholder="Source" />
