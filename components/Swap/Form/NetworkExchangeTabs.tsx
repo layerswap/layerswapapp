@@ -34,7 +34,7 @@ export default function NetworkExchangeTabs({ networkForm, exchangeForm }: Props
                 </TabsList>
             </motion.div>
 
-            <div className="mr-[56px] sm:mr-[180px] w-full">
+            <div>
                 <TabsContent value="network">
                     <div className="p-4">{networkForm}</div>
                 </TabsContent>

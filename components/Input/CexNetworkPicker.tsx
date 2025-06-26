@@ -49,7 +49,7 @@ const CexNetworkPicker: FC<{ direction: SwapDirection, partner?: Partner | undef
                                         <SpinIcon className="animate-spin h-5 w-5" />
                                     </div>
                                 ) : (
-                                    <CommandList>
+                                    <CommandList className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full">
                                         <CommandEmpty>No results found.</CommandEmpty>
                                         {
                                             exchangeElements?.flatMap((item, index) => {
