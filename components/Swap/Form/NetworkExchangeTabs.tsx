@@ -18,7 +18,7 @@ export default function NetworkExchangeTabs({ networkForm, exchangeForm }: Props
                 onHoverStart={() => setHovered(true)}
                 onHoverEnd={() => setHovered(false)}
                 animate={{ width: hovered ? 180 : 48 }}
-                className="absolute right-[95%] top-24 overflow-hidden rounded-l-lg"
+                className="absolute right-[99%] top-24 overflow-hidden rounded-l-lg"
                 layoutId="bubble"
                 transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
             >
@@ -35,11 +35,11 @@ export default function NetworkExchangeTabs({ networkForm, exchangeForm }: Props
             </motion.div>
 
             <div>
-                <TabsContent value="network">
-                    <div className="p-4">{networkForm}</div>
+                <TabsContent value="network" className='!mt-0'>
+                    {networkForm}
                 </TabsContent>
-                <TabsContent value="exchange">
-                    <div className="p-4">{exchangeForm}</div>
+                <TabsContent value="exchange" className='!mt-0'>
+                    {exchangeForm}
                 </TabsContent>
             </div>
         </Tabs>

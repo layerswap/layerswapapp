@@ -36,7 +36,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
             />
             <NetworkExchangeTabs
                 networkForm={<NetworkForm partner={partner} setOpenRefuelModal={setOpenRefuelModal} />}
-                exchangeForm={<ExchangeForm partner={partner} setOpenRefuelModal={setOpenRefuelModal} isExchange={true} />}
+                exchangeForm={<ExchangeForm partner={partner} setOpenRefuelModal={setOpenRefuelModal} />}
             />
             <RefuelModal openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} />
         </Form>

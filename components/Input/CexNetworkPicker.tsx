@@ -1,7 +1,6 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback } from "react";
+import { FC, useCallback, useEffect } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
-import { Network } from "../../Models/Network";
 import { Selector, SelectorContent, SelectorTrigger } from "../Select/CommandNew/Index";
 import { ChevronDown, Search } from "lucide-react";
 import { CommandEmpty, CommandInput, CommandItem, CommandList, CommandWrapper } from "../shadcn/command";
@@ -9,7 +8,7 @@ import SpinIcon from "../icons/spinIcon";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import { Exchange, ExchangeToken } from "../../Models/Exchange";
 import React from "react";
-import { ExchangeElement, RouteToken } from "../../Models/Route";
+import { ExchangeElement } from "../../Models/Route";
 import { SelectItem } from "../Select/CommandNew/SelectItem/Index";
 import { Partner } from "../../Models/Partner";
 import useFormRoutes from "@/hooks/useFormRoutes";
@@ -23,18 +22,35 @@ const CexNetworkPicker: FC<{ direction: SwapDirection, partner?: Partner | undef
     } = useFormikContext<SwapFormValues>();
 
     const { isDesktop } = useWindowDimensions();
-    const { exchangeElements, exchangesRoutesLoading: isLoading } = useFormRoutes({ direction, values }, "")
+    const { exchangeElements, exchangesRoutesLoading: isLoading, allRoutes, selectedRoute, selectedToken } = useFormRoutes({ direction, values }, "");
+    const { fromExchange, toAsset, to } = values;
 
-    const handleSelect = useCallback(async (network: Exchange) => {
-        setFieldValue(direction, network, true)
+    useEffect(() => {
+        const updateValues = async () => {
+            if (!fromExchange) return;
+
+            const currencyGroup = fromExchange?.token_groups?.find(group => group.symbol === toAsset?.symbol);
+            const sourceRoute = allRoutes[0]
+            const sourceRouteToken = sourceRoute?.tokens?.find(t => t.symbol === toAsset?.symbol);
+
+            await setFieldValue("currencyGroup", currencyGroup, true);
+            await setFieldValue("from", sourceRoute, true)
+            await setFieldValue(`fromAsset`, sourceRouteToken, false)
+        };
+
+        updateValues();
+    }, [selectedRoute, selectedToken, allRoutes, selectedToken]);
+
+    const handleSelect = useCallback(async (exchange: Exchange) => {
+        setFieldValue("fromExchange", exchange, true)
     }, [direction, values])
-
+    console.log(values)
     return (
         <div className="rounded-lg space-y-2">
             <div className="relative mb-2">
                 <Selector>
                     <SelectorTrigger disabled={false}>
-                        <SelectedNetworkDisplay network={values.fromExchange} placeholder="Source" />
+                        <SelectedNetworkDisplay exchange={values.fromExchange} placeholder="Source" />
                     </SelectorTrigger>
                     <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search">
                         {({ closeModal }) => (
@@ -108,33 +124,31 @@ const ExchangeNetwork = (props: ExchangeNetworkProps) => {
 }
 
 type SelectedNetworkDisplayProps = {
-    network?: Exchange;
+    exchange?: Exchange;
     token?: ExchangeToken;
     placeholder: string;
 }
 
 export const SelectedNetworkDisplay = (props: SelectedNetworkDisplayProps) => {
-    const { network, placeholder } = props
+    const { exchange, placeholder } = props
 
     return (
         <span className="flex grow text-left items-center text-xs md:text-base relative">
-            {network ? (
+            {exchange ? (
                 <>
                     <div className="inline-flex items-center relative shrink-0">
                         <ImageWithFallback
-                            src={network.logo}
-                            alt="Route Logo"
-                            height="12"
-                            width="12"
+                            src={exchange.logo}
+                            alt="Token Logo"
+                            height="24"
+                            width="24"
                             loading="eager"
                             fetchPriority="high"
-                            className="h-3.5 w-3.5 absolute -right-1.5 -bottom-1.5 object-contain rounded border-1 border-secondary-300"
+                            className="rounded-full object-contain"
                         />
                     </div>
                     <span className="ml-3 flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0 max-w-3/5">
-                        <span className="text-secondary-text font-normal text-sm leading-4 truncate whitespace-nowrap max-w-[60px] sm:max-w-[100px]">
-                            {network.display_name}
-                        </span>
+                        {exchange.display_name}
                     </span>
                 </>
             ) : (
