@@ -34,7 +34,7 @@ const PageComponent: FC<{ settings: LayerSwapSettings }> = ({ settings }) => {
                     settings={settings}
                     version='mainnet'
                     themeData={{ enablePortal: false, borderRadius: 'extraLarge' }}
-                    apiKey='NDBxG+aon6WlbgIA2LfwmcbLU52qUL9qTnztTuTRPNSohf/VnxXpRaJlA5uLSQVqP8YGIiy/0mz+mMeZhLY4/Q'
+                    apiKey='m1jz5JMmndWbMmYLm5vcsHtpxQ35xGT2Z4xa+rp/i98GXVc1vhH7lvY0zbLMTdkD9BXw+HLUTku4H6VumEDogQ'
                 >
                     <CustomHooks >
                         <Swap

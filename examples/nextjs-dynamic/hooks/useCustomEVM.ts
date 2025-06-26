@@ -1,191 +1,171 @@
-import { useAccount, useConfig, useSwitchAccount } from "wagmi"
-import { useMemo } from "react"
-import { useUserWallets, useDynamicContext, Wallet as DynamicWallet, dynamicEvents } from "@dynamic-labs/sdk-react-core"
-import { WalletProvider, useSettingsState, Wallet, resolveWalletConnectorIcon, NetworkWithTokens, NetworkType, InternalConnector } from "@layerswap/widget"
+import { useAccount, useSwitchAccount } from "wagmi";
+import { useCallback, useEffect, useMemo } from "react";
+import {
+  useUserWallets,
+  useDynamicContext,
+  dynamicEvents,
+  Wallet as DynamicWallet,
+} from "@dynamic-labs/sdk-react-core";
+import {
+  WalletProvider,
+  Wallet,
+  resolveWalletConnectorIcon,
+  useSettingsState,
+  NetworkWithTokens,
+  NetworkType,
+} from "@layerswap/widget";
 
 export default function useEVM(): WalletProvider {
-    const name = 'EVM'
-    const id = 'evm'
-    const { connectors: activeConnectors } = useSwitchAccount()
-    const activeAccount = useAccount()
-    const config = useConfig()
-    const { setShowAuthFlow, handleLogOut } = useDynamicContext();
-    const userWallets = useUserWallets();
-    const { networks } = useSettingsState()
-    const asSourceSupportedNetworks = [
-        ...networks.filter(network => network.type === NetworkType.EVM).map(l => l.name),
-    ]
+  const name = "EVM";
+  const id = "evm";
 
-    const withdrawalSupportedNetworks = [
-        ...asSourceSupportedNetworks,
-    ]
+  // wagmi
+  const { connectors: activeConnectors } = useSwitchAccount();
+  const { connector: activeConnector, address: activeAddress } = useAccount();
+  // Dynamic SDK
+  const { setShowAuthFlow, handleLogOut } = useDynamicContext();
+  const userWallets = useUserWallets();
+  // Layerswap settings
+  const { networks } = useSettingsState();
 
-    const autofillSupportedNetworks = [
-        ...asSourceSupportedNetworks,
-    ]
+  // Gather the EVM‐type network names
+  const evmNetworkNames = useMemo(
+    () => networks.filter((n) => n.type === NetworkType.EVM).map((n) => n.name),
+    [networks],
+  );
 
-    const connectWallet = async () => {
+  // Supported-networks
+  const supportedNetworks = useMemo(
+    () => ({
+      asSource: evmNetworkNames,
+      autofill: evmNetworkNames,
+      withdrawal: evmNetworkNames,
+    }),
+    [evmNetworkNames],
+  );
 
-        if (userWallets.length) await handleLogOut()
+  // Clean up dynamicEvents listeners on unmount
+  useEffect(() => {
+    return () => {
+      dynamicEvents.removeAllListeners("walletAdded");
+      dynamicEvents.removeAllListeners("authFlowCancelled");
+    };
+  }, []);
 
-        function connectAndWaitForStatusChange() {
-            return new Promise((resolve, reject) => {
-                try {
-                    setShowAuthFlow(true)
-
-                    let wallet: DynamicWallet | undefined = undefined
-
-                    dynamicEvents.on('walletAdded', async (newWallet) => {
-                        wallet = newWallet
-                        resolve(wallet)
-                    })
-
-                    dynamicEvents.on('authFlowCancelled', async (params) => {
-                        if (!wallet) {
-                            reject('User cancelled the connection');
-                        }
-                    })
-
-                } catch (error) {
-                    console.error('Error connecting:', error);
-                    reject(error);
-                }
-            });
-        }
-
-        const result: Wallet | undefined = await connectAndWaitForStatusChange()
-            .then((newWallet: DynamicWallet) => {
-
-                const wallet: Wallet | undefined = newWallet && newWallet.address ? ResolveWallet({
-                    activeConnection: (activeAccount.connector && activeAccount.address) ? {
-                        id: activeAccount.connector.id,
-                        address: activeAccount.address
-                    } : undefined,
-                    connection: newWallet,
-                    discconnect: disconnectWallets,
-                    networks,
-                    supportedNetworks: {
-                        asSource: asSourceSupportedNetworks,
-                        autofill: autofillSupportedNetworks,
-                        withdrawal: withdrawalSupportedNetworks
-                    },
-                    providerName: name
-                }) : undefined
-
-                return wallet ? wallet : undefined
-            })
-            .catch((error) => {
-                console.error('Promise rejected with error:', error);
-                throw new Error(error);
-            });
-
-        return result
-
+  // connectWallet: log out existing, show authFlow, wait for event, then resolve
+  const connectWallet = useCallback(async (): Promise<Wallet | undefined> => {
+    if (userWallets.length) {
+      await handleLogOut();
     }
 
-    const disconnectWallets = async () => {
-        try {
-            await handleLogOut()
-        }
-        catch (e) {
-            console.log(e)
-        }
-    }
+    const newDynWallet = await new Promise<DynamicWallet>((resolve, reject) => {
+      setShowAuthFlow(true);
 
-    const resolvedConnectors: Wallet[] = useMemo(() => {
-        return activeConnectors.map((w): Wallet | undefined => {
+      const onAdded = (w: DynamicWallet) => {
+        cleanup();
+        resolve(w);
+      };
+      const onCancelled = () => {
+        cleanup();
+        reject(new Error("User cancelled the connection"));
+      };
+      const cleanup = () => {
+        dynamicEvents.off("walletAdded", onAdded);
+        dynamicEvents.off("authFlowCancelled", onCancelled);
+      };
 
-            const dynamicWallet = userWallets.find(w => w.connector.name === w.connector.name)
+      dynamicEvents.on("walletAdded", onAdded);
+      dynamicEvents.on("authFlowCancelled", onCancelled);
+    });
 
-            const wallet = dynamicWallet && ResolveWallet({
-                activeConnection: (activeAccount.connector && activeAccount.address) ? {
-                    id: activeAccount.connector.id,
-                    address: activeAccount.address
-                } : undefined,
-                connection: dynamicWallet,
-                discconnect: disconnectWallets,
-                networks,
-                supportedNetworks: {
-                    asSource: asSourceSupportedNetworks,
-                    autofill: autofillSupportedNetworks,
-                    withdrawal: withdrawalSupportedNetworks
-                },
-                providerName: name
-            })
+    return resolveWallet({
+      connection: newDynWallet,
+      activeConnection:
+        activeConnector && activeAddress ? { id: activeConnector.id, address: activeAddress } : undefined,
+      networks,
+      supportedNetworks,
+      disconnect: handleLogOut,
+      providerName: name,
+    });
+  }, [userWallets, handleLogOut, setShowAuthFlow, activeConnector, activeAddress, networks, supportedNetworks]);
 
-            return wallet
-        }).filter(w => w !== undefined) as Wallet[]
-    }, [activeAccount, activeConnectors, config, userWallets])
+  // Logout
+  const disconnectWallets = useCallback(async () => {
+    await handleLogOut();
+  }, [handleLogOut]);
 
-    const logo = networks.find(n => n.name.toLowerCase().includes('ethereum'))?.logo
+  // Map wagmi connectors → Dynamic SDK wallets → our Wallet shape
+  const connectedWallets: Wallet[] = useMemo(
+    () =>
+      activeConnectors
+        .map(() => {
+          const dyn = userWallets.find(() => true);
+          if (!dyn) return;
+          return resolveWallet({
+            connection: dyn,
+            activeConnection:
+              activeConnector && activeAddress ? { id: activeConnector.id, address: activeAddress } : undefined,
+            networks,
+            supportedNetworks,
+            disconnect: disconnectWallets,
+            providerName: name,
+          });
+        })
+        .filter(Boolean) as Wallet[],
+    [activeConnectors, userWallets, activeConnector, activeAddress, networks, supportedNetworks, disconnectWallets],
+  );
 
-    const availableWalletsForConnect: InternalConnector[] = [{
-        id: id,
-        name: name,
-        icon: logo,
-    }]
-    const provider = {
-        connectWallet,
-        connectConnector: connectWallet,
-        disconnectWallets,
-        activeWallet: resolvedConnectors.find(w => w.isActive),
-        connectedWallets: resolvedConnectors,
-        autofillSupportedNetworks,
-        withdrawalSupportedNetworks,
-        asSourceSupportedNetworks,
-        name,
-        id,
-        availableWalletsForConnect,
-        providerIcon: logo,
-    }
+  const logo = networks.find((n) => n.name.toLowerCase().includes("linea"))?.logo;
 
-    return provider
+  return {
+    connectWallet,
+    connectConnector: connectWallet,
+    activeWallet: connectedWallets.find((w) => w.isActive),
+    connectedWallets,
+    asSourceSupportedNetworks: supportedNetworks.asSource,
+    autofillSupportedNetworks: supportedNetworks.autofill,
+    withdrawalSupportedNetworks: supportedNetworks.withdrawal,
+    name,
+    id,
+    providerIcon: logo,
+  };
 }
 
-type ResolveWalletProps = {
-    connection: DynamicWallet
-    networks: NetworkWithTokens[],
-    activeConnection: {
-        id: string,
-        address: string
-    } | undefined,
-    discconnect: (connectorName?: string | undefined) => Promise<void>,
-    supportedNetworks: {
-        asSource: string[],
-        autofill: string[],
-        withdrawal: string[]
-    },
-    providerName: string
-}
+/** Reusable helper to turn a DynamicWallet + context into our `Wallet` shape */
+function resolveWallet(props: {
+  connection: DynamicWallet;
+  activeConnection?: { id: string; address: string };
+  networks: NetworkWithTokens[];
+  supportedNetworks: {
+    asSource: string[];
+    autofill: string[];
+    withdrawal: string[];
+  };
+  disconnect: () => Promise<void>;
+  providerName: string;
+}): Wallet | undefined {
+  const { connection, activeConnection, networks, supportedNetworks, disconnect, providerName } = props;
 
-const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
-    const { activeConnection, connection, networks, discconnect, supportedNetworks, providerName } = props
-    const accountIsActive = activeConnection?.address === connection?.address
+  const connectorName = connection.connector.name;
+  const address = connection.address;
+  if (!connectorName || !address) return;
 
-    const addresses = [connection?.address] as (string[] | undefined);
-    const activeAddress = activeConnection?.address
-    const connector = connection?.connector.name
-    if (!connector)
-        return undefined
-    const address = accountIsActive ? activeAddress : addresses?.[0]
-    if (!address) return undefined
+  const isActive = activeConnection?.address === address;
+  const displayName = `${connectorName} – ${providerName}`;
+  const networkIcon = networks.find((n) => n.name.toLowerCase().includes("linea"))?.logo;
 
-    const walletname = `${connector} - EVM`
-
-    const wallet: Wallet = {
-        id: connector,
-        isActive: accountIsActive,
-        address,
-        addresses: addresses || [address],
-        displayName: walletname,
-        providerName,
-        icon: resolveWalletConnectorIcon({ connector: connector, address }),
-        disconnect: () => discconnect(connector),
-        asSourceSupportedNetworks: supportedNetworks.asSource,
-        autofillSupportedNetworks: supportedNetworks.autofill,
-        withdrawalSupportedNetworks: supportedNetworks.withdrawal,
-        networkIcon: networks.find(n => n.name.toLowerCase().includes('ethereum'))?.logo,
-    }
-
-    return wallet
+  return {
+    id: connectorName,
+    isActive,
+    address,
+    addresses: [address],
+    displayName,
+    providerName,
+    icon: resolveWalletConnectorIcon({ connector: connectorName, address }),
+    disconnect: () => disconnect(),
+    asSourceSupportedNetworks: supportedNetworks.asSource,
+    autofillSupportedNetworks: supportedNetworks.autofill,
+    withdrawalSupportedNetworks: supportedNetworks.withdrawal,
+    networkIcon,
+  };
 }

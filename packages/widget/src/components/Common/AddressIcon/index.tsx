@@ -1,5 +1,5 @@
 'use client'
-import Jazzicon from "@metamask/jazzicon";
+import Jazzicon from "./jazzicon";
 import { FC, useEffect, useRef } from "react";
 
 type Props = {

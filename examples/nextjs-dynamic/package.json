@@ -13,7 +13,7 @@
     "@dynamic-labs/ethereum": "^4.14.0",
     "@dynamic-labs/sdk-react-core": "^4.14.0",
     "@dynamic-labs/wagmi-connector": "^4.14.0",
-    "@layerswap/widget": "0.1.17-beta.3",
+    "@layerswap/widget": "0.1.17-beta.5",
     "@tanstack/react-query": "^5.74.7",
     "next": "^14.0.4",
     "react": "^18.2.0",
