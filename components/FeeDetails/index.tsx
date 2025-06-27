@@ -14,6 +14,7 @@ import Clock from '../icons/Clock';
 import rewardCup from '@/public/images/rewardCup.png'
 import Image from 'next/image'
 import { Network } from '@/Models/Network';
+import { AnimatedValue } from '../Common/AnimatedValue';
 
 export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
     from?: Network;
@@ -100,9 +101,7 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
                 displayFeeInUsd &&
                 <div className='inline-flex items-center gap-1 pr-4'>
                     <GasIcon />
-                    <p>
-                        {displayFeeInUsd}
-                    </p>
+                    <AnimatedValue value={displayFeeInUsd} className='text-base text-primary-text' />
                 </div>
             }
             {
@@ -116,9 +115,7 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
                 reward &&
                 <div className='text-right text-primary-text inline-flex items-center gap-1 pr-4'>
                     <Image src={rewardCup} alt="Reward" width={16} height={16} />
-                    <p>
-                        {displayReward}
-                    </p>
+                    <AnimatedValue value={displayReward} className='text-base text-primary-text' />
                 </div>
             }
         </div>

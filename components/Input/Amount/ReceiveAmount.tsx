@@ -2,6 +2,7 @@ import { FC } from "react";
 import { Token } from "@/Models/Network";
 import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
+import { AnimatedValue } from "@/components/Common/AnimatedValue";
 
 type ReceiveAmountProps = {
     destination_token: Token | undefined;
@@ -24,17 +25,23 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ source_token, destinatio
                     </div>
                 ) : (
                     <div className="w-full flex items-center">
-                        {source_token && destination_token && Number(parsedReceiveAmount) > 0 ? (
+                        {/* {source_token && destination_token && Number(parsedReceiveAmount) > 0 ? (
                             <p>{parsedReceiveAmount}</p>
                         ) : (
                             <span>0</span>
-                        )}
+                        )} */}
+                        <AnimatedValue value={
+                            source_token && destination_token && Number(parsedReceiveAmount) > 0
+                                ? parsedReceiveAmount
+                                : "0"
+                        } />
                     </div>
                 )}
             </div>
-            <span className="text-base leading-5 font-medium text-secondary-text">
+            {/* <span className="text-base leading-5 font-medium text-secondary-text">
                 {`$${receiveAmountInUsd ?? 0}`}
-            </span>
+            </span> */}
+            <AnimatedValue value={`$${receiveAmountInUsd ?? 0}`} className="text-base leading-5 font-medium text-secondary-text" />
         </div>
     </>)
 }
