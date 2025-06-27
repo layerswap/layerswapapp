@@ -34,6 +34,7 @@ import { ValidationProvider } from "@/context/validationErrorContext";
 import { PendingSwap } from "./PendingSwap";
 import { QueryParams } from "@/Models/QueryParams";
 import VaulDrawer from "@/components/modal/vaulModal";
+import { usePersistedState } from "@/hooks/usePersistedState";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -64,6 +65,7 @@ export default function Form() {
     const addresses = useAddressesStore(state => state.addresses)
     const { getConfirmation } = useAsyncModal();
     const { quote } = useQuote()
+    const [showAddressNote, setAddressNote] = usePersistedState(false, 'showAddressNote', 'sessionStorage');
 
     const settings = useSettingsState();
     const query = useQueryState()
@@ -77,11 +79,21 @@ export default function Form() {
     const { swap } = swapResponse || {}
     const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useQuote()
 
+    useEffect(() => {
+        if (query.destination_address === undefined) {
+            setAddressNote(false);
+        }
+        else if (query.destination_address) {
+            setAddressNote(true);
+        }
+    }, [])
+
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         const { destination_address, to } = values
 
         if (to &&
             destination_address &&
+            showAddressNote &&
             (query.destination_address) &&
             (addressFormat(query.destination_address?.toString(), to) === addressFormat(destination_address, to)) &&
             !(addresses.find(a => addressFormat(a.address, to) === addressFormat(destination_address, to) && a.group !== AddressGroup.FromQuery)) && !isAddressFromQueryConfirmed) {
