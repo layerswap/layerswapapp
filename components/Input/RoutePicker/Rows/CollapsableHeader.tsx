@@ -1,6 +1,6 @@
 import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { ExchangeElement, GroupedTokenElement, NetworkElement } from "@/Models/Route";
-import { GroupedTokenHeader, NetworkRouteSelectItemDisplay } from "./Routes";
+import { GroupedTokenHeader, NetworkRouteSelectItemDisplay } from "../Routes";
 
 type Props = {
     item: GroupedTokenElement | NetworkElement | ExchangeElement
@@ -9,15 +9,15 @@ type Props = {
     hideTokenImages?: boolean;
 };
 
-export const AccordionHeaderContent = ({
+export const CollapsableHeader = ({
     item,
     direction,
     allbalancesLoaded,
     hideTokenImages,
 }: Props) => {
-    const isGrouped = item.type === "grouped_token";
+    const groupedByToken = item.type === "grouped_token";
 
-    return isGrouped ? (
+    return groupedByToken ? (
         <GroupedTokenHeader
             item={item as GroupedTokenElement}
             direction={direction}

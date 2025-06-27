@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import ReactPortal from "../../../Common/ReactPortal";
-import { AccordionHeaderContent } from "../AccordionHeaderContent";
+import { CollapsableHeader } from "./CollapsableHeader";
 import { ExchangeElement, GroupedTokenElement, NetworkElement } from "../../../../Models/Route";
 import { SwapDirection } from "../../../DTOs/SwapFormValues";
 
@@ -65,7 +65,7 @@ export function StickyHeader({
                 onClick={onClick}
                 className="cursor-pointer bg-secondary-700 hover:bg-secondary-600 relative pb-1"
             >
-                <AccordionHeaderContent
+                <CollapsableHeader
                     item={item}
                     direction={direction}
                     allbalancesLoaded={allbalancesLoaded}

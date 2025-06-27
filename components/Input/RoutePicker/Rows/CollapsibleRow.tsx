@@ -16,8 +16,8 @@ import {
 import { SwapDirection } from "../../../DTOs/SwapFormValues";
 import { CurrencySelectItemDisplay, GroupedTokenHeader, NetworkRouteSelectItemDisplay } from "../Routes";
 import { NetworkRoute, NetworkRouteToken } from "../../../../Models/Network";
-import { AccordionHeaderContent } from "../AccordionHeaderContent";
-import { StickyHeader } from "./StickyAccordionHeader";
+import { CollapsableHeader } from "./CollapsableHeader";
+import { StickyHeader } from "./StickyHeader";
 
 type GenericAccordionRowProps = {
   item: NetworkElement | GroupedTokenElement | ExchangeElement;
@@ -88,7 +88,7 @@ export const CollapsibleRow = ({
             }`}
         >
           <AccordionTrigger>
-            <AccordionHeaderContent
+            <CollapsableHeader
               item={item}
               direction={direction}
               allbalancesLoaded={allbalancesLoaded}
