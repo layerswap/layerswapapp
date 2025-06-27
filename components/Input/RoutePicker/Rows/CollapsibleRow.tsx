@@ -16,6 +16,8 @@ import {
 import { SwapDirection } from "../../../DTOs/SwapFormValues";
 import { CurrencySelectItemDisplay, GroupedTokenHeader, NetworkRouteSelectItemDisplay } from "../Routes";
 import { NetworkRoute, NetworkRouteToken } from "../../../../Models/Network";
+import { AccordionHeaderContent } from "../AccordionHeaderContent";
+import { StickyHeader } from "./StickyAccordionHeader";
 
 type GenericAccordionRowProps = {
   item: NetworkElement | GroupedTokenElement | ExchangeElement;
@@ -70,29 +72,7 @@ export const CollapsibleRow = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const isOpen = openValues?.some((ov) => ov === groupName);
 
-  useEffect(() => {
-    if (!isOpen) {
-      setSticky(false);
-      return;
-    }
-    const container = scrollContainerRef.current;
-    if (!container) return;
 
-    const onScroll = () => {
-      const headerRect = headerRef.current?.getBoundingClientRect();
-      const contentRect = contentRef.current?.getBoundingClientRect();
-      const containerRect = container.getBoundingClientRect();
-
-      const passedTop = Number(headerRect?.top) - 3 <= containerRect.top;
-      const contentGone =
-        Number(contentRect?.bottom) <=
-        containerRect.top + (headerRect?.height || 0) * 1.5;
-      setSticky(passedTop && !contentGone && Boolean(childrenList && childrenList.length > 1));
-    };
-
-    container.addEventListener("scroll", onScroll, { passive: true });
-    return () => container.removeEventListener("scroll", onScroll);
-  }, [isOpen, scrollContainerRef, headerRef, contentRef, childrenList]);
 
   const stickyToggle = () => {
     toggleContent(groupName);
@@ -110,50 +90,28 @@ export const CollapsibleRow = ({
             }`}
         >
           <AccordionTrigger>
-            {isGrouped ? (
-              <GroupedTokenHeader
-                item={item as GroupedTokenElement}
-                direction={direction}
-                allbalancesLoaded={allbalancesLoaded}
-                hideTokenImages={isOpen}
-              />
-            ) : (
-              <NetworkRouteSelectItemDisplay
-                item={(item as NetworkElement).route}
-                selected={false}
-                direction={direction}
-                allbalancesLoaded={allbalancesLoaded}
-                hideTokenImages={isOpen}
-              />
-            )}
+            <AccordionHeaderContent
+              item={item}
+              direction={direction}
+              allbalancesLoaded={allbalancesLoaded}
+              hideTokenImages={isOpen}
+            />
           </AccordionTrigger>
         </div>
 
-        {isSticky && (
-          <ReactPortal wrapperId="sticky_accordion_header">
-            <div
-              onClick={stickyToggle}
-              className="cursor-pointer bg-secondary-700 hover:bg-secondary-600 relative pb-1"
-            >
-              {isGrouped ? (
-                <GroupedTokenHeader
-                  item={item as GroupedTokenElement}
-                  direction={direction}
-                  allbalancesLoaded={allbalancesLoaded}
-                  hideTokenImages={isOpen}
-                />
-              ) : (
-                <NetworkRouteSelectItemDisplay
-                  item={(item as NetworkElement).route}
-                  selected={false}
-                  direction={direction}
-                  allbalancesLoaded={allbalancesLoaded}
-                  hideTokenImages={isOpen}
-                />
-              )}
-            </div>
-          </ReactPortal>
-        )}
+        <StickyHeader
+          item={item}
+          direction={direction}
+          scrollContainer={scrollContainerRef.current}
+          open={isOpen}
+          headerRef={headerRef}
+          contentRef={contentRef}
+          allbalancesLoaded={allbalancesLoaded}
+          childrenCount={childrenList?.length}
+          onClick={stickyToggle}
+          isSticky={isSticky}
+          setSticky={setSticky}
+        />
 
         <AccordionContent
           className="AccordionContent mt-1"
