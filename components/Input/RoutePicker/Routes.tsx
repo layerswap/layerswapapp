@@ -9,6 +9,7 @@ import { ChevronDown } from "lucide-react";
 import RoutePickerIcon from "../../icons/RoutePickerPlaceholder";
 import { useBalance } from "../../../lib/balances/providers/useBalance";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
+import { usePickerSelectedWalletStore } from "@/stores/pickerSelectedWallets";
 
 type TokenItemProps = {
     route: Route;
@@ -44,8 +45,9 @@ type NetworkTokenItemProps = {
 export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const { item, route, direction, allbalancesLoaded } = props
     const { provider } = useWallet(route, direction === "from" ? "withdrawal" : "autofil")
-    const activeAddress = provider?.activeWallet
-    const { balances } = useBalance(activeAddress?.address, route)
+    const { pickerSelectedWallets } = usePickerSelectedWalletStore(direction)
+    const selectedWallet = pickerSelectedWallets?.find(w => w.provider === provider?.name)
+    const { balances } = useBalance(selectedWallet?.address, route)
     const tokenbalance = balances?.find(b => b.token === item.symbol)
     const formatted_balance_amount = tokenbalance?.amount ? truncateDecimals(tokenbalance?.amount, item.precision) : ''
     const balanceAmountInUsd = (item?.price_in_usd * Number(formatted_balance_amount)).toFixed(2)
@@ -86,9 +88,10 @@ type NetworkRouteItemProps = {
 const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const { item, direction, allbalancesLoaded } = props
     const { provider } = useWallet(item, direction === "from" ? "withdrawal" : "autofil")
-    const activeWallet = provider?.activeWallet
+    const { pickerSelectedWallets } = usePickerSelectedWalletStore(direction)
+    const selectedWallet = pickerSelectedWallets?.find(w => w.provider === provider?.name)
 
-    const { balances, totalInUSD } = useBalance(activeWallet?.address, item)
+    const { balances, totalInUSD } = useBalance(selectedWallet?.address, item)
     const tokensWithBalance = balances?.filter(b => b.amount > 0)
         ?.map(b => b.token);
     const filteredNetworkTokens = item?.tokens?.filter(token =>
