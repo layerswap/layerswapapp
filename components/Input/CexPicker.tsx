@@ -20,11 +20,11 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
+    const direction = "from"
 
     const { isDesktop } = useWindowDimensions();
-    const { exchangeElements, exchangesRoutesLoading: isLoading, selectedRoute, selectedToken, exchangeNetworks } = useFormRoutes({ direction: "from", values }, "");
+    const { exchangeElements, exchangesRoutesLoading: isLoading, selectedRoute, selectedToken, exchangeNetworks } = useFormRoutes({ direction, values });
     const { fromExchange, toAsset } = values;
-    const direction = "from"
 
     useEffect(() => {
         const updateValues = async () => {
