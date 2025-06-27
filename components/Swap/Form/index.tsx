@@ -65,37 +65,39 @@ export default function Form() {
     const addresses = useAddressesStore(state => state.addresses)
     const { getConfirmation } = useAsyncModal();
     const { quote } = useQuote()
-    const [showAddressNote, setShowAddressNote] = usePersistedState(false, 'showAddressNote', 'sessionStorage');
+    const [showAddressNote, setShowAddressNote] = usePersistedState('', 'showAddressNote', 'sessionStorage');
 
     const settings = useSettingsState();
     const query = useQueryState()
+    const { appName, destination_address, sameAccountNetwork } = query
     const { createSwap, setSwapId, setSwapPath, removeSwapPath, resolveSwapDataFromQuery } = useSwapDataUpdate()
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.appName && `/internal/apps?name=${query?.appName}`, layerswapApiClient.fetcher)
-    const partner = query?.appName && partnerData?.data?.client_id?.toLowerCase() === (query?.appName as string)?.toLowerCase() ? partnerData?.data : undefined
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
+    const partner = appName && partnerData?.data?.client_id?.toLowerCase() === (appName as string)?.toLowerCase() ? partnerData?.data : undefined
 
     const { swapResponse, selectedSourceAccount } = useSwapDataState()
     const { swap } = swapResponse || {}
     const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useQuote()
 
     useEffect(() => {
-        if (query.destination_address === undefined) {
-            setShowAddressNote(false);
+        if (showAddressNote == 'false') return
+        if (destination_address === undefined) {
+            setShowAddressNote('false');
         }
-        else if (query.destination_address) {
-            setShowAddressNote(true);
+        else if (destination_address) {
+            setShowAddressNote('true');
         }
-    }, [query])
+    }, [destination_address, showAddressNote])
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         const { destination_address, to } = values
 
         if (to &&
             destination_address &&
-            showAddressNote &&
-            (query.destination_address) &&
-            (addressFormat(query.destination_address?.toString(), to) === addressFormat(destination_address, to)) &&
+            showAddressNote == 'true' &&
+            (destination_address) &&
+            (addressFormat(destination_address?.toString(), to) === addressFormat(destination_address, to)) &&
             !(addresses.find(a => addressFormat(a.address, to) === addressFormat(destination_address, to) && a.group !== AddressGroup.FromQuery)) && !isAddressFromQueryConfirmed) {
 
             const confirmed = await getConfirmation({
@@ -165,7 +167,7 @@ export default function Form() {
         }
     }, [router, swap])
 
-    const validator = useMemo(() => MainStepValidation({ minAllowedAmount, maxAllowedAmount, sourceAddress: selectedSourceAccount?.address, sameAccountNetwork: query.sameAccountNetwork }), [minAllowedAmount, maxAllowedAmount, selectedSourceAccount, query.sameAccountNetwork])
+    const validator = useMemo(() => MainStepValidation({ minAllowedAmount, maxAllowedAmount, sourceAddress: selectedSourceAccount?.address, sameAccountNetwork: sameAccountNetwork }), [minAllowedAmount, maxAllowedAmount, selectedSourceAccount, sameAccountNetwork])
 
     return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
