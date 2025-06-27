@@ -72,8 +72,6 @@ export const CollapsibleRow = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const isOpen = openValues?.some((ov) => ov === groupName);
 
-
-
   const stickyToggle = () => {
     toggleContent(groupName);
     headerRef.current?.scrollIntoView({ block: "start", inline: "start" });
