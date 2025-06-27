@@ -27,7 +27,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const [isFocused, setIsFocused] = useState(false)
     const [showEcosystemSeletion, setShowEcosystemSelection] = useState(false)
     const [selectedMultiChainConnector, setSelectedMultiChainConnector] = useState<InternalConnector | undefined>(undefined)
-
+    const { isMobile: isMobileSize } = useWindowDimensions()
     const [isScrolling, setIsScrolling] = useState(false);
     const scrollTimeout = useRef<any>(null);
 
@@ -208,8 +208,8 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 <div
                     onScroll={handleScroll}
                     className={clsx('overflow-y-scroll -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar-thumb:bg-transparent', {
-                        'h-[55vh]': isMobile,
-                        'h-[265px]': !isMobile,
+                        'h-[55vh]': isMobileSize,
+                        'h-[265px]': !isMobileSize,
                         'styled-scroll': isScrolling
                     })}
                 >
