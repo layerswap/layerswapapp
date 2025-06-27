@@ -1,7 +1,6 @@
 import { FC, useCallback, useEffect } from "react";
-import ResizablePanel from "@/components/ResizablePanel";
 import ValidationError from "@/components/validationError";
-import CexNetworkPicker from "@/components/Input/CexNetworkPicker";
+import CexPicker from "@/components/Input/CexPicker";
 import QuoteDetails from "@/components/FeeDetails";
 import { Widget } from "@/components/Widget/Index";
 import FormButton from "../FormButton";
@@ -19,7 +18,7 @@ import { Partner } from "@/Models/Partner";
 import RoutePicker from "@/components/Input/RoutePicker";
 import AmountField from "@/components/Input/Amount";
 import Address from "@/components/Input/Address";
-import { ChevronDown, ChevronRight, PlusIcon } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import AddressIcon from "@/components/AddressIcon";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 
@@ -91,7 +90,7 @@ const ExchangeForm: FC<Props> = ({ partner, setOpenRefuelModal, isExchange }) =>
                                     </label>
                                 </div>
                                 <div className="relative">
-                                    <CexNetworkPicker direction="from" />
+                                    <CexPicker />
                                 </div>
 
                                 <div className="flex justify-between items-center">

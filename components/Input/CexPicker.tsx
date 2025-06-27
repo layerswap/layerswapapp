@@ -15,23 +15,29 @@ import useFormRoutes from "@/hooks/useFormRoutes";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
 import { SelectedRoutePlaceholder } from "./RoutePicker/Routes";
 
-const CexNetworkPicker: FC<{ direction: SwapDirection, partner?: Partner | undefined }> = ({ direction, partner }) => {
+const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
     const {
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
 
     const { isDesktop } = useWindowDimensions();
-    const { exchangeElements, exchangesRoutesLoading: isLoading, allRoutes, selectedRoute, selectedToken } = useFormRoutes({ direction, values }, "");
-    const { fromExchange, toAsset, to } = values;
+    const { exchangeElements, exchangesRoutesLoading: isLoading, selectedRoute, selectedToken, exchangeNetworks } = useFormRoutes({ direction: "from", values }, "");
+    const { fromExchange, toAsset } = values;
+    const direction = "from"
 
     useEffect(() => {
         const updateValues = async () => {
             if (!fromExchange) return;
 
             const currencyGroup = fromExchange?.token_groups?.find(group => group.symbol === toAsset?.symbol);
-            const sourceRoute = allRoutes[0]
-            const sourceRouteToken = sourceRoute?.tokens?.find(t => t.symbol === toAsset?.symbol);
+            const sourceRoute = exchangeNetworks?.find(route =>
+                route?.tokens?.some(token => token.symbol === toAsset?.symbol && token.status === 'active')
+            );
+
+            const sourceRouteToken = sourceRoute?.tokens?.find(
+                token => token.symbol === toAsset?.symbol && token.status === 'active'
+            );
 
             await setFieldValue("currencyGroup", currencyGroup, true);
             await setFieldValue("from", sourceRoute, true)
@@ -39,12 +45,12 @@ const CexNetworkPicker: FC<{ direction: SwapDirection, partner?: Partner | undef
         };
 
         updateValues();
-    }, [selectedRoute, selectedToken, allRoutes, selectedToken]);
+    }, [selectedRoute, selectedToken, exchangeNetworks, selectedToken]);
 
     const handleSelect = useCallback(async (exchange: Exchange) => {
         setFieldValue("fromExchange", exchange, true)
     }, [direction, values])
-    console.log(values)
+
     return (
         <div className="rounded-lg space-y-2">
             <div className="relative mb-2">
@@ -161,4 +167,4 @@ export const SelectedNetworkDisplay = (props: SelectedNetworkDisplayProps) => {
     )
 }
 
-export default CexNetworkPicker
+export default CexPicker

@@ -7,9 +7,9 @@ import { useSettingsState } from "../context/settings";
 import { NetworkElement, RowElement, NetworkTokenElement, TitleElement, GroupTokensResult, GroupedTokenElement, ExchangeElement, ExchangeTokenElement } from "../Models/Route";
 import useAllBalances from "./useAllBalances";
 import { NetworkBalance } from "../Models/Balance";
-import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../helpers/routes";
+import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL, resolveRoutesURLForSelectedAssetGroup } from "../helpers/routes";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
-import { Exchange } from "@/Models/Exchange";
+import { Exchange, ExchangeToken } from "@/Models/Exchange";
 
 const Titles: { [name: string]: TitleElement } = {
     topAssets: { type: 'group_title', text: 'Top Assets' },
@@ -28,8 +28,10 @@ type Props = {
 export default function useFormRoutes({ direction, values }: Props, search?: string) {
     const { routes, isLoading: routesLoading } = useRoutes({ direction, values });
     const { exchangesRoutes, isLoading: exchangesRoutesLoading } = useExchangeRoutes({ direction, values })
+    const { exchangesRoutes: exchangeSourceNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeDestinationRoutes({ direction: "from", currencyGroup: values.currencyGroup || {} as ExchangeToken });
 
     const balances = useAllBalances({ direction });
+    const exchange = values.fromExchange
 
     const topTokens = useMemo(() => getTopTokens(routes, balances), [routes, balances]);
     const sortedRoutes = useMemo(() => sortRoutes(routes, direction, balances), [routes, direction, balances]);
@@ -45,7 +47,11 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const exchangeElements = useMemo(() => {
         const grouped = groupExchanges(exchangesRoutes, search);
         return grouped;
-    }, [sortedRoutes, balances, direction, search, topTokens]);
+    }, [balances, direction, search, exchange]);
+
+    const exchangeNetworks = useMemo(() => {
+        return exchangeSourceNetworks;
+    }, [exchangeSourceNetworks, exchange, search]);
 
     const tokenElements = useMemo(() => {
         const grouped = groupTokens(routes, search);
@@ -65,6 +71,8 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         routeElements,
         exchangeElements,
         exchangesRoutesLoading,
+        exchangeNetworks,
+        exchangeSourceNetworksLoading,
         tokenElements,
         selectedRoute,
         selectedToken,
@@ -75,6 +83,8 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         routeElements,
         exchangeElements,
         exchangesRoutesLoading,
+        exchangeNetworks,
+        exchangeSourceNetworksLoading,
         tokenElements,
         selectedRoute,
         selectedToken,
@@ -302,3 +312,28 @@ function useExchangeRoutes({ direction, values }: Props) {
 
     return useMemo(() => ({ exchangesRoutes: res, isLoading }), [res, isLoading])
 }
+
+function useExchangeDestinationRoutes({ direction, currencyGroup, networkTypes }: { direction: 'from' | 'to', currencyGroup: (ExchangeToken & { manuallySet?: boolean | undefined; }), networkTypes?: string[] }) {
+    const apiClient = new LayerSwapApiClient()
+
+    const assetGroupRoutesURL = useMemo(() => (
+        resolveRoutesURLForSelectedAssetGroup(direction, currencyGroup, networkTypes)
+    ), [direction, currencyGroup, networkTypes])
+
+    const { data: apiResponse, isLoading } = useSWR<ApiResponse<NetworkRoute[]>>(
+        assetGroupRoutesURL,
+        apiClient.fetcher,
+        { keepPreviousData: true, dedupingInterval: 10000 }
+    )
+
+    const [exchangesRoutes, setExchangesData] = useState<NetworkRoute[]>()
+
+    useEffect(() => {
+        if (!isLoading && apiResponse?.data) {
+            setExchangesData(apiResponse.data)
+        }
+    }, [apiResponse, isLoading])
+
+    return { exchangesRoutes, isLoading }
+}
+
