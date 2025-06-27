@@ -65,7 +65,7 @@ export default function Form() {
     const addresses = useAddressesStore(state => state.addresses)
     const { getConfirmation } = useAsyncModal();
     const { quote } = useQuote()
-    const [showAddressNote, setAddressNote] = usePersistedState(false, 'showAddressNote', 'sessionStorage');
+    const [showAddressNote, setShowAddressNote] = usePersistedState(false, 'showAddressNote', 'sessionStorage');
 
     const settings = useSettingsState();
     const query = useQueryState()
@@ -81,12 +81,12 @@ export default function Form() {
 
     useEffect(() => {
         if (query.destination_address === undefined) {
-            setAddressNote(false);
+            setShowAddressNote(false);
         }
         else if (query.destination_address) {
-            setAddressNote(true);
+            setShowAddressNote(true);
         }
-    }, [])
+    }, [query])
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         const { destination_address, to } = values
