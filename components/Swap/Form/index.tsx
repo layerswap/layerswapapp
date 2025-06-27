@@ -34,7 +34,7 @@ import { ValidationProvider } from "@/context/validationErrorContext";
 import { PendingSwap } from "./PendingSwap";
 import { QueryParams } from "@/Models/QueryParams";
 import VaulDrawer from "@/components/modal/vaulModal";
-import { usePersistedState } from "@/hooks/usePersistedState";
+import useShowAddressNote from "@/hooks/useShowAddressNote";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -65,11 +65,11 @@ export default function Form() {
     const addresses = useAddressesStore(state => state.addresses)
     const { getConfirmation } = useAsyncModal();
     const { quote } = useQuote()
-    const [showAddressNote, setShowAddressNote] = usePersistedState('', 'showAddressNote', 'sessionStorage');
+    const showAddressNote = useShowAddressNote()
 
     const settings = useSettingsState();
     const query = useQueryState()
-    const { appName, destination_address, sameAccountNetwork } = query
+    const { appName, sameAccountNetwork } = query
     const { createSwap, setSwapId, setSwapPath, removeSwapPath, resolveSwapDataFromQuery } = useSwapDataUpdate()
 
     const layerswapApiClient = new LayerSwapApiClient()
@@ -80,22 +80,12 @@ export default function Form() {
     const { swap } = swapResponse || {}
     const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useQuote()
 
-    useEffect(() => {
-        if (showAddressNote == 'false') return
-        if (destination_address === undefined) {
-            setShowAddressNote('false');
-        }
-        else if (destination_address) {
-            setShowAddressNote('true');
-        }
-    }, [destination_address, showAddressNote])
-
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         const { destination_address, to } = values
 
         if (to &&
             destination_address &&
-            showAddressNote == 'true' &&
+            showAddressNote &&
             (destination_address) &&
             (addressFormat(destination_address?.toString(), to) === addressFormat(destination_address, to)) &&
             !(addresses.find(a => addressFormat(a.address, to) === addressFormat(destination_address, to) && a.group !== AddressGroup.FromQuery)) && !isAddressFromQueryConfirmed) {
