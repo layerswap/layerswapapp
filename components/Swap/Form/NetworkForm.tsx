@@ -109,14 +109,6 @@ const NetworkForm: FC<Props> = ({ partner, setOpenRefuelModal }) => {
                                 !(query?.hideTo && values?.to) && <DestinationPicker partner={partner} />
                             }
                         </div>
-                        {
-                            (((fromExchange && destination) || (toExchange && source)) && currencyGroup) &&
-                            <div className="mb-6 leading-4">
-                                <ResizablePanel>
-                                    <CexNetworkPicker direction={fromExchange ? 'from' : 'to'} partner={partner} />
-                                </ResizablePanel>
-                            </div>
-                        }
                         <div className="w-full">
                             {values.amount &&
                                 <ReserveGasNote onSubmit={handleReserveGas} />
