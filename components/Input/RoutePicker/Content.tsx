@@ -1,13 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { RowElement } from "../../../Models/Route";
-import useWindowDimensions from "../../../hooks/useWindowDimensions";
 import { SwapDirection } from "../../DTOs/SwapFormValues";
 import { useVirtualizer } from "../../../lib/virtual";
-import { Search } from "lucide-react";
 import { Accordion } from "../../shadcn/accordion";
 import Row from "./Rows";
 import { LayoutGroup, motion } from "framer-motion";
-import FilledX from "../../icons/FilledX";
 import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
 import { useSelectorState } from "../../Select/CommandNew/Index";
 import useWallet from "@/hooks/useWallet";

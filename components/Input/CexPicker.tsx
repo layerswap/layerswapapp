@@ -29,19 +29,14 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
     const parentRef = useRef<HTMLDivElement>(null);
     const [searchQuery, setSearchQuery] = useState("");
 
-    const filteredExchanges = exchangeElements?.filter(
-        item => item.type === 'exchange' &&
-            item.route.display_name.toLowerCase().includes(searchQuery.toLowerCase())
-    ) as ExchangeElement[];
-
     const virtualizer = useVirtualizer({
-        count: filteredExchanges?.length || 0,
+        count: exchangeElements?.length || 0,
         estimateSize: () => 50,
         getScrollElement: () => parentRef.current,
         overscan: 10
     });
     const items = virtualizer.getVirtualItems();
-
+    console.log("items", items, exchangeElements)
     useEffect(() => {
         const updateValues = async () => {
             if (!fromExchange) return;
@@ -61,14 +56,14 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
         };
 
         updateValues();
-    }, [selectedRoute, selectedToken, exchangeNetworks, selectedToken]);
+    }, [selectedRoute, selectedToken, exchangeNetworks, selectedToken, exchangeElements]);
 
     const handleSelect = useCallback(async (exchange: Exchange) => {
         setFieldValue("fromExchange", exchange, true)
     }, [direction, values])
 
     return (
-        <div className="flex w-full flex-col self-end relative ml-auto items-center">
+        <div className="flex w-full flex-col self-end relative ml-auto items-center" ref={parentRef}>
             <Selector>
                 <SelectorTrigger disabled={false}>
                     <SelectedNetworkDisplay exchange={fromExchange} placeholder="Select Token" />
@@ -78,8 +73,8 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
                         <div className="overflow-y-auto flex flex-col h-full z-40" >
                             <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={isOpen} />
                             <LayoutGroup>
-                                <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full" ref={parentRef}>
-                                    <div className="relative"  >
+                                <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full">
+                                    <div className="relative">
                                         <div
                                             style={{
                                                 height: virtualizer.getTotalSize(),
@@ -87,7 +82,6 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
                                                 position: 'relative',
                                             }}
                                         >
-                                            <div className="sticky top-0 z-50" id="sticky_accordion_header" />
                                             <div
                                                 style={{
                                                     position: 'absolute',

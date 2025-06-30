@@ -47,7 +47,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const exchangeElements = useMemo(() => {
         const grouped = groupExchanges(exchangesRoutes, search);
         return grouped;
-    }, [exchangesRoutes, direction, search, exchange, values]);
+    }, [exchangesRoutes, direction, search, values]);
 
     const exchangeNetworks = useMemo(() => {
         return exchangeSourceNetworks;
@@ -308,9 +308,9 @@ function useExchangeRoutes({ direction, values }: Props) {
         if (!isLoading && apiResponse?.data) setExchangesData(apiResponse.data)
     }, [apiResponse])
 
-    const res = useMemo(() => exchangesRoutes.map(r => ({ ...r, cex: true } as { cex: true } & Exchange)), [exchangesRoutes])
+    const res = exchangesRoutes.map(r => ({ ...r, cex: true } as { cex: true } & Exchange))
 
-    return useMemo(() => ({ exchangesRoutes: res, isLoading }), [res, isLoading])
+    return { exchangesRoutes: res, isLoading }
 }
 
 function useExchangeDestinationRoutes({ direction, currencyGroup, networkTypes }: { direction: 'from' | 'to', currencyGroup: (ExchangeToken & { manuallySet?: boolean | undefined; }), networkTypes?: string[] }) {
