@@ -1,12 +1,10 @@
 import {
   RefObject,
-  useEffect,
   useMemo,
   useRef,
   useState,
 } from "react";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "../../../shadcn/accordion";
-import ReactPortal from "../../../Common/ReactPortal";
 import { motion } from "framer-motion";
 import {
   NetworkElement,
@@ -14,7 +12,7 @@ import {
   ExchangeElement,
 } from "../../../../Models/Route";
 import { SwapDirection } from "../../../DTOs/SwapFormValues";
-import { CurrencySelectItemDisplay, GroupedTokenHeader, NetworkRouteSelectItemDisplay } from "../Routes";
+import { CurrencySelectItemDisplay } from "../Routes";
 import { NetworkRoute, NetworkRouteToken } from "../../../../Models/Network";
 import { CollapsableHeader } from "./CollapsableHeader";
 import { StickyHeader } from "./StickyHeader";

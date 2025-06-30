@@ -47,7 +47,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const exchangeElements = useMemo(() => {
         const grouped = groupExchanges(exchangesRoutes, search);
         return grouped;
-    }, [balances, direction, search, exchange]);
+    }, [exchangesRoutes, direction, search, exchange, values]);
 
     const exchangeNetworks = useMemo(() => {
         return exchangeSourceNetworks;

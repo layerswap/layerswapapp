@@ -1,19 +1,19 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect } from "react";
+import { FC, useCallback, useEffect, useRef, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
-import { Selector, SelectorContent, SelectorTrigger } from "../Select/CommandNew/Index";
-import { ChevronDown, Search } from "lucide-react";
-import { CommandEmpty, CommandInput, CommandItem, CommandList, CommandWrapper } from "../shadcn/command";
-import SpinIcon from "../icons/spinIcon";
-import useWindowDimensions from "../../hooks/useWindowDimensions";
+import { Selector, SelectorContent, SelectorTrigger, useSelectorState } from "../Select/CommandNew/Index";
 import { Exchange, ExchangeToken } from "../../Models/Exchange";
 import React from "react";
 import { ExchangeElement } from "../../Models/Route";
 import { SelectItem } from "../Select/CommandNew/SelectItem/Index";
 import { Partner } from "../../Models/Partner";
 import useFormRoutes from "@/hooks/useFormRoutes";
-import { ImageWithFallback } from "../Common/ImageWithFallback";
 import { SelectedRoutePlaceholder } from "./RoutePicker/Routes";
+import { useVirtualizer } from "@/lib/virtual";
+import { LayoutGroup, motion } from "framer-motion";
+import { SearchComponent } from "./Search";
+import { ImageWithFallback } from "../Common/ImageWithFallback";
+import { ChevronDown } from "lucide-react";
 
 const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
     const {
@@ -22,9 +22,25 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
     } = useFormikContext<SwapFormValues>();
     const direction = "from"
 
-    const { isDesktop } = useWindowDimensions();
     const { exchangeElements, exchangesRoutesLoading: isLoading, selectedRoute, selectedToken, exchangeNetworks } = useFormRoutes({ direction, values });
     const { fromExchange, toAsset } = values;
+    const { isOpen } = useSelectorState();
+
+    const parentRef = useRef<HTMLDivElement>(null);
+    const [searchQuery, setSearchQuery] = useState("");
+
+    const filteredExchanges = exchangeElements?.filter(
+        item => item.type === 'exchange' &&
+            item.route.display_name.toLowerCase().includes(searchQuery.toLowerCase())
+    ) as ExchangeElement[];
+
+    const virtualizer = useVirtualizer({
+        count: filteredExchanges?.length || 0,
+        estimateSize: () => 50,
+        getScrollElement: () => parentRef.current,
+        overscan: 10
+    });
+    const items = virtualizer.getVirtualItems();
 
     useEffect(() => {
         const updateValues = async () => {
@@ -52,36 +68,45 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
     }, [direction, values])
 
     return (
-        <div className="rounded-lg space-y-2">
-            <div className="relative mb-2">
-                <Selector>
-                    <SelectorTrigger disabled={false}>
-                        <SelectedNetworkDisplay exchange={values.fromExchange} placeholder="Source" />
-                    </SelectorTrigger>
-                    <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search">
-                        {({ closeModal }) => (
-                            <CommandWrapper>
-                                <CommandInput autoFocus={isDesktop} placeholder="Search">
-                                    <div className="pl-2">
-                                        <Search className="w-6 h-6 text-secondary-text" />
-                                    </div>
-                                </CommandInput>
-                                {isLoading ? (
-                                    <div className="flex justify-center h-full items-center">
-                                        <SpinIcon className="animate-spin h-5 w-5" />
-                                    </div>
-                                ) : (
-                                    <CommandList className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full">
-                                        <CommandEmpty>No results found.</CommandEmpty>
-                                        {
-                                            exchangeElements?.flatMap((item, index) => {
-                                                if (item.type === 'exchange') {
-                                                    const exchange = item as ExchangeElement;
-                                                    const { route } = exchange;
-
-                                                    return (
+        <div className="flex w-full flex-col self-end relative ml-auto items-center">
+            <Selector>
+                <SelectorTrigger disabled={false}>
+                    <SelectedNetworkDisplay exchange={fromExchange} placeholder="Select Token" />
+                </SelectorTrigger>
+                <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search" header="">
+                    {({ closeModal }) => (
+                        <div className="overflow-y-auto flex flex-col h-full z-40" >
+                            <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={isOpen} />
+                            <LayoutGroup>
+                                <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full" ref={parentRef}>
+                                    <div className="relative"  >
+                                        <div
+                                            style={{
+                                                height: virtualizer.getTotalSize(),
+                                                width: '100%',
+                                                position: 'relative',
+                                            }}
+                                        >
+                                            <div className="sticky top-0 z-50" id="sticky_accordion_header" />
+                                            <div
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    left: 0,
+                                                    width: '100%',
+                                                    transform: `translateY(${items[0]?.start ? (items[0]?.start - 0) : 0}px)`,
+                                                }}>
+                                                {items.map((virtualRow) => {
+                                                    const data = exchangeElements?.[virtualRow.index] as ExchangeElement
+                                                    const route = data?.route
+                                                    const key = ((data as any)?.route as any)?.name || virtualRow.key;
+                                                    return <div
+                                                        className="py-1 box-border"
+                                                        key={key}
+                                                        data-index={virtualRow.index}
+                                                        ref={virtualizer.measureElement}>
                                                         <ExchangeNetwork
-                                                            key={`${route.name}-${index}`}
+                                                            key={key}
                                                             route={route}
                                                             direction={direction}
                                                             onSelect={(n) => {
@@ -89,19 +114,19 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
                                                                 closeModal();
                                                             }}
                                                         />
-                                                    )
-                                                }
-                                                return [];
-                                            })
-                                        }
-                                    </CommandList>
-                                )}
-                            </CommandWrapper>
-                        )}
-                    </SelectorContent>
-                </Selector>
-            </div>
+                                                    </div>
+                                                })}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            </LayoutGroup>
+                        </div>
+                    )}
+                </SelectorContent>
+            </Selector>
         </div>
+
     )
 }
 
@@ -113,25 +138,17 @@ type ExchangeNetworkProps = {
 
 const ExchangeNetwork = (props: ExchangeNetworkProps) => {
     const { route, onSelect } = props
-    const tokenItemRef = React.useRef<HTMLDivElement>(null);
 
-    return <CommandItem
-        className="aria-selected:bg-secondary-400 aria-selected:text-primary-text rounded-lg bg-secondary-500 hover:bg-secondary-400 relative mt-1.5"
-        value={`${route.display_name} ##`}
-        key={route.name}
-        onSelect={() => { onSelect(route) }}
-        ref={tokenItemRef}
-    >
+    return <div className="bg-secondary-500 cursor-pointer hover:bg-secondary-400 rounded-xl outline-none disabled:cursor-not-allowed relative" onClick={() => onSelect(route)} >
         <SelectItem>
             <SelectItem.Logo imgSrc={route.logo} altText={`${route.display_name} logo`} />
             <SelectItem.Title className="py-3">{route.display_name}</SelectItem.Title>
         </SelectItem>
-    </CommandItem>
+    </div>
 }
 
 type SelectedNetworkDisplayProps = {
     exchange?: Exchange;
-    token?: ExchangeToken;
     placeholder: string;
 }
 
