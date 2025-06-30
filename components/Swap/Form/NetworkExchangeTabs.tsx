@@ -24,11 +24,15 @@ export default function NetworkExchangeTabs({ networkForm, exchangeForm }: Props
                 >
                     <TabsList className="flex flex-col bg-secondary-500 h-full !pl-1.5 !pr-3 py-2 w-full space-y-2">
                         <TabsTrigger value="network" className="w-full text-white grid grid-cols-4 justify-start !p-1 data-[state=active]:bg-secondary-300 hover:bg-secondary-100 overflow-hidden">
-                            <NetworkTabIcon className="h-6 w-6" />
+                            <div className="h-6 w-6">
+                                <NetworkTabIcon className="h-6 w-6" />
+                            </div>
                             {hovered && <span className="text-sm whitespace-nowrap">Swap</span>}
                         </TabsTrigger>
                         <TabsTrigger value="exchange" className="w-full text-white flex items-center justify-start !p-1 data-[state=active]:bg-secondary-300 hover:bg-secondary-100 overflow-hidden">
-                            <ExchangeTabIcon className="h-6 w-6" />
+                            <div className="h-6 w-6">
+                                <ExchangeTabIcon className="h-6 w-6" />
+                            </div>
                             {hovered && <span className="text-sm whitespace-nowrap">Deposit from CEX</span>}
                         </TabsTrigger>
                     </TabsList>
