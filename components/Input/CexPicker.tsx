@@ -36,7 +36,7 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
         overscan: 10
     });
     const items = virtualizer.getVirtualItems();
-    console.log("items", items, exchangeElements)
+
     useEffect(() => {
         const updateValues = async () => {
             if (!fromExchange) return;
