@@ -34,12 +34,11 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
             if (updatedRoute && updatedToken) {
                 await setFieldValue(currencyFieldName, updatedToken, true);
-                await setFieldValue(direction, updatedRoute, true);
             }
         };
 
         updateValues();
-    }, [selectedRoute, selectedToken, allRoutes, selectedToken]);
+    }, [selectedRoute, selectedToken, allRoutes, direction]);
 
     const handleSelect = useCallback(async (route: NetworkRoute, token: NetworkRouteToken) => {
         swapInProgress.current = false;
