@@ -97,7 +97,7 @@ export default function useEVM(): WalletProvider {
                             pendingResolve.current = undefined
                             rej(new Error("Timed out waiting for new connector"))
                         }
-                    }, 1000)
+                    }, 4000)
                 })
 
             }
