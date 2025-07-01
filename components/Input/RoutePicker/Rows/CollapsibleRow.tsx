@@ -9,7 +9,6 @@ import { motion } from "framer-motion";
 import {
   NetworkElement,
   GroupedTokenElement,
-  ExchangeElement,
 } from "../../../../Models/Route";
 import { SwapDirection } from "../../../DTOs/SwapFormValues";
 import { CurrencySelectItemDisplay } from "../Routes";
@@ -18,7 +17,7 @@ import { CollapsableHeader } from "./CollapsableHeader";
 import { StickyHeader } from "./StickyHeader";
 
 type GenericAccordionRowProps = {
-  item: NetworkElement | GroupedTokenElement | ExchangeElement;
+  item: NetworkElement | GroupedTokenElement;
   direction: SwapDirection;
   onSelect: (route: NetworkRoute, token: NetworkRouteToken) => void;
   selectedRoute: string | undefined;

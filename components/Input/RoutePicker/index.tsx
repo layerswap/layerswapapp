@@ -55,7 +55,6 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search" header={<PickerWalletConnect />}>
                     {({ closeModal }) => (
                         <Content
-                            key={String(showTokens)}
                             allbalancesLoaded={allbalancesLoaded}
                             onSelect={(r, t) => { handleSelect(r, t); closeModal(); }}
                             searchQuery={searchQuery}

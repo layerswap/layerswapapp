@@ -1,9 +1,9 @@
 import { SwapDirection } from "@/components/DTOs/SwapFormValues";
-import { ExchangeElement, GroupedTokenElement, NetworkElement } from "@/Models/Route";
+import { GroupedTokenElement, NetworkElement } from "@/Models/Route";
 import { GroupedTokenHeader, NetworkRouteSelectItemDisplay } from "../Routes";
 
 type Props = {
-    item: GroupedTokenElement | NetworkElement | ExchangeElement
+    item: GroupedTokenElement | NetworkElement
     direction: SwapDirection;
     allbalancesLoaded?: boolean;
     hideTokenImages?: boolean;
