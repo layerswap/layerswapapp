@@ -31,7 +31,7 @@ export interface QuoteComponentProps {
 }
 
 export default function QuoteDetails({ swapValues: values, quote: quoteData, isQuoteLoading, isUpdatingValues = false }: QuoteComponentProps) {
-    const { toAsset, to, from, fromAsset: fromCurrency, destination_address } = values || {};
+    const { toAsset, fromAsset: fromCurrency, destination_address } = values || {};
     const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(false);
 
     return (
@@ -50,7 +50,7 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
                         )}>
                             {
                                 (isAccordionOpen) ?
-                                    <p>
+                                    <p className='text-sm'>
                                         Details
                                     </p>
                                     :
@@ -120,11 +120,11 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
                     <AverageCompletionTime avgCompletionTime={quote.avg_completion_time} />
                 </div>
             }
-            {(averageCompletionTime && !reward) && (
+            {(averageCompletionTime && reward) && (
                 <div className="w-px h-3 bg-primary-text-placeholder rounded-2xl" />
             )}
             {
-                !reward &&
+                reward &&
                 <div className='text-right text-primary-text inline-flex items-center gap-1 text-sm'>
                     <Image src={rewardCup} alt="Reward" width={16} height={16} />
                     <AnimatedValue value={displayReward} className='text-sm text-primary-text' />

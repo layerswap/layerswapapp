@@ -30,11 +30,6 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ source_token, destinatio
                         "w-full flex items-center",
                         { "animate-pulse-brightness": isUpdatingValues }
                     )}>
-                        {/* {source_token && destination_token && Number(parsedReceiveAmount) > 0 ? (
-                            <p>{parsedReceiveAmount}</p>
-                        ) : (
-                            <span>0</span>
-                        )} */}
                         <AnimatedValue
                             value={
                                 source_token && destination_token && Number(parsedReceiveAmount) > 0
