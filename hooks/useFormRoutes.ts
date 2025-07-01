@@ -38,7 +38,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
 
     const routeElements = useMemo(() => {
         const grouped = groupRoutes(sortedRoutes, direction, balances, search);
-        if (topTokens.length > 0 && !search) {
+        if (direction !== "to" && topTokens.length > 0 && !search) {
             return [Titles.topAssets, ...topTokens, ...grouped];
         }
         return grouped;
@@ -55,9 +55,18 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
 
     const tokenElements = useMemo(() => {
         const grouped = groupTokens(routes, search);
+
         if (!search && balances) {
             const sorted = sortGroupedTokensByBalance(grouped as GroupedTokenElement[], balances);
-            return topTokens.length > 0 ? [Titles.topAssets, ...topTokens, ...sorted] : [Titles.allTokens, ...sorted];
+            const popularRoutes = resolvePopularRoutes(routes, direction);
+
+            const popularNetworks = direction === 'to'
+                ? routes
+                    .filter(r => popularRoutes.includes(r.name))
+                    .map(r => ({ type: 'network', route: r }) as NetworkElement)
+                : [];
+
+            return (topTokens.length > 0 && direction !== "to") ? [Titles.topAssets, ...topTokens, ...sorted] : [Titles.popular, ...popularNetworks, ...sorted];
         }
         return grouped;
     }, [routes, balances, search, topTokens]);
@@ -210,14 +219,14 @@ function groupRoutes(
 
 function groupExchanges(exchangesRoutes: (Exchange)[], search?: string): Exchange[] {
     if (search) {
-        const exchanges = exchangesRoutes.filter(r => r.name.toLowerCase().includes(search.toLowerCase())).map((r): Exchange => ({  ...r  }))
+        const exchanges = exchangesRoutes.filter(r => r.name.toLowerCase().includes(search.toLowerCase())).map((r): Exchange => ({ ...r }))
 
         return [
             ...exchanges,
         ]
     }
 
-    const exchanges = exchangesRoutes.map((r): Exchange => ({  ...r  }))
+    const exchanges = exchangesRoutes.map((r): Exchange => ({ ...r }))
 
     return [
         ...exchanges,

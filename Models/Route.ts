@@ -7,7 +7,10 @@ export type NetworkElement = {
     type: 'network';
     route: NetworkRoute;
 }
-
+export type PopularRouteElement = {
+    type: 'popular_route';
+    route: NetworkRoute;
+};
 export type NetworkTokenElement = {
     type: 'network_token' | 'top_token';
     route: {
@@ -35,6 +38,7 @@ export type RowElement = {}
     & (NetworkElement
         | NetworkTokenElement
         | TitleElement
-        | GroupedTokenElement);
+        | GroupedTokenElement
+        | PopularRouteElement);
 
 export type GroupTokensResult = (GroupedTokenElement | NetworkElement | NetworkTokenElement | TitleElement)[];
