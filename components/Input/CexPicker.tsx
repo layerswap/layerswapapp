@@ -25,7 +25,7 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
     const { isOpen } = useSelectorState();
 
     const [searchQuery, setSearchQuery] = useState("");
-console.log(exchanges)
+
     useEffect(() => {
         const updateValues = async () => {
             if (!fromExchange) return;
