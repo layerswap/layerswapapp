@@ -7,10 +7,7 @@ export type NetworkElement = {
     type: 'network';
     route: NetworkRoute;
 }
-export type ExchangeElement = {
-    type: 'exchange';
-    route: Exchange & { cex: true };
-}
+
 export type NetworkTokenElement = {
     type: 'network_token' | 'top_token';
     route: {
@@ -38,8 +35,6 @@ export type RowElement = {}
     & (NetworkElement
         | NetworkTokenElement
         | TitleElement
-        | GroupedTokenElement
-        | ExchangeElement
-        | ExchangeTokenElement);
+        | GroupedTokenElement);
 
 export type GroupTokensResult = (GroupedTokenElement | NetworkElement | NetworkTokenElement | TitleElement)[];

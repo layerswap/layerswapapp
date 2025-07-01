@@ -1,15 +1,13 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { Selector, SelectorContent, SelectorTrigger, useSelectorState } from "../Select/CommandNew/Index";
-import { Exchange, ExchangeToken } from "../../Models/Exchange";
+import { Exchange } from "../../Models/Exchange";
 import React from "react";
-import { ExchangeElement } from "../../Models/Route";
 import { SelectItem } from "../Select/CommandNew/SelectItem/Index";
 import { Partner } from "../../Models/Partner";
 import useFormRoutes from "@/hooks/useFormRoutes";
 import { SelectedRoutePlaceholder } from "./RoutePicker/Routes";
-import { useVirtualizer } from "@/lib/virtual";
 import { LayoutGroup, motion } from "framer-motion";
 import { SearchComponent } from "./Search";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
@@ -22,21 +20,12 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
     } = useFormikContext<SwapFormValues>();
     const direction = "from"
 
-    const { exchangeElements, exchangesRoutesLoading: isLoading, selectedRoute, selectedToken, exchangeNetworks } = useFormRoutes({ direction, values });
+    const { exchanges, exchangesRoutesLoading: isLoading, selectedRoute, selectedToken, exchangeNetworks } = useFormRoutes({ direction, values });
     const { fromExchange, toAsset } = values;
     const { isOpen } = useSelectorState();
 
-    const parentRef = useRef<HTMLDivElement>(null);
     const [searchQuery, setSearchQuery] = useState("");
-
-    const virtualizer = useVirtualizer({
-        count: exchangeElements?.length || 0,
-        estimateSize: () => 50,
-        getScrollElement: () => parentRef.current,
-        overscan: 10
-    });
-    const items = virtualizer.getVirtualItems();
-
+console.log(exchanges)
     useEffect(() => {
         const updateValues = async () => {
             if (!fromExchange) return;
@@ -58,14 +47,14 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
         };
 
         updateValues();
-    }, [selectedRoute, selectedToken, exchangeNetworks, selectedToken, exchangeElements]);
+    }, [selectedRoute, selectedToken, exchangeNetworks, selectedToken, exchanges]);
 
     const handleSelect = useCallback(async (exchange: Exchange) => {
         setFieldValue("fromExchange", exchange, true)
     }, [direction, values])
 
     return (
-        <div className="flex w-full flex-col self-end relative ml-auto items-center" ref={parentRef}>
+        <div className="flex w-full flex-col self-end relative ml-auto items-center">
             <Selector>
                 <SelectorTrigger disabled={false}>
                     <SelectedNetworkDisplay exchange={fromExchange} placeholder="Select Token" />
@@ -77,52 +66,26 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
                             <LayoutGroup>
                                 <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full">
                                     <div className="relative">
-                                        <div
-                                            style={{
-                                                height: virtualizer.getTotalSize(),
-                                                width: '100%',
-                                                position: 'relative',
-                                            }}
-                                        >
-                                            <div
-                                                style={{
-                                                    position: 'absolute',
-                                                    top: 0,
-                                                    left: 0,
-                                                    width: '100%',
-                                                    transform: `translateY(${items[0]?.start ? (items[0]?.start - 0) : 0}px)`,
-                                                }}>
-                                                {items.map((virtualRow) => {
-                                                    const data = exchangeElements?.[virtualRow.index] as ExchangeElement
-                                                    const route = data?.route
-                                                    const key = ((data as any)?.route as any)?.name || virtualRow.key;
-                                                    return <div
-                                                        className="py-1 box-border"
-                                                        key={key}
-                                                        data-index={virtualRow.index}
-                                                        ref={virtualizer.measureElement}>
-                                                        <ExchangeNetwork
-                                                            key={key}
-                                                            route={route}
-                                                            direction={direction}
-                                                            onSelect={(n) => {
-                                                                handleSelect(n);
-                                                                closeModal();
-                                                            }}
-                                                        />
-                                                    </div>
-                                                })}
+                                        {exchanges.map((exchange) => {
+                                            return <div className="py-1 box-border" key={exchange.name}>
+                                                <ExchangeNetwork
+                                                    route={exchange}
+                                                    direction={direction}
+                                                    onSelect={(n) => {
+                                                        handleSelect(n);
+                                                        closeModal();
+                                                    }}
+                                                />
                                             </div>
-                                        </div>
+                                        })}
                                     </div>
                                 </motion.div>
                             </LayoutGroup>
-                        </div>
+                        </div >
                     )}
                 </SelectorContent>
             </Selector>
         </div>
-
     )
 }
 

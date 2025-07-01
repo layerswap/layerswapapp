@@ -51,7 +51,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                         className="w-full my-2.5"
                     />
                 }
-                <div className="relative"  >
+                <div className="relative">
                     <Accordion type="multiple" value={openValues}>
                         <div>
                             <div
