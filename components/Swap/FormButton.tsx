@@ -17,7 +17,8 @@ const FormButton = ({
     errors,
     isSubmitting,
     actionDisplayName,
-    partner
+    partner,
+    isUpdatingValues = false,
 }) => {
     if (shouldConnectWallet) {
         return <FormSourceWalletButton />;
@@ -42,7 +43,7 @@ const FormButton = ({
         <SwapButton
             className="plausible-event-name=Swap+initiated"
             type="submit"
-            isDisabled={!isValid}
+            isDisabled={!isValid || isUpdatingValues}
             isSubmitting={isSubmitting}
         >
             {ActionText(errors, actionDisplayName)}

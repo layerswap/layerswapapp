@@ -27,9 +27,10 @@ export interface QuoteComponentProps {
     swapValues: SwapValues;
     destination?: Network,
     destinationAddress?: string;
+    isUpdatingValues?: boolean;
 }
 
-export default function QuoteDetails({ swapValues: values, quote: quoteData, isQuoteLoading }: QuoteComponentProps) {
+export default function QuoteDetails({ swapValues: values, quote: quoteData, isQuoteLoading, isUpdatingValues = false }: QuoteComponentProps) {
     const { toAsset, to, from, fromAsset: fromCurrency, destination_address } = values || {};
     const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(false);
 
@@ -44,6 +45,7 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
                             {
                                 'bg-secondary-500': !isAccordionOpen,
                                 'bg-secondary-400': isAccordionOpen,
+                                'animate-pulse-brightness': isUpdatingValues && !isAccordionOpen
                             }
                         )}>
                             {
@@ -96,26 +98,36 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
     }
 
     return (
-        <div className='divide-x divide-primary-text-placeholder flex items-center  space-x-4'>
+        <div className='flex items-center  space-x-4'>
             {
                 displayFeeInUsd &&
-                <div className='inline-flex items-center gap-1 pr-4'>
-                    <GasIcon />
-                    <AnimatedValue value={displayFeeInUsd} className='text-base text-primary-text' />
+                <div className='inline-flex items-center gap-1'>
+                    <div className='h-[18px] w-[18px]'>
+                        <GasIcon />
+                    </div>
+                    <AnimatedValue value={displayFeeInUsd} className='text-sm text-primary-text' />
                 </div>
             }
+            {displayFeeInUsd && averageCompletionTime && (
+                <div className="w-px h-3 bg-primary-text-placeholder rounded-2xl" />
+            )}
             {
                 averageCompletionTime &&
-                <div className="text-right text-primary-text inline-flex items-center gap-1 pr-4">
-                    <Clock />
+                <div className="text-right text-primary-text inline-flex items-center gap-1 text-sm">
+                    <div className='h-4 w-4'>
+                        <Clock className='h-4 w-4' />
+                    </div>
                     <AverageCompletionTime avgCompletionTime={quote.avg_completion_time} />
                 </div>
             }
+            {(averageCompletionTime && !reward) && (
+                <div className="w-px h-3 bg-primary-text-placeholder rounded-2xl" />
+            )}
             {
-                reward &&
-                <div className='text-right text-primary-text inline-flex items-center gap-1 pr-4'>
+                !reward &&
+                <div className='text-right text-primary-text inline-flex items-center gap-1 text-sm'>
                     <Image src={rewardCup} alt="Reward" width={16} height={16} />
-                    <AnimatedValue value={displayReward} className='text-base text-primary-text' />
+                    <AnimatedValue value={displayReward} className='text-sm text-primary-text' />
                 </div>
             }
         </div>

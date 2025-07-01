@@ -7,7 +7,6 @@ import useSWRGas from "../../../lib/gases/useSWRGas";
 import useSWRBalance from "../../../lib/balances/useSWRBalance";
 import { useSwapDataState } from "../../../context/swap";
 import { resolveMacAllowedAmount } from "./helpers";
-import { AnimatedValue } from "@/components/Common/AnimatedValue";
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
 
@@ -70,10 +69,9 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                         updateRequestedAmountInUsd(parseFloat(e.target.value), fromCurrencyPriceInUsd);
                     }}
                 />
-                {/* <span className="text-base leading-5 font-medium text-secondary-text">
+                <span className="text-base leading-5 font-medium text-secondary-text">
                     {`$${requestedAmountInUsd ?? 0}`}
-                </span> */}
-                <AnimatedValue value={`$${requestedAmountInUsd ?? 0}`} className="text-base leading-5 font-medium text-secondary-text" />
+                </span>
             </div>
         </div >
     </>)

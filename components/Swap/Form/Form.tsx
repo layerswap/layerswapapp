@@ -60,7 +60,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
 
     const { selectedSourceAccount } = useSwapDataState()
     const { providers, wallets } = useWallet()
-    const { minAllowedAmount, valuesChanger, isQuoteLoading, quote } = useQuote()
+    const { minAllowedAmount, valuesChanger, isQuoteLoading, quote, isUpdatingValues } = useQuote()
     const toAsset = values.toAsset
     const fromAsset = values.fromAsset
 
@@ -148,7 +148,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                         {
                             validationMessage
                                 ? <ValidationError />
-                                : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                                : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} isUpdatingValues={isUpdatingValues} />
                         }
                     </div>
                 </div>
@@ -162,6 +162,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
                     isSubmitting={isSubmitting}
                     actionDisplayName={actionDisplayName}
                     partner={partner}
+                    isUpdatingValues={isUpdatingValues}
                 />
             </Widget.Footer>
             <RefuelModal openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} />
