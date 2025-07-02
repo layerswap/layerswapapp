@@ -5,15 +5,15 @@ import { Selector, SelectorContent, SelectorTrigger, useSelectorState } from "..
 import { Exchange } from "../../Models/Exchange";
 import React from "react";
 import { SelectItem } from "../Select/CommandNew/SelectItem/Index";
-import { Partner } from "../../Models/Partner";
 import useFormRoutes from "@/hooks/useFormRoutes";
 import { SelectedRoutePlaceholder } from "./RoutePicker/Routes";
 import { LayoutGroup, motion } from "framer-motion";
 import { SearchComponent } from "./Search";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
 import { ChevronDown } from "lucide-react";
+import { updateForm } from "../Swap/Form/updateForm";
 
-const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
+const CexPicker: FC = () => {
     const {
         values,
         setFieldValue,
@@ -40,9 +40,24 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
             );
 
             if (values.currencyGroup !== currencyGroup || sourceRouteToken !== selectedToken) {
-                await setFieldValue("currencyGroup", currencyGroup, true);
-                await setFieldValue("from", sourceRoute, true)
-                await setFieldValue(`fromAsset`, sourceRouteToken, false)
+                await updateForm({
+                    formDataKey: 'currencyGroup',
+                    formDataValue: currencyGroup,
+                    shouldValidate: true,
+                    setFieldValue
+                });
+                await updateForm({
+                    formDataKey: 'from',
+                    formDataValue: sourceRoute,
+                    shouldValidate: true,
+                    setFieldValue
+                });
+                await updateForm({
+                    formDataKey: 'fromAsset',
+                    formDataValue: sourceRouteToken,
+                    shouldValidate: false,
+                    setFieldValue
+                });
             }
         };
 
@@ -50,7 +65,12 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
     }, [selectedRoute, selectedToken, exchangeNetworks, exchanges, values]);
 
     const handleSelect = useCallback(async (exchange: Exchange) => {
-        setFieldValue("fromExchange", exchange, true)
+        updateForm({
+            formDataKey: 'fromExchange',
+            formDataValue: exchange,
+            shouldValidate: true,
+            setFieldValue
+        });
     }, [direction, values])
 
     return (

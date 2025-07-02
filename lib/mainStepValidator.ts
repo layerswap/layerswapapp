@@ -10,7 +10,7 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount,
         if (!values.from && !values.fromExchange) {
             errors.from = 'Select source';
         }
-        if (!values.to && !values.toExchange) {
+        if (!values.to) {
             errors.to = 'Select destination';
         }
         if (!values.fromAsset) {
@@ -24,15 +24,13 @@ export default function MainStepValidation({ maxAllowedAmount, minAllowedAmount,
             errors.from = 'Select withdrawal network';
         }
         if (values.currencyGroup &&
-            values.toExchange && !values.to && values.from) {
+            !values.to && values.from) {
             errors.to = 'Select deposit network';
         }
         if (values.fromExchange && !values.currencyGroup) {
             errors.currencyGroup = 'Select source asset'
         }
-        if (values.toExchange && !values.currencyGroup) {
-            errors.currencyGroup = 'Select destination asset'
-        }
+
         if (!amount) {
             errors.amount = 'Enter an amount';
         }

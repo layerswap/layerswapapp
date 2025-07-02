@@ -2,17 +2,17 @@ import { useFormikContext } from "formik";
 import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import NumericInput from "../NumericInput";
-import { useQuote } from "../../../context/feeContext";
-import useSWRGas from "../../../lib/gases/useSWRGas";
-import useSWRBalance from "../../../lib/balances/useSWRBalance";
-import { useSwapDataState } from "../../../context/swap";
-import { resolveMacAllowedAmount } from "./helpers";
+import { useQuote } from "@/context/feeContext";
+import useSWRGas from "@/lib/gases/useSWRGas";
+import useSWRBalance from "@/lib/balances/useSWRBalance";
+import { useSwapDataState } from "@/context/swap";
+import { resolveMaxAllowedAmount } from "./helpers";
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
-    const { fromAsset: fromCurrency, from, to, amount, toAsset: toCurrency, fromExchange, toExchange } = values || {};
-    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, quote: fee, isQuoteLoading: isFeeLoading } = useQuote()
+    const { fromAsset: fromCurrency, from, amount, toAsset: toCurrency, fromExchange } = values || {};
+    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, quote: fee } = useQuote()
 
     const { selectedSourceAccount } = useSwapDataState()
     const sourceAddress = selectedSourceAccount?.address
@@ -26,14 +26,14 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const walletBalance = balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
     let maxAllowedAmount: number = useMemo(() => {
         if (!fromCurrency || !minAllowedAmount || !maxAmountFromApi) return 0
-        return resolveMacAllowedAmount({ fromCurrency, limitsMinAmount: minAllowedAmount, limitsMaxAmount: maxAmountFromApi, walletBalance, gasAmount, native_currency })
+        return resolveMaxAllowedAmount({ fromCurrency, limitsMinAmount: minAllowedAmount, limitsMaxAmount: maxAmountFromApi, walletBalance, gasAmount, native_currency })
     }, [fromCurrency, minAllowedAmount, maxAmountFromApi, walletBalance, gasAmount, native_currency])
 
     const placeholder = '0'
     const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
     const amountRef = useRef(ref)
 
-    const diasbled = Boolean((fromExchange && !toCurrency) || (toExchange && !fromCurrency))
+    const diasbled = Boolean(fromExchange && !toCurrency)
 
     const updateRequestedAmountInUsd = useCallback((requestedAmount: number, price_in_usd: number | undefined) => {
         if (price_in_usd && !isNaN(requestedAmount)) {

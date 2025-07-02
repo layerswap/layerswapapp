@@ -11,13 +11,14 @@ import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
 import PickerWalletConnect from "./RouterPickerWalletConnect";
 import { useRouteTokenSwitchStore } from "@/stores/routeTokenSwitchStore";
 import { swapInProgress } from "@/components/utils/swapUtils";
+import { updateForm } from "@/components/Swap/Form/updateForm";
+import { useRouter } from "next/router";
 
 const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
-
     const [searchQuery, setSearchQuery] = useState("")
     const { allRoutes, isLoading, routeElements, tokenElements, selectedRoute, selectedToken, allbalancesLoaded } = useFormRoutes({ direction, values }, searchQuery)
     const currencyFieldName = direction === 'from' ? 'fromAsset' : 'toAsset';
@@ -33,7 +34,12 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
             if (updatedToken === selectedToken) return;
 
             if (updatedRoute && updatedToken) {
-                await setFieldValue(currencyFieldName, updatedToken, true);
+                await updateForm({
+                    formDataKey: currencyFieldName,
+                    formDataValue: updatedToken,
+                    shouldValidate: true,
+                    setFieldValue
+                })
             }
         };
 
@@ -42,8 +48,18 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
 
     const handleSelect = useCallback(async (route: NetworkRoute, token: NetworkRouteToken) => {
         swapInProgress.current = false;
-        await setFieldValue(currencyFieldName, token, true)
-        await setFieldValue(direction, route, true)
+        await updateForm({
+            formDataKey: currencyFieldName,
+            formDataValue: token,
+            shouldValidate: true,
+            setFieldValue
+        })
+        await updateForm({
+            formDataKey: direction,
+            formDataValue: route,
+            shouldValidate: true,
+            setFieldValue
+        })
     }, [currencyFieldName, direction, values, showTokens])
 
     return (
