@@ -39,7 +39,7 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
                 token => token.symbol === toAsset?.symbol && token.status === 'active'
             );
 
-            if (values.currencyGroup !== currencyGroup) {
+            if (values.currencyGroup !== currencyGroup || sourceRouteToken !== selectedToken) {
                 await setFieldValue("currencyGroup", currencyGroup, true);
                 await setFieldValue("from", sourceRoute, true)
                 await setFieldValue(`fromAsset`, sourceRouteToken, false)
@@ -47,7 +47,7 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
         };
 
         updateValues();
-    }, [selectedRoute, selectedToken, exchangeNetworks, selectedToken, exchanges]);
+    }, [selectedRoute, selectedToken, exchangeNetworks, exchanges, values]);
 
     const handleSelect = useCallback(async (exchange: Exchange) => {
         setFieldValue("fromExchange", exchange, true)
