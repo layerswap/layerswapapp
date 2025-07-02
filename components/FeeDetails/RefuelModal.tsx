@@ -1,6 +1,5 @@
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import { Dispatch, FC, SetStateAction } from 'react';
-import useWallet from '../../hooks/useWallet';
 import Modal from '../modal/modal';
 import { Fuel } from 'lucide-react';
 import { roundDecimals, truncateDecimals } from '../utils/RoundDecimals';
@@ -9,7 +8,6 @@ import SecondaryButton from '../buttons/secondaryButton';
 import { useFormikContext } from 'formik';
 import { useQuote } from '../../context/feeContext';
 import useSWRBalance from '../../lib/balances/useSWRBalance';
-import { useSwapDataState } from '../../context/swap';
 
 type RefuelModalProps = {
     openModal: boolean,

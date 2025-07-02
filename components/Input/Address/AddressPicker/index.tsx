@@ -93,10 +93,10 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const previouslyAutofilledAddress = useRef<string | undefined>(undefined)
 
     useEffect(() => {
-        const groupedAddresses = destination && resolveAddressGroups({ address_book, destination, destinationExchange, wallets: connectedWallets, newAddress, addressFromQuery: query.destAddress })
+        const groupedAddresses = destination && resolveAddressGroups({ address_book, destination, destinationExchange, wallets: connectedWallets, newAddress, addressFromQuery: query.destination_address })
         if (groupedAddresses) setAddresses(groupedAddresses)
 
-    }, [address_book, destination, destinationExchange, newAddress, query.destAddress, connectedWalletskey])
+    }, [address_book, destination, destinationExchange, newAddress, query.destination_address, connectedWalletskey])
 
     const destinationAddressItem = destination && destination_address ?
         groupedAddresses?.find(a => a.address.toLowerCase() === destination_address.toLowerCase()) || { address: destination_address, group: AddressGroup.ManualAdded }
