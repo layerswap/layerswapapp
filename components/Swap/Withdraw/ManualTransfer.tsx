@@ -82,7 +82,7 @@ const TransferInvoice: FC<{ deposit_address?: string }> = ({ deposit_address }) 
                             }
                             {
                                 deposit_address &&
-                                <div className="space-x-2 flex self-start">
+                                <div className="flex self-start">
                                     <QRCodeModal qrUrl={deposit_address?.toLocaleString()} iconSize={isMobile ? 20 : 16} className=' text-secondary-text bg-secondary-text/10 p-1.5 hover:text-primary-text rounded-sm' />
                                 </div>
                             }
