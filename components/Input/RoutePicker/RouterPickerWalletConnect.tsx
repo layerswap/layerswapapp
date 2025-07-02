@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { useConnectModal } from "../../WalletModal";
 import { Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import VaulDrawer from "../../modal/vaulModal";
@@ -30,7 +30,8 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
     const { connect } = useConnectModal()
 
     const connectWallet = async () => {
-        await connect()
+        const result = await connect()
+        if (result) addWallet({ address: result?.address, provider: result?.providerName })
     }
 
     return <>
@@ -84,17 +85,18 @@ const WalletButton: FC<{ wallets: Wallet[], pickerSelectedWallets: ReturnType<ty
 
     const wallet = wallets[0]
 
-    wallets.forEach(w => {
+    const mappedWallets = useMemo(() => wallets.map(w => {
         const selectedWallet = pickerSelectedWallets?.find(sw => sw.provider === w.providerName)
         if (selectedWallet && selectedWallet.address && w.address !== selectedWallet.address) {
-            w.address = selectedWallet.address
+            return { ...w, address: selectedWallet.address }
         }
-    })
+        return w
+    }), [wallets, pickerSelectedWallets])
 
-    if (wallets.length > 0) {
+    if (mappedWallets.length > 0) {
         return <button onClick={onOpenModalClick} type="button" className="py-1 px-2 bg-transparent flex items-center w-fit rounded-md space-x-1 relative font-semibold transform hover:bg-secondary-400 transition duration-200 ease-in-out">
             {
-                wallets.length === 1 ?
+                mappedWallets.length === 1 ?
                     <div className="flex gap-2 items-center text-sm text-primary-text">
                         <wallet.icon className='h-5 w-5' />
                         {
@@ -104,7 +106,7 @@ const WalletButton: FC<{ wallets: Wallet[], pickerSelectedWallets: ReturnType<ty
                         <ChevronDown className="h-5 w-5" />
                     </div>
                     :
-                    <WalletsIcons wallets={wallets} />
+                    <WalletsIcons wallets={mappedWallets} />
             }
         </button>
     }
