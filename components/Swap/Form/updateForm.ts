@@ -12,21 +12,36 @@ const fieldMapping: Record<string, string> = {
     fromExchange: "name",
 };
 
-function updateQueries({ formDataKey, formDataValue }: { formDataKey: string, formDataValue: string }) {
-    //TODO: as path should be without basepath and host
-    var urlWithQueries = window.location.protocol + "//"
-        + window.location.host;
+/**
+ * Update a single query‐param (add/update or remove).
+ */
+function updateQueries({ formDataKey, formDataValue, }: { formDataKey: string; formDataValue: string | null | undefined; }) {
+    const base =
+        window.location.protocol +
+        "//" +
+        window.location.host +
+        window.location.pathname;
 
-    const raw = window.location.search.startsWith('?')
+    // parse existing
+    const raw = window.location.search.startsWith("?")
         ? window.location.search.slice(1)
         : window.location.search;
-    const query: ParsedUrlQuery = parse(raw);
-    const params = resolvePersistantQueryParams(query)
-    const search = new URLSearchParams({ ...(params as any), [formDataKey]: formDataValue });
-    if (search)
-        urlWithQueries += `?${search}`
+    const existing: ParsedUrlQuery = parse(raw);
+    const params = resolvePersistantQueryParams(existing) as Record<string, any>;
 
-    window.history.pushState({ ...window.history.state, as: urlWithQueries, url: urlWithQueries }, '', urlWithQueries);
+    if (formDataValue == null || formDataValue === "") {
+        delete params[formDataKey];
+    } else {
+        params[formDataKey] = formDataValue;
+    }
+
+    const qs = new URLSearchParams(params).toString();
+    const newUrl = qs ? `${base}?${qs}` : base;
+    window.history.pushState(
+        { ...window.history.state, as: newUrl, url: newUrl },
+        "",
+        newUrl
+    );
 }
 
 export async function updateForm<K extends keyof SwapFormValues>({ formDataKey, formDataValue, shouldValidate, setFieldValue }: { formDataKey: K, formDataValue: SwapFormValues[K], shouldValidate?: boolean, setFieldValue: FormikHelpers<SwapFormValues>['setFieldValue'] }) {
@@ -39,9 +54,11 @@ export async function updateForm<K extends keyof SwapFormValues>({ formDataKey, 
 }
 
 /**
- * Single-shot URL updater (unchanged).
+ * Update *all* query-params in one go, removing nulls/undefineds.
  */
-function updateQueriesBulk(updates: Record<string, string>) {
+function updateQueriesBulk(
+    updates: Record<string, string | null | undefined>
+) {
     const base =
         window.location.protocol +
         "//" +
@@ -52,16 +69,19 @@ function updateQueriesBulk(updates: Record<string, string>) {
         ? window.location.search.slice(1)
         : window.location.search;
     const existing: ParsedUrlQuery = parse(raw);
-    const persistent = resolvePersistantQueryParams(existing);
+    const params = resolvePersistantQueryParams(existing) as Record<string, any>;
 
-    const merged = {
-        ...(persistent as Record<string, string>),
-        ...updates,
-    };
+    // apply each update: delete null/undefined, or set the string
+    for (const [key, val] of Object.entries(updates)) {
+        if (val == null || val === "") {
+            delete params[key];
+        } else {
+            params[key] = val;
+        }
+    }
 
-    const search = new URLSearchParams(merged).toString();
-    const newUrl = search ? `${base}?${search}` : base;
-
+    const qs = new URLSearchParams(params).toString();
+    const newUrl = qs ? `${base}?${qs}` : base;
     window.history.pushState(
         { ...window.history.state, as: newUrl, url: newUrl },
         "",
@@ -70,33 +90,34 @@ function updateQueriesBulk(updates: Record<string, string>) {
 }
 
 /**
- * Bulk‐update your Formik form *and* the URL in one go.
- *
- * @param values       Partial form values to merge in
- * @param setValues    Formik’s setValues(fn | object, shouldValidate?)
- * @param shouldValidate  whether to trigger validation
+ * Bulk‐update Formik with `setValues(...)`, and then sync the URL
+ * removing any null/undefined fields from the query.
  */
 export async function updateFormBulk(
     values: Partial<SwapFormValues>,
     shouldValidate = false,
-    setValues: FormikHelpers<SwapFormValues>['setValues']
+    setValues: FormikHelpers<SwapFormValues>["setValues"]
 ) {
-    // 1) Merge into the form state in one call
+    // 1) update the form in one shot
     await setValues(values, shouldValidate);
 
-    // 2) Build a flat map of strings for the URL
-    const updates: Record<string, string> = {};
+    // 2) build our “updates” map (string or null)
+    const updates: Record<string, string | null> = {};
     for (const [key, value] of Object.entries(values)) {
-        if (value == null) continue;
-        const mapKey = fieldMapping[key] ?? key;
-        const str =
-            typeof value === "object"
-                ? // @ts-ignore
-                String(value[mapKey])
-                : String(value);
-        updates[key] = str;
+        if (value == null) {
+            // explicit removal
+            updates[key] = null;
+        } else {
+            const mapKey = fieldMapping[key] ?? key;
+            const str =
+                typeof value === "object"
+                    ? // @ts-ignore
+                    String(value[mapKey])
+                    : String(value);
+            updates[key] = str;
+        }
     }
 
-    // 3) Push the new URL once
+    // 3) one pushState that adds/edits or deletes
     updateQueriesBulk(updates);
 }
