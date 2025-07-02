@@ -56,27 +56,30 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const tokenElements = useMemo(() => {
         const grouped = groupTokens(routes, search);
 
+        const shouldShowPopular = !search && direction === 'to';
+        const popularRoutes = resolvePopularRoutes(routes, direction);
+        const popularNetworks = shouldShowPopular
+            ? routes
+                .filter(r => popularRoutes.includes(r.name))
+                .map(r => ({ type: 'network', route: r }) as NetworkElement)
+            : [];
+
         if (!search && balances) {
             const sorted = sortGroupedTokensByBalance(grouped as GroupedTokenElement[], balances);
-            const popularRoutes = resolvePopularRoutes(routes, direction);
-
-            const shouldAddPopular = direction === 'to';
-            const popularNetworks = shouldAddPopular
-                ? routes
-                    .filter(r => popularRoutes.includes(r.name))
-                    .map(r => ({ type: 'network', route: r }) as NetworkElement)
-                : [];
 
             if (topTokens.length > 0 && direction !== "to") {
                 return [Titles.topAssets, ...topTokens, ...sorted];
             }
 
-            return shouldAddPopular
+            return shouldShowPopular
                 ? [Titles.popular, ...popularNetworks, ...sorted]
                 : sorted;
         }
 
-        return grouped;
+        return shouldShowPopular
+            ? [Titles.popular, ...popularNetworks, ...grouped]
+            : grouped;
+
     }, [routes, balances, search, topTokens]);
 
     const selectedRoute = useMemo(() => resolveSelectedRoute(values, direction), [values, direction]);
