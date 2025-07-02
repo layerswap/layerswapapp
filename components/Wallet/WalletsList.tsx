@@ -95,7 +95,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                 onClick={() => (selectable && wallet.addresses.length == 1 && onWalletSelect) && onWalletSelect(wallet, wallet.address)}
                 className={clsx('w-full relative items-center justify-between gap-2 flex rounded-lg outline-hidden bg-secondary-500 text-primary-text p-3 group/addressItem', {
                     'hover:bg-secondary-400 cursor-pointer': selectable && wallet.addresses.length == 1,
-                    'bg-secondary-500 py-2': wallet.addresses.length > 1
+                    'bg-secondary-600 py-2': wallet.addresses.length > 1
                 })}>
 
                 <div className="flex space-x-2 items-center grow">
@@ -188,7 +188,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
             </div>
             {
                 wallet.addresses.length > 1 &&
-                <div className='w-full grow py-1 mt-1 bg-secondary-600 rounded-xl' >
+                <div className='w-full grow py-1 mt-1 bg-secondary-500 rounded-lg' >
                     {
                         wallet.addresses.map((address, index) => <NestedWalletAddress
                             key={index}

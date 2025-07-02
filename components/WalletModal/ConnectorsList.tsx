@@ -399,7 +399,7 @@ const MultichainConnectorModal: FC<MultichainConnectorModalProps> = ({ selectedC
                 </div>
             }
         >
-            <VaulDrawer.Snap id="item-1" className="flex flex-col items-center gap-4 pb-6">
+            <VaulDrawer.Snap id="item-1" className="flex flex-col items-center gap-4 pb-4">
                 <p className="text-base text-left text-secondary-text">
                     <span>{selectedConnector.name}</span> <span>supports multiple network types. Please select the one you&apos;d like to use.</span>
                 </p>

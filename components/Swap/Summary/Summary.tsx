@@ -63,7 +63,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
 
             <div className="font-normal flex flex-col w-full relative z-10 space-y-3">
                 <div className="w-full grid grid-cols-10">
-                    <div className="col-span-7">
+                    <div className="col-span-6">
                         <RouteTokenPair
                             route={sourceExchange || source}
                             exchange={sourceExchange}
@@ -72,7 +72,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                             address={sourceAccountAddress}
                         />
                     </div>
-                    <div className="flex flex-col col-start-8 col-span-3 items-end">
+                    <div className="flex flex-col col-start-7 col-span-4 items-end">
                         {
                             requestedAmount &&
                             <p className="text-primary-text text-sm">{truncateDecimals(requestedAmount, sourceCurrency.precision)} {sourceCurrency.symbol}</p>
@@ -85,7 +85,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                     <ArrowDown className="absolute left-1/2 -translate-x-1/2 top-[-10px] h-6 w-6 p-1 bg-secondary-400 rounded-md text-secondary-text" />
                 </div>
                 <div className="w-full grid grid-cols-10">
-                    <div className="col-span-7">
+                    <div className="col-span-6">
                         <RouteTokenPair
                             route={destExchange || destination}
                             exchange={destExchange}
@@ -96,8 +96,8 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                     </div>
                     {
                         receiveAmount != undefined ?
-                            <div className="flex flex-col justify-end items-end w-full col-start-8 col-span-3">
-                                <p className="text-primary-text text-sm">{truncateDecimals(receiveAmount, destinationCurrency.precision)} {destinationCurrency.symbol}</p>
+                            <div className="flex flex-col justify-end items-end w-full col-start-7 col-span-4">
+                                <p className="text-primary-text text-sm text-end">{truncateDecimals(receiveAmount, destinationCurrency.precision)} {destinationCurrency.symbol}</p>
                                 <p className="text-secondary-text text-sm">${receiveAmountInUsd}</p>
                             </div>
                             :

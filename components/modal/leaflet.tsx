@@ -106,8 +106,8 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 dragElastic={{ top: 0, bottom: 1 }}
                 dragConstraints={{ top: 0, bottom: 0 }}
             >
-                <div className={`py-3 overflow-y-auto flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-700 rounded-t-2xl ' : ''} pb-6`}>
-                    <div className={`px-6 pb-2 flex justify-between items-center ${height != 'full' && 'hover:cursor-grab'}`}>
+                <div className={`py-3 overflow-y-auto flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-700 rounded-t-2xl ' : ''} pb-4`}>
+                    <div className={`px-4 pb-2 flex justify-between items-center ${height != 'full' && 'hover:cursor-grab'}`}>
                         <div className="text-lg text-secondary-text font-semibold w-full">
                             <div>{title}</div>
                         </div>
