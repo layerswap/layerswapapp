@@ -11,7 +11,6 @@ import AddressWithIcon from "./AddressWithIcon";
 import { Wallet } from "../../../../Models/WalletProvider";
 import { updateForm } from "@/components/Swap/Form/updateForm";
 import { FormikHelpers } from "formik";
-import { useRouter } from "next/router";
 
 type AddressInput = {
     manualAddress: string,
@@ -31,7 +30,6 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
 
     const { to: destination } = values || {}
     const [isFocused, setIsFocused] = useState(false);
-    const router = useRouter();
     const placeholder = "Enter address"
 
     const handleRemoveNewDepositeAddress = useCallback(async () => {

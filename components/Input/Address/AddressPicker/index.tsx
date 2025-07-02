@@ -81,13 +81,13 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const [newAddress, setNewAddress] = useState<{ address: string, networkType: NetworkType | string } | undefined>()
 
     useEffect(() => {
-        if (!destination)
+        if (!destination && destination_address)
             updateForm({
                 formDataKey: 'destination_address',
                 formDataValue: '',
                 setFieldValue
             })
-    }, [destination])
+    }, [destination, destination_address])
 
     useEffect(() => {
         if (destination_address && !isValidAddress(destination_address, destination)) {
