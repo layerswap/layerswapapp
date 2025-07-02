@@ -95,7 +95,7 @@ export function SwapDataProvider({ children }) {
         setSelectedSourceAccount({ wallet, address })
     }
 
-    const swapResponse = swapData?.data || swapDataFromQuery;
+    const swapResponse = swapId ? swapData?.data : swapDataFromQuery;
 
     const sourceIsSupported = swapResponse && WalletIsSupportedForSource({
         providers: providers,
@@ -131,7 +131,7 @@ export function SwapDataProvider({ children }) {
         if (!values)
             throw new Error("No swap data")
 
-        const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, refuel, fromExchange, toExchange, depositMethod, amount, destination_address, currencyGroup } = values
+        const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, refuel, fromExchange, depositMethod, amount, destination_address, currencyGroup } = values
 
         if (!to || !fromCurrency || !toCurrency || !from || !amount || !destination_address || !depositMethod)
             throw new Error("Form data is missing")
@@ -152,7 +152,6 @@ export function SwapDataProvider({ children }) {
             source_token: fromCurrency.symbol,
             destination_token: toCurrency.symbol,
             source_exchange: fromExchange?.name,
-            destination_exchange: toExchange?.name,
             destination_address: destination_address,
             reference_id: query.externalId,
             refuel: !!refuel,
@@ -177,9 +176,9 @@ export function SwapDataProvider({ children }) {
                 custom_str_1_value: fromExchange?.display_name || from?.display_name!,
                 custom_str_2_label: "to",
                 walletAddress: (fromExchange || depositMethod !== 'wallet') ? '' : selectedSourceAccount?.address!,
-                custom_str_2_value: toExchange?.display_name || to?.display_name!,
+                custom_str_2_value: to?.display_name!,
                 fromCurrency: fromExchange ? currencyGroup?.symbol! : fromCurrency?.symbol!,
-                toCurrency: toExchange ? currencyGroup?.symbol! : toCurrency?.symbol!,
+                toCurrency: toCurrency?.symbol!,
                 fromAmount: amount!,
                 toAmount: amount!
             }

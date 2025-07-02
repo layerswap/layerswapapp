@@ -24,7 +24,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
         return connectedWallets;
     }, [walletProviders, network]);
 
-    const getProvider = useCallback(() => (network: Network, purpose: WalletPurpose) => {
+    const getProvider = useCallback((network: Network, purpose: WalletPurpose) => {
         return network && resolveProvider(network, walletProviders, purpose)
     }, [walletProviders, purpose]);
 

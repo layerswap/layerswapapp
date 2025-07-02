@@ -5,61 +5,62 @@ import { Selector, SelectorContent, SelectorTrigger } from "../../Select/Command
 import { SelectedRouteDisplay } from "./Routes";
 import React from "react";
 import useFormRoutes from "../../../hooks/useFormRoutes";
-import { Route, RouteToken } from "../../../Models/Route";
 import Balance from "../Amount/Balance";
 import { Content } from "./Content";
+import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
 import PickerWalletConnect from "./RouterPickerWalletConnect";
+import { useRouteTokenSwitchStore } from "@/stores/routeTokenSwitchStore";
+import { swapInProgress } from "@/components/utils/swapUtils";
+import { updateForm } from "@/components/Swap/Form/updateForm";
+import { useRouter } from "next/router";
 
 const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
-
     const [searchQuery, setSearchQuery] = useState("")
-    const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken, allbalancesLoaded } = useFormRoutes({ direction, values }, searchQuery)
+    const { allRoutes, isLoading, routeElements, tokenElements, selectedRoute, selectedToken, allbalancesLoaded } = useFormRoutes({ direction, values }, searchQuery)
     const currencyFieldName = direction === 'from' ? 'fromAsset' : 'toAsset';
+    const showTokens = useRouteTokenSwitchStore((s) => s.showTokens)
 
     useEffect(() => {
+        const updateValues = async () => {
+            if (!selectedRoute || !selectedToken || !allRoutes || swapInProgress.current) return;
 
-        if (!selectedRoute || !selectedToken || !allRoutes) return
+            const updatedRoute = allRoutes.find(r => r.name === selectedRoute.name);
+            const updatedToken = updatedRoute?.tokens?.find(t => t.symbol === selectedToken.symbol);
 
-        const updatedRoute = allRoutes.find(r => r.name === selectedRoute.name)
+            if (updatedToken === selectedToken) return;
 
-        //TODO: handle cex
-        if (updatedRoute?.cex) {
-            const updatedToken = updatedRoute?.token_groups?.find(t => t.symbol === selectedToken.symbol)
-            if (updatedToken === selectedToken) return
-            setFieldValue("currencyGroup", updatedToken, true)
-            return;
-        }
+            if (updatedRoute && updatedToken) {
+                await updateForm({
+                    formDataKey: currencyFieldName,
+                    formDataValue: updatedToken,
+                    shouldValidate: true,
+                    setFieldValue
+                })
+            }
+        };
 
-        const updatedToken = updatedRoute?.tokens?.find(t => t.symbol === selectedToken.symbol)
+        updateValues();
+    }, [selectedRoute, selectedToken, allRoutes, direction]);
 
-        if (updatedToken === selectedToken) return
-
-        if (updatedRoute && updatedToken) {
-            setFieldValue(currencyFieldName, updatedToken, true)
-            setFieldValue(direction, updatedRoute, true)
-        }
-
-    }, [selectedRoute, selectedToken, allRoutes])
-
-    const handleSelect = useCallback(async (route: Route, token: RouteToken) => {
-        if (route.cex) {
-            setFieldValue(currencyFieldName, null)
-            setFieldValue(direction, null)
-
-            setFieldValue('currencyGroup', token, true)
-            setFieldValue(`${direction}Exchange`, route, true)
-        }
-        else {
-            setFieldValue(`${direction}Exchange`, null)
-
-            setFieldValue(currencyFieldName, token, true)
-            setFieldValue(direction, route, true)
-        }
-    }, [currencyFieldName, direction, values])
+    const handleSelect = useCallback(async (route: NetworkRoute, token: NetworkRouteToken) => {
+        swapInProgress.current = false;
+        await updateForm({
+            formDataKey: currencyFieldName,
+            formDataValue: token,
+            shouldValidate: true,
+            setFieldValue
+        })
+        await updateForm({
+            formDataKey: direction,
+            formDataValue: route,
+            shouldValidate: true,
+            setFieldValue
+        })
+    }, [currencyFieldName, direction, values, showTokens])
 
     return (
         <div className="flex w-full flex-col self-end relative ml-auto items-center">
@@ -74,7 +75,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                             onSelect={(r, t) => { handleSelect(r, t); closeModal(); }}
                             searchQuery={searchQuery}
                             setSearchQuery={setSearchQuery}
-                            rowElements={routeElements}
+                            rowElements={showTokens ? tokenElements : routeElements}
                             direction={direction}
                             selectedRoute={selectedRoute?.name}
                             selectedToken={selectedToken?.symbol}

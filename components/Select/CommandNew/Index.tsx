@@ -19,6 +19,14 @@ export const Selector = ({ children }) => {
     );
 };
 
+export const useSelectorState = () => {
+    const context = useContext(SelectorContext);
+    if (!context) {
+        throw new Error("useSelectorContext must be used within a SelectorProvider");
+    }
+    return context;
+}
+
 type ContentChildProps = {
     closeModal: () => void;
 }

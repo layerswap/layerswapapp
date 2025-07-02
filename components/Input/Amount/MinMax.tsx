@@ -6,7 +6,9 @@ import useSWRGas from "../../../lib/gases/useSWRGas";
 import { useSwapDataState } from "../../../context/swap";
 import { NetworkRoute, NetworkRouteToken, Token } from "../../../Models/Network";
 import { useMemo } from "react";
-import { resolveMacAllowedAmount } from "./helpers";
+import { resolveMaxAllowedAmount } from "./helpers";
+import { updateForm } from "@/components/Swap/Form/updateForm";
+import { useRouter } from "next/router";
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -19,7 +21,6 @@ const MinMax = (props: MinMaxProps) => {
 
     const { setFieldValue } = useFormikContext<SwapFormValues>();
     const { fromCurrency, from, limitsMinAmount, limitsMaxAmount } = props;
-
     const { selectedSourceAccount } = useSwapDataState()
 
     const { gas } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency)
@@ -28,20 +29,28 @@ const MinMax = (props: MinMaxProps) => {
     const gasAmount = gas || 0;
 
     const handleSetMinAmount = () => {
-        setFieldValue('amount', limitsMinAmount);
+        updateForm({
+            formDataKey: 'amount',
+            formDataValue: limitsMinAmount.toString(),
+            setFieldValue
+        })
     }
     const walletBalance = selectedSourceAccount?.address ? balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol) : undefined
     const native_currency = from?.token
 
     let maxAllowedAmount: number = useMemo(() => {
-        return resolveMacAllowedAmount({ fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency })
+        return resolveMaxAllowedAmount({ fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency })
     }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency])
 
     const handleSetMaxAmount = async () => {
         const updatedBalances = await mutate()
         const updatedWalletBalance = updatedBalances?.balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
-        const maxAllowedAmount = resolveMacAllowedAmount({ fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance: updatedWalletBalance, gasAmount, native_currency })
-        setFieldValue('amount', maxAllowedAmount);
+        const maxAllowedAmount = resolveMaxAllowedAmount({ fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance: updatedWalletBalance, gasAmount, native_currency })
+        updateForm({
+            formDataKey: 'amount',
+            formDataValue: maxAllowedAmount.toString(),
+            setFieldValue
+        })
     }
 
     return (

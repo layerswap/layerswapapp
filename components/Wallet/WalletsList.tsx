@@ -124,8 +124,8 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
 
                     {
                         wallet.addresses.length > 1 ?
-                            <div>
-                                <span className="text-sm">{wallet.displayName}</span>
+                            <div className="text-sm">
+                                {wallet.displayName}
                             </div>
                             :
                             <div className="w-full inline-flex items-center justify-between grow">
@@ -236,7 +236,7 @@ const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddre
             })}
         >
             <div className='flex items-center w-fit gap-3' >
-                <div className="flex bg-secondary-400  items-center justify-center rounded-md h-8 w-8 overflow-hidden">
+                <div className="flex bg-secondary-400 items-center justify-center rounded-md h-8 w-8 overflow-hidden">
                     <AddressIcon
                         className="scale-150 h-8 w-8 p-0.5"
                         address={address}

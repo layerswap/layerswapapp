@@ -9,7 +9,6 @@ export const SwapQuoteDetails: FC<{ swapResponse: SwapResponse | undefined }> = 
     if (!requested_amount || !source_network || !destination_network || !quote) return null
 
     const values: SwapValues = {
-        toExchange: destination_exchange,
         fromExchange: source_exchange,
         amount: requested_amount.toString(),
         from: source_network,

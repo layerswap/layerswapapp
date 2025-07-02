@@ -3,20 +3,19 @@ import { NetworkRouteToken, NetworkRoute } from "./Network";
 
 export type RouteToken = NetworkRouteToken | ExchangeToken
 export type Route = ({ cex: true } & Exchange | { cex?: false } & NetworkRoute)
-
 export type NetworkElement = {
     type: 'network';
-    route: NetworkRoute & { cex: false };
+    route: NetworkRoute;
 }
-export type ExchangeElement = {
-    type: 'exchange';
-    route: Exchange & { cex: true };
-}
+export type PopularRouteElement = {
+    type: 'popular_route';
+    route: NetworkRoute;
+};
 export type NetworkTokenElement = {
-    type: 'network_token';
+    type: 'network_token' | 'top_token';
     route: {
-        token: RouteToken;
-        route: NetworkRoute & { cex: false };
+        token: NetworkRouteToken;
+        route: NetworkRoute
     }
 }
 export type ExchangeTokenElement = {
@@ -30,9 +29,16 @@ export type TitleElement = {
     type: 'group_title';
     text: string
 }
+export type GroupedTokenElement = {
+    type: 'grouped_token';
+    symbol: string;
+    items: NetworkTokenElement[];
+}
 export type RowElement = {}
     & (NetworkElement
-        | ExchangeElement
         | NetworkTokenElement
-        | ExchangeTokenElement
-        | TitleElement)
+        | TitleElement
+        | GroupedTokenElement
+        | PopularRouteElement);
+
+export type GroupTokensResult = (GroupedTokenElement | NetworkElement | NetworkTokenElement | TitleElement)[];

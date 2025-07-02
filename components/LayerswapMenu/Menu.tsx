@@ -131,7 +131,8 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                         bg-secondary-700 
                         shadow-widget-footer 
                         p-4 
-                        px-6 
+                        pr-6
+                        pl-5 
                         w-full ${hidden ? 'animation-slide-out' : ''}`}>
                     {children}
                 </motion.div>

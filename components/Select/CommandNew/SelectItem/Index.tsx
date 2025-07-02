@@ -18,8 +18,8 @@ type SeelctItemLogoProps = {
     className?: string;
 }
 const Logo = ({ imgSrc, altText, className = 'rounded-md' }: SeelctItemLogoProps) => {
-    return <div className="shrink-0 relative h-8 w-8">
-        {imgSrc ? <div className='inline-flex items-center relative'>
+    return <div className="shrink-0 relative h-9 w-9">
+        {imgSrc ? <div className='inline-flex relative'>
             <ImageWithFallback
                 src={imgSrc}
                 alt={altText}
@@ -42,7 +42,7 @@ type SelectItemTitleProps = {
 const Title = ({ children, className }: SelectItemTitleProps) => {
     return <div className={`flex justify-between w-full items-center ${className}`}>
         <div className="flex items-center pb-0.5 text-base w-full">
-            <div className="flex justify-between w-full">
+            <div className="flex justify-between w-full items-center">
                 {children}
             </div>
         </div>
@@ -55,9 +55,10 @@ type SelectItemDetailedTitleProps = {
     title: string;
     secondary: string | JSX.Element | JSX.Element[];
     secondaryLogoSrc?: string;
+    logoClassName?: string;
 }
 
-const DetailedTitle = ({ children, className, title, secondary, secondaryLogoSrc }: SelectItemDetailedTitleProps) => {
+const DetailedTitle = ({ children, className, title, secondary, secondaryLogoSrc, logoClassName }: SelectItemDetailedTitleProps) => {
     return <Title className={`py-2 ${className}`}>
         <>
             <div className="grid gap-0 leading-5 align-middle space-y-0.5 font-medium">
@@ -69,7 +70,7 @@ const DetailedTitle = ({ children, className, title, secondary, secondaryLogoSrc
                         height="36"
                         width="36"
                         loading="eager"
-                        className='h-4 w-4 object-contain rounded-[4px]'
+                        className={`h-4 w-4 object-contain rounded-[4px] ${logoClassName}`}
                     />}
                     <span className="text-secondary-text text-xs whitespace-nowrap">
                         {secondary}
