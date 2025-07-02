@@ -10,7 +10,6 @@ import MainStepValidation from "@/lib/mainStepValidator";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/lib/generateSwapInitialValues";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 import Modal from "../../modal/modal";
-import SwapForm from "./Form";
 import useSWR from "swr";
 import { NextRouter, useRouter } from "next/router";
 import { ApiResponse } from "@/Models/ApiResponse";
@@ -22,7 +21,6 @@ import TokenService from "@/lib/TokenService";
 import LayerSwapAuthApiClient from "@/lib/apiClients/userAuthApiClient";
 import { AnimatePresence } from "framer-motion";
 import { useQuote } from "@/context/feeContext";
-import ResizablePanel from "../../ResizablePanel";
 import useWallet from "@/hooks/useWallet";
 import { DepositMethodProvider } from "@/context/depositMethodContext";
 import { dynamicWithRetries } from "@/lib/dynamicWithRetries";
@@ -35,6 +33,10 @@ import { ValidationProvider } from "@/context/validationErrorContext";
 import { PendingSwap } from "./PendingSwap";
 import { QueryParams } from "@/Models/QueryParams";
 import VaulDrawer from "@/components/modal/vaulModal";
+import NetworkExchangeTabs from "./NetworkExchangeTabs";
+import NetworkForm from "./NetworkForm";
+import ExchangeForm from "./ExchangeForm";
+import { Widget } from "@/components/Widget/Index";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -184,17 +186,34 @@ export default function Form() {
                 <SwapDetails type="contained" />
             </VaulDrawer.Snap>
         </VaulDrawer>
-        <Formik
-            innerRef={formikRef}
-            initialValues={initialValues}
-            validateOnMount={true}
-            validate={validator}
-            onSubmit={handleSubmit}
-        >
-            <ValidationProvider>
-                <SwapForm partner={partner} />
-            </ValidationProvider>
-        </Formik>
+        <NetworkExchangeTabs
+            networkForm={
+                <Formik
+                    innerRef={formikRef}
+                    initialValues={initialValues}
+                    validateOnMount={true}
+                    validate={validator}
+                    onSubmit={handleSubmit}
+                >
+                    <ValidationProvider>
+                        <NetworkForm partner={partner} />
+                    </ValidationProvider>
+                </Formik>
+            }
+            exchangeForm={
+                <Formik
+                    innerRef={formikRef}
+                    initialValues={initialValues}
+                    validateOnMount={true}
+                    validate={validator}
+                    onSubmit={handleSubmit}
+                >
+                    <ValidationProvider>
+                        <ExchangeForm />
+                    </ValidationProvider>
+                </Formik>
+            }
+        />
     </DepositMethodProvider>
 }
 

@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import ReactPortal from "../../../Common/ReactPortal";
 import { CollapsableHeader } from "./CollapsableHeader";
-import { ExchangeElement, GroupedTokenElement, NetworkElement } from "../../../../Models/Route";
+import { GroupedTokenElement, NetworkElement } from "../../../../Models/Route";
 import { SwapDirection } from "../../../DTOs/SwapFormValues";
 
 type StickyHeaderProps = {
-    item: NetworkElement | GroupedTokenElement | ExchangeElement;
+    item: NetworkElement | GroupedTokenElement;
     direction: SwapDirection;
     scrollContainer: HTMLDivElement | null;
     open: boolean | undefined;

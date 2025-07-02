@@ -30,7 +30,7 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
     return (
         <>
             {isDesktop && (
-                <ReactPortal wrapperId="widget_root">
+                <ReactPortal wrapperId="widget">
                     {delayedShow &&
                         <Leaflet
                             key={modalId}

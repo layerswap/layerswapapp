@@ -9,6 +9,9 @@ import { AddressGroup, AddressItem } from ".";
 import { addressFormat } from "../../../../lib/address/formatter";
 import AddressWithIcon from "./AddressWithIcon";
 import { Wallet } from "../../../../Models/WalletProvider";
+import { updateForm } from "@/components/Swap/Form/updateForm";
+import { FormikHelpers } from "formik";
+import { useRouter } from "next/router";
 
 type AddressInput = {
     manualAddress: string,
@@ -18,7 +21,7 @@ type AddressInput = {
     partner?: Partner,
     name: string,
     inputReference: React.Ref<HTMLInputElement>,
-    setFieldValue: (field: string, value: any) => void,
+    setFieldValue: FormikHelpers<SwapFormValues>['setFieldValue'],
     close: () => void,
     addresses: AddressItem[] | undefined,
     connectedWallet: Wallet | undefined
@@ -26,9 +29,9 @@ type AddressInput = {
 
 const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress, setNewAddress, values, name, inputReference, setFieldValue, close, addresses, connectedWallet, partner }) => {
 
-    const { to: destination, toExchange: destinationExchange } = values || {}
+    const { to: destination } = values || {}
     const [isFocused, setIsFocused] = useState(false);
-
+    const router = useRouter();
     const placeholder = "Enter address"
 
     const handleRemoveNewDepositeAddress = useCallback(async () => {
@@ -42,9 +45,13 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
     const handleSaveNewAddress = () => {
         if (isValidAddress(manualAddress, destination)) {
             if (destination) {
-                setNewAddress({ address: manualAddress, networkType: destinationExchange ? destinationExchange.name : destination.type })
+                setNewAddress({ address: manualAddress, networkType: destination.type })
             }
-            setFieldValue(name, manualAddress)
+            updateForm({
+                formDataKey: 'destination_address',
+                formDataValue: manualAddress,
+                setFieldValue
+            })
             setManualAddress("")
         }
         close()

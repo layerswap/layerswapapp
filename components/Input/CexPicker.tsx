@@ -12,6 +12,7 @@ import { LayoutGroup, motion } from "framer-motion";
 import { SearchComponent } from "./Search";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
 import { ChevronDown } from "lucide-react";
+import { updateForm } from "../Swap/Form/updateForm";
 
 const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
     const {
@@ -40,9 +41,24 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
             );
 
             if (values.currencyGroup !== currencyGroup) {
-                await setFieldValue("currencyGroup", currencyGroup, true);
-                await setFieldValue("from", sourceRoute, true)
-                await setFieldValue(`fromAsset`, sourceRouteToken, false)
+                await updateForm({
+                    formDataKey: 'currencyGroup',
+                    formDataValue: currencyGroup,
+                    shouldValidate: true,
+                    setFieldValue
+                });
+                await updateForm({
+                    formDataKey: 'from',
+                    formDataValue: sourceRoute,
+                    shouldValidate: true,
+                    setFieldValue
+                });
+                await updateForm({
+                    formDataKey: 'fromAsset',
+                    formDataValue: sourceRouteToken,
+                    shouldValidate: false,
+                    setFieldValue
+                });
             }
         };
 
@@ -50,7 +66,12 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
     }, [selectedRoute, selectedToken, exchangeNetworks, selectedToken, exchanges]);
 
     const handleSelect = useCallback(async (exchange: Exchange) => {
-        setFieldValue("fromExchange", exchange, true)
+        updateForm({
+            formDataKey: 'fromExchange',
+            formDataValue: exchange,
+            shouldValidate: true,
+            setFieldValue
+        });
     }, [direction, values])
 
     return (
