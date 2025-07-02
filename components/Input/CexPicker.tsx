@@ -26,7 +26,7 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
 
     const [searchQuery, setSearchQuery] = useState("");
 
-    useEffect(() => {
+    useEffect(() => { 
         const updateValues = async () => {
             if (!fromExchange) return;
 
