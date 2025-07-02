@@ -60,14 +60,22 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
             const sorted = sortGroupedTokensByBalance(grouped as GroupedTokenElement[], balances);
             const popularRoutes = resolvePopularRoutes(routes, direction);
 
-            const popularNetworks = direction === 'to'
+            const shouldAddPopular = direction === 'to';
+            const popularNetworks = shouldAddPopular
                 ? routes
                     .filter(r => popularRoutes.includes(r.name))
                     .map(r => ({ type: 'network', route: r }) as NetworkElement)
                 : [];
 
-            return (topTokens.length > 0 && direction !== "to") ? [Titles.topAssets, ...topTokens, ...sorted] : [Titles.popular, ...popularNetworks, ...sorted];
+            if (topTokens.length > 0 && direction !== "to") {
+                return [Titles.topAssets, ...topTokens, ...sorted];
+            }
+
+            return shouldAddPopular
+                ? [Titles.popular, ...popularNetworks, ...sorted]
+                : sorted;
         }
+
         return grouped;
     }, [routes, balances, search, topTokens]);
 
