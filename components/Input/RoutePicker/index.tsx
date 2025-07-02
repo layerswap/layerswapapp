@@ -67,7 +67,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                 <SelectorTrigger disabled={false}>
                     <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select Token" />
                 </SelectorTrigger>
-                <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search" header={<PickerWalletConnect />}>
+                <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search" header={<PickerWalletConnect direction={direction} />}>
                     {({ closeModal }) => (
                         <Content
                             allbalancesLoaded={allbalancesLoaded}
