@@ -1,5 +1,5 @@
 {
-  "count": 531,
+  "count": 537,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -7035,84 +7035,6 @@
         "2"
       ]
     },
-    "2ba89f94faff121a7c1091c3cea124167dc4291ebe87123620c66e0f120197cc": {
-      "app": {
-        "android": "https://play.google.com/store/apps/details?id=com.coinsdo.wallet",
-        "browser": "https://www.coinsdo.com/wallet_coinsdo.html",
-        "chrome": "https://chromewebstore.google.com/detail/coinwallet-btc-crypto-wal/oafedfoadhdjjcipmcbecikgokpaphjk",
-        "edge": null,
-        "firefox": null,
-        "ios": "https://apps.apple.com/us/app/coinsdo-wallet-btc-eth-wallet/id6479635869",
-        "linux": null,
-        "mac": null,
-        "opera": null,
-        "safari": null,
-        "windows": null
-      },
-      "app_type": "wallet",
-      "category": "Mobile Wallets",
-      "chains": [
-        "cip-34:0-1",
-        "cip-34:1-764824073",
-        "eip155:1",
-        "eip155:100",
-        "eip155:10000",
-        "eip155:10001",
-        "eip155:128",
-        "eip155:137",
-        "eip155:250",
-        "eip155:256",
-        "eip155:43113",
-        "eip155:43114",
-        "eip155:5",
-        "eip155:56",
-        "eip155:59",
-        "eip155:61",
-        "eip155:65",
-        "eip155:66",
-        "eip155:80001",
-        "eip155:97",
-        "polkadot:91b171bb158e2d3848fa23a9f1c25182"
-      ],
-      "description": "MPC-TSS HD Multichain Wallet, support mainnet and testnet, generate address based on custom derivation path, NFT, DApp, and more.",
-      "desktop": {
-        "native": "coinwallet://",
-        "universal": "https://www.coinsdo.com/wallet_coinsdo.html"
-      },
-      "homepage": "https://www.coinsdo.com",
-      "id": "2ba89f94faff121a7c1091c3cea124167dc4291ebe87123620c66e0f120197cc",
-      "image_id": "1c0cd352-ce8e-4bcc-f91d-8763eab60b00",
-      "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/1c0cd352-ce8e-4bcc-f91d-8763eab60b00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/1c0cd352-ce8e-4bcc-f91d-8763eab60b00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/1c0cd352-ce8e-4bcc-f91d-8763eab60b00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
-      },
-      "injected": null,
-      "metadata": {
-        "colors": {
-          "primary": null,
-          "secondary": null
-        },
-        "shortName": "CoinWallet"
-      },
-      "mobile": {
-        "native": "coinwallet://",
-        "universal": null
-      },
-      "name": "CoinWallet",
-      "rdns": null,
-      "sdks": [
-        "sign_v1",
-        "sign_v2",
-        "auth_v1"
-      ],
-      "slug": "coinwallet",
-      "updatedAt": "2023-07-25T19:46:31.595549+00:00",
-      "versions": [
-        "1",
-        "2"
-      ]
-    },
     "2bc58b1c76e6572fa6cd68c3a448128ce90f7442d563f02e9f9db3b58d01d810": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.app.renegade",
@@ -8462,7 +8384,7 @@
       },
       "mobile": {
         "native": "bifrostwallet://",
-        "universal": "https://app.bifrostwallet.com"
+        "universal": "https://app.bifrostwallet.com/"
       },
       "name": "Bifrost Wallet",
       "rdns": "com.bifrostwallet",
@@ -11213,6 +11135,68 @@
         "2"
       ]
     },
+    "482b0925a9355574e46629ac396ed48232746bd32f72a7b813767a3fa876ad93": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.metapro.app&hl=en&gl=US",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "https://apps.apple.com/us/app/mone-my-one-superapp/id1628087356",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:11155111",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:56",
+        "eip155:8453"
+      ],
+      "description": "Your Web3 superapp for games, mini-apps, tokens, and NFT collections—all under your control in one app!",
+      "desktop": {
+        "native": "",
+        "universal": null
+      },
+      "homepage": "https://mone.my/",
+      "id": "482b0925a9355574e46629ac396ed48232746bd32f72a7b813767a3fa876ad93",
+      "image_id": "031df921-c5a5-451c-1ad4-f41d4f8fbb00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/031df921-c5a5-451c-1ad4-f41d4f8fbb00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/031df921-c5a5-451c-1ad4-f41d4f8fbb00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/031df921-c5a5-451c-1ad4-f41d4f8fbb00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "mone://",
+        "universal": "https://mone.my/app"
+      },
+      "name": "mOne superapp",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "mone-superapp",
+      "updatedAt": "2025-06-10T08:11:01.972781+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "483afe1df1df63daf313109971ff3ef8356ddf1cc4e45877d205eee0b7893a13": {
       "app": {
         "android": null,
@@ -13315,6 +13299,69 @@
         "2"
       ]
     },
+    "565c5bf4c46b4e1945867d8df722473ee8adc812c10d39da50c2fca4afd18726": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=app.w3wallet.w3wallet",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "https://apps.apple.com/ge/app/w3-wallet-manage-crypto/id6670211780",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": "Mobile Wallets",
+      "chains": [
+        "algorand:wGHE2Pwdvd7S12BL5FaOP20EGYesN73k",
+        "eip155:1",
+        "eip155:1313161554",
+        "eip155:137",
+        "eip155:56",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "description": "W3 Wallet is a self-custodial, multi-chain wallet app with native DeFi integrations, designed to onboard the next wave of crypto users.",
+      "desktop": {
+        "native": "",
+        "universal": null
+      },
+      "homepage": "https://w3wallet.app",
+      "id": "565c5bf4c46b4e1945867d8df722473ee8adc812c10d39da50c2fca4afd18726",
+      "image_id": "2f2d1309-de72-468b-3c04-77d0b9cd8500",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/2f2d1309-de72-468b-3c04-77d0b9cd8500?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/2f2d1309-de72-468b-3c04-77d0b9cd8500?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/2f2d1309-de72-468b-3c04-77d0b9cd8500?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "w3wallet://",
+        "universal": null
+      },
+      "name": "W3 Wallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "w3-wallet-dev",
+      "updatedAt": "2025-06-12T15:31:04.681646+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "56843177b5e89d4bcb19a27dab7c49e0f33d8d3a6c8c4c7e5274f605e92befd6": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.socios&hl=en",
@@ -13503,7 +13550,7 @@
         "edge": null,
         "firefox": null,
         "ios": "https://ewallet.kaxaa.com",
-        "linux": null,
+        "linux": "https://ewallet.kaxaa.com",
         "mac": null,
         "opera": null,
         "safari": null,
@@ -13521,13 +13568,18 @@
       },
       "homepage": "https://kaxaa.com/",
       "id": "56d1854ddbc8d9ecdf5d7e2f19228314f475ee110c38fbfe3fa0b72baa41ca14",
-      "image_id": "06c2aa4f-12a9-4c91-7b27-1755813c9c00",
+      "image_id": "2a7981aa-14f4-400d-86ae-ffa3ea866900",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/06c2aa4f-12a9-4c91-7b27-1755813c9c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/06c2aa4f-12a9-4c91-7b27-1755813c9c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/06c2aa4f-12a9-4c91-7b27-1755813c9c00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/2a7981aa-14f4-400d-86ae-ffa3ea866900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/2a7981aa-14f4-400d-86ae-ffa3ea866900?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/2a7981aa-14f4-400d-86ae-ffa3ea866900?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
-      "injected": null,
+      "injected": [
+        {
+          "injected_id": "isKaxaaWallet",
+          "namespace": "eip155"
+        }
+      ],
       "metadata": {
         "colors": {
           "primary": "#9fc93a",
@@ -13537,9 +13589,9 @@
       },
       "mobile": {
         "native": "",
-        "universal": null
+        "universal": "https://link.kaxaa.com/"
       },
-      "name": "KAX-Wallet",
+      "name": "KAXAA Wallet",
       "rdns": null,
       "sdks": [
         "sign_v1",
@@ -14017,7 +14069,14 @@
       "app_type": "wallet",
       "category": "Mobile Wallets",
       "chains": [
-        "cosmos:cosmoshub-4"
+        "cosmos:columbus-4",
+        "cosmos:cosmoshub-4",
+        "cosmos:kava-4",
+        "eip155:1",
+        "eip155:1329",
+        "eip155:137",
+        "eip155:250",
+        "eip155:56"
       ],
       "description": "The Universal Wallet for Multichain Web3 Interoperability",
       "desktop": {
@@ -14032,7 +14091,12 @@
         "md": "https://explorer-api.walletconnect.com/v3/logo/md/68489978-9f79-47f4-fd59-86a29df9bf00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
         "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/68489978-9f79-47f4-fd59-86a29df9bf00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
-      "injected": null,
+      "injected": [
+        {
+          "injected_id": "isOWallet",
+          "namespace": "eip155"
+        }
+      ],
       "metadata": {
         "colors": {
           "primary": null,
@@ -14045,7 +14109,7 @@
         "universal": null
       },
       "name": "OWallet",
-      "rdns": null,
+      "rdns": "io.owallet",
       "sdks": [
         "sign_v1",
         "sign_v2"
@@ -14475,7 +14539,7 @@
         "native": "",
         "universal": "https://oaog.uxlink.io"
       },
-      "homepage": "https://uxlink.io",
+      "homepage": "https://oaog.uxlink.io",
       "id": "5eac22ff46c34944f245146ad45f62923360290d90bb292a4f019668d74f7792",
       "image_id": "7c0ac68c-efd6-42ab-488b-be8febe45f00",
       "image_url": {
@@ -22328,14 +22392,16 @@
         "mac": null,
         "opera": null,
         "safari": null,
-        "windows": null
+        "windows": "https://apps.microsoft.com/detail/9nq6hf99b8nj?hl=en-US&gl=US"
       },
       "app_type": "wallet",
       "category": "MPC-based wallets",
       "chains": [
         "eip155:1",
         "eip155:137",
-        "eip155:56"
+        "eip155:56",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
       "description": "Web3 Wallet",
       "desktop": {
@@ -23716,6 +23782,77 @@
       ],
       "slug": "nabox-1",
       "updatedAt": "2024-06-25T01:35:20.185478+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "a77eaf6509774b780b22f678fa15168c4e12f71f7eb3102edf85112a222bb503": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.dok.wallet&pli=1",
+        "browser": "https://www.dokwallet.app",
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "https://apps.apple.com/il/app/dokwallet-crypto-wallet/id1533065700",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "cosmos:cosmoshub-4",
+        "cosmos:thorchain-mainnet-v1",
+        "eip155:1",
+        "eip155:10",
+        "eip155:204",
+        "eip155:324",
+        "eip155:42161",
+        "eip155:43114",
+        "eip155:56",
+        "eip155:59144",
+        "eip155:61",
+        "eip155:8453",
+        "eip155:88",
+        "polkadot:91b171bb158e2d3848fa23a9f1c25182",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "description": "Non-cutodial crypto wallet",
+      "desktop": {
+        "native": "",
+        "universal": null
+      },
+      "homepage": "https://www.dokwallet.com",
+      "id": "a77eaf6509774b780b22f678fa15168c4e12f71f7eb3102edf85112a222bb503",
+      "image_id": "5707f35e-17a1-42b3-35c5-664f7655cd00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/5707f35e-17a1-42b3-35c5-664f7655cd00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/5707f35e-17a1-42b3-35c5-664f7655cd00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/5707f35e-17a1-42b3-35c5-664f7655cd00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "dokwallet://",
+        "universal": "https://www.dokwallet.app"
+      },
+      "name": "Dokwallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "dokwallet",
+      "updatedAt": "2025-06-13T06:55:06.591999+00:00",
       "versions": [
         "1",
         "2"
@@ -26631,6 +26768,65 @@
         "2"
       ]
     },
+    "bec3c4be910f31b01e051525996b8dca85a60a616dba2a756728d5ddeecd6136": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.revelator.originalworks",
+        "browser": "https://wallet.revelator.com/",
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "https://apps.apple.com/app/id1484642420?platform=iphone",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": "Mobile Wallets",
+      "chains": [
+        "eip155:137",
+        "eip155:8453",
+        "eip155:84532"
+      ],
+      "description": "Access music royalties & unlock web3",
+      "desktop": {
+        "native": "",
+        "universal": null
+      },
+      "homepage": "https://wallet.revelator.com/",
+      "id": "bec3c4be910f31b01e051525996b8dca85a60a616dba2a756728d5ddeecd6136",
+      "image_id": "2027dfea-316d-474a-1c7d-08dead7b4200",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/2027dfea-316d-474a-1c7d-08dead7b4200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/2027dfea-316d-474a-1c7d-08dead7b4200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/2027dfea-316d-474a-1c7d-08dead7b4200?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": "#4611EA",
+          "secondary": null
+        },
+        "shortName": "Revelator Wallet"
+      },
+      "mobile": {
+        "native": "revelatorwallet://",
+        "universal": null
+      },
+      "name": "Revelator Wallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "revelator-wallet",
+      "updatedAt": "2025-06-13T09:33:39.347007+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "bfa6967fd05add7bb2b19a442ac37cedb6a6b854483729194f5d7185272c5594": {
       "app": {
         "android": null,
@@ -29373,6 +29569,66 @@
         "2"
       ]
     },
+    "ce02f1ae74686234eabfa7d31876c442779b730dfe7924a3ca0e6559a7afa30f": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.creditcoin.mobile",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "https://apps.apple.com/us/app/gluwa/id1021292326",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": "Mobile Wallets",
+      "chains": [
+        "eip155:1",
+        "eip155:11155111",
+        "polkadot:91b171bb158e2d3848fa23a9f1c25182"
+      ],
+      "description": "The Multichain Credit Protocol Powering Real-World Assets",
+      "desktop": {
+        "native": "",
+        "universal": null
+      },
+      "homepage": "https://app.creditcoin.org",
+      "id": "ce02f1ae74686234eabfa7d31876c442779b730dfe7924a3ca0e6559a7afa30f",
+      "image_id": "cf606650-415f-4e7f-a45d-fd6b16769400",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/cf606650-415f-4e7f-a45d-fd6b16769400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/cf606650-415f-4e7f-a45d-fd6b16769400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/cf606650-415f-4e7f-a45d-fd6b16769400?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": "Credit wallet"
+      },
+      "mobile": {
+        "native": "creditcoin://",
+        "universal": null
+      },
+      "name": "Credit Wallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2",
+        "auth_v1"
+      ],
+      "slug": "credit-wallet",
+      "updatedAt": "2025-06-10T08:24:24.986255+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "ce216ac7310971159adda1ac271fc6e6590d2c02da43b894ac11919084196e40": {
       "app": {
         "android": null,
@@ -30188,6 +30444,66 @@
       "updatedAt": "2022-07-28T14:36:55.983097+00:00",
       "versions": [
         "1"
+      ]
+    },
+    "d9a4512e145f350693f9beea76326ca17a9af19857af17b3ccfd47f4ecc8bb65": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=io.up.wallet&hl=en",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:137",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      ],
+      "description": "Next-gen crypto wallet",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://up.io",
+      "id": "d9a4512e145f350693f9beea76326ca17a9af19857af17b3ccfd47f4ecc8bb65",
+      "image_id": "f1a3f4d4-871f-42db-89ab-bb36b5c01f00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/f1a3f4d4-871f-42db-89ab-bb36b5c01f00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/f1a3f4d4-871f-42db-89ab-bb36b5c01f00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/f1a3f4d4-871f-42db-89ab-bb36b5c01f00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "up-io://",
+        "universal": "https://up.io/app/"
+      },
+      "name": "UP.io",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "upio",
+      "updatedAt": "2025-06-13T11:16:12.325448+00:00",
+      "versions": [
+        "1",
+        "2"
       ]
     },
     "d9c7ec94218de654cabce846bb26e6ca0ed8495b4cea9d39def83ba377caab20": {
@@ -34192,6 +34508,8 @@
       "chains": [
         "eip155:1",
         "eip155:137",
+        "eip155:30",
+        "eip155:324",
         "eip155:56"
       ],
       "description": "Crypto made simple",
@@ -35617,6 +35935,69 @@
         "2"
       ]
     },
+    "fea98faf8b5ae216c1091bb33dfc41ee27278059b871bf1d5b1b7af3744eca72": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.ibvm.wallet",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "https://apps.apple.com/us/app/ibvm-wallet/id6744966630",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:11155111",
+        "eip155:137",
+        "eip155:56",
+        "eip155:80002",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+      ],
+      "description": "IBVM Wallet is the official crypto wallet of International Bitcoin Virtual Machine.",
+      "desktop": {
+        "native": "",
+        "universal": null
+      },
+      "homepage": "https://ibvm.io/",
+      "id": "fea98faf8b5ae216c1091bb33dfc41ee27278059b871bf1d5b1b7af3744eca72",
+      "image_id": "6e24298f-666e-4fbe-02d3-6b706f039000",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/6e24298f-666e-4fbe-02d3-6b706f039000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/6e24298f-666e-4fbe-02d3-6b706f039000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/6e24298f-666e-4fbe-02d3-6b706f039000?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "ibvm://",
+        "universal": null
+      },
+      "name": "IBVM Wallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "ibvm-wallet",
+      "updatedAt": "2025-06-10T12:06:27.35573+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "feb6ff1fb426db18110f5a80c7adbde846d0a7e96b2bc53af4b73aaf32552bea": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=wannabit.io.cosmostaion",
@@ -35742,5 +36123,5 @@
       ]
     }
   },
-  "total": 531
+  "total": 537
 }
