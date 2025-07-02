@@ -83,8 +83,6 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
 
 const WalletButton: FC<{ wallets: Wallet[], pickerSelectedWallets: ReturnType<typeof usePickerSelectedWalletStore>['pickerSelectedWallets'], onOpenModalClick: () => void }> = ({ wallets, onOpenModalClick, pickerSelectedWallets }) => {
 
-    const wallet = wallets[0]
-
     const mappedWallets = useMemo(() => wallets.map(w => {
         const selectedWallet = pickerSelectedWallets?.find(sw => sw.provider === w.providerName)
         if (selectedWallet && selectedWallet.address && w.address !== selectedWallet.address) {
@@ -93,15 +91,17 @@ const WalletButton: FC<{ wallets: Wallet[], pickerSelectedWallets: ReturnType<ty
         return w
     }), [wallets, pickerSelectedWallets])
 
+    const firstWallet = useMemo(() => mappedWallets[0], [mappedWallets])
+
     if (mappedWallets.length > 0) {
         return <button onClick={onOpenModalClick} type="button" className="py-1 px-2 bg-transparent flex items-center w-fit rounded-md space-x-1 relative font-semibold transform hover:bg-secondary-400 transition duration-200 ease-in-out">
             {
                 mappedWallets.length === 1 ?
                     <div className="flex gap-2 items-center text-sm text-primary-text">
-                        <wallet.icon className='h-5 w-5' />
+                        <firstWallet.icon className='h-5 w-5' />
                         {
-                            !wallet.isLoading && wallet.address &&
-                            <p>{shortenAddress(wallet.address)}</p>
+                            !firstWallet.isLoading && firstWallet.address &&
+                            <p>{shortenAddress(firstWallet.address)}</p>
                         }
                         <ChevronDown className="h-5 w-5" />
                     </div>
