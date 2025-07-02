@@ -5,7 +5,6 @@ import { Selector, SelectorContent, SelectorTrigger, useSelectorState } from "..
 import { Exchange } from "../../Models/Exchange";
 import React from "react";
 import { SelectItem } from "../Select/CommandNew/SelectItem/Index";
-import { Partner } from "../../Models/Partner";
 import useFormRoutes from "@/hooks/useFormRoutes";
 import { SelectedRoutePlaceholder } from "./RoutePicker/Routes";
 import { LayoutGroup, motion } from "framer-motion";
@@ -14,7 +13,7 @@ import { ImageWithFallback } from "../Common/ImageWithFallback";
 import { ChevronDown } from "lucide-react";
 import { updateForm } from "../Swap/Form/updateForm";
 
-const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
+const CexPicker: FC = () => {
     const {
         values,
         setFieldValue,
@@ -40,7 +39,7 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
                 token => token.symbol === toAsset?.symbol && token.status === 'active'
             );
 
-            if (values.currencyGroup !== currencyGroup) {
+            if (values.currencyGroup !== currencyGroup || sourceRouteToken !== selectedToken) {
                 await updateForm({
                     formDataKey: 'currencyGroup',
                     formDataValue: currencyGroup,
@@ -63,7 +62,7 @@ const CexPicker: FC<{ partner?: Partner | undefined }> = ({ partner }) => {
         };
 
         updateValues();
-    }, [selectedRoute, selectedToken, exchangeNetworks, selectedToken, exchanges]);
+    }, [selectedRoute, selectedToken, exchangeNetworks, exchanges, values]);
 
     const handleSelect = useCallback(async (exchange: Exchange) => {
         updateForm({
