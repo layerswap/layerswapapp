@@ -74,6 +74,7 @@ export function SwapDataProvider({ children }) {
     const [selectedSourceAccount, setSelectedSourceAccount] = useState<{ wallet: Wallet, address: string } | undefined>()
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
     const [swapDataFromQuery, setSwapDataFromQuery] = useState<SwapResponse | undefined>(undefined)
+
     const [recentNetworks, setRecentNetworks] = usePersistedState<RecentNetworks>({ sourceNetworks: [], destinationNetworks: [] }, 'recentNetworks', 'localStorage');
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `/swaps/${swapId}?exclude_deposit_actions=true`
