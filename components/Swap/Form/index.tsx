@@ -33,10 +33,13 @@ import { ValidationProvider } from "@/context/validationErrorContext";
 import { PendingSwap } from "./PendingSwap";
 import { QueryParams } from "@/Models/QueryParams";
 import VaulDrawer from "@/components/modal/vaulModal";
-import NetworkExchangeTabs from "./NetworkExchangeTabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./NetworkExchangeTabs";
 import NetworkForm from "./NetworkForm";
 import ExchangeForm from "./ExchangeForm";
 import useShowAddressNote from "@/hooks/useShowAddressNote";
+import { Widget } from "@/components/Widget/Index";
+import NetworkTabIcon from "@/components/icons/NetworkTabIcon";
+import ExchangeTabIcon from "@/components/icons/ExchangeTabIcon";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -192,34 +195,46 @@ export default function Form() {
                 <SwapDetails type="contained" />
             </VaulDrawer.Snap>
         </VaulDrawer>
-        <NetworkExchangeTabs
-            networkForm={
-                <Formik
-                    innerRef={formikRef}
-                    initialValues={initialValues}
-                    validateOnMount={true}
-                    validate={validator}
-                    onSubmit={handleSubmit}
-                >
-                    <ValidationProvider>
-                        <NetworkForm partner={partner} />
-                    </ValidationProvider>
-                </Formik>
-            }
-            exchangeForm={
-                <Formik
-                    innerRef={formikRef}
-                    initialValues={initialValues}
-                    validateOnMount={true}
-                    validate={validator}
-                    onSubmit={handleSubmit}
-                >
-                    <ValidationProvider>
-                        <ExchangeForm />
-                    </ValidationProvider>
-                </Formik>
-            }
-        />
+        <Tabs defaultValue="cross-chain">
+            <TabsList>
+                <TabsTrigger
+                    label="Swap"
+                    Icon={NetworkTabIcon}
+                    value="cross-chain" />
+                <TabsTrigger
+                    label="Deposit from CEX"
+                    Icon={ExchangeTabIcon}
+                    value="exchange" />
+            </TabsList>
+            <Widget className="sm:min-h-[450px] h-full">
+                <TabsContent value="cross-chain">
+                    <Formik
+                        innerRef={formikRef}
+                        initialValues={initialValues}
+                        validateOnMount={true}
+                        validate={validator}
+                        onSubmit={handleSubmit}
+                    >
+                        <ValidationProvider>
+                            <NetworkForm partner={partner} />
+                        </ValidationProvider>
+                    </Formik>
+                </TabsContent>
+                <TabsContent value="exchange">
+                    <Formik
+                        innerRef={formikRef}
+                        initialValues={initialValues}
+                        validateOnMount={true}
+                        validate={validator}
+                        onSubmit={handleSubmit}
+                    >
+                        <ValidationProvider>
+                            <ExchangeForm />
+                        </ValidationProvider>
+                    </Formik>
+                </TabsContent>
+            </Widget>
+        </Tabs>
     </DepositMethodProvider>
 }
 
