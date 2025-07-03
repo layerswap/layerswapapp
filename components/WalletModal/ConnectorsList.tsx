@@ -263,6 +263,7 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
                 </div>
                 <button
                     onClick={() => window.open(selectedConnector.installUrl, '_blank')}
+                    type="button"
                     className="px-3 py-1 rounded-full bg-secondary-600 text-primary-500 font-semibold text-base hover:brightness-125 transition-all duration-200"
                 >
                     INSTALL
@@ -409,6 +410,7 @@ const MultichainConnectorModal: FC<MultichainConnectorModalProps> = ({ selectedC
                             const provider = providers.find(p => p.name === connector?.providerName)
                             return (
                                 <button
+                                    type="button"
                                     key={index}
                                     onClick={async () => {
                                         setShowEcosystemSelection(false);

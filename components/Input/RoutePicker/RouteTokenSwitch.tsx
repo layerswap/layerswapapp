@@ -24,6 +24,7 @@ const RouteTokenSwitch: FC = () => {
                     switchValues.map((item, index) => (
                         <Tooltip key={index}>
                             <TooltipTrigger
+                                type="button"
                                 onClick={() => { setShowTokens(item.value); }}
                                 className="z-10 flex items-center justify-center rounded-2xl px-4 py-1 relative">
                                 {activeTab === item.id && (
