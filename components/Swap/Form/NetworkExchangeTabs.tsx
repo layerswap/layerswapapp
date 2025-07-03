@@ -30,10 +30,10 @@ export const TabsList: FC<TabsListProps> = ({ children }) => {
                 onHoverStart={() => setHovered(true)}
                 onHoverEnd={() => setHovered(false)}
                 animate={{ width: hovered ? 180 : 48 }}
-                className="absolute right-full top-24 overflow-hidden rounded-l-lg max-sm:right-19 max-sm:z-20 max-sm:top-[15px] max-sm:w-16! max-sm:rounded-lg"
+                className="absolute right-full top-24 overflow-hidden rounded-l-xl max-sm:right-19 max-sm:z-20 max-sm:top-[13px] max-sm:w-fit! max-sm:rounded-lg"
                 transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
             >
-                <div className="flex flex-col bg-secondary-500 h-full !pl-1.5 !pr-3 py-2 w-full space-y-2 max-sm:flex-row max-sm:space-y-0 max-sm:pr-1.5! max-sm:py-1.5">
+                <div className="flex flex-col bg-secondary-500 h-full p-1.5 sm:p-2 w-full space-y-2 max-sm:flex-row max-sm:space-y-0 max-sm:space-x-2">
                     {React.Children.map(children, child =>
                         React.isValidElement(child)
                             ? React.cloneElement(child as React.ReactElement<TabsTriggerProps>, { isHovered: hovered })
@@ -59,7 +59,7 @@ export const TabsTrigger: FC<TabsTriggerProps> = ({ value, isHovered, label, Ico
             type="button"
             onClick={() => ctx.setActiveId(value)}
             className={clsx(
-                'w-full text-primary-text flex items-center justify-start !p-1 hover:bg-secondary-100 overflow-hidden rounded-lg max-sm:justify-center max-sm:px-0',
+                'w-full text-primary-text flex items-center justify-start !p-1 hover:bg-secondary-100 overflow-hidden rounded-md max-sm:justify-center max-sm:px-0',
                 { 'bg-secondary-300': isActive }
             )}
         >
