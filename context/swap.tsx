@@ -56,7 +56,7 @@ export type SwapData = {
     swapTransaction: SwapTransaction | undefined,
     swapDataFromQuery?: SwapResponse | undefined,
     selectedSourceAccount?: { wallet: Wallet, address: string }
-    recentNetworks: RecentNetworks
+    recentNetworks?: RecentNetworks
 }
 
 export type RecentNetworks = {
