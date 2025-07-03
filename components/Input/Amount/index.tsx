@@ -52,7 +52,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     return (<>
         <div className="flex flex-col w-full bg-secondary-500 rounded-lg">
-            <div className="relative w-full in-has-[.exchange-amount-field]:pb-2">
+            <div className="relative w-full group-[.exchange-amount-field]:pb-2">
                 <NumericInput
                     disabled={diasbled}
                     placeholder={placeholder}
@@ -62,13 +62,13 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     name={name}
                     ref={amountRef}
                     precision={fromCurrency?.precision}
-                    className="w-full text-[28px] text-primary-text placeholder:!text-primary-text leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal in-has-[.exchange-amount-field]:px-2 in-has-[.exchange-amount-field]:pb-2 in-has-[.exchange-amount-field]:pr-2 pl-0"
+                    className="w-full text-[28px] text-primary-text placeholder:!text-primary-text leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal group-[.exchange-amount-field]:px-4 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 pl-0"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value), fromCurrencyPriceInUsd);
                     }}
                 />
-                <span className="text-base leading-5 font-medium text-secondary-text in-has-[.exchange-amount-field]:px-2">
+                <span className="text-base leading-5 font-medium text-secondary-text group-[.exchange-amount-field]:px-4">
                     {`$${requestedAmountInUsd ?? 0}`}
                 </span>
             </div>
