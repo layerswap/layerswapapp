@@ -19,7 +19,7 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
    const query = useQueryState()
 
    return (
-      <div className="w-full grid grid-cols-5 px-6 mt-3 pb-2" >
+      <div className="w-full grid grid-cols-5 px-6 mt-3 pb-2 max-sm:pl-0 max-sm:pr-8" >
          {
             goBack &&
             <IconButton onClick={goBack}
@@ -31,7 +31,7 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
             </IconButton>
          }
          {
-            !query.hideLogo && <div className='justify-self-center self-center col-start-2 col-span-3 mx-auto overflow-hidden md:hidden headerLogo'>
+            !query.hideLogo && <div className="self-center col-start-1 md:col-start-2 md:col-span-3 justify-self-start md:justify-self-center md:hidden">
                <GoHomeButton />
             </div>
          }
@@ -46,7 +46,7 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
                   <ChatIcon className="h-6 w-6" strokeWidth="2" />
                }>
             </IconButton>
-            <div className="fixed-width-container">
+            <div className="fixed-width-container max-sm:bg-secondary-500 max-sm:rounded-lg max-sm:p-0.5">
                <LayerswapMenu />
             </div>
          </div>
