@@ -26,7 +26,7 @@ export const SwapDataStateContext = createContext<SwapData>({
     withdrawType: undefined,
     swapTransaction: undefined,
     depositActionsResponse: undefined,
-    recentNetworks: { sourceNetworks: [], destinationNetworks: [] },
+    recentNetworks: undefined,
 });
 
 export const SwapDataUpdateContext = createContext<UpdateSwapInterface | null>(null);
@@ -60,8 +60,14 @@ export type SwapData = {
 }
 
 export type RecentNetworks = {
-    sourceNetworks: string[],
-    destinationNetworks: string[]
+    sourceNetworks: {
+        network: string
+        token?: string
+    }[],
+    destinationNetworks: {
+        network: string
+        token?: string
+    }[],
 }
 
 export function SwapDataProvider({ children }) {
@@ -177,7 +183,11 @@ export function SwapDataProvider({ children }) {
         if (!swap?.swap.id)
             throw new Error("Could not create swap")
 
-        setRecentNetworks(updateRecentNetworks(recentNetworks, fromExchange ? undefined : from.name, to.name));
+        setRecentNetworks(prev => updateRecentNetworks(
+            prev,
+            fromExchange ? undefined : { network: from.name, token: fromCurrency?.symbol },
+            { network: to.name, token: toCurrency?.symbol }
+        ));
 
         window.safary?.track({
             eventType: 'swap',
@@ -251,22 +261,28 @@ export function useSwapDataUpdate() {
     return updateFns;
 }
 
+const moveToEnd = (
+    array: { network: string, token?: string, }[],
+    item: { network: string, token?: string, },
+): { network: string, token?: string, }[] => {
+    const filtered = array.filter(existing => !(existing.network === item.network && existing.token === item.token));
+    return [...filtered, item];
+}
+
+
 const updateRecentNetworks = (
     prev: RecentNetworks,
-    fromName?: string,
-    toName?: string
+    fromObject?: { network: string, token?: string, },
+    toObject?: { network: string, token?: string, },
 ): RecentNetworks => {
-    const moveToEnd = (array: string[], item: string): string[] => {
-        const filtered = array.filter(i => i !== item);
-        return [...filtered, item];
-    };
+
 
     return {
-        sourceNetworks: fromName
-            ? moveToEnd(prev.sourceNetworks || [], fromName)
+        sourceNetworks: fromObject
+            ? moveToEnd(prev.sourceNetworks || [], fromObject,)
             : (prev.sourceNetworks || []),
-        destinationNetworks: toName
-            ? moveToEnd(prev.destinationNetworks || [], toName)
+        destinationNetworks: toObject
+            ? moveToEnd(prev.destinationNetworks || [], toObject,)
             : (prev.destinationNetworks || []),
     };
 }

@@ -10,6 +10,7 @@ import { NetworkBalance } from "../Models/Balance";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL, resolveRoutesURLForSelectedAssetGroup } from "../helpers/routes";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 import { Exchange, ExchangeToken } from "@/Models/Exchange";
+import { RecentNetworks, useSwapDataState } from "@/context/swap";
 
 const Titles: { [name: string]: TitleElement } = {
     topAssets: { type: 'group_title', text: 'Top Assets' },
@@ -18,6 +19,7 @@ const Titles: { [name: string]: TitleElement } = {
     networks: { type: 'group_title', text: 'Networks' },
     tokens: { type: 'group_title', text: 'Tokens' },
     allTokens: { type: 'group_title', text: 'All' },
+    recentNetworks: { type: 'group_title', text: 'Recent Networks' },
 };
 
 type Props = {
@@ -29,6 +31,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const { routes, isLoading: routesLoading } = useRoutes({ direction, values });
     const { exchangesRoutes, isLoading: exchangesRoutesLoading } = useExchangeRoutes({ direction, values })
     const { exchangesRoutes: exchangeSourceNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeDestinationRoutes({ direction: "from", currencyGroup: values.currencyGroup || {} as ExchangeToken });
+    const { recentNetworks } = useSwapDataState()
 
     const balances = useAllBalances({ direction });
     const exchange = values.fromExchange
@@ -37,7 +40,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const sortedRoutes = useMemo(() => sortRoutes(routes, direction, balances), [routes, direction, balances]);
 
     const routeElements = useMemo(() => {
-        const grouped = groupRoutes(sortedRoutes, direction, balances, search);
+        const grouped = groupRoutes(sortedRoutes, direction, balances, search, recentNetworks);
         if (direction !== "to" && topTokens.length > 0 && !search) {
             return [Titles.topAssets, ...topTokens, ...grouped];
         }
@@ -186,7 +189,8 @@ function groupRoutes(
     routes: NetworkRoute[],
     direction: SwapDirection,
     balances: Record<string, NetworkBalance> | null,
-    search?: string
+    search?: string,
+    recentNetworks?: RecentNetworks
 ): RowElement[] {
     if (search) {
         const networks = routes.filter(r =>
@@ -222,7 +226,11 @@ function groupRoutes(
                 : r
         }) as NetworkElement);
 
+    const recentList = (direction === 'from' ? recentNetworks?.sourceNetworks : recentNetworks?.destinationNetworks);
+    const recent = recentList ? getRecentNetworkRoutes(recentList, routes) : [];
+
     return [
+        ...(recent.length ? [Titles.recentNetworks, ...recent] : []),
         ...(popularNetworks.length ? [Titles.popular, ...popularNetworks] : []),
         ...(remaining.length ? [Titles.allNetworks, ...remaining] : [])
     ];
@@ -355,3 +363,18 @@ function useExchangeDestinationRoutes({ direction, currencyGroup, networkTypes }
     return { exchangesRoutes, isLoading }
 }
 
+function getRecentNetworkRoutes(
+    recent: { network: string; token?: string }[],
+    routes: NetworkRoute[],
+    count = 4
+): NetworkTokenElement[] {
+    return recent.slice(-count).flatMap(({ network, token }) => {
+        const route = routes.find(r => r.name === network);
+        if (!route || !token) return [];
+
+        const matchedToken = route.tokens?.find(t => t.symbol === token);
+        return matchedToken
+            ? [{ type: 'network_token', route: { token: matchedToken, route } } as NetworkTokenElement]
+            : [];
+    });
+}
