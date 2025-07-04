@@ -34,7 +34,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const exchange = values.fromExchange
 
     const topTokens = useMemo(() => getTopTokens(routes, balances), [routes, balances]);
-    const sortedRoutes = useMemo(() => sortRoutes(routes, direction, balances), [routes, direction, balances]);
+    const sortedRoutes = useMemo(() => sortRoutes(routes, balances), [routes, balances]);
 
     const routeElements = useMemo(() => {
         const grouped = groupRoutes(sortedRoutes, direction, balances, search);
@@ -156,15 +156,20 @@ function getTopTokens(routes: NetworkRoute[], balances: Record<string, NetworkBa
         .map(({ token, route }) => ({ type: 'top_token', route: { token, route } }));
 }
 
-function sortRoutes(routes: NetworkRoute[], direction: SwapDirection, balances: Record<string, NetworkBalance> | null): NetworkRoute[] {
-    const sorted = [...routes];
+function sortRoutes(
+    routes: NetworkRoute[],
+    balances: Record<string, NetworkBalance> | null
+): NetworkRoute[] {
+    return [...routes].sort((a, b) => {
+        const balanceA = balances?.[a.name]?.totalInUSD || 0;
+        const balanceB = balances?.[b.name]?.totalInUSD || 0;
 
-    sorted.sort((a, b) => (direction !== 'to' && balances)
-        ? (balances?.[b.name]?.totalInUSD || 0) - (balances?.[a.name]?.totalInUSD || 0)
-        : a.display_name.localeCompare(b.display_name)
-    )
+        if (balanceB !== balanceA) {
+            return balanceB - balanceA;
+        }
 
-    return sorted;
+        return a.display_name.localeCompare(b.display_name);
+    });
 }
 
 function sortGroupedTokensByBalance(tokenElements: GroupedTokenElement[], balances: Record<string, NetworkBalance>): GroupedTokenElement[] {
@@ -214,11 +219,11 @@ function groupRoutes(
         : [];
 
     const remaining = routes
-        .filter(r => !popularRoutes.includes(r.name))
+        .filter(r => direction === 'from' || !popularRoutes.includes(r.name))
         .map(r => ({
             type: 'network',
             route: direction === 'from'
-                ? { ...r, tokens: sortNetworkTokensByBalance(r, balances) }
+                ? { ...r, tokens: sortNetworkTokens(r, balances) }
                 : r
         }) as NetworkElement);
 
@@ -237,8 +242,9 @@ function groupExchanges(exchangesRoutes: (Exchange)[], search?: string): Exchang
         ]
     }
 
-    const exchanges = exchangesRoutes.map((r): Exchange => ({ ...r }))
-
+    const exchanges = exchangesRoutes
+        .map((r): Exchange => ({ ...r }))
+        .sort((a, b) => a.name.localeCompare(b.name));
     return [
         ...exchanges,
     ]
@@ -269,23 +275,33 @@ function groupTokens(routes: NetworkRoute[], search?: string): GroupTokensResult
         }
     }
 
-    const groupedTokens: GroupedTokenElement[] = Object.entries(tokenMap).map(([symbol, items]) => ({
-        type: 'grouped_token',
-        symbol,
-        items,
-    }));
+    const groupedTokens: GroupedTokenElement[] = Object.entries(tokenMap)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([symbol, items]) => ({
+            type: 'grouped_token',
+            symbol,
+            items
+        }));
 
     return [Titles.allTokens, ...groupedTokens];
 }
 
-
-
 // ---------- Sorting ----------
 
-function sortNetworkTokensByBalance(route: NetworkRoute, balances: Record<string, NetworkBalance> | null): NetworkRouteToken[] {
-    return [...(route.tokens || [])].sort((a, b) =>
-        getTokenBalanceUSD(route, b, balances || {}) - getTokenBalanceUSD(route, a, balances || {})
-    );
+function sortNetworkTokens(
+    route: NetworkRoute,
+    balances: Record<string, NetworkBalance> | null
+): NetworkRouteToken[] {
+    return [...(route.tokens || [])].sort((a, b) => {
+        const balanceA = getTokenBalanceUSD(route, a, balances || {});
+        const balanceB = getTokenBalanceUSD(route, b, balances || {});
+
+        if (balanceB !== balanceA) {
+            return balanceB - balanceA; // Descending by balance
+        }
+
+        return a.symbol.localeCompare(b.symbol); // Ascending by symbol
+    });
 }
 
 // ---------- Resolvers ----------
