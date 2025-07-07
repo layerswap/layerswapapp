@@ -2,17 +2,17 @@ import { useFormikContext } from "formik";
 import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import NumericInput from "../NumericInput";
-import { useQuote } from "@/context/feeContext";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { useSwapDataState } from "@/context/swap";
 import { resolveMaxAllowedAmount } from "./helpers";
+import { useQuoteData } from "@/hooks/useFee";
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
     const { fromAsset: fromCurrency, from, amount, toAsset: toCurrency, fromExchange } = values || {};
-    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, quote: fee } = useQuote()
+    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, quote: fee } = useQuoteData(values)
 
     const { selectedSourceAccount } = useSwapDataState()
     const sourceAddress = selectedSourceAccount?.address
@@ -52,7 +52,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     return (<>
         <div className="flex flex-col w-full bg-secondary-500 rounded-lg">
-            <div className="relative w-full group-[.exchange-amount-field]:pb-2">
+            <div className={`relative w-full group-[.exchange-amount-field]:pb-2`}>
                 <NumericInput
                     disabled={diasbled}
                     placeholder={placeholder}
@@ -62,7 +62,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     name={name}
                     ref={amountRef}
                     precision={fromCurrency?.precision}
-                    className="w-full text-[28px] text-primary-text placeholder:!text-primary-text leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal group-[.exchange-amount-field]:px-4 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 pl-0"
+                    className="w-full text-[28px] text-primary-text placeholder:!text-primary-text leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal group-[.exchange-amount-field]:px-4 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! pl-0"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value), fromCurrencyPriceInUsd);

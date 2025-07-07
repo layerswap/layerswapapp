@@ -76,7 +76,7 @@ const CexPicker: FC = () => {
     return (
         <div className="flex w-full flex-col self-end relative ml-auto items-center">
             <Selector>
-                <SelectorTrigger disabled={false}>
+                <SelectorTrigger disabled={false} className="bg-secondary-500">
                     <SelectedNetworkDisplay exchange={fromExchange} placeholder="Select Token" />
                 </SelectorTrigger>
                 <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search" header="">

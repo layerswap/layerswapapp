@@ -12,10 +12,8 @@ import { Wallet, WalletProvider } from '../Models/WalletProvider';
 import useWallet from '../hooks/useWallet';
 import { Network } from '../Models/Network';
 import { resolvePersistantQueryParams } from '../helpers/querryHelper';
-import { useQuote } from './feeContext';
 import { SwapStatus } from '../Models/SwapStatus';
 import { LayerSwapAppSettings } from '@/Models/LayerSwapAppSettings';
-import { useSettingsState } from './settings';
 import { TrackEvent } from "@/pages/_document";
 import { parse, ParsedUrlQuery } from 'querystring';
 
