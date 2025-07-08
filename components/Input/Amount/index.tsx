@@ -9,17 +9,25 @@ import { resolveMaxAllowedAmount } from "./helpers";
 import { useQuoteData } from "@/hooks/useFee";
 
 interface AmountFieldProps {
-  usdPosition?: "right" | "bottom";
+    usdPosition?: "right" | "bottom";
 }
 
 const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: AmountFieldProps, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
-    const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
     const { fromAsset: fromCurrency, from, amount, toAsset: toCurrency, fromExchange } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, quote: fee } = useQuoteData(values)
     const name = "amount"
     const amountRef = useRef(ref)
     const suffixRef = useRef<HTMLSpanElement>(null);
+
+    const sourceCurrencyPriceInUsd = fee?.quote.source_token?.price_in_usd || fromCurrency?.price_in_usd;
+
+    const requestedAmountInUsd = useMemo(() => {
+        const amountNumber = Number(amount);
+        if (isNaN(amountNumber) || amountNumber <= 0 || !sourceCurrencyPriceInUsd)
+            return undefined;
+        return (sourceCurrencyPriceInUsd * amountNumber).toFixed(2)
+    }, [amount, sourceCurrencyPriceInUsd]);
 
     useLayoutEffect(() => {
         const input = amountRef.current;
@@ -52,20 +60,6 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
 
     const disabled = Boolean(fromExchange && !toCurrency)
 
-    const updateRequestedAmountInUsd = useCallback((requestedAmount: number, price_in_usd: number | undefined) => {
-        if (price_in_usd && !isNaN(requestedAmount)) {
-            setRequestedAmountInUsd((price_in_usd * requestedAmount).toFixed(2));
-        } else if (isNaN(requestedAmount) || requestedAmount <= 0) {
-            setRequestedAmountInUsd(undefined);
-        }
-    }, [requestedAmountInUsd, fee]);
-
-    const fromCurrencyPriceInUsd = fee?.quote.source_token?.price_in_usd || fromCurrency?.price_in_usd;
-
-    useEffect(() => {
-        if (fee && amount) updateRequestedAmountInUsd(Number(amount), fromCurrencyPriceInUsd)
-    }, [amount, fromCurrency, fee])
-
     return (<>
         <div className="flex flex-col w-full bg-secondary-500 rounded-lg">
             <div className={`relative w-full group-[.exchange-amount-field]:pb-2 group ${usdPosition === "right" ? "focus-within:[&_.usd-suffix]:invisible" : ""}`}>
@@ -81,7 +75,6 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
                     className="w-full text-[28px] text-primary-text placeholder:!text-primary-text leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal group-[.exchange-amount-field]:px-2.5 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! pl-0"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
-                        updateRequestedAmountInUsd(parseFloat(e.target.value), fromCurrencyPriceInUsd);
                     }}
                 />
                 <span className={`${usdPosition === "right" ? "absolute bottom-4" : ""} usd-suffix text-base font-medium text-secondary-text pointer-events-none`} ref={suffixRef}>
