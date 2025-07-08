@@ -152,7 +152,7 @@ export default function Form() {
     useEffect(() => {
         formikRef.current?.validateForm();
     }, [minAllowedAmount, maxAllowedAmount, selectedSourceAccount]);
-console.log('formikRef', formikRef) 
+
     const handleShowSwapModal = useCallback((value: boolean) => {
         setShowSwapModal(value)
         if (swap?.id) {

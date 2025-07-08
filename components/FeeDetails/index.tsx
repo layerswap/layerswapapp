@@ -14,6 +14,7 @@ import Clock from '../icons/Clock';
 import rewardCup from '@/public/images/rewardCup.png'
 import Image from 'next/image'
 import { Network } from '@/Models/Network';
+import ExchangeGasIcon from '../icons/ExchangeGasIcon';
 
 export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
     from?: Network;
@@ -99,7 +100,9 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
             {
                 displayFeeInUsd &&
                 <div className='inline-flex items-center gap-1 pr-4'>
-                    <GasIcon />
+                    {!values.fromExchange ?
+                        <GasIcon /> : <ExchangeGasIcon />
+                    }
                     <p>
                         {displayFeeInUsd}
                     </p>
