@@ -92,7 +92,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                             }
                                         </div>
                                         <div className="relative group exchange-amount-field px-1">
-                                            <AmountField />
+                                            <AmountField usdPosition="right"/>
                                         </div>
                                     </div>
                                 </div>

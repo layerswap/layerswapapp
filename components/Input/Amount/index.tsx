@@ -8,7 +8,11 @@ import { useSwapDataState } from "@/context/swap";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { useQuoteData } from "@/hooks/useFee";
 
-const AmountField = forwardRef(function AmountField(_, ref: any) {
+interface AmountFieldProps {
+  usdPosition?: "right" | "bottom";
+}
+
+const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: AmountFieldProps, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
     const { fromAsset: fromCurrency, from, amount, toAsset: toCurrency, fromExchange } = values || {};
@@ -26,7 +30,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         const font = getFontFromElement(input);
         const width = getTextWidth(input.value || "0", font);
 
-        suffix.style.left = `${width + 20}px`;
+        suffix.style.left = `${width + 16}px`;
     }, [amount, requestedAmountInUsd]);
 
     const { selectedSourceAccount } = useSwapDataState()
@@ -64,7 +68,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     return (<>
         <div className="flex flex-col w-full bg-secondary-500 rounded-lg">
-            <div className={`relative w-full group-[.exchange-amount-field]:pb-2 group focus-within:[&_.usd-suffix]:invisible`}>
+            <div className={`relative w-full group-[.exchange-amount-field]:pb-2 group ${usdPosition === "right" ? "focus-within:[&_.usd-suffix]:invisible" : ""}`}>
                 <NumericInput
                     disabled={disabled}
                     placeholder={placeholder}
@@ -74,14 +78,14 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     name={name}
                     ref={amountRef}
                     precision={fromCurrency?.precision}
-                    className="w-full text-[28px] text-primary-text placeholder:!text-primary-text leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal group-[.exchange-amount-field]:px-4 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! pl-0"
+                    className="w-full text-[28px] text-primary-text placeholder:!text-primary-text leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal group-[.exchange-amount-field]:px-2.5 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! pl-0"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                         updateRequestedAmountInUsd(parseFloat(e.target.value), fromCurrencyPriceInUsd);
                     }}
                 />
-                <span className="usd-suffix text-base font-medium text-secondary-text pointer-events-none group-[.exchange-amount-field]:absolute group-[.exchange-amount-field]:bottom-4" ref={suffixRef}>
-                    ${requestedAmountInUsd ?? "0"}
+                <span className={`${usdPosition === "right" ? "absolute bottom-4" : ""} usd-suffix text-base font-medium text-secondary-text pointer-events-none`} ref={suffixRef}>
+                    {`$${requestedAmountInUsd ?? 0}`}
                 </span>
             </div>
         </div>
