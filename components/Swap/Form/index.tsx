@@ -20,7 +20,6 @@ import { useQueryState } from "@/context/query";
 import TokenService from "@/lib/TokenService";
 import LayerSwapAuthApiClient from "@/lib/apiClients/userAuthApiClient";
 import { AnimatePresence } from "framer-motion";
-import { useQuote } from "@/context/feeContext";
 import useWallet from "@/hooks/useWallet";
 import { DepositMethodProvider } from "@/context/depositMethodContext";
 import { dynamicWithRetries } from "@/lib/dynamicWithRetries";
@@ -40,6 +39,7 @@ import useShowAddressNote from "@/hooks/useShowAddressNote";
 import { Widget } from "@/components/Widget/Index";
 import NetworkTabIcon from "@/components/icons/NetworkTabIcon";
 import ExchangeTabIcon from "@/components/icons/ExchangeTabIcon";
+import { useQuoteData } from "@/hooks/useFee";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -69,7 +69,6 @@ export default function Form() {
     const { getProvider } = useWallet()
     const addresses = useAddressesStore(state => state.addresses)
     const { getConfirmation } = useAsyncModal();
-    const { quote } = useQuote()
     const showAddressNote = useShowAddressNote()
 
     const settings = useSettingsState();
@@ -83,7 +82,7 @@ export default function Form() {
 
     const { swapResponse, selectedSourceAccount } = useSwapDataState()
     const { swap } = swapResponse || {}
-    const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useQuote()
+    const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits, quote } = useQuoteData(formikRef.current?.values || {})
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         const { destination_address, to } = values

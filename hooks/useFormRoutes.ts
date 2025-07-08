@@ -10,6 +10,7 @@ import { NetworkBalance } from "../Models/Balance";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL, resolveRoutesURLForSelectedAssetGroup } from "../helpers/routes";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 import { Exchange, ExchangeToken } from "@/Models/Exchange";
+import useExchangeNetworks from "./useExchangeNetworks";
 
 const Titles: { [name: string]: TitleElement } = {
     topAssets: { type: 'group_title', text: 'Top Assets' },
@@ -28,7 +29,7 @@ type Props = {
 export default function useFormRoutes({ direction, values }: Props, search?: string) {
     const { routes, isLoading: routesLoading } = useRoutes({ direction, values });
     const { exchangesRoutes, isLoading: exchangesRoutesLoading } = useExchangeRoutes({ direction, values })
-    const { exchangesRoutes: exchangeSourceNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeDestinationRoutes({ direction: "from", currencyGroup: values.currencyGroup || {} as ExchangeToken });
+    const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks({ values });
 
     const balances = useAllBalances({ direction });
     const exchange = values.fromExchange
@@ -43,8 +44,8 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     }, [exchangesRoutes, direction, search, values]);
 
     const exchangeNetworks = useMemo(() => {
-        return exchangeSourceNetworks;
-    }, [exchangeSourceNetworks, exchange, search]);
+        return withdrawalNetworks;
+    }, [withdrawalNetworks, exchange, search]);
 
     const tokenElements = useMemo(() => groupRoutes(routes, direction, balances, topTokens, "token", search), [routes, balances, direction, search, topTokens]);
     const selectedRoute = useMemo(() => resolveSelectedRoute(values, direction), [values, direction]);
@@ -330,4 +331,3 @@ function useExchangeDestinationRoutes({ direction, currencyGroup, networkTypes }
 
     return { exchangesRoutes, isLoading }
 }
-

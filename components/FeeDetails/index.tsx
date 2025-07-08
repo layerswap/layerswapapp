@@ -14,6 +14,7 @@ import Clock from '../icons/Clock';
 import rewardCup from '@/public/images/rewardCup.png'
 import Image from 'next/image'
 import { Network } from '@/Models/Network';
+import ExchangeGasIcon from '../icons/ExchangeGasIcon';
 
 export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
     from?: Network;
@@ -83,7 +84,7 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
     const { gas } = useSWRGas(wallet?.address, values.from, values.fromAsset)
     const LsFeeAmountInUsd = quote?.total_fee_in_usd
     const gasFeeAmountInUsd = (quote?.source_network?.token && gas) ? gas * quote.source_network?.token?.price_in_usd : null;
-    const feeAmountInUsd = (LsFeeAmountInUsd || 0) + (gasFeeAmountInUsd || 0)
+    const feeAmountInUsd = values.fromExchange ? ((LsFeeAmountInUsd || 0) + (gasFeeAmountInUsd || 0)) : (gasFeeAmountInUsd || 0)
     const displayFeeInUsd = feeAmountInUsd ? (feeAmountInUsd < 0.01 ? '<$0.01' : `$${feeAmountInUsd?.toFixed(2)}`) : null
     const displayReward = reward?.amount_in_usd ? (reward?.amount_in_usd < 0.01 ? '<$0.01' : `$${reward?.amount_in_usd?.toFixed(2)}`) : null
     const averageCompletionTime = quote?.avg_completion_time;
@@ -99,7 +100,9 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
             {
                 displayFeeInUsd &&
                 <div className='inline-flex items-center gap-1 pr-4'>
-                    <GasIcon />
+                    {!values.fromExchange ?
+                        <GasIcon /> : <ExchangeGasIcon />
+                    }
                     <p>
                         {displayFeeInUsd}
                     </p>

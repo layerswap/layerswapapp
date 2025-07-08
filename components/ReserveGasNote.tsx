@@ -2,17 +2,17 @@ import WarningMessage from "./WarningMessage"
 import { useFormikContext } from "formik"
 import { SwapFormValues } from "./DTOs/SwapFormValues"
 import { truncateDecimals } from "./utils/RoundDecimals"
-import { useQuote } from "../context/feeContext"
 import { TokenBalance } from "../Models/Balance"
 import useSWRBalance from "../lib/balances/useSWRBalance"
 import useSWRGas from "../lib/gases/useSWRGas"
 import { useSwapDataState } from "../context/swap"
+import { useQuoteData } from "@/hooks/useFee"
 
 const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: TokenBalance, networkGas: number) => void }) => {
     const {
         values,
     } = useFormikContext<SwapFormValues>();
-    const { minAllowedAmount, maxAllowedAmount } = useQuote()
+    const { minAllowedAmount, maxAllowedAmount } = useQuoteData(values)
     const { selectedSourceAccount } = useSwapDataState()
 
     const { balances } = useSWRBalance(selectedSourceAccount?.address, values.from)
