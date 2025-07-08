@@ -13,6 +13,8 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
     const { fromAsset: fromCurrency, from, amount, toAsset: toCurrency, fromExchange } = values || {};
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, quote: fee } = useQuoteData(values)
+    const mirrorRef = useRef<HTMLSpanElement>(null);
+    const [valueWidth, setValueWidth] = useState(0);
 
     const { selectedSourceAccount } = useSwapDataState()
     const sourceAddress = selectedSourceAccount?.address
@@ -33,7 +35,17 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
     const amountRef = useRef(ref)
 
-    const diasbled = Boolean(fromExchange && !toCurrency)
+    useEffect(() => {
+        if (mirrorRef.current) {
+            const observer = new ResizeObserver(() => {
+                setValueWidth(mirrorRef.current?.offsetWidth ?? 0);
+            });
+            observer.observe(mirrorRef.current);
+            return () => observer.disconnect();
+        }
+    }, [amount]);
+
+    const disabled = Boolean(fromExchange && !toCurrency)
 
     const updateRequestedAmountInUsd = useCallback((requestedAmount: number, price_in_usd: number | undefined) => {
         if (price_in_usd && !isNaN(requestedAmount)) {
@@ -49,12 +61,11 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
         if (fee && amount) updateRequestedAmountInUsd(Number(amount), fromCurrencyPriceInUsd)
     }, [amount, fromCurrency, fee])
 
-
     return (<>
         <div className="flex flex-col w-full bg-secondary-500 rounded-lg">
             <div className={`relative w-full group-[.exchange-amount-field]:pb-2`}>
                 <NumericInput
-                    disabled={diasbled}
+                    disabled={disabled}
                     placeholder={placeholder}
                     min={minAllowedAmount}
                     max={maxAllowedAmount || 0}
@@ -68,8 +79,17 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                         updateRequestedAmountInUsd(parseFloat(e.target.value), fromCurrencyPriceInUsd);
                     }}
                 />
-                <span className="text-base leading-5 font-medium text-secondary-text group-[.exchange-amount-field]:px-4">
-                    {`$${requestedAmountInUsd ?? 0}`}
+                <span
+                    ref={mirrorRef}
+                    className="invisible absolute whitespace-pre text-[28px] font-normal"
+                >
+                    {amount || placeholder}
+                </span>
+                <span
+                    className="group-[.exchange-amount-field]:absolute group-[.exchange-amount-field]:top-1/2 group-[.exchange-amount-field]:-translate-y-1/2 text-base font-medium text-secondary-text pointer-events-none"
+                    style={{ left: `${valueWidth + 28}px` }}
+                >
+                    ${requestedAmountInUsd ?? "0"}
                 </span>
             </div>
         </div>
