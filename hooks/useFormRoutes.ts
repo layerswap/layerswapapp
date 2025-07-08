@@ -30,6 +30,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const { exchangesRoutes, isLoading: exchangesRoutesLoading } = useExchangeRoutes({ direction, values })
     const { exchangesRoutes: exchangeSourceNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeDestinationRoutes({ direction: "from", currencyGroup: values.currencyGroup || {} as ExchangeToken });
 
+    
     const balances = useAllBalances({ direction });
     const exchange = values.fromExchange
 
