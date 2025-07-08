@@ -79,14 +79,14 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                             }</Address>
                                         </div>
                                     </div>
-                                    <div className="bg-secondary-500 rounded-lg p-1 pt-1.5">
+                                    <div className="bg-secondary-500 rounded-lg p-1 pt-1.5 group">
                                         <div className="flex justify-between items-center mb-2 px-2">
                                             <label htmlFor="From" className="block font-medium text-secondary-text text-sm">
                                                 Enter amount
                                             </label>
                                             {
                                                 from && destination && fromCurrency && minAllowedAmount && maxAmountFromApi &&
-                                                <div>
+                                                <div className="hidden group-focus-within:block">
                                                     <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />
                                                 </div>
                                             }

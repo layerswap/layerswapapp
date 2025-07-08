@@ -22,10 +22,10 @@ const SourcePicker = () => {
                 <SourceWalletPicker />
             </div>
         </div>
-        <div className="relative">
+        <div className="relative group">
             {
                 from && to && fromCurrency && minAllowedAmount && maxAmountFromApi &&
-                <div className="absolute z-10 -top-6 left-0">
+                <div className="absolute z-10 -top-6 left-0 hidden group-focus-within:block">
                     <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />
                 </div>
             }
