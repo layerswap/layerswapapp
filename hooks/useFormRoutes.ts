@@ -30,13 +30,13 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const { exchangesRoutes, isLoading: exchangesRoutesLoading } = useExchangeRoutes({ direction, values })
     const { exchangesRoutes: exchangeSourceNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeDestinationRoutes({ direction: "from", currencyGroup: values.currencyGroup || {} as ExchangeToken });
 
-    
     const balances = useAllBalances({ direction });
     const exchange = values.fromExchange
 
     const topTokens = useMemo(() => getTopTokens(routes, balances), [routes, balances]);
+    const sortedRoutes = useMemo(() => sortRoutes(routes, balances), [routes, balances]);
 
-    const routeElements = useMemo(() => groupRoutes(routes, direction, balances, topTokens, "network", search), [routes, balances, direction, search, topTokens]);
+    const routeElements = useMemo(() => groupRoutes(sortedRoutes, direction, balances, topTokens, "network", search), [sortedRoutes, balances, direction, search, topTokens]);
 
     const exchanges = useMemo(() => {
         const grouped = groupExchanges(exchangesRoutes, search);
@@ -47,7 +47,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         return exchangeSourceNetworks;
     }, [exchangeSourceNetworks, exchange, search]);
 
-    const tokenElements = useMemo(() => groupRoutes(routes, direction, balances, topTokens, "token", search), [routes, balances, direction, search, topTokens]);
+    const tokenElements = useMemo(() => groupRoutes(sortedRoutes, direction, balances, topTokens, "token", search), [sortedRoutes, balances, direction, search, topTokens]);
     const selectedRoute = useMemo(() => resolveSelectedRoute(values, direction), [values, direction]);
     const selectedToken = useMemo(() => resolveSelectedToken(values, direction), [values, direction]);
 
@@ -242,8 +242,8 @@ function groupByTokens(routes: NetworkRoute[]): GroupTokensResult {
             symbol,
             items
         }));
-
-
+    
+        
     return result;
 }
 
