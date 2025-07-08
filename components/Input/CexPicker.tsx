@@ -12,6 +12,7 @@ import { SearchComponent } from "./Search";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
 import { ChevronDown } from "lucide-react";
 import { updateForm } from "../Swap/Form/updateForm";
+import { NetworkRoute } from "@/Models/Network";
 
 const CexPicker: FC = () => {
     const {
@@ -32,13 +33,11 @@ const CexPicker: FC = () => {
 
             const currencyGroup = fromExchange?.token_groups?.find(group => group.symbol === toAsset?.symbol);
             const sourceRoute = exchangeNetworks?.find(route =>
-                route?.tokens?.some(token => token.symbol === toAsset?.symbol && token.status === 'active')
+                route?.token
             );
 
-            const sourceRouteToken = sourceRoute?.tokens?.find(
-                token => token.symbol === toAsset?.symbol && token.status === 'active'
-            );
-
+            const sourceRouteToken = sourceRoute?.token
+            //TODO refactor form types
             if (values.currencyGroup !== currencyGroup || sourceRouteToken !== selectedToken) {
                 await updateForm({
                     formDataKey: 'currencyGroup',
@@ -48,7 +47,7 @@ const CexPicker: FC = () => {
                 });
                 await updateForm({
                     formDataKey: 'from',
-                    formDataValue: sourceRoute,
+                    formDataValue: sourceRoute?.network as NetworkRoute,
                     shouldValidate: true,
                     setFieldValue
                 });
