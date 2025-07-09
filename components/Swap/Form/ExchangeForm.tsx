@@ -29,7 +29,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
         errors, isValid, isSubmitting
     } = useFormikContext<SwapFormValues>();
 
-    const { fromAsset: fromCurrency, from, to: destination, toAsset, refuel } = values || {};
+    const { fromAsset: fromCurrency, from, to: destination, toAsset: toCurrency } = values || {};
 
     const { isQuoteLoading, quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(values);
     const { validationMessage } = useValidationContext();
@@ -93,8 +93,10 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                             }
                                         </div>
                                         <div className="relative group exchange-amount-field px-1">
-                                            <AmountField usdPosition="right"/>
-                                            <ReceiveAmounts destination_token={toAsset} fee={quote} isFeeLoading={isQuoteLoading} source_token={fromCurrency}} />
+                                            <AmountField usdPosition="right" />
+                                            {toCurrency && fromCurrency && quote &&
+                                                <ReceiveAmounts destination_token={toCurrency} fee={quote} isFeeLoading={isQuoteLoading} source_token={fromCurrency} />
+                                            }
                                         </div>
                                     </div>
                                 </div>
