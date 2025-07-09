@@ -122,7 +122,7 @@ const Component: FC = () => {
         >
             <VaulDrawer.Snap
                 id="item-1"
-                className="pb-6 flex flex-col gap-3"
+                className="pb-4 flex flex-col gap-3"
             >
                 <div
                     className={clsx('w-full order-1', {
