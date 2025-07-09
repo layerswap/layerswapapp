@@ -9,7 +9,7 @@ type WillReceiveProps = {
     source_token: Token | undefined;
     refuel: boolean;
     fee: Quote | undefined;
-    onButtonClick: () => void;
+    onButtonClick?: () => void;
     isFeeLoading: boolean;
 }
 
@@ -19,40 +19,38 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ source_token, destination
 
     const receiveAmountInUsd = receive_amount && destination_token && fee.quote?.destination_token?.price_in_usd ? (receive_amount * fee.quote.destination_token.price_in_usd).toFixed(2) : undefined
 
-    return <div className="w-full h-full">
-        <div className="flex items-center justify-between w-full">
-            <span className="md:font-semibold text-sm text-primary-buttonTextColor leading-8 md:leading-8 flex-1">
+    return <div className="w-full h-full mt-3">
+        <div className="flex flex-col justify-between w-full px-2 pb-2">
+            <span className="block font-normal text-secondary-text text-base leading-5">
                 You will receive
             </span>
             {isFeeLoading ? (
                 <div className='h-[10px] w-16 inline-flex bg-gray-500 rounded-xs animate-pulse self-center' />
             ) :
-                <div className="text-sm md:text-base flex flex-col items-end">
+                <div className="flex">
                     {
                         source_token && destination_token && Number(parsedReceiveAmount) > 0 ?
-                            <div className="font-semibold md:font-bold text-right leading-8">
-                                <div className="flex items-center justify-end">
-                                    <p>
-                                        <>{parsedReceiveAmount}</>
-                                        &nbsp;
-                                        <span>
-                                            {destination_token?.symbol}
+                            <div className="flex items-center justify-end">
+                                <p className="text-primary-text text-base leading-5 mt-2.5 font-medium">
+                                    <>{parsedReceiveAmount}</>
+                                    &nbsp;
+                                    <span>
+                                        {destination_token?.symbol}
+                                    </span>
+                                    {
+                                        receiveAmountInUsd !== undefined && Number(receiveAmountInUsd) > 0 &&
+                                        <span className="text-secondary-text text-sm font-medium ml-2">
+                                            ${receiveAmountInUsd}
                                         </span>
-                                        {
-                                            receiveAmountInUsd !== undefined && Number(receiveAmountInUsd) > 0 &&
-                                            <span className="text-secondary-text text-xs font-medium ml-1 block md:inline-block">
-                                                (${receiveAmountInUsd})
-                                            </span>
-                                        }
-                                    </p>
-                                </div>
+                                    }
+                                </p>
                             </div>
                             : '-'
                     }
                 </div>
             }
         </div>
-        {
+        {/* {
             refuel && fee?.refuel?.amount ?
                 <p onClick={() => onButtonClick()} className='flex cursor-pointer justify-end rounded-md gap-1 items-center text-xs text-primary-buttonTextColor leading-8 md:leading-none font-semibold'>
                     <span>{(fee?.quote?.refuel_in_source && source_token) ? roundDecimals(fee?.quote?.refuel_in_source, source_token?.precision) : '-'} {source_token?.symbol}</span>
@@ -60,7 +58,7 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ source_token, destination
                 </p>
                 :
                 <></>
-        }
+        } */}
     </div>
 
 }

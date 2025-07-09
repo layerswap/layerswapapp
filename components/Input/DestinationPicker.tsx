@@ -28,7 +28,7 @@ const DestinationPicker = (props: Props) => {
 
     return <div className='flex flex-col w-full bg-secondary-500 rounded-2xl py-4.5 px-4 space-y-8'>
         <div className="flex justify-between items-center h-[20px]">
-            <label htmlFor="To" className="block font-medium text-secondary-text text-sm w-30">
+            <label htmlFor="To" className="block font-normal text-secondary-text text-base leading-5 w-30">
                 Receive at
             </label>
             <div className="w-fit">

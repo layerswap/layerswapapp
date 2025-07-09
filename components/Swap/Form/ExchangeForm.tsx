@@ -17,6 +17,7 @@ import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/Addres
 import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import MinMax from "@/components/Input/Amount/MinMax";
 import { useQuoteData } from "@/hooks/useFee";
+import { ReceiveAmounts } from "@/components/FeeDetails/ReceiveAmounts";
 
 type Props = {
     partner?: Partner;
@@ -28,7 +29,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
         errors, isValid, isSubmitting
     } = useFormikContext<SwapFormValues>();
 
-    const { fromAsset: fromCurrency, from, to: destination } = values || {};
+    const { fromAsset: fromCurrency, from, to: destination, toAsset, refuel } = values || {};
 
     const { isQuoteLoading, quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(values);
     const { validationMessage } = useValidationContext();
@@ -43,7 +44,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                             <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
                                 <div className="flex flex-col w-full py-4.5 space-y-2">
                                     <div className="flex justify-between items-center">
-                                        <label htmlFor="From" className="block font-medium text-secondary-text text-sm">
+                                        <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5">
                                             Send from
                                         </label>
                                     </div>
@@ -52,7 +53,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                     </div>
 
                                     <div className="flex justify-between items-center">
-                                        <label htmlFor="From" className="block font-medium text-secondary-text text-sm">
+                                        <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5">
                                             Send to
                                         </label>
                                     </div>
@@ -81,7 +82,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                     </div>
                                     <div className="bg-secondary-500 rounded-lg p-1 pt-1.5 group">
                                         <div className="flex justify-between items-center mb-2 px-2">
-                                            <label htmlFor="From" className="block font-medium text-secondary-text text-sm">
+                                            <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5">
                                                 Enter amount
                                             </label>
                                             {
@@ -93,6 +94,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                         </div>
                                         <div className="relative group exchange-amount-field px-1">
                                             <AmountField usdPosition="right"/>
+                                            <ReceiveAmounts destination_token={toAsset} fee={quote} isFeeLoading={isQuoteLoading} source_token={fromCurrency} refuel={refuel || false} onButtonClick={() => console.log(9999)} />
                                         </div>
                                     </div>
                                 </div>

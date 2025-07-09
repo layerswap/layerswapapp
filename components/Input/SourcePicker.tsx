@@ -15,7 +15,7 @@ const SourcePicker = () => {
 
     return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl py-4.5 px-4 space-y-8">
         <div className="flex justify-between items-center">
-            <label htmlFor="From" className="block font-medium text-secondary-text text-sm">
+            <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5">
                 Send from
             </label>
             <div className="hover:bg-secondary-400 rounded-lg p-1.5 -m-1.5">
