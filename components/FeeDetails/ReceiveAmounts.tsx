@@ -7,13 +7,11 @@ import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 type WillReceiveProps = {
     destination_token: Token | undefined;
     source_token: Token | undefined;
-    refuel: boolean;
     fee: Quote | undefined;
-    onButtonClick?: () => void;
     isFeeLoading: boolean;
 }
 
-export const ReceiveAmounts: FC<WillReceiveProps> = ({ source_token, destination_token, refuel, fee, onButtonClick, isFeeLoading }) => {
+export const ReceiveAmounts: FC<WillReceiveProps> = ({ source_token, destination_token, fee, isFeeLoading }) => {
     const receive_amount = fee?.quote.receive_amount
     const parsedReceiveAmount = truncateDecimals(receive_amount ?? 0, destination_token?.precision);
 
@@ -50,15 +48,6 @@ export const ReceiveAmounts: FC<WillReceiveProps> = ({ source_token, destination
                 </div>
             }
         </div>
-        {/* {
-            refuel && fee?.refuel?.amount ?
-                <p onClick={() => onButtonClick()} className='flex cursor-pointer justify-end rounded-md gap-1 items-center text-xs text-primary-buttonTextColor leading-8 md:leading-none font-semibold'>
-                    <span>{(fee?.quote?.refuel_in_source && source_token) ? roundDecimals(fee?.quote?.refuel_in_source, source_token?.precision) : '-'} {source_token?.symbol}</span>
-                    <span><ArrowRight className="h-3 w-3" /></span> <span>{fee?.refuel?.amount} {fee?.refuel?.token?.symbol}</span> <span className="bg-primary/20 p-1 rounded-md"><Fuel className="h-3 w-3 text-primary" /></span>
-                </p>
-                :
-                <></>
-        } */}
     </div>
 
 }
