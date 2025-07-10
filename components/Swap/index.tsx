@@ -11,10 +11,11 @@ type Props = {
 }
 import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
 import SubmitButton from '../buttons/submitButton';
+import ExchangeWithdraw from './Withdraw/ExchangeWithdraw';
 
 const SwapDetails: FC<Props> = ({ type }) => {
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
+    const { swapResponse, depositActionsResponse: depositActions } = useSwapDataState()
+    const { swap, quote } = swapResponse || {}
 
     const swapStatus = swap?.status;
     const storedWalletTransactions = useSwapTransactionStore()
@@ -43,7 +44,11 @@ const SwapDetails: FC<Props> = ({ type }) => {
             {
                 ((swapStatus === SwapStatus.UserTransferPending
                     && !(swapInputTransaction || storedWalletTransaction))) ?
-                    <Withdraw type={type} />
+                    (
+                        swap.source_exchange
+                            ? <ExchangeWithdraw swap={swap} quote={quote} depositActions={depositActions} />
+                            : <Withdraw type={type} />
+                    )
                     :
                     <>
                         <Processing />

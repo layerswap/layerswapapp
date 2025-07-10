@@ -129,9 +129,8 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
 export default ExchangeForm;
 
 const AddressButton = ({ addressItem, network, disabled }) => {
-
     return <div className="justify-between w-full items-center flex font-light space-x-2 mx-auto rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
             <div className='flex text-primary-text items-center justify-center rounded-md h-6 overflow-hidden w-6'>
                 <AddressIcon className="scale-150 h-3 w-3" address={addressItem.address} size={36} />
             </div>

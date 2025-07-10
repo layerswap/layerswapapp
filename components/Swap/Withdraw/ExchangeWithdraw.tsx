@@ -1,0 +1,231 @@
+import AddressIcon from '@/components/AddressIcon'
+import CopyButton from '@/components/buttons/copyButton'
+import { ImageWithFallback } from '@/components/Common/ImageWithFallback'
+import QRIcon from '@/components/icons/QRIcon'
+import shortenAddress from '@/components/utils/ShortenAddress'
+import useCopyClipboard from '@/hooks/useCopyClipboard'
+import useWallet from '@/hooks/useWallet'
+import { DepositAction, SwapItem, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
+import { motion } from 'framer-motion'
+import { QRCodeSVG } from 'qrcode.react'
+import React, { useCallback, useEffect } from 'react'
+import { FC, ReactNode, useState } from 'react'
+import { Popover, PopoverContent, PopoverTrigger } from "../../shadcn/popover";
+import useExchangeNetworks from '@/hooks/useExchangeNetworks'
+import { ChevronDown } from 'lucide-react'
+import { CommandItem, CommandList, CommandWrapper } from '@/components/shadcn/command'
+import { Network } from '@/Models/Network'
+import { updateForm } from '../Form/updateForm'
+
+interface Props {
+    swap: SwapItem;
+    quote: SwapQuote | undefined;
+    depositActions: DepositAction[] | undefined
+}
+
+const ExchangeWithdraw: FC<Props> = ({ swap, quote, depositActions }) => {
+    const { wallets } = useWallet();
+
+    const [showQR, setShowQR] = useState(false)
+    const destinationLogo = swap?.destination_network?.logo
+    const [copied, copy] = useCopyClipboard()
+    console.log(swap)
+    const depositAddress = depositActions?.find(da => true)?.to_address;
+    const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == swap?.destination_address?.toLowerCase())?.icon;
+
+    const handleCopy = () => {
+        if (depositAddress) {
+            copy(depositAddress)
+        }
+    }
+
+    // const handleSelect = useCallback(async (network: Network) => {
+    //     updateForm({
+    //         formDataKey: 'from',
+    //         formDataValue: network,
+    //         shouldValidate: true,
+    //         setFieldValue
+    //     });
+    // }, [values])
+
+    const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks({
+        currencyGroup: swap?.source_token?.symbol,
+        fromExchange: swap?.source_exchange?.name,
+        to: swap?.destination_network?.name,
+        toAsset: swap?.destination_token?.symbol
+    });
+
+
+    const qrCode = (
+        <motion.div
+            initial={{ opacity: 0, scale: 0.8, y: -10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="absolute right-full mr-3 top-0 z-50 bg-secondary-300 p-2 rounded-xl"
+        >
+            <div className="bg-white p-2 rounded-xl shadow-lg">
+                <QRCodeSVG
+                    className="rounded-lg"
+                    value={depositAddress || ''}
+                    includeMargin={true}
+                    size={160}
+                    level="H"
+                />
+            </div>
+        </motion.div>
+    )
+
+    const requestAmount = (
+        <span className='inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg'>
+            {swap?.requested_amount} {swap?.source_token?.symbol}
+            <CopyButton toCopy={swap?.requested_amount} iconClassName='text-secondary-text' />
+        </span>
+    )
+
+    const destinationNetwork = (
+        <span className='flex items-center gap-1'>
+            {destinationLogo && <ImageWithFallback
+                src={destinationLogo!}
+                alt="Project Logo"
+                height="16"
+                width="16"
+                loading="eager"
+                className="rounded-md object-contain"
+            />}
+            {swap?.destination_network?.display_name}
+        </span>
+    )
+
+    const sourceNetworkPopover = (
+        <Popover>
+            <PopoverTrigger asChild>
+                <button className="inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg">
+                    <ImageWithFallback
+                        src={swap?.source_network?.logo}
+                        alt="Project Logo"
+                        height="16"
+                        width="16"
+                        loading="eager"
+                        className="rounded-sm object-contain"
+                    />
+                    <span>{swap?.source_network?.display_name}</span>
+                    <span className="pointer-events-none text-shadow-primary-text-muted">
+                        <ChevronDown className="h-3.5 w-3.5 text-secondary-text" aria-hidden="true" />
+                    </span>
+                </button>
+            </PopoverTrigger>
+            <PopoverContent side='top' className="bg-secondary-300! space-y-1 p-1! rounded-lg!">
+                <CommandWrapper>
+                    <CommandList>
+                        {withdrawalNetworks?.map((item, index) => {
+                            return (
+                                <CommandItem
+                                    className='hover:bg-secondary-100 rounded-md p-1! cursor-pointer'
+                                    value={item.network.name}
+                                    key={item.network.name}
+                                    onSelect={() => {
+                                        //setValue(item);
+                                    }}
+                                >
+                                    <div className={`flex items-center justify-between w-full overflow-hidden`}>
+                                        <div className={`gap-2 relative flex items-center w-full space-y-1`}>
+                                            <div className={`h-6 w-6 shrink-0 mb-0!`}>
+                                                {item.network.logo && (
+                                                    <ImageWithFallback
+                                                        src={item.network.logo}
+                                                        alt="Project Logo"
+                                                        height="24"
+                                                        width="24"
+                                                        loading="eager"
+                                                        className="rounded-md object-contain"
+                                                    />
+                                                )}
+                                            </div>
+                                            <div className="flex justify-between w-full items-center">
+                                                <span className="flex items-center pb-0.5 text-sm font-medium text-primary-text pr-20">
+                                                    {item.network.display_name}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CommandItem>
+                            );
+                        })}
+                    </CommandList>
+                </CommandWrapper>
+            </PopoverContent>
+        </Popover>
+    )
+
+    return (
+        <div className="rounded-lg space-y-4 text-white">
+            <div className="space-y-3">
+                <Step
+                    number={1}
+                    label={
+                        <div className="flex items-center justify-between gap-2 relative">
+                            <span>Copy the deposit address</span>
+                            <div className="relative">
+                                <QRIcon
+                                    className="bg-secondary-300 p-1 rounded-lg cursor-pointer hover:opacity-80"
+                                    onClick={() => setShowQR(!showQR)}
+                                />
+                                {showQR && qrCode}
+                            </div>
+                        </div>
+                    }
+                    value={
+                        <span className="cursor-pointer hover:underline" >
+                            {shortenAddress(depositAddress || '')}
+                        </span>
+                    }
+                />
+                <Step
+                    number={2}
+                    label={
+                        <span>
+                            Send {requestAmount} via {sourceNetworkPopover} using the deposit address
+                        </span>
+                    }
+                />
+                <Step
+                    number={3}
+                    label={
+                        <span className='flex items-center gap-1'>
+                            Receive {quote?.receive_amount} {swap?.destination_token?.symbol} at {destinationNetwork}
+                        </span>
+                    }
+                    value={
+                        <span className="cursor-pointer hover:underline flex items-center gap-2">
+                            {WalletIcon ?
+                                <WalletIcon className="w-4 h-4 p-0.5 bg-white rounded-sm" />
+                                :
+                                <AddressIcon className="h-4 w-4" address={swap.destination_address} size={36} rounded='4px' />
+
+                            }
+                            {shortenAddress(swap.destination_address)}
+                        </span>
+                    }
+                />
+            </div>
+            <button onClick={handleCopy} className="bg-primary hover:bg-primary/90 w-full py-2 rounded-md font-semibold">
+                Copy deposit address
+            </button>
+        </div>
+    )
+}
+
+const Step = ({ number, label, value }: { number: number, label: ReactNode, value?: ReactNode }) => (
+    <div className="flex items-start space-x-3 bg-secondary-500 p-3 rounded-lg">
+        <div className="w-6 h-6 rounded-md bg-secondary-400 text-primary-text flex items-center justify-center text-base font-normal leading-6">
+            {number}
+        </div>
+        <div className="flex-1">
+            <div className="font-normal text-base leading-6">{label}</div>
+            <div className="text-sm text-secondary-text">{value}</div>
+        </div>
+    </div>
+)
+
+export default ExchangeWithdraw

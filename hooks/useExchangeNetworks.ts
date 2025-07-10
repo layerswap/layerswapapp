@@ -1,5 +1,4 @@
 import useSWR from "swr";
-import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { resolveExchangeHistoricalNetworksURL } from "@/helpers/routes";
 import { ApiResponse } from "@/Models/ApiResponse";
 import { ExchangeNetwork } from "@/Models/Exchange";
@@ -7,11 +6,14 @@ import { useMemo } from "react";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 
 type Props = {
-    values: SwapFormValues;
+    fromExchange?: string | undefined;
+    currencyGroup?: string | undefined;
+    to?: string | undefined;
+    toAsset?: string | undefined;
 }
 
-export default function useExchangeNetworks({ values }: Props) {
-    const exchangeNetworksURL = resolveExchangeHistoricalNetworksURL('from', values)
+export default function useExchangeNetworks({ fromExchange, currencyGroup, to, toAsset }: Props) {
+    const exchangeNetworksURL = resolveExchangeHistoricalNetworksURL("from", { fromExchange, currencyGroup, to, toAsset });
 
     const apiClient = new LayerSwapApiClient()
     const {

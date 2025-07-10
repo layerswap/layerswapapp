@@ -29,7 +29,12 @@ type Props = {
 export default function useFormRoutes({ direction, values }: Props, search?: string) {
     const { routes, isLoading: routesLoading } = useRoutes({ direction, values });
     const { exchangesRoutes, isLoading: exchangesRoutesLoading } = useExchangeRoutes({ direction, values })
-    const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks({ values });
+    const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks({
+        fromExchange: values.fromExchange?.name,
+        currencyGroup: values.currencyGroup?.symbol,
+        to: values.to?.name,
+        toAsset: values.toAsset?.symbol
+    });
 
     const balances = useAllBalances({ direction });
     const exchange = values.fromExchange
