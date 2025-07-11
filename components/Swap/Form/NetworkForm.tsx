@@ -23,7 +23,7 @@ import { QueryParams } from "@/Models/QueryParams";
 import { WalletProvider } from "@/Models/WalletProvider";
 import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import { updateForm, updateFormBulk } from "./updateForm";
-import { useQuoteData } from "@/hooks/useFee";
+import { useQuote } from "@/context/feeContext";
 
 const RefuelModal = dynamic(() => import("@/components/FeeDetails/RefuelModal"), {
     loading: () => <></>,
@@ -55,11 +55,15 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const { selectedSourceAccount } = useSwapDataState();
     const { providers, wallets } = useWallet();
-    const { minAllowedAmount, isQuoteLoading, quote } = useQuoteData(values);
+    const { minAllowedAmount, valuesChanger, isQuoteLoading, quote } = useQuote();
     const toAsset = values.toAsset;
     const fromAsset = values.fromAsset;
     const { validationMessage } = useValidationContext();
     const query = useQueryState();
+
+    useEffect(() => {
+        valuesChanger(values);
+    }, [values, values.destination_address]);
 
     useEffect(() => {
         if (!source || !toAsset || !toAsset.refuel) {

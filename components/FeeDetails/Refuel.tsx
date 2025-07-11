@@ -6,7 +6,7 @@ import { Info } from "lucide-react";
 import { isValidAddress } from "../../lib/address/validator";
 import ResizablePanel from "../ResizablePanel";
 import useSWRBalance from "../../lib/balances/useSWRBalance";
-import { useQuoteData } from "@/hooks/useFee";
+import { useQuote } from "@/context/feeContext";
 
 type RefuelProps = {
     onButtonClick: () => void
@@ -19,7 +19,7 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick }) => {
         setFieldValue
     } = useFormikContext<SwapFormValues>();
     const { toAsset: toCurrency, to, destination_address, refuel } = values
-    const { quote } = useQuoteData(values)
+    const { quote } = useQuote()
 
     const { balances } = useSWRBalance(destination_address, to)
 

@@ -7,7 +7,7 @@ import SubmitButton from '../buttons/submitButton';
 import SecondaryButton from '../buttons/secondaryButton';
 import { useFormikContext } from 'formik';
 import useSWRBalance from '../../lib/balances/useSWRBalance';
-import { useQuoteData } from '@/hooks/useFee';
+import { useQuote } from '@/context/feeContext';
 
 type RefuelModalProps = {
     openModal: boolean,
@@ -22,7 +22,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
 
     const { to, toAsset: toCurrency, refuel, destination_address } = values || {};
 
-    const { quote: fee } = useQuoteData(values)
+    const { quote: fee } = useQuote()
 
     const nativeAsset = to?.token
     const token_usd_price = fee?.quote?.destination_network?.token?.price_in_usd || nativeAsset?.price_in_usd

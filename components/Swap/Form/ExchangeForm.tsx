@@ -16,7 +16,7 @@ import AddressIcon from "@/components/AddressIcon";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import MinMax from "@/components/Input/Amount/MinMax";
-import { useQuoteData } from "@/hooks/useFee";
+import { useQuote } from "@/context/feeContext";
 
 type Props = {
     partner?: Partner;
@@ -30,8 +30,12 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
 
     const { fromAsset: fromCurrency, from, to: destination } = values || {};
 
-    const { isQuoteLoading, quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(values);
+    const { valuesChanger, isQuoteLoading, quote, maxAllowedAmount, minAllowedAmount } = useQuote();
     const { validationMessage } = useValidationContext();
+
+    useEffect(() => {
+        valuesChanger(values);
+    }, [values, values.destination_address]);
 
     return (
         <>
@@ -85,9 +89,9 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                                 Enter amount
                                             </label>
                                             {
-                                                from && destination && fromCurrency && minAllowedAmount && maxAmountFromApi &&
+                                                from && destination && fromCurrency && minAllowedAmount && maxAllowedAmount &&
                                                 <div className="hidden group-focus-within:block">
-                                                    <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />
+                                                    <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAllowedAmount} />
                                                 </div>
                                             }
                                         </div>

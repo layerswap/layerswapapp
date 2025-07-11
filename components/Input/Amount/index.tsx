@@ -6,7 +6,7 @@ import useSWRGas from "@/lib/gases/useSWRGas";
 import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { useSwapDataState } from "@/context/swap";
 import { resolveMaxAllowedAmount } from "./helpers";
-import { useQuoteData } from "@/hooks/useFee";
+import { useQuote } from "@/context/feeContext";
 
 interface AmountFieldProps {
     usdPosition?: "right" | "bottom";
@@ -15,7 +15,7 @@ interface AmountFieldProps {
 const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: AmountFieldProps, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
     const { fromAsset: fromCurrency, from, amount, toAsset: toCurrency, fromExchange } = values || {};
-    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, quote: fee } = useQuoteData(values)
+    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, quote: fee } = useQuote()
     const name = "amount"
     const amountRef = useRef(ref)
     const suffixRef = useRef<HTMLSpanElement>(null);

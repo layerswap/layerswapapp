@@ -39,7 +39,7 @@ import useShowAddressNote from "@/hooks/useShowAddressNote";
 import { Widget } from "@/components/Widget/Index";
 import NetworkTabIcon from "@/components/icons/NetworkTabIcon";
 import ExchangeTabIcon from "@/components/icons/ExchangeTabIcon";
-import { useQuoteData } from "@/hooks/useFee";
+import { useQuote } from "@/context/feeContext";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -69,6 +69,7 @@ export default function Form() {
     const { getProvider } = useWallet()
     const addresses = useAddressesStore(state => state.addresses)
     const { getConfirmation } = useAsyncModal();
+    const { quote } = useQuote()
     const showAddressNote = useShowAddressNote()
 
     const settings = useSettingsState();
@@ -82,7 +83,7 @@ export default function Form() {
 
     const { swapResponse, selectedSourceAccount } = useSwapDataState()
     const { swap } = swapResponse || {}
-    const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits, quote } = useQuoteData(formikRef.current?.values || {})
+    const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useQuote()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         const { destination_address, to } = values

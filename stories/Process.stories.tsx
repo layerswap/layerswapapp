@@ -20,6 +20,7 @@ import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import MainStepValidation from '../lib/mainStepValidator';
 import { useArgs } from '@storybook/preview-api';
 import WagmiComponent from '../components/WalletProviders/Wagmi';
+import { QuoteProvider, useQuote } from '@/context/feeContext';
 
 window.plausible = () => { }
 const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues, timestamp?: string }> = ({ settings, swapData, theme, initialValues, timestamp }) => {
@@ -47,7 +48,9 @@ const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme
                                         validate={MainStepValidation({ minAllowedAmount: 8, maxAllowedAmount: 10, sourceAddress: undefined })}
                                         onSubmit={() => { }}
                                     >
-                                        <Component initialValues={initialValues} />
+                                        <QuoteProvider>
+                                            <Component initialValues={initialValues} />
+                                        </QuoteProvider>
                                     </Formik>
                                 </SwapDataUpdateContext.Provider>
                             </AuthDataUpdateContext.Provider>
@@ -60,6 +63,11 @@ const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme
 }
 
 const Component = ({ initialValues }: { initialValues: SwapFormValues | undefined }) => {
+    const { valuesChanger } = useQuote()
+    useEffect(() => {
+        valuesChanger(initialValues!)
+    }, [])
+
     return (
         <SwapDetails type='widget' />
     )
