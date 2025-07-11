@@ -5,7 +5,7 @@ import QRIcon from '@/components/icons/QRIcon'
 import shortenAddress from '@/components/utils/ShortenAddress'
 import useCopyClipboard from '@/hooks/useCopyClipboard'
 import useWallet from '@/hooks/useWallet'
-import { DepositAction, SwapItem, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
+import { DepositAction, Refuel, SwapItem, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
 import { motion } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
 import React, { useCallback, useEffect } from 'react'
@@ -14,22 +14,29 @@ import { Popover, PopoverContent, PopoverTrigger } from "../../shadcn/popover";
 import useExchangeNetworks from '@/hooks/useExchangeNetworks'
 import { ChevronDown } from 'lucide-react'
 import { CommandItem, CommandList, CommandWrapper } from '@/components/shadcn/command'
-import { Network } from '@/Models/Network'
+import { Network, NetworkRoute, Token } from '@/Models/Network'
 import { updateForm } from '../Form/updateForm'
+import { useQueryState } from '@/context/query'
+import { useSwapDataUpdate } from '@/context/swap'
+import { SwapFormValues } from '@/components/DTOs/SwapFormValues'
 
 interface Props {
     swap: SwapItem;
     quote: SwapQuote | undefined;
-    depositActions: DepositAction[] | undefined
+    depositActions: DepositAction[] | undefined;
+    refuel?: Refuel | undefined
 }
 
-const ExchangeWithdraw: FC<Props> = ({ swap, quote, depositActions }) => {
+const ExchangeWithdraw: FC<Props> = ({ swap, quote, depositActions, refuel }) => {
     const { wallets } = useWallet();
+    const { createSwap, setSwapId } = useSwapDataUpdate()
+    const [loading, setLoading] = useState(false)
 
     const [showQR, setShowQR] = useState(false)
     const destinationLogo = swap?.destination_network?.logo
     const [copied, copy] = useCopyClipboard()
-    console.log(swap)
+    const query = useQueryState()
+
     const depositAddress = depositActions?.find(da => true)?.to_address;
     const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == swap?.destination_address?.toLowerCase())?.icon;
 
@@ -39,14 +46,44 @@ const ExchangeWithdraw: FC<Props> = ({ swap, quote, depositActions }) => {
         }
     }
 
-    // const handleSelect = useCallback(async (network: Network) => {
-    //     updateForm({
-    //         formDataKey: 'from',
-    //         formDataValue: network,
-    //         shouldValidate: true,
-    //         setFieldValue
-    //     });
-    // }, [values])
+    const handleClick = async (network: Network, token: Token) => {
+
+        try {
+            setSwapId(undefined)
+            setLoading(true)
+            window.safary?.track({
+                eventName: 'click',
+                eventType: 'send_from_wallet',
+            })
+            debugger
+            const swapValues: SwapFormValues = {
+                amount: swap?.requested_amount.toString(),
+                from: network as NetworkRoute,
+                to: swap?.destination_network as NetworkRoute,
+                fromAsset: token,
+                toAsset: swap?.destination_token,
+                refuel: !!refuel,
+                destination_address: swap?.destination_address,
+                fromExchange: swap?.source_exchange,
+                currencyGroup: swap?.source_token,
+                depositMethod: 'deposit_address',
+            }
+
+            const swapData = await createSwap(swapValues, query);
+            const swapId = swapData?.swap?.id;
+            if (!swapId) {
+                throw new Error('Swap ID is undefined');
+            }
+        }
+        catch (e) {
+            console.log('Error in SendTransactionButton:', e)
+            throw new Error(e)
+        }
+        finally {
+            setLoading(false)
+        }
+
+    }
 
     const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks({
         currencyGroup: swap?.source_token?.symbol,
@@ -124,9 +161,7 @@ const ExchangeWithdraw: FC<Props> = ({ swap, quote, depositActions }) => {
                                     className='hover:bg-secondary-100 rounded-md p-1! cursor-pointer'
                                     value={item.network.name}
                                     key={item.network.name}
-                                    onSelect={() => {
-                                        //setValue(item);
-                                    }}
+                                    onSelect={() => handleClick(item.network, item.token)}
                                 >
                                     <div className={`flex items-center justify-between w-full overflow-hidden`}>
                                         <div className={`gap-2 relative flex items-center w-full space-y-1`}>
@@ -185,7 +220,13 @@ const ExchangeWithdraw: FC<Props> = ({ swap, quote, depositActions }) => {
                     number={2}
                     label={
                         <span>
-                            Send {requestAmount} via {sourceNetworkPopover} using the deposit address
+                            <span className='inline-flex items-center gap-1'>
+                                <span>Send</span>
+                                {requestAmount}
+                            </span>
+                            <span>via</span>
+                            {sourceNetworkPopover}
+                            <span>using the deposit address</span>
                         </span>
                     }
                 />

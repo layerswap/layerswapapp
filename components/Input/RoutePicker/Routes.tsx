@@ -322,7 +322,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                     </div>
                     <span className="ml-3 flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0 max-w-3/5">
                         <span className="leading-5">{token.symbol}</span>
-                        <span className="text-secondary-text font-normal text-sm leading-4 truncate whitespace-nowrap max-w-[60px] sm:max-w-[100px]">
+                        <span className="text-secondary-text font-normal text-sm leading-4 whitespace-nowrap">
                             {route.display_name}
                         </span>
                     </span>

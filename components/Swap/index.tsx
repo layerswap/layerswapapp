@@ -15,7 +15,7 @@ import ExchangeWithdraw from './Withdraw/ExchangeWithdraw';
 
 const SwapDetails: FC<Props> = ({ type }) => {
     const { swapResponse, depositActionsResponse: depositActions } = useSwapDataState()
-    const { swap, quote } = swapResponse || {}
+    const { swap, quote, refuel } = swapResponse || {}
 
     const swapStatus = swap?.status;
     const storedWalletTransactions = useSwapTransactionStore()
@@ -46,7 +46,7 @@ const SwapDetails: FC<Props> = ({ type }) => {
                     && !(swapInputTransaction || storedWalletTransaction))) ?
                     (
                         swap.source_exchange
-                            ? <ExchangeWithdraw swap={swap} quote={quote} depositActions={depositActions} />
+                            ? <ExchangeWithdraw swap={swap} quote={quote} depositActions={depositActions} refuel={refuel} />
                             : <Withdraw type={type} />
                     )
                     :
