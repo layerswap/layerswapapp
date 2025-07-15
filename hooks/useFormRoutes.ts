@@ -205,7 +205,7 @@ function groupRoutes(
     const recent = recentList ? getRecentNetworkRoutes(recentList, routes) : [];
 
     return [
-        ...(recent.length ? [Titles.recentNetworks, ...recent] : []),
+        ...(recent.length && (!topTokens || topTokens.length === 0) ? [Titles.recentNetworks, ...recent] : []),
         ...(direction === 'from' && topTokens && topTokens.length > 0 ? [Titles.topAssets, ...topTokens] : []),
         ...(popularNetworks.length ? [Titles.popular, ...popularNetworks] : []),
         ...(remaining.length ? [groupBy === "network" ? Titles.allNetworks : Titles.allTokens, ...remaining] : [])
