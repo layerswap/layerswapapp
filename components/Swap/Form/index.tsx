@@ -1,15 +1,15 @@
 import { Formik, FormikProps } from "formik";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSettingsState } from "@/context/settings";
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import React from "react";
-import ConnectNetwork from "../../ConnectNetwork";
+import ConnectNetwork from "@/components/ConnectNetwork";
 import toast from "react-hot-toast";
 import MainStepValidation from "@/lib/mainStepValidator";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/lib/generateSwapInitialValues";
 import LayerSwapApiClient, { Quote } from "@/lib/apiClients/layerSwapApiClient";
-import Modal from "../../modal/modal";
+import Modal from "@/components/modal/modal";
 import useSWR from "swr";
 import { NextRouter, useRouter } from "next/router";
 import { ApiResponse } from "@/Models/ApiResponse";
@@ -23,9 +23,9 @@ import { AnimatePresence } from "framer-motion";
 import useWallet from "@/hooks/useWallet";
 import { DepositMethodProvider } from "@/context/depositMethodContext";
 import { dynamicWithRetries } from "@/lib/dynamicWithRetries";
-import AddressNote from "../../Input/Address/AddressNote";
+import AddressNote from "@/components/Input/Address/AddressNote";
 import { addressFormat } from "@/lib/address/formatter";
-import { AddressGroup } from "../../Input/Address/AddressPicker";
+import { AddressGroup } from "@/components/Input/Address/AddressPicker";
 import { useAddressesStore } from "@/stores/addressesStore";
 import { useAsyncModal } from "@/context/asyncModal";
 import { ValidationProvider } from "@/context/validationErrorContext";
@@ -259,7 +259,8 @@ type SubmitProps = {
 
 const handleCreateSwap = async ({ query, values, settings, quote, partner, selectedSourceAddress, router, minAllowedAmount, setSwapId, setShowSwapModal, setSwapPath, pollFee, createSwap, setNetworkToConnect, setShowConnectNetworkModal, mutateLimits, resolveSwapDataFromQuery }: SubmitProps) => {
     if (values.depositMethod == 'wallet') {
-        quote && resolveSwapDataFromQuery(settings, selectedSourceAddress, quote, values?.destination_address)
+        if (!quote) throw new Error(`Quote is undefined.`)
+        resolveSwapDataFromQuery(settings, selectedSourceAddress, quote, values?.destination_address)
         setSwapId(undefined)
         pollFee(true)
         setShowSwapModal(true)
