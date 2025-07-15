@@ -343,7 +343,7 @@ export const SelectedRoutePlaceholder = ({ placeholder }: { placeholder: string 
             <RoutePickerIcon className="w-7 h-7" />
         </div>
         <span className="flex text-secondary-text text-base font-normal leading-5 flex-auto items-center max-w-2/3">
-            <span className="ml-2 text-xs sm:text-base sm:leading-5">{placeholder}</span>
+            <span className="ml-2 text-sm sm:text-base sm:leading-5">{placeholder}</span>
         </span>
     </>
 )

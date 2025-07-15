@@ -12,7 +12,6 @@ import PickerWalletConnect from "./RouterPickerWalletConnect";
 import { useRouteTokenSwitchStore } from "@/stores/routeTokenSwitchStore";
 import { swapInProgress } from "@/components/utils/swapUtils";
 import { updateForm } from "@/components/Swap/Form/updateForm";
-import { useRouter } from "next/router";
 
 const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const {
@@ -65,7 +64,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
     return (
         <div className="flex w-full flex-col self-end relative ml-auto items-center">
             <Selector>
-                <SelectorTrigger disabled={false}>
+                <SelectorTrigger disabled={false} className="group-[.exchange-picker]:bg-secondary-500">
                     <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select Token" />
                 </SelectorTrigger>
                 <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search" header={<PickerWalletConnect direction={direction} />}>

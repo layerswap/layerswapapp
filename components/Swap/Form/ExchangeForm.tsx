@@ -1,4 +1,4 @@
-import { FC, useEffect } from "react";
+import { FC } from "react";
 import ValidationError from "@/components/validationError";
 import CexPicker from "@/components/Input/CexPicker";
 import QuoteDetails from "@/components/FeeDetails";
@@ -6,7 +6,6 @@ import { Widget } from "@/components/Widget/Index";
 import FormButton from "../FormButton";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { Form, useFormikContext } from "formik";
-import { useQuote } from "@/context/feeContext";
 import { useValidationContext } from "@/context/validationErrorContext";
 import { Partner } from "@/Models/Partner";
 import RoutePicker from "@/components/Input/RoutePicker";
@@ -16,6 +15,8 @@ import { ChevronDown } from "lucide-react";
 import AddressIcon from "@/components/AddressIcon";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
+import MinMax from "@/components/Input/Amount/MinMax";
+import { useQuoteData } from "@/hooks/useFee";
 
 type Props = {
     partner?: Partner;
@@ -27,16 +28,10 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
         errors, isValid, isSubmitting
     } = useFormikContext<SwapFormValues>();
 
-    const {
-        to: destination,
-    } = values;
+    const { fromAsset: fromCurrency, from, to: destination } = values || {};
 
-    const { valuesChanger, isQuoteLoading, quote } = useQuote();
+    const { isQuoteLoading, quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(values);
     const { validationMessage } = useValidationContext();
-
-    useEffect(() => {
-        valuesChanger(values);
-    }, [values, values.destination_address]);
 
     return (
         <>
@@ -61,11 +56,11 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                             Send to
                                         </label>
                                     </div>
-                                    <div className="relative">
+                                    <div className="relative group exchange-picker">
                                         <RoutePicker direction="to" />
                                     </div>
 
-                                    <div className="hover:bg-secondary-400 bg-secondary-300 rounded-xl px-2 py-3 mb-4">
+                                    <div className="hover:bg-secondary-300 bg-secondary-500 rounded-xl px-2 py-3 mb-4">
                                         <div className="flex items-center col-span-6">
                                             <Address partner={partner} >{
                                                 ({ disabled, addressItem }) => <>
@@ -84,14 +79,21 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                             }</Address>
                                         </div>
                                     </div>
-
-                                    <div className="flex justify-between items-center">
-                                        <label htmlFor="From" className="block font-medium text-secondary-text text-sm">
-                                            Enter amount
-                                        </label>
-                                    </div>
-                                    <div className="relative exchange-amount-field">
-                                        <AmountField />
+                                    <div className="bg-secondary-500 rounded-lg p-1 pt-1.5 group">
+                                        <div className="flex justify-between items-center mb-2 px-2">
+                                            <label htmlFor="From" className="block font-medium text-secondary-text text-sm">
+                                                Enter amount
+                                            </label>
+                                            {
+                                                from && destination && fromCurrency && minAllowedAmount && maxAmountFromApi &&
+                                                <div className="hidden group-focus-within:block">
+                                                    <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />
+                                                </div>
+                                            }
+                                        </div>
+                                        <div className="relative group exchange-amount-field px-1">
+                                            <AmountField usdPosition="right" />
+                                        </div>
                                     </div>
                                 </div>
                             </div>

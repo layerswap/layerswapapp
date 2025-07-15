@@ -1,18 +1,45 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import NumericInput from "../NumericInput";
-import { useQuote } from "@/context/feeContext";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { useSwapDataState } from "@/context/swap";
 import { resolveMaxAllowedAmount } from "./helpers";
+import { useQuoteData } from "@/hooks/useFee";
 
-const AmountField = forwardRef(function AmountField(_, ref: any) {
+interface AmountFieldProps {
+    usdPosition?: "right" | "bottom";
+}
+
+const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: AmountFieldProps, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
-    const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
     const { fromAsset: fromCurrency, from, amount, toAsset: toCurrency, fromExchange } = values || {};
-    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, quote: fee } = useQuote()
+    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, quote: fee } = useQuoteData(values)
+    const name = "amount"
+    const amountRef = useRef(ref)
+    const suffixRef = useRef<HTMLSpanElement>(null);
+
+    const sourceCurrencyPriceInUsd = fee?.quote.source_token?.price_in_usd || fromCurrency?.price_in_usd;
+
+    const requestedAmountInUsd = useMemo(() => {
+        const amountNumber = Number(amount);
+        if (isNaN(amountNumber) || amountNumber <= 0 || !sourceCurrencyPriceInUsd)
+            return undefined;
+        return (sourceCurrencyPriceInUsd * amountNumber).toFixed(2)
+    }, [amount, sourceCurrencyPriceInUsd]);
+
+    useLayoutEffect(() => {
+        const input = amountRef.current;
+        const suffix = suffixRef.current;
+
+        if (!input || !suffix) return;
+
+        const font = getFontFromElement(input);
+        const width = getTextWidth(input.value || "0", font);
+
+        suffix.style.left = `${width + 16}px`;
+    }, [amount, requestedAmountInUsd]);
 
     const { selectedSourceAccount } = useSwapDataState()
     const sourceAddress = selectedSourceAccount?.address
@@ -22,7 +49,6 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const gasAmount = gas || 0;
     const native_currency = from?.token
 
-    const name = "amount"
     const walletBalance = balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
     let maxAllowedAmount: number = useMemo(() => {
         if (!fromCurrency || !minAllowedAmount || !maxAmountFromApi) return 0
@@ -31,30 +57,14 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const placeholder = '0'
     const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
-    const amountRef = useRef(ref)
 
-    const diasbled = Boolean(fromExchange && !toCurrency)
-
-    const updateRequestedAmountInUsd = useCallback((requestedAmount: number, price_in_usd: number | undefined) => {
-        if (price_in_usd && !isNaN(requestedAmount)) {
-            setRequestedAmountInUsd((price_in_usd * requestedAmount).toFixed(2));
-        } else if (isNaN(requestedAmount) || requestedAmount <= 0) {
-            setRequestedAmountInUsd(undefined);
-        }
-    }, [requestedAmountInUsd, fee]);
-
-    const fromCurrencyPriceInUsd = fee?.quote.source_token?.price_in_usd || fromCurrency?.price_in_usd;
-
-    useEffect(() => {
-        if (fee && amount) updateRequestedAmountInUsd(Number(amount), fromCurrencyPriceInUsd)
-    }, [amount, fromCurrency, fee])
-
+    const disabled = Boolean(fromExchange && !toCurrency)
 
     return (<>
         <div className="flex flex-col w-full bg-secondary-500 rounded-lg">
-            <div className="relative w-full in-has-[.exchange-amount-field]:pb-2">
+            <div className={`relative w-full group-[.exchange-amount-field]:pb-2 group ${usdPosition === "right" ? "focus-within:[&_.usd-suffix]:invisible" : ""}`}>
                 <NumericInput
-                    disabled={diasbled}
+                    disabled={disabled}
                     placeholder={placeholder}
                     min={minAllowedAmount}
                     max={maxAllowedAmount || 0}
@@ -62,13 +72,12 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
                     name={name}
                     ref={amountRef}
                     precision={fromCurrency?.precision}
-                    className="w-full text-[28px] text-primary-text placeholder:!text-primary-text leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal in-has-[.exchange-amount-field]:px-2 in-has-[.exchange-amount-field]:pb-2 in-has-[.exchange-amount-field]:pr-2 pl-0"
+                    className="w-full text-[28px] text-primary-text placeholder:!text-primary-text leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal group-[.exchange-amount-field]:px-2.5 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! pl-0"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
-                        updateRequestedAmountInUsd(parseFloat(e.target.value), fromCurrencyPriceInUsd);
                     }}
                 />
-                <span className="text-base leading-5 font-medium text-secondary-text in-has-[.exchange-amount-field]:px-2">
+                <span className={`${usdPosition === "right" ? "absolute bottom-4" : ""} usd-suffix text-base font-medium text-secondary-text pointer-events-none`} ref={suffixRef}>
                     {`$${requestedAmountInUsd ?? 0}`}
                 </span>
             </div>
@@ -77,3 +86,20 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 });
 
 export default AmountField
+
+function getTextWidth(text: string = '', font: string): number {
+    if (typeof document === "undefined") return 0;
+
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    if (!context) return 0;
+
+    context.font = font;
+    return context.measureText(text).width;
+}
+
+function getFontFromElement(el: HTMLElement | null): string {
+    if (!el) return '28px sans-serif';
+    const style = window.getComputedStyle(el);
+    return `${style.fontSize} ${style.fontFamily}`;
+}

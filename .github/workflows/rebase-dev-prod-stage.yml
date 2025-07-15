@@ -1,7 +1,7 @@
 name: Dev to dev-prod && dev-stage
 on: 
   push:
-    branches: [dev]
+    branches: [dev-route-picker]
 permissions:
   contents: write
 jobs:
@@ -18,7 +18,7 @@ jobs:
       run: |
           git fetch --unshallow
           git checkout dev-prod
-          git rebase dev
+          git rebase dev-route-picker
           git push
 
   rebase-dev-stage:
@@ -34,6 +34,6 @@ jobs:
       run: |
           git fetch --unshallow
           git checkout dev-stage
-          git rebase dev
+          git rebase dev-route-picker
           git push          
 

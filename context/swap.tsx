@@ -12,12 +12,11 @@ import { Wallet, WalletProvider } from '../Models/WalletProvider';
 import useWallet from '../hooks/useWallet';
 import { Network } from '../Models/Network';
 import { resolvePersistantQueryParams } from '../helpers/querryHelper';
-import { useQuote } from './feeContext';
 import { SwapStatus } from '../Models/SwapStatus';
 import { LayerSwapAppSettings } from '@/Models/LayerSwapAppSettings';
-import { useSettingsState } from './settings';
 import { TrackEvent } from "@/pages/_document";
 import { usePersistedState } from '@/hooks/usePersistedState';
+import { parse, ParsedUrlQuery } from 'querystring';
 
 export const SwapDataStateContext = createContext<SwapData>({
     codeRequested: false,
@@ -344,7 +343,11 @@ const setSwapPath = (swapId: string, router: NextRouter) => {
     const basePath = router?.basePath || ""
     var swapURL = window.location.protocol + "//"
         + window.location.host + `${basePath}/swap/${swapId}`;
-    const params = resolvePersistantQueryParams(router.query)
+    const raw = window.location.search.startsWith("?")
+        ? window.location.search.slice(1)
+        : window.location.search;
+    const existing: ParsedUrlQuery = parse(raw);
+    const params = resolvePersistantQueryParams(existing)
     if (params && Object.keys(params).length) {
         const search = new URLSearchParams(params as any);
         if (search)
@@ -359,7 +362,11 @@ const removeSwapPath = (router: NextRouter) => {
     let homeURL = window.location.protocol + "//"
         + window.location.host + basePath
 
-    const params = resolvePersistantQueryParams(router.query)
+    const raw = window.location.search.startsWith("?")
+        ? window.location.search.slice(1)
+        : window.location.search;
+    const existing: ParsedUrlQuery = parse(raw);
+    const params = resolvePersistantQueryParams(existing)
     if (params && Object.keys(params).length) {
         const search = new URLSearchParams(params as any);
         if (search)

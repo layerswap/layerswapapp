@@ -28,7 +28,7 @@ export const WalletsHeader = () => {
 const WalletsHeaderWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
     const [openModal, setOpenModal] = useState<boolean>(false)
     return <>
-        <button type="button" onClick={() => setOpenModal(true)} className="p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center">
+        <button type="button" onClick={() => setOpenModal(true)} className="p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center max-sm:hidden">
             <WalletsIcons wallets={wallets} />
         </button>
         <VaulDrawer
