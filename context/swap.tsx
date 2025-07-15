@@ -12,11 +12,10 @@ import { Wallet, WalletProvider } from '../Models/WalletProvider';
 import useWallet from '../hooks/useWallet';
 import { Network } from '../Models/Network';
 import { resolvePersistantQueryParams } from '../helpers/querryHelper';
-import { useQuote } from './feeContext';
 import { SwapStatus } from '../Models/SwapStatus';
 import { LayerSwapAppSettings } from '@/Models/LayerSwapAppSettings';
-import { useSettingsState } from './settings';
 import { TrackEvent } from "@/pages/_document";
+import { parse, ParsedUrlQuery } from 'querystring';
 
 export const SwapDataStateContext = createContext<SwapData>({
     codeRequested: false,
@@ -95,7 +94,7 @@ export function SwapDataProvider({ children }) {
         setSelectedSourceAccount({ wallet, address })
     }
 
-    const swapResponse = swapData?.data || swapDataFromQuery;
+    const swapResponse = swapId ? swapData?.data : swapDataFromQuery;
 
     const sourceIsSupported = swapResponse && WalletIsSupportedForSource({
         providers: providers,
@@ -131,7 +130,7 @@ export function SwapDataProvider({ children }) {
         if (!values)
             throw new Error("No swap data")
 
-        const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, refuel, fromExchange, toExchange, depositMethod, amount, destination_address, currencyGroup } = values
+        const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, refuel, fromExchange, depositMethod, amount, destination_address, currencyGroup } = values
 
         if (!to || !fromCurrency || !toCurrency || !from || !amount || !destination_address || !depositMethod)
             throw new Error("Form data is missing")
@@ -152,7 +151,6 @@ export function SwapDataProvider({ children }) {
             source_token: fromCurrency.symbol,
             destination_token: toCurrency.symbol,
             source_exchange: fromExchange?.name,
-            destination_exchange: toExchange?.name,
             destination_address: destination_address,
             reference_id: query.externalId,
             refuel: !!refuel,
@@ -177,9 +175,9 @@ export function SwapDataProvider({ children }) {
                 custom_str_1_value: fromExchange?.display_name || from?.display_name!,
                 custom_str_2_label: "to",
                 walletAddress: (fromExchange || depositMethod !== 'wallet') ? '' : selectedSourceAccount?.address!,
-                custom_str_2_value: toExchange?.display_name || to?.display_name!,
+                custom_str_2_value: to?.display_name!,
                 fromCurrency: fromExchange ? currencyGroup?.symbol! : fromCurrency?.symbol!,
-                toCurrency: toExchange ? currencyGroup?.symbol! : toCurrency?.symbol!,
+                toCurrency: toCurrency?.symbol!,
                 fromAmount: amount!,
                 toAmount: amount!
             }
@@ -297,7 +295,11 @@ const setSwapPath = (swapId: string, router: NextRouter) => {
     const basePath = router?.basePath || ""
     var swapURL = window.location.protocol + "//"
         + window.location.host + `${basePath}/swap/${swapId}`;
-    const params = resolvePersistantQueryParams(router.query)
+    const raw = window.location.search.startsWith("?")
+        ? window.location.search.slice(1)
+        : window.location.search;
+    const existing: ParsedUrlQuery = parse(raw);
+    const params = resolvePersistantQueryParams(existing)
     if (params && Object.keys(params).length) {
         const search = new URLSearchParams(params as any);
         if (search)
@@ -312,7 +314,11 @@ const removeSwapPath = (router: NextRouter) => {
     let homeURL = window.location.protocol + "//"
         + window.location.host + basePath
 
-    const params = resolvePersistantQueryParams(router.query)
+    const raw = window.location.search.startsWith("?")
+        ? window.location.search.slice(1)
+        : window.location.search;
+    const existing: ParsedUrlQuery = parse(raw);
+    const params = resolvePersistantQueryParams(existing)
     if (params && Object.keys(params).length) {
         const search = new URLSearchParams(params as any);
         if (search)

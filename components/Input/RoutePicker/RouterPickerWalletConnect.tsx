@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { useConnectModal } from "../../WalletModal";
 import { Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import VaulDrawer from "../../modal/vaulModal";
@@ -9,26 +9,37 @@ import useWallet from "../../../hooks/useWallet";
 import shortenAddress from "../../utils/ShortenAddress";
 import WalletIcon from "../../icons/WalletIcon";
 import ConnectButton from "../../buttons/connectButton";
+import { usePickerSelectedWalletStore } from "@/stores/pickerSelectedWallets";
+import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 
-const PickerWalletConnect: FC = () => {
+const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const [openModal, setOpenModal] = useState<boolean>(false)
 
     const { providers, wallets } = useWallet()
+    const { pickerSelectedWallets, addWallet } = usePickerSelectedWalletStore(direction)
+
+    useEffect(() => {
+        providers.forEach(provider => {
+            const selectedWallet = pickerSelectedWallets?.find(w => w.provider === provider.name)
+            if (!selectedWallet && provider.activeWallet) {
+                addWallet({ address: provider.activeWallet?.address, provider: provider.name })
+            }
+        })
+    }, [direction, pickerSelectedWallets])
 
     const { connect } = useConnectModal()
 
     const connectWallet = async () => {
-        await connect()
+        const result = await connect()
+        if (result) addWallet({ address: result?.address, provider: result?.providerName })
     }
 
-    const filteredWallets = wallets.filter(w => w.isActive)
-
     return <>
-        <WalletButton wallets={filteredWallets} onOpenModalClick={() => setOpenModal(true)} />
+        <WalletButton wallets={wallets} onOpenModalClick={() => setOpenModal(true)} pickerSelectedWallets={pickerSelectedWallets} />
         <VaulDrawer
             show={openModal}
             setShow={setOpenModal}
-            header={`Send from`}
+            header={`Select wallet`}
             modalId="connectedWallets"
         >
             <VaulDrawer.Snap id="item-1" className="space-y-1 pb-6">
@@ -42,10 +53,11 @@ const PickerWalletConnect: FC = () => {
                 </button>
                 {
                     providers.filter(p => p.connectedWallets?.length).map((provider, index) => {
-                        const handleSelectWallet = (wallet: Wallet, address: string) => {
-                            provider.switchAccount && provider.switchAccount(wallet, address)
+                        const handleSelectWallet = (_: Wallet, address: string) => {
+                            addWallet({ address, provider: provider.name })
                             setOpenModal(false)
                         }
+                        const selectedWallet = pickerSelectedWallets?.find(w => w.provider === provider.name)
 
                         return (
                             <div key={index}>
@@ -58,6 +70,7 @@ const PickerWalletConnect: FC = () => {
                                     key={index}
                                     provider={provider}
                                     onSelect={handleSelectWallet}
+                                    selectedAddress={selectedWallet?.address}
                                 />
                             </div>
                         )
@@ -68,24 +81,32 @@ const PickerWalletConnect: FC = () => {
     </>
 }
 
-const WalletButton: FC<{ wallets: Wallet[], onOpenModalClick: () => void }> = ({ wallets, onOpenModalClick }) => {
+const WalletButton: FC<{ wallets: Wallet[], pickerSelectedWallets: ReturnType<typeof usePickerSelectedWalletStore>['pickerSelectedWallets'], onOpenModalClick: () => void }> = ({ wallets, onOpenModalClick, pickerSelectedWallets }) => {
 
-    const wallet = wallets[0]
+    const mappedWallets = useMemo(() => wallets.map(w => {
+        const selectedWallet = pickerSelectedWallets?.find(sw => sw.provider === w.providerName)
+        if (selectedWallet && selectedWallet.address && w.address !== selectedWallet.address) {
+            return { ...w, address: selectedWallet.address }
+        }
+        return w
+    }), [wallets, pickerSelectedWallets])
 
-    if (wallets.length > 0) {
+    const firstWallet = useMemo(() => mappedWallets[0], [mappedWallets])
+
+    if (mappedWallets.length > 0) {
         return <button onClick={onOpenModalClick} type="button" className="py-1 px-2 bg-transparent flex items-center w-fit rounded-md space-x-1 relative font-semibold transform hover:bg-secondary-400 transition duration-200 ease-in-out">
             {
-                wallets.length === 1 ?
+                mappedWallets.length === 1 ?
                     <div className="flex gap-2 items-center text-sm text-primary-text">
-                        <wallet.icon className='h-5 w-5' />
+                        <firstWallet.icon className='h-5 w-5' />
                         {
-                            !wallet.isLoading && wallet.address &&
-                            <p>{shortenAddress(wallet.address)}</p>
+                            !firstWallet.isLoading && firstWallet.address &&
+                            <p>{shortenAddress(firstWallet.address)}</p>
                         }
                         <ChevronDown className="h-5 w-5" />
                     </div>
                     :
-                    <WalletsIcons wallets={wallets} />
+                    <WalletsIcons wallets={mappedWallets} />
             }
         </button>
     }
@@ -130,27 +151,27 @@ type Props = {
     token?: Token;
     network?: Network;
     provider?: WalletProvider | undefined;
+    selectedAddress?: string;
     onSelect: (wallet: Wallet, address: string) => void;
 }
 
 const WalletsList: FC<Props> = (props) => {
 
-    const { provider, onSelect } = props
-
+    const { provider, onSelect, selectedAddress } = props
     const wallets = provider?.connectedWallets || []
 
     return (
         <div className="space-y-3">
             {
                 wallets.length > 0 &&
-                <div className="flex flex-col justify-start gap-2 bg-secondary-500 rounded-xl">
+                <div className="flex flex-col justify-start gap-2 rounded-xl">
                     {
                         wallets.map((wallet, index) => <WalletItem
                             key={`${index}${wallet.providerName}`}
                             wallet={wallet}
                             selectable={true}
                             onWalletSelect={(wallet: Wallet, address: string) => onSelect(wallet, address)}
-                            selectedAddress={wallets.find(w => w.isActive)?.address}
+                            selectedAddress={selectedAddress}
                         />)
                     }
                 </div>

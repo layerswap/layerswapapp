@@ -122,7 +122,7 @@ const Component: FC = () => {
         >
             <VaulDrawer.Snap
                 id="item-1"
-                className="pb-6 flex flex-col gap-3"
+                className="pb-4 flex flex-col gap-3"
             >
                 <div
                     className={clsx('w-full order-1', {
@@ -292,7 +292,7 @@ const ContinueWithoutWallet: FC<{ onClick: () => void }> = ({ onClick }) => {
     //TODO: bg-secondary-700 is a hotfix, should refactor and fix sticky footer for VaulDrawer
     return (
         <div className="inline-flex items-center gap-1.5 justify-center w-full pt-2 bg-secondary-700">
-            <button onClick={onClick} className="underline hover:no-underline text-base text-center text-secondary-text cursor-pointer ">
+            <button type="button" onClick={onClick} className="underline hover:no-underline text-base text-center text-secondary-text cursor-pointer ">
                 Continue without a wallet
             </button>
             <Popover>

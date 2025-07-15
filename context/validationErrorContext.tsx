@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useMemo } from 'react';
 import { ReactNode } from 'react';
 import { Info, RouteOff } from 'lucide-react';
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
@@ -6,7 +6,6 @@ import { useFormikContext } from 'formik';
 import { useQueryState } from './query';
 import { useSettingsState } from './settings';
 import { useSwapDataState } from './swap';
-import KnownInternalNames from '../lib/knownIds';
 
 interface ValidationDetails {
     title?: string;
@@ -33,10 +32,10 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     } = useFormikContext<SwapFormValues>();
     const { destinationRoutes: allDestinations, sourceRoutes: allSources } = useSettingsState()
     const { selectedSourceAccount } = useSwapDataState()
-    const { to, from, fromAsset: fromCurrency, toAsset: toCurrency, toExchange, fromExchange, currencyGroup, validatingSource, validatingDestination, validatingCurrencyGroup, destination_address } = values;
+    const { to, from, fromAsset: fromCurrency, toAsset: toCurrency, fromExchange, currencyGroup, validatingSource, validatingDestination, validatingCurrencyGroup, destination_address } = values;
     const query = useQueryState();
     const fromDisplayName = fromExchange ? fromExchange.display_name : from?.display_name;
-    const toDisplayName = toExchange ? toExchange.display_name : to?.display_name;
+    const toDisplayName = to?.display_name;
 
     let validationMessage = '';
     let validationDetails: ValidationDetails = {};
@@ -56,12 +55,12 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         }
     }
     else if (query?.lockFromAsset) {
-        if (toCurrency?.status === 'not_found' || (currencyGroup?.status === 'not_found' && toExchange)) {
-            validationMessage = `Transfers to ${toDisplayName} ${toCurrency?.symbol || currencyGroup?.symbol} from this token are not supported`;
+        if (toCurrency?.status === 'not_found') {
+            validationMessage = `Transfers to ${toDisplayName} ${toCurrency?.symbol} from this token are not supported`;
             validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
         }
-        else if (toCurrency?.status === 'inactive' || (currencyGroup?.status === 'inactive' && toExchange)) {
-            validationMessage = `Sorry, transfers of ${toCurrency?.symbol || currencyGroup?.symbol} to ${toDisplayName} are not available at the moment. Please try later.`;
+        else if (toCurrency?.status === 'inactive') {
+            validationMessage = `Sorry, transfers of ${toCurrency?.symbol} to ${toDisplayName} are not available at the moment. Please try later.`;
             validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info stroke='#f8974b' className='w-4 h-4 ' /> };
         }
         else if (!fromCurrency) {

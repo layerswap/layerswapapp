@@ -10,7 +10,6 @@ import MainStepValidation from "@/lib/mainStepValidator";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/lib/generateSwapInitialValues";
 import LayerSwapApiClient, { Quote } from "@/lib/apiClients/layerSwapApiClient";
 import Modal from "../../modal/modal";
-import SwapForm from "./Form";
 import useSWR from "swr";
 import { NextRouter, useRouter } from "next/router";
 import { ApiResponse } from "@/Models/ApiResponse";
@@ -21,7 +20,6 @@ import { useQueryState } from "@/context/query";
 import TokenService from "@/lib/TokenService";
 import LayerSwapAuthApiClient from "@/lib/apiClients/userAuthApiClient";
 import { AnimatePresence } from "framer-motion";
-import { useQuote } from "@/context/feeContext";
 import useWallet from "@/hooks/useWallet";
 import { DepositMethodProvider } from "@/context/depositMethodContext";
 import { dynamicWithRetries } from "@/lib/dynamicWithRetries";
@@ -34,6 +32,14 @@ import { ValidationProvider } from "@/context/validationErrorContext";
 import { PendingSwap } from "./PendingSwap";
 import { QueryParams } from "@/Models/QueryParams";
 import VaulDrawer from "@/components/modal/vaulModal";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./NetworkExchangeTabs";
+import NetworkForm from "./NetworkForm";
+import ExchangeForm from "./ExchangeForm";
+import useShowAddressNote from "@/hooks/useShowAddressNote";
+import { Widget } from "@/components/Widget/Index";
+import NetworkTabIcon from "@/components/icons/NetworkTabIcon";
+import ExchangeTabIcon from "@/components/icons/ExchangeTabIcon";
+import { useQuoteData } from "@/hooks/useFee";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -63,27 +69,29 @@ export default function Form() {
     const { getProvider } = useWallet()
     const addresses = useAddressesStore(state => state.addresses)
     const { getConfirmation } = useAsyncModal();
-    const { quote } = useQuote()
+    const showAddressNote = useShowAddressNote()
 
     const settings = useSettingsState();
     const query = useQueryState()
+    const { appName, sameAccountNetwork } = query
     const { createSwap, setSwapId, setSwapPath, removeSwapPath, resolveSwapDataFromQuery } = useSwapDataUpdate()
 
     const layerswapApiClient = new LayerSwapApiClient()
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(query?.appName && `/internal/apps?name=${query?.appName}`, layerswapApiClient.fetcher)
-    const partner = query?.appName && partnerData?.data?.client_id?.toLowerCase() === (query?.appName as string)?.toLowerCase() ? partnerData?.data : undefined
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
+    const partner = appName && partnerData?.data?.client_id?.toLowerCase() === (appName as string)?.toLowerCase() ? partnerData?.data : undefined
 
     const { swapResponse, selectedSourceAccount } = useSwapDataState()
     const { swap } = swapResponse || {}
-    const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useQuote()
+    const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits, quote } = useQuoteData(formikRef.current?.values || {})
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         const { destination_address, to } = values
 
         if (to &&
             destination_address &&
-            (query.destination_address) &&
-            (addressFormat(query.destination_address?.toString(), to) === addressFormat(destination_address, to)) &&
+            showAddressNote &&
+            (destination_address) &&
+            (addressFormat(destination_address?.toString(), to) === addressFormat(destination_address, to)) &&
             !(addresses.find(a => addressFormat(a.address, to) === addressFormat(destination_address, to) && a.group !== AddressGroup.FromQuery)) && !isAddressFromQueryConfirmed) {
 
             const confirmed = await getConfirmation({
@@ -153,7 +161,7 @@ export default function Form() {
         }
     }, [router, swap])
 
-    const validator = useMemo(() => MainStepValidation({ minAllowedAmount, maxAllowedAmount, sourceAddress: selectedSourceAccount?.address, sameAccountNetwork: query.sameAccountNetwork }), [minAllowedAmount, maxAllowedAmount, selectedSourceAccount, query.sameAccountNetwork])
+    const validator = useMemo(() => MainStepValidation({ minAllowedAmount, maxAllowedAmount, sourceAddress: selectedSourceAccount?.address, sameAccountNetwork: sameAccountNetwork }), [minAllowedAmount, maxAllowedAmount, selectedSourceAccount, sameAccountNetwork])
 
     return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
@@ -186,17 +194,46 @@ export default function Form() {
                 <SwapDetails type="contained" />
             </VaulDrawer.Snap>
         </VaulDrawer>
-        <Formik
-            innerRef={formikRef}
-            initialValues={initialValues}
-            validateOnMount={true}
-            validate={validator}
-            onSubmit={handleSubmit}
-        >
-            <ValidationProvider>
-                <SwapForm partner={partner} />
-            </ValidationProvider>
-        </Formik>
+        <Tabs defaultValue="cross-chain">
+            <TabsList>
+                <TabsTrigger
+                    label="Swap"
+                    Icon={NetworkTabIcon}
+                    value="cross-chain" />
+                <TabsTrigger
+                    label="Deposit from CEX"
+                    Icon={ExchangeTabIcon}
+                    value="exchange" />
+            </TabsList>
+            <Widget className="sm:min-h-[450px] h-full">
+                <TabsContent value="cross-chain">
+                    <Formik
+                        innerRef={formikRef}
+                        initialValues={initialValues}
+                        validateOnMount={true}
+                        validate={validator}
+                        onSubmit={handleSubmit}
+                    >
+                        <ValidationProvider>
+                            <NetworkForm partner={partner} />
+                        </ValidationProvider>
+                    </Formik>
+                </TabsContent>
+                <TabsContent value="exchange">
+                    <Formik
+                        innerRef={formikRef}
+                        initialValues={initialValues}
+                        validateOnMount={true}
+                        validate={validator}
+                        onSubmit={handleSubmit}
+                    >
+                        <ValidationProvider>
+                            <ExchangeForm />
+                        </ValidationProvider>
+                    </Formik>
+                </TabsContent>
+            </Widget>
+        </Tabs>
     </DepositMethodProvider>
 }
 

@@ -5,6 +5,7 @@ import SwapButton from "../buttons/swapButton";
 import { FormikErrors } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import SubmitButton from "../buttons/submitButton";
+import { useQueryState } from "@/context/query";
 
 const Address = dynamic(() => import("../Input/Address"), {
     loading: () => <></>,
@@ -16,10 +17,12 @@ const FormButton = ({
     isValid,
     errors,
     isSubmitting,
-    actionDisplayName,
     partner,
     isUpdatingValues = false,
 }) => {
+    const query = useQueryState();
+    const actionDisplayName = query?.actionButtonText || "Swap now";
+
     if (shouldConnectWallet) {
         return <FormSourceWalletButton />;
     }

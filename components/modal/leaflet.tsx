@@ -89,7 +89,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                onClick={handleCloseModal}
+                onClick={handleCloseModal} 
             />
 
             <motion.div
@@ -120,7 +120,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                         </div>
                     </div>
                     <div
-                        className='select-text max-h-full in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll px-4 h-full'>
+                        className='select-text max-h-full in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll px-5 h-full' id="virtualListContainer">
                         {children}
                     </div>
                 </div>
