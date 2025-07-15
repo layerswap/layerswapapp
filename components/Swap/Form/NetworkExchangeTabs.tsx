@@ -76,12 +76,11 @@ interface TabsContentProps { value: string; children: ReactNode }
 export const TabsContent: FC<TabsContentProps> = ({ value, children }) => {
     const ctx = useContext(TabsContext)
     if (!ctx) throw new Error('TabsContent must be used within <Tabs>')
-    return <div
-        className={clsx('transition-all duration-200', {
-            'hidden': value !== ctx.activeId,
-            'block': value === ctx.activeId
-        })}
-    >
-        {children}
-    </div>
+    return <>
+        {value === ctx.activeId && (
+            <div className="transition-all duration-200">
+                {children}
+            </div>
+        )}
+    </>
 }

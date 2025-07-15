@@ -68,7 +68,7 @@ export default function Form() {
     const { updateAuthData, setUserType } = useAuthDataUpdate()
     const { getProvider } = useWallet()
     const addresses = useAddressesStore(state => state.addresses)
-    const { getConfirmation } = useAsyncModal();
+    const { getConfirmation } = useAsyncModal()
     const showAddressNote = useShowAddressNote()
 
     const settings = useSettingsState();
