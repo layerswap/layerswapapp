@@ -6,7 +6,6 @@ import { UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/cont
 import React from "react";
 import ConnectNetwork from "@/components/ConnectNetwork";
 import toast from "react-hot-toast";
-import MainStepValidation from "@/lib/mainStepValidator";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/lib/generateSwapInitialValues";
 import LayerSwapApiClient, { Quote } from "@/lib/apiClients/layerSwapApiClient";
 import Modal from "@/components/modal/modal";
@@ -28,7 +27,6 @@ import { addressFormat } from "@/lib/address/formatter";
 import { AddressGroup } from "@/components/Input/Address/AddressPicker";
 import { useAddressesStore } from "@/stores/addressesStore";
 import { useAsyncModal } from "@/context/asyncModal";
-import { ValidationProvider } from "@/context/validationErrorContext";
 import { PendingSwap } from "./PendingSwap";
 import { QueryParams } from "@/Models/QueryParams";
 import VaulDrawer from "@/components/modal/vaulModal";
@@ -40,6 +38,7 @@ import { Widget } from "@/components/Widget/Index";
 import NetworkTabIcon from "@/components/icons/NetworkTabIcon";
 import ExchangeTabIcon from "@/components/icons/ExchangeTabIcon";
 import { useQuoteData } from "@/hooks/useFee";
+import { ValidationProvider } from "@/context/validationContext";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -161,8 +160,6 @@ export default function Form() {
         }
     }, [router, swap])
 
-    const validator = useMemo(() => MainStepValidation({ minAllowedAmount, maxAllowedAmount, sourceAddress: selectedSourceAccount?.address, sameAccountNetwork: sameAccountNetwork }), [minAllowedAmount, maxAllowedAmount, selectedSourceAccount, sameAccountNetwork])
-
     return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence mode='wait'>
@@ -211,7 +208,6 @@ export default function Form() {
                         innerRef={formikRef}
                         initialValues={initialValues}
                         validateOnMount={true}
-                        validate={validator}
                         onSubmit={handleSubmit}
                     >
                         <ValidationProvider>
@@ -224,7 +220,6 @@ export default function Form() {
                         innerRef={formikRef}
                         initialValues={initialValues}
                         validateOnMount={true}
-                        validate={validator}
                         onSubmit={handleSubmit}
                     >
                         <ValidationProvider>

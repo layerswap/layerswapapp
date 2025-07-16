@@ -3,7 +3,6 @@ import { Form, FormikHelpers, useFormikContext } from "formik";
 import { Partner } from "@/Models/Partner";
 import { TokenBalance } from "@/Models/Balance";
 import ValidationError from "@/components/validationError";
-import { useValidationContext } from "@/context/validationErrorContext";
 import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import useWallet from "@/hooks/useWallet";
 import SourcePicker from "@/components/Input/SourcePicker";
@@ -24,6 +23,7 @@ import { WalletProvider } from "@/Models/WalletProvider";
 import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import { updateForm, updateFormBulk } from "./updateForm";
 import { useQuoteData } from "@/hooks/useFee";
+import { useValidationContext } from "@/context/validationContext";
 
 const RefuelModal = dynamic(() => import("@/components/FeeDetails/RefuelModal"), {
     loading: () => <></>,
@@ -44,8 +44,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const [openRefuelModal, setOpenRefuelModal] = useState(false);
     const {
         values,
-        setValues,
-        errors, isValid, isSubmitting, setFieldValue
+        setValues, isSubmitting, setFieldValue
     } = useFormikContext<SwapFormValues>();
 
     const {
@@ -58,9 +57,12 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const { minAllowedAmount, isQuoteLoading, quote } = useQuoteData(values);
     const toAsset = values.toAsset;
     const fromAsset = values.fromAsset;
-    const { validationMessage } = useValidationContext();
+    const { formValidation, routeValidation } = useValidationContext();
     const query = useQueryState();
 
+    const isValid = !formValidation.message;
+    const error = formValidation.message;
+    
     useEffect(() => {
         if (!source || !toAsset || !toAsset.refuel) {
             setFieldValue('refuel', false, true);
@@ -125,7 +127,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 <RefuelToggle onButtonClick={() => setOpenRefuelModal(true)} />
                             }
                             {
-                                validationMessage
+                                routeValidation.message
                                     ? <ValidationError />
                                     : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                             }
@@ -137,7 +139,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                         shouldConnectWallet={shouldConnectWallet}
                         values={values}
                         isValid={isValid}
-                        errors={errors}
+                        error={error}
                         isSubmitting={isSubmitting}
                         partner={partner}
                     />
