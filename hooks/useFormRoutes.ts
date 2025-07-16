@@ -10,8 +10,8 @@ import { NetworkBalance } from "../Models/Balance";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL, resolveRoutesURLForSelectedAssetGroup } from "../helpers/routes";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 import { Exchange, ExchangeToken } from "@/Models/Exchange";
-import { RecentNetworks, useSwapDataState } from "@/context/swap";
 import useExchangeNetworks from "./useExchangeNetworks";
+import { useRecentTokensStore, RecentTokens } from "@/stores/recentTokensStore";
 
 const Titles: { [name: string]: TitleElement } = {
     topAssets: { type: 'group_title', text: 'Top Assets' },
@@ -20,7 +20,7 @@ const Titles: { [name: string]: TitleElement } = {
     networks: { type: 'group_title', text: 'Networks' },
     tokens: { type: 'group_title', text: 'Tokens' },
     allTokens: { type: 'group_title', text: 'All Tokens' },
-    recentNetworks: { type: 'group_title', text: 'Recent Networks' },
+    recentTokens: { type: 'group_title', text: 'Recent Tokens' },
 };
 
 type Props = {
@@ -32,14 +32,14 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const { routes, isLoading: routesLoading } = useRoutes({ direction, values });
     const { exchangesRoutes, isLoading: exchangesRoutesLoading } = useExchangeRoutes({ direction, values })
     const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks({ values });
-    const { recentNetworks } = useSwapDataState()
+    const recentTokens = useRecentTokensStore(state => state.recentTokens)
 
     const balances = useAllBalances({ direction });
     const exchange = values.fromExchange
 
     const topTokens = useMemo(() => getTopTokens(routes, balances), [routes, balances]);
 
-    const routeElements = useMemo(() => groupRoutes(routes, direction, balances, topTokens, "network", search, recentNetworks), [routes, balances, direction, search, topTokens, recentNetworks]);
+    const routeElements = useMemo(() => groupRoutes(routes, direction, balances, topTokens, "network", search, recentTokens), [routes, balances, direction, search, topTokens, recentTokens]);
 
     const exchanges = useMemo(() => {
         const grouped = groupExchanges(exchangesRoutes, search);
@@ -50,7 +50,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         return withdrawalNetworks;
     }, [withdrawalNetworks, exchange, search]);
 
-    const tokenElements = useMemo(() => groupRoutes(routes, direction, balances, topTokens, "token", search, recentNetworks), [routes, balances, direction, search, topTokens, recentNetworks]);
+    const tokenElements = useMemo(() => groupRoutes(routes, direction, balances, topTokens, "token", search, recentTokens), [routes, balances, direction, search, topTokens, recentTokens]);
     const selectedRoute = useMemo(() => resolveSelectedRoute(values, direction), [values, direction]);
     const selectedToken = useMemo(() => resolveSelectedToken(values, direction), [values, direction]);
 
@@ -176,7 +176,7 @@ function groupRoutes(
     topTokens: NetworkTokenElement[] | undefined,
     groupBy: 'token' | 'network' = 'network',
     search?: string,
-    recentNetworks?: RecentNetworks
+    recentTokens?: RecentTokens
 ): RowElement[] {
 
     if (search) {
@@ -201,11 +201,11 @@ function groupRoutes(
         }) as NetworkElement)
         : groupByTokens(routes)
 
-    const recentList = (direction === 'from' ? recentNetworks?.sourceNetworks : recentNetworks?.destinationNetworks);
+    const recentList = (direction === 'from' ? recentTokens?.sourceTokens : recentTokens?.destinationTokens);
     const recent = recentList ? getRecentNetworkRoutes(recentList, routes) : [];
 
     return [
-        ...(recent.length && (!topTokens || topTokens.length === 0) ? [Titles.recentNetworks, ...recent] : []),
+        ...(recent.length && (!topTokens || topTokens.length === 0) ? [Titles.recentTokens, ...recent] : []),
         ...(direction === 'from' && topTokens && topTokens.length > 0 ? [Titles.topAssets, ...topTokens] : []),
         ...(popularNetworks.length ? [Titles.popular, ...popularNetworks] : []),
         ...(remaining.length ? [groupBy === "network" ? Titles.allNetworks : Titles.allTokens, ...remaining] : [])

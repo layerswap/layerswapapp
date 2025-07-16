@@ -15,8 +15,8 @@ import { resolvePersistantQueryParams } from '../helpers/querryHelper';
 import { SwapStatus } from '../Models/SwapStatus';
 import { LayerSwapAppSettings } from '@/Models/LayerSwapAppSettings';
 import { TrackEvent } from "@/pages/_document";
-import { usePersistedState } from '@/hooks/usePersistedState';
 import { parse, ParsedUrlQuery } from 'querystring';
+import { useRecentTokensStore } from '@/stores/recentTokensStore';
 
 export const SwapDataStateContext = createContext<SwapData>({
     codeRequested: false,
@@ -25,7 +25,6 @@ export const SwapDataStateContext = createContext<SwapData>({
     withdrawType: undefined,
     swapTransaction: undefined,
     depositActionsResponse: undefined,
-    recentNetworks: undefined,
 });
 
 export const SwapDataUpdateContext = createContext<UpdateSwapInterface | null>(null);
@@ -55,18 +54,6 @@ export type SwapData = {
     swapTransaction: SwapTransaction | undefined,
     swapDataFromQuery?: SwapResponse | undefined,
     selectedSourceAccount?: { wallet: Wallet, address: string }
-    recentNetworks?: RecentNetworks
-}
-
-export type RecentNetworks = {
-    sourceNetworks: {
-        network: string
-        token?: string
-    }[],
-    destinationNetworks: {
-        network: string
-        token?: string
-    }[],
 }
 
 export function SwapDataProvider({ children }) {
@@ -80,11 +67,12 @@ export function SwapDataProvider({ children }) {
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
     const [swapDataFromQuery, setSwapDataFromQuery] = useState<SwapResponse | undefined>(undefined)
 
-    const [recentNetworks, setRecentNetworks] = usePersistedState<RecentNetworks>({ sourceNetworks: [], destinationNetworks: [] }, 'recentNetworks', 'localStorage');
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `/swaps/${swapId}?exclude_deposit_actions=true`
     const [interval, setInterval] = useState(0)
     const { data: swapData, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
+
+    const updateRecentTokens = useRecentTokensStore(state => state.updateRecentTokens)
 
     const resolveSwapDataFromQuery = (settings: LayerSwapAppSettings, selectedSourceAddress: string | undefined, quoteData: Quote, destination_address?: string): SwapResponse | undefined => {
         const data = _resolveSwapDataFromQuery(settings, selectedSourceAddress, quoteData, destination_address)
@@ -182,11 +170,10 @@ export function SwapDataProvider({ children }) {
         if (!swap?.swap.id)
             throw new Error("Could not create swap")
 
-        setRecentNetworks(prev => updateRecentNetworks(
-            prev,
+        updateRecentTokens(
             fromExchange ? undefined : { network: from.name, token: fromCurrency?.symbol },
             { network: to.name, token: toCurrency?.symbol }
-        ));
+        );
 
         window.safary?.track({
             eventType: 'swap',
@@ -233,7 +220,6 @@ export function SwapDataProvider({ children }) {
             depositActionsResponse,
             selectedSourceAccount,
             swapDataFromQuery,
-            recentNetworks
         }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}
@@ -258,32 +244,6 @@ export function useSwapDataUpdate() {
     }
 
     return updateFns;
-}
-
-const moveToEnd = (
-    array: { network: string, token?: string, }[],
-    item: { network: string, token?: string, },
-): { network: string, token?: string, }[] => {
-    const filtered = array.filter(existing => !(existing.network === item.network && existing.token === item.token));
-    return [...filtered, item];
-}
-
-
-const updateRecentNetworks = (
-    prev: RecentNetworks,
-    fromObject?: { network: string, token?: string, },
-    toObject?: { network: string, token?: string, },
-): RecentNetworks => {
-
-
-    return {
-        sourceNetworks: fromObject
-            ? moveToEnd(prev.sourceNetworks || [], fromObject,)
-            : (prev.sourceNetworks || []),
-        destinationNetworks: toObject
-            ? moveToEnd(prev.destinationNetworks || [], toObject,)
-            : (prev.destinationNetworks || []),
-    };
 }
 
 const WalletIsSupportedForSource = ({ providers, sourceNetwork, sourceWallet }: { providers: WalletProvider[] | undefined, sourceWallet: Wallet | undefined, sourceNetwork: Network | undefined }) => {
