@@ -14,6 +14,7 @@ import { SwapDirection, SwapFormValues } from "@/components/DTOs/SwapFormValues"
 import { WalletsIcons } from "@/components/Wallet/ConnectedWallets";
 import { useFormikContext } from "formik";
 import { isValidAddress } from "@/lib/address/validator";
+import AddressIcon from "@/components/AddressIcon";
 
 const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -29,7 +30,13 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
 
     const connectWallet = async () => {
         const result = await connect()
-        if (result) addSelectedWallet({ wallet: result, address: result?.address, providerName: result.providerName })
+        if (result) handleSelectWallet(result, result?.address, result?.providerName)
+    }
+
+    const handleSelectWallet = (wallet: Wallet, address: string, providerName: string) => {
+        if (direction == 'to' && isValidAddress(address, values.to)) setFieldValue(`destination_address`, address)
+        addSelectedWallet({ wallet, address, providerName })
+        setOpenModal(false)
     }
 
     const providersWithManualAdded = useMemo(() => {
@@ -42,7 +49,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
                     address: selectedWallet?.address || '',
                     providerName: selectedWallet?.providerName || '',
                     id: selectedWallet?.providerName || '',
-                    icon: WalletIcon,
+                    icon: (props) => <AddressIcon address={selectedWallet?.address!} size={24} {...props} />,
                     isActive: true,
                     displayName: 'Manual Wallet',
                     addresses: [selectedWallet?.address || ''],
@@ -88,11 +95,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
                 </button>
                 {
                     providersWithManualAdded.filter(p => p.connectedWallets?.length).map((provider, index) => {
-                        const handleSelectWallet = (wallet: Wallet, address: string) => {
-                            if (direction == 'to' && isValidAddress(address, values.to)) setFieldValue(`destination_address`, address)
-                            addSelectedWallet({ wallet, address, providerName: provider.name })
-                            setOpenModal(false)
-                        }
+
                         const selectedWallet = pickerSelectedWallets?.find(w => w.providerName === provider.name)
 
                         return (
@@ -162,7 +165,7 @@ type Props = {
     network?: Network;
     provider?: WalletProvider | undefined;
     selectedWallet?: ReturnType<typeof useSelectedWalletStore>['pickerSelectedWallet'];
-    onSelect: (wallet: Wallet, address: string) => void;
+    onSelect: (wallet: Wallet, address: string, providerName: string) => void;
 }
 
 const WalletsList: FC<Props> = (props) => {
@@ -180,7 +183,7 @@ const WalletsList: FC<Props> = (props) => {
                             key={`${index}${wallet.providerName}`}
                             wallet={wallet}
                             selectable={true}
-                            onWalletSelect={(wallet: Wallet, address: string) => onSelect(wallet, address)}
+                            onWalletSelect={(wallet: Wallet, address: string) => provider?.name && onSelect(wallet, address, provider.name)}
                             selectedAddress={selectedWallet?.address}
                         />)
                     }
