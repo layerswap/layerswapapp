@@ -2,7 +2,7 @@ import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 import sleep from "@/lib/wallets/utils/sleep";
 import { useEffect, useState } from "react";
 
-export function useQuoteUpdate(quoteData: Quote | undefined, requested_amount: number | undefined): { isUpdatingValues: boolean, quote: Quote | undefined } {
+export function useQuoteUpdate(quoteData: Quote | undefined, requested_amount: string | undefined): { isUpdatingValues: boolean, quote: Quote | undefined } {
     const [isUpdatingValues, setIsUpdatingValues] = useState(false);
     const [newQuote, setNewQuote] = useState<Quote | undefined>(undefined)
 
@@ -15,16 +15,12 @@ export function useQuoteUpdate(quoteData: Quote | undefined, requested_amount: n
                 setIsUpdatingValues(true);
                 await sleep(3000);
                 setIsUpdatingValues(false);
-                setNewQuote(quoteData)
             }
-            else {
-                setNewQuote(quoteData)
-            }
+            setNewQuote(quoteData)
         })()
     }, [quoteData])
 
-
-    const _quote = (requested_amount && newQuote?.quote.requested_amount == requested_amount) ? newQuote : quoteData
+    const _quote = (requested_amount && newQuote?.quote.requested_amount == Number(requested_amount)) ? newQuote : quoteData
 
     return { isUpdatingValues, quote: _quote }
 }

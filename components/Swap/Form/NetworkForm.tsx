@@ -52,12 +52,13 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const {
         to: destination,
         from: source,
+        amount
     } = values;
 
     const { selectedSourceAccount } = useSwapDataState();
     const { providers, wallets } = useWallet();
     const { minAllowedAmount, isQuoteLoading, quote } = useQuoteData(values);
-    const { isUpdatingValues, quote: newQuote } = useQuoteUpdate(quote, Number(values.amount))
+    const { isUpdatingValues, quote: newQuote } = useQuoteUpdate(quote, amount)
     const toAsset = values.toAsset;
     const fromAsset = values.fromAsset;
     const { validationMessage } = useValidationContext();

@@ -18,7 +18,6 @@ const FormButton = ({
     errors,
     isSubmitting,
     partner,
-    isUpdatingValues = false,
 }) => {
     const query = useQueryState();
     const actionDisplayName = query?.actionButtonText || "Swap now";
@@ -46,7 +45,7 @@ const FormButton = ({
         <SwapButton
             className="plausible-event-name=Swap+initiated"
             type="submit"
-            isDisabled={!isValid || isUpdatingValues}
+            isDisabled={!isValid}
             isSubmitting={isSubmitting}
         >
             {ActionText(errors, actionDisplayName)}
