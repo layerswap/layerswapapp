@@ -1,15 +1,16 @@
-import { FC, useState, useEffect } from 'react'
-import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
-import WalletIcon from '../../icons/WalletIcon';
-import useWallet from '../../../hooks/useWallet';
-import AddressWithIcon from '../../Input/Address/AddressPicker/AddressWithIcon';
-import { AddressGroup } from '../../Input/Address/AddressPicker';
-import { truncateDecimals } from '../../utils/RoundDecimals';
-import VaulDrawer from '../../modal/vaulModal';
-import { Wallet } from '../../../Models/WalletProvider';
-import useSWRBalance from '../../../lib/balances/useSWRBalance';
-import { useSettingsState } from '../../../context/settings';
-import WalletsList from '../../Wallet/WalletsList';
+import { FC, useEffect } from 'react'
+import { useSwapDataState } from '@/context/swap';
+import WalletIcon from '@/components/icons/WalletIcon';
+import useWallet from '@/hooks/useWallet';
+import AddressWithIcon from '@/components/Input/Address/AddressPicker/AddressWithIcon';
+import { AddressGroup } from '@/components/Input/Address/AddressPicker';
+import { truncateDecimals } from '@/components/utils/RoundDecimals';
+import VaulDrawer from '@/components/modal/vaulModal';
+import { Wallet } from '@/Models/WalletProvider';
+import useSWRBalance from '@/lib/balances/useSWRBalance';
+import { useSettingsState } from '@/context/settings';
+import WalletsList from '@/components/Wallet/WalletsList';
+import { useSelectAccounts } from '@/context/selectedAccounts';
 
 type Props = {
     openModal: boolean;
@@ -17,8 +18,8 @@ type Props = {
 }
 const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal }) => {
     const { networks } = useSettingsState()
-    const { swapResponse, selectedSourceAccount } = useSwapDataState()
-    const { setSelectedSourceAccount } = useSwapDataUpdate()
+    const { swapResponse } = useSwapDataState()
+    const { setSelectedSourceAccount, selectedSourceAccount } = useSelectAccounts()
     const { swap } = swapResponse || {}
     const { source_token, source_network: swap_source_network } = swap || {}
     const source_network = swap_source_network && networks.find(n => n.name === swap_source_network?.name)
@@ -27,7 +28,7 @@ const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal }) => {
 
     const changeWallet = async (wallet: Wallet, address: string) => {
         provider?.switchAccount && provider.switchAccount(wallet, address)
-        setSelectedSourceAccount({ wallet, address })
+        setSelectedSourceAccount({ wallet, address, providerName: wallet.providerName })
         setOpenModal(false)
     }
 
@@ -38,12 +39,13 @@ const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal }) => {
         if (!selectedSourceAccount && activeWallet) {
             setSelectedSourceAccount({
                 wallet: activeWallet,
-                address: activeWallet.address
+                address: activeWallet.address,
+                providerName: activeWallet.providerName
             })
         }
     }, [activeWallet?.address, setSelectedSourceAccount, provider, selectedSourceAccount?.address])
 
-    const { balances, isBalanceLoading } = useSWRBalance(selectedSourceAccount?.address, source_network)
+    const { balances } = useSWRBalance(selectedSourceAccount?.address, source_network)
 
     const walletBalance = source_network && balances?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)

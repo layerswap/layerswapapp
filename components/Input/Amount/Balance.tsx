@@ -4,11 +4,12 @@ import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import { useSwapDataState } from "@/context/swap";
 import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { motion } from "framer-motion";
+import { useSelectAccounts } from "@/context/selectedAccounts";
 
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
     const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, destination_address } = values
-    const { selectedSourceAccount } = useSwapDataState()
+    const { selectedSourceAccount } = useSelectAccounts()
     const token = direction === 'from' ? fromCurrency : toCurrency
     const network = direction === 'from' ? from : to
     const address = direction === 'from' ? selectedSourceAccount?.address : destination_address

@@ -1,10 +1,8 @@
 import useSWR from "swr"
-import { NetworkWithTokens, NetworkRoute } from "../../Models/Network"
+import { NetworkWithTokens } from "../../Models/Network"
 import { BalanceResolver } from "./balanceResolver"
-import useSWRMutation from "swr/mutation"
 
 const useSWRBalance = (address: string | undefined, network: NetworkWithTokens | undefined) => {
-    
     const { data, error, mutate, isLoading } = useSWR(network ? `/balances/${address}/${network.name}` : null, () => {
         if (!network) return
         return new BalanceResolver().getBalance(network, address)

@@ -32,7 +32,7 @@ export type Wallet = {
     }
     chainId?: string | number,
     isLoading?: boolean,
-    disconnect: () => Promise<void> | undefined | void;
+    disconnect?: () => Promise<void> | undefined | void;
     connect?: () => Promise<Wallet | undefined>;
     isNotAvailable?: boolean;
     //TODO: refactor

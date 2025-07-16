@@ -1,13 +1,15 @@
 import { FC } from "react"
-import { useSwapDataState } from "../../../context/swap"
+import { useSwapDataState } from "@/context/swap"
 import Summary from "./Summary"
-import { TransactionType } from "../../../lib/apiClients/layerSwapApiClient"
+import { TransactionType } from "@/lib/apiClients/layerSwapApiClient"
 import { shortenEmail } from "../../utils/ShortenAddress"
-import KnownInternalNames from "../../../lib/knownIds"
-import { useQueryState } from "../../../context/query"
+import KnownInternalNames from "@/lib/knownIds"
+import { useQueryState } from "@/context/query"
+import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets"
 
 const SwapSummary: FC = () => {
-    const { swapResponse, selectedSourceAccount } = useSwapDataState()
+    const { swapResponse } = useSwapDataState()
+    const { pickerSelectedWallet: selectedSourceAccount } = useSelectedWalletStore('from')
     const { swap, quote: swapQuote, refuel: swapRefuel } = swapResponse || {}
     const { source_network, destination_network, source_token, destination_token } = swap || {}
 

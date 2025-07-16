@@ -2,6 +2,8 @@
 export class PersistantQueryParams {
     from?: string = "";
     to?: string = "";
+    fromExchange?: string = "";
+    currencyGroup?: string = "";
     lockFrom?: boolean = false;
     lockTo?: boolean = false;
 

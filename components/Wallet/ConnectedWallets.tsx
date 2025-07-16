@@ -44,7 +44,7 @@ const WalletsHeaderWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
     </>
 }
 
-const WalletsIcons = ({ wallets }: { wallets: Wallet[] }) => {
+export const WalletsIcons = ({ wallets }: { wallets: Wallet[] }) => {
 
     const uniqueWallets = wallets.filter((wallet, index, self) => index === self.findIndex((t) => t.id === wallet.id))
 

@@ -23,10 +23,6 @@ import { AnimatePresence } from "framer-motion";
 import useWallet from "@/hooks/useWallet";
 import { DepositMethodProvider } from "@/context/depositMethodContext";
 import { dynamicWithRetries } from "@/lib/dynamicWithRetries";
-import AddressNote from "../../Input/Address/AddressNote";
-import { addressFormat } from "@/lib/address/formatter";
-import { AddressGroup } from "../../Input/Address/AddressPicker";
-import { useAddressesStore } from "@/stores/addressesStore";
 import { useAsyncModal } from "@/context/asyncModal";
 import { ValidationProvider } from "@/context/validationErrorContext";
 import { PendingSwap } from "./PendingSwap";
@@ -40,6 +36,7 @@ import { Widget } from "@/components/Widget/Index";
 import NetworkTabIcon from "@/components/icons/NetworkTabIcon";
 import ExchangeTabIcon from "@/components/icons/ExchangeTabIcon";
 import { useQuoteData } from "@/hooks/useFee";
+import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -67,7 +64,6 @@ export default function Form() {
     const router = useRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
     const { getProvider } = useWallet()
-    const addresses = useAddressesStore(state => state.addresses)
     const { getConfirmation } = useAsyncModal();
     const showAddressNote = useShowAddressNote()
 
@@ -80,33 +76,34 @@ export default function Form() {
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
     const partner = appName && partnerData?.data?.client_id?.toLowerCase() === (appName as string)?.toLowerCase() ? partnerData?.data : undefined
 
-    const { swapResponse, selectedSourceAccount } = useSwapDataState()
+    const { swapResponse } = useSwapDataState()
+    const { pickerSelectedWallet: selectedSourceAccount } = useSelectedWalletStore('from');
     const { swap } = swapResponse || {}
     const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits, quote } = useQuoteData(formikRef.current?.values || {})
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         const { destination_address, to } = values
 
-        if (to &&
-            destination_address &&
-            showAddressNote &&
-            (destination_address) &&
-            (addressFormat(destination_address?.toString(), to) === addressFormat(destination_address, to)) &&
-            !(addresses.find(a => addressFormat(a.address, to) === addressFormat(destination_address, to) && a.group !== AddressGroup.FromQuery)) && !isAddressFromQueryConfirmed) {
+        // if (to &&
+        //     destination_address &&
+        //     showAddressNote &&
+        //     (destination_address) &&
+        //     (addressFormat(destination_address?.toString(), to) === addressFormat(destination_address, to)) &&
+        //     !(addresses.find(a => addressFormat(a.address, to) === addressFormat(destination_address, to) && a.group !== AddressGroup.FromQuery)) && !isAddressFromQueryConfirmed) {
 
-            const confirmed = await getConfirmation({
-                content: <AddressNote partner={partner} values={values} />,
-                submitText: 'Confirm address',
-                dismissText: 'Cancel address'
-            })
+        //     const confirmed = await getConfirmation({
+        //         content: <AddressNote partner={partner} values={values} />,
+        //         submitText: 'Confirm address',
+        //         dismissText: 'Cancel address'
+        //     })
 
-            if (confirmed) {
-                setIsAddressFromQueryConfirmed(true)
-            }
-            else if (!confirmed) {
-                return
-            }
-        }
+        //     if (confirmed) {
+        //         setIsAddressFromQueryConfirmed(true)
+        //     }
+        //     else if (!confirmed) {
+        //         return
+        //     }
+        // }
         try {
             const accessToken = TokenService.getAuthData()?.access_token
             if (!accessToken) {
