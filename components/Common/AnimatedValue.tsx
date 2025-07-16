@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { FC, useEffect, useState, ReactNode } from 'react'
+import { FC } from 'react'
 
 type AnimatedValueProps = {
     value: string | number | null | undefined;
@@ -7,13 +7,6 @@ type AnimatedValueProps = {
 };
 
 export const AnimatedValue: FC<AnimatedValueProps> = ({ value, className }) => {
-    const [previousValue, setPreviousValue] = useState<ReactNode | null>(null);
-
-    useEffect(() => {
-        if (value !== previousValue) {
-            setPreviousValue(value);
-        }
-    }, [value]);
 
     return (
         <span className={`relative inline-block overflow-hidden w-full ${className}`}>

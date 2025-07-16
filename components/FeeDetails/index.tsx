@@ -55,7 +55,7 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
                                         Details
                                     </p>
                                     :
-                                    <DetailsButton quote={quoteData} isQuoteLoading={isQuoteLoading} swapValues={values} />
+                                    <DetailsButton quote={quoteData} isQuoteLoading={isQuoteLoading} swapValues={values} isUpdatingValues={isUpdatingValues} />
                             }
                             <ChevronDown className='h-3.5 w-3.5 text-secondary-text' />
                         </AccordionTrigger>
@@ -80,7 +80,7 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
 }
 
 
-const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoading, swapValues: values }) => {
+const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoading, swapValues: values, isUpdatingValues }) => {
     const { quote, reward } = quoteData || {}
     const { provider } = useWallet(values.from, 'withdrawal')
     const wallet = provider?.activeWallet

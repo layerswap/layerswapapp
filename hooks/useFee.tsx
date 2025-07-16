@@ -3,7 +3,6 @@ import useSWR from 'swr'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues'
 import LayerSwapApiClient, { Quote } from '../lib/apiClients/layerSwapApiClient'
 import { ApiResponse } from '../Models/ApiResponse'
-import sleep from '@/lib/wallets/utils/sleep'
 
 type UseQuoteData = {
     minAllowedAmount?: number
@@ -13,14 +12,12 @@ type UseQuoteData = {
     mutateFee: () => void
     mutateLimits: () => void
     updatePolling: (value: boolean) => void
-    isUpdatingValues: boolean
 }
 
 export function useQuoteData(formValues: SwapFormValues): UseQuoteData {
     const { fromAsset: fromCurrency, toAsset: toCurrency, from, to, amount, refuel, depositMethod } = formValues || {}
     const [debouncedAmount, setDebouncedAmount] = useState(amount)
     const [poll, updatePolling] = useState(true)
-    const requestedAmountRef = useRef<number | null>(null)
 
     useEffect(() => {
         const handler = setTimeout(() => {
@@ -52,31 +49,11 @@ export function useQuoteData(formValues: SwapFormValues): UseQuoteData {
         refreshInterval: poll ? 42000 : 0,
     })
 
-    const [quoteData, setQuoteData] = useState<Quote | undefined>(undefined);
-    const [isUpdatingValues, setIsUpdatingValues] = useState(false);
-
-    useEffect(() => {
-        (async () => {
-            const requestedAmount = quote?.data?.quote.requested_amount
-            if (requestedAmountRef.current == requestedAmount) {
-                setIsUpdatingValues(true)
-                await sleep(3000)
-                setIsUpdatingValues(false)
-            }
-            if (quote && quote.data && !lsFeeError) {
-                setQuoteData(quote.data)
-                return
-            }
-            if (requestedAmount) requestedAmountRef.current = requestedAmount
-        })()
-    }, [quote])
-
     return {
         minAllowedAmount: amountRange?.data?.min_amount,
         maxAllowedAmount: amountRange?.data?.max_amount,
-        quote: quoteData,
+        quote: quote?.data,
         isQuoteLoading,
-        isUpdatingValues,
         mutateFee,
         mutateLimits,
         updatePolling
