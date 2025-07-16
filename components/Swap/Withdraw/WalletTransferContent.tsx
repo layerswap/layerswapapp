@@ -76,7 +76,7 @@ const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal }) => {
                         addressItem={{ address: accountAddress, group: AddressGroup.ConnectedWallet }}
                         connectedWallet={selectedWallet}
                         network={source_network}
-                        onDisconnect={() => selectedWallet.disconnect()}
+                        onDisconnect={() => selectedWallet?.disconnect && selectedWallet?.disconnect()}
                     />
                     <div className="flex flex-col col-start-8 col-span-3 items-end font-normal text-secondary-text text-xs">
                         <p>Balance</p>
