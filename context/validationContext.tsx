@@ -1,11 +1,11 @@
-import React, { createContext, useMemo, ReactNode, useRef } from 'react';
+import React, { createContext, useMemo, ReactNode } from 'react';
 import { useFormikContext } from 'formik';
 import { useQueryState } from './query';
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import { useSwapDataState } from './swap';
 import { useQuoteData } from '@/hooks/useFee';
 import { resolveFormValidation } from '@/hooks/useFormValidation';
 import { resolveRouteValidation } from '@/hooks/useRouteValidation';
+import useSelectedWalletStore from './selectedAccounts/pickerSelectedWallets';
 
 interface ValidationDetails {
     title?: string;
@@ -34,7 +34,7 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     const { values } = useFormikContext<SwapFormValues>();
     const query = useQueryState();
     const { sameAccountNetwork } = query
-    const { selectedSourceAccount } = useSwapDataState()
+    const { pickerSelectedWallet: selectedSourceAccount } = useSelectedWalletStore('from')
     const { minAllowedAmount, maxAllowedAmount } = useQuoteData(values || {})
 
     const routeValidation = resolveRouteValidation();
