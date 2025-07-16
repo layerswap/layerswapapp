@@ -15,12 +15,12 @@ const FormButton = ({
     shouldConnectWallet,
     values,
     isValid,
-    errors,
+    error,
     isSubmitting,
     partner,
 }) => {
     const query = useQueryState();
-    const actionDisplayName = query?.actionButtonText || "Swap now";
+    const actionDisplayName = error || query?.actionButtonText || "Swap now";
 
     if (shouldConnectWallet) {
         return <FormSourceWalletButton />;
@@ -48,19 +48,9 @@ const FormButton = ({
             isDisabled={!isValid}
             isSubmitting={isSubmitting}
         >
-            {ActionText(errors, actionDisplayName)}
+            {actionDisplayName}
         </SwapButton>
     );
 };
-
-function ActionText(errors: FormikErrors<SwapFormValues>, actionDisplayName: string): string {
-    return errors.from?.toString()
-        || errors.to?.toString()
-        || errors.fromAsset
-        || errors.toAsset
-        || errors.currencyGroup
-        || errors.amount
-        || (actionDisplayName)
-}
 
 export default FormButton;

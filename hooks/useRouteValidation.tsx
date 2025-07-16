@@ -1,11 +1,10 @@
-import React, { createContext, useMemo } from 'react';
-import { ReactNode } from 'react';
 import { Info, RouteOff } from 'lucide-react';
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
+import { useMemo } from 'react';
+import { useSettingsState } from '@/context/settings';
+import { useSwapDataState } from '@/context/swap';
+import { useQueryState } from '@/context/query';
 import { useFormikContext } from 'formik';
-import { useQueryState } from './query';
-import { useSettingsState } from './settings';
-import { useSwapDataState } from './swap';
 
 interface ValidationDetails {
     title?: string;
@@ -13,23 +12,8 @@ interface ValidationDetails {
     icon?: React.ReactNode;
 }
 
-interface ValidationContextType {
-    validationMessage: string;
-    validationDetails: ValidationDetails;
-}
-
-const defaultContextValue: ValidationContextType = {
-    validationMessage: '',
-    validationDetails: {},
-};
-
-const ValidationContext = createContext<ValidationContextType>(defaultContextValue);
-
-export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-
-    const {
-        values
-    } = useFormikContext<SwapFormValues>();
+export function resolveRouteValidation() {
+    const { values } = useFormikContext<SwapFormValues>();
     const { destinationRoutes: allDestinations, sourceRoutes: allSources } = useSettingsState()
     const { selectedSourceAccount } = useSwapDataState()
     const { to, from, fromAsset: fromCurrency, toAsset: toCurrency, fromExchange, currencyGroup, validatingSource, validatingDestination, validatingCurrencyGroup, destination_address } = values;
@@ -37,7 +21,7 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     const fromDisplayName = fromExchange ? fromExchange.display_name : from?.display_name;
     const toDisplayName = to?.display_name;
 
-    let validationMessage = '';
+    let validationMessage: string = '';
     let validationDetails: ValidationDetails = {};
 
     if (query?.lockToAsset) {
@@ -105,16 +89,10 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
         }
 
     }
-    const value = useMemo(() => ({ validationMessage, validationDetails }), [validationMessage, validationDetails])
-
-    return (
-        <ValidationContext.Provider
-            value={value}
-        >
-            {children}
-        </ValidationContext.Provider>
-    );
-};
-
-
-export const useValidationContext = () => React.useContext(ValidationContext);
+    const value = useMemo(() => ({
+        message: validationMessage,
+        details: validationDetails
+    }), [validationMessage, validationDetails]);
+    
+    return value
+}
