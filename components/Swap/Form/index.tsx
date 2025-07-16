@@ -1,15 +1,14 @@
 import { Formik, FormikProps } from "formik";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSettingsState } from "@/context/settings";
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import React from "react";
-import ConnectNetwork from "../../ConnectNetwork";
+import ConnectNetwork from "@/components/ConnectNetwork";
 import toast from "react-hot-toast";
-import MainStepValidation from "@/lib/mainStepValidator";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/lib/generateSwapInitialValues";
 import LayerSwapApiClient, { Quote } from "@/lib/apiClients/layerSwapApiClient";
-import Modal from "../../modal/modal";
+import Modal from "@/components/modal/modal";
 import useSWR from "swr";
 import { NextRouter, useRouter } from "next/router";
 import { ApiResponse } from "@/Models/ApiResponse";
@@ -24,7 +23,6 @@ import useWallet from "@/hooks/useWallet";
 import { DepositMethodProvider } from "@/context/depositMethodContext";
 import { dynamicWithRetries } from "@/lib/dynamicWithRetries";
 import { useAsyncModal } from "@/context/asyncModal";
-import { ValidationProvider } from "@/context/validationErrorContext";
 import { PendingSwap } from "./PendingSwap";
 import { QueryParams } from "@/Models/QueryParams";
 import VaulDrawer from "@/components/modal/vaulModal";
@@ -37,6 +35,7 @@ import NetworkTabIcon from "@/components/icons/NetworkTabIcon";
 import ExchangeTabIcon from "@/components/icons/ExchangeTabIcon";
 import { useQuoteData } from "@/hooks/useFee";
 import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
+import { ValidationProvider } from "@/context/validationContext";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -158,8 +157,6 @@ export default function Form() {
         }
     }, [router, swap])
 
-    const validator = useMemo(() => MainStepValidation({ minAllowedAmount, maxAllowedAmount, sourceAddress: selectedSourceAccount?.address, sameAccountNetwork: sameAccountNetwork }), [minAllowedAmount, maxAllowedAmount, selectedSourceAccount, sameAccountNetwork])
-
     return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence mode='wait'>
@@ -208,7 +205,6 @@ export default function Form() {
                         innerRef={formikRef}
                         initialValues={initialValues}
                         validateOnMount={true}
-                        validate={validator}
                         onSubmit={handleSubmit}
                     >
                         <ValidationProvider>
@@ -221,7 +217,6 @@ export default function Form() {
                         innerRef={formikRef}
                         initialValues={initialValues}
                         validateOnMount={true}
-                        validate={validator}
                         onSubmit={handleSubmit}
                     >
                         <ValidationProvider>
@@ -256,7 +251,8 @@ type SubmitProps = {
 
 const handleCreateSwap = async ({ query, values, settings, quote, partner, selectedSourceAddress, router, minAllowedAmount, setSwapId, setShowSwapModal, setSwapPath, pollFee, createSwap, setNetworkToConnect, setShowConnectNetworkModal, mutateLimits, resolveSwapDataFromQuery }: SubmitProps) => {
     if (values.depositMethod == 'wallet') {
-        quote && resolveSwapDataFromQuery(settings, selectedSourceAddress, quote, values?.destination_address)
+        if (!quote) throw new Error(`Quote is undefined.`)
+        resolveSwapDataFromQuery(settings, selectedSourceAddress, quote, values?.destination_address)
         setSwapId(undefined)
         pollFee(true)
         setShowSwapModal(true)
