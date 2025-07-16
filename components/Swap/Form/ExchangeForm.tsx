@@ -18,6 +18,7 @@ import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import MinMax from "@/components/Input/Amount/MinMax";
 import { useQuoteData } from "@/hooks/useFee";
 import { ReceiveAmounts } from "@/components/FeeDetails/ReceiveAmounts";
+import useWallet from "@/hooks/useWallet";
 
 type Props = {
     partner?: Partner;
@@ -29,7 +30,9 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
         errors, isValid, isSubmitting
     } = useFormikContext<SwapFormValues>();
 
-    const { fromAsset: fromCurrency, from, to: destination, toAsset: toCurrency } = values || {};
+    const { fromAsset: fromCurrency, from, to: destination, toAsset: toCurrency, destination_address } = values || {};
+    const { wallets } = useWallet();
+    const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == destination_address?.toLowerCase())?.icon;
 
     const { isQuoteLoading, quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(values);
     const { validationMessage } = useValidationContext();
@@ -67,7 +70,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                                 ({ disabled, addressItem }) => <>
                                                     {
                                                         addressItem ? <>
-                                                            <AddressButton addressItem={addressItem} network={destination} disabled={disabled} />
+                                                            <AddressButton addressItem={addressItem} network={destination} disabled={disabled} WalletIcon={WalletIcon} />
                                                         </>
                                                             : <span className="flex items-center pointer-events-none text-shadow-primary-text-muted px-1 py-1">
                                                                 <span>Enter Address</span>
@@ -128,11 +131,15 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
 
 export default ExchangeForm;
 
-const AddressButton = ({ addressItem, network, disabled }) => {
+const AddressButton = ({ addressItem, network, disabled, WalletIcon }) => {
     return <div className="justify-between w-full items-center flex font-light space-x-2 mx-auto rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative">
         <div className="flex items-center gap-2">
             <div className='flex text-primary-text items-center justify-center rounded-md h-6 overflow-hidden w-6'>
-                <AddressIcon className="scale-150 h-3 w-3" address={addressItem.address} size={36} />
+                {WalletIcon ? (
+                    <WalletIcon className="h-4 w-4 object-contain" />
+                ) : (
+                    <AddressIcon className="scale-150 h-3 w-3" address={addressItem.address} size={36} />
+                )}
             </div>
             <ExtendedAddress address={addressItem.address} network={network} />
         </div>
