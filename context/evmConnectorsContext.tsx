@@ -38,17 +38,17 @@ export function EvmConnectorsProvider({ children }) {
         setWalletConnectWallets((prev) => [...prev.filter(v => v.name !== connector.name), connector])
     }
 
-    useEffect(() => {
-        const evmRecentConnectors = recentConnectors.filter(c => c.providerName === 'EVM')
-        evmRecentConnectors.forEach(c => {
-            if (!c.connectorName || featuredWalletsIds.includes(c.connectorName.toLowerCase())) {
-                return;
-            }
+    const initialRecentConnectors = useMemo(() => {
+        const evmRecentConnectors = recentConnectors.filter(c =>
+            c.providerName === 'EVM'
+            && c.connectorName
+            && !featuredWalletsIds.includes(c.connectorName.toLowerCase())
+        )
+        return evmRecentConnectors.filter(con => _walletConnectWallets.some(w => w.name.toLowerCase() === con?.connectorName?.toLowerCase())).map(c => {
             const connector = _walletConnectWallets.find(w => w.name.toLowerCase() === c?.connectorName?.toLowerCase())
-            if (walletConnectWallets.some(w => w.name.toLowerCase() === connector?.name.toLowerCase()) || !connector) return
-            addWalletConnectWallet(connector)
+            return connector!
         })
-    }, [recentConnectors, _walletConnectWallets, walletConnectWallets])
+    }, [recentConnectors]);
 
     const resolvedFeaturedWallets = useMemo(() => {
         return featuredWallets.map(wallet => {
@@ -57,10 +57,17 @@ export function EvmConnectorsProvider({ children }) {
     }, [featuredWallets]);
 
     const resolvedWalletConnectWallets = useMemo(() => {
-        return walletConnectWallets.map(wallet => {
+        const resolvedInitialRecentConnectors = initialRecentConnectors.map(wallet => {
             return resolveConnector(wallet.name)
         })
-    }, [walletConnectWallets]);
+        const resolvedWalletConnectConnectors = walletConnectWallets.map(wallet => {
+            return resolveConnector(wallet.name)
+        })
+        return [
+            ...resolvedInitialRecentConnectors,
+            ...resolvedWalletConnectConnectors
+        ]
+    }, [walletConnectWallets, initialRecentConnectors]);
 
     const defaultConnectors: CreateConnectorFn[] = [
         coinbaseWallet({
