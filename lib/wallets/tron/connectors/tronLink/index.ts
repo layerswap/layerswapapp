@@ -219,7 +219,7 @@ export class TronLinkAdapter extends Adapter {
                     if (!res) {
                         // 1. wallet is locked
                         // 2. tronlink is first installed and there is no wallet account
-                        throw new WalletConnectionError('TronLink wallet is locked or no wallet account is avaliable.');
+                        throw new WalletConnectionError('TronLink wallet is locked or no wallet account is available.');
                     }
                     if (res.code === 4000) {
                         throw new WalletConnectionError(

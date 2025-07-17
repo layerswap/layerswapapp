@@ -30,7 +30,7 @@ export class BalanceResolver {
 
     getBalance(address: string, network: NetworkWithTokens) {
         const provider = this.providers.find(p => p.supportsNetwork(network));
-        //TODO: create interface for balance providers in case of empty state they shoudl throw error 
+        //TODO: create interface for balance providers in case of empty state they should throw error 
         //never return undefined as SWR does not set loading state if undefined is returned
         if (!provider) throw new Error(`No balance provider found for network ${network.name}`);
 
