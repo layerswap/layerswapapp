@@ -1,12 +1,12 @@
 
 import { ChevronDown, Plus, RefreshCw } from "lucide-react";
-import { Network } from "../../../../Models/Network";
+import { Network } from "@/Models/Network";
 import { FC, useState } from "react";
-import ResizablePanel from "../../../ResizablePanel";
-import { Wallet, WalletProvider } from "../../../../Models/WalletProvider";
-import WalletIcon from "../../../icons/WalletIcon";
-import { WalletItem } from "../../../Wallet/WalletsList";
-import { useConnectModal } from "../../../WalletModal";
+import ResizablePanel from "@/components/ResizablePanel";
+import { Wallet, WalletProvider } from "@/Models/WalletProvider";
+import WalletIcon from "@/components/icons/WalletIcon";
+import { WalletItem } from "@/components/Wallet/WalletsList";
+import { useConnectModal } from "@/components/WalletModal";
 
 type Props = {
     provider: WalletProvider,
@@ -33,7 +33,8 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
 
     //TODO: should check for real compatibility, in the future network can have wallets from multiple providers
     const notCompatibleWallets = wallets.filter(wallet => wallet.providerName !== provider.name || wallet.isNotAvailable)
-    return <div className="space-y-2">
+
+    return (notCompatibleWallets?.length || connectedWallets?.length) ? <div className="flex flex-col gap-2">
         {
             connectedWallets && connectedWallets?.length > 0 &&
             <div className="flex flex-col gap-2">
@@ -71,8 +72,6 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                 }
             </div>
         }
-
-
         {
             notCompatibleWallets.length > 0 &&
             (notCompatibleWallets.length > 1 ? (
@@ -139,6 +138,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
         }
 
     </div>
+        : null
 }
 
 export default ConnectedWallets;

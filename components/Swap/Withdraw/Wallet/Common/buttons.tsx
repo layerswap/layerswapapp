@@ -15,7 +15,7 @@ import { useRouter } from "next/router";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { BackendTransactionStatus } from "@/lib/apiClients/layerSwapApiClient";
 import { useQuoteData } from "@/hooks/useFee";
-import { useFormikContext } from "formik";
+import { useSelectAccounts } from "@/context/selectedAccounts";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapResponse } = useSwapDataState()
@@ -81,7 +81,7 @@ export const ChangeNetworkButton: FC<ChangeNetworkProps> = (props) => {
     const [error, setError] = useState<Error | null>(null)
     const [isPending, setIsPending] = useState(false)
 
-    const { selectedSourceAccount } = useSwapDataState()
+    const { selectedSourceAccount } = useSelectAccounts()
 
     const clickHandler = useCallback(async () => {
         try {

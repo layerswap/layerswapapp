@@ -8,13 +8,13 @@ import SubmitButton from "@/components/buttons/submitButton";
 import WalletIcon from "@/components/icons/WalletIcon";
 import Modal from '@/components/modal/modal';
 import MessageComponent from "@/components/MessageComponent";
-import { ActionData, TransferProps, WithdrawPageProps } from "../../Common/sharedTypes";
+import { ActionData, TransferProps } from "../../Common/sharedTypes";
 import TransactionMessage from "./transactionMessage";
 import { SendTransactionButton } from "../../Common/buttons";
-import { useSwapDataState } from "@/context/swap";
 import { datadogRum } from "@datadog/browser-rum";
 import { isMobile } from "@/lib/openLink";
 import { sendTransaction } from '@wagmi/core'
+import { useSelectAccounts } from "@/context/selectedAccounts";
 
 const TransferTokenButton: FC<{ savedTransactionHash?: string, chainId?: number }> = ({
     savedTransactionHash,
@@ -22,7 +22,7 @@ const TransferTokenButton: FC<{ savedTransactionHash?: string, chainId?: number 
 }) => {
     const [buttonClicked, setButtonClicked] = useState(false)
     const config = useConfig()
-    const { selectedSourceAccount } = useSwapDataState()
+    const { selectedSourceAccount } = useSelectAccounts()
     const [error, setError] = useState<any | undefined>()
     const [loading, setLoading] = useState(false)
 
@@ -47,7 +47,7 @@ const TransferTokenButton: FC<{ savedTransactionHash?: string, chainId?: number 
                 data: callData as `0x${string}`,
                 account: selectedSourceAccount.address as `0x${string}`
             }
-            if (isMobile() && selectedSourceAccount.wallet.metadata?.deepLink) {
+            if (isMobile() && selectedSourceAccount?.wallet?.metadata?.deepLink) {
                 window.location.href = selectedSourceAccount.wallet.metadata?.deepLink
                 await new Promise(resolve => setTimeout(resolve, 100))
             }
