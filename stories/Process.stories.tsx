@@ -17,8 +17,6 @@ import SwapMockFunctions from './Mocks/context/SwapDataUpdate';
 import AuthMockFunctions from './Mocks/context/AuthDataUpdate';
 import { Formik, FormikProps } from 'formik';
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import MainStepValidation from '../lib/mainStepValidator';
-import { QuoteProvider, useQuote } from '../context/feeContext';
 import { useArgs } from '@storybook/preview-api';
 import WagmiComponent from '../components/WalletProviders/Wagmi';
 
@@ -45,12 +43,9 @@ const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme
                                         innerRef={formikRef}
                                         initialValues={initialValues!}
                                         validateOnMount={true}
-                                        validate={MainStepValidation({ minAllowedAmount: 8, maxAllowedAmount: 10, sourceAddress: undefined })}
                                         onSubmit={() => { }}
                                     >
-                                        <QuoteProvider>
-                                            <Component initialValues={initialValues} />
-                                        </QuoteProvider>
+                                        <Component initialValues={initialValues} />
                                     </Formik>
                                 </SwapDataUpdateContext.Provider>
                             </AuthDataUpdateContext.Provider>
@@ -63,10 +58,6 @@ const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme
 }
 
 const Component = ({ initialValues }: { initialValues: SwapFormValues | undefined }) => {
-    const { valuesChanger } = useQuote()
-    useEffect(() => {
-        valuesChanger(initialValues!)
-    }, [])
     return (
         <SwapDetails type='widget' />
     )

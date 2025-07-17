@@ -1,16 +1,14 @@
 import { Formik, FormikProps } from "formik";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSettingsState } from "@/context/settings";
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import React from "react";
-import ConnectNetwork from "../../ConnectNetwork";
+import ConnectNetwork from "@/components/ConnectNetwork";
 import toast from "react-hot-toast";
-import MainStepValidation from "@/lib/mainStepValidator";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/lib/generateSwapInitialValues";
 import LayerSwapApiClient, { Quote } from "@/lib/apiClients/layerSwapApiClient";
-import Modal from "../../modal/modal";
-import SwapForm from "./Form";
+import Modal from "@/components/modal/modal";
 import useSWR from "swr";
 import { NextRouter, useRouter } from "next/router";
 import { ApiResponse } from "@/Models/ApiResponse";
@@ -21,20 +19,26 @@ import { useQueryState } from "@/context/query";
 import TokenService from "@/lib/TokenService";
 import LayerSwapAuthApiClient from "@/lib/apiClients/userAuthApiClient";
 import { AnimatePresence } from "framer-motion";
-import { useQuote } from "@/context/feeContext";
 import useWallet from "@/hooks/useWallet";
 import { DepositMethodProvider } from "@/context/depositMethodContext";
 import { dynamicWithRetries } from "@/lib/dynamicWithRetries";
-import AddressNote from "../../Input/Address/AddressNote";
+import AddressNote from "@/components/Input/Address/AddressNote";
 import { addressFormat } from "@/lib/address/formatter";
-import { AddressGroup } from "../../Input/Address/AddressPicker";
+import { AddressGroup } from "@/components/Input/Address/AddressPicker";
 import { useAddressesStore } from "@/stores/addressesStore";
 import { useAsyncModal } from "@/context/asyncModal";
-import { ValidationProvider } from "@/context/validationErrorContext";
 import { PendingSwap } from "./PendingSwap";
 import { QueryParams } from "@/Models/QueryParams";
 import VaulDrawer from "@/components/modal/vaulModal";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./NetworkExchangeTabs";
+import NetworkForm from "./NetworkForm";
+import ExchangeForm from "./ExchangeForm";
 import useShowAddressNote from "@/hooks/useShowAddressNote";
+import { Widget } from "@/components/Widget/Index";
+import NetworkTabIcon from "@/components/icons/NetworkTabIcon";
+import ExchangeTabIcon from "@/components/icons/ExchangeTabIcon";
+import { useQuoteData } from "@/hooks/useFee";
+import { ValidationProvider } from "@/context/validationContext";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -64,7 +68,6 @@ export default function Form() {
     const { getProvider } = useWallet()
     const addresses = useAddressesStore(state => state.addresses)
     const { getConfirmation } = useAsyncModal();
-    const { quote } = useQuote()
     const showAddressNote = useShowAddressNote()
 
     const settings = useSettingsState();
@@ -78,7 +81,7 @@ export default function Form() {
 
     const { swapResponse, selectedSourceAccount } = useSwapDataState()
     const { swap } = swapResponse || {}
-    const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits } = useQuote()
+    const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits, quote } = useQuoteData(formikRef.current?.values || {})
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         const { destination_address, to } = values
@@ -157,8 +160,6 @@ export default function Form() {
         }
     }, [router, swap])
 
-    const validator = useMemo(() => MainStepValidation({ minAllowedAmount, maxAllowedAmount, sourceAddress: selectedSourceAccount?.address, sameAccountNetwork: sameAccountNetwork }), [minAllowedAmount, maxAllowedAmount, selectedSourceAccount, sameAccountNetwork])
-
     return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence mode='wait'>
@@ -190,17 +191,44 @@ export default function Form() {
                 <SwapDetails type="contained" />
             </VaulDrawer.Snap>
         </VaulDrawer>
-        <Formik
-            innerRef={formikRef}
-            initialValues={initialValues}
-            validateOnMount={true}
-            validate={validator}
-            onSubmit={handleSubmit}
-        >
-            <ValidationProvider>
-                <SwapForm partner={partner} />
-            </ValidationProvider>
-        </Formik>
+        <Tabs defaultValue="cross-chain">
+            <TabsList>
+                <TabsTrigger
+                    label="Swap"
+                    Icon={NetworkTabIcon}
+                    value="cross-chain" />
+                <TabsTrigger
+                    label="Deposit from CEX"
+                    Icon={ExchangeTabIcon}
+                    value="exchange" />
+            </TabsList>
+            <Widget className="sm:min-h-[450px] h-full">
+                <TabsContent value="cross-chain">
+                    <Formik
+                        innerRef={formikRef}
+                        initialValues={initialValues}
+                        validateOnMount={true}
+                        onSubmit={handleSubmit}
+                    >
+                        <ValidationProvider>
+                            <NetworkForm partner={partner} />
+                        </ValidationProvider>
+                    </Formik>
+                </TabsContent>
+                <TabsContent value="exchange">
+                    <Formik
+                        innerRef={formikRef}
+                        initialValues={initialValues}
+                        validateOnMount={true}
+                        onSubmit={handleSubmit}
+                    >
+                        <ValidationProvider>
+                            <ExchangeForm />
+                        </ValidationProvider>
+                    </Formik>
+                </TabsContent>
+            </Widget>
+        </Tabs>
     </DepositMethodProvider>
 }
 
@@ -226,7 +254,8 @@ type SubmitProps = {
 
 const handleCreateSwap = async ({ query, values, settings, quote, partner, selectedSourceAddress, router, minAllowedAmount, setSwapId, setShowSwapModal, setSwapPath, pollFee, createSwap, setNetworkToConnect, setShowConnectNetworkModal, mutateLimits, resolveSwapDataFromQuery }: SubmitProps) => {
     if (values.depositMethod == 'wallet') {
-        quote && resolveSwapDataFromQuery(settings, selectedSourceAddress, quote, values?.destination_address)
+        if (!quote) throw new Error(`Quote is undefined.`)
+        resolveSwapDataFromQuery(settings, selectedSourceAddress, quote, values?.destination_address)
         setSwapId(undefined)
         pollFee(true)
         setShowSwapModal(true)

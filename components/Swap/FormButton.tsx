@@ -5,6 +5,7 @@ import SwapButton from "../buttons/swapButton";
 import { FormikErrors } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import SubmitButton from "../buttons/submitButton";
+import { useQueryState } from "@/context/query";
 
 const Address = dynamic(() => import("../Input/Address"), {
     loading: () => <></>,
@@ -14,11 +15,13 @@ const FormButton = ({
     shouldConnectWallet,
     values,
     isValid,
-    errors,
+    error,
     isSubmitting,
-    actionDisplayName,
     partner
 }) => {
+    const query = useQueryState();
+    const actionDisplayName = error || query?.actionButtonText || "Swap now";
+
     if (shouldConnectWallet) {
         return <FormSourceWalletButton />;
     }
@@ -45,19 +48,9 @@ const FormButton = ({
             isDisabled={!isValid}
             isSubmitting={isSubmitting}
         >
-            {ActionText(errors, actionDisplayName)}
+            {actionDisplayName}
         </SwapButton>
     );
 };
-
-function ActionText(errors: FormikErrors<SwapFormValues>, actionDisplayName: string): string {
-    return errors.from?.toString()
-        || errors.to?.toString()
-        || errors.fromAsset
-        || errors.toAsset
-        || errors.currencyGroup
-        || errors.amount
-        || (actionDisplayName)
-}
 
 export default FormButton;

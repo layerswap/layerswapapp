@@ -33,9 +33,9 @@ export const resolveExchangesURLForSelectedToken = (direction: SwapDirection, va
 
 }
 
-export const resolveExchangeHistoricalNetworksURL = (direction: SwapDirection, values: SwapFormValues, networkTypes?: string[]) => {
+export const resolveExchangeHistoricalNetworksURL = (direction: SwapDirection, values: SwapFormValues) => {
 
-    const { from, to, fromAsset: fromCurrency, toAsset: toCurrency, fromExchange, toExchange, currencyGroup } = values
+    const { to, toAsset: toCurrency, fromExchange, currencyGroup } = values
 
     if (direction === "from" && fromExchange && to && toCurrency && currencyGroup) {
         const params = new URLSearchParams({
@@ -46,36 +46,17 @@ export const resolveExchangeHistoricalNetworksURL = (direction: SwapDirection, v
         })
         return `/exchange_withdrawal_networks?${params.toString()}`
     }
-    else if (direction === "to" && toExchange && from && fromCurrency && currencyGroup) {
-        const params = new URLSearchParams({
-            source_network: from.name,
-            source_token: fromCurrency.symbol,
-            destination_exchange: toExchange.name,
-            destination_token_group: currencyGroup?.symbol
-        })
-        return `/exchange_deposit_networks?${params.toString()}`
-    }
 
     return null
 }
 
 export const resolveNetworkRoutesURL = (direction: SwapDirection, values: SwapFormValues, networkTypes?: string[]) => {
 
-    const { from, to, fromAsset: fromCurrency, toAsset: toCurrency, fromExchange, toExchange, currencyGroup } = values
+    const { from, to, fromAsset: fromCurrency, toAsset: toCurrency } = values
 
-    const selectedExchange = direction === 'from' ? toExchange : fromExchange
-
-    if (selectedExchange) {
-        return currencyGroup ?
-            resolveRoutesURLForSelectedAssetGroup(direction, currencyGroup, networkTypes)
-            :
-            resolveRoutesURLForSelectedToken({ direction, network: undefined, token: undefined, includes: { unavailable: true, unmatched: true }, networkTypes })
-    }
-    else {
-        const selectednetwork = direction === "from" ? to : from
-        const selectedToken = direction === "from" ? toCurrency?.symbol : fromCurrency?.symbol
-        return resolveRoutesURLForSelectedToken({ direction, network: selectednetwork?.name, token: selectedToken, includes: { unmatched: true, unavailable: true }, networkTypes })
-    }
+    const selectednetwork = direction === "from" ? to : from
+    const selectedToken = direction === "from" ? toCurrency?.symbol : fromCurrency?.symbol
+    return resolveRoutesURLForSelectedToken({ direction, network: selectednetwork?.name, token: selectedToken, includes: { unmatched: true, unavailable: true }, networkTypes })
 }
 
 export const resolveRoutesURLForSelectedToken = ({ direction, network, token, includes, networkTypes }: { direction: SwapDirection, network: string | undefined, token: string | undefined, includes: { unavailable: boolean, unmatched: boolean }, networkTypes?: string[] }) => {

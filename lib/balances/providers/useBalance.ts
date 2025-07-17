@@ -17,7 +17,6 @@ export function useBalance(
     const key = useMemo(() => (address && network) ? getKey(address, network) : 'unknown', [address, network])
     const {
         refreshInterval = 400000,
-        dedupeInterval = 200000,
         refreshWhenHidden = false,
         refreshWhenOffline = false,
     } = opts ?? {}

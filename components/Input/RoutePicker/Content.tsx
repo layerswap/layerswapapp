@@ -1,29 +1,30 @@
 import { useRef, useState } from "react";
-import { Route, RouteToken, RowElement } from "../../../Models/Route";
-import useWindowDimensions from "../../../hooks/useWindowDimensions";
+import { RowElement } from "../../../Models/Route";
 import { SwapDirection } from "../../DTOs/SwapFormValues";
 import { useVirtualizer } from "../../../lib/virtual";
-import { Search } from "lucide-react";
 import { Accordion } from "../../shadcn/accordion";
 import Row from "./Rows";
 import { LayoutGroup, motion } from "framer-motion";
+import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
+import { useSelectorState } from "../../Select/CommandNew/Index";
 import useWallet from "@/hooks/useWallet";
 import ConnectWalletButton from "../../Common/ConnectWalletButton";
-
+import { SearchComponent } from "../Search";
 
 type ContentProps = {
-    onSelect: (route: Route, token: RouteToken) => Promise<void> | void;
+    onSelect: (route: NetworkRoute, token: NetworkRouteToken) => Promise<void> | void;
     searchQuery: string;
     setSearchQuery: (query: string) => void;
     rowElements: RowElement[];
     selectedRoute: string | undefined;
     selectedToken: string | undefined;
     direction: SwapDirection;
-    allbalancesLoaded: boolean
+    allbalancesLoaded?: boolean;
 }
 export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, allbalancesLoaded }: ContentProps) => {
     const parentRef = useRef<HTMLDivElement>(null)
     const [openValues, setOpenValues] = useState<string[]>(selectedRoute ? [selectedRoute] : [])
+    const { isOpen } = useSelectorState();
     const { wallets } = useWallet()
 
     const toggleAccordionItem = (value: string) => {
@@ -40,7 +41,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
     const items = virtualizer.getVirtualItems()
 
     return <div className="overflow-y-auto flex flex-col h-full z-40" >
-        <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+        <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={isOpen} />
         <LayoutGroup>
             <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full" ref={parentRef}>
                 {
@@ -50,7 +51,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                         className="w-full my-2.5"
                     />
                 }
-                <div className="relative"  >
+                <div className="relative">
                     <Accordion type="multiple" value={openValues}>
                         <div>
                             <div
@@ -98,20 +99,4 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
             </motion.div>
         </LayoutGroup>
     </div >
-}
-
-const SearchComponent = ({ searchQuery, setSearchQuery }: { searchQuery: string, setSearchQuery: (query: string) => void }) => {
-    const { isDesktop } = useWindowDimensions();
-
-    return <div className="flex items-center bg-secondary-500 rounded-lg px-2 mb-2">
-        <Search className="w-6 h-6 mr-2 text-primary-text-placeholder" />
-        <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            autoFocus={isDesktop}
-            placeholder="Search"
-            autoComplete="off"
-            className="placeholder:text-primary-text-placeholder border-0 border-b-0 border-primary-text bg-secondary-500 focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-11 text-base outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
-        />
-    </div>
 }

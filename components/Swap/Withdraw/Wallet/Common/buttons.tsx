@@ -14,7 +14,8 @@ import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { useRouter } from "next/router";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { BackendTransactionStatus } from "@/lib/apiClients/layerSwapApiClient";
-import { useQuote } from "@/context/feeContext";
+import { useQuoteData } from "@/hooks/useFee";
+import { useFormikContext } from "formik";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapResponse } = useSwapDataState()
@@ -151,9 +152,18 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const [loading, setLoading] = useState(false)
     const { createSwap, setSwapId, setSwapPath } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { updatePolling, isQuoteLoading } = useQuote()
     const { swapResponse } = useSwapDataState()
     const { swap } = swapResponse || {}
+    const { updatePolling, isQuoteLoading } = useQuoteData({
+        amount: swap?.requested_amount.toString(),
+        from: swap?.source_network as NetworkRoute,
+        to: swap?.destination_network as NetworkRoute,
+        fromAsset: swap?.source_token,
+        toAsset: swap?.destination_token,
+        refuel: !!swapResponse?.refuel,
+        destination_address: swap?.destination_address,
+        depositMethod: 'wallet'
+    } as SwapFormValues);
     const router = useRouter()
     const query = useQueryState()
 

@@ -7,23 +7,24 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { Partner } from "../../Models/Partner";
 import useWallet from "../../hooks/useWallet";
 import { ReceiveAmount } from "./Amount/ReceiveAmount";
-import { useQuote } from "../../context/feeContext";
+import { useQuoteData } from "@/hooks/useFee";
 
 type Props = {
     partner?: Partner
 }
 
 const DestinationPicker = (props: Props) => {
-    const { partner } = props;
-    const { values: { toExchange, fromExchange, destination_address, to, from, depositMethod, fromAsset: fromCurrency, toAsset: toCurrency } } = useFormikContext<SwapFormValues>();
-    const { quote: fee, isQuoteLoading: isFeeLoading } = useQuote()
+    const { partner } = props
+    const { values } = useFormikContext<SwapFormValues>()
+    const { fromExchange, destination_address, to, from, depositMethod, fromAsset: fromCurrency, toAsset: toCurrency } = values
+    const { quote: fee, isQuoteLoading: isFeeLoading } = useQuoteData(values)
     const sourceWalletNetwork = fromExchange ? undefined : from
-    const destinationWalletNetwork = toExchange ? undefined : to
+    const destinationWalletNetwork = to
 
     const { provider: withdrawalProvider } = useWallet(sourceWalletNetwork, 'withdrawal')
     const { provider: autofilProvider } = useWallet(destinationWalletNetwork, 'autofil')
 
-    const showAddDestinationAddress = !destination_address && !toExchange && to && ((from && autofilProvider?.id !== withdrawalProvider?.id) || depositMethod === 'deposit_address')
+    const showAddDestinationAddress = !destination_address && to && ((from && autofilProvider?.id !== withdrawalProvider?.id) || depositMethod === 'deposit_address')
 
     return <div className='flex flex-col w-full bg-secondary-500 rounded-2xl py-4.5 px-4 space-y-8'>
         <div className="flex justify-between items-center h-[20px]">
@@ -31,12 +32,9 @@ const DestinationPicker = (props: Props) => {
                 Receive at
             </label>
             <div className="w-fit">
-                {
-                    !toExchange &&
-                    <Address partner={partner}>
-                        {({ destination, disabled, addressItem, connectedWallet, partner }) => <DestinationWalletPicker destination={destination} disabled={disabled} addressItem={addressItem} connectedWallet={connectedWallet} partner={partner} />}
-                    </Address>
-                }
+                <Address partner={partner}>
+                    {({ destination, disabled, addressItem, connectedWallet, partner }) => <DestinationWalletPicker destination={destination} disabled={disabled} addressItem={addressItem} connectedWallet={connectedWallet} partner={partner} />}
+                </Address>
             </div>
         </div>
         <div className="rounded-xl items-center space-y-2">

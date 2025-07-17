@@ -3,15 +3,15 @@ import RoutePicker from "./RoutePicker";
 import AmountField from "./Amount";
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { useQuote } from "../../context/feeContext";
 import MinMax from "./Amount/MinMax";
 import { LayoutGroup, motion } from "framer-motion";
+import { useQuoteData } from "@/hooks/useFee";
 
 const SourcePicker = () => {
     const { values } = useFormikContext<SwapFormValues>();
 
     const { fromAsset: fromCurrency, from, to } = values || {};
-    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuote()
+    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(values)
 
     return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl py-4.5 px-4 space-y-8">
         <div className="flex justify-between items-center">
@@ -22,10 +22,10 @@ const SourcePicker = () => {
                 <SourceWalletPicker />
             </div>
         </div>
-        <div className="relative">
+        <div className="relative group">
             {
                 from && to && fromCurrency && minAllowedAmount && maxAmountFromApi &&
-                <div className="absolute z-10 -top-6 left-0">
+                <div className="absolute z-10 -top-6 left-0 hidden group-focus-within:block">
                     <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />
                 </div>
             }
