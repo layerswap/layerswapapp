@@ -18,7 +18,7 @@ import {
     getAddress,
     numberToHex,
 } from 'viem'
-import { isAndroid, isMobile } from '../utils/isMobile'
+import { isAndroid, isMobile, isIOS } from '../utils/isMobile'
 
 type WalletConnectConnector = Connector & {
     onDisplayUri(uri: string): void
@@ -131,9 +131,8 @@ export function walletConnect(parameters: Params) {
         deepLink: mobile.native || mobile.universal,
         icon: icon,
         resolveURI: (uri: string) => {
-            return (isAndroid() || !isMobile())
-                ? uri
-                : `${addWC(mobile.native)}?uri=${encodeURIComponent(uri)}`
+            const resolver = customResolvers[id];
+            return resolver ? resolver(uri) : defaultResolver(uri, mobile);
         },
         async setup() {
             const provider = await this.getProvider().catch(() => null)
@@ -491,11 +490,54 @@ export function walletConnect(parameters: Params) {
 function addWC(url) {
     if (url?.endsWith("://")) {
         return url + "wc";
-    } 
+    }
     else if (url?.endsWith("/")) {
         return url + "wc";
     }
     else {
         return url + "/wc";
     }
+}
+
+const customResolvers: Record<string, (uri: string) => string> = {
+    'argent': (uri: string) => {
+        return (isAndroid() || !isMobile())
+            ? uri
+            : `argent://app/wc?uri=${encodeURIComponent(uri)}`;
+    },
+
+    'bitkeep': (uri: string) => {
+        return isAndroid()
+            ? uri
+            : `bitkeep://wc?uri=${encodeURIComponent(uri)}`;
+    },
+
+    'metamask': (uri: string) => {
+        return isAndroid()
+            ? uri
+            : isIOS()
+                ? // currently broken in MetaMask v6.5.0 https://github.com/MetaMask/metamask-mobile/issues/6457
+                `metamask://wc?uri=${encodeURIComponent(uri)}`
+                : `https://metamask.app.link/wc?uri=${encodeURIComponent(uri)}`;
+    },
+
+    'okx-wallet': (uri: string) => {
+        return isAndroid()
+            ? uri
+            : `okex://main/wc?uri=${encodeURIComponent(uri)}`;
+    },
+
+    'rainbow': (uri: string) => {
+        return isAndroid()
+            ? uri
+            : isIOS()
+                ? `rainbow://wc?uri=${encodeURIComponent(uri)}&connector=rainbowkit`
+                : `https://rnbwapp.com/wc?uri=${encodeURIComponent(uri,)}&connector=rainbowkit`;
+    }
+}
+
+const defaultResolver = (uri: string, mobile: any) => {
+    return (isAndroid() || !isMobile())
+        ? uri
+        : `${addWC(mobile.native)}?uri=${encodeURIComponent(uri)}`
 }
