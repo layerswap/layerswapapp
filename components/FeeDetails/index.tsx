@@ -15,6 +15,7 @@ import rewardCup from '@/public/images/rewardCup.png'
 import Image from 'next/image'
 import { Network } from '@/Models/Network';
 import ExchangeGasIcon from '../icons/ExchangeGasIcon';
+import useSWRNftBalance from '@/lib/nft/useSWRNftBalance';
 
 export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
     from?: Network;
@@ -52,7 +53,7 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
                                         Details
                                     </p>
                                     :
-                                    <DetailsButton quote={quoteData} isQuoteLoading={isQuoteLoading} swapValues={values} />
+                                    <DetailsButton quote={quoteData} isQuoteLoading={isQuoteLoading} swapValues={values} destination={values.to} destinationAddress={destination_address} />
                             }
                             <ChevronDown className='h-3.5 w-3.5 text-secondary-text' />
                         </AccordionTrigger>
@@ -77,7 +78,7 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
 }
 
 
-const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoading, swapValues: values }) => {
+const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoading, swapValues: values, destination, destinationAddress }) => {
     const { quote, reward } = quoteData || {}
     const { provider } = useWallet(values.from, 'withdrawal')
     const wallet = provider?.activeWallet
@@ -88,6 +89,13 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
     const displayFeeInUsd = feeAmountInUsd ? (feeAmountInUsd < 0.01 ? '<$0.01' : `$${feeAmountInUsd?.toFixed(2)}`) : null
     const displayReward = reward?.amount_in_usd ? (reward?.amount_in_usd < 0.01 ? '<$0.01' : `$${reward?.amount_in_usd?.toFixed(2)}`) : null
     const averageCompletionTime = quote?.avg_completion_time;
+
+    const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && reward?.nft_contract_address;
+    const { balance: nftBalance, isLoading, error } = useSWRNftBalance(
+        destinationAddress || '',
+        destination,
+        reward?.nft_contract_address || ''
+    );
 
     if (isQuoteLoading) {
         return (
@@ -117,6 +125,7 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
             }
             {
                 reward &&
+                (!shouldCheckNFT || (!isLoading && !error && nftBalance !== undefined && nftBalance > 0)) &&
                 <div className='text-right text-primary-text inline-flex items-center gap-1 pr-4'>
                     <Image src={rewardCup} alt="Reward" width={16} height={16} />
                     <p>

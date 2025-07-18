@@ -188,7 +188,7 @@ type DetailsContentProps = {
 
 type ShowConditionProps = {
     gasFeeInUsd?: number | null
-    
+
     shouldCheckNFT?: string | false | undefined
     isLoading?: boolean
     error?: any
