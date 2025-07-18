@@ -505,10 +505,6 @@ function getResolveUri(
     },
 ): string {
     switch (id) {
-        case 'argent':
-            return (isAndroid() || !isMobile())
-                ? uri
-                : `argent://app/wc?uri=${encodeURIComponent(uri)}`
         case 'bitkeep':
             return isAndroid()
                 ? uri
