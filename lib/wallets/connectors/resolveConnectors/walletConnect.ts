@@ -18,7 +18,7 @@ import {
     getAddress,
     numberToHex,
 } from 'viem'
-import { isAndroid, isMobile } from '../utils/isMobile'
+import { isAndroid, isMobile, isIOS } from '../utils/isMobile'
 
 type WalletConnectConnector = Connector & {
     onDisplayUri(uri: string): void
@@ -130,11 +130,7 @@ export function walletConnect(parameters: Params) {
         type: type,
         deepLink: mobile.native || mobile.universal,
         icon: icon,
-        resolveURI: (uri: string) => {
-            return (isAndroid() || !isMobile())
-                ? uri
-                : `${addWC(mobile.native)}?uri=${encodeURIComponent(uri)}`
-        },
+        resolveURI: (uri: string) => getResolveUri(id, uri, mobile),
         async setup() {
             const provider = await this.getProvider().catch(() => null)
             if (!provider) return
@@ -491,11 +487,48 @@ export function walletConnect(parameters: Params) {
 function addWC(url) {
     if (url?.endsWith("://")) {
         return url + "wc";
-    } 
+    }
     else if (url?.endsWith("/")) {
         return url + "wc";
     }
     else {
         return url + "/wc";
+    }
+}
+
+function getResolveUri(
+    id: string,
+    uri: string,
+    mobile: {
+        native: string,
+        universal: string,
+    },
+): string {
+    switch (id) {
+        case 'bitkeep':
+            return isAndroid()
+                ? uri
+                : `bitkeep://wc?uri=${encodeURIComponent(uri)}`;
+        case 'metamask':
+            return isAndroid()
+                ? uri
+                : isIOS()
+                    ? // currently broken in MetaMask v6.5.0 https://github.com/MetaMask/metamask-mobile/issues/6457
+                    `metamask://wc?uri=${encodeURIComponent(uri)}`
+                    : `https://metamask.app.link/wc?uri=${encodeURIComponent(uri)}`;
+        case 'okx-wallet':
+            return isAndroid()
+                ? uri
+                : `okex://main/wc?uri=${encodeURIComponent(uri)}`;
+        case 'rainbow':
+            return isAndroid()
+                ? uri
+                : isIOS()
+                    ? `rainbow://wc?uri=${encodeURIComponent(uri)}&connector=rainbowkit`
+                    : `https://rnbwapp.com/wc?uri=${encodeURIComponent(uri,)}&connector=rainbowkit`;
+        default:
+            return (isAndroid() || !isMobile())
+                ? uri
+                : `${addWC(mobile.native)}?uri=${encodeURIComponent(uri)}`
     }
 }
