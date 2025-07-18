@@ -102,7 +102,7 @@ export default function useSVM(): WalletProvider {
         return connectors;
     }, [wallets]);
 
-    const provider = {
+    const provider: WalletProvider = {
         connectedWallets: connectedWallets,
         activeWallet: connectedWallets?.[0],
         connectWallet,

@@ -119,11 +119,10 @@ export default function useTON(): WalletProvider {
         icon: logo,
     }]
 
-    const provider = {
+    const provider: WalletProvider = {
         connectWallet,
         disconnectWallets,
         availableWalletsForConnect,
-        activeAccountAddress: wallet?.address,
         connectedWallets: getWallet(),
         activeWallet: wallet,
         withdrawalSupportedNetworks: commonSupportedNetworks,
