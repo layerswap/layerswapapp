@@ -32,7 +32,7 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                         }
                         className="[&_[cmdk-group-heading]]:pb-1! [&_[cmdk-group-heading]]:px-0! py-0! px-0!"
                     >
-                        <div className="space-y-0 w-full flex flex-col items-stretch max-h-[200px] overflow-y-auto styled-scroll">
+                        <div className="w-full flex flex-col items-stretch max-h-[200px] overflow-y-auto styled-scroll gap-2">
                             {addressBook.sort(sortingByDate).map(item => {
                                 const isSelected = addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!)
                                 return (

@@ -17,7 +17,6 @@ import SwapMockFunctions from './Mocks/context/SwapDataUpdate';
 import AuthMockFunctions from './Mocks/context/AuthDataUpdate';
 import { Formik, FormikProps } from 'formik';
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import MainStepValidation from '../lib/mainStepValidator';
 import { useArgs } from '@storybook/preview-api';
 import WagmiComponent from '../components/WalletProviders/Wagmi';
 
@@ -44,7 +43,6 @@ const Comp: FC<{ settings: any, swapData: SwapData, failedSwap?: SwapItem, theme
                                         innerRef={formikRef}
                                         initialValues={initialValues!}
                                         validateOnMount={true}
-                                        validate={MainStepValidation({ minAllowedAmount: 8, maxAllowedAmount: 10, sourceAddress: undefined })}
                                         onSubmit={() => { }}
                                     >
                                         <Component initialValues={initialValues} />

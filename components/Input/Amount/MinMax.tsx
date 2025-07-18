@@ -1,14 +1,13 @@
 import SecondaryButton from "../../buttons/secondaryButton"
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import useSWRBalance from "../../../lib/balances/useSWRBalance";
-import useSWRGas from "../../../lib/gases/useSWRGas";
-import { useSwapDataState } from "../../../context/swap";
-import { NetworkRoute, NetworkRouteToken, Token } from "../../../Models/Network";
+import useSWRBalance from "@/lib/balances/useSWRBalance";
+import useSWRGas from "@/lib/gases/useSWRGas";
+import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { useMemo } from "react";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { updateForm } from "@/components/Swap/Form/updateForm";
-import { useRouter } from "next/router";
+import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -21,7 +20,7 @@ const MinMax = (props: MinMaxProps) => {
 
     const { setFieldValue } = useFormikContext<SwapFormValues>();
     const { fromCurrency, from, limitsMinAmount, limitsMaxAmount } = props;
-    const { selectedSourceAccount } = useSwapDataState()
+    const { pickerSelectedWallet: selectedSourceAccount } = useSelectedWalletStore('from')
 
     const { gas } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency)
     const { balances, mutate } = useSWRBalance(selectedSourceAccount?.address, from)

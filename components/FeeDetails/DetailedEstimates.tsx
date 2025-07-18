@@ -47,7 +47,7 @@ export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, i
     return <div className="flex flex-col w-full gap-2 divide-y divide-secondary-300 p-3">
         {
             detailsElements.map((item) => {
-                const showElement = item.showCondition ? item.showCondition({ gas, shouldCheckNFT, isLoading, error, nftBalance, campaign, reward, destinationAddress }) : true
+                const showElement = item.showCondition ? item.showCondition({ gasFeeInUsd, shouldCheckNFT, isLoading, error, nftBalance, campaign, reward, destinationAddress }) : true
                 if (!showElement) return null
 
                 return (
@@ -78,7 +78,7 @@ const detailsElements: DetailedElement[] = [
     {
         name: 'Gas Fee',
         icon: GasIcon,
-        showCondition: (props) => { return props.gas !== undefined },
+        showCondition: (props) => { return props.gasFeeInUsd !== null && props.gasFeeInUsd !== undefined },
         content: ({ gas, nativeCurrencyName, displayGasFeeInUsd, isGasLoading }) => {
             return isGasLoading ? (
                 <LoadingBar />
@@ -187,8 +187,8 @@ type DetailsContentProps = {
 }
 
 type ShowConditionProps = {
-    gas?: number | undefined
-
+    gasFeeInUsd?: number | null
+    
     shouldCheckNFT?: string | false | undefined
     isLoading?: boolean
     error?: any

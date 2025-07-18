@@ -1,12 +1,12 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useLayoutEffect, useMemo, useRef } from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import NumericInput from "../NumericInput";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import useSWRBalance from "@/lib/balances/useSWRBalance";
-import { useSwapDataState } from "@/context/swap";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { useQuoteData } from "@/hooks/useFee";
+import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
 
 interface AmountFieldProps {
     usdPosition?: "right" | "bottom";
@@ -18,7 +18,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, quote: fee } = useQuoteData(values)
     const name = "amount"
     const amountRef = useRef(ref)
-    const suffixRef = useRef<HTMLSpanElement>(null);
+    const suffixRef = useRef<HTMLDivElement>(null);
 
     const sourceCurrencyPriceInUsd = fee?.quote.source_token?.price_in_usd || fromCurrency?.price_in_usd;
 
@@ -41,7 +41,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
         suffix.style.left = `${width + 16}px`;
     }, [amount, requestedAmountInUsd]);
 
-    const { selectedSourceAccount } = useSwapDataState()
+    const { pickerSelectedWallet: selectedSourceAccount } = useSelectedWalletStore('from')
     const sourceAddress = selectedSourceAccount?.address
 
     const { balances } = useSWRBalance(sourceAddress, from)
@@ -77,9 +77,9 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                     }}
                 />
-                <span className={`${usdPosition === "right" ? "absolute bottom-4" : ""} usd-suffix text-base font-medium text-secondary-text pointer-events-none`} ref={suffixRef}>
+                <div className={`${usdPosition === "right" ? "absolute bottom-4" : ""} usd-suffix h-5 text-base font-medium text-secondary-text pointer-events-none`} ref={suffixRef}>
                     {`$${requestedAmountInUsd ?? 0}`}
-                </span>
+                </div>
             </div>
         </div>
     </>)

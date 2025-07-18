@@ -4,7 +4,6 @@ import { Quote, SwapResponse } from "@/lib/apiClients/layerSwapApiClient"
 import { LayerSwapAppSettings } from "@/Models/LayerSwapAppSettings"
 
 const MockFunctions: UpdateSwapInterface = {
-    setSelectedSourceAccount: () => { throw new Error("Not implemented") },
     createSwap: () => { throw new Error("Not implemented") },
     setCodeRequested: () => { throw new Error("Not implemented") },
     mutateSwap: () => { throw new Error("Not implemented") },

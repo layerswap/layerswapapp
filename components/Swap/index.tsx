@@ -11,6 +11,7 @@ type Props = {
 }
 import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
 import SubmitButton from '../buttons/submitButton';
+import { SelectedAccountsProvider } from '@/context/selectedAccounts';
 
 const SwapDetails: FC<Props> = ({ type }) => {
     const { swapResponse } = useSwapDataState()
@@ -39,23 +40,25 @@ const SwapDetails: FC<Props> = ({ type }) => {
     </>
 
     return (
-        <Container type={type}>
-            {
-                ((swapStatus === SwapStatus.UserTransferPending
-                    && !(swapInputTransaction || storedWalletTransaction))) ?
-                    <Withdraw type={type} />
-                    :
-                    <>
-                        <Processing />
-                        {
-                            storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
-                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={removeStoredTransaction}>
-                                Try again
-                            </SubmitButton>
-                        }
-                    </>
-            }
-        </Container>
+        <SelectedAccountsProvider from={swapResponse?.swap.source_network} to={swapResponse?.swap.destination_network}>
+            <Container type={type}>
+                {
+                    ((swapStatus === SwapStatus.UserTransferPending
+                        && !(swapInputTransaction || storedWalletTransaction))) ?
+                        <Withdraw type={type} />
+                        :
+                        <>
+                            <Processing />
+                            {
+                                storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
+                                <SubmitButton isDisabled={false} isSubmitting={false} onClick={removeStoredTransaction}>
+                                    Try again
+                                </SubmitButton>
+                            }
+                        </>
+                }
+            </Container>
+        </SelectedAccountsProvider>
     )
 }
 

@@ -19,9 +19,8 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const [searchQuery, setSearchQuery] = useState("")
-    const { allRoutes, isLoading, routeElements, tokenElements, selectedRoute, selectedToken, allbalancesLoaded } = useFormRoutes({ direction, values }, searchQuery)
+    const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken, allbalancesLoaded } = useFormRoutes({ direction, values }, searchQuery)
     const currencyFieldName = direction === 'from' ? 'fromAsset' : 'toAsset';
-    const showTokens = useRouteTokenSwitchStore((s) => s.showTokens)
 
     useEffect(() => {
         const updateValues = async () => {
@@ -59,7 +58,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
             shouldValidate: true,
             setFieldValue
         })
-    }, [currencyFieldName, direction, values, showTokens])
+    }, [currencyFieldName, direction, values])
 
     return (
         <div className="flex w-full flex-col self-end relative ml-auto items-center">
@@ -74,7 +73,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                             onSelect={(r, t) => { handleSelect(r, t); closeModal(); }}
                             searchQuery={searchQuery}
                             setSearchQuery={setSearchQuery}
-                            rowElements={showTokens ? tokenElements : routeElements}
+                            rowElements={routeElements}
                             direction={direction}
                             selectedRoute={selectedRoute?.name}
                             selectedToken={selectedToken?.symbol}

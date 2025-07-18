@@ -1,9 +1,11 @@
 import { useSwapDataState } from "@/context/swap"
 import NetworkGas from "./Common/networkGas"
 import { WalletTransferContent } from "./WalletTransferContent"
+import { useSelectAccounts } from "@/context/selectedAccounts"
 
 const WalletTransferWrapper = () => {
-    const { swapResponse, depositActionsResponse, selectedSourceAccount } = useSwapDataState()
+    const { swapResponse, depositActionsResponse } = useSwapDataState()
+    const { selectedSourceAccount } = useSelectAccounts()
     const { swap } = swapResponse || {}
     const { source_network } = swap || {}
 
@@ -12,7 +14,7 @@ const WalletTransferWrapper = () => {
 
     return <div className='rounded-xl bg-secondary-500 py-3'>
         {
-            source_network && fee_token && selectedSourceAccount &&
+            source_network && fee_token && selectedSourceAccount?.address &&
             <NetworkGas address={selectedSourceAccount.address} network={source_network} token={fee_token} />
         }
         <WalletTransferContent />
