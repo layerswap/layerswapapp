@@ -130,10 +130,7 @@ export function walletConnect(parameters: Params) {
         type: type,
         deepLink: mobile.native || mobile.universal,
         icon: icon,
-        resolveURI: (uri: string) => {
-            const resolver = customResolvers[id];
-            return resolver ? resolver(uri) : defaultResolver(uri, mobile);
-        },
+        resolveURI: (uri: string) => getResolveUri(id, uri, mobile),
         async setup() {
             const provider = await this.getProvider().catch(() => null)
             if (!provider) return
@@ -499,45 +496,43 @@ function addWC(url) {
     }
 }
 
-const customResolvers: Record<string, (uri: string) => string> = {
-    'argent': (uri: string) => {
-        return (isAndroid() || !isMobile())
-            ? uri
-            : `argent://app/wc?uri=${encodeURIComponent(uri)}`;
+function getResolveUri(
+    id: string,
+    uri: string,
+    mobile: {
+        native: string,
+        universal: string,
     },
-
-    'bitkeep': (uri: string) => {
-        return isAndroid()
-            ? uri
-            : `bitkeep://wc?uri=${encodeURIComponent(uri)}`;
-    },
-
-    'metamask': (uri: string) => {
-        return isAndroid()
-            ? uri
-            : isIOS()
-                ? // currently broken in MetaMask v6.5.0 https://github.com/MetaMask/metamask-mobile/issues/6457
-                `metamask://wc?uri=${encodeURIComponent(uri)}`
-                : `https://metamask.app.link/wc?uri=${encodeURIComponent(uri)}`;
-    },
-
-    'okx-wallet': (uri: string) => {
-        return isAndroid()
-            ? uri
-            : `okex://main/wc?uri=${encodeURIComponent(uri)}`;
-    },
-
-    'rainbow': (uri: string) => {
-        return isAndroid()
-            ? uri
-            : isIOS()
-                ? `rainbow://wc?uri=${encodeURIComponent(uri)}&connector=rainbowkit`
-                : `https://rnbwapp.com/wc?uri=${encodeURIComponent(uri,)}&connector=rainbowkit`;
+): string {
+    switch (id) {
+        case 'argent':
+            return (isAndroid() || !isMobile())
+                ? uri
+                : `argent://app/wc?uri=${encodeURIComponent(uri)}`
+        case 'bitkeep':
+            return isAndroid()
+                ? uri
+                : `bitkeep://wc?uri=${encodeURIComponent(uri)}`;
+        case 'metamask':
+            return isAndroid()
+                ? uri
+                : isIOS()
+                    ? // currently broken in MetaMask v6.5.0 https://github.com/MetaMask/metamask-mobile/issues/6457
+                    `metamask://wc?uri=${encodeURIComponent(uri)}`
+                    : `https://metamask.app.link/wc?uri=${encodeURIComponent(uri)}`;
+        case 'okx-wallet':
+            return isAndroid()
+                ? uri
+                : `okex://main/wc?uri=${encodeURIComponent(uri)}`;
+        case 'rainbow':
+            return isAndroid()
+                ? uri
+                : isIOS()
+                    ? `rainbow://wc?uri=${encodeURIComponent(uri)}&connector=rainbowkit`
+                    : `https://rnbwapp.com/wc?uri=${encodeURIComponent(uri,)}&connector=rainbowkit`;
+        default:
+            return (isAndroid() || !isMobile())
+                ? uri
+                : `${addWC(mobile.native)}?uri=${encodeURIComponent(uri)}`
     }
-}
-
-const defaultResolver = (uri: string, mobile: any) => {
-    return (isAndroid() || !isMobile())
-        ? uri
-        : `${addWC(mobile.native)}?uri=${encodeURIComponent(uri)}`
 }
