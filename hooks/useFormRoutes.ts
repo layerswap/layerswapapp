@@ -214,12 +214,6 @@ function groupRoutesWithoutBalanceSorting(routes: NetworkRoute[],
                 : [];
         });
 
-    // const recentNetworks = networks
-    //     .slice(-4)
-    //     .map(name => routes.find(r => r.name === name))
-    //     .filter((r): r is NetworkRoute => !!r)
-    //     .map(r => ({ type: 'network', route: r } as NetworkElement));
-
     const recentNames = recentNetworks.map(e => e.route.name)
 
     const remaining = groupBy === "network" ?
