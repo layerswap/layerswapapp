@@ -32,7 +32,8 @@ export function SelectedAccountsProvider({ children, from, to }: SelectedAccount
         if (provider?.activeWallet?.address.toLowerCase() !== address?.toLowerCase() && wallet && address) {
             provider?.switchAccount && provider?.switchAccount(wallet, address)
         }
-        addSelectedSrcWallet({ wallet, address, providerName })
+        const account = { wallet, address, providerName }
+        if (account.address) addSelectedSrcWallet(account)
     }
 
     useEffect(() => {
@@ -40,7 +41,7 @@ export function SelectedAccountsProvider({ children, from, to }: SelectedAccount
             const provider = getProvider(from, 'withdrawal');
             const selectedSourceAccount = pickerSelectedSrcWallets?.find(w => w.providerName === provider?.name);
 
-            if (selectedSourceAccount) {
+            if (selectedSourceAccount?.address) {
                 return setSelectedSourceWallet(selectedSourceAccount)
             }
             else if (provider && provider.activeWallet) {
@@ -61,18 +62,25 @@ export function SelectedAccountsProvider({ children, from, to }: SelectedAccount
             const selectedWallet = pickerSelectedDestWallets?.find(w => w.providerName === provider.name)
             if (!selectedWallet && provider.activeWallet) {
                 addSelectedDestWallet({ wallet: provider.activeWallet, address: provider.activeWallet?.address, providerName: provider.name })
+            } else if (selectedWallet?.address && selectedWallet.providerName === provider.name && !provider.activeWallet) {
+                addSelectedDestWallet({ wallet: undefined, address: undefined, providerName: provider.name })
             }
         })
-    }, [pickerSelectedDestWallets])
+    }, [pickerSelectedDestWallets, providers])
 
     useEffect(() => {
         providers.forEach(provider => {
             const selectedWallet = pickerSelectedSrcWallets?.find(w => w.providerName === provider.name)
             if (!selectedWallet && provider.activeWallet) {
-                addSelectedDestWallet({ wallet: provider.activeWallet, address: provider.activeWallet?.address, providerName: provider.name })
+                addSelectedSrcWallet({ wallet: provider.activeWallet, address: provider.activeWallet?.address, providerName: provider.name })
+            } else if (selectedWallet?.address && selectedWallet.providerName === provider.name && !provider.activeWallet) {
+                addSelectedSrcWallet({ wallet: undefined, address: undefined, providerName: provider.name })
+                if (selectedWallet.providerName === selectedSourceAccount?.providerName) {
+                    setSelectedSourceWallet(undefined)
+                }
             }
         })
-    }, [pickerSelectedSrcWallets])
+    }, [pickerSelectedSrcWallets, providers])
 
     return (
         <SelectedAccountsStateContext.Provider value={{
