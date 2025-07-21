@@ -26,6 +26,7 @@ type GenericAccordionRowProps = {
   openValues?: string[];
   scrollContainerRef: RefObject<HTMLDivElement>;
   allbalancesLoaded?: boolean;
+  destAddress?: string;
 };
 
 export const CollapsibleRow = ({
@@ -38,6 +39,7 @@ export const CollapsibleRow = ({
   openValues,
   scrollContainerRef,
   allbalancesLoaded,
+  destAddress
 }: GenericAccordionRowProps) => {
   const isGrouped = item.type === "grouped_token";
   const groupName = isGrouped ? (item as GroupedTokenElement).symbol : (item as NetworkElement).route.name;
@@ -90,6 +92,7 @@ export const CollapsibleRow = ({
               direction={direction}
               allbalancesLoaded={allbalancesLoaded}
               hideTokenImages={isOpen}
+              destAddress={destAddress}
             />
           </AccordionTrigger>
         </div>
@@ -130,6 +133,7 @@ export const CollapsibleRow = ({
                       route={route}
                       direction={direction}
                       isGroupedToken={isGrouped}
+                      destAddress={destAddress}
                     />
                   </div>
                 );

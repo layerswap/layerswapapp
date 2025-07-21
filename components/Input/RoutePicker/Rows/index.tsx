@@ -17,6 +17,7 @@ type Props = {
     openValues: string[];
     scrollContainerRef: RefObject<HTMLDivElement>;
     allbalancesLoaded?: boolean;
+    destAddress?: string;
 };
 
 export default function Row({
@@ -29,6 +30,7 @@ export default function Row({
     openValues,
     allbalancesLoaded,
     scrollContainerRef,
+    destAddress
 }: Props) {
     if (item.type === "network" || item.type === "grouped_token") {
         return (
@@ -42,6 +44,7 @@ export default function Row({
                 openValues={openValues}
                 scrollContainerRef={scrollContainerRef}
                 allbalancesLoaded={allbalancesLoaded}
+                destAddress={destAddress}
             />
         );
     }
@@ -59,6 +62,7 @@ export default function Row({
                     selected={isSelected}
                     route={route}
                     direction={direction}
+                    destAddress={destAddress}
                 />
             </div>
         );

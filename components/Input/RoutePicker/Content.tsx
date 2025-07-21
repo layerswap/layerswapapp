@@ -20,8 +20,9 @@ type ContentProps = {
     selectedToken: string | undefined;
     direction: SwapDirection;
     allbalancesLoaded?: boolean;
+    destAddress?: string;
 }
-export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, allbalancesLoaded }: ContentProps) => {
+export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, allbalancesLoaded, destAddress }: ContentProps) => {
     const parentRef = useRef<HTMLDivElement>(null)
     const [openValues, setOpenValues] = useState<string[]>(selectedRoute ? [selectedRoute] : [])
     const { isOpen } = useSelectorState();
@@ -88,6 +89,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                                                 selectedRoute={selectedRoute}
                                                 selectedToken={selectedToken}
                                                 toggleContent={toggleAccordionItem}
+                                                destAddress={destAddress}
                                             />
                                         </div>
                                     })}

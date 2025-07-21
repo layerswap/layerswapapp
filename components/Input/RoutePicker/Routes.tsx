@@ -1,5 +1,5 @@
 import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
-import { SwapDirection } from "../../DTOs/SwapFormValues";
+import { SwapDirection, SwapFormValues } from "../../DTOs/SwapFormValues";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import { SelectItem } from "../../Select/CommandNew/SelectItem/Index";
 import { ChevronDown } from "lucide-react";
@@ -17,10 +17,11 @@ type TokenItemProps = {
     direction: SwapDirection;
     allbalancesLoaded?: boolean;
     isGroupedToken?: boolean;
+    destAddress?: string;
 };
 
 export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
-    const { item, route, direction, allbalancesLoaded } = props
+    const { item, route, direction, allbalancesLoaded, destAddress } = props
 
     return <SelectItem>
         <SelectItem.Logo
@@ -28,7 +29,7 @@ export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
             altText={`${item.symbol} logo`}
             className="rounded-full"
         />
-        <NetworkTokenTitle item={item as NetworkRouteToken} route={route} direction={direction} allbalancesLoaded={allbalancesLoaded} />
+        <NetworkTokenTitle item={item as NetworkRouteToken} route={route} direction={direction} allbalancesLoaded={allbalancesLoaded} destAddress={destAddress} />
     </SelectItem>
 }
 
@@ -37,12 +38,15 @@ type NetworkTokenItemProps = {
     item: NetworkRouteToken;
     direction: SwapDirection;
     allbalancesLoaded?: boolean;
+    destAddress?: string;
 }
 export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
-    const { item, route, direction, allbalancesLoaded } = props
+    const { item, route, direction, allbalancesLoaded, destAddress } = props
     const { pickerSelectedWallets } = useSelectedWalletStore(direction)
     const selectedWallet = pickerSelectedWallets?.find(w => (direction == 'from' ? w.wallet?.withdrawalSupportedNetworks : w.wallet?.autofillSupportedNetworks)?.includes(route.name));
-    const { balances } = useBalance(selectedWallet?.address, route)
+    const address = (direction === 'to' && destAddress) ? destAddress : selectedWallet?.address;
+
+    const { balances } = useBalance(address, route)
     const tokenbalance = balances?.find(b => b.token === item.symbol)
     const formatted_balance_amount = (tokenbalance?.amount || tokenbalance?.amount === 0) ? truncateDecimals(tokenbalance?.amount, item.precision) : ''
     const balanceAmountInUsd = (item?.price_in_usd * Number(formatted_balance_amount)).toFixed(2)
@@ -75,15 +79,17 @@ type NetworkRouteItemProps = {
     direction: SwapDirection;
     allbalancesLoaded?: boolean;
     hideTokenImages?: boolean;
+    destAddress?: string;
 }
 
 export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
-    const { item, direction, allbalancesLoaded, hideTokenImages } = props
+    const { item, direction, allbalancesLoaded, hideTokenImages, destAddress } = props
     const { pickerSelectedWallets } = useSelectedWalletStore(direction)
 
     const selectedWallet = pickerSelectedWallets?.find(w => (direction == 'from' ? w.wallet?.withdrawalSupportedNetworks : w.wallet?.autofillSupportedNetworks)?.includes(item.name));
+    const address = (direction === 'to' && destAddress) ? destAddress : selectedWallet?.address;
 
-    const { balances, totalInUSD } = useBalance(selectedWallet?.address, item)
+    const { balances, totalInUSD } = useBalance(address, item)
     const tokensWithBalance = balances?.filter(b => b.amount > 0)
         ?.map(b => b.token);
     const filteredNetworkTokens = item?.tokens?.filter(token =>

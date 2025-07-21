@@ -9,7 +9,6 @@ import Balance from "../Amount/Balance";
 import { Content } from "./Content";
 import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
 import PickerWalletConnect from "./RouterPickerWalletConnect";
-import { useRouteTokenSwitchStore } from "@/stores/routeTokenSwitchStore";
 import { swapInProgress } from "@/components/utils/swapUtils";
 import { updateForm } from "@/components/Swap/Form/updateForm";
 
@@ -77,6 +76,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                             direction={direction}
                             selectedRoute={selectedRoute?.name}
                             selectedToken={selectedToken?.symbol}
+                            destAddress={values.destination_address}
                         />
                     )}
                 </SelectorContent>

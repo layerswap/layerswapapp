@@ -63,16 +63,16 @@ export function SelectedAccountsProvider({ children, from, to }: SelectedAccount
                 addSelectedDestWallet({ wallet: provider.activeWallet, address: provider.activeWallet?.address, providerName: provider.name })
             }
         })
-    }, [pickerSelectedDestWallets])
+    }, [pickerSelectedDestWallets, providers])
 
     useEffect(() => {
         providers.forEach(provider => {
             const selectedWallet = pickerSelectedSrcWallets?.find(w => w.providerName === provider.name)
             if (!selectedWallet && provider.activeWallet) {
-                addSelectedDestWallet({ wallet: provider.activeWallet, address: provider.activeWallet?.address, providerName: provider.name })
+                addSelectedSrcWallet({ wallet: provider.activeWallet, address: provider.activeWallet?.address, providerName: provider.name })
             }
         })
-    }, [pickerSelectedSrcWallets])
+    }, [pickerSelectedSrcWallets, providers])
 
     return (
         <SelectedAccountsStateContext.Provider value={{

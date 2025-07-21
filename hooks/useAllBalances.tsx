@@ -6,7 +6,7 @@ import { useEffect, useMemo } from "react"
 import { NetworkWithTokens } from "../Models/Network"
 
 type Props = {
-    direction: SwapDirection
+    direction: SwapDirection;
 }
 export default function useAllBalances({ direction }: Props) {
     const wallets = useWallet().wallets

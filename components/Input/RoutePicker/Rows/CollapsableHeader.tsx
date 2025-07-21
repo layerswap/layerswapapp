@@ -7,6 +7,7 @@ type Props = {
     direction: SwapDirection;
     allbalancesLoaded?: boolean;
     hideTokenImages?: boolean;
+    destAddress?: string;
 };
 
 export const CollapsableHeader = ({
@@ -14,6 +15,7 @@ export const CollapsableHeader = ({
     direction,
     allbalancesLoaded,
     hideTokenImages,
+    destAddress,
 }: Props) => {
     const groupedByToken = item.type === "grouped_token";
 
@@ -31,6 +33,7 @@ export const CollapsableHeader = ({
             direction={direction}
             allbalancesLoaded={allbalancesLoaded}
             hideTokenImages={hideTokenImages}
+            destAddress={destAddress}
         />
     );
 };
