@@ -12,6 +12,7 @@ import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 import { Exchange, ExchangeToken } from "@/Models/Exchange";
 import useExchangeNetworks from "./useExchangeNetworks";
 import { useRouteTokenSwitchStore } from "@/stores/routeTokenSwitchStore";
+import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
 
 const Titles: { [name: string]: TitleElement } = {
     topAssets: { type: 'group_title', text: 'Top Assets' },
@@ -32,7 +33,9 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const { exchangesRoutes, isLoading: exchangesRoutesLoading } = useExchangeRoutes({ direction, values })
     const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks({ values });
     const groupByToken = useRouteTokenSwitchStore((s) => s.showTokens)
-    const balances = useAllBalances({ direction });
+    const { pickerSelectedWallets } = useSelectedWalletStore(direction)
+
+    const balances = useAllBalances({ direction, pickerSelectedWallets });
     const exchange = values.fromExchange
 
     const routeElements = useMemo(() => groupRoutes(routes, direction, balances, groupByToken ? "token" : "network", search), [routes, balances, direction, search, groupByToken]);

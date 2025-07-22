@@ -4,20 +4,19 @@ import { useBalanceStore } from "../stores/balanceStore"
 import { SwapDirection } from "../components/DTOs/SwapFormValues"
 import { useEffect, useMemo } from "react"
 import { NetworkWithTokens } from "../Models/Network"
+import { SelectedWallet } from "@/context/selectedAccounts/pickerSelectedWallets"
 
 type Props = {
     direction: SwapDirection;
+    pickerSelectedWallets: SelectedWallet[] | undefined;
 }
-export default function useAllBalances({ direction }: Props) {
-    const wallets = useWallet().wallets
+export default function useAllBalances({ direction, pickerSelectedWallets }: Props) {
     const networks = useSettingsState().networks
-    const walletAddresses = useMemo(() => wallets.map(w => w.address).join(":"), [wallets])
-    const activeWallets = useMemo(() => wallets.filter(w => w.isActive), [walletAddresses])
 
     const walletNetworks = useMemo(() => {
-        return activeWallets.map(wallet => {
-            const sourceNetworks = wallet.asSourceSupportedNetworks
-            const withdrawalNetworks = wallet.withdrawalSupportedNetworks
+        return pickerSelectedWallets?.map(wallet => {
+            const sourceNetworks = wallet?.wallet?.asSourceSupportedNetworks
+            const withdrawalNetworks = wallet?.wallet?.withdrawalSupportedNetworks
             const networkNames = direction === 'from' ? sourceNetworks : withdrawalNetworks
             if (!networkNames || networkNames.length === 0) return []
 
@@ -30,7 +29,7 @@ export default function useAllBalances({ direction }: Props) {
                 }
             })
         }).flat().filter(item => item !== null) as Array<{ address: string, network: NetworkWithTokens }>
-    }, [activeWallets, direction, networks])
+    }, [pickerSelectedWallets, direction, networks])
 
     useEffect(() => {
         if (walletNetworks)
