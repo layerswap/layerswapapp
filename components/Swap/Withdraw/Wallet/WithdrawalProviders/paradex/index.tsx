@@ -11,6 +11,7 @@ import SubmitButton from '@/components/buttons/submitButton';
 import { WalletIcon } from 'lucide-react';
 import { WithdrawPageProps } from '../../Common/sharedTypes';
 import { useConnectModal } from '@/components/WalletModal';
+import { useSelectAccounts } from '@/context/selectedAccounts';
 
 export const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ token }) => {
 
@@ -38,17 +39,18 @@ const ConnectWalletModal = () => {
     const { source_network } = swapResponse?.swap || {}
     const { provider } = useWallet(source_network, 'withdrawal')
     const { connect } = useConnectModal()
-    const { setSelectedSourceAccount } = useSwapDataUpdate()
+    const { setSelectedSourceAccount } = useSelectAccounts()
 
     const handleSelectWallet = (wallet?: Wallet | undefined, address?: string | undefined) => {
         if (wallet && address) {
             setSelectedSourceAccount({
                 wallet,
-                address
+                address,
+                providerName: wallet.providerName
             })
         }
         else {
-            setSelectedSourceAccount(undefined)
+            setSelectedSourceAccount({providerName: provider?.name, wallet: undefined, address: undefined})
         }
     }
     const handleConnect = async () => {

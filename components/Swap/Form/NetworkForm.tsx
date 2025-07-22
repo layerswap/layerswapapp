@@ -3,7 +3,6 @@ import { Form, FormikHelpers, useFormikContext } from "formik";
 import { Partner } from "@/Models/Partner";
 import { TokenBalance } from "@/Models/Balance";
 import ValidationError from "@/components/validationError";
-import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import useWallet from "@/hooks/useWallet";
 import SourcePicker from "@/components/Input/SourcePicker";
 import DestinationPicker from "@/components/Input/DestinationPicker";
@@ -24,12 +23,13 @@ import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import { updateForm, updateFormBulk } from "./updateForm";
 import { useQuoteData } from "@/hooks/useFee";
 import { useQuoteUpdate } from "@/hooks/useQuoteUpdate";
+import { SelectedAccountsProvider, useSelectAccounts } from "@/context/selectedAccounts";
+import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
 import { useValidationContext } from "@/context/validationContext";
 
 const RefuelModal = dynamic(() => import("@/components/FeeDetails/RefuelModal"), {
     loading: () => <></>,
 });
-
 const ReserveGasNote = dynamic(() => import("@/components/ReserveGasNote"), {
     loading: () => <></>,
 });
@@ -51,10 +51,11 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const {
         to: destination,
         from: source,
-        amount
+        amount,
+        depositMethod
     } = values;
 
-    const { selectedSourceAccount } = useSwapDataState();
+    const { pickerSelectedWallet: selectedSourceAccount } = useSelectedWalletStore('from');
     const { providers, wallets } = useWallet();
     const { minAllowedAmount, isQuoteLoading, quote } = useQuoteData(values);
     const { isUpdatingValues, quote: newQuote } = useQuoteUpdate(quote, amount)
@@ -65,7 +66,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const isValid = !formValidation.message;
     const error = formValidation.message;
-    
+
     useEffect(() => {
         if (!source || !toAsset || !toAsset.refuel) {
             setFieldValue('refuel', false, true);
@@ -91,11 +92,10 @@ const NetworkForm: FC<Props> = ({ partner }) => {
             });
     }, [setFieldValue]);
 
-    const sourceWalletNetwork = values.fromExchange ? undefined : values.from;
-    const shouldConnectWallet = (sourceWalletNetwork && values.from?.deposit_methods?.includes('wallet') && values.depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!values.from && !values.fromExchange && !wallets.length && values.depositMethod !== 'deposit_address');
+    const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
     return (
-        <>
+        <SelectedAccountsProvider from={source} to={destination}>
             <DepositMethodComponent />
             <Form className="h-full grow flex flex-col justify-between">
                 <Widget.Content>
@@ -118,13 +118,12 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                     !(query?.hideTo && values?.to) && <DestinationPicker partner={partner} />
                                 }
                             </div>
-                            <div className="w-full">
-                                {values.amount &&
-                                    <ReserveGasNote onSubmit={handleReserveGas} />
-                                }
-                            </div>
                         </div>
                         <div className="space-y-3">
+                            {
+                                values.amount &&
+                                <ReserveGasNote onSubmit={handleReserveGas} />
+                            }
                             {
                                 values.toAsset?.refuel && !query.hideRefuel &&
                                 <RefuelToggle onButtonClick={() => setOpenRefuelModal(true)} />
@@ -132,7 +131,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                             {
                                 routeValidation.message
                                     ? <ValidationError />
-                                    : <QuoteDetails swapValues={values} quote={newQuote} isQuoteLoading={isQuoteLoading} isUpdatingValues={isUpdatingValues} />
+                                    : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                             }
                         </div>
                     </div>
@@ -149,8 +148,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                 </Widget.Footer>
                 <RefuelModal openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} />
             </Form>
-        </>
-
+        </SelectedAccountsProvider>
     );
 };
 
@@ -159,8 +157,8 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
         { rotateX: 0 },
         { rotateX: 180 }
     );
-    const { selectedSourceAccount } = useSwapDataState()
-    const { setSelectedSourceAccount } = useSwapDataUpdate()
+    const { setSelectedSourceAccount } = useSelectAccounts()
+    const { pickerSelectedWallet: selectedSourceAccount } = useSelectedWalletStore('from');
 
     let valuesSwapperDisabled = false;
 
@@ -200,12 +198,12 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
             ? providers.find(p => p.autofillSupportedNetworks?.includes(destination?.name) && p.connectedWallets?.some(w => !w.isNotAvailable && w.addresses.some(a => a.toLowerCase() === values.destination_address?.toLowerCase())))
             : undefined
 
-        const newDestinationProvider = newTo ? providers.find(p => p.autofillSupportedNetworks?.includes(newTo.name) && p.connectedWallets?.some(w => !w.isNotAvailable && w.addresses.some(a => a.toLowerCase() === selectedSourceAccount?.address.toLowerCase())))
+        const newDestinationProvider = newTo ? providers.find(p => p.autofillSupportedNetworks?.includes(newTo.name) && p.connectedWallets?.some(w => !w.isNotAvailable && w.addresses.some(a => a.toLowerCase() === selectedSourceAccount?.address?.toLowerCase())))
             : undefined
         const oldDestinationWallet = newDestinationProvider?.connectedWallets?.find(w => w.autofillSupportedNetworks?.some(n => n.toLowerCase() === newTo?.name.toLowerCase()) && w.addresses.some(a => a.toLowerCase() === values.destination_address?.toLowerCase()))
         const oldDestinationWalletIsNotCompatible = destinationProvider && (destinationProvider?.name !== newDestinationProvider?.name || !(newTo && oldDestinationWallet?.autofillSupportedNetworks?.some(n => n.toLowerCase() === newTo?.name.toLowerCase())))
-        const destinationWalletIsAvailable = newTo ? newDestinationProvider?.connectedWallets?.some(w => w.autofillSupportedNetworks?.some(n => n.toLowerCase() === newTo.name.toLowerCase()) && w.addresses.some(a => a.toLowerCase() === selectedSourceAccount?.address.toLowerCase())) : undefined
-        const oldSourceWalletIsNotCompatible = destinationProvider && (selectedSourceAccount?.wallet.providerName !== destinationProvider?.name || !(newFrom && selectedSourceAccount?.wallet.withdrawalSupportedNetworks?.some(n => n.toLowerCase() === newFrom.name.toLowerCase())))
+        const destinationWalletIsAvailable = newTo ? newDestinationProvider?.connectedWallets?.some(w => w.autofillSupportedNetworks?.some(n => n.toLowerCase() === newTo.name.toLowerCase()) && w.addresses.some(a => a.toLowerCase() === selectedSourceAccount?.address?.toLowerCase())) : undefined
+        const oldSourceWalletIsNotCompatible = destinationProvider && (selectedSourceAccount?.providerName !== destinationProvider?.name || !(newFrom && selectedSourceAccount?.wallet?.withdrawalSupportedNetworks?.some(n => n.toLowerCase() === newFrom.name.toLowerCase())))
 
         const changeDestinationAddress = newTo && (oldDestinationWalletIsNotCompatible || oldSourceWalletIsNotCompatible) && destinationWalletIsAvailable
 
@@ -235,11 +233,12 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
             if (sourceAvailableWallet) {
                 setSelectedSourceAccount({
                     wallet: sourceAvailableWallet,
-                    address: values.destination_address
+                    address: values.destination_address,
+                    providerName: sourceAvailableWallet.providerName
                 })
             }
             else {
-                setSelectedSourceAccount(undefined)
+                if (selectedSourceAccount) setSelectedSourceAccount({ providerName: selectedSourceAccount?.providerName, wallet: undefined, address: undefined })
             }
 
         }

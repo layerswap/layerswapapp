@@ -8,12 +8,14 @@ import { useSwapDataState } from "@/context/swap";
 import TransactionMessages from "../../../messages/TransactionMessages";
 import { useQueryState } from "@/context/query";
 import { WithdrawPageProps } from "../../Common/sharedTypes";
+import { useSelectAccounts } from "@/context/selectedAccounts";
 
 export const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
     network,
     swapId
 }) => {
-    const { swapResponse, selectedSourceAccount } = useSwapDataState()
+    const { swapResponse } = useSwapDataState()
+    const { selectedSourceAccount } = useSelectAccounts()
     const { source_network, destination_network, destination_address } = swapResponse?.swap || {}
     const { isConnected, chain: activeChain } = useAccount();
     const { provider } = useWallet(network, 'withdrawal')

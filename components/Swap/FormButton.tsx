@@ -30,7 +30,7 @@ const FormButton = ({
         return (
             <Address partner={partner}>
                 {() => (
-                    <SubmitButton className="w-full">
+                    <SubmitButton type="button" className="w-full">
                         <span className="order-first absolute left-0 inset-y-0 flex items-center pl-3">
                             <PlusIcon className="stroke-1" />
                         </span>

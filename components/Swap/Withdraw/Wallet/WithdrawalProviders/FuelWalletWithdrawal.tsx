@@ -7,11 +7,11 @@ import {
     useFuel,
     useNetwork,
 } from '@fuels/react';
-import { useSwapDataState } from '@/context/swap';
 import { datadogRum } from '@datadog/browser-rum';
 import { coinQuantityfy, CoinQuantityLike, Provider, ScriptTransactionRequest } from 'fuels';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import TransactionMessages from '../../messages/TransactionMessages';
+import { useSelectAccounts } from '@/context/selectedAccounts';
 
 export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }) => {
     const [loading, setLoading] = useState(false);
@@ -22,13 +22,13 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }
 
     const { network: fuelNetwork, refetch: refetchNetwork } = useNetwork()
     const networkChainId = Number(network?.chain_id)
-    const { selectedSourceAccount } = useSwapDataState()
+    const { selectedSourceAccount } = useSelectAccounts()
     const { fuel } = useFuel()
 
     const activeChainId = fuelNetwork?.chainId || (fuelNetwork?.url.includes('testnet') ? 0 : 9889)
 
     useEffect(() => {
-        if (provider?.activeWallet && selectedSourceAccount) {
+        if (provider?.activeWallet && selectedSourceAccount?.wallet && selectedSourceAccount?.address) {
             provider?.switchAccount && provider?.switchAccount(selectedSourceAccount?.wallet, selectedSourceAccount?.address)
             refetchNetwork()
         }
