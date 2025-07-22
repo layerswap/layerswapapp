@@ -25,6 +25,7 @@ export const CollapsableHeader = ({
             direction={direction}
             allbalancesLoaded={allbalancesLoaded}
             hideTokenImages={hideTokenImages}
+            destAddress={destAddress}
         />
     ) : (
         <NetworkRouteSelectItemDisplay

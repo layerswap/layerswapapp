@@ -7,8 +7,8 @@ import RoutePickerIcon from "../../icons/RoutePickerPlaceholder";
 import { useBalance } from "../../../lib/balances/providers/useBalance";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { GroupedTokenElement } from "@/Models/Route";
-import { useBalanceStore } from "@/stores/balanceStore";
 import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
+import { useGroupedTokenBalances } from "@/hooks/useGroupedTokenBalances";
 
 type TokenItemProps = {
     route: NetworkRoute;
@@ -160,51 +160,27 @@ export const GroupedTokenHeader = ({
     item,
     direction,
     allbalancesLoaded,
-    hideTokenImages
+    hideTokenImages,
+    destAddress
 }: {
     item: GroupedTokenElement;
     direction: SwapDirection;
     allbalancesLoaded?: boolean;
     hideTokenImages?: boolean;
+    destAddress?: string;
 }) => {
-    const tokens = item.items;
+    const {
+        totalInUSD,
+        hasLoadedBalances,
+        networksWithBalance,
+        mainToken
+    } = useGroupedTokenBalances({
+        item,
+        direction,
+        destAddress,
+        allBalancesLoaded: allbalancesLoaded
+    });
 
-    const allBalances = useBalanceStore(s => s.allBalances)
-
-    const networksWithBalance: NetworkRoute[] = Array.from(
-        new Map(
-            tokens
-                .map(({ route }) => {
-                    const tokenSymbol = route.token.symbol;
-                    const networkRoute = route.route;
-
-                    const networkBalances = allBalances?.[networkRoute.name];
-                    const balanceEntry = networkBalances?.balances?.find(
-                        (b) => b.token === tokenSymbol && b.amount >= 0
-                    );
-
-                    return balanceEntry ? [networkRoute.name, networkRoute] as const : null;
-                })
-                .filter((entry): entry is readonly [string, NetworkRoute] => !!entry)
-        ).values()
-    );
-
-    const totalInUSD = tokens.reduce((sum, { route }) => {
-        const tokenSymbol = route.token.symbol;
-        const networkName = route.route.name;
-        const price = route.token.price_in_usd;
-
-        const networkBalances = allBalances?.[networkName];
-        const balanceEntry = networkBalances?.balances?.find(
-            (b) => b.token === tokenSymbol
-        );
-
-        if (!balanceEntry) return sum;
-        return sum + balanceEntry.amount * price;
-    }, 0);
-
-    const mainToken = tokens[0]?.route.token;
-    const hasLoadedBalances = allbalancesLoaded && Number(totalInUSD) >= 0;
     const showNetworkIcons = hasLoadedBalances && networksWithBalance.length > 0;
 
     return (
@@ -246,7 +222,7 @@ export const GroupedTokenHeader = ({
                                 </div>
                             )}
                         </div>
-                    ) : allBalances ? (
+                    ) : totalInUSD ? (
                         <div className="px-0.5">-</div>
                     ) : <></>}
 
