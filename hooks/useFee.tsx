@@ -46,7 +46,7 @@ export function useQuoteData(formValues: SwapFormValues): UseQuoteData {
         `/quote?source_network=${from?.name}&source_token=${fromCurrency?.symbol}&destination_network=${to?.name}&destination_token=${toCurrency?.symbol}&amount=${debouncedAmount}&refuel=${!!refuel}&use_deposit_address=${use_deposit_address}` : null
 
     const { data: quote, mutate: mutateFee, isLoading: isQuoteLoading, error: lsFeeError } = useSWR<ApiResponse<Quote>>(quoteURL, apiClient.fetcher, {
-        refreshInterval: poll ? 2000 : 0,
+        refreshInterval: poll ? 42000 : 0,
     })
 
     return {
