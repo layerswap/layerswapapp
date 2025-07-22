@@ -121,16 +121,16 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         {
                             isMobile &&
                             <div className="absolute top-2 left-[calc(50%-24px)]" >
-                                <Drawer.Handle className='!w-12 bg-primary-text-muted'/>
+                                <Drawer.Handle className='!w-12 bg-primary-text-muted' />
                             </div>
                         }
 
                         <div className='flex items-center w-full text-left justify-between px-4 pt-3 pb-2'>
-                            <Drawer.Title className="text-lg text-secondary-text font-semibold">
+                            <Drawer.Title className="text-lg text-secondary-text font-semibold w-full">
                                 {header}
                             </Drawer.Title>
                             <Drawer.Close asChild>
-                                <div className='-mr-2'>
+                                <div className=''>
                                     <IconButton className='inline-flex' icon={
                                         <X strokeWidth={3} />
                                     }>
@@ -146,8 +146,8 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         }
                     </div>
                     <div
-                        className={clsx('flex flex-col w-full h-fit max-h-[90dvh] px-4 styled-scroll overflow-x-hidden relative ', {
-                            'overflow-y-auto': snap === 1,
+                        className={clsx('flex flex-col w-full h-fit max-h-[90dvh] px-4 styled-scroll overflow-x-hidden relative', {
+                            'overflow-y-auto h-full': snap === 1,
                             'overflow-hidden': snap !== 1,
                         })}
                         id="virtualListContainer"
