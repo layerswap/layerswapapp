@@ -377,19 +377,3 @@ function useExchangeDestinationRoutes({ direction, currencyGroup, networkTypes }
 
     return { exchangesRoutes, isLoading }
 }
-
-function getRecentNetworkRoutes(
-    recent: { network: string; token?: string }[],
-    routes: NetworkRoute[],
-    count = 4
-): NetworkTokenElement[] {
-    return recent.slice(-count).flatMap(({ network, token }) => {
-        const route = routes.find(r => r.name === network);
-        if (!route || !token) return [];
-
-        const matchedToken = route.tokens?.find(t => t.symbol === token);
-        return matchedToken
-            ? [{ type: 'network_token', route: { token: matchedToken, route } } as NetworkTokenElement]
-            : [];
-    });
-}
