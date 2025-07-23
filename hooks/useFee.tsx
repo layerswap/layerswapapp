@@ -68,10 +68,6 @@ export function useQuoteData(formValues: Props | undefined): UseQuoteData {
     }
 }
 export function transformFormValuesToQuoteArgs(values: SwapFormValues): Props | undefined {
-
-    if (!values.from || !values.to || !values.fromAsset || !values.toAsset || !values.amount || values.fromAsset?.status !== "active" || values.toAsset?.status !== "active")
-        return undefined
-
     return {
         amount: values.amount,
         from: values.from?.name,
@@ -84,18 +80,14 @@ export function transformFormValuesToQuoteArgs(values: SwapFormValues): Props | 
 }
 
 export function transformSwapDataToQuoteArgs(swapData: SwapBasicData | undefined, refuel: boolean): Props | undefined {
-
-    if (!swapData || !swapData.source_network || !swapData.destination_network || !swapData.source_token || !swapData.destination_token || !swapData.requested_amount)
-        return undefined
-
     return {
         refuel,
-        amount: swapData.requested_amount,
-        from: swapData.source_network.name,
-        depositMethod: swapData.use_deposit_address ? 'deposit_address' : 'wallet',
-        fromCurrency: swapData.source_token.symbol,
-        to: swapData.destination_network.name,
-        toCurrency: swapData.destination_token.symbol,
+        amount: swapData?.requested_amount,
+        from: swapData?.source_network.name,
+        depositMethod: swapData?.use_deposit_address ? 'deposit_address' : 'wallet',
+        fromCurrency: swapData?.source_token.symbol,
+        to: swapData?.destination_network.name,
+        toCurrency: swapData?.destination_token.symbol,
     }
 }
 
