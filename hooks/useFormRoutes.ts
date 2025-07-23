@@ -4,7 +4,7 @@ import { SwapDirection, SwapFormValues } from "../components/DTOs/SwapFormValues
 import { ApiResponse } from "../Models/ApiResponse";
 import { NetworkRoute, NetworkRouteToken } from "../Models/Network";
 import { useSettingsState } from "../context/settings";
-import { NetworkElement, RowElement, NetworkTokenElement, TitleElement, GroupTokensResult, GroupedTokenElement } from "../Models/Route";
+import { NetworkElement, RowElement, NetworkTokenElement, TitleElement, GroupedTokenElement } from "../Models/Route";
 import useAllBalances from "./useAllBalances";
 import { NetworkBalance } from "../Models/Balance";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL, resolveRoutesURLForSelectedAssetGroup } from "../helpers/routes";

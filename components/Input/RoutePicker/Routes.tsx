@@ -48,7 +48,11 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const { balances } = useBalance(selectedWallet?.address, route)
     const tokenbalance = balances?.find(b => b.token === item.symbol)
     const formatted_balance_amount = (tokenbalance?.amount || tokenbalance?.amount === 0) ? truncateDecimals(tokenbalance?.amount, item.precision) : ''
-    const balanceAmountInUsd = (item?.price_in_usd * Number(formatted_balance_amount)).toFixed(2)
+    const usdAmount = item?.price_in_usd * Number(formatted_balance_amount)
+    const displayUsdAmount =
+        usdAmount > 0 && usdAmount < 0.01
+            ? '<$0.01'
+            : `$${usdAmount.toFixed(2)}`
 
     return <SelectItem.DetailedTitle
         title={item.symbol}
@@ -69,7 +73,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
                         className={clsx({
                             'text-xs leading-4': type == 'top_token',
                         })}
-                    >${balanceAmountInUsd}</div>
+                    >{displayUsdAmount}</div>
                 )}
             </span>
         ) : balances ? (
