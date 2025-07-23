@@ -1,4 +1,4 @@
-import { ComponentProps, FC, useCallback, useState } from "react";
+import { ComponentProps, FC, useCallback, useMemo, useState } from "react";
 import WalletIcon from "@/components/icons/WalletIcon";
 import { ActionData, TransferProps } from "./sharedTypes";
 import SubmitButton, { SubmitButtonProps } from "@/components/buttons/submitButton";
@@ -13,14 +13,13 @@ import { useQueryState } from "@/context/query";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { useRouter } from "next/router";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
-import { BackendTransactionStatus } from "@/lib/apiClients/layerSwapApiClient";
-import { useQuoteData } from "@/hooks/useFee";
+import { BackendTransactionStatus, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
+import { transformSwapDataToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useSelectAccounts } from "@/context/selectedAccounts";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
-    const { source_network } = swap || {}
+    const { swapBasicData } = useSwapDataState()
+    const { source_network } = swapBasicData || {}
     const [loading, setLoading] = useState(false)
     const { provider } = useWallet(source_network, 'withdrawal')
     const { connect } = useConnectModal()
@@ -142,28 +141,24 @@ type ButtonWrapperProps = ComponentProps<typeof ButtonWrapper>;
 type SendFromWalletButtonProps = Omit<ButtonWrapperProps, 'onClick'> & {
     error?: boolean;
     onClick: (props: TransferProps) => Promise<string | undefined>
+    swapData: SwapBasicData,
+    refuel: boolean
 };
 
 export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     error,
     onClick,
+    swapData,
+    refuel,
     ...props
 }) => {
     const [loading, setLoading] = useState(false)
-    const { createSwap, setSwapId, setSwapPath } = useSwapDataUpdate()
+    const { createSwap, setSwapId } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
-    const { updatePolling, isQuoteLoading } = useQuoteData({
-        amount: swap?.requested_amount.toString(),
-        from: swap?.source_network as NetworkRoute,
-        to: swap?.destination_network as NetworkRoute,
-        fromAsset: swap?.source_token,
-        toAsset: swap?.destination_token,
-        refuel: !!swapResponse?.refuel,
-        destination_address: swap?.destination_address,
-        depositMethod: 'wallet'
-    } as SwapFormValues);
+
+    const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapData, refuel), [swapData, refuel]);
+    const { isQuoteLoading } = useQuoteData(quoteArgs);
+
     const router = useRouter()
     const query = useQueryState()
 
@@ -178,40 +173,38 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             })
 
             const swapValues: SwapFormValues = {
-                amount: swap?.requested_amount.toString(),
-                from: swap?.source_network as NetworkRoute,
-                to: swap?.destination_network as NetworkRoute,
-                fromAsset: swap?.source_token,
-                toAsset: swap?.destination_token,
-                refuel: !!swapResponse?.refuel,
-                destination_address: swap?.destination_address,
+                amount: swapData.requested_amount.toString(),
+                from: swapData.source_network as NetworkRoute,
+                to: swapData.destination_network as NetworkRoute,
+                fromAsset: swapData.source_token,
+                toAsset: swapData.destination_token,
+                refuel: refuel,
+                destination_address: swapData.destination_address,
                 depositMethod: 'wallet',
             }
 
-            const swapData = await createSwap(swapValues, query);
-            const swapId = swapData?.swap?.id;
+            const _swapData = await createSwap(swapValues, query);
+            const swapId = _swapData?.swap?.id;
             if (!swapId) {
                 throw new Error('Swap ID is undefined');
             }
 
-            const depositAction = swapData?.deposit_actions && swapData?.deposit_actions[0];
+            const depositAction = _swapData?.deposit_actions && _swapData?.deposit_actions[0];
 
             const transferProps: TransferProps = {
                 amount: depositAction?.amount,
                 callData: depositAction?.call_data,
                 depositAddress: depositAction?.to_address,
-                sequenceNumber: swap?.metadata.sequence_number,
+                sequenceNumber: _swapData.swap?.metadata.sequence_number,
                 swapId: swapId,
-                userDestinationAddress: swap?.destination_address
+                userDestinationAddress: _swapData.swap?.destination_address
             }
 
             const hash = await onClick(transferProps)
 
             if (hash) {
                 setSwapTransaction(swapId, BackendTransactionStatus.Pending, hash);
-                updatePolling(false);
                 setSwapId(swapId)
-                setSwapPath(swapId, router)
             }
 
         }

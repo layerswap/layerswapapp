@@ -87,9 +87,8 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
     const wallet = provider?.activeWallet
     const { gas } = useSWRGas(wallet?.address, values.from, values.fromAsset)
     const LsFeeAmountInUsd = quote?.total_fee_in_usd
-    const gasFeeAmountInUsd = (quote?.source_network?.token) ? (gas || 0) * quote.source_network?.token?.price_in_usd : null;
-    const feeAmountInUsd = values.fromExchange ? ((LsFeeAmountInUsd || 0) + (gasFeeAmountInUsd || 0)) : (LsFeeAmountInUsd || 0)
-    const displayFeeInUsd = feeAmountInUsd ? (feeAmountInUsd < 0.01 ? '<$0.01' : `$${feeAmountInUsd?.toFixed(2)}`) : null
+    const gasFeeInUsd = (quote?.source_network?.token && gas) ? gas * quote?.source_network?.token?.price_in_usd : null;
+    const displayGasFeeInUsd = gasFeeInUsd ? (gasFeeInUsd < 0.01 ? '<$0.01' : `$${gasFeeInUsd?.toFixed(2)}`) : null
     const displayReward = reward?.amount_in_usd ? (reward?.amount_in_usd < 0.01 ? '<$0.01' : `$${reward?.amount_in_usd?.toFixed(2)}`) : null
     const averageCompletionTime = quote?.avg_completion_time;
 
@@ -109,14 +108,14 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
     return (
         <div className='flex items-center space-x-4'>
             {
-                displayFeeInUsd &&
+                displayGasFeeInUsd &&
                 <div className='inline-flex items-center gap-1'>
                     <div className='h-4 w-4'>
                         {!values.fromExchange ?
                             <GasIcon className='h-4 w-4' /> : <ExchangeGasIcon className='h-4 w-4' />
                         }
                     </div>
-                    <AnimatedValue value={displayFeeInUsd} className='text-sm text-primary-text' />
+                    <AnimatedValue value={displayGasFeeInUsd} className='text-sm text-primary-text' />
                 </div>
             }
             {

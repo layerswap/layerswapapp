@@ -1,12 +1,12 @@
 import ToggleButton from "../buttons/toggleButton"
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { FC, useEffect, useRef } from "react";
+import { FC, useEffect, useMemo, useRef } from "react";
 import { Info } from "lucide-react";
 import { isValidAddress } from "../../lib/address/validator";
 import ResizablePanel from "../ResizablePanel";
 import useSWRBalance from "../../lib/balances/useSWRBalance";
-import { useQuoteData } from "@/hooks/useFee";
+import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 
 type RefuelProps = {
     onButtonClick: () => void
@@ -19,7 +19,8 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick }) => {
         setFieldValue
     } = useFormikContext<SwapFormValues>();
     const { toAsset: toCurrency, to, destination_address, refuel } = values
-    const { quote } = useQuoteData(values)
+    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
+    const { quote } = useQuoteData(quoteArgs)
 
     const { balances } = useSWRBalance(destination_address, to)
 

@@ -155,29 +155,61 @@ export type Refuel = {
     amount_in_usd: number
 }
 
-export type SwapItem = {
-    id: string,
-    created_date: string,
+export type SwapBasicData = {
     source_network: Network,
     source_token: Token,
     source_exchange?: Exchange,
     destination_network: Network,
     destination_token: Token,
-    destination_exchange?: Exchange,
-    status: SwapStatus,
-    source_address: string,
     destination_address: string,
     requested_amount: number,
-    use_deposit_address: boolean
+    use_deposit_address: boolean,
+
+}
+
+export type SwapDetails = {
+    id: string,
+    created_date: string,
+    status: SwapStatus,
     transactions: Transaction[]
     exchange_account_connected: boolean;
     exchange_account_name?: string;
+
     fail_reason?: string;
     metadata: {
         reference_id: string | null;
         app: string | null;
         sequence_number: number
     }
+}
+
+export type SwapItem = {
+    id: string,
+    created_date: string,
+
+    source_network: Network,
+    source_token: Token,
+    source_exchange?: Exchange,
+    destination_network: Network,
+    destination_token: Token,
+    destination_address: string,
+    requested_amount: number,
+    use_deposit_address: boolean
+
+
+    status: SwapStatus,
+    transactions: Transaction[]
+    exchange_account_connected: boolean;
+    exchange_account_name?: string;
+
+    fail_reason?: string;
+    metadata: {
+        reference_id: string | null;
+        app: string | null;
+        sequence_number: number
+    },
+
+    destination_exchange?: Exchange,
 }
 
 export type DepositAction = {
