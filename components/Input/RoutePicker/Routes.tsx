@@ -10,6 +10,7 @@ import { GroupedTokenElement, RowElement } from "@/Models/Route";
 import { useBalanceStore } from "@/stores/balanceStore";
 import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
 import clsx from "clsx";
+import { formatUsd } from "@/components/utils/formatUsdAmount";
 
 type TokenItemProps = {
     route: NetworkRoute;
@@ -49,13 +50,6 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const tokenbalance = balances?.find(b => b.token === item.symbol)
     const formatted_balance_amount = (tokenbalance?.amount || tokenbalance?.amount === 0) ? truncateDecimals(tokenbalance?.amount, item.precision) : ''
     const usdAmount = item?.price_in_usd * Number(formatted_balance_amount);
-    const balanceAmountInUsd =
-        usdAmount > 0 && usdAmount < 0.01
-            ? '<$0.01'
-            : new Intl.NumberFormat('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-            }).format(usdAmount || 0);
             
     return <SelectItem.DetailedTitle
         title={item.symbol}
@@ -76,7 +70,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
                         className={clsx({
                             'text-xs leading-4': type == 'top_token',
                         })}
-                    >${balanceAmountInUsd}</div>
+                    >{formatUsd(usdAmount)}</div>
                 )}
             </span>
         ) : balances ? (
@@ -121,10 +115,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                     {hasLoadedBalances ? (
                         <div className={`${showTokenLogos ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "hidden" : ""}`}>
                             <span className="text-secondary-text text-sm leading-4 font-medium">
-                                ${new Intl.NumberFormat('en-US', {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                }).format(totalInUSD ?? 0)}
+                                {formatUsd(totalInUSD)}
                             </span>
 
                             {showTokenLogos ? (
@@ -236,10 +227,7 @@ export const GroupedTokenHeader = ({
                     {hasLoadedBalances ? (
                         <div className={`${showNetworkIcons ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "invisible" : "visible"}`}>
                             <span className="text-secondary-text text-sm leading-4 font-medium">
-                                ${new Intl.NumberFormat('en-US', {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2,
-                                }).format(totalInUSD ?? 0)}
+                                {formatUsd(totalInUSD)}
                             </span>
 
                             {showNetworkIcons && (
