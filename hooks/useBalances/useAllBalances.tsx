@@ -12,7 +12,7 @@ type Props = {
 }
 
 type ExtendedSelectedWallet = SelectedWallet & {
-    asSourceSupportedNetworks?: string[];
+    autofillSupportedNetworks?: string[];
     withdrawalSupportedNetworks?: string[];
 };
 
@@ -28,7 +28,7 @@ export default function useAllBalances({ direction, pickerSelectedWallets }: Pro
                 const provider = providers.find(p => p.name === sw.providerName)
                 return {
                     ...sw,
-                    asSourceSupportedNetworks: provider?.asSourceSupportedNetworks,
+                    autofillSupportedNetworks: provider?.autofillSupportedNetworks,
                     withdrawalSupportedNetworks: provider?.withdrawalSupportedNetworks,
                 }
             })
@@ -39,7 +39,7 @@ export default function useAllBalances({ direction, pickerSelectedWallets }: Pro
             wallet: w,
             address: w.address,
             providerName: w.providerName,
-            asSourceSupportedNetworks: w?.asSourceSupportedNetworks,
+            autofillSupportedNetworks: w?.autofillSupportedNetworks,
             withdrawalSupportedNetworks: w?.withdrawalSupportedNetworks,
         }))];
 
@@ -56,8 +56,8 @@ export default function useAllBalances({ direction, pickerSelectedWallets }: Pro
     const walletNetworks = useMemo(() => {
         return mergedWallets.flatMap(wallet => {
             const networkNames = direction === 'from'
-                ? wallet?.asSourceSupportedNetworks
-                : wallet?.withdrawalSupportedNetworks;
+                ? wallet?.withdrawalSupportedNetworks
+                : wallet?.autofillSupportedNetworks;
 
             if (!networkNames || networkNames.length === 0) return [];
 
