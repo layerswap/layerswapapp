@@ -35,9 +35,8 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const { exchangesRoutes, isLoading: exchangesRoutesLoading } = useExchangeRoutes({ direction, values })
     const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks({ values });
     const groupByToken = useRouteTokenSwitchStore((s) => s.showTokens)
-    const { pickerSelectedWallets } = useSelectedWalletStore(direction)
 
-    const balances = useAllBalances({ direction, pickerSelectedWallets });
+    const balances = useAllBalances({ direction });
     const exchange = values.fromExchange
     const recents = useRecentNetworksStore(state => state.recentNetworks)
 
