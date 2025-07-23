@@ -17,7 +17,7 @@ const FormButton = ({
     isValid,
     error,
     isSubmitting,
-    partner
+    partner,
 }) => {
     const query = useQueryState();
     const actionDisplayName = error || query?.actionButtonText || "Swap now";

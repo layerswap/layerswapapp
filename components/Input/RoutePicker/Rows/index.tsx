@@ -63,6 +63,7 @@ export default function Row({
                     route={route}
                     direction={direction}
                     destAddress={destAddress}
+                    type={item.type}
                 />
             </div>
         );

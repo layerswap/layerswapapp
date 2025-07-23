@@ -8,6 +8,7 @@ import { Partner } from "../../Models/Partner";
 import useWallet from "../../hooks/useWallet";
 import { ReceiveAmount } from "./Amount/ReceiveAmount";
 import { useQuoteData } from "@/hooks/useFee";
+import { useQuoteUpdate } from "@/hooks/useQuoteUpdate";
 
 type Props = {
     partner?: Partner
@@ -16,8 +17,9 @@ type Props = {
 const DestinationPicker = (props: Props) => {
     const { partner } = props
     const { values } = useFormikContext<SwapFormValues>()
-    const { fromExchange, destination_address, to, from, depositMethod, fromAsset: fromCurrency, toAsset: toCurrency } = values
+    const { fromExchange, destination_address, to, from, depositMethod, fromAsset: fromCurrency, toAsset: toCurrency, amount } = values
     const { quote: fee, isQuoteLoading: isFeeLoading } = useQuoteData(values)
+    const { isUpdatingValues, quote: newQuote } = useQuoteUpdate(fee, amount)
     const sourceWalletNetwork = fromExchange ? undefined : from
     const destinationWalletNetwork = to
 
@@ -43,8 +45,9 @@ const DestinationPicker = (props: Props) => {
                     <ReceiveAmount
                         source_token={fromCurrency}
                         destination_token={toCurrency}
-                        fee={fee}
+                        fee={newQuote}
                         isFeeLoading={isFeeLoading}
+                        isUpdatingValues={isUpdatingValues}
                     />
                 </div>
                 <div className="col-span-3 flex items-center self-start justify-end">

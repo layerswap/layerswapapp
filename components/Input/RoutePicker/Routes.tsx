@@ -6,13 +6,16 @@ import { ChevronDown } from "lucide-react";
 import RoutePickerIcon from "../../icons/RoutePickerPlaceholder";
 import { useBalance } from "../../../lib/balances/providers/useBalance";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
-import { GroupedTokenElement } from "@/Models/Route";
+import { GroupedTokenElement, RowElement } from "@/Models/Route";
+import { useBalanceStore } from "@/stores/balanceStore";
 import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
+import clsx from "clsx";
 import { useGroupedTokenBalances } from "@/hooks/useBalances/useGroupedTokenBalances";
 
 type TokenItemProps = {
     route: NetworkRoute;
     item: NetworkRouteToken;
+    type?: RowElement['type'];
     selected: boolean;
     direction: SwapDirection;
     allbalancesLoaded?: boolean;
@@ -21,7 +24,7 @@ type TokenItemProps = {
 };
 
 export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
-    const { item, route, direction, allbalancesLoaded, destAddress } = props
+    const { item, route, direction, allbalancesLoaded, type, destAddress } = props
 
     return <SelectItem>
         <SelectItem.Logo
@@ -29,7 +32,7 @@ export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
             altText={`${item.symbol} logo`}
             className="rounded-full"
         />
-        <NetworkTokenTitle item={item as NetworkRouteToken} route={route} direction={direction} allbalancesLoaded={allbalancesLoaded} destAddress={destAddress} />
+        <NetworkTokenTitle item={item as NetworkRouteToken} route={route} direction={direction} allbalancesLoaded={allbalancesLoaded} destAddress={destAddress} type={type} />
     </SelectItem>
 }
 
@@ -37,11 +40,12 @@ type NetworkTokenItemProps = {
     route: NetworkRoute;
     item: NetworkRouteToken;
     direction: SwapDirection;
+    type?: RowElement['type'];
     allbalancesLoaded?: boolean;
     destAddress?: string;
 }
 export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
-    const { item, route, direction, allbalancesLoaded, destAddress } = props
+    const { item, route, direction, allbalancesLoaded, type, destAddress } = props
     const { pickerSelectedWallets } = useSelectedWalletStore(direction)
     const selectedWallet = pickerSelectedWallets?.find(w => (direction == 'from' ? w.wallet?.withdrawalSupportedNetworks : w.wallet?.autofillSupportedNetworks)?.includes(route.name));
     const address = (direction === 'to' && destAddress) ? destAddress : selectedWallet?.address;
@@ -58,11 +62,19 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     >
         {(allbalancesLoaded && tokenbalance && Number(formatted_balance_amount) >= 0) ? (
             <span className="text-sm text-secondary-text text-right my-auto leading-4 font-medium">
-                <div className="text-primary-text">
+                <div className={clsx("text-primary-text",
+                    {
+                        'text-lg leading-[22px]': type === 'top_token',
+                    }
+                )}>
                     {formatted_balance_amount}
                 </div>
                 {Number(tokenbalance?.amount) >= 0 && (
-                    <div>${balanceAmountInUsd}</div>
+                    <div
+                        className={clsx({
+                            'text-xs leading-4': type == 'top_token',
+                        })}
+                    >${balanceAmountInUsd}</div>
                 )}
             </span>
         ) : balances ? (

@@ -14,6 +14,7 @@ import Clock from '../icons/Clock';
 import rewardCup from '@/public/images/rewardCup.png'
 import Image from 'next/image'
 import { Network } from '@/Models/Network';
+import { AnimatedValue } from '../Common/AnimatedValue';
 import ExchangeGasIcon from '../icons/ExchangeGasIcon';
 import useSWRNftBalance from '@/lib/nft/useSWRNftBalance';
 
@@ -28,10 +29,11 @@ export interface QuoteComponentProps {
     swapValues: SwapValues;
     destination?: Network,
     destinationAddress?: string;
+    isUpdatingValues?: boolean;
 }
 
-export default function QuoteDetails({ swapValues: values, quote: quoteData, isQuoteLoading }: QuoteComponentProps) {
-    const { toAsset, to, from, fromAsset: fromCurrency, destination_address } = values || {};
+export default function QuoteDetails({ swapValues: values, quote: quoteData, isQuoteLoading, isUpdatingValues = false }: QuoteComponentProps) {
+    const { toAsset, fromAsset: fromCurrency, destination_address } = values || {};
     const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(false);
 
     return (
@@ -45,11 +47,12 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
                             {
                                 'bg-secondary-500': !isAccordionOpen,
                                 'bg-secondary-400': isAccordionOpen,
+                                'animate-pulse-brightness': isUpdatingValues && !isAccordionOpen
                             }
                         )}>
                             {
                                 (isAccordionOpen) ?
-                                    <p>
+                                    <p className='text-sm'>
                                         Details
                                     </p>
                                     :
@@ -99,39 +102,46 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
 
     if (isQuoteLoading) {
         return (
-            <div className='h-[24px] w-30 inline-flex bg-gray-500 rounded-xs animate-pulse' />
+            <div className='h-[20px] w-30 inline-flex bg-gray-500 rounded-xs animate-pulse' />
         )
     }
 
     return (
-        <div className='divide-x divide-primary-text-placeholder flex items-center  space-x-4'>
+        <div className='flex items-center space-x-4'>
             {
                 displayFeeInUsd &&
-                <div className='inline-flex items-center gap-1 pr-4'>
-                    {!values.fromExchange ?
-                        <GasIcon /> : <ExchangeGasIcon />
-                    }
-                    <p>
-                        {displayFeeInUsd}
-                    </p>
+                <div className='inline-flex items-center gap-1'>
+                    <div className='h-4 w-4'>
+                        {!values.fromExchange ?
+                            <GasIcon className='h-4 w-4' /> : <ExchangeGasIcon className='h-4 w-4' />
+                        }
+                    </div>
+                    <AnimatedValue value={displayFeeInUsd} className='text-sm text-primary-text' />
                 </div>
             }
             {
                 averageCompletionTime &&
-                <div className="text-right text-primary-text inline-flex items-center gap-1 pr-4">
-                    <Clock />
-                    <AverageCompletionTime avgCompletionTime={quote.avg_completion_time} />
-                </div>
+                <>
+                    <div className="w-px h-3 bg-primary-text-placeholder rounded-2xl" />
+                    <div className="text-right text-primary-text inline-flex items-center gap-1 text-sm">
+                        <div className='h-4 w-4'>
+                            <Clock className='h-4 w-4' />
+                        </div>
+                        <AverageCompletionTime avgCompletionTime={quote.avg_completion_time} />
+                    </div>
+                </>
             }
             {
                 reward &&
                 (!shouldCheckNFT || (!isLoading && !error && nftBalance !== undefined && nftBalance > 0)) &&
-                <div className='text-right text-primary-text inline-flex items-center gap-1 pr-4'>
-                    <Image src={rewardCup} alt="Reward" width={16} height={16} />
-                    <p>
-                        {displayReward}
-                    </p>
-                </div>
+                <>
+                    <div className="w-px h-3 bg-primary-text-placeholder rounded-2xl" />
+                    <div className='text-right text-primary-text inline-flex items-center gap-1 pr-4'>
+                        <Image src={rewardCup} alt="Reward" width={16} height={16} />
+                        <AnimatedValue value={displayReward} className='text-sm text-primary-text' />
+                    </div>
+                </>
+
             }
         </div>
     )

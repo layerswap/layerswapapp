@@ -226,6 +226,7 @@ export type SwapQuote = {
     source_token?: Token,
     destination_network?: Network,
     destination_token?: Token,
+    requested_amount?: number
     receive_amount: number,
     min_receive_amount: number,
     fee_discount?: number

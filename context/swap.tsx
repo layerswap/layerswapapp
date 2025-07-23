@@ -16,6 +16,7 @@ import { SwapStatus } from '../Models/SwapStatus';
 import { LayerSwapAppSettings } from '@/Models/LayerSwapAppSettings';
 import { TrackEvent } from "@/pages/_document";
 import { parse, ParsedUrlQuery } from 'querystring';
+import { useRecentNetworksStore } from '@/stores/recentNetworksStore';
 import useSelectedWalletStore, { SelectedWallet } from '@/context/selectedAccounts/pickerSelectedWallets';
 
 export const SwapDataStateContext = createContext<SwapData>({
@@ -69,6 +70,7 @@ export function SwapDataProvider({ children }) {
     const [interval, setInterval] = useState(0)
     const { data: swapData, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
 
+    const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
     const swapResponse = swapId ? swapData?.data : swapDataFromQuery;
 
     const { pickerSelectedWallet: selectedSourceAccount } = useSelectedWalletStore('from');
@@ -153,6 +155,8 @@ export function SwapDataProvider({ children }) {
         const swap = swapResponse?.data;
         if (!swap?.swap.id)
             throw new Error("Could not create swap")
+
+        updateRecentTokens(fromExchange ? undefined : from.name, to.name);
 
         window.safary?.track({
             eventType: 'swap',

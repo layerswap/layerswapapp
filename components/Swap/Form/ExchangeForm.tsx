@@ -1,4 +1,4 @@
-import { FC, useEffect } from "react";
+import { FC } from "react";
 import ValidationError from "@/components/validationError";
 import CexPicker from "@/components/Input/CexPicker";
 import QuoteDetails from "@/components/FeeDetails";
