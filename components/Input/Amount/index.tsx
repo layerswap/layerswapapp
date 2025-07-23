@@ -26,7 +26,10 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
         const amountNumber = Number(amount);
         if (isNaN(amountNumber) || amountNumber <= 0 || !sourceCurrencyPriceInUsd)
             return undefined;
-        return (sourceCurrencyPriceInUsd * amountNumber).toFixed(2)
+        return new Intl.NumberFormat('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        }).format(sourceCurrencyPriceInUsd * amountNumber)
     }, [amount, sourceCurrencyPriceInUsd]);
 
     useLayoutEffect(() => {
