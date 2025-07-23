@@ -86,7 +86,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     return (
         <>
             <VaulDrawer.Snap id='item-1' className='pb-3 space-y-3'>
-                <div className='p-3 bg-secondary-700 rounded-xl'>
+                <div className='p-3 bg-secondary-500 rounded-xl'>
                     <div className={`font-normal flex flex-col w-full relative ${(source_exchange || destination_exchange) ? 'space-y-2' : 'space-y-4'}`}>
 
                         {/* From and To */}
@@ -185,7 +185,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
                         {/* Refuel */}
                         {
-                            refuel && <div className=' bg-secondary-700 rounded-xl py-1.5'>
+                            refuel && <div className=' bg-secondary-500 rounded-xl py-1.5'>
                                 <div className="flex justify-between items-center text-sm font-normal">
                                     <div className='inline-flex items-center text-primary-text gap-2'>
                                         <Fuel className='h-4 w-4' />
@@ -232,7 +232,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                     </div>
                 </div>
                 {/* Fees */}
-                <div className='p-3 bg-secondary-700 rounded-xl'>
+                <div className='p-3 bg-secondary-500 rounded-xl'>
                     {
                         (inputTransactionFeeInUsd && !source_exchange) ?
                             <Accordion type="single" collapsible>
@@ -275,7 +275,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                 </div>
 
                 {/* Date and Status */}
-                <div className='p-3 bg-secondary-700 rounded-xl'>
+                <div className='p-3 bg-secondary-500 rounded-xl'>
                     <div className='text-sm flex flex-col gap-3'>
                         <div className="flex justify-between items-center text-sm text-primary-text">
                             <p className="text-left text-secondary-text">Swap Id</p>
@@ -315,7 +315,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                     <div className='space-y-3'>
 
                         {/* Source and Destination Transactions */}
-                        <div className='p-3 bg-secondary-700 rounded-xl text-primary-text'>
+                        <div className='p-3 bg-secondary-500 rounded-xl text-primary-text'>
                             <div className='text-sm flex flex-col gap-3'>
                                 <div className="flex justify-between items-baseline">
                                     <p className="text-left text-secondary-text">Source transaction</p>

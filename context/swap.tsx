@@ -16,6 +16,8 @@ import { TrackEvent } from "@/pages/_document";
 import { parse, ParsedUrlQuery } from 'querystring';
 import { useSettingsState } from './settings';
 import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
+import { useRecentNetworksStore } from '@/stores/recentNetworksStore';
+import useSelectedWalletStore, { SelectedWallet } from '@/context/selectedAccounts/pickerSelectedWallets';
 
 export const SwapDataStateContext = createContext<SwapContextData>({
     codeRequested: false,
@@ -69,6 +71,7 @@ export function SwapDataProvider({ children }) {
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
     const { sourceRoutes, destinationRoutes } = useSettingsState()
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
+    const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
 
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
     const { quote: formDataQuote } = useQuoteData(swapId ? undefined : quoteArgs);
@@ -209,6 +212,8 @@ export function SwapDataProvider({ children }) {
         const swap = swapResponse?.data;
         if (!swap?.swap.id)
             throw new Error("Could not create swap")
+
+        updateRecentTokens(fromExchange ? undefined : from.name, to.name);
 
         window.safary?.track({
             eventType: 'swap',

@@ -22,6 +22,7 @@ import { WalletProvider } from "@/Models/WalletProvider";
 import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import { updateForm, updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
+import { useQuoteUpdate } from "@/hooks/useQuoteUpdate";
 import { SelectedAccountsProvider, useSelectAccounts } from "@/context/selectedAccounts";
 import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
 import { useValidationContext } from "@/context/validationContext";
@@ -50,6 +51,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const {
         to: destination,
         from: source,
+        amount,
         depositMethod
     } = values;
 
@@ -94,63 +96,60 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
     return (
-        <>
-            <SelectedAccountsProvider from={source} to={destination}>
-                <DepositMethodComponent />
-                <Form className="h-full grow flex flex-col justify-between">
-                    <Widget.Content>
-                        <div className="w-full min-h-[79svh] sm:min-h-[480px] flex flex-col justify-between">
-                            <div>
-                                <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
-                                    {
-                                        !(query?.hideFrom && values?.from) && <SourcePicker />
-                                    }
-                                    {
-                                        !query?.hideFrom && !query?.hideTo &&
-                                        <ValueSwapperButton
-                                            values={values}
-                                            setValues={setValues}
-                                            providers={providers}
-                                            query={query}
-                                        />
-                                    }
-                                    {
-                                        !(query?.hideTo && values?.to) && <DestinationPicker partner={partner} />
-                                    }
-                                </div>
-                            </div>
-                            <div className="space-y-3">
+        <SelectedAccountsProvider from={source} to={destination}>
+            <DepositMethodComponent />
+            <Form className="h-full grow flex flex-col justify-between">
+                <Widget.Content>
+                    <div className="w-full min-h-[79svh] sm:min-h-[480px] flex flex-col justify-between">
+                        <div>
+                            <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
                                 {
-                                    values.amount &&
-                                    <ReserveGasNote onSubmit={handleReserveGas} />
+                                    !(query?.hideFrom && values?.from) && <SourcePicker />
                                 }
                                 {
-                                    values.toAsset?.refuel && !query.hideRefuel &&
-                                    <RefuelToggle onButtonClick={() => setOpenRefuelModal(true)} />
+                                    !query?.hideFrom && !query?.hideTo &&
+                                    <ValueSwapperButton
+                                        values={values}
+                                        setValues={setValues}
+                                        providers={providers}
+                                        query={query}
+                                    />
                                 }
                                 {
-                                    routeValidation.message
-                                        ? <ValidationError />
-                                        : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                                    !(query?.hideTo && values?.to) && <DestinationPicker partner={partner} />
                                 }
                             </div>
                         </div>
-                    </Widget.Content>
-                    <Widget.Footer>
-                        <FormButton
-                            shouldConnectWallet={shouldConnectWallet}
-                            values={values}
-                            isValid={isValid}
-                            error={error}
-                            isSubmitting={isSubmitting}
-                            partner={partner}
-                        />
-                    </Widget.Footer>
-                    <RefuelModal openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} />
-                </Form>
-            </SelectedAccountsProvider>
-        </>
-
+                        <div className="space-y-3">
+                            {
+                                values.amount &&
+                                <ReserveGasNote onSubmit={handleReserveGas} />
+                            }
+                            {
+                                values.toAsset?.refuel && !query.hideRefuel &&
+                                <RefuelToggle onButtonClick={() => setOpenRefuelModal(true)} />
+                            }
+                            {
+                                routeValidation.message
+                                    ? <ValidationError />
+                                    : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                            }
+                        </div>
+                    </div>
+                </Widget.Content>
+                <Widget.Footer>
+                    <FormButton
+                        shouldConnectWallet={shouldConnectWallet}
+                        values={values}
+                        isValid={isValid}
+                        error={error}
+                        isSubmitting={isSubmitting}
+                        partner={partner}
+                    />
+                </Widget.Footer>
+                <RefuelModal openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} />
+            </Form>
+        </SelectedAccountsProvider>
     );
 };
 

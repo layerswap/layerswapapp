@@ -9,6 +9,7 @@ import useWallet from "../../hooks/useWallet";
 import { ReceiveAmount } from "./Amount/ReceiveAmount";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useMemo } from "react";
+import { useQuoteUpdate } from "@/hooks/useQuoteUpdate";
 
 type Props = {
     partner?: Partner
@@ -20,6 +21,7 @@ const DestinationPicker = (props: Props) => {
     const { fromExchange, destination_address, to, from, depositMethod, fromAsset: fromCurrency, toAsset: toCurrency } = values
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const { quote: fee, isQuoteLoading: isFeeLoading } = useQuoteData(quoteArgs)
+    const { isUpdatingValues, quote: newQuote } = useQuoteUpdate(fee, values.amount)
     const sourceWalletNetwork = fromExchange ? undefined : from
     const destinationWalletNetwork = to
 
@@ -45,8 +47,9 @@ const DestinationPicker = (props: Props) => {
                     <ReceiveAmount
                         source_token={fromCurrency}
                         destination_token={toCurrency}
-                        fee={fee}
+                        fee={newQuote}
                         isFeeLoading={isFeeLoading}
+                        isUpdatingValues={isUpdatingValues}
                     />
                 </div>
                 <div className="col-span-3 flex items-center self-start justify-end">

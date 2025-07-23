@@ -1,15 +1,13 @@
 import { ImageWithFallback } from '@/components/Common/ImageWithFallback';
-import Image from 'next/image'
+import clsx from 'clsx';
 
 type SelectItemWrapperProps = {
     className?: string;
     children: JSX.Element | JSX.Element[];
 }
 const SelectItem = ({ children, className }: SelectItemWrapperProps) => {
-    return <div className="flex items-center justify-between gap-3 w-full overflow-hidden cursor-pointer relative">
-        <div className={`gap-2 pl-2 pr-4 relative flex items-center w-full ${className}`}>
-            {children}
-        </div>
+    return <div className={clsx("flex items-center justify-between w-full pl-2 pr-3 overflow-hidden cursor-pointer relative gap-2", className)}>
+        {children}
     </div>
 }
 type SeelctItemLogoProps = {

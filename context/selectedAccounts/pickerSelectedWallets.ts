@@ -37,7 +37,7 @@ function useSelectedWalletStore(direction: 'from'): {
     pickerSelectedWallets: SelectedWallet[] | undefined;
     pickerSelectedWallet: SelectedWallet | undefined
     addSelectedWallet: (wallet: SelectedWallet) => void;
-    setSelectedSrcWallet: (selectedWallet: SelectedWallet) => void;
+    setSelectedSrcWallet: (selectedWallet: SelectedWallet | undefined) => void;
 };
 function useSelectedWalletStore(direction: SwapDirection) {
     const pickerSelectedWallets = _useSelectedWalletStore(state =>

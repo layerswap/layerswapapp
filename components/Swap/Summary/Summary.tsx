@@ -1,17 +1,17 @@
 import { ArrowDown, Fuel } from "lucide-react";
 import { FC } from "react";
-import { truncateDecimals } from "../../utils/RoundDecimals";
-import LayerSwapApiClient, { Refuel } from "../../../lib/apiClients/layerSwapApiClient";
-import { ApiResponse } from "../../../Models/ApiResponse";
-import { Partner } from "../../../Models/Partner";
+import { truncateDecimals } from "@/components/utils/RoundDecimals";
+import LayerSwapApiClient, { Refuel } from "@/lib/apiClients/layerSwapApiClient";
+import { ApiResponse } from "@/Models/ApiResponse";
+import { Partner } from "@/Models/Partner";
 import useSWR from 'swr'
-import { useQueryState } from "../../../context/query";
-import { Network, Token } from "../../../Models/Network";
-import { Exchange } from "../../../Models/Exchange";
-import { addressFormat } from "../../../lib/address/formatter";
-import { ExtendedAddress } from "../../Input/Address/AddressPicker/AddressWithIcon";
-import { isValidAddress } from "../../../lib/address/validator";
-import shortenAddress from "../../utils/ShortenAddress";
+import { useQueryState } from "@/context/query";
+import { Network, Token } from "@/Models/Network";
+import { Exchange } from "@/Models/Exchange";
+import { addressFormat } from "@/lib/address/formatter";
+import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
+import { isValidAddress } from "@/lib/address/validator";
+import shortenAddress from "@/components/utils/ShortenAddress";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 type SwapInfoProps = {
