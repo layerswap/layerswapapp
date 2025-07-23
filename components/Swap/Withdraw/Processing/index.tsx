@@ -4,11 +4,11 @@ import Processing from './Processing';
 
 const Component: FC = () => {
 
-    const { swapResponse: swap } = useSwapDataState()
+    const { swapBasicData, swapDetails, quote, refuel } = useSwapDataState()
 
     return (
         <>
-            {swap && <Processing swapResponse={swap} />}
+            {swapDetails && swapBasicData && <Processing swapBasicData={swapBasicData} swapDetails={swapDetails} quote={quote} refuel={refuel} />}
         </>
 
     )

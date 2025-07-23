@@ -7,7 +7,8 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { Partner } from "../../Models/Partner";
 import useWallet from "../../hooks/useWallet";
 import { ReceiveAmount } from "./Amount/ReceiveAmount";
-import { useQuoteData } from "@/hooks/useFee";
+import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
+import { useMemo } from "react";
 
 type Props = {
     partner?: Partner
@@ -17,7 +18,8 @@ const DestinationPicker = (props: Props) => {
     const { partner } = props
     const { values } = useFormikContext<SwapFormValues>()
     const { fromExchange, destination_address, to, from, depositMethod, fromAsset: fromCurrency, toAsset: toCurrency } = values
-    const { quote: fee, isQuoteLoading: isFeeLoading } = useQuoteData(values)
+    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
+    const { quote: fee, isQuoteLoading: isFeeLoading } = useQuoteData(quoteArgs)
     const sourceWalletNetwork = fromExchange ? undefined : from
     const destinationWalletNetwork = to
 

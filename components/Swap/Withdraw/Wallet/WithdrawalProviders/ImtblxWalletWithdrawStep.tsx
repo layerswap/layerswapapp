@@ -7,25 +7,26 @@ import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import WarningMessage from '@/components/WarningMessage';
 
-export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }) => {
+export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
+    const { source_network, source_token } = swapBasicData;
 
-    const { provider } = useWallet(network, 'withdrawal')
+    const { provider } = useWallet(source_network, 'withdrawal')
     const imxAccount = provider?.activeWallet
 
     const handleTransfer = useCallback(async ({ amount, depositAddress, swapId }: TransferProps) => {
-        if (!network || !depositAddress || !amount)
+        if (!source_network || !depositAddress || !amount)
             return
         setLoading(true)
         try {
             const ImtblClient = (await import('@/lib/imtbl')).default;
-            const imtblClient = new ImtblClient(network?.name)
+            const imtblClient = new ImtblClient(source_network?.name)
 
-            if (!token) {
+            if (!source_token) {
                 throw new Error("No source currency could be found");
             }
-            const res = await imtblClient.Transfer(amount.toString(), token, depositAddress)
+            const res = await imtblClient.Transfer(amount.toString(), source_token, depositAddress)
             const transactionRes = res?.result?.[0]
             if (!transactionRes)
                 toast('Transfer failed or terminated')
@@ -42,7 +43,7 @@ export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token
             if (e?.message)
                 toast(e.message)
         }
-    }, [imxAccount, network, token,])
+    }, [imxAccount, source_network, source_token])
 
     if (!imxAccount) {
         return <ConnectWalletButton icon={<Link className="h-5 w-5 ml-2" aria-hidden="true" />} />
@@ -56,11 +57,18 @@ export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token
                         <span className='flex-none'>
                             Learn how to send from
                         </span>
-                        <GuideLink text={network?.display_name} userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/off-ramp/send-assets-from-immutablex/' />
+                        <GuideLink text={source_network?.display_name} userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/off-ramp/send-assets-from-immutablex/' />
                     </WarningMessage>
                     {
                         imxAccount &&
-                        <SendTransactionButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} />
+                        <SendTransactionButton
+                            isDisabled={!!(loading || transferDone)}
+                            isSubmitting={!!(loading || transferDone)}
+                            onClick={handleTransfer}
+                            icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />}
+                            swapData={swapBasicData}
+                            refuel={refuel}
+                        />
                     }
                 </div>
             </div>

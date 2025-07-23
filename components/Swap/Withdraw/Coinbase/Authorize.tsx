@@ -25,9 +25,8 @@ type Props = {
 }
 
 const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
-    const { source_exchange: exchange } = swap || {}
+    const { swapBasicData, swapDetails } = useSwapDataState()
+    const { source_exchange: exchange } = swapBasicData || {}
     const router = useRouter()
     let alreadyFamiliar = useCoinbaseStore((state) => state.alreadyFamiliar);
     let toggleAlreadyFamiliar = useCoinbaseStore((state) => state.toggleAlreadyFamiliar);
@@ -41,13 +40,13 @@ const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
 
     const exchange_name = exchange?.display_name
 
-    const currency = swap?.source_token
+    const currency = swapBasicData?.source_token
 
     const coinbaseOauthProvider = exchange?.metadata.o_auth
     const { authorize_url } = coinbaseOauthProvider || {}
 
     const minimalAuthorizeAmount = currency?.price_in_usd ?
-        CalculateMinimalAuthorizeAmount(currency?.price_in_usd, Number(swap?.requested_amount)) : null
+        CalculateMinimalAuthorizeAmount(currency?.price_in_usd, Number(swapBasicData?.requested_amount)) : null
 
     const checkShouldStartPolling = useCallback(() => {
         let authWindowHref: string | undefined = ""
@@ -70,7 +69,7 @@ const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
 
     const handleConnect = useCallback(() => {
         try {
-            if (!swap)
+            if (!swapDetails)
                 return
             if (!carouselFinished && !alreadyFamiliar) {
                 carouselRef?.current?.next()
@@ -82,14 +81,14 @@ const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
                 return
             }
             const { sub } = parseJwt(access_token) || {}
-            const encoded = btoa(JSON.stringify({ SwapId: swap?.id, UserId: Number(sub), RedirectUrl: `${window.location.origin}/salon` }))
-            const authWindow = OpenLink({ link: authorize_url + encoded, query: router.query, swapId: swap.id })
+            const encoded = btoa(JSON.stringify({ SwapId: swapDetails.id, UserId: Number(sub), RedirectUrl: `${window.location.origin}/salon` }))
+            const authWindow = OpenLink({ link: authorize_url + encoded, query: router.query, swapId: swapDetails.id })
             setAuthWindow(authWindow)
         }
         catch (e) {
             toast.error(e.message)
         }
-    }, [carouselFinished, alreadyFamiliar, swap?.id, authorize_url, router.query])
+    }, [carouselFinished, alreadyFamiliar, swapDetails?.id, authorize_url, router.query])
 
     const handlePrev = useCallback(() => {
         carouselRef?.current?.prev()
@@ -122,7 +121,7 @@ const Authorize: FC<Props> = ({ onAuthorized, hideHeader }) => {
                 }
                 {
                     <div className="w-full flex flex-col self-center h-[100%]">
-                        {swap && <Carousel onLast={onCarouselLast} onFirst={setFirstScreen} ref={carouselRef} starAtLast={alreadyFamiliar}>
+                        {swapDetails && <Carousel onLast={onCarouselLast} onFirst={setFirstScreen} ref={carouselRef} starAtLast={alreadyFamiliar}>
                             <CarouselItem width={100} >
                                 <FirstScreen exchange_name={exchange_name} />
                             </CarouselItem>

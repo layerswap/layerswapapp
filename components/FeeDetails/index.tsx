@@ -30,7 +30,7 @@ export interface QuoteComponentProps {
 }
 
 export default function QuoteDetails({ swapValues: values, quote: quoteData, isQuoteLoading }: QuoteComponentProps) {
-    const { toAsset, to, from, fromAsset: fromCurrency, destination_address } = values || {};
+    const { toAsset, fromAsset: fromCurrency, destination_address } = values || {};
     const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(false);
 
     return (

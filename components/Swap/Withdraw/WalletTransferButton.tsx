@@ -1,10 +1,16 @@
 import SwitchIcon from '@/components/icons/SwitchIcon';
 import WalletTransfer from './Wallet';
 import WalletTransferContent from './WalletTransferContent';
-import { useState } from 'react';
+import { FC, useState } from 'react';
 import ManualTransferNote from './Wallet/Common/manualTransferNote';
+import { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
 
-const WalletTransferButton = () => {
+type Props = {
+    swapBasicData: SwapBasicData,
+    swapId: string | undefined
+    refuel: boolean
+}
+const WalletTransferButton: FC<Props> = ({ swapBasicData: swapData, swapId, refuel }) => {
     const [openModal, setOpenModal] = useState(false);
 
     return <>
@@ -22,8 +28,8 @@ const WalletTransferButton = () => {
                 </button>
             </div>
             <div>
-                <WalletTransferContent openModal={openModal} setOpenModal={setOpenModal} />
-                <WalletTransfer />
+                <WalletTransferContent openModal={openModal} setOpenModal={setOpenModal} swapData={swapData}/>
+                <WalletTransfer swapData={swapData} swapId={swapId} refuel={refuel} />
             </div>
         </div>
         <div className="flex justify-center">

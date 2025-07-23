@@ -4,10 +4,7 @@ import {
     useConfig,
 } from "wagmi";
 import { parseEther } from 'viem'
-import SubmitButton from "@/components/buttons/submitButton";
 import WalletIcon from "@/components/icons/WalletIcon";
-import Modal from '@/components/modal/modal';
-import MessageComponent from "@/components/MessageComponent";
 import { ActionData, TransferProps } from "../../Common/sharedTypes";
 import TransactionMessage from "./transactionMessage";
 import { SendTransactionButton } from "../../Common/buttons";
@@ -15,10 +12,19 @@ import { datadogRum } from "@datadog/browser-rum";
 import { isMobile } from "@/lib/openLink";
 import { sendTransaction } from '@wagmi/core'
 import { useSelectAccounts } from "@/context/selectedAccounts";
+import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 
-const TransferTokenButton: FC<{ savedTransactionHash?: string, chainId?: number }> = ({
+type Props = {
+    savedTransactionHash?: string;
+    chainId?: number;
+    swapData: SwapBasicData,
+    refuel: boolean
+}
+const TransferTokenButton: FC<Props> = ({
     savedTransactionHash,
-    chainId
+    chainId,
+    swapData,
+    refuel
 }) => {
     const [buttonClicked, setButtonClicked] = useState(false)
     const config = useConfig()
@@ -89,6 +95,8 @@ const TransferTokenButton: FC<{ savedTransactionHash?: string, chainId?: number 
                 onClick={clickHandler}
                 icon={<WalletIcon className="stroke-2 w-6 h-6" />}
                 error={!!error && buttonClicked}
+                swapData={swapData}
+                refuel={refuel}
             />
         }
         {/* <Modal
