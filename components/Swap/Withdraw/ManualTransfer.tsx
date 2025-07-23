@@ -14,19 +14,18 @@ import useWindowDimensions from "../../../hooks/useWindowDimensions";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 const ManualTransfer: FC = () => {
-    const { swapResponse, depositActionsResponse } = useSwapDataState()
+    const { swapDetails, depositActionsResponse } = useSwapDataState()
 
-    const { swap } = swapResponse || {}
     const hintsStore = useSwapDepositHintClicked()
-    const hintClicked = hintsStore.swapTransactions[swap?.id || ""]
+    const hintClicked = hintsStore.swapTransactions[swapDetails?.id || ""]
     const trasnsferACtionData = depositActionsResponse?.find(a => true)
 
     let generatedDepositAddress = trasnsferACtionData?.to_address
 
     const handleCloseNote = useCallback(async () => {
-        if (swap)
-            hintsStore.setSwapDepositHintClicked(swap?.id)
-    }, [swap, hintsStore])
+        if (swapDetails)
+            hintsStore.setSwapDepositHintClicked(swapDetails?.id)
+    }, [swapDetails, hintsStore])
 
     return (
         <div className='rounded-md bg-secondary-700 border border-secondary-500 w-full h-full items-center relative'>
@@ -53,21 +52,22 @@ const ManualTransfer: FC = () => {
 }
 
 const TransferInvoice: FC<{ deposit_address?: string }> = ({ deposit_address }) => {
-    const { swapResponse: swapResponse } = useSwapDataState()
-    const { swap, quote: swapQuote } = swapResponse || {}
+    const { swapBasicData, quote } = useSwapDataState()
     const { isMobile } = useWindowDimensions()
 
-    const minAllowedAmount = swapQuote?.min_receive_amount
+    const minAllowedAmount = quote?.min_receive_amount
 
     const {
         source_exchange,
         source_network,
         source_token,
-    } = swap || {}
-    const source_network_internal_name = swap?.source_network.name
+        requested_amount
+    } = swapBasicData || {}
+
+    const source_network_internal_name = source_network?.name
 
     //TODO pick manual transfer minAllowedAmount when its available
-    const requested_amount = Number(minAllowedAmount) > Number(swap?.requested_amount) ? minAllowedAmount : swap?.requested_amount
+    const corrected_amount = Number(minAllowedAmount) > Number(requested_amount) ? minAllowedAmount : requested_amount
 
     // const handleChangeSelectedNetwork = useCallback((n: NetworkCurrency) => {
     //     setSelectedAssetNetwork(n)
@@ -122,9 +122,9 @@ const TransferInvoice: FC<{ deposit_address?: string }> = ({ deposit_address }) 
         }
 
         <div className='flex divide-x divide-secondary-500'>
-            <BackgroundField Copiable={true} toCopy={requested_amount} header={'Amount'} withoutBorder>
+            <BackgroundField Copiable={true} toCopy={corrected_amount} header={'Amount'} withoutBorder>
                 <p>
-                    {requested_amount}
+                    {corrected_amount}
                 </p>
             </BackgroundField>
             <BackgroundField header={'Asset'} withoutBorder Explorable={source_token?.contract != null && isValidAddress(source_token?.contract, source_network)} toExplore={source_token?.contract != null ? source_network?.account_explorer_template?.replace("{0}", source_token?.contract) : undefined}>
@@ -160,7 +160,7 @@ const TransferInvoice: FC<{ deposit_address?: string }> = ({ deposit_address }) 
 }
 
 const ExchangeNetworkPicker: FC<{ onChange?: (exchnage: Exchange) => void }> = ({ onChange }) => {
-    const { swapResponse: swap } = useSwapDataState()
+    const { swapBasicData } = useSwapDataState()
 
     //const exchangeAssets = source_exchange?.assets?.filter(a => a.asset === source_network_asset && a.network_internal_name !== destination_network && a.network?.status !== "inactive")
     //const defaultSourceNetwork = exchangeAssets?.find(sn => sn.is_default) || exchangeAssets?.[0]
@@ -175,8 +175,8 @@ const ExchangeNetworkPicker: FC<{ onChange?: (exchnage: Exchange) => void }> = (
         <span>Network:</span>
         {/* {exchangeAssets?.length === 1 ? */}
         <div className='flex space-x-1 items-center w-fit font-semibold text-primary-text'>
-            <ImageWithFallback alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={swap?.swap.source_network.logo || ''} />
-            <span>{swap?.swap.source_network.display_name}</span>
+            <ImageWithFallback alt="chainLogo" height='20' width='20' className='h-5 w-5 rounded-md ring-2 ring-secondary-600' src={swapBasicData?.source_network.logo || ''} />
+            <span>{swapBasicData?.source_network.display_name}</span>
         </div>
         {/* :
             <Select onValueChange={handleChangeSelectedNetwork} defaultValue={defaultSourceNetwork?.network_internal_name}>

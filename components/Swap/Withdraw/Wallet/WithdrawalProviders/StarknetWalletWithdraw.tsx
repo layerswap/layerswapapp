@@ -7,17 +7,18 @@ import TransactionMessages from '../../messages/TransactionMessages';
 import { datadogRum } from '@datadog/browser-rum';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 
-export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token, }) => {
+export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [error, setError] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
-    const { provider } = useWallet(network, 'withdrawal')
+    const { source_network, source_token } = swapBasicData
+    const { provider } = useWallet(source_network, 'withdrawal')
     const { userId } = useAuthState()
 
     const wallet = provider?.activeWallet
 
     const handleTransfer = useCallback(async ({ callData, swapId }: TransferProps) => {
-        if (!swapId || !token) {
+        if (!swapId || !source_token) {
             return
         }
         setLoading(true)
@@ -41,7 +42,7 @@ export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, tok
             setLoading(false)
             setError(e.message)
         }
-    }, [wallet, network, userId, token])
+    }, [wallet, source_network, userId, source_token])
 
     if (!wallet) {
         return <ConnectWalletButton />
@@ -62,6 +63,8 @@ export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, tok
                             aria-hidden="true"
                         />
                     }
+                    refuel={refuel}
+                    swapData={swapBasicData}
                     error={!!error}
                 />
             }

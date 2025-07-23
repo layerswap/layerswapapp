@@ -2,7 +2,7 @@ import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { QueryParams } from "../Models/QueryParams";
 import { isValidAddress } from "./address/validator";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
-import { SwapResponse } from "./apiClients/layerSwapApiClient";
+import { SwapBasicData, SwapResponse } from "./apiClients/layerSwapApiClient";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams): SwapFormValues {
     const { destination_address, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, depositMethod } = queryParams
@@ -59,8 +59,7 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
 }
 
 
-export function generateSwapInitialValuesFromSwap(swapResponse: SwapResponse, settings: LayerSwapAppSettings): SwapFormValues {
-    const { swap, refuel } = swapResponse || ''
+export function generateSwapInitialValuesFromSwap(swapResponse: SwapBasicData, refuel: boolean, settings: LayerSwapAppSettings): SwapFormValues {
     const {
         destination_address,
         requested_amount,
@@ -69,7 +68,7 @@ export function generateSwapInitialValuesFromSwap(swapResponse: SwapResponse, se
         source_token,
         destination_token,
         source_exchange,
-    } = swap
+    } = swapResponse
 
     const { sourceRoutes, destinationRoutes } = settings || {}
 

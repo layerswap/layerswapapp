@@ -10,11 +10,10 @@ import { SwapQuoteDetails } from './SwapQuoteDetails';
 import WalletTransferButton from './WalletTransferButton';
 
 const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
+    const { swapBasicData, swapDetails, quote, refuel } = useSwapDataState()
     const { appName, signature } = useQueryState()
-    const sourceIsImmutableX = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
-        || swap?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
+    const sourceIsImmutableX = swapBasicData?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
+        || swapBasicData?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const isImtblMarketplace = (signature && appName === "imxMarketplace" && sourceIsImmutableX)
 
     let withdraw: {
@@ -22,11 +21,11 @@ const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
         footer?: JSX.Element | JSX.Element[],
     } = {}
 
-    if (swap?.use_deposit_address === false) {
+    if (swapBasicData?.use_deposit_address === false) {
         withdraw = {
-            footer: <WalletTransferButton />
+            footer: <WalletTransferButton swapBasicData={swapBasicData} swapId={swapDetails?.id} refuel={!!refuel} />
         }
-    } else if (swap?.use_deposit_address === true) {
+    } else if (swapBasicData?.use_deposit_address === true) {
         withdraw = {
             footer: <ManualTransfer />,
             content: <></>
@@ -45,7 +44,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
                 <div className="w-full flex flex-col justify-between  text-secondary-text">
                     <div className='grid grid-cols-1 gap-3 '>
                         <SwapSummary />
-                        <SwapQuoteDetails swapResponse={swapResponse} />
+                        {quote && <SwapQuoteDetails swapBasicData={swapBasicData} quote={quote} refuel={refuel} />}
                         {withdraw?.content}
                     </div>
                 </div>

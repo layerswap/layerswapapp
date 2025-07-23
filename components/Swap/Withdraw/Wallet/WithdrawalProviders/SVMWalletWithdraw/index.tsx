@@ -15,19 +15,20 @@ import { ConnectWalletButton, SendTransactionButton } from '../../Common/buttons
 import TransactionMessages from '../../../messages/TransactionMessages';
 import WalletMessage from '../../../messages/Message';
 
-export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }) => {
+export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | undefined>()
     const [insufficientTokens, setInsufficientTokens] = useState<string[]>([])
+    const { source_network, source_token } = swapBasicData;
 
-    const { provider } = useWallet(network, 'withdrawal');
+    const { provider } = useWallet(source_network, 'withdrawal');
     const { setSwapTransaction } = useSwapTransactionStore();
 
     const wallet = provider?.activeWallet
     const { wallet: solanaWallet, signTransaction } = useSolanaWallet();
     const walletPublicKey = solanaWallet?.adapter.publicKey
-    const solanaNode = network?.node_url
-    const networkName = network?.name
+    const solanaNode = source_network?.node_url
+    const networkName = source_network?.name
 
     const { networks } = useSettingsState()
     const networkWithTokens = networks.find(n => n.name === networkName)
@@ -53,18 +54,18 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token })
             const feeInLamports = await transaction.getEstimatedFee(connection)
             const feeInSol = feeInLamports / LAMPORTS_PER_SOL
 
-            const nativeTokenBalance = balances?.find(b => b.token == network?.token?.symbol)
-            const tokenbalanceData = balances?.find(b => b.token == token?.symbol)
+            const nativeTokenBalance = balances?.find(b => b.token == source_network?.token?.symbol)
+            const tokenbalanceData = balances?.find(b => b.token == source_token?.symbol)
             const tokenBalanceAmount = tokenbalanceData?.amount
             const nativeTokenBalanceAmount = nativeTokenBalance?.amount
 
             const insufficientTokensArr: string[] = []
 
-            if (network?.token && (Number(nativeTokenBalanceAmount) < feeInSol || isNaN(Number(nativeTokenBalanceAmount)))) {
-                insufficientTokensArr.push(network.token?.symbol);
+            if (source_network?.token && (Number(nativeTokenBalanceAmount) < feeInSol || isNaN(Number(nativeTokenBalanceAmount)))) {
+                insufficientTokensArr.push(source_network.token?.symbol);
             }
-            if (network?.token?.symbol !== token?.symbol && amount && token?.symbol && Number(tokenBalanceAmount) < amount) {
-                insufficientTokensArr.push(token?.symbol);
+            if (source_network?.token?.symbol !== source_token?.symbol && amount && source_token?.symbol && Number(tokenBalanceAmount) < amount) {
+                insufficientTokensArr.push(source_token?.symbol);
             }
             setInsufficientTokens(insufficientTokensArr)
             const signature = await configureAndSendCurrentTransaction(
@@ -84,7 +85,7 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token })
                 return
             }
         }
-    }, [walletPublicKey, signTransaction, network, token])
+    }, [walletPublicKey, signTransaction, source_network, source_token])
 
     if (!wallet || !walletPublicKey) {
         return <ConnectWalletButton />
@@ -99,7 +100,15 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token })
             />
             {
                 wallet && !loading &&
-                <SendTransactionButton isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} error={!!error} />
+                <SendTransactionButton
+                    isDisabled={!!loading}
+                    isSubmitting={!!loading}
+                    onClick={handleTransfer}
+                    icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />}
+                    error={!!error}
+                    refuel={refuel}
+                    swapData={swapBasicData}
+                />
             }
         </div>
     )

@@ -12,15 +12,16 @@ import { useConnectModal } from '@/components/WalletModal';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import TransactionMessages from '../../../messages/TransactionMessages';
 
-export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }) => {
+export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
     const { connect } = useConnectModal()
-    const { provider } = useWallet(network, 'withdrawal');
+    const { source_network, source_token } = swapBasicData;
+    const { provider } = useWallet(source_network, 'withdrawal');
     const [transactionErrorMessage, setTransactionErrorMessage] = useState<string | undefined>(undefined)
     const { connector } = useAccount()
     const wallet = provider?.activeWallet
-    const dataLoading = !network || !token
-    const isTestnet = network?.name === KnownInternalNames.Networks.BitcoinTestnet;
+    const dataLoading = !source_network || !source_token
+    const isTestnet = source_network?.name === KnownInternalNames.Networks.BitcoinTestnet;
 
     const config = useConfig()
     const publicClient = config.getClient()
@@ -40,15 +41,15 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, toke
     }, [provider])
 
     const rpcClient = useMemo(() => {
-        return network && new JsonRpcClient(network.node_url);
-    }, [network]);
+        return source_network && new JsonRpcClient(source_network.node_url);
+    }, [source_network]);
 
     const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setTransactionErrorMessage(undefined)
 
         try {
             setLoading(true)
-            if (!amount || !depositAddress || !network || !token || !callData || !wallet || !connector || !rpcClient) {
+            if (!amount || !depositAddress || !source_network || !source_token || !callData || !wallet || !connector || !rpcClient) {
                 throw new Error('Missing required parameters for transfer');
             }
 
@@ -70,7 +71,7 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, toke
             setLoading(false)
             setTransactionErrorMessage(e.message)
         }
-    }, [network, token, wallet, connector, rpcClient, isTestnet])
+    }, [source_network, source_token, wallet, connector, rpcClient, isTestnet])
 
     if (!wallet) {
         return <ConnectWalletButton isDisabled={loading} isSubmitting={loading} onClick={handleConnect} />
@@ -82,7 +83,14 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, toke
                 transactionErrorMessage &&
                 <TransactionMessage isLoading={loading} error={transactionErrorMessage} />
             }
-            <SendTransactionButton isDisabled={!!loading || dataLoading} isSubmitting={!!loading || dataLoading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} />
+            <SendTransactionButton
+                isDisabled={!!loading || dataLoading}
+                isSubmitting={!!loading || dataLoading}
+                onClick={handleTransfer}
+                icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />}
+                swapData={swapBasicData}
+                refuel={refuel}
+            />
         </div>
     )
 }
