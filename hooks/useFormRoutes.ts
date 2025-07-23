@@ -5,7 +5,7 @@ import { ApiResponse } from "../Models/ApiResponse";
 import { NetworkRoute, NetworkRouteToken } from "../Models/Network";
 import { useSettingsState } from "../context/settings";
 import { NetworkElement, RowElement, NetworkTokenElement, TitleElement, GroupTokensResult, GroupedTokenElement } from "../Models/Route";
-import useAllBalances from "./useAllBalances";
+import useAllBalances from "./useBalances/useAllBalances";
 import { NetworkBalance } from "../Models/Balance";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL, resolveRoutesURLForSelectedAssetGroup } from "../helpers/routes";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";

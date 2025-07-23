@@ -8,7 +8,7 @@ import { useBalance } from "../../../lib/balances/providers/useBalance";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { GroupedTokenElement } from "@/Models/Route";
 import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
-import { useGroupedTokenBalances } from "@/hooks/useGroupedTokenBalances";
+import { useGroupedTokenBalances } from "@/hooks/useBalances/useGroupedTokenBalances";
 
 type TokenItemProps = {
     route: NetworkRoute;

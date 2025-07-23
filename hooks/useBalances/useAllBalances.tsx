@@ -1,16 +1,21 @@
-import useWallet from "./useWallet"
-import { useSettingsState } from "../context/settings"
-import { useBalanceStore } from "../stores/balanceStore"
-import { SwapDirection } from "../components/DTOs/SwapFormValues"
+import useWallet from "../useWallet"
+import { useSettingsState } from "../../context/settings"
+import { useBalanceStore } from "../../stores/balanceStore"
+import { SwapDirection } from "../../components/DTOs/SwapFormValues"
 import { useEffect, useMemo } from "react"
-import { NetworkWithTokens } from "../Models/Network"
+import { NetworkWithTokens } from "../../Models/Network"
 import { SelectedWallet } from "@/context/selectedAccounts/pickerSelectedWallets"
-import { Wallet } from "@/Models/WalletProvider"
 
 type Props = {
     direction: SwapDirection;
     pickerSelectedWallets: SelectedWallet[] | undefined;
 }
+
+type ExtendedSelectedWallet = SelectedWallet & {
+    asSourceSupportedNetworks?: string[];
+    withdrawalSupportedNetworks?: string[];
+};
+
 export default function useAllBalances({ direction, pickerSelectedWallets }: Props) {
     const { wallets, providers } = useWallet()
     const networks = useSettingsState().networks
@@ -29,11 +34,13 @@ export default function useAllBalances({ direction, pickerSelectedWallets }: Pro
             })
     }, [pickerSelectedWallets, providers]);
 
-    const mergedWallets = useMemo((): SelectedWallet[] => {
+    const mergedWallets = useMemo((): ExtendedSelectedWallet[] => {
         const combined = [...selectedWallets, ...activeWallets.map(w => ({
             wallet: w,
             address: w.address,
             providerName: w.providerName,
+            asSourceSupportedNetworks: w?.asSourceSupportedNetworks,
+            withdrawalSupportedNetworks: w?.withdrawalSupportedNetworks,
         }))];
 
         const unique = new Map<string, SelectedWallet>();
@@ -49,8 +56,8 @@ export default function useAllBalances({ direction, pickerSelectedWallets }: Pro
     const walletNetworks = useMemo(() => {
         return mergedWallets.flatMap(wallet => {
             const networkNames = direction === 'from'
-                ? wallet?.wallet?.asSourceSupportedNetworks
-                : wallet?.wallet?.withdrawalSupportedNetworks;
+                ? wallet?.asSourceSupportedNetworks
+                : wallet?.withdrawalSupportedNetworks;
 
             if (!networkNames || networkNames.length === 0) return [];
 
