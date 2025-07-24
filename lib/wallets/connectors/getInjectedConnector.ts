@@ -44,7 +44,7 @@ function getWindowProviderNamespace(namespace: string) {
 }
 
 /*
- * Checks if the explict provider or window ethereum exists
+ * Checks if the explicit provider or window ethereum exists
  */
 export function hasInjectedProvider({
     flag,
