@@ -5,40 +5,39 @@ import QRIcon from '@/components/icons/QRIcon'
 import shortenAddress from '@/components/utils/ShortenAddress'
 import useCopyClipboard from '@/hooks/useCopyClipboard'
 import useWallet from '@/hooks/useWallet'
-import { DepositAction, Refuel, SwapItem, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
+import { DepositAction, Refuel, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
 import { motion } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
-import React, { useCallback, useEffect } from 'react'
+import React from 'react'
 import { FC, ReactNode, useState } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from "../../shadcn/popover";
 import useExchangeNetworks from '@/hooks/useExchangeNetworks'
 import { ChevronDown } from 'lucide-react'
 import { CommandItem, CommandList, CommandWrapper } from '@/components/shadcn/command'
 import { Network, NetworkRoute, Token } from '@/Models/Network'
-import { updateForm } from '../Form/updateForm'
 import { useQueryState } from '@/context/query'
 import { useSwapDataUpdate } from '@/context/swap'
 import { SwapFormValues } from '@/components/DTOs/SwapFormValues'
 
 interface Props {
-    swap: SwapItem;
+    swapBasicData: SwapBasicData;
     quote: SwapQuote | undefined;
     depositActions: DepositAction[] | undefined;
     refuel?: Refuel | undefined
 }
 
-const ExchangeWithdraw: FC<Props> = ({ swap, quote, depositActions, refuel }) => {
+const ExchangeWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refuel }) => {
     const { wallets } = useWallet();
     const { createSwap, setSwapId } = useSwapDataUpdate()
     const [loading, setLoading] = useState(false)
 
     const [showQR, setShowQR] = useState(false)
-    const destinationLogo = swap?.destination_network?.logo
+    const destinationLogo = swapBasicData?.destination_network?.logo
     const [copied, copy] = useCopyClipboard()
     const query = useQueryState()
 
     const depositAddress = depositActions?.find(da => true)?.to_address;
-    const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == swap?.destination_address?.toLowerCase())?.icon;
+    const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == swapBasicData?.destination_address?.toLowerCase())?.icon;
 
     const handleCopy = () => {
         if (depositAddress) {
@@ -57,15 +56,15 @@ const ExchangeWithdraw: FC<Props> = ({ swap, quote, depositActions, refuel }) =>
             })
             debugger
             const swapValues: SwapFormValues = {
-                amount: swap?.requested_amount.toString(),
+                amount: swapBasicData?.requested_amount.toString(),
                 from: network as NetworkRoute,
-                to: swap?.destination_network as NetworkRoute,
+                to: swapBasicData?.destination_network as NetworkRoute,
                 fromAsset: token,
-                toAsset: swap?.destination_token,
+                toAsset: swapBasicData?.destination_token,
                 refuel: !!refuel,
-                destination_address: swap?.destination_address,
-                fromExchange: swap?.source_exchange,
-                currencyGroup: swap?.source_token,
+                destination_address: swapBasicData?.destination_address,
+                fromExchange: swapBasicData?.source_exchange,
+                currencyGroup: swapBasicData?.source_token,
                 depositMethod: 'deposit_address',
             }
 
@@ -86,10 +85,10 @@ const ExchangeWithdraw: FC<Props> = ({ swap, quote, depositActions, refuel }) =>
     }
 
     const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks({
-        currencyGroup: swap?.source_token?.symbol,
-        fromExchange: swap?.source_exchange?.name,
-        to: swap?.destination_network?.name,
-        toAsset: swap?.destination_token?.symbol
+        currencyGroup: swapBasicData?.source_token?.symbol,
+        fromExchange: swapBasicData?.source_exchange?.name,
+        to: swapBasicData?.destination_network?.name,
+        toAsset: swapBasicData?.destination_token?.symbol
     });
 
 
@@ -115,8 +114,8 @@ const ExchangeWithdraw: FC<Props> = ({ swap, quote, depositActions, refuel }) =>
 
     const requestAmount = (
         <span className='inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg'>
-            {swap?.requested_amount} {swap?.source_token?.symbol}
-            <CopyButton toCopy={swap?.requested_amount} iconClassName='text-secondary-text' />
+            {swapBasicData?.requested_amount} {swapBasicData?.source_token?.symbol}
+            <CopyButton toCopy={swapBasicData?.requested_amount} iconClassName='text-secondary-text' />
         </span>
     )
 
@@ -130,7 +129,7 @@ const ExchangeWithdraw: FC<Props> = ({ swap, quote, depositActions, refuel }) =>
                 loading="eager"
                 className="rounded-md object-contain"
             />}
-            {swap?.destination_network?.display_name}
+            {swapBasicData?.destination_network?.display_name}
         </span>
     )
 
@@ -139,14 +138,14 @@ const ExchangeWithdraw: FC<Props> = ({ swap, quote, depositActions, refuel }) =>
             <PopoverTrigger asChild>
                 <button className="inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg">
                     <ImageWithFallback
-                        src={swap?.source_network?.logo}
+                        src={swapBasicData?.source_network?.logo}
                         alt="Project Logo"
                         height="16"
                         width="16"
                         loading="eager"
                         className="rounded-sm object-contain"
                     />
-                    <span>{swap?.source_network?.display_name}</span>
+                    <span>{swapBasicData?.source_network?.display_name}</span>
                     <span className="pointer-events-none text-shadow-primary-text-muted">
                         <ChevronDown className="h-3.5 w-3.5 text-secondary-text" aria-hidden="true" />
                     </span>
@@ -234,7 +233,7 @@ const ExchangeWithdraw: FC<Props> = ({ swap, quote, depositActions, refuel }) =>
                     number={3}
                     label={
                         <span className='flex items-center gap-1'>
-                            Receive {quote?.receive_amount} {swap?.destination_token?.symbol} at {destinationNetwork}
+                            Receive {quote?.receive_amount} {swapBasicData?.destination_token?.symbol} at {destinationNetwork}
                         </span>
                     }
                     value={
@@ -242,10 +241,10 @@ const ExchangeWithdraw: FC<Props> = ({ swap, quote, depositActions, refuel }) =>
                             {WalletIcon ?
                                 <WalletIcon className="w-4 h-4 p-0.5 bg-white rounded-sm" />
                                 :
-                                <AddressIcon className="h-4 w-4" address={swap.destination_address} size={36} rounded='4px' />
+                                <AddressIcon className="h-4 w-4" address={swapBasicData.destination_address} size={36} rounded='4px' />
 
                             }
-                            {shortenAddress(swap.destination_address)}
+                            {shortenAddress(swapBasicData.destination_address)}
                         </span>
                     }
                 />

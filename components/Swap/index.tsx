@@ -11,7 +11,6 @@ type Props = {
 }
 import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
 import SubmitButton from '../buttons/submitButton';
-import { SelectedAccountsProvider } from '@/context/selectedAccounts';
 import ExchangeWithdraw from './Withdraw/ExchangeWithdraw';
 
 const SwapDetails: FC<Props> = ({ type }) => {
