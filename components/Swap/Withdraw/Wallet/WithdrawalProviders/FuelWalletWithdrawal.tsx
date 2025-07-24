@@ -7,28 +7,28 @@ import {
     useFuel,
     useNetwork,
 } from '@fuels/react';
-import { useSwapDataState } from '@/context/swap';
 import { datadogRum } from '@datadog/browser-rum';
 import { coinQuantityfy, CoinQuantityLike, Provider, ScriptTransactionRequest } from 'fuels';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import TransactionMessages from '../../messages/TransactionMessages';
+import { useSelectAccounts } from '@/context/selectedAccounts';
 
-export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }) => {
+export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
     const [buttonClicked, setButtonClicked] = useState(false)
     const [error, setError] = useState<string | undefined>()
-
-    const { provider } = useWallet(network, 'withdrawal');
+    const { source_network, source_token } = swapBasicData;
+    const { provider } = useWallet(source_network, 'withdrawal');
 
     const { network: fuelNetwork, refetch: refetchNetwork } = useNetwork()
-    const networkChainId = Number(network?.chain_id)
-    const { selectedSourceAccount } = useSwapDataState()
+    const networkChainId = Number(source_network?.chain_id)
+    const { selectedSourceAccount } = useSelectAccounts()
     const { fuel } = useFuel()
 
     const activeChainId = fuelNetwork?.chainId || (fuelNetwork?.url.includes('testnet') ? 0 : 9889)
 
     useEffect(() => {
-        if (provider?.activeWallet && selectedSourceAccount) {
+        if (provider?.activeWallet && selectedSourceAccount?.wallet && selectedSourceAccount?.address) {
             provider?.switchAccount && provider?.switchAccount(selectedSourceAccount?.wallet, selectedSourceAccount?.address)
             refetchNetwork()
         }
@@ -40,15 +40,15 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }
         try {
             setLoading(true)
 
-            if (!network) throw Error("Network not found")
+            if (!source_network) throw Error("Network not found")
             if (!depositAddress) throw Error("Deposit address not found")
-            if (!network.metadata.watchdog_contract) throw Error("Watchdog contract not found")
+            if (!source_network.metadata.watchdog_contract) throw Error("Watchdog contract not found")
             if (!amount) throw Error("Amount not found")
-            if (!token) throw Error("Token not found")
+            if (!source_token) throw Error("Token not found")
             if (!callData) throw Error("Call data not found")
             if (!selectedSourceAccount?.address) throw Error("No selected account")
 
-            const fuelProvider = new Provider(network.node_url);
+            const fuelProvider = new Provider(source_network.node_url);
             const fuelWallet = await fuel.getWallet(selectedSourceAccount.address, fuelProvider);
 
             if (!fuelWallet) throw Error("Fuel wallet not found")
@@ -87,16 +87,16 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }
                 return
             }
         }
-    }, [network, selectedSourceAccount, token, fuel])
+    }, [source_network, selectedSourceAccount, source_token, fuel])
 
     if (!provider?.activeWallet) {
         return <ConnectWalletButton />
     }
-    else if (network && activeChainId !== undefined && networkChainId !== activeChainId) {
+    else if (source_network && activeChainId !== undefined && networkChainId !== activeChainId) {
         return <ChangeNetworkButton
             onChange={refetchNetwork}
             chainId={networkChainId}
-            network={network.display_name}
+            network={source_network.display_name}
         />
     }
     return (
@@ -110,7 +110,14 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ network, token }
             }
             {
                 !loading &&
-                <SendTransactionButton isDisabled={!!loading} isSubmitting={!!loading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} />
+                <SendTransactionButton
+                    isDisabled={!!loading}
+                    isSubmitting={!!loading}
+                    onClick={handleTransfer}
+                    icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />}
+                    swapData={swapBasicData}
+                    refuel={refuel}
+                />
             }
         </div>
     )

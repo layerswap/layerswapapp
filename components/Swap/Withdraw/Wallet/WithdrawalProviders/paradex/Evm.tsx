@@ -10,12 +10,13 @@ import useWallet from '@/hooks/useWallet';
 import WalletIcon from '@/components/icons/WalletIcon';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 
-const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ token }) => {
+const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
 
     const [loading, setLoading] = useState(false)
 
     const { networks } = useSettingsState();
     const l1Network = networks.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
+    const { source_token } = swapBasicData;
 
     const { provider } = useWallet(l1Network, 'withdrawal')
     const { chain } = useAccount();
@@ -25,7 +26,7 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ token }) => {
     const ethersSigner = useEthersSigner()
 
     const handleTransfer = async ({ amount, callData, swapId }: TransferProps) => {
-        if (!token || !amount || !callData || !swapId || !ethersSigner) return
+        if (!source_token || !amount || !callData || !swapId || !ethersSigner) return
 
         setLoading(true)
         try {
@@ -62,7 +63,14 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ token }) => {
     }
 
     return (
-        <SendTransactionButton isDisabled={!!(loading || !ethersSigner)} isSubmitting={!!(loading || !ethersSigner)} onClick={handleTransfer} icon={<WalletIcon className="h-5 w-5 stroke-2" aria-hidden="true" />} >
+        <SendTransactionButton
+            isDisabled={!!(loading || !ethersSigner)}
+            isSubmitting={!!(loading || !ethersSigner)}
+            onClick={handleTransfer}
+            icon={<WalletIcon className="h-5 w-5 stroke-2" aria-hidden="true" />}
+            swapData={swapBasicData}
+            refuel={refuel}
+        >
             Send from EVM wallet
         </SendTransactionButton>
     )

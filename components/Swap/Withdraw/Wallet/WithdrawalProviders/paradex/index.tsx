@@ -11,8 +11,9 @@ import SubmitButton from '@/components/buttons/submitButton';
 import { WalletIcon } from 'lucide-react';
 import { WithdrawPageProps } from '../../Common/sharedTypes';
 import { useConnectModal } from '@/components/WalletModal';
+import { useSelectAccounts } from '@/context/selectedAccounts';
 
-export const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ token }) => {
+export const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ refuel, swapBasicData, swapId }) => {
 
     const { networks } = useSettingsState();
     const l1Network = networks.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
@@ -25,30 +26,31 @@ export const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ token }) => {
     const starknetWallet = starknetProvider?.activeWallet
 
     if (selectedProvider === evmProvider?.name && evmWallet) {
-        return <Evm token={token} />
+        return <Evm refuel={refuel} swapBasicData={swapBasicData} swapId={swapId}/>
     }
     if (selectedProvider === starknetProvider?.name && starknetWallet) {
-        return <Starknet token={token} />
+        return <Starknet refuel={refuel} swapBasicData={swapBasicData} swapId={swapId}/>
     }
 
     return <ConnectWalletModal />
 }
 const ConnectWalletModal = () => {
-    const { swapResponse } = useSwapDataState()
-    const { source_network } = swapResponse?.swap || {}
+    const { swapBasicData } = useSwapDataState()
+    const { source_network } = swapBasicData || {}
     const { provider } = useWallet(source_network, 'withdrawal')
     const { connect } = useConnectModal()
-    const { setSelectedSourceAccount } = useSwapDataUpdate()
+    const { setSelectedSourceAccount } = useSelectAccounts()
 
     const handleSelectWallet = (wallet?: Wallet | undefined, address?: string | undefined) => {
         if (wallet && address) {
             setSelectedSourceAccount({
                 wallet,
-                address
+                address,
+                providerName: wallet.providerName
             })
         }
         else {
-            setSelectedSourceAccount(undefined)
+            setSelectedSourceAccount({ providerName: provider?.name, wallet: undefined, address: undefined })
         }
     }
     const handleConnect = async () => {

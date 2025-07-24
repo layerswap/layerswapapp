@@ -11,23 +11,23 @@ type Props = {
 }
 import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
 import SubmitButton from '../buttons/submitButton';
+import { SelectedAccountsProvider } from '@/context/selectedAccounts';
 import ExchangeWithdraw from './Withdraw/ExchangeWithdraw';
 
 const SwapDetails: FC<Props> = ({ type }) => {
-    const { swapResponse, depositActionsResponse: depositActions } = useSwapDataState()
-    const { swap, quote, refuel } = swapResponse || {}
+    const { swapDetails, swapBasicData, quote, refuel, depositActionsResponse } = useSwapDataState()
 
-    const swapStatus = swap?.status;
+    const swapStatus = swapDetails?.status || SwapStatus.UserTransferPending;
     const storedWalletTransactions = useSwapTransactionStore()
 
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
-    const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swap?.id || '']
+    const swapInputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Input)
+    const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swapDetails?.id || '']
 
     const removeStoredTransaction = useCallback(() => {
-        useSwapTransactionStore.getState().removeSwapTransaction(swap?.id || '');
-    }, [swap?.id, storedWalletTransactions])
+        useSwapTransactionStore.getState().removeSwapTransaction(swapDetails?.id || '');
+    }, [swapDetails?.id, storedWalletTransactions])
 
-    if (!swap) return <>
+    if (!swapBasicData) return <>
         <div className="w-full h-[430px]">
             <div className="animate-pulse flex space-x-4">
                 <div className="flex-1 space-y-6 py-1">
@@ -45,8 +45,8 @@ const SwapDetails: FC<Props> = ({ type }) => {
                 ((swapStatus === SwapStatus.UserTransferPending
                     && !(swapInputTransaction || storedWalletTransaction))) ?
                     (
-                        swap.source_exchange
-                            ? <ExchangeWithdraw swap={swap} quote={quote} depositActions={depositActions} refuel={refuel} />
+                        swapBasicData.source_exchange
+                            ? <ExchangeWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} />
                             : <Withdraw type={type} />
                     )
                     :

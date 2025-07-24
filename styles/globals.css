@@ -446,3 +446,17 @@ textarea:disabled::placeholder {
   40% { box-shadow: 0 2.5em 0 0 }
 }
     
+@layer utilities {
+  @keyframes pulse-brightness {
+    0%, 100% {
+      filter: brightness(1);
+    }
+    50% {
+      filter: brightness(0.75);
+    }
+  }
+
+  .animate-pulse-brightness {
+    animation: pulse-brightness 1.5s ease-in-out 2;
+  }
+}

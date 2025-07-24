@@ -1,17 +1,17 @@
 import { ArrowDown, Fuel } from "lucide-react";
 import { FC } from "react";
-import { truncateDecimals } from "../../utils/RoundDecimals";
-import LayerSwapApiClient, { Refuel } from "../../../lib/apiClients/layerSwapApiClient";
-import { ApiResponse } from "../../../Models/ApiResponse";
-import { Partner } from "../../../Models/Partner";
+import { truncateDecimals } from "@/components/utils/RoundDecimals";
+import LayerSwapApiClient, { Refuel } from "@/lib/apiClients/layerSwapApiClient";
+import { ApiResponse } from "@/Models/ApiResponse";
+import { Partner } from "@/Models/Partner";
 import useSWR from 'swr'
-import { useQueryState } from "../../../context/query";
-import { Network, Token } from "../../../Models/Network";
-import { Exchange } from "../../../Models/Exchange";
-import { addressFormat } from "../../../lib/address/formatter";
-import { ExtendedAddress } from "../../Input/Address/AddressPicker/AddressWithIcon";
-import { isValidAddress } from "../../../lib/address/validator";
-import shortenAddress from "../../utils/ShortenAddress";
+import { useQueryState } from "@/context/query";
+import { Network, Token } from "@/Models/Network";
+import { Exchange } from "@/Models/Exchange";
+import { addressFormat } from "@/lib/address/formatter";
+import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
+import { isValidAddress } from "@/lib/address/validator";
+import shortenAddress from "@/components/utils/ShortenAddress";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 type SwapInfoProps = {
@@ -57,7 +57,6 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
     const refuelAmountInUsd = nativeCurrency && ((nativeCurrency?.price_in_usd || 1) * (Number(truncatedRefuelAmount) || 0)).toFixed(2)
 
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
-
     return (
         <div className="bg-secondary-500 rounded-2xl px-3 py-4 w-full relative z-10 space-y-4">
 
@@ -97,7 +96,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                     {
                         receiveAmount != undefined ?
                             <div className="flex flex-col justify-end items-end w-full col-start-7 col-span-4">
-                                <p className="text-primary-text text-sm text-end">{truncateDecimals(receiveAmount, destinationCurrency.precision)} {destinationCurrency.symbol}</p>
+                                <p className="text-primary-text text-sm text-end">{receiveAmount} {destinationCurrency.symbol}</p>
                                 <p className="text-secondary-text text-sm">${receiveAmountInUsd}</p>
                             </div>
                             :

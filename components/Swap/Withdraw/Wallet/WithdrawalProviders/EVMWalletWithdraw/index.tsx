@@ -4,23 +4,23 @@ import { PublishedSwapTransactions } from "@/lib/apiClients/layerSwapApiClient";
 import { ChangeNetworkButton, ConnectWalletButton } from "../../Common/buttons";
 import TransferTokenButton from "./TransferToken";
 import useWallet from "@/hooks/useWallet";
-import { useSwapDataState } from "@/context/swap";
 import TransactionMessages from "../../../messages/TransactionMessages";
 import { useQueryState } from "@/context/query";
 import { WithdrawPageProps } from "../../Common/sharedTypes";
+import { useSelectAccounts } from "@/context/selectedAccounts";
 
 export const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
-    network,
+    swapBasicData,
+    refuel,
     swapId
 }) => {
-    const { swapResponse, selectedSourceAccount } = useSwapDataState()
-    const { source_network, destination_network, destination_address } = swapResponse?.swap || {}
+    const { selectedSourceAccount } = useSelectAccounts()
+    const { source_network, destination_network, destination_address } = swapBasicData
     const { isConnected, chain: activeChain } = useAccount();
-    const { provider } = useWallet(network, 'withdrawal')
+    const { provider } = useWallet(source_network, 'withdrawal')
     const { sameAccountNetwork } = useQueryState()
     const wallet = provider?.activeWallet
-
-    const networkChainId = Number(network?.chain_id) ?? undefined
+    const networkChainId = Number(source_network?.chain_id) ?? undefined
 
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
 
@@ -47,14 +47,16 @@ export const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
     if (!isConnected || !wallet) {
         return <ConnectWalletButton />
     }
-    else if (activeChain?.id !== networkChainId && network) {
+    else if (activeChain?.id !== networkChainId && source_network) {
         return <ChangeNetworkButton
             chainId={networkChainId}
-            network={network}
+            network={source_network}
         />
     }
     else {
         return <TransferTokenButton
+            swapData={swapBasicData}
+            refuel={refuel}
             chainId={networkChainId}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
         />

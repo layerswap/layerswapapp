@@ -25,16 +25,15 @@ const textMotion = {
 };
 
 export const PendingSwap = ({ onClick }: { onClick: () => void }) => {
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
+    const { swapBasicData, swapDetails } = useSwapDataState()
     const {
-        destination_exchange,
         source_exchange,
         source_network,
         destination_network
-    } = swap || {}
+    } = swapBasicData || {}
 
-    if (!swap?.id)
+    //TODO might need loading state
+    if (!swapDetails)
         return <></>
 
     return <motion.div
@@ -71,21 +70,14 @@ export const PendingSwap = ({ onClick }: { onClick: () => void }) => {
                     </div>
                     <ChevronRight className="block h-4 w-4 mx-1" />
                     <div className="shrink-0 h-5 w-5 relative block">
-                        {destination_exchange ? <ImageWithFallback
-                            src={destination_exchange.logo}
-                            alt="To Logo"
-                            height="60"
-                            width="60"
-                            className="rounded-md object-contain"
-                        /> : destination_network ?
+                        {destination_network ?
                             <ImageWithFallback
                                 src={destination_network.logo}
                                 alt="To Logo"
                                 height="60"
                                 width="60"
                                 className="rounded-md object-contain"
-                            /> : null
-                        }
+                            /> : null}
                     </div>
                 </div>
             </motion.div>

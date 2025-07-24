@@ -5,15 +5,17 @@ import { truncateDecimals } from "./utils/RoundDecimals"
 import { TokenBalance } from "../Models/Balance"
 import useSWRBalance from "../lib/balances/useSWRBalance"
 import useSWRGas from "../lib/gases/useSWRGas"
-import { useSwapDataState } from "../context/swap"
-import { useQuoteData } from "@/hooks/useFee"
+import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee"
+import { useSelectAccounts } from "@/context/selectedAccounts"
+import { useMemo } from "react"
 
 const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: TokenBalance, networkGas: number) => void }) => {
     const {
         values,
     } = useFormikContext<SwapFormValues>();
-    const { minAllowedAmount, maxAllowedAmount } = useQuoteData(values)
-    const { selectedSourceAccount } = useSwapDataState()
+    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
+    const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs)
+    const { selectedSourceAccount } = useSelectAccounts()
 
     const { balances } = useSWRBalance(selectedSourceAccount?.address, values.from)
     const { gas: networkGas } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset)
@@ -34,13 +36,13 @@ const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: TokenBalance, 
                 mightBeOutOfGas && gasToReserveFormatted &&
                 (
                     (Number(walletBalance.amount) < Number(networkGas)) ?
-                        <WarningMessage messageType="warning" className="mt-4">
+                        <WarningMessage messageType="warning">
                             <div className="font-normal text-primary-text">
                                 You don&apos;t have enough funds to cover gas fees.
                             </div>
                         </WarningMessage>
                         :
-                        <WarningMessage messageType="warning" className="mt-4">
+                        <WarningMessage messageType="warning">
                             <div className="font-normal text-primary-text">
                                 <div>
                                     You might not be able to complete the transaction.

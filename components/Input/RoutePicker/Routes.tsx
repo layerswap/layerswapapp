@@ -1,5 +1,4 @@
 import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
-import useWallet from "../../../hooks/useWallet";
 import { SwapDirection } from "../../DTOs/SwapFormValues";
 import { truncateDecimals } from "../../utils/RoundDecimals";
 import { SelectItem } from "../../Select/CommandNew/SelectItem/Index";
@@ -7,13 +6,15 @@ import { ChevronDown } from "lucide-react";
 import RoutePickerIcon from "../../icons/RoutePickerPlaceholder";
 import { useBalance } from "../../../lib/balances/providers/useBalance";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
-import { GroupedTokenElement } from "@/Models/Route";
+import { GroupedTokenElement, RowElement } from "@/Models/Route";
 import { useBalanceStore } from "@/stores/balanceStore";
-import { usePickerSelectedWalletStore } from "@/stores/pickerSelectedWallets";
+import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
+import clsx from "clsx";
 
 type TokenItemProps = {
     route: NetworkRoute;
     item: NetworkRouteToken;
+    type?: RowElement['type'];
     selected: boolean;
     direction: SwapDirection;
     allbalancesLoaded?: boolean;
@@ -21,7 +22,7 @@ type TokenItemProps = {
 };
 
 export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
-    const { item, route, direction, allbalancesLoaded } = props
+    const { item, route, direction, allbalancesLoaded, type } = props
 
     return <SelectItem>
         <SelectItem.Logo
@@ -29,7 +30,7 @@ export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
             altText={`${item.symbol} logo`}
             className="rounded-full"
         />
-        <NetworkTokenTitle item={item as NetworkRouteToken} route={route} direction={direction} allbalancesLoaded={allbalancesLoaded} />
+        <NetworkTokenTitle item={item as NetworkRouteToken} route={route} direction={direction} allbalancesLoaded={allbalancesLoaded} type={type} />
     </SelectItem>
 }
 
@@ -37,13 +38,13 @@ type NetworkTokenItemProps = {
     route: NetworkRoute;
     item: NetworkRouteToken;
     direction: SwapDirection;
+    type?: RowElement['type'];
     allbalancesLoaded?: boolean;
 }
 export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
-    const { item, route, direction, allbalancesLoaded } = props
-    const { provider } = useWallet(route, direction === "from" ? "withdrawal" : "autofil")
-    const { pickerSelectedWallets } = usePickerSelectedWalletStore(direction)
-    const selectedWallet = pickerSelectedWallets?.find(w => w.provider === provider?.name)
+    const { item, route, direction, allbalancesLoaded, type } = props
+    const { pickerSelectedWallets } = useSelectedWalletStore(direction)
+    const selectedWallet = pickerSelectedWallets?.find(w => (direction == 'from' ? w.wallet?.withdrawalSupportedNetworks : w.wallet?.autofillSupportedNetworks)?.includes(route.name));
     const { balances } = useBalance(selectedWallet?.address, route)
     const tokenbalance = balances?.find(b => b.token === item.symbol)
     const formatted_balance_amount = (tokenbalance?.amount || tokenbalance?.amount === 0) ? truncateDecimals(tokenbalance?.amount, item.precision) : ''
@@ -56,11 +57,19 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     >
         {(allbalancesLoaded && tokenbalance && Number(formatted_balance_amount) >= 0) ? (
             <span className="text-sm text-secondary-text text-right my-auto leading-4 font-medium">
-                <div className="text-primary-text">
+                <div className={clsx("text-primary-text",
+                    {
+                        'text-lg leading-[22px]': type === 'top_token',
+                    }
+                )}>
                     {formatted_balance_amount}
                 </div>
                 {Number(tokenbalance?.amount) >= 0 && (
-                    <div>${balanceAmountInUsd}</div>
+                    <div
+                        className={clsx({
+                            'text-xs leading-4': type == 'top_token',
+                        })}
+                    >${balanceAmountInUsd}</div>
                 )}
             </span>
         ) : balances ? (
@@ -81,9 +90,9 @@ type NetworkRouteItemProps = {
 
 export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const { item, direction, allbalancesLoaded, hideTokenImages } = props
-    const { provider } = useWallet(item, direction === "from" ? "withdrawal" : "autofil")
-    const { pickerSelectedWallets } = usePickerSelectedWalletStore(direction)
-    const selectedWallet = pickerSelectedWallets?.find(w => w.provider === provider?.name)
+    const { pickerSelectedWallets } = useSelectedWalletStore(direction)
+
+    const selectedWallet = pickerSelectedWallets?.find(w => (direction == 'from' ? w.wallet?.withdrawalSupportedNetworks : w.wallet?.autofillSupportedNetworks)?.includes(item.name));
 
     const { balances, totalInUSD } = useBalance(selectedWallet?.address, item)
     const tokensWithBalance = balances?.filter(b => b.amount > 0)

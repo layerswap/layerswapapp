@@ -12,37 +12,33 @@ import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import TransactionMessages from '../../messages/TransactionMessages';
 import WalletIcon from '@/components/icons/WalletIcon';
 
-export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ network, token }) => {
+export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | undefined>()
-
-    const { provider } = useWallet(network, 'withdrawal');
-
+    const { source_network, source_token } = swapBasicData;
+    const { provider } = useWallet(source_network, 'withdrawal');
     const wallet = provider?.activeWallet
     const { wallet: tronWallet, signTransaction } = useTronWallet();
     const walletAddress = tronWallet?.adapter.address
-    const tronNode = network?.node_url
-    const networkName = network?.name
-
+    const tronNode = source_network?.node_url
+    const networkName = source_network?.name
     const { networks } = useSettingsState()
     const networkWithTokens = networks.find(n => n.name === networkName)
-
-    const { gas, isGasLoading } = useSWRGas(walletAddress, networkWithTokens, token)
+    const { gas, isGasLoading } = useSWRGas(walletAddress, networkWithTokens, source_token)
 
     const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setError(undefined)
         setLoading(true)
         try {
-
-            if (!signTransaction || !swapId || !depositAddress || !amount || !token) throw new Error('Missing data')
+            if (!signTransaction || !swapId || !depositAddress || !amount || !source_token) throw new Error('Missing data')
             if (!walletAddress) throw new Error('Tron wallet not connected')
             if (!callData) throw new Error("No call data provided")
 
             const tronWeb = new TronWeb({ fullNode: tronNode, solidityNode: tronNode });
 
-            const amountInWei = Math.pow(10, token?.decimals) * amount
+            const amountInWei = Math.pow(10, source_token?.decimals) * amount
 
-            const initialTransaction = await buildInitialTransaction({ tronWeb, token, depositAddress, amountInWei, gas, issuerAddress: walletAddress })
+            const initialTransaction = await buildInitialTransaction({ tronWeb, token: source_token, depositAddress, amountInWei, gas, issuerAddress: walletAddress })
             const data = Buffer.from(callData).toString('hex')
             const transaction = await tronWeb.transactionBuilder.addUpdateData(initialTransaction, data, "hex")
             const signature = await signTransaction(transaction)
@@ -62,7 +58,7 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ network, token }) =>
                 return
             }
         }
-    }, [walletAddress, signTransaction, network, gas, token])
+    }, [walletAddress, signTransaction, source_network, gas, source_token])
 
     if (!wallet || !walletAddress) {
         return <ConnectWalletButton />
@@ -76,7 +72,15 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ network, token }) =>
             />
             {
                 wallet && !loading &&
-                <SendTransactionButton isDisabled={!!loading || isGasLoading} isSubmitting={!!loading || isGasLoading} onClick={handleTransfer} icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />} error={!!error} />
+                <SendTransactionButton
+                    isDisabled={!!loading || isGasLoading}
+                    isSubmitting={!!loading || isGasLoading}
+                    onClick={handleTransfer}
+                    icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />}
+                    error={!!error}
+                    refuel={refuel}
+                    swapData={swapBasicData}
+                />
             }
         </div>
     )

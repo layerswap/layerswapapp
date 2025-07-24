@@ -1,17 +1,19 @@
 import { FC, useMemo } from "react";
-import { useSwapDataState } from "@/context/swap";
 import KnownInternalNames from "@/lib/knownIds";
 import { NetworkType } from "@/Models/Network";
 import {
     ImtblxWalletWithdrawStep, BitcoinWalletWithdrawStep, EVMWalletWithdrawal, FuelWalletWithdrawStep, LoopringWalletWithdraw, ParadexWalletWithdraw, SVMWalletWithdrawStep, StarknetWalletWithdrawStep, TonWalletWithdrawStep, TronWalletWithdraw, ZkSyncWalletWithdrawStep
 } from "./WithdrawalProviders";
+import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 
-
+type Props = {
+    swapData: SwapBasicData
+    swapId: string | undefined
+    refuel: boolean
+};
 //TODO have separate components for evm and none_evm as others are sweepless anyway
-export const WalletTransferContent: FC = () => {
-    const { swapResponse } = useSwapDataState();
-    const { swap } = swapResponse || {};
-    const { source_network } = swap || {};
+export const WalletTransferContent: FC<Props> = ({ swapData, swapId, refuel }) => {
+    const { source_network, source_token } = swapData
     const source_network_internal_name = source_network?.name;
 
     const WithdrawalPages = useMemo(() => [
@@ -99,11 +101,11 @@ export const WalletTransferContent: FC = () => {
 
     return <>
         {
-            swap && WithdrawalComponent &&
+            swapData && WithdrawalComponent &&
             <WithdrawalComponent
-                swapId={swap.id}
-                network={swap.source_network}
-                token={swap.source_token}
+                swapId={swapId}
+                swapBasicData={swapData}
+                refuel={refuel}
             />
         }
     </>;
