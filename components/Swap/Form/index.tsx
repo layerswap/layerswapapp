@@ -134,7 +134,7 @@ export default function Form() {
         }
     }, [createSwap, query, partner, router, updateAuthData, setUserType, swapBasicData, getProvider, settings, quote, selectedSourceAccount])
 
-    const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, settings)
+    const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings)
         : generateSwapInitialValues(settings, query)
 
     const handleShowSwapModal = useCallback((value: boolean) => {
