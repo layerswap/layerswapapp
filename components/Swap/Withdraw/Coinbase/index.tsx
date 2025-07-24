@@ -19,8 +19,7 @@ const Coinbase: FC = () => {
 }
 
 const TransferElements: FC = () => {
-    const { swapResponse, codeRequested } = useSwapDataState()
-    const { swap } = swapResponse || {}
+    const { swapBasicData, swapDetails, codeRequested } = useSwapDataState()
     const { setCodeRequested, mutateSwap } = useSwapDataUpdate()
 
     const { start: startTimer } = useTimerState()
@@ -32,7 +31,7 @@ const TransferElements: FC = () => {
     const [loading, setLoading] = useState(false)
 
     const handleTransfer = useCallback(async () => {
-        if (!swap || !swap.source_exchange)
+        if (!swapDetails || !swapBasicData?.source_exchange)
             return
         setLoading(true)
         if (codeRequested)
@@ -40,7 +39,7 @@ const TransferElements: FC = () => {
         else {
             try {
                 const layerswapApiClient = new LayerSwapApiClient()
-                await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange.name)
+                await layerswapApiClient.WithdrawFromExchange(swapDetails.id, swapBasicData.source_exchange.name)
             }
             catch (e) {
                 if (e?.response?.data?.error?.code === LSAPIKnownErrorCode.COINBASE_INVALID_2FA) {
@@ -60,7 +59,7 @@ const TransferElements: FC = () => {
             }
         }
         setLoading(false)
-    }, [swap, codeRequested])
+    }, [swapBasicData, swapDetails, codeRequested])
 
     const openConnect = () => {
         setShowCoinbaseConnectModal(true)
@@ -109,7 +108,7 @@ const TransferElements: FC = () => {
                 <div className='space-y-4'>
                     <div className='border-secondary-500 rounded-md border bg-secondary-700 p-3'>
                         {
-                            swap?.exchange_account_connected ?
+                            swapDetails?.exchange_account_connected ?
                                 <SubmitButton
                                     isDisabled={loading}
                                     isSubmitting={loading}

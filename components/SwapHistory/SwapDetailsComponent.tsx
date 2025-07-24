@@ -1,6 +1,5 @@
 import { FC, useState, Fragment } from 'react'
 import LayerSwapApiClient, { SwapResponse, TransactionType } from '../../lib/apiClients/layerSwapApiClient';
-import Image from 'next/image'
 import shortenAddress, { shortenEmail } from '../utils/ShortenAddress';
 import CopyButton from '../buttons/copyButton';
 import StatusIcon from './StatusIcons';
@@ -23,6 +22,7 @@ import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
 import VaulDrawer from '../modal/vaulModal';
 import { Popover, PopoverContent, PopoverTrigger } from '../shadcn/popover';
+import { ImageWithFallback } from '../Common/ImageWithFallback';
 
 type Props = {
     swapResponse: SwapResponse
@@ -86,7 +86,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     return (
         <>
             <VaulDrawer.Snap id='item-1' className='pb-3 space-y-3'>
-                <div className='p-3 bg-secondary-700 rounded-xl'>
+                <div className='p-3 bg-secondary-500 rounded-xl'>
                     <div className={`font-normal flex flex-col w-full relative ${(source_exchange || destination_exchange) ? 'space-y-2' : 'space-y-4'}`}>
 
                         {/* From and To */}
@@ -94,7 +94,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             <p className='text-xs font-normal text-secondary-text pl-1'>From</p>
                             <div className="flex items-center justify-between w-full">
                                 <div className="flex items-center gap-3">
-                                    <Image
+                                    <ImageWithFallback
                                         src={source_exchange?.logo || source.logo}
                                         alt={source_exchange?.display_name || source.display_name}
                                         width={32}
@@ -136,7 +136,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             <div className='flex flex-row space-x-2'>
                                 <div className='flex flex-col gap-1 justify-start items-center w-fit ml-2.5'>
                                     <div className="w-0.5 h-2.5 bg-[#d9d9d9] rounded-xs" />
-                                    <Image
+                                    <ImageWithFallback
                                         src={source_exchange ? source_network?.logo : destination_network?.logo}
                                         alt={source_exchange ? source_network?.display_name : destination_network?.display_name}
                                         width={24}
@@ -154,7 +154,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             <p className='text-xs font-normal text-secondary-text pl-1'>To</p>
                             <div className="flex items-center justify-between w-full ">
                                 <div className="flex items-center gap-3">
-                                    <Image
+                                    <ImageWithFallback
                                         src={destination_exchange?.logo || destination.logo}
                                         alt={destination_exchange?.display_name || destination.display_name}
                                         width={32}
@@ -185,7 +185,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
                         {/* Refuel */}
                         {
-                            refuel && <div className=' bg-secondary-700 rounded-xl py-1.5'>
+                            refuel && <div className=' bg-secondary-500 rounded-xl py-1.5'>
                                 <div className="flex justify-between items-center text-sm font-normal">
                                     <div className='inline-flex items-center text-primary-text gap-2'>
                                         <Fuel className='h-4 w-4' />
@@ -232,7 +232,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                     </div>
                 </div>
                 {/* Fees */}
-                <div className='p-3 bg-secondary-700 rounded-xl'>
+                <div className='p-3 bg-secondary-500 rounded-xl'>
                     {
                         (inputTransactionFeeInUsd && !source_exchange) ?
                             <Accordion type="single" collapsible>
@@ -275,7 +275,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                 </div>
 
                 {/* Date and Status */}
-                <div className='p-3 bg-secondary-700 rounded-xl'>
+                <div className='p-3 bg-secondary-500 rounded-xl'>
                     <div className='text-sm flex flex-col gap-3'>
                         <div className="flex justify-between items-center text-sm text-primary-text">
                             <p className="text-left text-secondary-text">Swap Id</p>
@@ -315,7 +315,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                     <div className='space-y-3'>
 
                         {/* Source and Destination Transactions */}
-                        <div className='p-3 bg-secondary-700 rounded-xl text-primary-text'>
+                        <div className='p-3 bg-secondary-500 rounded-xl text-primary-text'>
                             <div className='text-sm flex flex-col gap-3'>
                                 <div className="flex justify-between items-baseline">
                                     <p className="text-left text-secondary-text">Source transaction</p>
@@ -366,7 +366,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                 pathname: `/`,
                                 query: {
                                     amount: requested_amount,
-                                    destAddress: destination_address,
+                                    destination_address: destination_address,
                                     from: source_network?.name,
                                     to: destination_network?.name,
                                     fromAsset: source_token.symbol,

@@ -9,11 +9,10 @@ import QuestionIcon from '../../icons/Question';
 import Link from 'next/link';
 
 const Failed: FC = () => {
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
+    const { swapDetails } = useSwapDataState()
     const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ userId, customAttributes: { swapId: swap?.id, email: email } })
+    const updateWithProps = () => update({ userId, customAttributes: { swapId: swapDetails?.id, email: email } })
 
     useEffect(() => {
         window.plausible && plausible(TrackEvent.SwapFailed)
@@ -36,15 +35,15 @@ const Failed: FC = () => {
                 </div>
                 <div className='mt-4 text-xs md:text-sm text-primary-text'>
                     {
-                        swap?.status == SwapStatus.Cancelled &&
-                        <Canceled onGetHelp={startIntercom} swap={swap} />
+                        swapDetails?.status == SwapStatus.Cancelled &&
+                        <Canceled onGetHelp={startIntercom} />
                     }
                     {
-                        swap?.status == SwapStatus.Expired &&
-                        <Expired onGetHelp={startIntercom} swap={swap} />
+                        swapDetails?.status == SwapStatus.Expired &&
+                        <Expired onGetHelp={startIntercom} />
                     }
                     {
-                        swap?.status == SwapStatus.UserTransferDelayed &&
+                        swapDetails?.status == SwapStatus.UserTransferDelayed &&
                         <Delay />
                     }
                 </div>
@@ -54,7 +53,6 @@ const Failed: FC = () => {
     )
 }
 type Props = {
-    swap: SwapItem
     onGetHelp: () => void
 }
 
@@ -71,7 +69,7 @@ const Delay: FC = () => {
         <div>
             <p className='text-md '><span>This usually means that the exchange needs additional verification.</span>
                 <Link target='_blank' href="https://docs.layerswap.io/user-docs/why-is-coinbase-transfer-taking-so-long/"
-                    className='disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed ml-1 underline hover:no-underline cursor-pointer'>Learn More</Link></p>
+                    className='disabled:text-primary-text/40 disabled:bg-primary-900 disabled:cursor-not-allowed ml-1 underline hover:no-underline cursor-pointer'>Learn More</Link></p>
             <ul className="list-inside list-decimal font-light space-y-1 mt-2 text-left text-primary-text ">
                 <li>Check your email for details from Coinbase</li>
                 <li>Check your Coinbase account&apos;s transfer history</li>

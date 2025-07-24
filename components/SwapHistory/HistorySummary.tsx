@@ -2,7 +2,6 @@
 import useSWR from "swr"
 import LayerSwapApiClient, { SwapResponse, TransactionType } from "../../lib/apiClients/layerSwapApiClient"
 import { ApiResponse } from "../../Models/ApiResponse"
-import Image from 'next/image';
 import { useQueryState } from "../../context/query"
 import { Partner } from "../../Models/Partner"
 import { addressEnding, shortenEmail } from "../utils/ShortenAddress"
@@ -15,6 +14,7 @@ import AddressIcon from "../AddressIcon";
 import { addressFormat } from "../../lib/address/formatter";
 import { SwapStatus } from "../../Models/SwapStatus";
 import { Wallet } from "../../Models/WalletProvider";
+import { ImageWithFallback } from "../Common/ImageWithFallback";
 
 type SwapInfoProps = {
     className?: string,
@@ -68,34 +68,34 @@ const HistorySummary: FC<SwapInfoProps> = ({
 
     return (
         source_token && <>
-            <div className={`${className || ''} bg-secondary-700 z-10 p-3 w-full relative font-normal space-y-3 hover:bg-secondary-600 rounded-xl overflow-hidden cursor-pointer`}>
+            <div className={`${className || ''} bg-secondary-500 z-10 p-3 w-full relative font-normal space-y-3 hover:bg-secondary-400 rounded-xl overflow-hidden cursor-pointer`}>
                 <div className="grid grid-cols-6 sm:grid-cols-8 gap-3 w-full items-center">
                     {source?.display_name !== destination?.display_name ?
                         <div className="col-span-1 h-11 w-11 relative min-w-11">
                             {
                                 source &&
-                                <Image
+                                <ImageWithFallback
                                     src={source.logo}
                                     alt={source.display_name}
                                     width={28}
                                     height={28}
-                                    className="rounded" />
+                                    className="rounded-sm" />
                             }
                             {
                                 destination &&
-                                <Image
+                                <ImageWithFallback
                                     src={destination.logo}
                                     alt={destination.display_name}
                                     width={28}
                                     height={28}
-                                    className="rounded absolute left-4 top-4" />
+                                    className="rounded-sm absolute left-4 top-4" />
                             }
                         </div>
                         :
                         <div className="w-11 h-11 col-span-1">
                             {
                                 source &&
-                                <Image
+                                <ImageWithFallback
                                     src={source.logo}
                                     alt={source.display_name}
                                     width={44}
@@ -133,7 +133,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                                 :
                                                 (
                                                     sourceAddressFromInput && !source_exchange ?
-                                                        <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded h-3.5 overflow-hidden w-3.5'>
+                                                        <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-sm h-3.5 overflow-hidden w-3.5'>
                                                             <AddressIcon className="scale-150 h-3.5 w-3.5" address={sourceAddressFromInput} size={14} />
                                                         </div>
                                                         :
@@ -153,7 +153,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                                     <destination_wallet.icon className="h-3.5 w-3.5" />
                                                     :
                                                     !destination_exchange &&
-                                                    <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded h-3.5 overflow-hidden w-3.5'>
+                                                    <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded-sm h-3.5 overflow-hidden w-3.5'>
                                                         <AddressIcon className="scale-150 h-3.5 w-3.5" address={destAddress} size={14} />
                                                     </div>
                                             }

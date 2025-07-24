@@ -90,7 +90,7 @@ const SendEmail: FC<Props> = ({ onSend, compactLogin }) => {
                                     </div>
                                     <div className="text-sm text-secondary-text font-normal mt-4">
                                         <div className='grid gap-4 grid-cols-5  items-center'>
-                                            <div className="relative rounded-md shadow-sm col-span-3">
+                                            <div className="relative rounded-md shadow-xs col-span-3">
                                                 <Field name="email">
                                                     {({ field }) => (
                                                         <input
@@ -122,7 +122,7 @@ const SendEmail: FC<Props> = ({ onSend, compactLogin }) => {
                                                 What&apos;s your email?
                                             </p>
                                         </div>
-                                        <div className="relative rounded-md shadow-sm">
+                                        <div className="relative rounded-md shadow-xs">
                                             <Field name="email">
                                                 {({ field }) => (
                                                     <input

@@ -1,5 +1,5 @@
 import { datadogRum } from "@datadog/browser-rum";
-import { Balance } from "../../../Models/Balance";
+import { TokenBalance } from "../../../Models/Balance";
 import { Network, NetworkWithTokens, Token } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
@@ -12,7 +12,7 @@ export class TronBalanceProvider {
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
-        let balances: Balance[] = []
+        let balances: TokenBalance[] = []
         const provider = new TronWeb({ fullNode: network.node_url, solidityNode: network.node_url, privateKey: '01' });
         const tokens = insertIfNotExists(network.tokens, network.token)
 

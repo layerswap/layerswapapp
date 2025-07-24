@@ -1,10 +1,10 @@
-import { NetworkWithTokens, RouteNetwork } from "./Network";
+import { NetworkWithTokens, NetworkRoute } from "./Network";
 import { Exchange } from "./Exchange";
 
 export class LayerSwapSettings {
     sourceExchanges?: Exchange[];
     destinationExchanges?: Exchange[];
     networks: NetworkWithTokens[];
-    sourceRoutes?: RouteNetwork[];
-    destinationRoutes?: RouteNetwork[];
+    sourceRoutes?: NetworkRoute[];
+    destinationRoutes?: NetworkRoute[];
 };

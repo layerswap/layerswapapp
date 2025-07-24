@@ -26,9 +26,9 @@ function constructIcons(messageType: messageType) {
 
 const WarningMessage: FC<Props> = (({ children, className, messageType = 'warning' }) => {
     return (
-        <div className={`flex-col w-full rounded-md bg-secondary-700 border border-secondary-500 shadow-lg px-3.5 py-3 ${className}`}>
+        <div className={`flex-col w-full rounded-xl bg-secondary-500 shadow-lg px-3.5 py-3 ${className}`}>
             <div className='flex items-center'>
-                <div className={`mr-2 hidden sm:inline p-2 rounded-lg bg-secondary-400 text-primary-text`}>
+                <div className={`mr-2 hidden sm:inline p-2 rounded-lg bg-secondary-300 text-primary-text`}>
                     {constructIcons(messageType)}
                 </div>
                 <div className={`text-xs sm:text-sm leading-5 ${messageType == 'warning' ? 'font-semibold' : " text-primary-text font-normal"}`}>

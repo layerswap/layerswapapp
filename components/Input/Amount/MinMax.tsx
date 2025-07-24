@@ -1,16 +1,17 @@
 import SecondaryButton from "../../buttons/secondaryButton"
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import useSWRBalance from "../../../lib/balances/useSWRBalance";
-import useSWRGas from "../../../lib/gases/useSWRGas";
-import { useSwapDataState } from "../../../context/swap";
-import { RouteNetwork, RouteToken, Token } from "../../../Models/Network";
+import useSWRBalance from "@/lib/balances/useSWRBalance";
+import useSWRGas from "@/lib/gases/useSWRGas";
+import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { useMemo } from "react";
-import { resolveMacAllowedAmount } from "./helpers";
+import { resolveMaxAllowedAmount } from "./helpers";
+import { updateForm } from "@/components/Swap/Form/updateForm";
+import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
 
 type MinMaxProps = {
-    fromCurrency: RouteToken,
-    from: RouteNetwork,
+    fromCurrency: NetworkRouteToken,
+    from: NetworkRoute,
     limitsMaxAmount: number,
     limitsMinAmount: number
 }
@@ -19,43 +20,46 @@ const MinMax = (props: MinMaxProps) => {
 
     const { setFieldValue } = useFormikContext<SwapFormValues>();
     const { fromCurrency, from, limitsMinAmount, limitsMaxAmount } = props;
-
-    const { selectedSourceAccount } = useSwapDataState()
+    const { pickerSelectedWallet: selectedSourceAccount } = useSelectedWalletStore('from')
 
     const { gas } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency)
-    const { balance, mutate } = useSWRBalance(selectedSourceAccount?.address, from)
+    const { balances, mutate } = useSWRBalance(selectedSourceAccount?.address, from)
 
     const gasAmount = gas || 0;
 
     const handleSetMinAmount = () => {
-        setFieldValue('amount', limitsMinAmount);
+        updateForm({
+            formDataKey: 'amount',
+            formDataValue: limitsMinAmount.toString(),
+            setFieldValue
+        })
     }
-    const walletBalance = selectedSourceAccount?.address ? balance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol) : undefined
+    const walletBalance = selectedSourceAccount?.address ? balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol) : undefined
     const native_currency = from?.token
 
     let maxAllowedAmount: number = useMemo(() => {
-        return resolveMacAllowedAmount({ fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency })
+        return resolveMaxAllowedAmount({ fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency })
     }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency])
 
     const handleSetMaxAmount = async () => {
-        const updatedBalance = await mutate()
-        const updatedWalletBalance = updatedBalance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
-        const maxAllowedAmount = resolveMacAllowedAmount({ fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance: updatedWalletBalance, gasAmount, native_currency })
-        setFieldValue('amount', maxAllowedAmount);
+        const updatedBalances = await mutate()
+        const updatedWalletBalance = updatedBalances?.balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
+        const maxAllowedAmount = resolveMaxAllowedAmount({ fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance: updatedWalletBalance, gasAmount, native_currency })
+        updateForm({
+            formDataKey: 'amount',
+            formDataValue: maxAllowedAmount.toString(),
+            setFieldValue
+        })
     }
 
     return (
-        <div className="flex flex-col justify-center">
-            <div className="text-xs flex flex-col items-center space-x-1 md:space-x-2 ml-2 md:ml-5 px-2">
-                <div className="flex">
-                    <SecondaryButton disabled={!limitsMinAmount} onClick={handleSetMinAmount} size="xs">
-                        MIN
-                    </SecondaryButton>
-                    <SecondaryButton disabled={!maxAllowedAmount} onClick={handleSetMaxAmount} size="xs" className="ml-1.5">
-                        MAX
-                    </SecondaryButton>
-                </div>
-            </div>
+        <div className="flex gap-1">
+            <SecondaryButton disabled={!limitsMinAmount} onClick={handleSetMinAmount} size="xs" className="!py-0 !font-medium !text-sm !bg-secondary-300 rounded-sm !border-0">
+                Min
+            </SecondaryButton>
+            <SecondaryButton disabled={!maxAllowedAmount} onClick={handleSetMaxAmount} size="xs" className="!py-0 !font-medium !text-sm !bg-secondary-300 rounded-sm !border-0">
+                Max
+            </SecondaryButton>
         </div>
     )
 }

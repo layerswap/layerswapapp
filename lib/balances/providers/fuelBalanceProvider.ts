@@ -1,4 +1,4 @@
-import { Balance } from "../../../Models/Balance";
+import { TokenBalance } from "../../../Models/Balance";
 import { NetworkWithTokens } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
@@ -10,7 +10,7 @@ export class FuelBalanceProvider {
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
-        let balances: Balance[] = []
+        let balances: TokenBalance[] = []
 
         if (!network?.tokens) return
 
@@ -57,7 +57,7 @@ export class FuelBalanceProvider {
                 const token = network.tokens[i]
                 const balance = json.data.balances.nodes.find(b => b?.assetId === token.contract) || null
 
-                const balanceObj: Balance = {
+                const balanceObj: TokenBalance = {
                     network: network.name,
                     amount: formatAmount(Number(balance?.amount || 0), token.decimals),
                     decimals: token.decimals,

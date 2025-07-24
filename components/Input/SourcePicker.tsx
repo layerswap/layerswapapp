@@ -1,0 +1,55 @@
+import SourceWalletPicker from "./SourceWalletPicker";
+import RoutePicker from "./RoutePicker";
+import AmountField from "./Amount";
+import { useFormikContext } from "formik";
+import { SwapFormValues } from "../DTOs/SwapFormValues";
+import MinMax from "./Amount/MinMax";
+import { LayoutGroup, motion } from "framer-motion";
+import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
+import { useMemo } from "react";
+
+const SourcePicker = () => {
+    const { values } = useFormikContext<SwapFormValues>();
+
+    const { fromAsset: fromCurrency, from, to } = values || {};
+    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
+    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(quoteArgs)
+
+    return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl py-4.5 px-4 space-y-8">
+        <div className="flex justify-between items-center">
+            <label htmlFor="From" className="block font-medium text-secondary-text text-sm">
+                Send from
+            </label>
+            <div className="hover:bg-secondary-400 rounded-lg p-1.5 -m-1.5">
+                <SourceWalletPicker />
+            </div>
+        </div>
+        <div className="relative group">
+            {
+                from && to && fromCurrency && minAllowedAmount && maxAmountFromApi &&
+                <div className="absolute z-10 -top-6 left-0 hidden group-focus-within:block">
+                    <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />
+                </div>
+            }
+            <LayoutGroup>
+                <div className="grid grid-cols-8 gap-2 group">
+                    <motion.div
+                        layout
+                        transition={{ duration: 0.25, ease: 'easeInOut' }}
+                        className="col-span-5"
+                    >
+                        <AmountField />
+                    </motion.div>
+                    <motion.div
+                        transition={{ duration: 0.25, ease: 'easeInOut' }}
+                        className="col-span-3 flex items-center self-start justify-end"
+                    >
+                        <RoutePicker direction="from" />
+                    </motion.div>
+                </div>
+            </LayoutGroup>
+        </div>
+    </div>
+}
+
+export default SourcePicker

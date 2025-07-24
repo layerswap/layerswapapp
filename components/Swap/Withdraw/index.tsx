@@ -1,5 +1,4 @@
 import { FC } from 'react'
-import WalletTransfer from './Wallet';
 import ManualTransfer from './ManualTransfer';
 import { useSwapDataState } from '../../../context/swap';
 import KnownInternalNames from '../../../lib/knownIds';
@@ -7,16 +6,14 @@ import SwapSummary from '../Summary';
 import External from './External';
 import { useQueryState } from '../../../context/query';
 import { Widget } from '../../Widget/Index';
-import WalletTransferContent from './WalletTransferContent';
+import { SwapQuoteDetails } from './SwapQuoteDetails';
+import WalletTransferButton from './WalletTransferButton';
 
-const Withdraw: FC = () => {
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
+const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
+    const { swapBasicData, swapDetails, quote, refuel } = useSwapDataState()
     const { appName, signature } = useQueryState()
-
-    const sourceIsImmutableX = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
-        || swap?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
-
+    const sourceIsImmutableX = swapBasicData?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
+        || swapBasicData?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const isImtblMarketplace = (signature && appName === "imxMarketplace" && sourceIsImmutableX)
 
     let withdraw: {
@@ -24,12 +21,11 @@ const Withdraw: FC = () => {
         footer?: JSX.Element | JSX.Element[],
     } = {}
 
-    if (swap?.use_deposit_address === false) {
+    if (swapBasicData?.use_deposit_address === false) {
         withdraw = {
-            content: <WalletTransferContent />,
-            footer: <WalletTransfer />
+            footer: <WalletTransferButton swapBasicData={swapBasicData} swapId={swapDetails?.id} refuel={!!refuel} />
         }
-    } else if (swap?.use_deposit_address === true) {
+    } else if (swapBasicData?.use_deposit_address === true) {
         withdraw = {
             footer: <ManualTransfer />,
             content: <></>
@@ -46,19 +42,16 @@ const Withdraw: FC = () => {
         <>
             <Widget.Content>
                 <div className="w-full flex flex-col justify-between  text-secondary-text">
-                    <div className='grid grid-cols-1 gap-4 '>
-                        <div className="bg-secondary-700 rounded-lg px-3 py-4 border border-secondary-500 w-full relative z-10 space-y-4">
-                            <SwapSummary />
-                        </div>
-                        <span>
-                            {withdraw?.content}
-                        </span>
+                    <div className='grid grid-cols-1 gap-3 '>
+                        <SwapSummary />
+                        {quote && <SwapQuoteDetails swapBasicData={swapBasicData} quote={quote} refuel={refuel} />}
+                        {withdraw?.content}
                     </div>
                 </div>
             </Widget.Content>
             {
                 withdraw?.footer &&
-                <Widget.Footer sticky={true}>
+                <Widget.Footer sticky={type == 'widget'}>
                     {withdraw?.footer}
                 </Widget.Footer>
             }

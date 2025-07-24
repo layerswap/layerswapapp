@@ -1,6 +1,6 @@
-import { UpdateInterface } from "../../../context/authContext"
+import { UpdateAuthInterface } from "../../../context/authContext"
 
-const MockFunctions: UpdateInterface = {
+const MockFunctions: UpdateAuthInterface = {
     updateTempEmail: () => { throw new Error("Not implemented") },
     updateAuthData: () => { throw new Error("Not implemented") },
     getAuthData: () => { throw new Error("Not implemented") },

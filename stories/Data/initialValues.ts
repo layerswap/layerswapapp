@@ -64,7 +64,7 @@ export const initialValues: SwapFormValues = {
             "wallet"
         ]
     },
-    "fromCurrency": {
+    "fromAsset": {
         "symbol": "ETH",
         "listing_date": "2023-12-27T16:46:50.617075+00:00",
         "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
@@ -122,7 +122,7 @@ export const initialValues: SwapFormValues = {
             "wallet"
         ]
     },
-    "toCurrency": {
+    "toAsset": {
         "status": "active",
         "symbol": "ETH",
         "listing_date": "2023-12-27T16:46:50.617075+00:00",

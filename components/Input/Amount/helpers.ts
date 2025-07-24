@@ -1,17 +1,17 @@
-import { Balance } from "../../../Models/Balance"
+import { TokenBalance } from "../../../Models/Balance"
 import { Token } from "../../../Models/Network"
 
 
 type ResoleMaxAllowedAmountProps = {
     limitsMinAmount: number
     limitsMaxAmount: number
-    walletBalance: Balance | undefined
+    walletBalance: TokenBalance | undefined
     gasAmount: number
     fromCurrency: Token
     native_currency: Token | undefined
 }
 
-export const resolveMacAllowedAmount = (props: ResoleMaxAllowedAmountProps) => {
+export const resolveMaxAllowedAmount = (props: ResoleMaxAllowedAmountProps) => {
     const { limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, fromCurrency, native_currency } = props
 
     if (!walletBalance || !isInRange({ value: walletBalance.amount, min: limitsMinAmount, max: limitsMaxAmount }))

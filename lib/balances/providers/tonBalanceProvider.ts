@@ -1,5 +1,5 @@
 import { datadogRum } from "@datadog/browser-rum";
-import { Balance } from "../../../Models/Balance";
+import { TokenBalance } from "../../../Models/Balance";
 import { Network, NetworkWithTokens, Token } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 
@@ -14,7 +14,7 @@ export class TonBalanceProvider {
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
-        let balances: Balance[] = []
+        let balances: TokenBalance[] = []
         const tokens = insertIfNotExists(network.tokens || [], network.token)
 
         for (const token of tokens) {

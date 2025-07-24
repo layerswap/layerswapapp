@@ -23,11 +23,11 @@ export const ResolveConnectorIcon = ({
     iconClassName,
     className,
 }: {
-    connector: string;
+    connector?: string;
     iconClassName: string;
     className?: string;
 }) => {
-    switch (connector.toLowerCase()) {
+    switch (connector?.toLowerCase()) {
         case KnownConnectors.EVM:
             return (
                 <IconsWrapper className={className}>
@@ -92,7 +92,14 @@ export const ResolveConnectorIcon = ({
                 </IconsWrapper>
             );
         default:
-            return <></>;
+            return (
+                <IconsWrapper className={className}>
+                    <MetaMaskIcon className={iconClassName} />
+                    <WalletConnectIcon className={iconClassName} />
+                    <RainbowIcon className={iconClassName} />
+                    <Phantom className={iconClassName} />
+                </IconsWrapper>
+            );
     }
 };
 

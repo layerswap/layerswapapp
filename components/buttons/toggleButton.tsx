@@ -15,15 +15,15 @@ const ToggleButton: FC<ToggleButtonProps> = ({ onChange, value, disabled = false
             onChange={onChange}
             disabled={disabled}
             className={classNames(
-                value ? 'bg-primary' : 'bg-secondary-500',
-                'relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none'
+                value ? 'bg-primary' : 'bg-secondary-400',
+                'relative inline-flex shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-hidden'
             )}
         >
             <span className="sr-only">Use setting</span>
             <span
                 className={classNames(
                     value ? 'translate-x-5 bg-primary-text' : 'bg-secondary-200 translate-x-0',
-                    'pointer-events-none relative inline-block h-5 w-5 rounded-full shadow transform ring-0 transition ease-in-out duration-200'
+                    'pointer-events-none relative inline-block h-5 w-5 rounded-full shadow-sm transform ring-0 transition ease-in-out duration-200'
                 )}
             >
                 <span

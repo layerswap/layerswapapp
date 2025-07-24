@@ -35,7 +35,7 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
 
     return (
         sticky ?
-            <>
+            <div>
                 <motion.div
                     ref={footerRef}
                     transition={{
@@ -48,7 +48,7 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                         max-sm:inset-x-0
                         max-sm:bottom-0 
                         max-sm:z-30
-                        max-sm:bg-secondary-900 
+                        max-sm:bg-secondary-700 
                         max-sm:shadow-widget-footer 
                         max-sm:p-4 
                         max-sm:px-6 
@@ -65,7 +65,7 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                              max-sm:bottom-0 
                              max-sm:p-4 max-sm:w-full invisible sm:hidden`}>
                 </div>
-            </ >
+            </div>
             :
             <>
                 {children}

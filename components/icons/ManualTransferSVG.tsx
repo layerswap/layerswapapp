@@ -1,7 +1,7 @@
 const ManualTransferSVG = () => {
     return <svg id="efu6402UDMN1" xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 464 198" shapeRendering="geometricPrecision" textRendering="geometricPrecision">
-        <rect width="464" height="198" rx="0" ry="0" fill="rgb(var(--ls-colors-secondary-900))" />
+        <rect width="464" height="198" rx="0" ry="0" fill="rgb(var(--ls-colors-secondary-700))" />
         <g transform="translate(0 2.666)">
             <path d="M24,44c0-4.4183,3.5817-8,8-8h400c4.418,0,8,3.5817,8,8v72h-416v-72Z" fill="rgb(var(--ls-colors-secondary-600))" />
             <path
