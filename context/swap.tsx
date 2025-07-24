@@ -1,7 +1,7 @@
 import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, Quote, SwapBasicData, SwapQuote, Refuel, SwapDetails } from '@/lib/apiClients/layerSwapApiClient';
-import { NextRouter, useRouter } from 'next/router';
+import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, SwapBasicData, SwapQuote, Refuel, SwapDetails } from '@/lib/apiClients/layerSwapApiClient';
+import { useRouter } from 'next/router';
 import { QueryParams } from '../Models/QueryParams';
 import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
@@ -11,13 +11,10 @@ import { ResolvePollingInterval } from '../components/utils/SwapStatus';
 import { Wallet, WalletProvider } from '../Models/WalletProvider';
 import useWallet from '../hooks/useWallet';
 import { Network } from '../Models/Network';
-import { resolvePersistantQueryParams } from '../helpers/querryHelper';
 import { TrackEvent } from "@/pages/_document";
-import { parse, ParsedUrlQuery } from 'querystring';
 import { useSettingsState } from './settings';
 import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useRecentNetworksStore } from '@/stores/recentNetworksStore';
-import useSelectedWalletStore, { SelectedWallet } from '@/context/selectedAccounts/pickerSelectedWallets';
 
 export const SwapDataStateContext = createContext<SwapContextData>({
     codeRequested: false,

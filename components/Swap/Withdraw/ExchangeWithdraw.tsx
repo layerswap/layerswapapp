@@ -54,7 +54,6 @@ const ExchangeWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, ref
                 eventName: 'click',
                 eventType: 'send_from_wallet',
             })
-            debugger
             const swapValues: SwapFormValues = {
                 amount: swapBasicData?.requested_amount.toString(),
                 from: network as NetworkRoute,
@@ -73,6 +72,7 @@ const ExchangeWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, ref
             if (!swapId) {
                 throw new Error('Swap ID is undefined');
             }
+            setSwapId(swapId);
         }
         catch (e) {
             console.log('Error in SendTransactionButton:', e)
