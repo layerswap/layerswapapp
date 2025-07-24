@@ -37,7 +37,7 @@ function updateQueries({ formDataKey, formDataValue, }: { formDataKey: string; f
 
     const qs = new URLSearchParams(params).toString();
     const newUrl = qs ? `${base}?${qs}` : base;
-    window.history.pushState(
+    window.history.replaceState(
         { ...window.history.state, as: newUrl, url: newUrl },
         "",
         newUrl
@@ -82,7 +82,7 @@ function updateQueriesBulk(
 
     const qs = new URLSearchParams(params).toString();
     const newUrl = qs ? `${base}?${qs}` : base;
-    window.history.pushState(
+    window.history.replaceState(
         { ...window.history.state, as: newUrl, url: newUrl },
         "",
         newUrl
@@ -118,6 +118,6 @@ export async function updateFormBulk(
         }
     }
 
-    // 3) one pushState that adds/edits or deletes
+    // 3) one replaceState that adds/edits or deletes
     updateQueriesBulk(updates);
 }

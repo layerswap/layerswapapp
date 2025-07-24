@@ -5,13 +5,15 @@ import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import MinMax from "./Amount/MinMax";
 import { LayoutGroup, motion } from "framer-motion";
-import { useQuoteData } from "@/hooks/useFee";
+import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
+import { useMemo } from "react";
 
 const SourcePicker = () => {
     const { values } = useFormikContext<SwapFormValues>();
 
     const { fromAsset: fromCurrency, from, to } = values || {};
-    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(values)
+    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
+    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(quoteArgs)
 
     return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl py-4.5 px-4 space-y-8">
         <div className="flex justify-between items-center">

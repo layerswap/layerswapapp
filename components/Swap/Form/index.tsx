@@ -1,15 +1,14 @@
 import { Formik, FormikProps } from "formik";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSettingsState } from "@/context/settings";
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import React from "react";
-import ConnectNetwork from "../../ConnectNetwork";
+import ConnectNetwork from "@/components/ConnectNetwork";
 import toast from "react-hot-toast";
-import MainStepValidation from "@/lib/mainStepValidator";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/lib/generateSwapInitialValues";
 import LayerSwapApiClient, { Quote } from "@/lib/apiClients/layerSwapApiClient";
-import Modal from "../../modal/modal";
+import Modal from "@/components/modal/modal";
 import useSWR from "swr";
 import { NextRouter, useRouter } from "next/router";
 import { ApiResponse } from "@/Models/ApiResponse";
@@ -23,12 +22,7 @@ import { AnimatePresence } from "framer-motion";
 import useWallet from "@/hooks/useWallet";
 import { DepositMethodProvider } from "@/context/depositMethodContext";
 import { dynamicWithRetries } from "@/lib/dynamicWithRetries";
-import AddressNote from "../../Input/Address/AddressNote";
-import { addressFormat } from "@/lib/address/formatter";
-import { AddressGroup } from "../../Input/Address/AddressPicker";
-import { useAddressesStore } from "@/stores/addressesStore";
 import { useAsyncModal } from "@/context/asyncModal";
-import { ValidationProvider } from "@/context/validationErrorContext";
 import { PendingSwap } from "./PendingSwap";
 import { QueryParams } from "@/Models/QueryParams";
 import VaulDrawer from "@/components/modal/vaulModal";
@@ -39,7 +33,9 @@ import useShowAddressNote from "@/hooks/useShowAddressNote";
 import { Widget } from "@/components/Widget/Index";
 import NetworkTabIcon from "@/components/icons/NetworkTabIcon";
 import ExchangeTabIcon from "@/components/icons/ExchangeTabIcon";
-import { useQuoteData } from "@/hooks/useFee";
+import { transformSwapDataToQuoteArgs, useQuoteData } from "@/hooks/useFee";
+import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
+import { ValidationProvider } from "@/context/validationContext";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -67,46 +63,46 @@ export default function Form() {
     const router = useRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
     const { getProvider } = useWallet()
-    const addresses = useAddressesStore(state => state.addresses)
-    const { getConfirmation } = useAsyncModal()
-    const showAddressNote = useShowAddressNote()
+    const { getConfirmation } = useAsyncModal();
 
     const settings = useSettingsState();
     const query = useQueryState()
     const { appName, sameAccountNetwork } = query
-    const { createSwap, setSwapId, setSwapPath, removeSwapPath, resolveSwapDataFromQuery } = useSwapDataUpdate()
+    const { createSwap, setSwapId, setSubmitedFormValues } = useSwapDataUpdate()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
     const partner = appName && partnerData?.data?.client_id?.toLowerCase() === (appName as string)?.toLowerCase() ? partnerData?.data : undefined
 
-    const { swapResponse, selectedSourceAccount } = useSwapDataState()
-    const { swap } = swapResponse || {}
-    const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits, quote } = useQuoteData(formikRef.current?.values || {})
+    const { swapBasicData, swapDetails } = useSwapDataState()
+    const { pickerSelectedWallet: selectedSourceAccount } = useSelectedWalletStore('from');
+
+    const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicData, !!swapBasicData?.refuel), [swapBasicData]);
+    const { quote } = useQuoteData(quoteArgs)
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         const { destination_address, to } = values
 
-        if (to &&
-            destination_address &&
-            showAddressNote &&
-            (destination_address) &&
-            (addressFormat(destination_address?.toString(), to) === addressFormat(destination_address, to)) &&
-            !(addresses.find(a => addressFormat(a.address, to) === addressFormat(destination_address, to) && a.group !== AddressGroup.FromQuery)) && !isAddressFromQueryConfirmed) {
+        // if (to &&
+        //     destination_address &&
+        //     showAddressNote &&
+        //     (destination_address) &&
+        //     (addressFormat(destination_address?.toString(), to) === addressFormat(destination_address, to)) &&
+        //     !(addresses.find(a => addressFormat(a.address, to) === addressFormat(destination_address, to) && a.group !== AddressGroup.FromQuery)) && !isAddressFromQueryConfirmed) {
 
-            const confirmed = await getConfirmation({
-                content: <AddressNote partner={partner} values={values} />,
-                submitText: 'Confirm address',
-                dismissText: 'Cancel address'
-            })
+        //     const confirmed = await getConfirmation({
+        //         content: <AddressNote partner={partner} values={values} />,
+        //         submitText: 'Confirm address',
+        //         dismissText: 'Cancel address'
+        //     })
 
-            if (confirmed) {
-                setIsAddressFromQueryConfirmed(true)
-            }
-            else if (!confirmed) {
-                return
-            }
-        }
+        //     if (confirmed) {
+        //         setIsAddressFromQueryConfirmed(true)
+        //     }
+        //     else if (!confirmed) {
+        //         return
+        //     }
+        // }
         try {
             const accessToken = TokenService.getAuthData()?.access_token
             if (!accessToken) {
@@ -122,52 +118,34 @@ export default function Form() {
                 }
             }
             await handleCreateSwap({
+                setSwapId,
                 values,
+                setSubmitedFormValues,
                 query,
                 partner,
-                router,
-                minAllowedAmount,
-                quote,
-                settings,
-                selectedSourceAddress: selectedSourceAccount?.address,
-                mutateLimits,
-                setSwapId,
-                setSwapPath,
                 createSwap,
                 setShowSwapModal: handleShowSwapModal,
-                pollFee,
                 setNetworkToConnect,
                 setShowConnectNetworkModal,
-                resolveSwapDataFromQuery,
             })
         }
         catch (error) {
             toast.error(error?.message)
         }
-    }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getProvider, settings, quote, selectedSourceAccount])
+    }, [createSwap, query, partner, router, updateAuthData, setUserType, swapBasicData, getProvider, settings, quote, selectedSourceAccount])
 
-    const initialValues: SwapFormValues = swapResponse ? generateSwapInitialValuesFromSwap(swapResponse, settings)
+    const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, settings)
         : generateSwapInitialValues(settings, query)
-
-    useEffect(() => {
-        formikRef.current?.validateForm();
-    }, [minAllowedAmount, maxAllowedAmount, selectedSourceAccount]);
 
     const handleShowSwapModal = useCallback((value: boolean) => {
         setShowSwapModal(value)
-        if (swap?.id) {
-            pollFee(!value)
-            value ? setSwapPath(swap?.id, router) : removeSwapPath(router)
-        }
-    }, [router, swap])
-
-    const validator = useMemo(() => MainStepValidation({ minAllowedAmount, maxAllowedAmount, sourceAddress: selectedSourceAccount?.address, sameAccountNetwork: sameAccountNetwork }), [minAllowedAmount, maxAllowedAmount, selectedSourceAccount, sameAccountNetwork])
+    }, [router, swapDetails])
 
     return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence mode='wait'>
                 {
-                    swap &&
+                    swapDetails &&
                     !showSwapModal &&
                     <PendingSwap key="pendingSwap" onClick={() => handleShowSwapModal(true)} />
                 }
@@ -211,7 +189,6 @@ export default function Form() {
                         innerRef={formikRef}
                         initialValues={initialValues}
                         validateOnMount={true}
-                        validate={validator}
                         onSubmit={handleSubmit}
                     >
                         <ValidationProvider>
@@ -224,7 +201,6 @@ export default function Form() {
                         innerRef={formikRef}
                         initialValues={initialValues}
                         validateOnMount={true}
-                        validate={validator}
                         onSubmit={handleSubmit}
                     >
                         <ValidationProvider>
@@ -241,41 +217,28 @@ type SubmitProps = {
     values: SwapFormValues;
     query: QueryParams;
     partner?: Partner;
-    router: NextRouter;
-    minAllowedAmount?: number;
-    quote?: Quote;
-    selectedSourceAddress?: string
-    settings: ReturnType<typeof useSettingsState>;
+    setSubmitedFormValues: UpdateSwapInterface['setSubmitedFormValues'];
     setSwapId: UpdateSwapInterface['setSwapId'];
-    setSwapPath: UpdateSwapInterface['setSwapPath'];
+
     createSwap: UpdateSwapInterface['createSwap'];
-    resolveSwapDataFromQuery: UpdateSwapInterface['resolveSwapDataFromQuery'];
     setShowSwapModal: (value: boolean) => void;
-    pollFee: (value: boolean) => void;
     setNetworkToConnect: (value: NetworkToConnect) => void;
     setShowConnectNetworkModal: (value: boolean) => void;
-    mutateLimits: () => void;
 }
 
-const handleCreateSwap = async ({ query, values, settings, quote, partner, selectedSourceAddress, router, minAllowedAmount, setSwapId, setShowSwapModal, setSwapPath, pollFee, createSwap, setNetworkToConnect, setShowConnectNetworkModal, mutateLimits, resolveSwapDataFromQuery }: SubmitProps) => {
+const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, createSwap, setNetworkToConnect, setShowConnectNetworkModal, setSwapId, setSubmitedFormValues }: SubmitProps) => {
     if (values.depositMethod == 'wallet') {
-        quote && resolveSwapDataFromQuery(settings, selectedSourceAddress, quote, values?.destination_address)
         setSwapId(undefined)
-        pollFee(true)
+        setSubmitedFormValues(values)
         setShowSwapModal(true)
         return
     }
-
     try {
-        const swapData = await createSwap(values, query, partner);
-        const swapId = swapData?.swap?.id;
-        setSwapId(swapId)
-        pollFee(false)
-        setSwapPath(swapId, router)
+        const swap = await createSwap(values, query, partner);
+        setSwapId(swap.swap.id)
         setShowSwapModal(true)
     }
     catch (error) {
-        mutateLimits()
         const data: ApiError = error?.response?.data?.error
         if (data?.code === LSAPIKnownErrorCode.BLACKLISTED_ADDRESS) {
             throw new Error("You can't transfer to that address. Please double check.")
@@ -295,11 +258,11 @@ const handleCreateSwap = async ({ query, values, settings, quote, partner, selec
             const minutes = Number(time[1])
             const remainingTime = `${hours > 0 ? `${hours.toFixed()} ${(hours > 1 ? 'hours' : 'hour')}` : ''} ${minutes > 0 ? `${minutes.toFixed()} ${(minutes > 1 ? 'minutes' : 'minute')}` : ''}`
 
-            if (minAllowedAmount && data.metadata.AvailableTransactionAmount > minAllowedAmount) {
-                throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromAsset?.symbol} or retry in ${remainingTime}.`)
-            } else {
-                throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please retry in ${remainingTime}.`)
-            }
+            // if (minAllowedAmount && data.metadata.AvailableTransactionAmount > minAllowedAmount) {
+            //     throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromAsset?.symbol} or retry in ${remainingTime}.`)
+            // } else {
+            //     throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please retry in ${remainingTime}.`)
+            // }
         }
         else {
             throw new Error(data?.message || error?.message)

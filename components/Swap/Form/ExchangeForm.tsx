@@ -1,4 +1,4 @@
-import { FC, useEffect } from "react";
+import { FC, useMemo } from "react";
 import ValidationError from "@/components/validationError";
 import CexPicker from "@/components/Input/CexPicker";
 import QuoteDetails from "@/components/FeeDetails";
@@ -6,7 +6,6 @@ import { Widget } from "@/components/Widget/Index";
 import FormButton from "../FormButton";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { Form, useFormikContext } from "formik";
-import { useValidationContext } from "@/context/validationErrorContext";
 import { Partner } from "@/Models/Partner";
 import RoutePicker from "@/components/Input/RoutePicker";
 import AmountField from "@/components/Input/Amount";
@@ -16,7 +15,8 @@ import AddressIcon from "@/components/AddressIcon";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import MinMax from "@/components/Input/Amount/MinMax";
-import { useQuoteData } from "@/hooks/useFee";
+import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
+import { useValidationContext } from "@/context/validationContext";
 
 type Props = {
     partner?: Partner;
@@ -24,14 +24,17 @@ type Props = {
 
 const ExchangeForm: FC<Props> = ({ partner }) => {
     const {
-        values,
-        errors, isValid, isSubmitting
+        values, isSubmitting
     } = useFormikContext<SwapFormValues>();
 
     const { fromAsset: fromCurrency, from, to: destination } = values || {};
+    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
 
-    const { isQuoteLoading, quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(values);
-    const { validationMessage } = useValidationContext();
+    const { isQuoteLoading, quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(quoteArgs);
+    const { routeValidation, formValidation } = useValidationContext();
+
+    const isValid = !formValidation.message;
+    const error = formValidation.message;
 
     return (
         <>
@@ -92,7 +95,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                             }
                                         </div>
                                         <div className="relative group exchange-amount-field px-1">
-                                            <AmountField usdPosition="right"/>
+                                            <AmountField usdPosition="right" />
                                         </div>
                                     </div>
                                 </div>
@@ -100,7 +103,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                         </div>
                         <div className="space-y-3">
                             {
-                                validationMessage
+                                routeValidation.message
                                     ? <ValidationError />
                                     : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                             }
@@ -112,7 +115,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                         shouldConnectWallet={false}
                         values={values}
                         isValid={isValid}
-                        errors={errors}
+                        error={error}
                         isSubmitting={isSubmitting}
                         partner={partner}
                     />

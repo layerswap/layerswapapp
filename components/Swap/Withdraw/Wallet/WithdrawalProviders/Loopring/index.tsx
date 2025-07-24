@@ -12,12 +12,14 @@ import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import WalletMessage from '../../../messages/Message';
 import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from '../../Common/buttons';
 import SignatureIcon from '@/components/icons/SignatureIcon';
+import WalletIcon from '@/components/icons/WalletIcon';
 
-export const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, swapId }) => {
+export const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
     const [transferDone, setTransferDone] = useState<boolean>();
     const [activationPubKey, setActivationPubKey] = useState<{ x: string; y: string }>()
     const [selectedActivationAsset, setSelectedActivationAsset] = useState<string>()
+    const { source_network, source_token } = swapBasicData;
 
     const { isConnected, address: fromAddress, chain } = useAccount();
     const { account: accInfo, isLoading: loadingAccount, noAccount, mutate: refetchAccount } = useLoopringAccount({ address: fromAddress })
@@ -74,7 +76,7 @@ export const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, 
     const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setLoading(true)
         try {
-            if (!swapId || !accInfo || !unlockedAccount || !token || !amount)
+            if (!swapId || !accInfo || !unlockedAccount || !source_token || !amount)
                 return
 
             const transferResult = await LoopringAPI.userAPI.transfer({
@@ -82,7 +84,7 @@ export const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, 
                 amount: amount.toString(),
                 depositAddress: depositAddress as `0x${string}`,
                 call_data: callData,
-                token,
+                token: source_token,
                 unlockedAccount
             }, config)
             if (transferResult.hash) {
@@ -98,7 +100,7 @@ export const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, 
             if (e?.message)
                 toast(e.message)
         }
-    }, [network, accInfo, unlockedAccount, token])
+    }, [source_network, accInfo, unlockedAccount, source_token])
 
     if (noAccount) {
         //TODO fix text
@@ -128,11 +130,11 @@ export const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, 
         return <ConnectWalletButton />
     }
     let walletChainId = AppSettings.ApiVersion === "sandbox" ? ChainId.SEPOLIA : ChainId.MAINNET
-    if (network && chain?.id !== Number(walletChainId)) {
+    if (source_network && chain?.id !== Number(walletChainId)) {
         return (
             <ChangeNetworkButton
                 chainId={Number(walletChainId)}
-                network={network}
+                network={source_network}
             />
         )
     }
@@ -152,7 +154,13 @@ export const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ network, token, 
                 <div className='space-y-4'>
                     {
                         (accInfo && unlockedAccount) ?
-                            <SendTransactionButton isDisabled={!!(loading || transferDone)} isSubmitting={!!(loading || transferDone)} onClick={handleTransfer} icon={<ArrowLeftRight className="h-5 w-5 ml-2" aria-hidden="true" />} />
+                            <SendTransactionButton
+                                isDisabled={!!(loading || transferDone)}
+                                onClick={handleTransfer}
+                                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
+                                swapData={swapBasicData}
+                                refuel={refuel}
+                            />
                             :
                             <>
                                 {shouldActivate &&

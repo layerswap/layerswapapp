@@ -14,7 +14,9 @@ import Clock from '../icons/Clock';
 import rewardCup from '@/public/images/rewardCup.png'
 import Image from 'next/image'
 import { Network } from '@/Models/Network';
+import { AnimatedValue } from '../Common/AnimatedValue';
 import ExchangeGasIcon from '../icons/ExchangeGasIcon';
+import useSWRNftBalance from '@/lib/nft/useSWRNftBalance';
 
 export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
     from?: Network;
@@ -27,10 +29,11 @@ export interface QuoteComponentProps {
     swapValues: SwapValues;
     destination?: Network,
     destinationAddress?: string;
+    isUpdatingValues?: boolean;
 }
 
-export default function QuoteDetails({ swapValues: values, quote: quoteData, isQuoteLoading }: QuoteComponentProps) {
-    const { toAsset, to, from, fromAsset: fromCurrency, destination_address } = values || {};
+export default function QuoteDetails({ swapValues: values, quote: quoteData, isQuoteLoading, isUpdatingValues = false }: QuoteComponentProps) {
+    const { toAsset, fromAsset: fromCurrency, destination_address } = values || {};
     const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(false);
 
     return (
@@ -44,15 +47,16 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
                             {
                                 'bg-secondary-500': !isAccordionOpen,
                                 'bg-secondary-400': isAccordionOpen,
+                                'animate-pulse-brightness': isUpdatingValues && !isAccordionOpen
                             }
                         )}>
                             {
                                 (isAccordionOpen) ?
-                                    <p>
+                                    <p className='text-sm'>
                                         Details
                                     </p>
                                     :
-                                    <DetailsButton quote={quoteData} isQuoteLoading={isQuoteLoading} swapValues={values} />
+                                    <DetailsButton quote={quoteData} isQuoteLoading={isQuoteLoading} swapValues={values} destination={values.to} destinationAddress={destination_address} />
                             }
                             <ChevronDown className='h-3.5 w-3.5 text-secondary-text' />
                         </AccordionTrigger>
@@ -77,52 +81,66 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
 }
 
 
-const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoading, swapValues: values }) => {
+const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoading, swapValues: values, destination, destinationAddress }) => {
     const { quote, reward } = quoteData || {}
     const { provider } = useWallet(values.from, 'withdrawal')
     const wallet = provider?.activeWallet
     const { gas } = useSWRGas(wallet?.address, values.from, values.fromAsset)
     const LsFeeAmountInUsd = quote?.total_fee_in_usd
-    const gasFeeAmountInUsd = (quote?.source_network?.token) ? (gas || 0) * quote.source_network?.token?.price_in_usd : null;
-    const feeAmountInUsd = values.fromExchange ? ((LsFeeAmountInUsd || 0) + (gasFeeAmountInUsd || 0)) : (LsFeeAmountInUsd || 0)
-    const displayFeeInUsd = feeAmountInUsd ? (feeAmountInUsd < 0.01 ? '<$0.01' : `$${feeAmountInUsd?.toFixed(2)}`) : null
+    const gasFeeInUsd = (quote?.source_network?.token && gas) ? gas * quote?.source_network?.token?.price_in_usd : null;
+    const displayGasFeeInUsd = gasFeeInUsd ? (gasFeeInUsd < 0.01 ? '<$0.01' : `$${gasFeeInUsd?.toFixed(2)}`) : null
     const displayReward = reward?.amount_in_usd ? (reward?.amount_in_usd < 0.01 ? '<$0.01' : `$${reward?.amount_in_usd?.toFixed(2)}`) : null
     const averageCompletionTime = quote?.avg_completion_time;
 
+    const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && reward?.nft_contract_address;
+    const { balance: nftBalance, isLoading, error } = useSWRNftBalance(
+        destinationAddress || '',
+        destination,
+        reward?.nft_contract_address || ''
+    );
+
     if (isQuoteLoading) {
         return (
-            <div className='h-[24px] w-30 inline-flex bg-gray-500 rounded-xs animate-pulse' />
+            <div className='h-[20px] w-30 inline-flex bg-gray-500 rounded-xs animate-pulse' />
         )
     }
 
     return (
-        <div className='divide-x divide-primary-text-placeholder flex items-center  space-x-4'>
+        <div className='flex items-center space-x-4'>
             {
-                displayFeeInUsd &&
-                <div className='inline-flex items-center gap-1 pr-4'>
-                    {!values.fromExchange ?
-                        <GasIcon /> : <ExchangeGasIcon />
-                    }
-                    <p>
-                        {displayFeeInUsd}
-                    </p>
+                displayGasFeeInUsd &&
+                <div className='inline-flex items-center gap-1'>
+                    <div className='h-4 w-4'>
+                        {!values.fromExchange ?
+                            <GasIcon className='h-4 w-4' /> : <ExchangeGasIcon className='h-4 w-4' />
+                        }
+                    </div>
+                    <AnimatedValue value={displayGasFeeInUsd} className='text-sm text-primary-text' />
                 </div>
             }
             {
                 averageCompletionTime &&
-                <div className="text-right text-primary-text inline-flex items-center gap-1 pr-4">
-                    <Clock />
-                    <AverageCompletionTime avgCompletionTime={quote.avg_completion_time} />
-                </div>
+                <>
+                    <div className="w-px h-3 bg-primary-text-placeholder rounded-2xl" />
+                    <div className="text-right text-primary-text inline-flex items-center gap-1 text-sm">
+                        <div className='h-4 w-4'>
+                            <Clock className='h-4 w-4' />
+                        </div>
+                        <AverageCompletionTime avgCompletionTime={quote.avg_completion_time} />
+                    </div>
+                </>
             }
             {
                 reward &&
-                <div className='text-right text-primary-text inline-flex items-center gap-1 pr-4'>
-                    <Image src={rewardCup} alt="Reward" width={16} height={16} />
-                    <p>
-                        {displayReward}
-                    </p>
-                </div>
+                (!shouldCheckNFT || (!isLoading && !error && nftBalance !== undefined && nftBalance > 0)) &&
+                <>
+                    <div className="w-px h-3 bg-primary-text-placeholder rounded-2xl" />
+                    <div className='text-right text-primary-text inline-flex items-center gap-1 pr-4'>
+                        <Image src={rewardCup} alt="Reward" width={16} height={16} />
+                        <AnimatedValue value={displayReward} className='text-sm text-primary-text' />
+                    </div>
+                </>
+
             }
         </div>
     )

@@ -1,4 +1,5 @@
 import { Network, Token } from "@/Models/Network";
+import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 
 export type ActionData = {
     error: Error | null;
@@ -7,9 +8,9 @@ export type ActionData = {
 }
 
 export type WithdrawPageProps = {
-    network?: Network
-    token?: Token
-    swapId?: string
+    swapId: string | undefined
+    swapBasicData: SwapBasicData
+    refuel: boolean
     savedTransactionHash?: string
 }
 
