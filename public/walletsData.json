@@ -1,5 +1,5 @@
 {
-  "count": 554,
+  "count": 555,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -1317,6 +1317,61 @@
       "updatedAt": "2022-02-02T08:24:27.934939+00:00",
       "versions": [
         "2"
+      ]
+    },
+    "090447a8ce11f1f55f3016fe933044b6e06cb21fbf57d902e7ccc207892b86c6": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.roar_wallet&pli=1",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "https://apps.apple.com/us/app/r0ar-wallet/id6745417026",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1"
+      ],
+      "description": "The R0AR Wallet — Simple, Secure, and Built for Real Users\nWe built the R0AR Wallet to make your Web3 experience effortless and secure. Available now on iOS, Android, and Google Play stores, our wallet puts users in full control of their assets with true self-custody — no hidden fees, no shady MEV bots, and no complicated onboarding. With built-in AI-powered features never before seen in a crypto wallet, R0AR Wallet helps users navigate Web3 with confidence, simplicity, and security.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://www.r0ar.io/",
+      "id": "090447a8ce11f1f55f3016fe933044b6e06cb21fbf57d902e7ccc207892b86c6",
+      "image_id": "a8239b76-9877-4809-c29e-d1392b6f4e00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/a8239b76-9877-4809-c29e-d1392b6f4e00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/a8239b76-9877-4809-c29e-d1392b6f4e00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/a8239b76-9877-4809-c29e-d1392b6f4e00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "Roarwallet://",
+        "universal": ""
+      },
+      "name": "R0AR Mobile Wallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1"
+      ],
+      "slug": "r0ar-mobile-wallet",
+      "updatedAt": "2025-07-28T10:41:24.982392+00:00",
+      "versions": [
+        "1"
       ]
     },
     "09d3f710148d94993ca9f3ed095594d7cc90ba46137dd803a8904b6dbb4bd89c": {
@@ -23074,7 +23129,7 @@
       },
       "mobile": {
         "native": "okex://main",
-        "universal": "https://www.okx.com/ul/rE3RWm"
+        "universal": "https://www.okx.com/download?appendQuery=true&deeplink=okx://web3/wallet/walletConnect"
       },
       "name": "OKX Wallet",
       "rdns": "com.okex.wallet",
@@ -37663,5 +37718,5 @@
       ]
     }
   },
-  "total": 554
+  "total": 555
 }
