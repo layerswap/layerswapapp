@@ -1,4 +1,4 @@
-import { FC, useCallback, useState } from "react";
+import { FC, useCallback, useMemo, useState } from "react";
 import {
     useAccount,
     useConfig,
@@ -11,8 +11,8 @@ import { SendTransactionButton } from "../../Common/buttons";
 import { datadogRum } from "@datadog/browser-rum";
 import { isMobile } from "@/lib/openLink";
 import { sendTransaction } from '@wagmi/core'
-import { useSelectAccounts } from "@/context/selectedAccounts";
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
+import useWallet from "@/hooks/useWallet";
 
 type Props = {
     savedTransactionHash?: string;
@@ -28,12 +28,13 @@ const TransferTokenButton: FC<Props> = ({
 }) => {
     const [buttonClicked, setButtonClicked] = useState(false)
     const config = useConfig()
-    const { selectedSourceAccount } = useSelectAccounts()
     const [error, setError] = useState<any | undefined>()
     const [loading, setLoading] = useState(false)
 
-    const { address } = useAccount();
 
+    const { provider } = useWallet(swapData.source_network, "withdrawal")
+    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
+    
     const clickHandler = useCallback(async ({ amount, callData, depositAddress }: TransferProps) => {
         setButtonClicked(true)
         setError(undefined)
@@ -53,8 +54,8 @@ const TransferTokenButton: FC<Props> = ({
                 data: callData as `0x${string}`,
                 account: selectedSourceAccount.address as `0x${string}`
             }
-            if (isMobile() && selectedSourceAccount?.wallet?.metadata?.deepLink) {
-                window.location.href = selectedSourceAccount.wallet.metadata?.deepLink
+            if (isMobile() && selectedSourceAccount?.metadata?.deepLink) {
+                window.location.href = selectedSourceAccount.metadata?.deepLink
                 await new Promise(resolve => setTimeout(resolve, 100))
             }
             const hash = await sendTransaction(config, tx)
@@ -85,7 +86,7 @@ const TransferTokenButton: FC<Props> = ({
             <TransactionMessage
                 transaction={transaction}
                 applyingTransaction={!!savedTransactionHash}
-                activeAddress={address}
+                activeAddress={selectedSourceAccount?.address}
                 selectedSourceAddress={selectedSourceAccount?.address}
             />
         }

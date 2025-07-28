@@ -31,6 +31,7 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     else if (transaction?.isError && transactionResolvedError === "transaction_rejected") {
         return <TransactionMessages.TransactionRejectedMessage />
     }
+    //TODO: this is old we mihght need to remove it, as now the selected account is the active one
     else if (transaction.isError && activeAddress && selectedSourceAddress && (activeAddress?.toLowerCase() !== selectedSourceAddress?.toLowerCase())) {
         return <TransactionMessages.WaletMismatchMessage address={selectedSourceAddress} />
     }
