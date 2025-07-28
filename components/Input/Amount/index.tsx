@@ -81,7 +81,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
                     }}
                 />
                 <div className={`${usdPosition === "right" ? "absolute bottom-4" : "h-5"} usd-suffix text-base font-medium text-secondary-text pointer-events-none`} ref={suffixRef}>
-                    {`$${requestedAmountInUsd ?? 0}`}
+                    {`${requestedAmountInUsd ?? 0}`}
                 </div>
             </div>
         </div>
