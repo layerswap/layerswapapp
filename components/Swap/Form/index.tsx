@@ -1,5 +1,5 @@
 import { Formik, FormikProps } from "formik";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useSettingsState } from "@/context/settings";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
@@ -10,7 +10,7 @@ import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/
 import LayerSwapApiClient, { Quote } from "@/lib/apiClients/layerSwapApiClient";
 import Modal from "@/components/modal/modal";
 import useSWR from "swr";
-import { NextRouter, useRouter } from "next/router";
+import { useRouter } from "next/router";
 import { ApiResponse } from "@/Models/ApiResponse";
 import { Partner } from "@/Models/Partner";
 import { UserType, useAuthDataUpdate } from "@/context/authContext";
@@ -29,7 +29,6 @@ import VaulDrawer from "@/components/modal/vaulModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./NetworkExchangeTabs";
 import NetworkForm from "./NetworkForm";
 import ExchangeForm from "./ExchangeForm";
-import useShowAddressNote from "@/hooks/useShowAddressNote";
 import { Widget } from "@/components/Widget/Index";
 import NetworkTabIcon from "@/components/icons/NetworkTabIcon";
 import ExchangeTabIcon from "@/components/icons/ExchangeTabIcon";

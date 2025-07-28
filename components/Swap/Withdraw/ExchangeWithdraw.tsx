@@ -8,7 +8,7 @@ import useWallet from '@/hooks/useWallet'
 import { DepositAction, Refuel, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
 import { motion } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
-import React from 'react'
+import React, { useEffect, useMemo } from 'react'
 import { FC, ReactNode, useState } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from "../../shadcn/popover";
 import useExchangeNetworks from '@/hooks/useExchangeNetworks'
@@ -18,6 +18,9 @@ import { Network, NetworkRoute, Token } from '@/Models/Network'
 import { useQueryState } from '@/context/query'
 import { useSwapDataUpdate } from '@/context/swap'
 import { SwapFormValues } from '@/components/DTOs/SwapFormValues'
+import { transformFormValuesToQuoteArgs, useQuoteData } from '@/hooks/useFee'
+import { useAsyncModal } from '@/context/asyncModal'
+import QuoteUpdated from './QuoteUpdated'
 
 interface Props {
     swapBasicData: SwapBasicData;
@@ -30,6 +33,8 @@ const ExchangeWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, ref
     const { wallets } = useWallet();
     const { createSwap, setSwapId } = useSwapDataUpdate()
     const [loading, setLoading] = useState(false)
+    const [pendingSwapValues, setPendingSwapValues] = useState<SwapFormValues | null>(null)
+    const { getConfirmation } = useAsyncModal();
 
     const [showQR, setShowQR] = useState(false)
     const destinationLogo = swapBasicData?.destination_network?.logo
@@ -45,44 +50,86 @@ const ExchangeWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, ref
         }
     }
 
-    const handleClick = async (network: Network, token: Token) => {
+    const quoteArgs = useMemo(() => {
+        return pendingSwapValues ? transformFormValuesToQuoteArgs(pendingSwapValues) : null;
+    }, [pendingSwapValues]);
 
-        try {
-            setSwapId(undefined)
-            setLoading(true)
-            window.safary?.track({
-                eventName: 'click',
-                eventType: 'send_from_wallet',
-            })
-            const swapValues: SwapFormValues = {
-                amount: swapBasicData?.requested_amount.toString(),
-                from: network as NetworkRoute,
-                to: swapBasicData?.destination_network as NetworkRoute,
-                fromAsset: token,
-                toAsset: swapBasicData?.destination_token,
-                refuel: !!refuel,
-                destination_address: swapBasicData?.destination_address,
-                fromExchange: swapBasicData?.source_exchange,
-                currencyGroup: swapBasicData?.source_token,
-                depositMethod: 'deposit_address',
-            }
+    const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs || undefined);
 
-            const swapData = await createSwap(swapValues, query);
-            const swapId = swapData?.swap?.id;
-            if (!swapId) {
-                throw new Error('Swap ID is undefined');
-            }
-            setSwapId(swapId);
-        }
-        catch (e) {
-            console.log('Error in SendTransactionButton:', e)
-            throw new Error(e)
-        }
-        finally {
-            setLoading(false)
-        }
+    const handleClick = (network: Network, token: Token) => {
+        const swapValues: SwapFormValues = {
+            amount: swapBasicData?.requested_amount?.toString(),
+            from: network as NetworkRoute,
+            to: swapBasicData?.destination_network as NetworkRoute,
+            fromAsset: token,
+            toAsset: swapBasicData?.destination_token,
+            refuel: !!refuel,
+            destination_address: swapBasicData?.destination_address,
+            fromExchange: swapBasicData?.source_exchange,
+            currencyGroup: swapBasicData?.source_token,
+            depositMethod: 'deposit_address',
+        };
 
+        setPendingSwapValues(swapValues);
     }
+    
+    useEffect(() => {
+        const handleCreateSwap = async () => {
+            if (!pendingSwapValues) return;
+
+            const requestedAmount = parseFloat(pendingSwapValues.amount || "0");
+
+            if ((minAllowedAmount && requestedAmount < minAllowedAmount) || (maxAllowedAmount && requestedAmount > maxAllowedAmount)) {
+                const isBelowMin = minAllowedAmount !== undefined && requestedAmount < minAllowedAmount;
+                const isAboveMax = maxAllowedAmount !== undefined && requestedAmount > maxAllowedAmount;
+
+                const newAmount = isBelowMin ? minAllowedAmount : isAboveMax ? maxAllowedAmount : requestedAmount;
+
+                const confirmed = await getConfirmation({
+                    content: (
+                        <QuoteUpdated
+                            minAllowedAmount={minAllowedAmount}
+                            maxAllowedAmount={maxAllowedAmount}
+                            originalAmount={requestedAmount}
+                            updatedReceiveAmount={quote?.receive_amount}
+                        />
+                    ),
+                    submitText: "Continue with new quote",
+                });
+
+                if (!confirmed) return;
+
+                const newValues = {
+                    ...pendingSwapValues,
+                    amount: newAmount.toString(),
+                };
+                setPendingSwapValues(newValues);
+                return;
+            }
+
+            try {
+                setSwapId(undefined);
+                setLoading(true);
+
+                window.safary?.track?.({
+                    eventName: 'click',
+                    eventType: 'send_from_wallet',
+                });
+
+                const swapData = await createSwap(pendingSwapValues, query);
+                const swapId = swapData?.swap?.id;
+                if (!swapId) throw new Error('Swap ID is undefined');
+
+                setSwapId(swapId);
+            } catch (e) {
+                console.error('Swap creation error:', e);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        handleCreateSwap();
+    }, [pendingSwapValues]);
 
     const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks({
         currencyGroup: swapBasicData?.source_token?.symbol,
