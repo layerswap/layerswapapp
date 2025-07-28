@@ -10,6 +10,7 @@ import { GroupedTokenElement, RowElement } from "@/Models/Route";
 import { useBalanceStore } from "@/stores/balanceStore";
 import { useBalanceAccounts } from "@/context/balanceAccounts";
 import clsx from "clsx";
+import { formatUsd } from "@/components/utils/formatUsdAmount";
 
 type TokenItemProps = {
     route: NetworkRoute;
@@ -49,8 +50,8 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const { balances } = useBalance(selectedWallet?.address, route)
     const tokenbalance = balances?.find(b => b.token === item.symbol)
     const formatted_balance_amount = (tokenbalance?.amount || tokenbalance?.amount === 0) ? truncateDecimals(tokenbalance?.amount, item.precision) : ''
-    const balanceAmountInUsd = (item?.price_in_usd * Number(formatted_balance_amount)).toFixed(2)
-
+    const usdAmount = item?.price_in_usd * Number(formatted_balance_amount);
+            
     return <SelectItem.DetailedTitle
         title={item.symbol}
         secondary={route.display_name}
@@ -70,7 +71,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
                         className={clsx({
                             'text-xs leading-4': type == 'top_token',
                         })}
-                    >${balanceAmountInUsd}</div>
+                    >{formatUsd(usdAmount)}</div>
                 )}
             </span>
         ) : balances ? (
@@ -114,7 +115,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                     {hasLoadedBalances ? (
                         <div className={`${showTokenLogos ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "hidden" : ""}`}>
                             <span className="text-secondary-text text-sm leading-4 font-medium">
-                                ${totalInUSD?.toFixed(2)}
+                                {formatUsd(totalInUSD)}
                             </span>
 
                             {showTokenLogos ? (
@@ -226,7 +227,7 @@ export const GroupedTokenHeader = ({
                     {hasLoadedBalances ? (
                         <div className={`${showNetworkIcons ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "invisible" : "visible"}`}>
                             <span className="text-secondary-text text-sm leading-4 font-medium">
-                                ${totalInUSD.toFixed(2)}
+                                {formatUsd(totalInUSD)}
                             </span>
 
                             {showNetworkIcons && (

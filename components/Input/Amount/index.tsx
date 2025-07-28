@@ -7,6 +7,7 @@ import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import useWallet from "@/hooks/useWallet";
+import { formatUsd } from "@/components/utils/formatUsdAmount";
 
 interface AmountFieldProps {
     usdPosition?: "right" | "bottom";
@@ -29,7 +30,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
         const amountNumber = Number(amount);
         if (isNaN(amountNumber) || amountNumber <= 0 || !sourceCurrencyPriceInUsd)
             return undefined;
-        return (sourceCurrencyPriceInUsd * amountNumber).toFixed(2)
+        return formatUsd(sourceCurrencyPriceInUsd * amountNumber)
     }, [amount, sourceCurrencyPriceInUsd]);
 
     useLayoutEffect(() => {
@@ -79,7 +80,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                     }}
                 />
-                <div className={`${usdPosition === "right" ? "absolute bottom-4" : ""} usd-suffix h-5 text-base font-medium text-secondary-text pointer-events-none`} ref={suffixRef}>
+                <div className={`${usdPosition === "right" ? "absolute bottom-4" : "h-5"} usd-suffix text-base font-medium text-secondary-text pointer-events-none`} ref={suffixRef}>
                     {`$${requestedAmountInUsd ?? 0}`}
                 </div>
             </div>
