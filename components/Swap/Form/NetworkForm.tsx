@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Form, FormikHelpers, useFormikContext } from "formik";
 import { Partner } from "@/Models/Partner";
 import { TokenBalance } from "@/Models/Balance";
@@ -21,7 +21,7 @@ import { QueryParams } from "@/Models/QueryParams";
 import { WalletProvider } from "@/Models/WalletProvider";
 import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import { updateForm, updateFormBulk } from "./updateForm";
-import { useQuoteData } from "@/hooks/useFee";
+import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useQuoteUpdate } from "@/hooks/useQuoteUpdate";
 import { SelectedAccountsProvider, useSelectAccounts } from "@/context/selectedAccounts";
 import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
@@ -57,8 +57,9 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const { pickerSelectedWallet: selectedSourceAccount } = useSelectedWalletStore('from');
     const { providers, wallets } = useWallet();
-    const { minAllowedAmount, isQuoteLoading, quote } = useQuoteData(values);
-    const { isUpdatingValues, quote: newQuote } = useQuoteUpdate(quote, amount)
+    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
+    const { minAllowedAmount, isQuoteLoading, quote } = useQuoteData(quoteArgs);
+    
     const toAsset = values.toAsset;
     const fromAsset = values.fromAsset;
     const { formValidation, routeValidation } = useValidationContext();

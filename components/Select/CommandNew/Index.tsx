@@ -11,7 +11,7 @@ const SelectorContext = createContext<SelectorProps>({ isOpen: false, setIsOpen:
 
 export const Selector = ({ children }) => {
     const [isOpen, setIsOpen] = useState(false);
-
+    
     return (
         <SelectorContext.Provider value={{ isOpen, setIsOpen }}>
             {children}

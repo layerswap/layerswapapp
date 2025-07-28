@@ -33,7 +33,8 @@ export function SelectedAccountsProvider({ children, from, to }: SelectedAccount
             provider?.switchAccount && provider?.switchAccount(wallet, address)
         }
         const account = { wallet, address, providerName }
-        if (account.address) addSelectedSrcWallet(account)
+        addSelectedSrcWallet(account)
+        setSelectedSourceWallet(address ? account : undefined);
     }
 
     useEffect(() => {
@@ -71,12 +72,21 @@ export function SelectedAccountsProvider({ children, from, to }: SelectedAccount
     useEffect(() => {
         providers.forEach(provider => {
             const selectedWallet = pickerSelectedSrcWallets?.find(w => w.providerName === provider.name)
+
             if (!selectedWallet && provider.activeWallet) {
                 addSelectedSrcWallet({ wallet: provider.activeWallet, address: provider.activeWallet?.address, providerName: provider.name })
-            } else if (selectedWallet?.address && selectedWallet.providerName === provider.name && !provider.activeWallet) {
-                addSelectedSrcWallet({ wallet: undefined, address: undefined, providerName: provider.name })
-                if (selectedWallet.providerName === selectedSourceAccount?.providerName) {
-                    setSelectedSourceWallet(undefined)
+            } else if (selectedWallet?.address && selectedWallet.providerName === provider.name) {
+                const selectedWalletOnProvider = provider.connectedWallets?.find(w => w.address === selectedWallet.address);
+                if (!provider.activeWallet) {
+                    addSelectedSrcWallet({ wallet: undefined, address: undefined, providerName: provider.name })
+                    if (selectedWallet.providerName === selectedSourceAccount?.providerName) {
+                        setSelectedSourceWallet(undefined)
+                    }
+                } else if (provider.activeWallet && !selectedWalletOnProvider) {
+                    addSelectedSrcWallet({ wallet: provider.activeWallet, address: provider.activeWallet?.address, providerName: provider.name })
+                    if (selectedWallet.providerName === selectedSourceAccount?.providerName) {
+                        setSelectedSourceWallet({ wallet: provider.activeWallet, address: provider.activeWallet?.address, providerName: provider.name })
+                    }
                 }
             }
         })

@@ -33,7 +33,7 @@ import useShowAddressNote from "@/hooks/useShowAddressNote";
 import { Widget } from "@/components/Widget/Index";
 import NetworkTabIcon from "@/components/icons/NetworkTabIcon";
 import ExchangeTabIcon from "@/components/icons/ExchangeTabIcon";
-import { useQuoteData } from "@/hooks/useFee";
+import { transformSwapDataToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
 import { ValidationProvider } from "@/context/validationContext";
 
@@ -64,21 +64,21 @@ export default function Form() {
     const { updateAuthData, setUserType } = useAuthDataUpdate()
     const { getProvider } = useWallet()
     const { getConfirmation } = useAsyncModal();
-    const showAddressNote = useShowAddressNote()
 
     const settings = useSettingsState();
     const query = useQueryState()
     const { appName, sameAccountNetwork } = query
-    const { createSwap, setSwapId, setSwapPath, removeSwapPath, resolveSwapDataFromQuery } = useSwapDataUpdate()
+    const { createSwap, setSwapId, setSubmitedFormValues } = useSwapDataUpdate()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
     const partner = appName && partnerData?.data?.client_id?.toLowerCase() === (appName as string)?.toLowerCase() ? partnerData?.data : undefined
 
-    const { swapResponse } = useSwapDataState()
+    const { swapBasicData, swapDetails } = useSwapDataState()
     const { pickerSelectedWallet: selectedSourceAccount } = useSelectedWalletStore('from');
-    const { swap } = swapResponse || {}
-    const { minAllowedAmount, maxAllowedAmount, updatePolling: pollFee, mutateLimits, quote } = useQuoteData(formikRef.current?.values || {})
+
+    const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicData, !!swapBasicData?.refuel), [swapBasicData]);
+    const { quote } = useQuoteData(quoteArgs)
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         const { destination_address, to } = values
@@ -118,50 +118,34 @@ export default function Form() {
                 }
             }
             await handleCreateSwap({
+                setSwapId,
                 values,
+                setSubmitedFormValues,
                 query,
                 partner,
-                router,
-                minAllowedAmount,
-                quote,
-                settings,
-                selectedSourceAddress: selectedSourceAccount?.address,
-                mutateLimits,
-                setSwapId,
-                setSwapPath,
                 createSwap,
                 setShowSwapModal: handleShowSwapModal,
-                pollFee,
                 setNetworkToConnect,
                 setShowConnectNetworkModal,
-                resolveSwapDataFromQuery,
             })
         }
         catch (error) {
             toast.error(error?.message)
         }
-    }, [createSwap, query, partner, router, updateAuthData, setUserType, swap, getProvider, settings, quote, selectedSourceAccount])
+    }, [createSwap, query, partner, router, updateAuthData, setUserType, swapBasicData, getProvider, settings, quote, selectedSourceAccount])
 
-    const initialValues: SwapFormValues = swapResponse ? generateSwapInitialValuesFromSwap(swapResponse, settings)
+    const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings)
         : generateSwapInitialValues(settings, query)
-
-    useEffect(() => {
-        formikRef.current?.validateForm();
-    }, [minAllowedAmount, maxAllowedAmount, selectedSourceAccount]);
 
     const handleShowSwapModal = useCallback((value: boolean) => {
         setShowSwapModal(value)
-        if (swap?.id) {
-            pollFee(!value)
-            value ? setSwapPath(swap?.id, router) : removeSwapPath(router)
-        }
-    }, [router, swap])
+    }, [router, swapDetails])
 
     return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
         <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
             <AnimatePresence mode='wait'>
                 {
-                    swap &&
+                    swapDetails &&
                     !showSwapModal &&
                     <PendingSwap key="pendingSwap" onClick={() => handleShowSwapModal(true)} />
                 }
@@ -233,42 +217,28 @@ type SubmitProps = {
     values: SwapFormValues;
     query: QueryParams;
     partner?: Partner;
-    router: NextRouter;
-    minAllowedAmount?: number;
-    quote?: Quote;
-    selectedSourceAddress?: string
-    settings: ReturnType<typeof useSettingsState>;
+    setSubmitedFormValues: UpdateSwapInterface['setSubmitedFormValues'];
     setSwapId: UpdateSwapInterface['setSwapId'];
-    setSwapPath: UpdateSwapInterface['setSwapPath'];
+
     createSwap: UpdateSwapInterface['createSwap'];
-    resolveSwapDataFromQuery: UpdateSwapInterface['resolveSwapDataFromQuery'];
     setShowSwapModal: (value: boolean) => void;
-    pollFee: (value: boolean) => void;
     setNetworkToConnect: (value: NetworkToConnect) => void;
     setShowConnectNetworkModal: (value: boolean) => void;
-    mutateLimits: () => void;
 }
 
-const handleCreateSwap = async ({ query, values, settings, quote, partner, selectedSourceAddress, router, minAllowedAmount, setSwapId, setShowSwapModal, setSwapPath, pollFee, createSwap, setNetworkToConnect, setShowConnectNetworkModal, mutateLimits, resolveSwapDataFromQuery }: SubmitProps) => {
+const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, createSwap, setNetworkToConnect, setShowConnectNetworkModal, setSwapId, setSubmitedFormValues }: SubmitProps) => {
     if (values.depositMethod == 'wallet') {
-        if (!quote) throw new Error(`Quote is undefined.`)
-        resolveSwapDataFromQuery(settings, selectedSourceAddress, quote, values?.destination_address)
         setSwapId(undefined)
-        pollFee(true)
+        setSubmitedFormValues(values)
         setShowSwapModal(true)
         return
     }
-
     try {
-        const swapData = await createSwap(values, query, partner);
-        const swapId = swapData?.swap?.id;
-        setSwapId(swapId)
-        pollFee(false)
-        setSwapPath(swapId, router)
+        const swap = await createSwap(values, query, partner);
+        setSwapId(swap.swap.id)
         setShowSwapModal(true)
     }
     catch (error) {
-        mutateLimits()
         const data: ApiError = error?.response?.data?.error
         if (data?.code === LSAPIKnownErrorCode.BLACKLISTED_ADDRESS) {
             throw new Error("You can't transfer to that address. Please double check.")
@@ -288,11 +258,11 @@ const handleCreateSwap = async ({ query, values, settings, quote, partner, selec
             const minutes = Number(time[1])
             const remainingTime = `${hours > 0 ? `${hours.toFixed()} ${(hours > 1 ? 'hours' : 'hour')}` : ''} ${minutes > 0 ? `${minutes.toFixed()} ${(minutes > 1 ? 'minutes' : 'minute')}` : ''}`
 
-            if (minAllowedAmount && data.metadata.AvailableTransactionAmount > minAllowedAmount) {
-                throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromAsset?.symbol} or retry in ${remainingTime}.`)
-            } else {
-                throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please retry in ${remainingTime}.`)
-            }
+            // if (minAllowedAmount && data.metadata.AvailableTransactionAmount > minAllowedAmount) {
+            //     throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromAsset?.symbol} or retry in ${remainingTime}.`)
+            // } else {
+            //     throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please retry in ${remainingTime}.`)
+            // }
         }
         else {
             throw new Error(data?.message || error?.message)

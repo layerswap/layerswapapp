@@ -2,16 +2,16 @@ import { FC, useCallback, useEffect, useState } from "react";
 import { SwapStatus } from "../../Models/SwapStatus";
 import { useIntercom } from "react-use-intercom";
 import { useAuthState } from "../../context/authContext";
-import { SwapItem, TransactionType } from "../../lib/apiClients/layerSwapApiClient";
+import { SwapDetails, SwapItem, TransactionType } from "../../lib/apiClients/layerSwapApiClient";
 import { datadogRum } from "@datadog/browser-rum";
 
-const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTime, swap }) => {
+const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails }> = ({ initialTime, swapDetails }) => {
 
     const { email, userId } = useAuthState();
     const { boot, show, update } = useIntercom();
     const [countdown, setCountdown] = useState<number>();
     const [thresholdElapsed, setThresholdElapsed] = useState<boolean>(false);
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
+    const swapInputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Input)
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -28,9 +28,9 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [initialTime, swap.status, swapInputTransaction, thresholdElapsed]);
+    }, [initialTime, swapDetails.status, swapInputTransaction, thresholdElapsed]);
 
-    const updateWithProps = () => update({ userId, customAttributes: { email: email, swapId: swap.id } })
+    const updateWithProps = () => update({ userId, customAttributes: { email: email, swapId: swapDetails.id } })
     const startIntercom = useCallback(() => {
         boot();
         show();
@@ -50,7 +50,7 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
     };
     const formatted = countdown && formatTime(countdown);
 
-    if (thresholdElapsed && swap.status !== SwapStatus.Completed) {
+    if (thresholdElapsed && swapDetails.status !== SwapStatus.Completed) {
         const renderingError = new Error("Transaction is taking longer than expected");
         renderingError.name = `LongTransactionError`;
         renderingError.cause = renderingError;
@@ -60,16 +60,16 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
     return (
         <div className='flex items-center space-x-1'>
             {
-                thresholdElapsed && swap.status !== SwapStatus.UserTransferPending ? (
+                thresholdElapsed && swapDetails.status !== SwapStatus.UserTransferPending ? (
                     <div>
                         <span>Transaction is taking longer than expected </span>
                         <a className='underline hover:cursor-pointer' onClick={() => startIntercom()}>please contact our support.</a>
                     </div>
-                ) : countdown === 0 && swap.status !== SwapStatus.Completed ? (
+                ) : countdown === 0 && swapDetails.status !== SwapStatus.Completed ? (
                     <div>
                         <span>Taking a bit longer than expected</span>
                     </div>
-                ) : swap.status === SwapStatus.Completed && (!countdown || countdown === 0) ? (
+                ) : swapDetails.status === SwapStatus.Completed && (!countdown || countdown === 0) ? (
                     ""
                 ) : (
                     <div className='text-secondary-text flex items-center'>

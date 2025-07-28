@@ -28,8 +28,7 @@ type Props = {
 //TODO email code is almost identical create reusable component for email and two factor code verification
 const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
     const initialValues: CodeFormValues = { Code: '' }
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
+    const { swapBasicData, swapDetails } = useSwapDataState()
     const [loading, setLoading] = useState(false)
     const [showInsufficientFundsModal, setShowInsufficientFundsModal] = useState(false)
     const [showFundsOnHoldModal, setShowFundsOnHoldModal] = useState(false)
@@ -39,13 +38,13 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
     const formikRef = useRef<FormikProps<CodeFormValues>>(null);
 
     const handleSubmit = useCallback(async (values: CodeFormValues) => {
-        if (!swap || !swap.source_exchange)
+        if (!swapDetails || !swapBasicData?.source_exchange)
             return
         setLoading(true)
         try {
             const layerswapApiClient = new LayerSwapApiClient()
-            await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange.name, values.Code)
-            await onSuccess(swap.id)
+            await layerswapApiClient.WithdrawFromExchange(swapDetails.id, swapBasicData.source_exchange.name, values.Code)
+            await onSuccess(swapDetails.id)
         }
         catch (error) {
             const data: ApiError = error?.response?.data?.error
@@ -65,16 +64,16 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
             }
         }
         setLoading(false)
-    }, [swap])
+    }, [swapBasicData, swapDetails])
 
     const handleResendTwoFACode = useCallback(async () => {
-        if (!swap || !swap.source_exchange)
+        if (!swapDetails || !swapBasicData?.source_exchange)
             return
         setLoading(true)
         try {
             formikRef.current?.setFieldValue("Code", "");
             const layerswapApiClient = new LayerSwapApiClient()
-            await layerswapApiClient.WithdrawFromExchange(swap.id, swap.source_exchange.name)
+            await layerswapApiClient.WithdrawFromExchange(swapDetails.id, swapBasicData.source_exchange.name)
         } catch (error) {
             const data: ApiError = error?.response?.data?.error
 
@@ -93,7 +92,7 @@ const Coinbase2FA: FC<Props> = ({ onSuccess, footerStickiness = true }) => {
         finally {
             setLoading(false)
         }
-    }, [swap])
+    }, [swapBasicData, swapDetails])
     return <>
         <Modal show={showInsufficientFundsModal} setShow={setShowInsufficientFundsModal} modalId='insufficientFunds'>
             <MessageComponent>

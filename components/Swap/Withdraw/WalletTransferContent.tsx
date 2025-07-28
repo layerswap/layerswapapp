@@ -11,17 +11,17 @@ import useSWRBalance from '@/lib/balances/useSWRBalance';
 import { useSettingsState } from '@/context/settings';
 import WalletsList from '@/components/Wallet/WalletsList';
 import { useSelectAccounts } from '@/context/selectedAccounts';
+import { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
 
 type Props = {
+    swapData: SwapBasicData
     openModal: boolean;
     setOpenModal: (show: boolean) => void
 }
-const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal }) => {
+const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal, swapData }) => {
     const { networks } = useSettingsState()
-    const { swapResponse } = useSwapDataState()
     const { setSelectedSourceAccount, selectedSourceAccount } = useSelectAccounts()
-    const { swap } = swapResponse || {}
-    const { source_token, source_network: swap_source_network } = swap || {}
+    const { source_token, source_network: swap_source_network } = swapData
     const source_network = swap_source_network && networks.find(n => n.name === swap_source_network?.name)
     const { provider } = useWallet(source_network, 'withdrawal')
     const availableWallets = provider?.connectedWallets?.filter(c => !c.isNotAvailable) || []
@@ -51,14 +51,11 @@ const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal }) => {
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
 
     let accountAddress: string | undefined = ""
-    if (swap?.source_exchange) {
-        accountAddress = swap.exchange_account_name || ""
-    }
-    else if (selectedSourceAccount) {
+    if (selectedSourceAccount) {
         accountAddress = selectedSourceAccount.address || "";
     }
 
-    if (!accountAddress || (swap?.source_exchange && !swap.exchange_account_connected)) {
+    if (!accountAddress) {
         return <>
             <div className='flex justify-center'>
                 <WalletIcon className='w-12 text-secondary-800/70' />

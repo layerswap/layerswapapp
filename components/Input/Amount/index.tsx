@@ -5,7 +5,7 @@ import NumericInput from "../NumericInput";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { resolveMaxAllowedAmount } from "./helpers";
-import { useQuoteData } from "@/hooks/useFee";
+import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 
@@ -16,7 +16,8 @@ interface AmountFieldProps {
 const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: AmountFieldProps, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
     const { fromAsset: fromCurrency, from, amount, toAsset: toCurrency, fromExchange } = values || {};
-    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, quote: fee } = useQuoteData(values)
+    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
+    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, quote: fee } = useQuoteData(quoteArgs)
     const name = "amount"
     const amountRef = useRef(ref)
     const suffixRef = useRef<HTMLDivElement>(null);
@@ -78,8 +79,8 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                     }}
                 />
-                <div className={`${usdPosition === "right" ? "absolute bottom-4" : ""} usd-suffix h-5 text-base font-medium text-secondary-text pointer-events-none`} ref={suffixRef}>
-                    {`${requestedAmountInUsd ?? 0}`}
+                <div className={`${usdPosition === "right" ? "absolute bottom-4" : "h-5"} usd-suffix text-base font-medium text-secondary-text pointer-events-none`} ref={suffixRef}>
+                    {`$${requestedAmountInUsd ?? 0}`}
                 </div>
             </div>
         </div>

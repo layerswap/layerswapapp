@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import ValidationError from "@/components/validationError";
 import CexPicker from "@/components/Input/CexPicker";
 import QuoteDetails from "@/components/FeeDetails";
@@ -15,7 +15,7 @@ import AddressIcon from "@/components/AddressIcon";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import MinMax from "@/components/Input/Amount/MinMax";
-import { useQuoteData } from "@/hooks/useFee";
+import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
 
 type Props = {
@@ -28,8 +28,9 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     } = useFormikContext<SwapFormValues>();
 
     const { fromAsset: fromCurrency, from, to: destination } = values || {};
+    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
 
-    const { isQuoteLoading, quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(values);
+    const { isQuoteLoading, quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(quoteArgs);
     const { routeValidation, formValidation } = useValidationContext();
 
     const isValid = !formValidation.message;

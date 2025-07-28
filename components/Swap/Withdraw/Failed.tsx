@@ -9,11 +9,10 @@ import QuestionIcon from '../../icons/Question';
 import Link from 'next/link';
 
 const Failed: FC = () => {
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
+    const { swapDetails } = useSwapDataState()
     const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ userId, customAttributes: { swapId: swap?.id, email: email } })
+    const updateWithProps = () => update({ userId, customAttributes: { swapId: swapDetails?.id, email: email } })
 
     useEffect(() => {
         window.plausible && plausible(TrackEvent.SwapFailed)
@@ -36,15 +35,15 @@ const Failed: FC = () => {
                 </div>
                 <div className='mt-4 text-xs md:text-sm text-primary-text'>
                     {
-                        swap?.status == SwapStatus.Cancelled &&
-                        <Canceled onGetHelp={startIntercom} swap={swap} />
+                        swapDetails?.status == SwapStatus.Cancelled &&
+                        <Canceled onGetHelp={startIntercom} />
                     }
                     {
-                        swap?.status == SwapStatus.Expired &&
-                        <Expired onGetHelp={startIntercom} swap={swap} />
+                        swapDetails?.status == SwapStatus.Expired &&
+                        <Expired onGetHelp={startIntercom} />
                     }
                     {
-                        swap?.status == SwapStatus.UserTransferDelayed &&
+                        swapDetails?.status == SwapStatus.UserTransferDelayed &&
                         <Delay />
                     }
                 </div>
@@ -54,7 +53,6 @@ const Failed: FC = () => {
     )
 }
 type Props = {
-    swap: SwapItem
     onGetHelp: () => void
 }
 

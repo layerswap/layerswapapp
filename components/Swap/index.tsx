@@ -14,20 +14,19 @@ import SubmitButton from '../buttons/submitButton';
 import { SelectedAccountsProvider } from '@/context/selectedAccounts';
 
 const SwapDetails: FC<Props> = ({ type }) => {
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
+    const { swapDetails, swapBasicData } = useSwapDataState()
 
-    const swapStatus = swap?.status;
+    const swapStatus = swapDetails?.status || SwapStatus.UserTransferPending;
     const storedWalletTransactions = useSwapTransactionStore()
 
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
-    const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swap?.id || '']
+    const swapInputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Input)
+    const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swapDetails?.id || '']
 
     const removeStoredTransaction = useCallback(() => {
-        useSwapTransactionStore.getState().removeSwapTransaction(swap?.id || '');
-    }, [swap?.id, storedWalletTransactions])
+        useSwapTransactionStore.getState().removeSwapTransaction(swapDetails?.id || '');
+    }, [swapDetails?.id, storedWalletTransactions])
 
-    if (!swap) return <>
+if (!swapBasicData) return <>
         <div className="w-full h-[430px]">
             <div className="animate-pulse flex space-x-4">
                 <div className="flex-1 space-y-6 py-1">
@@ -40,7 +39,7 @@ const SwapDetails: FC<Props> = ({ type }) => {
     </>
 
     return (
-        <SelectedAccountsProvider from={swapResponse?.swap.source_network} to={swapResponse?.swap.destination_network}>
+        <SelectedAccountsProvider from={swapBasicData.source_network} to={swapBasicData.destination_network}>
             <Container type={type}>
                 {
                     ((swapStatus === SwapStatus.UserTransferPending
