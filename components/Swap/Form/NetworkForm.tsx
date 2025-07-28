@@ -22,9 +22,6 @@ import { WalletProvider } from "@/Models/WalletProvider";
 import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import { updateForm, updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
-import { useQuoteUpdate } from "@/hooks/useQuoteUpdate";
-import { SelectedAccountsProvider, useSelectAccounts } from "@/context/selectedAccounts";
-import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
 import { useValidationContext } from "@/context/validationContext";
 
 const RefuelModal = dynamic(() => import("@/components/FeeDetails/RefuelModal"), {
@@ -55,11 +52,13 @@ const NetworkForm: FC<Props> = ({ partner }) => {
         depositMethod
     } = values;
 
-    const { pickerSelectedWallet: selectedSourceAccount } = useSelectedWalletStore('from');
+    const { provider } = useWallet(source, 'withdrawal');
+    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
+
     const { providers, wallets } = useWallet();
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const { minAllowedAmount, isQuoteLoading, quote } = useQuoteData(quoteArgs);
-    
+
     const toAsset = values.toAsset;
     const fromAsset = values.fromAsset;
     const { formValidation, routeValidation } = useValidationContext();
@@ -96,7 +95,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
     return (
-        <SelectedAccountsProvider from={source} to={destination}>
+        <>
             <DepositMethodComponent />
             <Form className="h-full grow flex flex-col justify-between">
                 <Widget.Content>
@@ -149,7 +148,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                 </Widget.Footer>
                 <RefuelModal openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} />
             </Form>
-        </SelectedAccountsProvider>
+        </>
     );
 };
 
@@ -158,8 +157,6 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
         { rotateX: 0 },
         { rotateX: 180 }
     );
-    const { setSelectedSourceAccount } = useSelectAccounts()
-    const { pickerSelectedWallet: selectedSourceAccount } = useSelectedWalletStore('from');
 
     let valuesSwapperDisabled = false;
 
@@ -174,6 +171,9 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
         toAsset: toCurrency,
         from: source,
     } = values
+
+    const { provider } = useWallet(source, "withdrawal")
+    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
 
     const sourceCanBeSwapped = !source ? true : (destinationRoutes?.some(l => l.name === source?.name && l.tokens.some(t => t.symbol === fromCurrency?.symbol && t.status === 'active')) ?? false)
     const destinationCanBeSwapped = !destination ? true : (sourceRoutes?.some(l => l.name === destination?.name && l.tokens.some(t => t.symbol === toCurrency?.symbol && t.status === 'active')) ?? false)
@@ -204,7 +204,7 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
         const oldDestinationWallet = newDestinationProvider?.connectedWallets?.find(w => w.autofillSupportedNetworks?.some(n => n.toLowerCase() === newTo?.name.toLowerCase()) && w.addresses.some(a => a.toLowerCase() === values.destination_address?.toLowerCase()))
         const oldDestinationWalletIsNotCompatible = destinationProvider && (destinationProvider?.name !== newDestinationProvider?.name || !(newTo && oldDestinationWallet?.autofillSupportedNetworks?.some(n => n.toLowerCase() === newTo?.name.toLowerCase())))
         const destinationWalletIsAvailable = newTo ? newDestinationProvider?.connectedWallets?.some(w => w.autofillSupportedNetworks?.some(n => n.toLowerCase() === newTo.name.toLowerCase()) && w.addresses.some(a => a.toLowerCase() === selectedSourceAccount?.address?.toLowerCase())) : undefined
-        const oldSourceWalletIsNotCompatible = destinationProvider && (selectedSourceAccount?.providerName !== destinationProvider?.name || !(newFrom && selectedSourceAccount?.wallet?.withdrawalSupportedNetworks?.some(n => n.toLowerCase() === newFrom.name.toLowerCase())))
+        const oldSourceWalletIsNotCompatible = destinationProvider && (selectedSourceAccount?.providerName !== destinationProvider?.name || !(newFrom && selectedSourceAccount?.withdrawalSupportedNetworks?.some(n => n.toLowerCase() === newFrom.name.toLowerCase())))
 
         const changeDestinationAddress = newTo && (oldDestinationWalletIsNotCompatible || oldSourceWalletIsNotCompatible) && destinationWalletIsAvailable
 
@@ -228,21 +228,6 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
 
         swapInProgress.current = false;
 
-        const changeSourceAddress = newFrom && values.depositMethod === 'wallet' && destinationProvider && (oldSourceWalletIsNotCompatible || changeDestinationAddress)
-        if (changeSourceAddress && values.destination_address) {
-            const sourceAvailableWallet = destinationProvider?.connectedWallets?.find(w => w.withdrawalSupportedNetworks?.some(n => n.toLowerCase() === newFrom.name.toLowerCase()) && w.addresses.some(a => a.toLowerCase() === values.destination_address?.toLowerCase()))
-            if (sourceAvailableWallet) {
-                setSelectedSourceAccount({
-                    wallet: sourceAvailableWallet,
-                    address: values.destination_address,
-                    providerName: sourceAvailableWallet.providerName
-                })
-            }
-            else {
-                if (selectedSourceAccount) setSelectedSourceAccount({ providerName: selectedSourceAccount?.providerName, wallet: undefined, address: undefined })
-            }
-
-        }
     }, [values, sourceRoutes, destinationRoutes, sourceCanBeSwapped, selectedSourceAccount])
 
     return (

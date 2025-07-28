@@ -6,12 +6,11 @@ import Evm from './Evm';
 import Starknet from './Starknet';
 import { useWalletStore } from '@/stores/walletStore';
 import { useSwapDataState, useSwapDataUpdate } from '@/context/swap';
-import { Wallet } from '@/Models/WalletProvider';
+import { Wallet, WalletProvider } from '@/Models/WalletProvider';
 import SubmitButton from '@/components/buttons/submitButton';
 import { WalletIcon } from 'lucide-react';
 import { WithdrawPageProps } from '../../Common/sharedTypes';
 import { useConnectModal } from '@/components/WalletModal';
-import { useSelectAccounts } from '@/context/selectedAccounts';
 
 export const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ refuel, swapBasicData, swapId }) => {
 
@@ -26,10 +25,10 @@ export const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ refuel, swapBasic
     const starknetWallet = starknetProvider?.activeWallet
 
     if (selectedProvider === evmProvider?.name && evmWallet) {
-        return <Evm refuel={refuel} swapBasicData={swapBasicData} swapId={swapId}/>
+        return <Evm refuel={refuel} swapBasicData={swapBasicData} swapId={swapId} />
     }
     if (selectedProvider === starknetProvider?.name && starknetWallet) {
-        return <Starknet refuel={refuel} swapBasicData={swapBasicData} swapId={swapId}/>
+        return <Starknet refuel={refuel} swapBasicData={swapBasicData} swapId={swapId} />
     }
 
     return <ConnectWalletModal />
@@ -39,18 +38,10 @@ const ConnectWalletModal = () => {
     const { source_network } = swapBasicData || {}
     const { provider } = useWallet(source_network, 'withdrawal')
     const { connect } = useConnectModal()
-    const { setSelectedSourceAccount } = useSelectAccounts()
 
-    const handleSelectWallet = (wallet?: Wallet | undefined, address?: string | undefined) => {
-        if (wallet && address) {
-            setSelectedSourceAccount({
-                wallet,
-                address,
-                providerName: wallet.providerName
-            })
-        }
-        else {
-            setSelectedSourceAccount({ providerName: provider?.name, wallet: undefined, address: undefined })
+    const handleSelectWallet = (wallet: Wallet, address: string) => {
+        if (wallet && address && provider) {
+            provider?.switchAccount && provider?.switchAccount(wallet, address)
         }
     }
     const handleConnect = async () => {

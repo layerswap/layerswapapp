@@ -14,6 +14,7 @@ import { useConnectModal } from "../../../components/WalletModal"
 import { explicitInjectedproviderDetected } from "../connectors/getInjectedConnector"
 import walletsData from "../../../public/walletsData.json"
 import sleep from "../utils/sleep"
+import { useActiveEvmAccount } from "@/components/WalletProviders/ActiveEvmAccount"
 
 const ethereumNames = [KnownInternalNames.Networks.EthereumMainnet, KnownInternalNames.Networks.EthereumSepolia]
 const immutableZKEvm = [KnownInternalNames.Networks.ImmutableZkEVM]
@@ -44,7 +45,7 @@ export default function useEVM(): WalletProvider {
 
     const { disconnectAsync } = useDisconnect()
     const { switchAccountAsync } = useSwitchAccount()
-    const activeAccount = useAccount()
+    const { activeConnection, setActiveAddress } = useActiveEvmAccount()
     const allConnectors = useConnectors()
     const config = useConfig()
     const { connectAsync } = useConnect();
@@ -162,9 +163,9 @@ export default function useEVM(): WalletProvider {
         const connections = getConnections(config)
         return connections.map((connection): Wallet | undefined => {
             const wallet = ResolveWallet({
-                activeConnection: (activeAccount.connector && activeAccount.address) ? {
-                    id: activeAccount.connector.id,
-                    address: activeAccount.address
+                activeConnection: (activeConnection?.id && activeConnection.address) ? {
+                    id: activeConnection.id,
+                    address: activeConnection.address
                 } : undefined,
                 connection,
                 discconnect: disconnectWallet,
@@ -179,7 +180,7 @@ export default function useEVM(): WalletProvider {
 
             return wallet
         }).filter(w => w !== undefined) as Wallet[]
-    }, [activeAccount, config])
+    }, [activeConnection, config])
 
     const switchAccount = useCallback(async (wallet: Wallet, address: string) => {
         const connector = getConnections(config).find(c => c.connector.name === wallet.id)?.connector
@@ -189,6 +190,7 @@ export default function useEVM(): WalletProvider {
         const account = accounts.find(a => a.toLowerCase() === address.toLowerCase())
         if (!account)
             throw new Error("Account not found")
+        setActiveAddress(account)
     }, [config, switchAccountAsync])
 
     const switchChain = async (wallet: Wallet, chainId: string | number) => {
@@ -275,14 +277,14 @@ type ResolveWalletProps = {
 
 const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
     const { activeConnection, connection, networks, discconnect, supportedNetworks, providerName } = props
-    const accountIsActive = activeConnection?.id === connection?.connector.id
+    const walletIsActive = activeConnection?.id === connection?.connector.id
 
     const addresses = connection?.accounts as (string[] | undefined);
     const activeAddress = activeConnection?.address
     const connector = connection?.connector
     if (!connector)
         return undefined
-    const address = accountIsActive ? activeAddress : addresses?.[0]
+    const address = walletIsActive ? activeAddress : addresses?.[0]
     if (!address) return undefined
 
     const walletname = `${connector?.name} ${connector.id === "com.immutable.passport" ? "" : " - EVM"}`
@@ -290,7 +292,7 @@ const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
     const wallet: Wallet = {
         id: connector.name,
         internalId: connector.id,
-        isActive: accountIsActive,
+        isActive: walletIsActive,
         address,
         addresses: addresses || [address],
         displayName: walletname,

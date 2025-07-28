@@ -5,12 +5,14 @@ import IMX from "../../../components/icons/Wallets/IMX"
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
 import { useSettingsState } from "../../../context/settings"
 
+const supportedNetworks = [
+    KnownInternalNames.Networks.ImmutableXMainnet,
+    KnownInternalNames.Networks.ImmutableXGoerli,
+    KnownInternalNames.Networks.ImmutableXSepolia,
+]
+
 export default function useImtblX(): WalletProvider {
-    const withdrawalSupportedNetworks = [
-        KnownInternalNames.Networks.ImmutableXMainnet,
-        KnownInternalNames.Networks.ImmutableXGoerli,
-        KnownInternalNames.Networks.ImmutableXSepolia,
-    ]
+
 
     const { networks } = useSettingsState()
 
@@ -48,8 +50,9 @@ export default function useImtblX(): WalletProvider {
                 disconnect: () => disconnectWallet(),
                 isActive: true,
                 addresses: [res.address],
-                withdrawalSupportedNetworks,
-                asSourceSupportedNetworks: withdrawalSupportedNetworks,
+                withdrawalSupportedNetworks: supportedNetworks,
+                asSourceSupportedNetworks: supportedNetworks,
+                autofillSupportedNetworks: supportedNetworks,
             }
 
             addWallet(wallet);
@@ -77,8 +80,9 @@ export default function useImtblX(): WalletProvider {
         activeWallet: wallet,
         connectWallet,
         disconnectWallets: disconnectWallet,
-        withdrawalSupportedNetworks,
-        asSourceSupportedNetworks: withdrawalSupportedNetworks,
+        withdrawalSupportedNetworks: supportedNetworks,
+        asSourceSupportedNetworks: supportedNetworks,
+        autofillSupportedNetworks: supportedNetworks,
         name,
         id,
         hideFromList: true,

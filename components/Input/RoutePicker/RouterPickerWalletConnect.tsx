@@ -5,16 +5,14 @@ import VaulDrawer from "@/components/modal/vaulModal";
 import { ChevronDown, Plus } from "lucide-react";
 import { WalletItem } from "@/components/Wallet/WalletsList";
 import { Network, Token } from "@/Models/Network";
-import useWallet from "@/hooks/useWallet";
 import shortenAddress from "@/components/utils/ShortenAddress";
 import WalletIcon from "@/components/icons/WalletIcon";
 import ConnectButton from "@/components/buttons/connectButton";
-import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
 import { SwapDirection, SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { WalletsIcons } from "@/components/Wallet/ConnectedWallets";
 import { useFormikContext } from "formik";
 import { isValidAddress } from "@/lib/address/validator";
-import AddressIcon from "@/components/AddressIcon";
+import { BalanceAccount, useBalanceAccounts, useUpdateBalanceAccount } from "@/context/balanceAccounts";
 
 const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -23,8 +21,9 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
         values,
         setFieldValue
     } = useFormikContext<SwapFormValues>();
-    const { providers } = useWallet()
-    const { pickerSelectedWallets, addSelectedWallet } = useSelectedWalletStore(direction)
+
+    const balanceAccounts = useBalanceAccounts(direction)
+    const selectbalanceAccount = useUpdateBalanceAccount(direction)
 
     const { connect } = useConnectModal()
 
@@ -34,50 +33,18 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
     }
 
     const handleSelectWallet = (wallet: Wallet, address: string, providerName: string) => {
-        if (direction == 'to' && isValidAddress(address, values.to)) setFieldValue(`destination_address`, address)
-        addSelectedWallet({ wallet, address, providerName })
+        if (direction == 'to' && isValidAddress(address, values.to))
+            setFieldValue(`destination_address`, address)
+        selectbalanceAccount({
+            id: wallet.id,
+            address,
+            providerName,
+        })
         setOpenModal(false)
     }
 
-    const providersWithManualAdded = useMemo(() => {
-
-        return providers.map(provider => {
-            const selectedWallet = pickerSelectedWallets?.find(w => w.providerName === provider.name)
-
-            if (selectedWallet) {
-                const manualAddedWallet: Wallet | null = (!selectedWallet?.wallet && selectedWallet.address) ? {
-                    address: selectedWallet?.address || '',
-                    providerName: selectedWallet?.providerName || '',
-                    id: selectedWallet?.providerName || '',
-                    icon: (props) => <AddressIcon address={selectedWallet?.address!} size={24} {...props} />,
-                    isActive: true,
-                    displayName: 'Manual Wallet',
-                    addresses: [selectedWallet?.address || ''],
-                } : null
-
-                const connectedWallets = provider.connectedWallets || []
-                if (manualAddedWallet) {
-                    return { ...provider, connectedWallets: [manualAddedWallet, ...connectedWallets] }
-                }
-            }
-
-            return provider
-        })
-    }, [providers, pickerSelectedWallets])
-
-
-    const walletsWithManualAdded = useMemo(() => {
-
-        let connectedWallets: Wallet[] = [];
-        providersWithManualAdded.forEach((provider) => {
-            const w = provider.connectedWallets
-            connectedWallets = w ? [...connectedWallets, ...w] : [...connectedWallets];
-        });
-        return connectedWallets;
-    }, [providersWithManualAdded])
-
     return <>
-        <WalletButton wallets={walletsWithManualAdded} onOpenModalClick={() => setOpenModal(true)} pickerSelectedWallets={pickerSelectedWallets} />
+        <WalletButton wallets={balanceAccounts} onOpenModalClick={() => setOpenModal(true)} />
         <VaulDrawer
             show={openModal}
             setShow={setOpenModal}
@@ -94,22 +61,20 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
                     </div>
                 </button>
                 {
-                    providersWithManualAdded.filter(p => p.connectedWallets?.length).map((provider, index) => {
-
-                        const selectedWallet = pickerSelectedWallets?.find(w => w.providerName === provider.name)
+                    balanceAccounts.map((account, index) => {
 
                         return (
                             <div key={index}>
                                 <div className="flex justify-between items-center px-4 pt-2">
                                     <label htmlFor="From" className="block font-medium text-secondary-text text-sm pl-1 py-1">
-                                        {provider.name}
+                                        {account.provider.name}
                                     </label>
                                 </div>
                                 <WalletsList
                                     key={index}
-                                    provider={provider}
+                                    provider={account.provider}
                                     onSelect={handleSelectWallet}
-                                    selectedWallet={selectedWallet}
+                                    selectedAddress={account.address}
                                 />
                             </div>
                         )
@@ -120,32 +85,22 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
     </>
 }
 
-const WalletButton: FC<{ wallets: Wallet[], pickerSelectedWallets: ReturnType<typeof useSelectedWalletStore>['pickerSelectedWallets'], onOpenModalClick: () => void }> = ({ wallets, onOpenModalClick, pickerSelectedWallets }) => {
-
-    const mappedWallets = useMemo(() => wallets.map(w => {
-        const selectedWallet = pickerSelectedWallets?.find(sw => sw?.providerName === w.providerName)
-        if (selectedWallet && selectedWallet.address && w.address !== selectedWallet.address) {
-            return { ...w, address: selectedWallet.address }
-        }
-        return w
-    }), [wallets, pickerSelectedWallets])
-
-    const firstWallet = useMemo(() => mappedWallets[0], [mappedWallets])
-
-    if (mappedWallets.length > 0) {
+const WalletButton: FC<{ wallets: BalanceAccount[], onOpenModalClick: () => void }> = ({ wallets, onOpenModalClick }) => {
+    const firstWallet = useMemo(() => wallets[0], [wallets])
+    if (wallets.length > 0) {
         return <button onClick={onOpenModalClick} type="button" className="py-1 px-2 bg-transparent flex items-center w-fit rounded-md space-x-1 relative font-semibold transform hover:bg-secondary-400 transition duration-200 ease-in-out">
             {
-                mappedWallets.length === 1 ?
+                wallets.length === 1 ?
                     <div className="flex gap-2 items-center text-sm text-primary-text">
                         <firstWallet.icon className='h-5 w-5' />
                         {
-                            !firstWallet.isLoading && firstWallet.address &&
+                            !firstWallet.address &&
                             <p>{shortenAddress(firstWallet.address)}</p>
                         }
                         <ChevronDown className="h-5 w-5" />
                     </div>
                     :
-                    <WalletsIcons wallets={mappedWallets} />
+                    <WalletsIcons wallets={wallets} />
             }
         </button>
     }
@@ -164,13 +119,13 @@ type Props = {
     token?: Token;
     network?: Network;
     provider?: WalletProvider | undefined;
-    selectedWallet?: ReturnType<typeof useSelectedWalletStore>['pickerSelectedWallet'];
+    selectedAddress?: string;
     onSelect: (wallet: Wallet, address: string, providerName: string) => void;
 }
 
 const WalletsList: FC<Props> = (props) => {
 
-    const { provider, onSelect, selectedWallet } = props
+    const { provider, onSelect, selectedAddress } = props
     const wallets = provider?.connectedWallets || []
 
     return (
@@ -184,7 +139,7 @@ const WalletsList: FC<Props> = (props) => {
                             wallet={wallet}
                             selectable={true}
                             onWalletSelect={(wallet: Wallet, address: string) => provider?.name && onSelect(wallet, address, provider.name)}
-                            selectedAddress={selectedWallet?.address}
+                            selectedAddress={selectedAddress}
                         />)
                     }
                 </div>

@@ -17,6 +17,7 @@ import { bitget } from '../../lib/wallets/connectors/bitget';
 import { isMobile } from '../../lib/isMobile';
 import { browserInjected } from "../../lib/wallets/connectors/browserInjected";
 import { okxWallet } from "../../lib/wallets/connectors/okxWallet";
+import { ActiveEvmAccountProvider } from "./ActiveEvmAccount";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -70,7 +71,9 @@ function WagmiComponent({ children }: Props) {
     return (
         <WagmiProvider config={config} >
             <QueryClientProvider client={queryClient}>
-                {children}
+                <ActiveEvmAccountProvider>
+                    {children}
+                </ActiveEvmAccountProvider>
             </QueryClientProvider>
         </WagmiProvider >
     )

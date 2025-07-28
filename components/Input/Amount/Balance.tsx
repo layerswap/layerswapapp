@@ -1,14 +1,15 @@
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { motion } from "framer-motion";
-import { useSelectAccounts } from "@/context/selectedAccounts";
+import useWallet from "@/hooks/useWallet";
 
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
     const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, destination_address } = values
-    const { selectedSourceAccount } = useSelectAccounts()
+    const { provider } = useWallet(from, "withdrawal")
+    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
     const token = direction === 'from' ? fromCurrency : toCurrency
     const network = direction === 'from' ? from : to
     const address = direction === 'from' ? selectedSourceAccount?.address : destination_address

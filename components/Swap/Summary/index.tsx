@@ -1,11 +1,11 @@
-import { FC } from "react"
+import { FC, useMemo } from "react"
 import { useSwapDataState } from "@/context/swap"
 import Summary from "./Summary"
 import { TransactionType } from "@/lib/apiClients/layerSwapApiClient"
 import { shortenEmail } from "@/components/utils/ShortenAddress"
 import KnownInternalNames from "@/lib/knownIds"
 import { useQueryState } from "@/context/query"
-import { useSelectAccounts } from "@/context/selectedAccounts"
+import useWallet from "@/hooks/useWallet"
 
 const SwapSummary: FC = () => {
 
@@ -16,7 +16,8 @@ const SwapSummary: FC = () => {
 
     const { swapBasicData, swapDetails, quote, refuel } = useSwapDataState()
     const { source_network, destination_network, source_token, destination_token, source_exchange } = swapBasicData || {}
-    const { selectedSourceAccount } = useSelectAccounts()
+    const { provider } = useWallet(source_network, "withdrawal")
+    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
 
     if (!swapBasicData || !source_network || !source_token || !destination_token || !destination_network) {
         return <></>
