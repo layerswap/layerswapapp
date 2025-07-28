@@ -7,6 +7,7 @@ import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
+import { formatUsd } from "@/components/utils/formatUsdAmount";
 
 interface AmountFieldProps {
     usdPosition?: "right" | "bottom";
@@ -27,7 +28,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
         const amountNumber = Number(amount);
         if (isNaN(amountNumber) || amountNumber <= 0 || !sourceCurrencyPriceInUsd)
             return undefined;
-        return (sourceCurrencyPriceInUsd * amountNumber).toFixed(2)
+        return formatUsd(sourceCurrencyPriceInUsd * amountNumber)
     }, [amount, sourceCurrencyPriceInUsd]);
 
     useLayoutEffect(() => {
