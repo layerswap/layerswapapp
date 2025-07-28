@@ -11,7 +11,7 @@ type Props = {
 }
 import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
 import SubmitButton from '../buttons/submitButton';
-import ExchangeWithdraw from './Withdraw/ExchangeWithdraw';
+import ManualWithdraw from './Withdraw/ManualWithdraw';
 import { SelectedAccountsProvider } from '@/context/selectedAccounts';
 
 const SwapDetails: FC<Props> = ({ type }) => {
@@ -38,7 +38,7 @@ const SwapDetails: FC<Props> = ({ type }) => {
             </div>
         </div>
     </>
-
+    
     return (
         <SelectedAccountsProvider from={swapBasicData.source_network} to={swapBasicData.destination_network}>
             <Container type={type}>
@@ -46,8 +46,8 @@ const SwapDetails: FC<Props> = ({ type }) => {
                     ((swapStatus === SwapStatus.UserTransferPending
                         && !(swapInputTransaction || storedWalletTransaction))) ?
                         (
-                            swapBasicData.source_exchange
-                                ? <ExchangeWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} />
+                            swapBasicData?.use_deposit_address === true
+                                ? <ManualWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} />
                                 : <Withdraw type={type} />
                         )
                         :

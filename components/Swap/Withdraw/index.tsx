@@ -1,5 +1,4 @@
 import { FC } from 'react'
-import ManualTransfer from './ManualTransfer';
 import { useSwapDataState } from '../../../context/swap';
 import KnownInternalNames from '../../../lib/knownIds';
 import SwapSummary from '../Summary';
@@ -10,7 +9,7 @@ import { SwapQuoteDetails } from './SwapQuoteDetails';
 import WalletTransferButton from './WalletTransferButton';
 
 const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
-    const { swapBasicData, swapDetails, quote, refuel } = useSwapDataState()
+    const { swapBasicData, swapDetails, quote, refuel, depositActionsResponse } = useSwapDataState()
     const { appName, signature } = useQueryState()
     const sourceIsImmutableX = swapBasicData?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
         || swapBasicData?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
@@ -24,11 +23,6 @@ const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
     if (swapBasicData?.use_deposit_address === false) {
         withdraw = {
             footer: <WalletTransferButton swapBasicData={swapBasicData} swapId={swapDetails?.id} refuel={!!refuel} />
-        }
-    } else if (swapBasicData?.use_deposit_address === true) {
-        withdraw = {
-            footer: <ManualTransfer />,
-            content: <></>
         }
     }
 

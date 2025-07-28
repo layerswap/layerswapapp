@@ -29,11 +29,12 @@ interface Props {
     refuel?: Refuel | undefined
 }
 
-const ExchangeWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refuel }) => {
+const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refuel }) => {
     const { wallets } = useWallet();
     const { createSwap, setSwapId } = useSwapDataUpdate()
+    const [pendingSwapValues, setPendingSwapValues] = useState<SwapFormValues | null>(null);
+    
     const [loading, setLoading] = useState(false)
-    const [pendingSwapValues, setPendingSwapValues] = useState<SwapFormValues | null>(null)
     const { getConfirmation } = useAsyncModal();
 
     const [showQR, setShowQR] = useState(false)
@@ -42,6 +43,7 @@ const ExchangeWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, ref
     const query = useQueryState()
 
     const depositAddress = depositActions?.find(da => true)?.to_address;
+
     const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == swapBasicData?.destination_address?.toLowerCase())?.icon;
 
     const handleCopy = () => {
@@ -56,7 +58,7 @@ const ExchangeWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, ref
 
     const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs || undefined);
 
-    const handleClick = (network: Network, token: Token) => {
+    const handleClick = async (network: Network, token: Token) => {
         const swapValues: SwapFormValues = {
             amount: swapBasicData?.requested_amount?.toString(),
             from: network as NetworkRoute,
@@ -70,66 +72,53 @@ const ExchangeWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, ref
             depositMethod: 'deposit_address',
         };
 
-        setPendingSwapValues(swapValues);
-    }
-    
-    useEffect(() => {
-        const handleCreateSwap = async () => {
-            if (!pendingSwapValues) return;
+        setPendingSwapValues(swapValues)
+        const requestedAmount = parseFloat(swapValues.amount || "0");
 
-            const requestedAmount = parseFloat(pendingSwapValues.amount || "0");
+        if ((minAllowedAmount && requestedAmount < minAllowedAmount) || (maxAllowedAmount && requestedAmount > maxAllowedAmount)) {
+            const isBelowMin = minAllowedAmount !== undefined && requestedAmount < minAllowedAmount;
+            const isAboveMax = maxAllowedAmount !== undefined && requestedAmount > maxAllowedAmount;
 
-            if ((minAllowedAmount && requestedAmount < minAllowedAmount) || (maxAllowedAmount && requestedAmount > maxAllowedAmount)) {
-                const isBelowMin = minAllowedAmount !== undefined && requestedAmount < minAllowedAmount;
-                const isAboveMax = maxAllowedAmount !== undefined && requestedAmount > maxAllowedAmount;
+            const newAmount = isBelowMin ? minAllowedAmount : isAboveMax ? maxAllowedAmount : requestedAmount;
 
-                const newAmount = isBelowMin ? minAllowedAmount : isAboveMax ? maxAllowedAmount : requestedAmount;
+            const confirmed = await getConfirmation({
+                content: (
+                    <QuoteUpdated
+                        minAllowedAmount={minAllowedAmount}
+                        maxAllowedAmount={maxAllowedAmount}
+                        originalAmount={requestedAmount}
+                        updatedReceiveAmount={quote?.receive_amount}
+                    />
+                ),
+                submitText: "Continue with new quote",
+            });
 
-                const confirmed = await getConfirmation({
-                    content: (
-                        <QuoteUpdated
-                            minAllowedAmount={minAllowedAmount}
-                            maxAllowedAmount={maxAllowedAmount}
-                            originalAmount={requestedAmount}
-                            updatedReceiveAmount={quote?.receive_amount}
-                        />
-                    ),
-                    submitText: "Continue with new quote",
-                });
+            if (!confirmed) return;
 
-                if (!confirmed) return;
+            swapValues.amount = newAmount.toString();
+        }
 
-                const newValues = {
-                    ...pendingSwapValues,
-                    amount: newAmount.toString(),
-                };
-                setPendingSwapValues(newValues);
-                return;
-            }
+        try {
+            setSwapId(undefined);
+            setLoading(true);
 
-            try {
-                setSwapId(undefined);
-                setLoading(true);
+            window.safary?.track?.({
+                eventName: 'click',
+                eventType: 'send_from_wallet',
+            });
 
-                window.safary?.track?.({
-                    eventName: 'click',
-                    eventType: 'send_from_wallet',
-                });
+            const swapData = await createSwap(swapValues, query);
+            const swapId = swapData?.swap?.id;
+            if (!swapId) throw new Error('Swap ID is undefined');
 
-                const swapData = await createSwap(pendingSwapValues, query);
-                const swapId = swapData?.swap?.id;
-                if (!swapId) throw new Error('Swap ID is undefined');
+            setSwapId(swapId);
+        } catch (e) {
+            console.error('Swap creation error:', e);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-                setSwapId(swapId);
-            } catch (e) {
-                console.error('Swap creation error:', e);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        handleCreateSwap();
-    }, [pendingSwapValues]);
 
     const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks({
         currencyGroup: swapBasicData?.source_token?.symbol,
@@ -271,7 +260,23 @@ const ExchangeWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, ref
                                 {requestAmount}
                             </span>
                             <span>via</span>
-                            {sourceNetworkPopover}
+                            {swapBasicData?.source_exchange ? (
+                                <span className="inline-flex items-center align-bottom">
+                                    {sourceNetworkPopover}
+                                </span>
+                            ) : (
+                                <span className="inline-flex items-center gap-1 mx-1 h-6 align-bottom">
+                                    <ImageWithFallback
+                                        src={swapBasicData?.source_network?.logo}
+                                        alt="Project Logo"
+                                        height="16"
+                                        width="16"
+                                        loading="eager"
+                                        className="rounded-sm object-contain"
+                                    />
+                                    <span>{swapBasicData?.source_network?.display_name}</span>
+                                </span>
+                            )}
                             <span>using the deposit address</span>
                         </span>
                     }
@@ -315,4 +320,4 @@ const Step = ({ number, label, value }: { number: number, label: ReactNode, valu
     </div>
 )
 
-export default ExchangeWithdraw
+export default ManualWithdraw
