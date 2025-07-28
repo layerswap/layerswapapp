@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Fuel } from "lucide-react";
 import { FC } from "react";
 import { truncateDecimals } from "../../../../utils/RoundDecimals";
@@ -53,7 +54,7 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
 
     const truncatedRefuelAmount = nativeCurrency && !!refuel ?
         truncateDecimals(refuel.amount, nativeCurrency?.precision) : null
-    const refuelAmountInUsd = nativeCurrency && ((nativeCurrency?.price_in_usd || 1) * (truncatedRefuelAmount || 0)).toFixed(2)
+    const refuelAmountInUsd = nativeCurrency && ((nativeCurrency?.price_in_usd || 1) * (Number(truncatedRefuelAmount) || 0)).toFixed(2)
 
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
 
@@ -64,9 +65,9 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                     <div className="flex items-center gap-3">
                         {
                             sourceExchange ?
-                                <img src={sourceExchange.logo} alt={sourceExchange.display_name} width={32} height={32} className="rounded-lg" />
+                                <Image src={sourceExchange.logo} alt={sourceExchange.display_name} width={32} height={32} className="rounded-lg" />
                                 : source ?
-                                    <img src={source.logo} alt={source.display_name} width={32} height={32} className="rounded-lg" />
+                                    <Image src={source.logo} alt={source.display_name} width={32} height={32} className="rounded-lg" />
                                     :
                                     null
                         }
@@ -99,9 +100,9 @@ const Summary: FC<SwapInfoProps> = ({ sourceAccountAddress, sourceCurrency, dest
                     <div className="flex items-center gap-3">
                         {
                             destExchange ?
-                                <img src={destExchange.logo} alt={destExchange.display_name} width={32} height={32} className="rounded-lg" />
+                                <Image src={destExchange.logo} alt={destExchange.display_name} width={32} height={32} className="rounded-lg" />
                                 : destination ?
-                                    <img src={destination.logo} alt={destination.display_name} width={32} height={32} className="rounded-lg" />
+                                    <Image src={destination.logo} alt={destination.display_name} width={32} height={32} className="rounded-lg" />
                                     :
                                     null
                         }

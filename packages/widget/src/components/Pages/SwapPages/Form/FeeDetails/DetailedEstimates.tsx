@@ -3,6 +3,7 @@ import { useFormikContext } from "formik";
 import { SwapFormValues } from "../SwapFormValues";
 import { useFee } from "../../../../../context/feeContext";
 import AverageCompletionTime from "../../../../Common/AverageCompletionTime";
+import { truncateDecimals } from "../../../../utils/RoundDecimals";
 
 const DetailedEstimates: FC = () => {
 
@@ -10,13 +11,16 @@ const DetailedEstimates: FC = () => {
     const { fromCurrency } = values;
     const { fee, isFeeLoading } = useFee()
 
-    const fee_amount = fee?.quote.total_fee
+    const feeDiscount = fee?.quote?.fee_discount || 0;
+    const feeDiscountInUsd = feeDiscount * (fee?.quote.source_token?.price_in_usd || 0);
+    const fee_amount = fee?.quote.total_fee && fee.quote.total_fee - feeDiscount
+    const fullFeeAmount = fee?.quote.total_fee || 0;
+    const fullParsedFeeAmount = fullFeeAmount && parseFloat(Number(fullFeeAmount).toFixed(fromCurrency?.precision))
 
-    const parsedFee = fee && parseFloat(Number(fee_amount).toFixed(fromCurrency?.precision))
+    const parsedFee = fee && truncateDecimals(Number(fee_amount), fromCurrency?.precision)
     const currencyName = fromCurrency?.symbol || " "
-    const feeAmountInUsd = fee?.quote.total_fee_in_usd
+    const feeAmountInUsd = fee?.quote.total_fee_in_usd && (fee?.quote.total_fee_in_usd - feeDiscountInUsd)
 
-    const displayFee = parsedFee?.toFixed(fromCurrency?.precision)
     const displayFeeInUsd = feeAmountInUsd ? (feeAmountInUsd < 0.01 ? '<$0.01' : `$${feeAmountInUsd?.toFixed(2)}`) : null
 
     return <div className="flex flex-col w-full gap-2">
@@ -45,13 +49,27 @@ const DetailedEstimates: FC = () => {
                         <div className='h-[10px] w-16 inline-flex bg-gray-500 rounded-sm animate-pulse' />
                     ) : (
                         <div>
-                            <span>{displayFee || '-'} </span>
-                            <span>{parsedFee ? currencyName : ''}</span>
-                            {displayFeeInUsd !== undefined && (
+                            {
+                                feeDiscount > 0 ?
+                                    <span className="ml-1">
+                                        <span className="line-through">
+                                            <span>{fullParsedFeeAmount || '-'}</span> <span>{fee_amount == 0 ? currencyName : ''}</span>
+                                        </span>
+                                        <span className="ml-1">
+                                            <span>{fee_amount && fee_amount > 0 ? parsedFee : 'Free'}</span> <span>{fee_amount && fee_amount > 0 ? currencyName : ''}</span>
+                                        </span>
+                                    </span>
+                                    :
+                                    <span>{parsedFee || '-'} </span>
+                            }
+                            <span>{(parsedFee && !feeDiscount) ? currencyName : ''}</span>
+                            {displayFeeInUsd !== undefined && fee_amount ? (
                                 <span className="text-xs ml-1 font-medium">
                                     ({displayFeeInUsd})
                                 </span>
-                            )}
+                            )
+                                : null
+                            }
                         </div>
                     )}
                 </div>
