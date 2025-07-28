@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useLayoutEffect, useMemo, useRef } from "react";
+import { forwardRef, useEffect, useMemo, useRef } from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import NumericInput from "../NumericInput";
 import useSWRGas from "@/lib/gases/useSWRGas";
@@ -30,7 +30,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
         return (sourceCurrencyPriceInUsd * amountNumber).toFixed(2)
     }, [amount, sourceCurrencyPriceInUsd]);
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         const input = amountRef.current;
         const suffix = suffixRef.current;
 
