@@ -26,9 +26,7 @@ const QuoteUpdated: FC<QuoteUpdatedProps> = ({
             <h2 className="text-primary-text text-xl font-medium text-center mb-3">
                 <span>{isBelowMin ? "Minimum" : "Maximum"}</span> <span>Amount Adjusted</span>
             </h2>
-            <p className="text-center text-secondary-text text-base mb-6">
-                The {isBelowMin ? "minimum" : "maximum"} amount you can send using {network} is {isBelowMin ? minAllowedAmount : maxAllowedAmount} {token}. We’ll adjust your transfer to this limit to proceed.
-            </p>
+            
         </div>
     );
 };
