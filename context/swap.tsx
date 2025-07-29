@@ -130,14 +130,14 @@ export function SwapDataProvider({ children }) {
             return data?.data?.quote
         }
         return formDataQuote?.quote
-    }, [formDataQuote, data]);
+    }, [formDataQuote, data, swapId]);
 
     const refuel = useMemo(() => {
         if (swapId) {
             return data?.data?.refuel
         }
         return formDataQuote?.refuel
-    }, [formDataQuote, data]);
+    }, [formDataQuote, data, swapId]);
 
 
     const sourceIsSupported = swapBasicData && WalletIsSupportedForSource({

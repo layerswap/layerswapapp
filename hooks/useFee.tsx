@@ -50,13 +50,18 @@ export function useQuoteData(formValues: Props | undefined): UseQuoteData {
         dedupingInterval: 20000,
     })
 
-    const quoteURL = (from && to && Number(debouncedAmount) > 0 && depositMethod && toCurrency && fromCurrency) ?
+    const canGetQuote = from && to && depositMethod && toCurrency && fromCurrency
+        && Number(debouncedAmount) > 0
+        && (!amountRange || Number(debouncedAmount) >= (amountRange?.data?.min_amount || 0) && Number(debouncedAmount) <= (amountRange?.data?.max_amount || 0))
+
+    const quoteURL = canGetQuote ?
         `/quote?source_network=${from}&source_token=${fromCurrency}&destination_network=${to}&destination_token=${toCurrency}&amount=${debouncedAmount}&refuel=${!!refuel}&use_deposit_address=${use_deposit_address}` : null
 
     const { data: quote, mutate: mutateFee, isLoading: isQuoteLoading, error: lsFeeError } = useSWR<ApiResponse<Quote>>(quoteURL, apiClient.fetcher, {
         refreshInterval: 42000,
         dedupingInterval: 42000,
     })
+
 
     return {
         minAllowedAmount: amountRange?.data?.min_amount,
@@ -68,6 +73,7 @@ export function useQuoteData(formValues: Props | undefined): UseQuoteData {
     }
 }
 export function transformFormValuesToQuoteArgs(values: SwapFormValues): Props | undefined {
+    if (values.fromAsset?.status !== 'active' || values.toAsset?.status !== 'active') return undefined
     return {
         amount: values.amount,
         from: values.from?.name,

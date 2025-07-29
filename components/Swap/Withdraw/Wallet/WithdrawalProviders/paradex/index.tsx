@@ -11,23 +11,24 @@ import SubmitButton from '@/components/buttons/submitButton';
 import { WalletIcon } from 'lucide-react';
 import { WithdrawPageProps } from '../../Common/sharedTypes';
 import { useConnectModal } from '@/components/WalletModal';
+import { useActiveParadexAccount } from '@/components/WalletProviders/ActiveParadexAccount';
 
 export const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ refuel, swapBasicData, swapId }) => {
 
     const { networks } = useSettingsState();
     const l1Network = networks.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
     const starknet = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetGoerli || n.name === KnownInternalNames.Networks.StarkNetSepolia);
-    const selectedProvider = useWalletStore((state) => state.selectedProveder)
+    const { activeConnection } = useActiveParadexAccount()
     const { provider: evmProvider } = useWallet(l1Network, 'withdrawal')
     const { provider: starknetProvider } = useWallet(starknet, 'withdrawal')
 
     const evmWallet = evmProvider?.activeWallet
     const starknetWallet = starknetProvider?.activeWallet
 
-    if (selectedProvider === evmProvider?.name && evmWallet) {
+    if (activeConnection?.providerName === evmProvider?.name && evmWallet) {
         return <Evm refuel={refuel} swapBasicData={swapBasicData} swapId={swapId} />
     }
-    if (selectedProvider === starknetProvider?.name && starknetWallet) {
+    if (activeConnection?.providerName === starknetProvider?.name && starknetWallet) {
         return <Starknet refuel={refuel} swapBasicData={swapBasicData} swapId={swapId} />
     }
 
