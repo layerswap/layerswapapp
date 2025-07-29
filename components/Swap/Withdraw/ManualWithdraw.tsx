@@ -21,6 +21,7 @@ import { SwapFormValues } from '@/components/DTOs/SwapFormValues'
 import { transformFormValuesToQuoteArgs, useQuoteData } from '@/hooks/useFee'
 import { useAsyncModal } from '@/context/asyncModal'
 import QuoteUpdated from './QuoteUpdated'
+import { getLimits } from '@/components/utils/getLimits'
 
 interface Props {
     swapBasicData: SwapBasicData;
@@ -32,8 +33,8 @@ interface Props {
 const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refuel }) => {
     const { wallets } = useWallet();
     const { createSwap, setSwapId } = useSwapDataUpdate()
-    const [pendingSwapValues, setPendingSwapValues] = useState<SwapFormValues | null>(null);
-    
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
     const [loading, setLoading] = useState(false)
     const { getConfirmation } = useAsyncModal();
 
@@ -52,12 +53,6 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
         }
     }
 
-    const quoteArgs = useMemo(() => {
-        return pendingSwapValues ? transformFormValuesToQuoteArgs(pendingSwapValues) : null;
-    }, [pendingSwapValues]);
-
-    const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs || undefined);
-
     const handleClick = async (network: Network, token: Token) => {
         const swapValues: SwapFormValues = {
             amount: swapBasicData?.requested_amount?.toString(),
@@ -72,7 +67,8 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
             depositMethod: 'deposit_address',
         };
 
-        setPendingSwapValues(swapValues)
+        const { maxAllowedAmount, minAllowedAmount } = await getLimits(swapValues)
+
         const requestedAmount = parseFloat(swapValues.amount || "0");
 
         if ((minAllowedAmount && requestedAmount < minAllowedAmount) || (maxAllowedAmount && requestedAmount > maxAllowedAmount)) {
@@ -99,7 +95,6 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
         }
 
         try {
-            setSwapId(undefined);
             setLoading(true);
 
             window.safary?.track?.({
@@ -112,6 +107,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
             if (!swapId) throw new Error('Swap ID is undefined');
 
             setSwapId(swapId);
+            setIsPopoverOpen(false);
         } catch (e) {
             console.error('Swap creation error:', e);
         } finally {
@@ -170,7 +166,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
     )
 
     const sourceNetworkPopover = (
-        <Popover>
+        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
             <PopoverTrigger asChild>
                 <button className="inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg">
                     <ImageWithFallback
