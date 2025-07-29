@@ -1,4 +1,4 @@
-import { FC, useEffect } from 'react'
+import { FC, useEffect, useMemo } from 'react'
 import { useSwapDataState } from '@/context/swap';
 import WalletIcon from '@/components/icons/WalletIcon';
 import useWallet from '@/hooks/useWallet';
@@ -10,7 +10,6 @@ import { Wallet } from '@/Models/WalletProvider';
 import useSWRBalance from '@/lib/balances/useSWRBalance';
 import { useSettingsState } from '@/context/settings';
 import WalletsList from '@/components/Wallet/WalletsList';
-import { useSelectAccounts } from '@/context/selectedAccounts';
 import { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
 
 type Props = {
@@ -20,39 +19,26 @@ type Props = {
 }
 const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal, swapData }) => {
     const { networks } = useSettingsState()
-    const { setSelectedSourceAccount, selectedSourceAccount } = useSelectAccounts()
+
     const { source_token, source_network: swap_source_network } = swapData
     const source_network = swap_source_network && networks.find(n => n.name === swap_source_network?.name)
     const { provider } = useWallet(source_network, 'withdrawal')
+    const selectedWallet = useMemo(() => provider?.activeWallet, [provider]);
     const availableWallets = provider?.connectedWallets?.filter(c => !c.isNotAvailable) || []
 
     const changeWallet = async (wallet: Wallet, address: string) => {
         provider?.switchAccount && provider.switchAccount(wallet, address)
-        setSelectedSourceAccount({ wallet, address, providerName: wallet.providerName })
         setOpenModal(false)
     }
 
-    const selectedWallet = selectedSourceAccount?.wallet
-    const activeWallet = provider?.activeWallet
-
-    useEffect(() => {
-        if (!selectedSourceAccount && activeWallet) {
-            setSelectedSourceAccount({
-                wallet: activeWallet,
-                address: activeWallet.address,
-                providerName: activeWallet.providerName
-            })
-        }
-    }, [activeWallet?.address, setSelectedSourceAccount, provider, selectedSourceAccount?.address])
-
-    const { balances } = useSWRBalance(selectedSourceAccount?.address, source_network)
+    const { balances } = useSWRBalance(selectedWallet?.address, source_network)
 
     const walletBalance = source_network && balances?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
 
     let accountAddress: string | undefined = ""
-    if (selectedSourceAccount) {
-        accountAddress = selectedSourceAccount.address || "";
+    if (selectedWallet) {
+        accountAddress = selectedWallet.address || "";
     }
 
     if (!accountAddress) {

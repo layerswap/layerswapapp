@@ -5,7 +5,7 @@ import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { transformFormValuesToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { resolveFormValidation } from '@/hooks/useFormValidation';
 import { resolveRouteValidation } from '@/hooks/useRouteValidation';
-import useSelectedWalletStore from './selectedAccounts/pickerSelectedWallets';
+import useWallet from '@/hooks/useWallet';
 
 interface ValidationDetails {
     title?: string;
@@ -34,7 +34,9 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     const { values } = useFormikContext<SwapFormValues>();
     const query = useQueryState();
     const { sameAccountNetwork } = query
-    const { pickerSelectedWallet: selectedSourceAccount } = useSelectedWalletStore('from')
+
+    const { provider } = useWallet(values.from, "withdrawal")
+    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs)
 
