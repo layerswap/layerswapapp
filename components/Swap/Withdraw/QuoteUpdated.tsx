@@ -6,21 +6,18 @@ import { FC } from "react";
 interface QuoteUpdatedProps {
     minAllowedAmount?: number;
     maxAllowedAmount?: number;
-    originalAmount?: number;
     network?: string;
     token?: string;
+    isBelowMin?: boolean;
 }
 
 const QuoteUpdated: FC<QuoteUpdatedProps> = ({
     minAllowedAmount,
     maxAllowedAmount,
-    originalAmount,
     network,
-    token
+    token,
+    isBelowMin
 }) => {
-    const isBelowMin = originalAmount !== undefined && minAllowedAmount !== undefined && originalAmount < minAllowedAmount;
-    const isAboveMax = originalAmount !== undefined && maxAllowedAmount !== undefined && originalAmount > maxAllowedAmount;
-
     return (
         <div>
             <div className="p-3 bg-secondary-500 rounded-lg mb-3 w-fit mx-auto">
