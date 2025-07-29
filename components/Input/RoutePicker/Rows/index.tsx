@@ -73,7 +73,7 @@ export default function Row({
                 </p>
                 {
                     item.text.toLowerCase().includes("all") &&
-                    <div className="ml-auto">
+                    <div className="relative ml-auto">
                         <RouteTokenSwitch />
                     </div>
                 }

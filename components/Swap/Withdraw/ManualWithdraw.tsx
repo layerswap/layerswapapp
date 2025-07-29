@@ -83,10 +83,12 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                         minAllowedAmount={minAllowedAmount}
                         maxAllowedAmount={maxAllowedAmount}
                         originalAmount={requestedAmount}
-                        updatedReceiveAmount={quote?.receive_amount}
+                        network={network?.display_name}
+                        token={token?.symbol}
                     />
                 ),
-                submitText: "Continue with new quote",
+                submitText: "Continue with new amount",
+                dismissText: "Cancel",
             });
 
             if (!confirmed) return;
