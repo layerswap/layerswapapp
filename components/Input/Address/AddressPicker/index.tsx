@@ -15,7 +15,6 @@ import AddressButton from "./AddressButton";
 import { useQueryState } from "@/context/query";
 import ConnectedWallets from "./ConnectedWallets";
 import { Wallet } from "@/Models/WalletProvider";
-import { updateForm } from "@/components/Swap/Form/updateForm";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
@@ -136,20 +135,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [connectedWallet?.address, previouslyAutofilledAddress])
 
     function updateDestAddress(address: string | undefined) {
-        const wallet = destination && connectedWallets?.find(w => w.addresses?.find(a => addressFormat(a, destination) === addressFormat(address || '', destination)))
-        const addresItem = destination && groupedAddresses?.find(a => addressFormat(a.address, destination) === addressFormat(address || '', destination))
-        const account = {
-            address,
-            wallet: wallet,
-            providerName: provider?.name,
-            group: addresItem?.group,
-            date: addresItem?.date,
-        }
-        updateForm({
-            formDataKey: 'destination_address',
-            formDataValue: address,
-            setFieldValue
-        })
+        setFieldValue('destination_address', address);
     }
 
     useEffect(() => {
