@@ -8,7 +8,7 @@ import useWallet from '@/hooks/useWallet'
 import { DepositAction, Refuel, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
 import { motion } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
-import React, { useEffect, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { FC, ReactNode, useState } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from "../../shadcn/popover";
 import useExchangeNetworks from '@/hooks/useExchangeNetworks'
@@ -18,7 +18,6 @@ import { Network, NetworkRoute, Token } from '@/Models/Network'
 import { useQueryState } from '@/context/query'
 import { useSwapDataUpdate } from '@/context/swap'
 import { SwapFormValues } from '@/components/DTOs/SwapFormValues'
-import { transformFormValuesToQuoteArgs, useQuoteData } from '@/hooks/useFee'
 import { useAsyncModal } from '@/context/asyncModal'
 import QuoteUpdated from './QuoteUpdated'
 import { getLimits } from '@/components/utils/getLimits'
@@ -34,6 +33,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
     const { wallets } = useWallet();
     const { createSwap, setSwapId } = useSwapDataUpdate()
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+    const [newNetwork, setNewNetwork] = useState<Network | null>(null);
 
     const [loading, setLoading] = useState(false)
     const { getConfirmation } = useAsyncModal();
@@ -102,6 +102,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                 eventType: 'send_from_wallet',
             });
 
+            setNewNetwork(network);
             const swapData = await createSwap(swapValues, query);
             const swapId = swapData?.swap?.id;
             if (!swapId) throw new Error('Swap ID is undefined');
@@ -114,7 +115,6 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
             setLoading(false);
         }
     };
-
 
     const exchangeNetworkParams = useMemo(() => ({
         currencyGroup: swapBasicData?.source_token?.symbol,
@@ -171,14 +171,14 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
             <PopoverTrigger asChild>
                 <button className="inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg">
                     <ImageWithFallback
-                        src={swapBasicData?.source_network?.logo}
+                        src={newNetwork?.logo || swapBasicData?.source_network?.logo}
                         alt="Project Logo"
                         height="16"
                         width="16"
                         loading="eager"
                         className="rounded-sm object-contain"
                     />
-                    <span>{swapBasicData?.source_network?.display_name}</span>
+                    <span>{newNetwork?.display_name || swapBasicData?.source_network?.display_name}</span>
                     <span className="pointer-events-none text-shadow-primary-text-muted">
                         <ChevronDown className="h-3.5 w-3.5 text-secondary-text" aria-hidden="true" />
                     </span>
@@ -228,75 +228,85 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
     return (
         <div className="rounded-lg space-y-4 text-white">
             <div className="space-y-3">
-                <Step
-                    number={1}
-                    label={
-                        <div className="flex items-center justify-between gap-2 relative">
-                            <span>Copy the deposit address</span>
-                            <div className="relative">
-                                <QRIcon
-                                    className="bg-secondary-300 p-1 rounded-lg cursor-pointer hover:opacity-80"
-                                    onClick={() => setShowQR(!showQR)}
-                                />
-                                {showQR && qrCode}
-                            </div>
-                        </div>
-                    }
-                    value={
-                        <span className="cursor-pointer hover:underline" >
-                            {shortenAddress(depositAddress || '')}
-                        </span>
-                    }
-                />
-                <Step
-                    number={2}
-                    label={
-                        <span>
-                            <span className='inline-flex items-center gap-1'>
-                                <span>Send</span>
-                                {requestAmount}
-                            </span>
-                            <span>via</span>
-                            {swapBasicData?.source_exchange ? (
-                                <span className="inline-flex items-center align-bottom">
-                                    {sourceNetworkPopover}
-                                </span>
-                            ) : (
-                                <span className="inline-flex items-center gap-1 mx-1 h-6 align-bottom">
-                                    <ImageWithFallback
-                                        src={swapBasicData?.source_network?.logo}
-                                        alt="Project Logo"
-                                        height="16"
-                                        width="16"
-                                        loading="eager"
-                                        className="rounded-sm object-contain"
-                                    />
-                                    <span>{swapBasicData?.source_network?.display_name}</span>
-                                </span>
-                            )}
-                            <span>using the deposit address</span>
-                        </span>
-                    }
-                />
-                <Step
-                    number={3}
-                    label={
-                        <span className='flex items-center gap-1'>
-                            Receive {quote?.receive_amount} {swapBasicData?.destination_token?.symbol} at {destinationNetwork}
-                        </span>
-                    }
-                    value={
-                        <span className="cursor-pointer hover:underline flex items-center gap-2">
-                            {WalletIcon ?
-                                <WalletIcon className="w-4 h-4 p-0.5 bg-white rounded-sm" />
-                                :
-                                <AddressIcon className="h-4 w-4" address={swapBasicData.destination_address} size={36} rounded='4px' />
-
+                {(loading || exchangeSourceNetworksLoading) ? (
+                    <>
+                        <SkeletonStep number={1} />
+                        <SkeletonStep number={2} />
+                        <SkeletonStep number={3} />
+                    </>
+                ) : (
+                    <>
+                        <Step
+                            number={1}
+                            label={
+                                <div className="flex items-center justify-between gap-2 relative">
+                                    <span>Copy the deposit address</span>
+                                    <div className="relative">
+                                        <QRIcon
+                                            className="bg-secondary-300 p-1 rounded-lg cursor-pointer hover:opacity-80"
+                                            onClick={() => setShowQR(!showQR)}
+                                        />
+                                        {showQR && qrCode}
+                                    </div>
+                                </div>
                             }
-                            {shortenAddress(swapBasicData.destination_address)}
-                        </span>
-                    }
-                />
+                            value={
+                                <span className="cursor-pointer hover:underline min-h-[20px] block">
+                                    {depositAddress ? shortenAddress(depositAddress) : <span className="inline-block w-28 bg-secondary-400 h-[20px] rounded animate-pulse"></span>}
+                                </span>
+                            }
+                        />
+                        <Step
+                            number={2}
+                            label={
+                                <span>
+                                    <span className='inline-flex items-center gap-1'>
+                                        <span>Send</span>
+                                        {requestAmount}
+                                    </span>
+                                    <span>via</span>
+                                    {swapBasicData?.source_exchange ? (
+                                        <span className="inline-flex items-center align-bottom">
+                                            {sourceNetworkPopover}
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center gap-1 mx-1 h-6 align-bottom">
+                                            <ImageWithFallback
+                                                src={swapBasicData?.source_network?.logo}
+                                                alt="Project Logo"
+                                                height="16"
+                                                width="16"
+                                                loading="eager"
+                                                className="rounded-sm object-contain"
+                                            />
+                                            <span>{swapBasicData?.source_network?.display_name}</span>
+                                        </span>
+                                    )}
+                                    <span>using the deposit address</span>
+                                </span>
+                            }
+                        />
+                        <Step
+                            number={3}
+                            label={
+                                <span className='flex items-center gap-1'>
+                                    Receive {quote?.receive_amount} {swapBasicData?.destination_token?.symbol} at {destinationNetwork}
+                                </span>
+                            }
+                            value={
+                                <span className="cursor-pointer hover:underline flex items-center gap-2">
+                                    {WalletIcon ?
+                                        <WalletIcon className="w-4 h-4 p-0.5 bg-white rounded-sm" />
+                                        :
+                                        <AddressIcon className="h-4 w-4" address={swapBasicData.destination_address} size={36} rounded='4px' />
+
+                                    }
+                                    {shortenAddress(swapBasicData.destination_address)}
+                                </span>
+                            }
+                        />
+                    </>
+                )}
             </div>
             <button onClick={handleCopy} className="bg-primary hover:bg-primary/90 w-full py-2 rounded-md font-semibold">
                 Copy deposit address
@@ -313,6 +323,18 @@ const Step = ({ number, label, value }: { number: number, label: ReactNode, valu
         <div className="flex-1">
             <div className="font-normal text-base leading-6">{label}</div>
             <div className="text-sm text-secondary-text">{value}</div>
+        </div>
+    </div>
+)
+
+const SkeletonStep = ({ number }: { number: number }) => (
+    <div className="flex items-start space-x-3 bg-secondary-500 p-3 rounded-lg animate-pulse">
+        <div className="w-6 h-6 rounded-md bg-secondary-400 text-primary-text flex items-center justify-center text-base font-normal leading-6">
+            {number}
+        </div>
+        <div className="flex-1 space-y-2">
+            <div className="h-5 bg-secondary-300 rounded w-3/4"></div>
+            <div className="h-4 bg-secondary-300 rounded w-1/2"></div>
         </div>
     </div>
 )
