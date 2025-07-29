@@ -52,7 +52,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
 
     const exchangeNetworks = useMemo(() => {
         return withdrawalNetworks;
-    }, [withdrawalNetworks, exchange, search]);
+    }, [withdrawalNetworks, exchange, search, values]);
 
     const selectedRoute = useMemo(() => resolveSelectedRoute(values, direction), [values, direction]);
     const selectedToken = useMemo(() => resolveSelectedToken(values, direction), [values, direction]);

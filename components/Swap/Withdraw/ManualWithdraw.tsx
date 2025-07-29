@@ -116,13 +116,14 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
     };
 
 
-    const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks({
+    const exchangeNetworkParams = useMemo(() => ({
         currencyGroup: swapBasicData?.source_token?.symbol,
         fromExchange: swapBasicData?.source_exchange?.name,
         to: swapBasicData?.destination_network?.name,
         toAsset: swapBasicData?.destination_token?.symbol
-    });
+    }), [swapBasicData]);
 
+    const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks(exchangeNetworkParams);
 
     const qrCode = (
         <motion.div
