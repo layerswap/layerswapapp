@@ -2390,13 +2390,17 @@
         "eip155:10",
         "eip155:1329",
         "eip155:137",
+        "eip155:324",
         "eip155:42161",
         "eip155:43114",
         "eip155:56",
+        "eip155:59144",
         "eip155:8453",
         "polkadot:91b171bb158e2d3848fa23a9f1c25182",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-        "vechain:b1ac3413d346d43539627e6be7ec1b4a"
+        "stellar:pubnet",
+        "vechain:b1ac3413d346d43539627e6be7ec1b4a",
+        "xrpl:0"
       ],
       "description": "Cold Storage Crypto Wallet",
       "desktop": {
@@ -2421,7 +2425,7 @@
       },
       "mobile": {
         "native": "arculuswc://",
-        "universal": "https://gw.arculus.co/app"
+        "universal": "https://gw.arculus.co/app/wc"
       },
       "name": "Arculus Wallet",
       "rdns": null,
@@ -19667,6 +19671,7 @@
         "eip155:1313161555",
         "eip155:1313161556",
         "eip155:1313500",
+        "eip155:1329",
         "eip155:13371337",
         "eip155:1350216234",
         "eip155:1351057110",
@@ -19704,6 +19709,7 @@
         "eip155:18289463",
         "eip155:1856",
         "eip155:186",
+        "eip155:1868",
         "eip155:19",
         "eip155:19011",
         "eip155:1907",
@@ -19769,6 +19775,7 @@
         "eip155:321",
         "eip155:322",
         "eip155:324",
+        "eip155:325000",
         "eip155:32659",
         "eip155:3269",
         "eip155:3270",
@@ -35652,7 +35659,7 @@
       "description": "Non-custodial EVM wallet for Bahamut Ecosystem ",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": "https://yowallet.io"
       },
       "homepage": "https://yowallet.io",
       "id": "f9b40e3615afddce7aea739d37d543b922e5f70a4f30b886b6b59062c43b2437",
