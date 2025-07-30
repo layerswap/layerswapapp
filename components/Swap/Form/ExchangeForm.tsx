@@ -38,6 +38,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
 
     const isValid = !formValidation.message;
     const error = formValidation.message;
+    const showMinMax = isAmountFocused || !amount;
 
     return (
         <>
@@ -93,8 +94,8 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                             {
                                                 from && fromCurrency && minAllowedAmount && maxAmountFromApi &&
                                                 <div className={clsx({
-                                                    "hidden": !!amount && !isAmountFocused,
-                                                    "block": isAmountFocused || !amount
+                                                    "hidden": !showMinMax,
+                                                    "block": showMinMax
                                                 }
                                                 )}>
                                                     <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />

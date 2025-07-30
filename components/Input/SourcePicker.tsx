@@ -17,6 +17,7 @@ const SourcePicker = () => {
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const [isAmountFocused, setIsAmountFocused] = useState(false);
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(quoteArgs)
+    const showMinMax = isAmountFocused || !amount;
 
     return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl py-4.5 px-4 space-y-8">
         <div className="flex justify-between items-center">
@@ -32,9 +33,9 @@ const SourcePicker = () => {
                 from && to && fromCurrency && minAllowedAmount && maxAmountFromApi &&
                 <div className={clsx(
                     "absolute z-10 -top-6 left-0",
-                    { 
-                        "hidden": !!amount && !isAmountFocused,
-                        "block": isAmountFocused || !amount
+                    {
+                        "hidden": !showMinMax,
+                        "block": showMinMax
                     }
                 )}>
                     <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />
