@@ -25,7 +25,7 @@ const MinMax = (props: MinMaxProps) => {
     const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
 
     const { gas } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency)
-    const { balances, mutate } = useSWRBalance(selectedSourceAccount?.address, from)
+    const { balances } = useSWRBalance(selectedSourceAccount?.address, from)
 
     const gasAmount = gas || 0;
 
@@ -44,9 +44,8 @@ const MinMax = (props: MinMaxProps) => {
     }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency])
 
     const handleSetMaxAmount = async () => {
-        const updatedBalances = await mutate()
-        const updatedWalletBalance = updatedBalances?.balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
-        const maxAllowedAmount = resolveMaxAllowedAmount({ fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance: updatedWalletBalance, gasAmount, native_currency })
+        const walletBalance = balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
+        const maxAllowedAmount = resolveMaxAllowedAmount({ fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency })
         updateForm({
             formDataKey: 'amount',
             formDataValue: maxAllowedAmount.toString(),
