@@ -25,7 +25,7 @@ const MinMax = (props: MinMaxProps) => {
     const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
 
     const { gas } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency)
-    const { balances, mutate } = useSWRBalance(selectedSourceAccount?.address, from)
+    const { balances } = useSWRBalance(selectedSourceAccount?.address, from)
 
     const gasAmount = gas || 0;
 

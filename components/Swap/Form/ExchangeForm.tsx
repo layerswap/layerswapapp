@@ -1,4 +1,4 @@
-import { FC, useMemo } from "react";
+import { FC, useMemo, useState } from "react";
 import ValidationError from "@/components/validationError";
 import CexPicker from "@/components/Input/CexPicker";
 import QuoteDetails from "@/components/FeeDetails";
@@ -17,6 +17,8 @@ import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import MinMax from "@/components/Input/Amount/MinMax";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
+import sleep from "@/lib/wallets/utils/sleep";
+import clsx from "clsx";
 
 type Props = {
     partner?: Partner;
@@ -27,8 +29,9 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
         values, isSubmitting
     } = useFormikContext<SwapFormValues>();
 
-    const { fromAsset: fromCurrency, from, to: destination } = values || {};
+    const { fromAsset: fromCurrency, from, to: destination, amount } = values || {};
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
+    const [isAmountFocused, setIsAmountFocused] = useState(false);
 
     const { isQuoteLoading, quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(quoteArgs);
     const { routeValidation, formValidation } = useValidationContext();
@@ -88,14 +91,18 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                                 Enter amount
                                             </label>
                                             {
-                                                from && destination && fromCurrency && minAllowedAmount && maxAmountFromApi &&
-                                                <div className="hidden group-focus-within:block">
+                                                from && fromCurrency && minAllowedAmount && maxAmountFromApi &&
+                                                <div className={clsx({
+                                                    "hidden": !!amount && !isAmountFocused,
+                                                    "block": isAmountFocused || !amount
+                                                }
+                                                )}>
                                                     <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />
                                                 </div>
                                             }
                                         </div>
                                         <div className="relative group exchange-amount-field px-1">
-                                            <AmountField usdPosition="right" />
+                                            <AmountField usdPosition="right" onAmountFocus={() => setIsAmountFocused(true)} onAmountBlur={async () => { await sleep(500); setIsAmountFocused(false) }} />
                                         </div>
                                     </div>
                                 </div>
