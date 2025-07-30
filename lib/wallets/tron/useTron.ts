@@ -3,6 +3,7 @@ import { useWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
 import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { useSettingsState } from "@/context/settings";
+import { useMemo } from "react";
 
 export default function useTron(): WalletProvider {
     const commonSupportedNetworks = [
@@ -80,15 +81,16 @@ export default function useTron(): WalletProvider {
         }
     }
 
-    const availableWalletsForConnect: InternalConnector[] = wallets.map(wallet => {
+    const availableWalletsForConnect: InternalConnector[] = useMemo(() => wallets.map(wallet => {
+        const isNotInstalled = wallet.state == 'NotFound' || wallet.adapter.name == "TronLink"
         return {
             id: wallet.adapter.name,
             name: wallet.adapter.name,
             icon: wallet.adapter.icon,
-            type: wallet.state !== 'NotFound' ? 'injected' : 'other',
-            installUrl: wallet.state !== 'NotFound' ? undefined : wallet.adapter?.url,
+            type: isNotInstalled ? 'other' : 'injected',
+            installUrl: isNotInstalled ? wallet.adapter?.url : undefined,
         }
-    })
+    }), [wallets])
 
     const provider: WalletProvider = {
         connectWallet,
