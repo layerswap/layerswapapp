@@ -233,11 +233,11 @@ export function SwapDataProvider({ children }) {
     }, [selectedSourceAccount])
 
     const updateFns: UpdateSwapInterface = {
-        createSwap: createSwap,
-        setCodeRequested: setCodeRequested,
-        setInterval: setInterval,
+        createSwap,
+        setCodeRequested,
+        setInterval,
         mutateSwap: mutate,
-        setDepositAddressIsFromAccount: setDepositAddressIsFromAccount,
+        setDepositAddressIsFromAccount,
         setWithdrawType,
         setSwapId,
         setSelectedSourceAccount: handleChangeSelectedSourceAccount,
