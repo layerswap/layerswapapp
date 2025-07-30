@@ -11,9 +11,11 @@ import { formatUsd } from "@/components/utils/formatUsdAmount";
 
 interface AmountFieldProps {
     usdPosition?: "right" | "bottom";
+    onAmountFocus?: () => void;
+    onAmountBlur?: () => void;
 }
 
-const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: AmountFieldProps, ref: any) {
+const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", onAmountFocus, onAmountBlur }: AmountFieldProps, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
     const { fromAsset: fromCurrency, from, amount, toAsset: toCurrency, fromExchange } = values || {};
     const { provider } = useWallet(values.from, "withdrawal")
@@ -71,6 +73,8 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
                     placeholder={placeholder}
                     min={minAllowedAmount}
                     max={maxAllowedAmount || 0}
+                    onFocus={onAmountFocus}
+                    onBlur={onAmountBlur}
                     step={isNaN(step) ? 0.01 : step}
                     name={name}
                     ref={amountRef}
