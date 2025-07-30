@@ -1,4 +1,4 @@
-import { UpdateInterface } from "../../../context/swap"
+import { UpdateInterface } from "@/context/swap"
 
 const MockFunctions: UpdateInterface = {
     setSelectedSourceAccount: () => { throw new Error("Not implemented") },

@@ -27,9 +27,11 @@ const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isR
                 onClick={onClick}
                 {...props}
             >
-                <div className="grid grid-cols-3 gap-3 items-center font-medium w-full">
-                    <Icon className="w-9 sm:w-11 h-auto p-0.5 rounded-[10px] bg-secondary-800" />
-                    <div className='flex flex-col items-start justify-center col-start-2 col-span-3 min-h-[40px]'>
+                <div className="flex gap-2.5 items-center font-medium w-full">
+                    <div className="w-11">
+                        <Icon className="w-11 h-auto p-0.5 rounded-[10px] bg-secondary-800" />
+                    </div>
+                    <div className='flex flex-col items-start justify-center col-start-2 col-span-3 min-h-[40px] truncate'>
 
                         <p className='text-base text-left truncate w-full'>{connectorName}</p>
                         {

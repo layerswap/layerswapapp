@@ -16,18 +16,17 @@ import { usePersistedState } from "../../hooks/usePersistedState";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
 import { Checkbox } from "../shadcn/checkbox";
+import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 
 const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
-    const { isMobile } = useWindowDimensions()
     const { providers } = useWallet();
     const { setSelectedConnector, selectedProvider, setSelectedProvider, selectedConnector } = useConnectModal()
     let [recentConnectors, setRecentConnectors] = usePersistedState<({ providerName?: string, connectorName?: string }[])>([], 'recentConnectors', 'localStorage');
     const [connectionError, setConnectionError] = useState<string | undefined>(undefined);
     const [searchValue, setSearchValue] = useState<string | undefined>(undefined)
-    const [isFocused, setIsFocused] = useState(false)
     const [showEcosystemSeletion, setShowEcosystemSelection] = useState(false)
     const [selectedMultiChainConnector, setSelectedMultiChainConnector] = useState<InternalConnector | undefined>(undefined)
-
+    const { isMobile: isMobileSize } = useWindowDimensions()
     const [isScrolling, setIsScrolling] = useState(false);
     const scrollTimeout = useRef<any>(null);
 
@@ -48,7 +47,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const connect = async (connector: InternalConnector, provider: WalletProvider) => {
         try {
             setConnectionError(undefined)
-            if (connector.isMultiChain) {
+            if (connector?.isMultiChain) {
                 setSelectedMultiChainConnector(connector)
                 return setShowEcosystemSelection(true)
             }
@@ -114,10 +113,12 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const filteredProviders = providers.filter(p => !p.hideFromList)
     const featuredProviders = selectedProvider ? [selectedProvider] : filteredProviders
 
-    const allConnectors = featuredProviders.filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0).map((provider) =>
-        provider.availableWalletsForConnect?.filter(v => (isFocused || searchValue) ? (searchValue ? v.name.toLowerCase().includes(searchValue?.toLowerCase()) : false) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat()
+    const allFeaturedConnectors = useMemo(() => featuredProviders.filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0).map((provider) =>
+        provider.availableWalletsForConnect?.filter(v => searchValue ? (searchValue ? v.name.toLowerCase().includes(searchValue?.toLowerCase()) : false) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat(), [featuredProviders, searchValue])
+    const allHiddenConnectors = useMemo(() => featuredProviders.filter(g => g.availableHiddenWalletsForConnect && g.availableHiddenWalletsForConnect?.length > 0).map((provider) =>
+        provider.availableHiddenWalletsForConnect?.filter(v => searchValue ? (searchValue ? v.name.toLowerCase().includes(searchValue?.toLowerCase()) : false) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat(), [featuredProviders, searchValue])
 
-    const resolvedConnectors: InternalConnector[] = useMemo(() => removeDuplicatesWithKey(allConnectors, 'name'), [allConnectors])
+    const allConnectors: InternalConnector[] = useMemo(() => removeDuplicatesWithKey(([...allFeaturedConnectors, ...(searchValue ? allHiddenConnectors : [])] as InternalConnector[]).sort((a, b) => sortRecentConnectors(a, b, recentConnectors)), 'name'), [allFeaturedConnectors, allHiddenConnectors, searchValue])
 
     if (selectedConnector?.qr?.state) {
         const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
@@ -162,11 +163,10 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     }
 
     if (selectedConnector) {
-        const connector = allConnectors.find(c => c?.name === selectedConnector.name)
+        const connector = allFeaturedConnectors.find(c => c?.name === selectedConnector.name)
         const provider = featuredProviders.find(p => p.name === connector?.providerName)
         return <LoadingConnect
-            isMobile={isMobile}
-            onRetry={() => { connect(connector!, provider!) }}
+            onRetry={() => { (connector && provider) && connect(connector, provider) }}
             selectedConnector={selectedConnector}
             connectionError={connectionError}
         />
@@ -180,11 +180,10 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                         <input
                             value={searchValue}
                             onChange={(e) => setSearchValue(e.target.value)}
-                            onFocus={() => setIsFocused(true)}
-                            onBlur={() => setIsFocused(false)}
-                            placeholder="Search wallet"
+                            placeholder={allHiddenConnectors.length > 300 ? "Search through 400+ wallets..." : "Search wallet"}
                             autoComplete="off"
-                            className="placeholder:text-primary-text-placeholder border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-10 bg-transparent text-base outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
+                            className={clsx("placeholder:text-primary-text-placeholder focus:placeholder:invisible border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-10 bg-transparent text-base outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50",
+                            )}
                         />
                         {
                             searchValue &&
@@ -205,14 +204,14 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 <div
                     onScroll={handleScroll}
                     className={clsx('overflow-y-scroll -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar-thumb:bg-transparent', {
-                        'h-[55vh]': isMobile,
-                        'h-[265px]': !isMobile,
+                        'h-[55vh]': isMobileSize,
+                        'h-[265px]': !isMobileSize,
                         'styled-scroll': isScrolling
                     })}
                 >
                     <div className='grid grid-cols-2 gap-2'>
                         {
-                            resolvedConnectors.sort((a, b) => sortRecentConnectors(a, b, recentConnectors)).map(item => {
+                            allConnectors.map(item => {
                                 const provider = featuredProviders.find(p => p.name === item.providerName)
                                 const isRecent = recentConnectors?.some(v => v.connectorName === item.name)
                                 return (
@@ -233,7 +232,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 selectedMultiChainConnector &&
                 <MultichainConnectorModal
                     selectedConnector={selectedMultiChainConnector}
-                    allConnectors={allConnectors as InternalConnector[]}
+                    allConnectors={allFeaturedConnectors as InternalConnector[]}
                     providers={featuredProviders}
                     showEcosystemSelection={showEcosystemSeletion}
                     setShowEcosystemSelection={setShowEcosystemSelection}
@@ -244,14 +243,16 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     )
 }
 
-const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalConnector, connectionError: string | undefined, isMobile: boolean }> = ({ onRetry, selectedConnector, connectionError, isMobile }) => {
+const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalConnector, connectionError: string | undefined }> = ({ onRetry, selectedConnector, connectionError }) => {
     const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
+    const { isMobile: isMobileSize } = useWindowDimensions()
+    const isMobilePlatform = isMobile();
 
     if (selectedConnector.installUrl) {
         return <div
             className={clsx('w-full flex flex-col justify-center items-center font-semibold relative', {
-                'h-[60vh]': isMobile,
-                'h-[360px]': !isMobile,
+                'h-[60vh]': isMobileSize,
+                'h-[360px]': !isMobileSize,
             })}
         >
             <div className="flex flex-col gap-4 items-center justify-end row-start-2 row-span-1">
@@ -274,8 +275,8 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
     return (
         <div
             className={clsx('w-full flex flex-col justify-center items-center font-semibold relative', {
-                'h-[60vh]': isMobile,
-                'h-[360px]': !isMobile,
+                'h-[60vh]': isMobileSize,
+                'h-[360px]': !isMobileSize,
                 'pb-20': connectionError
             })}
         >
@@ -301,8 +302,8 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
                     {
                         !connectionError &&
                         <div className="py-1 text-center">
-                            <p className="text-base font-medium">Click connect in your wallet popup</p>
-                            <p className="text-sm font-normal text-secondary-text">Don&apos;t see a pop up? Check your other browser windows</p>
+                            <p className="text-base font-medium">{isMobilePlatform ? 'Approve connection in your wallet' : 'Approve connection in your wallet pop-up'}</p>
+                            <p className="text-sm font-normal text-secondary-text">{isMobilePlatform ? "Don't see the request? Check your wallet app." : "Don't see a pop-up? Check your browser windows."}</p>
                         </div>
                     }
                 </div>

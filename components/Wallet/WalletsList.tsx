@@ -35,7 +35,6 @@ const WalletsList: FC<Props> = (props) => {
         if (result && onSelect && result.withdrawalSupportedNetworks?.some(n => n === network?.name)) {
             onSelect(result, result.address)
         }
-
     }
 
     const { selectedSourceAccount } = useSwapDataState()
