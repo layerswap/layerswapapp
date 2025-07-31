@@ -4,12 +4,11 @@ import { SwapDirection, SwapFormValues } from "../../DTOs/SwapFormValues";
 import { Selector, SelectorContent, SelectorTrigger } from "../../Select/CommandNew/Index";
 import { SelectedRouteDisplay } from "./Routes";
 import React from "react";
-import useFormRoutes from "../../../hooks/useFormRoutes";
+import useFormRoutes from "@/hooks/useFormRoutes";
 import Balance from "../Amount/Balance";
 import { Content } from "./Content";
-import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import PickerWalletConnect from "./RouterPickerWalletConnect";
-import { useRouteTokenSwitchStore } from "@/stores/routeTokenSwitchStore";
 import { swapInProgress } from "@/components/utils/swapUtils";
 import { updateForm } from "@/components/Swap/Form/updateForm";
 

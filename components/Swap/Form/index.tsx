@@ -1,5 +1,5 @@
 import { Formik, FormikProps } from "formik";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useSettingsState } from "@/context/settings";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
@@ -7,10 +7,10 @@ import React from "react";
 import ConnectNetwork from "@/components/ConnectNetwork";
 import toast from "react-hot-toast";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/lib/generateSwapInitialValues";
-import LayerSwapApiClient, { Quote } from "@/lib/apiClients/layerSwapApiClient";
+import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 import Modal from "@/components/modal/modal";
 import useSWR from "swr";
-import { NextRouter, useRouter } from "next/router";
+import { useRouter } from "next/router";
 import { ApiResponse } from "@/Models/ApiResponse";
 import { Partner } from "@/Models/Partner";
 import { UserType, useAuthDataUpdate } from "@/context/authContext";
@@ -29,13 +29,14 @@ import VaulDrawer from "@/components/modal/vaulModal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./NetworkExchangeTabs";
 import NetworkForm from "./NetworkForm";
 import ExchangeForm from "./ExchangeForm";
-import useShowAddressNote from "@/hooks/useShowAddressNote";
 import { Widget } from "@/components/Widget/Index";
 import NetworkTabIcon from "@/components/icons/NetworkTabIcon";
 import ExchangeTabIcon from "@/components/icons/ExchangeTabIcon";
 import { transformSwapDataToQuoteArgs, useQuoteData } from "@/hooks/useFee";
-import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
 import { ValidationProvider } from "@/context/validationContext";
+import { BalanceAccountsProvider } from "@/context/balanceAccounts";
+import { addressFormat } from "@/lib/address/formatter";
+import AddressNote from "@/components/Input/Address/AddressNote";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -67,42 +68,42 @@ export default function Form() {
 
     const settings = useSettingsState();
     const query = useQueryState()
-    const { appName, sameAccountNetwork } = query
+    const { appName, destination_address: destinationAddressFromQuery } = query
     const { createSwap, setSwapId, setSubmitedFormValues } = useSwapDataUpdate()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
     const partner = appName && partnerData?.data?.client_id?.toLowerCase() === (appName as string)?.toLowerCase() ? partnerData?.data : undefined
-
     const { swapBasicData, swapDetails } = useSwapDataState()
-    const { pickerSelectedWallet: selectedSourceAccount } = useSelectedWalletStore('from');
-
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicData, !!swapBasicData?.refuel), [swapBasicData]);
     const { quote } = useQuoteData(quoteArgs)
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         const { destination_address, to } = values
 
-        // if (to &&
-        //     destination_address &&
-        //     showAddressNote &&
-        //     (destination_address) &&
-        //     (addressFormat(destination_address?.toString(), to) === addressFormat(destination_address, to)) &&
-        //     !(addresses.find(a => addressFormat(a.address, to) === addressFormat(destination_address, to) && a.group !== AddressGroup.FromQuery)) && !isAddressFromQueryConfirmed) {
+        if (
+            to &&
+            destination_address &&
+            destinationAddressFromQuery &&
+            (addressFormat(destinationAddressFromQuery?.toString(), to) === addressFormat(destination_address, to)) &&
+            !isAddressFromQueryConfirmed
+        ) {
+            const provider = to && getProvider(to, 'autofil')
+            const isDestAddressConnected = destination_address && provider?.connectedWallets?.some((wallet) => addressFormat(wallet.address, to) === addressFormat(destination_address, to))
 
-        //     const confirmed = await getConfirmation({
-        //         content: <AddressNote partner={partner} values={values} />,
-        //         submitText: 'Confirm address',
-        //         dismissText: 'Cancel address'
-        //     })
+            const confirmed = !isDestAddressConnected ? await getConfirmation({
+                content: <AddressNote partner={partner} values={values} />,
+                submitText: 'Confirm address',
+                dismissText: 'Cancel address'
+            }) : true
 
-        //     if (confirmed) {
-        //         setIsAddressFromQueryConfirmed(true)
-        //     }
-        //     else if (!confirmed) {
-        //         return
-        //     }
-        // }
+            if (confirmed) {
+                setIsAddressFromQueryConfirmed(true)
+            }
+            else if (!confirmed) {
+                return;
+            }
+        }
         try {
             const accessToken = TokenService.getAuthData()?.access_token
             if (!accessToken) {
@@ -132,7 +133,7 @@ export default function Form() {
         catch (error) {
             toast.error(error?.message)
         }
-    }, [createSwap, query, partner, router, updateAuthData, setUserType, swapBasicData, getProvider, settings, quote, selectedSourceAccount])
+    }, [createSwap, query, partner, router, updateAuthData, setUserType, swapBasicData, getProvider, settings, quote])
 
     const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings)
         : generateSwapInitialValues(settings, query)
@@ -141,76 +142,78 @@ export default function Form() {
         setShowSwapModal(value)
     }, [router, swapDetails])
 
-    return <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
-        <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
-            <AnimatePresence mode='wait'>
+    return <BalanceAccountsProvider>
+        <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
+            <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
+                <AnimatePresence mode='wait'>
+                    {
+                        swapDetails &&
+                        !showSwapModal &&
+                        <PendingSwap key="pendingSwap" onClick={() => handleShowSwapModal(true)} />
+                    }
+                </AnimatePresence>
+            </div>
+            <Modal
+                height="fit"
+                show={showConnectNetworkModal}
+                setShow={setShowConnectNetworkModal}
+                header={`${networkToConnect?.DisplayName} connect`}
+                modalId="showNetwork"
+            >
                 {
-                    swapDetails &&
-                    !showSwapModal &&
-                    <PendingSwap key="pendingSwap" onClick={() => handleShowSwapModal(true)} />
+                    networkToConnect &&
+                    <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
                 }
-            </AnimatePresence>
-        </div>
-        <Modal
-            height="fit"
-            show={showConnectNetworkModal}
-            setShow={setShowConnectNetworkModal}
-            header={`${networkToConnect?.DisplayName} connect`}
-            modalId="showNetwork"
-        >
-            {
-                networkToConnect &&
-                <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
-            }
-        </Modal>
-        <VaulDrawer
-            show={showSwapModal}
-            setShow={handleShowSwapModal}
-            header={`Complete the swap`}
-            modalId="showSwap">
-            <VaulDrawer.Snap id="item-1">
-                <SwapDetails type="contained" />
-            </VaulDrawer.Snap>
-        </VaulDrawer>
-        <Tabs defaultValue="cross-chain">
-            <TabsList>
-                <TabsTrigger
-                    label="Swap"
-                    Icon={NetworkTabIcon}
-                    value="cross-chain" />
-                <TabsTrigger
-                    label="Deposit from CEX"
-                    Icon={ExchangeTabIcon}
-                    value="exchange" />
-            </TabsList>
-            <Widget className="sm:min-h-[450px] h-full">
-                <TabsContent value="cross-chain">
-                    <Formik
-                        innerRef={formikRef}
-                        initialValues={initialValues}
-                        validateOnMount={true}
-                        onSubmit={handleSubmit}
-                    >
-                        <ValidationProvider>
-                            <NetworkForm partner={partner} />
-                        </ValidationProvider>
-                    </Formik>
-                </TabsContent>
-                <TabsContent value="exchange">
-                    <Formik
-                        innerRef={formikRef}
-                        initialValues={initialValues}
-                        validateOnMount={true}
-                        onSubmit={handleSubmit}
-                    >
-                        <ValidationProvider>
-                            <ExchangeForm />
-                        </ValidationProvider>
-                    </Formik>
-                </TabsContent>
-            </Widget>
-        </Tabs>
-    </DepositMethodProvider>
+            </Modal>
+            <VaulDrawer
+                show={showSwapModal}
+                setShow={handleShowSwapModal}
+                header={`Complete the swap`}
+                modalId="showSwap">
+                <VaulDrawer.Snap id="item-1">
+                    <SwapDetails type="contained" />
+                </VaulDrawer.Snap>
+            </VaulDrawer>
+            <Tabs defaultValue="cross-chain">
+                <TabsList>
+                    <TabsTrigger
+                        label="Swap"
+                        Icon={NetworkTabIcon}
+                        value="cross-chain" />
+                    <TabsTrigger
+                        label="Deposit from CEX"
+                        Icon={ExchangeTabIcon}
+                        value="exchange" />
+                </TabsList>
+                <Widget className="sm:min-h-[450px] h-full">
+                    <TabsContent value="cross-chain">
+                        <Formik
+                            innerRef={formikRef}
+                            initialValues={initialValues}
+                            validateOnMount={true}
+                            onSubmit={handleSubmit}
+                        >
+                            <ValidationProvider>
+                                <NetworkForm partner={partner} />
+                            </ValidationProvider>
+                        </Formik>
+                    </TabsContent>
+                    <TabsContent value="exchange">
+                        <Formik
+                            innerRef={formikRef}
+                            initialValues={initialValues}
+                            validateOnMount={true}
+                            onSubmit={handleSubmit}
+                        >
+                            <ValidationProvider>
+                                <ExchangeForm />
+                            </ValidationProvider>
+                        </Formik>
+                    </TabsContent>
+                </Widget>
+            </Tabs>
+        </DepositMethodProvider>
+    </BalanceAccountsProvider>
 }
 
 type SubmitProps = {
@@ -258,11 +261,11 @@ const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, crea
             const minutes = Number(time[1])
             const remainingTime = `${hours > 0 ? `${hours.toFixed()} ${(hours > 1 ? 'hours' : 'hour')}` : ''} ${minutes > 0 ? `${minutes.toFixed()} ${(minutes > 1 ? 'minutes' : 'minute')}` : ''}`
 
-            // if (minAllowedAmount && data.metadata.AvailableTransactionAmount > minAllowedAmount) {
-            //     throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromAsset?.symbol} or retry in ${remainingTime}.`)
-            // } else {
-            //     throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please retry in ${remainingTime}.`)
-            // }
+            if (data.metadata.AvailableTransactionAmount) {
+                throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromAsset?.symbol} or retry in ${remainingTime}.`)
+            } else {
+                throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please retry in ${remainingTime}.`)
+            }
         }
         else {
             throw new Error(data?.message || error?.message)

@@ -6,30 +6,30 @@ import Evm from './Evm';
 import Starknet from './Starknet';
 import { useWalletStore } from '@/stores/walletStore';
 import { useSwapDataState, useSwapDataUpdate } from '@/context/swap';
-import { Wallet } from '@/Models/WalletProvider';
+import { Wallet, WalletProvider } from '@/Models/WalletProvider';
 import SubmitButton from '@/components/buttons/submitButton';
 import { WalletIcon } from 'lucide-react';
 import { WithdrawPageProps } from '../../Common/sharedTypes';
 import { useConnectModal } from '@/components/WalletModal';
-import { useSelectAccounts } from '@/context/selectedAccounts';
+import { useActiveParadexAccount } from '@/components/WalletProviders/ActiveParadexAccount';
 
 export const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ refuel, swapBasicData, swapId }) => {
 
     const { networks } = useSettingsState();
     const l1Network = networks.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
     const starknet = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetGoerli || n.name === KnownInternalNames.Networks.StarkNetSepolia);
-    const selectedProvider = useWalletStore((state) => state.selectedProveder)
+    const { activeConnection } = useActiveParadexAccount()
     const { provider: evmProvider } = useWallet(l1Network, 'withdrawal')
     const { provider: starknetProvider } = useWallet(starknet, 'withdrawal')
 
     const evmWallet = evmProvider?.activeWallet
     const starknetWallet = starknetProvider?.activeWallet
 
-    if (selectedProvider === evmProvider?.name && evmWallet) {
-        return <Evm refuel={refuel} swapBasicData={swapBasicData} swapId={swapId}/>
+    if (activeConnection?.providerName === evmProvider?.name && evmWallet) {
+        return <Evm refuel={refuel} swapBasicData={swapBasicData} swapId={swapId} />
     }
-    if (selectedProvider === starknetProvider?.name && starknetWallet) {
-        return <Starknet refuel={refuel} swapBasicData={swapBasicData} swapId={swapId}/>
+    if (activeConnection?.providerName === starknetProvider?.name && starknetWallet) {
+        return <Starknet refuel={refuel} swapBasicData={swapBasicData} swapId={swapId} />
     }
 
     return <ConnectWalletModal />
@@ -39,18 +39,10 @@ const ConnectWalletModal = () => {
     const { source_network } = swapBasicData || {}
     const { provider } = useWallet(source_network, 'withdrawal')
     const { connect } = useConnectModal()
-    const { setSelectedSourceAccount } = useSelectAccounts()
 
-    const handleSelectWallet = (wallet?: Wallet | undefined, address?: string | undefined) => {
-        if (wallet && address) {
-            setSelectedSourceAccount({
-                wallet,
-                address,
-                providerName: wallet.providerName
-            })
-        }
-        else {
-            setSelectedSourceAccount({ providerName: provider?.name, wallet: undefined, address: undefined })
+    const handleSelectWallet = (wallet: Wallet, address: string) => {
+        if (wallet && address && provider) {
+            provider?.switchAccount && provider?.switchAccount(wallet, address)
         }
     }
     const handleConnect = async () => {

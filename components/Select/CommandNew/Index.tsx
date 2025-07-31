@@ -1,19 +1,24 @@
-import { createContext, ReactNode, useContext, useState } from "react";
+import { createContext, ReactNode, SetStateAction, useContext, useState } from "react";
 import { LeafletHeight } from "../../modal/leaflet";
 import Modal from "../../modal/modal";
+import VaulDrawer from "@/components/modal/vaulModal";
+import useWindowDimensions from "@/hooks/useWindowDimensions";
 
 type SelectorProps = {
-    setIsOpen: (value: boolean) => void;
+    setIsOpen: (value: SetStateAction<boolean>) => void;
     isOpen: boolean
+    shouldFocus: boolean;
+    setShouldFocus: (value: SetStateAction<boolean>) => void;
 }
 
-const SelectorContext = createContext<SelectorProps>({ isOpen: false, setIsOpen: () => { } });
+const SelectorContext = createContext<SelectorProps>({ isOpen: false, setIsOpen: () => { }, shouldFocus: false, setShouldFocus: () => { } });
 
 export const Selector = ({ children }) => {
     const [isOpen, setIsOpen] = useState(false);
+    const [shouldFocus, setShouldFocus] = useState(false);
 
     return (
-        <SelectorContext.Provider value={{ isOpen, setIsOpen }}>
+        <SelectorContext.Provider value={{ isOpen, setIsOpen, shouldFocus, setShouldFocus }}>
             {children}
         </SelectorContext.Provider>
     );
@@ -41,10 +46,12 @@ type SelectContentProps = {
 }
 
 export const SelectorContent = (props: SelectContentProps) => {
-    const { children, modalContent, header, modalHeight, searchHint, isLoading } = props
-    const { isOpen, setIsOpen } = useContext(SelectorContext);
-    const closeModal = () => setIsOpen(false)
-    return <Modal
+    const { children, modalContent, header } = props
+    const { isOpen, setIsOpen, setShouldFocus } = useSelectorState();
+    const { isDesktop, isMobile, windowSize } = useWindowDimensions();
+    const closeModal = () => { setIsOpen(false); setShouldFocus(false) };
+
+    return <VaulDrawer
         header={
             header ?
                 <div className="flex-1 text-lg text-secondary-text font-semibold w-full flex justify-end">
@@ -52,20 +59,22 @@ export const SelectorContent = (props: SelectContentProps) => {
                 </div>
                 : <></>
         }
-        height={modalHeight}
         show={isOpen}
-        setShow={setIsOpen}
+        setShow={(v) => { setIsOpen(v); v == false && setShouldFocus(v) }}
         modalId='comandSelect'
+        onAnimationEnd={() => { isDesktop && isOpen && setShouldFocus(true) }}
     >
-        {
-            isOpen ?
-                <div className="h-full">
-                    {modalContent}
-                    {children({ closeModal })}
-                </div>
-                : <></>
-        }
-    </Modal>
+        <VaulDrawer.Snap
+            id="item-1"
+            style={{ height: isMobile && windowSize.height ? `${(windowSize.height * 0.8).toFixed()}px` : '100%' }}
+            fullheight={isDesktop}
+        >
+            <>
+                {modalContent}
+                {children({ closeModal })}
+            </>
+        </VaulDrawer.Snap>
+    </VaulDrawer>
 }
 
 type SelectTriggerProps = {

@@ -1,4 +1,4 @@
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { useAccount } from "wagmi";
 import { PublishedSwapTransactions } from "@/lib/apiClients/layerSwapApiClient";
 import { ChangeNetworkButton, ConnectWalletButton } from "../../Common/buttons";
@@ -7,17 +7,17 @@ import useWallet from "@/hooks/useWallet";
 import TransactionMessages from "../../../messages/TransactionMessages";
 import { useQueryState } from "@/context/query";
 import { WithdrawPageProps } from "../../Common/sharedTypes";
-import { useSelectAccounts } from "@/context/selectedAccounts";
 
 export const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
     swapBasicData,
     refuel,
     swapId
 }) => {
-    const { selectedSourceAccount } = useSelectAccounts()
+
     const { source_network, destination_network, destination_address } = swapBasicData
     const { isConnected, chain: activeChain } = useAccount();
-    const { provider } = useWallet(source_network, 'withdrawal')
+    const { provider } = useWallet(swapBasicData.source_network, "withdrawal")
+    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
     const { sameAccountNetwork } = useQueryState()
     const wallet = provider?.activeWallet
     const networkChainId = Number(source_network?.chain_id) ?? undefined

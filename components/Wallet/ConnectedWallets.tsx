@@ -43,8 +43,14 @@ const WalletsHeaderWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
         </VaulDrawer>
     </>
 }
-
-export const WalletsIcons = ({ wallets }: { wallets: Wallet[] }) => {
+type WalletsIconsProps = {
+    wallets: {
+        id: string;
+        displayName?: string;
+        icon: (props: any) => React.JSX.Element;
+    }[]
+}
+export const WalletsIcons = ({ wallets }: WalletsIconsProps) => {
 
     const uniqueWallets = wallets.filter((wallet, index, self) => index === self.findIndex((t) => t.id === wallet.id))
 

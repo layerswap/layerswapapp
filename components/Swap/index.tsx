@@ -5,14 +5,13 @@ import Withdraw from './Withdraw';
 import Processing from './Withdraw/Processing';
 import { BackendTransactionStatus, TransactionType } from '../../lib/apiClients/layerSwapApiClient';
 import { SwapStatus } from '../../Models/SwapStatus';
+import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
+import SubmitButton from '../buttons/submitButton';
+import ExchangeWithdraw from './Withdraw/ExchangeWithdraw';
 
 type Props = {
     type: "widget" | "contained",
 }
-import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
-import SubmitButton from '../buttons/submitButton';
-import ExchangeWithdraw from './Withdraw/ExchangeWithdraw';
-import { SelectedAccountsProvider } from '@/context/selectedAccounts';
 
 const SwapDetails: FC<Props> = ({ type }) => {
     const { swapDetails, swapBasicData, quote, refuel, depositActionsResponse } = useSwapDataState()
@@ -40,29 +39,27 @@ const SwapDetails: FC<Props> = ({ type }) => {
     </>
 
     return (
-        <SelectedAccountsProvider from={swapBasicData.source_network} to={swapBasicData.destination_network}>
-            <Container type={type}>
-                {
-                    ((swapStatus === SwapStatus.UserTransferPending
-                        && !(swapInputTransaction || storedWalletTransaction))) ?
-                        (
-                            swapBasicData.source_exchange
-                                ? <ExchangeWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} />
-                                : <Withdraw type={type} />
-                        )
-                        :
-                        <>
-                            <Processing />
-                            {
-                                storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
-                                <SubmitButton isDisabled={false} isSubmitting={false} onClick={removeStoredTransaction}>
-                                    Try again
-                                </SubmitButton>
-                            }
-                        </>
-                }
-            </Container>
-        </SelectedAccountsProvider>
+        <Container type={type}>
+            {
+                ((swapStatus === SwapStatus.UserTransferPending
+                    && !(swapInputTransaction || storedWalletTransaction))) ?
+                    (
+                        swapBasicData.source_exchange
+                            ? <ExchangeWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} />
+                            : <Withdraw type={type} />
+                    )
+                    :
+                    <>
+                        <Processing />
+                        {
+                            storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
+                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={removeStoredTransaction}>
+                                Try again
+                            </SubmitButton>
+                        }
+                    </>
+            }
+        </Container>
     )
 }
 

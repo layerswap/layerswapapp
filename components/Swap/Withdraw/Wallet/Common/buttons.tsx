@@ -15,7 +15,6 @@ import { useRouter } from "next/router";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { BackendTransactionStatus, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { transformSwapDataToQuoteArgs, useQuoteData } from "@/hooks/useFee";
-import { useSelectAccounts } from "@/context/selectedAccounts";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
@@ -76,20 +75,20 @@ type ChangeNetworkProps = {
 
 export const ChangeNetworkButton: FC<ChangeNetworkProps> = (props) => {
     const { chainId, network } = props
-    const { provider } = useWallet(network, 'withdrawal')
     const [error, setError] = useState<Error | null>(null)
     const [isPending, setIsPending] = useState(false)
 
-    const { selectedSourceAccount } = useSelectAccounts()
+    const { provider } = useWallet(network, "withdrawal")
+    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
 
     const clickHandler = useCallback(async () => {
         try {
             setIsPending(true)
             if (!provider) throw new Error(`No provider from ${network?.name}`)
             if (!provider.switchChain) throw new Error(`No switchChain from ${network?.name}`)
-            if (!selectedSourceAccount?.wallet) throw new Error(`No selectedSourceAccount from ${network?.name}`)
+            if (!selectedSourceAccount) throw new Error(`No selectedSourceAccount from ${network?.name}`)
 
-            return await provider.switchChain(selectedSourceAccount?.wallet, chainId)
+            return await provider.switchChain(selectedSourceAccount, chainId)
         } catch (e) {
             setError(e)
         } finally {

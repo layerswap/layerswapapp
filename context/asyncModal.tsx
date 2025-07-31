@@ -22,7 +22,7 @@ const AsyncModal: FC<AsyncModalProps> = ({ onConfirm, onDismiss, children, submi
                         <SubmitButton type="button" onClick={onConfirm}>
                             {submitText ?? 'Confirm'}
                         </SubmitButton>
-                        <SecondaryButton className="w-full h-full py-3 !text-base" onClick={onDismiss}>
+                        <SecondaryButton size="xl" className="w-full h-full py-3 !text-base" onClick={onDismiss}>
                             {dismissText ?? 'Cancel'}
                         </SecondaryButton>
                     </div>
@@ -49,7 +49,6 @@ const AsyncModalProvider = ({ children }) => {
 
     const resetDialog = () => {
         setDialogOpen(false);
-        setDialogConfig(undefined);
     };
 
     const onConfirm = () => {
@@ -69,6 +68,7 @@ const AsyncModalProvider = ({ children }) => {
                 setShow={setDialogOpen}
                 onConfirm={onConfirm}
                 onDismiss={onDismiss}
+                onAnimationEnd={(v) => !v && setDialogConfig(undefined)}
                 submitText={dialogConfig?.submitText}
                 dismissText={dialogConfig?.dismissText}
                 modalId="asyncModal"
@@ -76,7 +76,7 @@ const AsyncModalProvider = ({ children }) => {
                 {dialogConfig?.content}
             </AsyncModal>
             {children}
-        </AsyncModalContext.Provider>
+        </AsyncModalContext.Provider >
     );
 };
 
