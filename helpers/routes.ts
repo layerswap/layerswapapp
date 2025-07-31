@@ -33,16 +33,13 @@ export const resolveExchangesURLForSelectedToken = (direction: SwapDirection, va
 
 }
 
-export const resolveExchangeHistoricalNetworksURL = (direction: SwapDirection, values: SwapFormValues) => {
-
-    const { to, toAsset: toCurrency, fromExchange, currencyGroup } = values
-
-    if (direction === "from" && fromExchange && to && toCurrency && currencyGroup) {
+export const resolveExchangeHistoricalNetworksURL = (direction: SwapDirection, { fromExchange, currencyGroup, to, toAsset }: { fromExchange?: string | undefined; currencyGroup?: string | undefined; to?: string | undefined; toAsset?: string | undefined }) => {
+    if (direction === "from" && fromExchange && to && toAsset && currencyGroup) {
         const params = new URLSearchParams({
-            source_exchange: fromExchange.name,
-            source_token_group: currencyGroup?.symbol,
-            destination_network: to.name,
-            destination_token: toCurrency.symbol,
+            source_exchange: fromExchange,
+            source_token_group: currencyGroup,
+            destination_network: to,
+            destination_token: toAsset,
         })
         return `/exchange_withdrawal_networks?${params.toString()}`
     }
