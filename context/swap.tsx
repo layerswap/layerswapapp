@@ -15,6 +15,8 @@ import { TrackEvent } from "@/pages/_document";
 import { useSettingsState } from './settings';
 import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useRecentNetworksStore } from '@/stores/recentNetworksStore';
+import { useAsyncModal } from './asyncModal';
+import { handleQuoteAndLimits } from '@/components/Swap/Withdraw/QuoteUpdate';
 
 export const SwapDataStateContext = createContext<SwapContextData>({
     codeRequested: false,
@@ -68,7 +70,9 @@ export function SwapDataProvider({ children }) {
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
     const { sourceRoutes, destinationRoutes } = useSettingsState()
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
+    const [confirmedQuote, setConfirmedQuote] = useState<Quote | undefined>(undefined);
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
+    const { getConfirmation } = useAsyncModal();
 
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
     const { quote: formDataQuote } = useQuoteData(swapId ? undefined : quoteArgs);
@@ -80,6 +84,7 @@ export function SwapDataProvider({ children }) {
         const toCurrency = to?.tokens.find(t => t.symbol === values.toAsset?.symbol)
         if (!from || !to || !fromCurrency || !toCurrency || !values.amount! || !values.destination_address) return
 
+        setConfirmedQuote(undefined);
         setSwapBasicFormData({
             source_network: from,
             destination_network: to,
@@ -170,6 +175,12 @@ export function SwapDataProvider({ children }) {
         setSwapTransaction(txForSwap)
     }, [swapId])
 
+    useEffect(() => {
+        if (swapBasicData && !swapId && formDataQuote && !confirmedQuote) {
+            setConfirmedQuote(formDataQuote);
+        }
+    }, [swapBasicData, swapId, formDataQuote, confirmedQuote]);
+
     const createSwap = useCallback(async (values: SwapFormValues, query: QueryParams, partner: Partner) => {
         if (!values)
             throw new Error("No swap data")
@@ -201,7 +212,18 @@ export function SwapDataProvider({ children }) {
             source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined
         }
 
+        await handleQuoteAndLimits({
+            swapValues: values,
+            network: sourceLayer,
+            token: fromCurrency,
+            formDataQuote: formDataQuote?.quote,
+            confirmedQuote: confirmedQuote?.quote,
+            getConfirmation
+        })
+
         const swapResponse = await layerswapApiClient.CreateSwapAsync(data)
+        setConfirmedQuote(formDataQuote);
+
         if (swapResponse?.error) {
             throw swapResponse?.error
         }
@@ -230,7 +252,7 @@ export function SwapDataProvider({ children }) {
         plausible(TrackEvent.SwapInitiated)
 
         return swap;
-    }, [selectedSourceAccount])
+    }, [selectedSourceAccount, formDataQuote])
 
     const updateFns: UpdateSwapInterface = {
         createSwap,

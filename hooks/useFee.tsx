@@ -38,7 +38,14 @@ export function useQuoteData(formValues: Props | undefined): UseQuoteData {
     const use_deposit_address = depositMethod === 'wallet' ? false : true
 
     const limitsURL = (from && to && depositMethod && toCurrency && fromCurrency) ?
-        `/limits?source_network=${from}&source_token=${fromCurrency}&destination_network=${to}&destination_token=${toCurrency}&use_deposit_address=${use_deposit_address}&refuel=${!!refuel}` : null
+        buildLimitsUrl({
+            sourceNetwork: from!,
+            sourceToken: fromCurrency!,
+            destinationNetwork: to!,
+            destinationToken: toCurrency!,
+            depositMethod,
+            refuel
+        }) : null
 
     const { data: amountRange, mutate: mutateLimits } = useSWR<ApiResponse<{
         min_amount: number
@@ -97,3 +104,66 @@ export function transformSwapDataToQuoteArgs(swapData: SwapBasicData | undefined
     }
 }
 
+export const getLimits = async (swapValues: LimitsQueryOptions) => {
+    const apiClient = new LayerSwapApiClient()
+    const { sourceToken, sourceNetwork, destinationNetwork, destinationToken, refuel, depositMethod } = swapValues || {}
+
+    if (!sourceNetwork || !destinationNetwork || !depositMethod || !destinationToken || !sourceToken)
+        return { minAllowedAmount: undefined, maxAllowedAmount: undefined }
+
+    const url = buildLimitsUrl({
+        sourceNetwork,
+        sourceToken,
+        destinationNetwork,
+        destinationToken,
+        depositMethod,
+        refuel
+    })
+
+    const response = await apiClient.fetcher(url) as ApiResponse<{
+        min_amount: number
+        max_amount: number
+        min_amount_in_usd: number
+        max_amount_in_usd: number
+    }>
+
+    return {
+        minAllowedAmount: response?.data?.min_amount,
+        maxAllowedAmount: response?.data?.max_amount
+    }
+}
+
+interface LimitsQueryOptions {
+    sourceNetwork?: string;
+    sourceToken?: string;
+    destinationNetwork?: string;
+    destinationToken?: string;
+    depositMethod?: "wallet" | "deposit_address";
+    refuel?: boolean;
+}
+
+export function buildLimitsUrl({
+    sourceNetwork,
+    sourceToken,
+    destinationNetwork,
+    destinationToken,
+    depositMethod = "wallet",
+    refuel = false
+}: LimitsQueryOptions): string {
+
+    if (!sourceNetwork || !sourceToken || !destinationNetwork || !destinationToken) {
+        throw new Error("Invalid parameters for building limits URL");
+    }
+
+    const useDepositAddress = depositMethod === "wallet" ? "false" : "true";
+    const params = new URLSearchParams({
+        source_network: sourceNetwork,
+        source_token: sourceToken,
+        destination_network: destinationNetwork,
+        destination_token: destinationToken,
+        use_deposit_address: useDepositAddress,
+        refuel: String(!!refuel),
+    });
+
+    return `/limits?${params.toString()}`;
+}
