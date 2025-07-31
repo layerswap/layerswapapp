@@ -7,6 +7,7 @@ import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
+import { truncateDecimals } from "@/components/utils/RoundDecimals";
 
 interface AmountFieldProps {
     usdPosition?: "right" | "bottom";
@@ -68,7 +69,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
                     disabled={disabled}
                     placeholder={placeholder}
                     min={minAllowedAmount}
-                    max={maxAllowedAmount || 0}
+                    max={Number(truncateDecimals(maxAllowedAmount, fromCurrency?.precision)) || 0}
                     step={isNaN(step) ? 0.01 : step}
                     name={name}
                     ref={amountRef}

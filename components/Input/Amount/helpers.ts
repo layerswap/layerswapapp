@@ -1,4 +1,3 @@
-import { truncateDecimals } from "@/components/utils/RoundDecimals"
 import { TokenBalance } from "../../../Models/Balance"
 import { Token } from "../../../Models/Network"
 
@@ -22,10 +21,9 @@ export const resolveMaxAllowedAmount = (props: ResoleMaxAllowedAmountProps) => {
     const shouldPayGasWithTheToken = (native_currency?.symbol === fromCurrency?.symbol) || !native_currency
     const payableAmount = walletBalance.amount - gasAmount
     const payableIsInRange = isInRange({ value: payableAmount, min: limitsMinAmount, max: limitsMaxAmount })
-    const truncatedBalance = truncateDecimals(walletBalance.amount, fromCurrency?.precision)
 
     if (!shouldPayGasWithTheToken || !payableIsInRange)
-        return truncatedBalance
+        return walletBalance.amount
 
     return Number(payableAmount.toFixed(fromCurrency?.decimals))
 }
