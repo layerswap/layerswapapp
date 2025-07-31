@@ -1,6 +1,6 @@
 import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, SwapBasicData, SwapQuote, Refuel, SwapDetails } from '@/lib/apiClients/layerSwapApiClient';
+import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, Quote, SwapBasicData, SwapQuote, Refuel, SwapDetails } from '@/lib/apiClients/layerSwapApiClient';
 import { useRouter } from 'next/router';
 import { QueryParams } from '../Models/QueryParams';
 import useSWR, { KeyedMutator } from 'swr';
@@ -130,14 +130,14 @@ export function SwapDataProvider({ children }) {
             return data?.data?.quote
         }
         return formDataQuote?.quote
-    }, [formDataQuote, data]);
+    }, [formDataQuote, data, swapId]);
 
     const refuel = useMemo(() => {
         if (swapId) {
             return data?.data?.refuel
         }
         return formDataQuote?.refuel
-    }, [formDataQuote, data]);
+    }, [formDataQuote, data, swapId]);
 
 
     const sourceIsSupported = swapBasicData && WalletIsSupportedForSource({
@@ -233,11 +233,11 @@ export function SwapDataProvider({ children }) {
     }, [selectedSourceAccount])
 
     const updateFns: UpdateSwapInterface = {
-        createSwap: createSwap,
-        setCodeRequested: setCodeRequested,
-        setInterval: setInterval,
+        createSwap,
+        setCodeRequested,
+        setInterval,
         mutateSwap: mutate,
-        setDepositAddressIsFromAccount: setDepositAddressIsFromAccount,
+        setDepositAddressIsFromAccount,
         setWithdrawType,
         setSwapId,
         setSelectedSourceAccount: handleChangeSelectedSourceAccount,

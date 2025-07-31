@@ -51,7 +51,6 @@ const AsyncModalProvider = ({ children }) => {
 
     const resetDialog = () => {
         setDialogOpen(false);
-        setDialogConfig(undefined);
     };
 
     const onConfirm = () => {
@@ -71,6 +70,7 @@ const AsyncModalProvider = ({ children }) => {
                 setShow={setDialogOpen}
                 onConfirm={onConfirm}
                 onDismiss={onDismiss}
+                onAnimationEnd={(v) => !v && setDialogConfig(undefined)}
                 submitText={dialogConfig?.submitText}
                 dismissText={dialogConfig?.dismissText}
                 modalId="asyncModal"
@@ -78,7 +78,7 @@ const AsyncModalProvider = ({ children }) => {
                 {dialogConfig?.content}
             </AsyncModal>
             {children}
-        </AsyncModalContext.Provider>
+        </AsyncModalContext.Provider >
     );
 };
 
