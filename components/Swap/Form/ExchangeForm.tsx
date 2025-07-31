@@ -49,9 +49,9 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
             <DepositMethodComponent />
             <Form className="h-full grow flex flex-col justify-between">
                 <Widget.Content>
-                    <div className="w-full min-h-[79svh] sm:min-h-[480px] flex flex-col justify-between">
-                        <div className='flex-col relative flex justify-between gap-1.5 w-full  leading-4'>
-                            <div className="flex flex-col w-full py-4.5 space-y-2">
+                    <div className="w-full min-h-[79svh] sm:min-h-[480px] flex flex-col justify-between mt-2 sm:mt-0">
+                        <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3 leading-4'>
+                            <div className="flex flex-col w-full space-y-2">
                                 <div className="flex justify-between items-center">
                                     <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5">
                                         Send from
