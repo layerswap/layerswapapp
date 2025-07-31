@@ -1,6 +1,6 @@
 import { FC, useMemo, useState } from "react";
 import { useConnectModal } from "@/components/WalletModal";
-import { Wallet, WalletProvider } from "@/Models/WalletProvider";
+import { Wallet } from "@/Models/WalletProvider";
 import VaulDrawer from "@/components/modal/vaulModal";
 import { ChevronDown, Plus } from "lucide-react";
 import { WalletItem } from "@/components/Wallet/WalletsList";
@@ -23,7 +23,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
     } = useFormikContext<SwapFormValues>();
 
     const balanceAccounts = useBalanceAccounts(direction)
-    const selectbalanceAccount = useUpdateBalanceAccount(direction)
+    const selectBalanceAccount = useUpdateBalanceAccount(direction)
 
     const { connect } = useConnectModal()
 
@@ -35,7 +35,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
     const handleSelectWallet = (wallet: Wallet, address: string, providerName: string) => {
         if (direction == 'to' && isValidAddress(address, values.to))
             setFieldValue(`destination_address`, address)
-        selectbalanceAccount({
+        selectBalanceAccount({
             id: wallet.id,
             address,
             providerName,
@@ -62,7 +62,6 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
                 </button>
                 {
                     balanceAccounts.map((account, index) => {
-
                         return (
                             <div key={index}>
                                 <div className="flex justify-between items-center px-4 pt-2">
@@ -72,9 +71,9 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
                                 </div>
                                 <WalletsList
                                     key={index}
-                                    provider={account.provider}
                                     onSelect={handleSelectWallet}
                                     selectedAddress={account.address}
+                                    account={account}
                                 />
                             </div>
                         )
@@ -118,15 +117,25 @@ const WalletButton: FC<{ wallets: BalanceAccount[], onOpenModalClick: () => void
 type Props = {
     token?: Token;
     network?: Network;
-    provider?: WalletProvider | undefined;
+    account?: BalanceAccount | undefined;
     selectedAddress?: string;
     onSelect: (wallet: Wallet, address: string, providerName: string) => void;
 }
 
 const WalletsList: FC<Props> = (props) => {
 
-    const { provider, onSelect, selectedAddress } = props
-    const wallets = provider?.connectedWallets || []
+    const { account, onSelect, selectedAddress } = props
+    const provider = account?.provider;
+    const connectedWallets = provider?.connectedWallets || []
+
+    const isAccountDuplicate = account && connectedWallets.some(
+        (w) => w.address.toLowerCase() === account.address?.toLowerCase()
+    )
+
+    const wallets: Wallet[] = [
+        ...connectedWallets,
+        ...(account && !isAccountDuplicate ? [account as unknown as Wallet] : [])
+    ];
 
     return (
         <div className="space-y-3">
@@ -144,7 +153,7 @@ const WalletsList: FC<Props> = (props) => {
                     }
                 </div>
             }
-        </div >
+        </div>
     )
 }
 
