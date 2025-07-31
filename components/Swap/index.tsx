@@ -7,7 +7,7 @@ import { BackendTransactionStatus, TransactionType } from '../../lib/apiClients/
 import { SwapStatus } from '../../Models/SwapStatus';
 import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
 import SubmitButton from '../buttons/submitButton';
-import ExchangeWithdraw from './Withdraw/ExchangeWithdraw';
+import ManualWithdraw from './Withdraw/ManualWithdraw';
 
 type Props = {
     type: "widget" | "contained",
@@ -44,8 +44,8 @@ const SwapDetails: FC<Props> = ({ type }) => {
                 ((swapStatus === SwapStatus.UserTransferPending
                     && !(swapInputTransaction || storedWalletTransaction))) ?
                     (
-                        swapBasicData.source_exchange
-                            ? <ExchangeWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} />
+                        swapBasicData?.use_deposit_address === true
+                            ? <ManualWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} />
                             : <Withdraw type={type} />
                     )
                     :

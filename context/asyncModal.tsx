@@ -16,15 +16,17 @@ const AsyncModal: FC<AsyncModalProps> = ({ onConfirm, onDismiss, children, submi
     return (
         <VaulDrawer onClose={onDismiss} {...props}>
             <VaulDrawer.Snap id="item-1">
-                <div className="flex flex-col items-center gap-6 mt-2">
+                <div className="flex flex-col items-center gap-2 mt-2">
                     {children}
                     <div className="h-full w-full space-y-3">
                         <SubmitButton type="button" onClick={onConfirm}>
                             {submitText ?? 'Confirm'}
                         </SubmitButton>
-                        <SecondaryButton size="xl" className="w-full h-full py-3 !text-base" onClick={onDismiss}>
-                            {dismissText ?? 'Cancel'}
-                        </SecondaryButton>
+                        {dismissText &&
+                            <SecondaryButton className="w-full h-full py-3 !text-base" onClick={onDismiss}>
+                                {dismissText}
+                            </SecondaryButton>
+                        }
                     </div>
                 </div>
             </VaulDrawer.Snap>
