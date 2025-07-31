@@ -9,11 +9,9 @@ const Swap: FC = () => {
   return (
     <div className="text-primary-text">
       <SWRConfig value={{ use: [updatePendingCount] }}>
-        <SwapDataProvider>
-          <TimerProvider>
-            <SwapForm />
-          </TimerProvider>
-        </SwapDataProvider>
+        <TimerProvider>
+          <SwapForm />
+        </TimerProvider>
       </SWRConfig>
     </div >
   )
