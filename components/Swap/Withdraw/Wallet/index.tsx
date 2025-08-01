@@ -1,9 +1,9 @@
 import { useSwapDataState } from "@/context/swap"
 import NetworkGas from "./Common/networkGas"
 import { WalletTransferContent } from "./WalletTransferContent"
-import { useSelectAccounts } from "@/context/selectedAccounts"
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient"
-import { FC } from "react"
+import { FC, useMemo } from "react"
+import useWallet from "@/hooks/useWallet"
 
 type Props = {
     swapData: SwapBasicData,
@@ -12,7 +12,8 @@ type Props = {
 }
 const WalletTransferWrapper: FC<Props> = ({ swapData, swapId, refuel }) => {
     const { depositActionsResponse } = useSwapDataState()
-    const { selectedSourceAccount } = useSelectAccounts()
+    const { provider } = useWallet(swapData.source_network, "withdrawal")
+    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
     const { source_network } = swapData
 
     const transfer_action = depositActionsResponse?.find(a => true)

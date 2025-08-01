@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import useWallet from '@/hooks/useWallet';
 import WalletIcon from '@/components/icons/WalletIcon';
 import { ButtonWrapper, ChangeNetworkMessage, ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
@@ -11,7 +11,6 @@ import { datadogRum } from '@datadog/browser-rum';
 import { coinQuantityfy, CoinQuantityLike, Provider, ScriptTransactionRequest } from 'fuels';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import TransactionMessages from '../../messages/TransactionMessages';
-import { useSelectAccounts } from '@/context/selectedAccounts';
 
 export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -19,17 +18,16 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, r
     const [error, setError] = useState<string | undefined>()
     const { source_network, source_token } = swapBasicData;
     const { provider } = useWallet(source_network, 'withdrawal');
-
+    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
     const { network: fuelNetwork, refetch: refetchNetwork } = useNetwork()
     const networkChainId = Number(source_network?.chain_id)
-    const { selectedSourceAccount } = useSelectAccounts()
     const { fuel } = useFuel()
 
     const activeChainId = fuelNetwork?.chainId || (fuelNetwork?.url.includes('testnet') ? 0 : 9889)
 
     useEffect(() => {
-        if (provider?.activeWallet && selectedSourceAccount?.wallet && selectedSourceAccount?.address) {
-            provider?.switchAccount && provider?.switchAccount(selectedSourceAccount?.wallet, selectedSourceAccount?.address)
+        if (provider?.activeWallet && selectedSourceAccount && selectedSourceAccount?.address) {
+            provider?.switchAccount && provider?.switchAccount(selectedSourceAccount, selectedSourceAccount?.address)
             refetchNetwork()
         }
     }, [selectedSourceAccount, provider?.activeWallet])

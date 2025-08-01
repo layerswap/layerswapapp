@@ -1,3 +1,4 @@
+import clsx from "clsx"
 import { ButtonHTMLAttributes, FC } from "react"
 
 type buttonSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
@@ -8,34 +9,20 @@ type SecondaryButtonProps = {
 }
 
 const SecondaryButton: FC<ButtonHTMLAttributes<HTMLButtonElement> & SecondaryButtonProps> = (props) => {
-
+    const { className } = props
     const size = props.size || 'md'
-
-    let defaultStyle = `rounded-md duration-200 break-keep transition bg-secondary-500 hover:bg-secondary-400 border border-secondary-400 hover:border-secondary-200 font-semibold text-primary-buttonTextColor shadow-xs cursor-pointer ${props.className} `
-
-    switch (size) {
-        case 'xs':
-            defaultStyle += " px-2 py-1 text-xs";
-            break;
-        case 'sm':
-            defaultStyle += " px-2 py-1 text-sm";
-            break;
-        case 'md':
-            defaultStyle += " px-2.5 py-1.5 text-sm";
-            break;
-        case 'lg':
-            defaultStyle += " px-3 py-2 text-sm";
-            break;
-        case 'xl':
-            defaultStyle += " px-3.5 py-2.5 text-sm";
-            break;
-    }
 
     return (
         <button
             {...props}
             type="button"
-            className={defaultStyle}
+            className={clsx('rounded-md duration-200 break-keep transition bg-secondary-500 hover:bg-secondary-400 border border-secondary-400 hover:border-secondary-200 font-semibold text-primary-buttonTextColor shadow-xs cursor-pointer', className, {
+                'px-2 py-1 text-xs': size === 'xs',
+                'px-2 py-1 text-sm': size === 'sm',
+                'px-2.5 py-1.5 text-sm': size === 'md',
+                'px-3 py-2 text-sm': size === 'lg',
+                'px-3.5 py-2.5 text-sm rounded-xl': size === 'xl',
+            })}
         >
             {props.children}
         </button>

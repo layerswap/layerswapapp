@@ -1,21 +1,26 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useLayoutEffect, useMemo, useRef } from "react";
+import { forwardRef, useEffect, useMemo, useRef } from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import NumericInput from "../NumericInput";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
-import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
+import useWallet from "@/hooks/useWallet";
+import { formatUsd } from "@/components/utils/formatUsdAmount";
 
 interface AmountFieldProps {
     usdPosition?: "right" | "bottom";
+    onAmountFocus?: () => void;
+    onAmountBlur?: () => void;
 }
 
-const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: AmountFieldProps, ref: any) {
+const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", onAmountFocus, onAmountBlur }: AmountFieldProps, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
     const { fromAsset: fromCurrency, from, amount, toAsset: toCurrency, fromExchange } = values || {};
+    const { provider } = useWallet(values.from, "withdrawal")
+    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, quote: fee } = useQuoteData(quoteArgs)
     const name = "amount"
@@ -28,10 +33,10 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
         const amountNumber = Number(amount);
         if (isNaN(amountNumber) || amountNumber <= 0 || !sourceCurrencyPriceInUsd)
             return undefined;
-        return (sourceCurrencyPriceInUsd * amountNumber).toFixed(2)
+        return formatUsd(sourceCurrencyPriceInUsd * amountNumber)
     }, [amount, sourceCurrencyPriceInUsd]);
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         const input = amountRef.current;
         const suffix = suffixRef.current;
 
@@ -43,7 +48,6 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
         suffix.style.left = `${width + 16}px`;
     }, [amount, requestedAmountInUsd]);
 
-    const { pickerSelectedWallet: selectedSourceAccount } = useSelectedWalletStore('from')
     const sourceAddress = selectedSourceAccount?.address
 
     const { balances } = useSWRBalance(sourceAddress, from)
@@ -70,6 +74,8 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
                     placeholder={placeholder}
                     min={minAllowedAmount}
                     max={Number(truncateDecimals(maxAllowedAmount, fromCurrency?.precision)) || 0}
+                    onFocus={onAmountFocus}
+                    onBlur={onAmountBlur}
                     step={isNaN(step) ? 0.01 : step}
                     name={name}
                     ref={amountRef}
@@ -79,8 +85,8 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                     }}
                 />
-                <div className={`${usdPosition === "right" ? "absolute bottom-4" : ""} usd-suffix h-5 text-base font-medium text-secondary-text pointer-events-none`} ref={suffixRef}>
-                    {`$${requestedAmountInUsd ?? 0}`}
+                <div className={`${usdPosition === "right" ? "absolute bottom-4" : "h-5"} usd-suffix text-base font-medium text-secondary-text pointer-events-none`} ref={suffixRef}>
+                    {`${requestedAmountInUsd ?? '$0'}`}
                 </div>
             </div>
         </div>

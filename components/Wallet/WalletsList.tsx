@@ -1,7 +1,7 @@
 import { Plus, Power } from "lucide-react";
 import AddressIcon from "../AddressIcon";
-import { Wallet, WalletProvider } from "../../Models/WalletProvider";
-import { FC, HTMLAttributes } from "react";
+import { SelectAccountProps, Wallet, WalletProvider } from "../../Models/WalletProvider";
+import { FC, HTMLAttributes, useMemo } from "react";
 import { ExtendedAddress } from "../Input/Address/AddressPicker/AddressWithIcon";
 import { clsx } from 'clsx';
 import { useConnectModal } from "../WalletModal";
@@ -12,15 +12,16 @@ import useSWRBalance from "../../lib/balances/useSWRBalance";
 import { useSettingsState } from "../../context/settings";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
-import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
+import useWallet from "@/hooks/useWallet";
+import { AccountIdentity } from "@/context/balanceAccounts";
 
 type Props = {
     selectable?: boolean;
-    wallets: Wallet[];
+    wallets: (Wallet | AccountIdentity)[];
     token?: Token;
     network?: Network;
     provider?: WalletProvider | undefined;
-    onSelect?: (wallet: Wallet, address: string) => void;
+    onSelect?: (props: SelectAccountProps) => void;
 }
 
 const WalletsList: FC<Props> = (props) => {
@@ -30,15 +31,23 @@ const WalletsList: FC<Props> = (props) => {
     const { connect } = useConnectModal()
 
     const connectWallet = async () => {
+        if (!provider) {
+            throw new Error("Provider is required to connect a wallet");
+        }
         const result = await connect(provider)
 
         if (result && onSelect && result.withdrawalSupportedNetworks?.some(n => n === network?.name)) {
-            onSelect(result, result.address)
+            onSelect({
+                providerName: provider.name,
+                walletId: result.id,
+                address: result.address
+            })
         }
 
     }
 
-    const { pickerSelectedWallet: selectedSourceAccount } = useSelectedWalletStore('from')
+    const { provider: sourceProvider } = useWallet(network, "withdrawal")
+    const selectedSourceAccount = useMemo(() => sourceProvider?.activeWallet, [provider]);
 
     return (
         <div className="space-y-3">
@@ -56,7 +65,7 @@ const WalletsList: FC<Props> = (props) => {
                     {
                         wallets.map((wallet, index) => <WalletItem
                             key={`${index}${wallet.providerName}`}
-                            wallet={wallet}
+                            account={wallet}
                             selectable={selectable}
                             token={token}
                             network={network}
@@ -71,19 +80,18 @@ const WalletsList: FC<Props> = (props) => {
 }
 
 type WalletItemProps = {
-    wallet: Wallet,
+    account: AccountIdentity | Wallet,
     selectable?: boolean,
     token?: Token;
     network?: Network;
     selectedAddress: string | undefined;
-    onWalletSelect?: (wallet: Wallet, address: string) => void;
+    onWalletSelect?: (props: SelectAccountProps) => void;
 }
-export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = ({ selectable, wallet, network, onWalletSelect, token, selectedAddress, ...props }) => {
+export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = ({ selectable, account: wallet, network, onWalletSelect, token, selectedAddress, ...props }) => {
     const { networks } = useSettingsState()
-    const networkWithTokens = networks.find(n => n.name === network?.name)
+    const balanceNetwork = token ? networks.find(n => n.name === network?.name && n.tokens.some(t => t.symbol === token.symbol)) : undefined
 
-    const w = wallet.autofillSupportedNetworks?.find(n => n === network?.name) ? wallet : undefined
-    const { balances, isBalanceLoading } = useSWRBalance(w?.address, w ? networkWithTokens : undefined)
+    const { balances, isBalanceLoading } = useSWRBalance(wallet.address, balanceNetwork)
 
     const walletBalance = balances?.find(b => b?.token === token?.symbol)
 
@@ -93,7 +101,11 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
     return (
         <div {...props} className="rounded-md outline-hidden text-primary-tex">
             <div
-                onClick={() => (selectable && wallet.addresses.length == 1 && onWalletSelect) && onWalletSelect(wallet, wallet.address)}
+                onClick={() => (selectable && wallet.addresses.length == 1 && onWalletSelect) && onWalletSelect({
+                    providerName: wallet.providerName,
+                    walletId: wallet.id,
+                    address: wallet.address
+                })}
                 className={clsx('w-full relative items-center justify-between gap-2 flex rounded-lg outline-hidden bg-secondary-500 text-primary-text p-3 group/addressItem', {
                     'hover:bg-secondary-400 cursor-pointer': selectable && wallet.addresses.length == 1,
                     'bg-secondary-600 py-2': wallet.addresses.length > 1
@@ -109,7 +121,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                                 })}
                             />
                             {
-                                wallet?.networkIcon && <div className="h-5 w-5 absolute -right-1 -bottom-1">
+                                hasNetworkIcon(wallet) && <div className="h-5 w-5 absolute -right-1 -bottom-1">
                                     <ImageWithFallback
                                         src={wallet?.networkIcon || ''}
                                         alt="Wallet default network icon"
@@ -122,7 +134,6 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
 
                         </div>
                     }
-
                     {
                         wallet.addresses.length > 1 ?
                             <div className="text-sm">
@@ -132,12 +143,12 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                             <div className="w-full inline-flex items-center justify-between grow">
                                 <div>
                                     {
-                                        !wallet.isLoading && wallet.address &&
+                                        !isLoading(wallet) && wallet.address &&
                                         <ExtendedAddress
                                             address={wallet.address}
                                             network={network}
                                             addressClassNames="font-normal text-sm"
-                                            onDisconnect={() => wallet.disconnect && wallet.disconnect()}
+                                            onDisconnect={() => hasDisconnect(wallet) && wallet.disconnect()}
                                         />
                                     }
                                     <p className="text-xs text-secondary-text">
@@ -168,7 +179,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                     }
                 </div>
                 {
-                    !selectable && wallet.disconnect &&
+                    !selectable && hasDisconnect(wallet) &&
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <button type="button" onClick={wallet.disconnect} className="text-xs text-secondary-text hover:text-primary-text rounded-full p-1.5 bg-secondary-700 transition-colors duration-200 ">
@@ -208,30 +219,34 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
     )
 }
 
+
 type NestedWalletAddressProps = {
     address: string,
     selectable?: boolean,
     token?: Token;
     network?: Network;
-    wallet: Wallet,
-    onWalletSelect?: (wallet: Wallet, address: string) => void;
+    wallet: AccountIdentity | Wallet,
+    onWalletSelect?: (props: SelectAccountProps) => void;
     selectedAddress: string | undefined;
 }
 
 const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddressProps> = ({ selectable, address, network, onWalletSelect, token, wallet, selectedAddress, ...props }) => {
     const { networks } = useSettingsState()
-    const networkWithTokens = networks.find(n => n.name === network?.name)
-    const { balances, isBalanceLoading } = useSWRBalance(address, networkWithTokens)
+    const balanceNetwork = token ? networks.find(n => n.name === network?.name && n.tokens.some(t => t.symbol === token.symbol)) : undefined
+    const { balances, isBalanceLoading } = useSWRBalance(address, balanceNetwork)
 
     const isNestedSelected = selectable && address == selectedAddress
     const nestedWalletBalance = balances?.find(b => b?.token === token?.symbol)
     const nestedWalletBalanceAmount = nestedWalletBalance?.amount !== undefined ? truncateDecimals(nestedWalletBalance.amount, token?.precision) : ''
 
-
     return (
         <div
             {...props}
-            onClick={() => (selectable && onWalletSelect) && onWalletSelect(wallet, address)}
+            onClick={() => (selectable && onWalletSelect) && onWalletSelect({
+                providerName: wallet.providerName,
+                walletId: wallet.id,
+                address: address
+            })}
             className={clsx('flex w-full justify-between gap-3 items-center pl-6 pr-4 py-2 group/addressItem', {
                 'hover:bg-secondary-400 cursor-pointer': selectable
             })}
@@ -247,12 +262,12 @@ const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddre
 
                 <div>
                     {
-                        !wallet.isLoading && address &&
+                        !isLoading(wallet) && address &&
                         <ExtendedAddress
                             address={address}
                             network={network}
                             addressClassNames="font-normal text-sm"
-                            onDisconnect={() => wallet.disconnect && wallet?.disconnect()}
+                            onDisconnect={() => hasDisconnect(wallet) && wallet?.disconnect()}
                         />
                     }
                 </div>
@@ -287,4 +302,13 @@ const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddre
 
 }
 
+function hasNetworkIcon(w: AccountIdentity | Wallet): w is Wallet & { networkIcon: string } {
+    return 'networkIcon' in w && typeof w.networkIcon === 'string' && w.networkIcon !== '';
+}
+function hasDisconnect(w: AccountIdentity | Wallet): w is Wallet & { disconnect: Function } {
+    return 'disconnect' in w && typeof w.disconnect === 'function';
+}
+function isLoading(w: AccountIdentity | Wallet): w is Wallet & { isLoading: boolean } {
+    return 'isLoading' in w && typeof w.isLoading === 'boolean' && w.isLoading;
+}
 export default WalletsList

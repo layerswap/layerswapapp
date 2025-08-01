@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FC, forwardRef, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { AddressBookItem } from "@/lib/apiClients/layerSwapApiClient";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { isValidAddress } from "@/lib/address/validator";
@@ -15,8 +15,7 @@ import AddressButton from "./AddressButton";
 import { useQueryState } from "@/context/query";
 import ConnectedWallets from "./ConnectedWallets";
 import { Wallet } from "@/Models/WalletProvider";
-import { updateForm } from "@/components/Swap/Form/updateForm";
-import useSelectedWalletStore from "@/context/selectedAccounts/pickerSelectedWallets";
+import { useBalanceAccounts, useUpdateBalanceAccount } from "@/context/balanceAccounts";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
@@ -61,17 +60,17 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         values,
         setFieldValue
     } = useFormikContext<SwapFormValues>();
+
     const query = useQueryState()
     const { destination_address, to: destination } = values
-    const { pickerSelectedWallet: selectedSourceAccount } = useSelectedWalletStore('from')
-    const { addSelectedWallet: addSelectedDestWallet } = useSelectedWalletStore('to');
+    const balanceAccounts = useBalanceAccounts("to")
+    const selectDestinationAccount = useUpdateBalanceAccount("to");
 
     const { provider, wallets } = useWallet(destination, 'autofil')
     const connectedWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
-    const connectedWalletskey = connectedWallets?.map(w => w.addresses.join('')).join('')
 
-    const defaultWallet = provider?.connectedWallets?.sort((x, y) => (x.isActive === y.isActive) ? 0 : x.isActive ? -1 : 1).find(w => !w.isNotAvailable)
-    const defaultAddress = (selectedSourceAccount && defaultWallet?.addresses.find(a => a.toLowerCase() == selectedSourceAccount?.address?.toLowerCase())) || defaultWallet?.address
+    const connectedWalletskey = connectedWallets?.map(w => w.addresses.join('')).join('')
+    const defaultAccount = useMemo(() => balanceAccounts.find(w => w.provider?.name === provider?.name), [balanceAccounts, provider?.name])
 
     const [manualAddress, setManualAddress] = useState<string>('')
     const [newAddress, setNewAddress] = useState<{ address: string, networkType: NetworkType | string } | undefined>()
@@ -85,7 +84,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [destination, destination_address])
 
     const inputReference = useRef<HTMLInputElement>(null);
-    const previouslyAutofilledAddress = useRef<string | undefined>(undefined)
 
     const groupedAddresses = useMemo(() => {
         return resolveAddressGroups({
@@ -109,52 +107,42 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         const selected = destination && groupedAddresses?.find(a => addressFormat(a.address, destination) === addressFormat(address, destination))
         const formattedAddress = selected?.address
         updateDestAddress(formattedAddress)
-        if (selected?.wallet)
-            previouslyAutofilledAddress.current = selected?.address
         close()
     }, [close, setFieldValue, groupedAddresses])
 
-    const autofillConnectedWallet = useCallback(() => {
-        if (destination_address || !destination) return
-        updateDestAddress(defaultAddress)
-        previouslyAutofilledAddress.current = defaultAddress
-        if (showAddressModal && defaultWallet) setShowAddressModal(false)
-    }, [setFieldValue, setShowAddressModal, showAddressModal, destination, defaultWallet, defaultAddress, destination_address])
-
     const onConnect = (wallet: Wallet) => {
-        previouslyAutofilledAddress.current = wallet.address
         updateDestAddress(wallet.address)
         close()
     }
 
     useEffect(() => {
-        if ((!destination_address || (previouslyAutofilledAddress.current && previouslyAutofilledAddress.current != defaultAddress)) && defaultWallet) {
-            autofillConnectedWallet()
-        }
-    }, [defaultWallet?.address, destination_address])
-
-    useEffect(() => {
-        if (previouslyAutofilledAddress && previouslyAutofilledAddress.current?.toLowerCase() === destination_address?.toLowerCase() && !connectedWallet?.address) {
+        if (!defaultAccount?.address) {
             updateDestAddress(undefined)
+            return
         }
-    }, [connectedWallet?.address, previouslyAutofilledAddress])
+        updateDestAddress(defaultAccount?.address)
+        setShowAddressModal(false)
+    }, [defaultAccount?.address])
 
     function updateDestAddress(address: string | undefined) {
         const wallet = destination && connectedWallets?.find(w => w.addresses?.find(a => addressFormat(a, destination) === addressFormat(address || '', destination)))
-        const addresItem = destination && groupedAddresses?.find(a => addressFormat(a.address, destination) === addressFormat(address || '', destination))
-        const account = {
-            address,
-            wallet: wallet,
-            providerName: provider?.name,
-            group: addresItem?.group,
-            date: addresItem?.date,
+
+        setFieldValue('destination_address', address)
+
+        if (destination && address && provider) {
+            if (wallet)
+                selectDestinationAccount({
+                    address: address,
+                    id: wallet.id,
+                    providerName: wallet.providerName
+                });
+            else
+                selectDestinationAccount({
+                    address: address || "",
+                    id: 'manually_added',
+                    providerName: provider.name,
+                });
         }
-        updateForm({
-            formDataKey: 'destination_address',
-            formDataValue: address,
-            setFieldValue
-        })
-        addSelectedDestWallet(account)
     }
 
     useEffect(() => {
@@ -187,7 +175,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                             !disabled
                             && destination
                             && provider
-                            && !defaultWallet &&
+                            && !provider?.activeWallet &&
                             <ConnectWalletButton
                                 provider={provider}
                                 onConnect={onConnect}
@@ -215,7 +203,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                             <ConnectedWallets
                                 provider={provider}
                                 wallets={wallets}
-                                onClick={(_, address) => handleSelectAddress(address)}
+                                onClick={(props) => handleSelectAddress(props.address)}
                                 onConnect={onConnect}
                                 destination={destination}
                                 destination_address={destination_address}

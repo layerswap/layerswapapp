@@ -24,7 +24,7 @@ type ContentProps = {
 export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, allbalancesLoaded }: ContentProps) => {
     const parentRef = useRef<HTMLDivElement>(null)
     const [openValues, setOpenValues] = useState<string[]>(selectedRoute ? [selectedRoute] : [])
-    const { isOpen } = useSelectorState();
+    const { shouldFocus } = useSelectorState();
     const { wallets } = useWallet()
 
     const toggleAccordionItem = (value: string) => {
@@ -41,7 +41,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
     const items = virtualizer.getVirtualItems()
 
     return <div className="overflow-y-auto flex flex-col h-full z-40" >
-        <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={isOpen} />
+        <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={shouldFocus} />
         <LayoutGroup>
             <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full" ref={parentRef}>
                 {

@@ -1,11 +1,11 @@
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, FC, SetStateAction, useCallback, useEffect, useMemo, useState } from "react";
 import useWallet from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
 import { ChevronDown, CircleHelp, QrCode } from "lucide-react";
 import VaulDrawer, { WalletFooterPortal } from "../modal/vaulModal";
-import { Wallet } from "../../Models/WalletProvider";
+import { SelectAccountProps, Wallet } from "../../Models/WalletProvider";
 import WalletIcon from "../icons/WalletIcon";
 import SubmitButton from "../buttons/submitButton";
 import { useConnectModal } from "../WalletModal";
@@ -13,7 +13,7 @@ import WalletsList from "../Wallet/WalletsList";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import FilledCheck from "../icons/FilledCheck";
 import clsx from "clsx";
-import { useSelectAccounts } from "@/context/selectedAccounts";
+import { SwitchWalletAccount } from "@/helpers/accountSelectHelper";
 
 const Component: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -23,54 +23,29 @@ const Component: FC = () => {
         setFieldValue
     } = useFormikContext<SwapFormValues>();
 
-    const { setSelectedSourceAccount, selectedSourceAccount } = useSelectAccounts()
     const source_token = values.fromAsset
-    const destination_address = values.destination_address
-    const { provider } = useWallet(values.from, 'withdrawal')
+
+    const { provider } = useWallet(values.from, "withdrawal")
+    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
+
     const { selectedConnector } = useConnectModal()
     const availableWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
 
-    const selectedWallet = selectedSourceAccount?.wallet
-    //TODO: sort by active wallet
-    const defaultWallet = values.from && availableWallets?.find(w => !w.isNotAvailable)
-
-    const source_address = selectedSourceAccount?.address
-
-    useEffect(() => {
-        if (!source_address && defaultWallet && values.depositMethod !== 'deposit_address') {
-            setSelectedSourceAccount({
-                wallet: defaultWallet,
-                address: defaultWallet.address,
-                providerName: defaultWallet.providerName
-            })
-        }
-    }, [defaultWallet?.address, source_address, values.depositMethod, destination_address])
-
-    useEffect(() => {
-        if (values.depositMethod === 'deposit_address' || !defaultWallet?.address || (selectedSourceAccount && !availableWallets.some(w => w?.addresses?.some(a => a === selectedSourceAccount.address)))) {
-            setSelectedSourceAccount({ providerName: defaultWallet?.providerName, wallet: undefined, address: undefined })
-        }
-    }, [values.depositMethod, defaultWallet?.address, availableWallets.length])
 
     const handleWalletChange = () => {
         setOpenModal(true)
     }
 
-    const handleSelectWallet = (wallet?: Wallet | undefined, address?: string | undefined) => {
-        if (wallet && address) {
-            setSelectedSourceAccount({
-                wallet,
-                address,
-                providerName: wallet.providerName
-            })
+    const handleSelectWallet = useCallback((props?: SelectAccountProps) => {
+        if (props) {
+            SwitchWalletAccount(props, provider)
             setFieldValue('depositMethod', 'wallet')
         }
         else {
-            setSelectedSourceAccount({ providerName: wallet?.providerName, wallet: undefined, address: undefined })
             setFieldValue('depositMethod', 'deposit_address')
         }
         setOpenModal(false)
-    }
+    }, [provider, setFieldValue])
 
     if (!values.from || !source_token)
         return <></>
@@ -97,10 +72,10 @@ const Component: FC = () => {
                 :
                 <div className="rounded-lg flex items-center space-x-2 text-sm leading-4">
                     {
-                        selectedWallet && selectedSourceAccount?.address && <>
+                        selectedSourceAccount && selectedSourceAccount?.address && <>
                             <div onClick={handleWalletChange} className="rounded-lg flex space-x-1 items-center cursor-pointer">
                                 <div className="inline-flex items-center relative px-0.5">
-                                    <selectedWallet.icon className="w-4 h-4" />
+                                    <selectedSourceAccount.icon className="w-4 h-4" />
                                 </div>
                                 <div className="text-secondary-text">
                                     {shortenAddress(selectedSourceAccount.address)}
@@ -181,30 +156,24 @@ export const FormSourceWalletButton: FC = () => {
         setFieldValue
     } = useFormikContext<SwapFormValues>();
 
-    const { setSelectedSourceAccount } = useSelectAccounts()
-
     const [mountWalletPortal, setMounWalletPortal] = useState<boolean>(false)
 
     const walletNetwork = values.fromExchange ? undefined : values.from
 
     const { provider } = useWallet(walletNetwork, 'withdrawal')
+
     const { isWalletModalOpen, cancel, selectedConnector, connect } = useConnectModal()
 
     const handleWalletChange = () => {
         setOpenModal(true)
     }
 
-    const handleSelectWallet = (wallet?: Wallet, address?: string) => {
-        if (wallet && address) {
-            setSelectedSourceAccount({
-                wallet,
-                address,
-                providerName: wallet.providerName
-            })
+    const handleSelectWallet = (props?: SelectAccountProps) => {
+        if (props) {
+            SwitchWalletAccount(props, provider)
             setFieldValue('depositMethod', 'wallet')
         }
         else {
-            setSelectedSourceAccount({ providerName: wallet?.providerName, wallet: undefined, address: undefined })
             setFieldValue('depositMethod', 'deposit_address')
         }
         cancel()
@@ -215,7 +184,11 @@ export const FormSourceWalletButton: FC = () => {
         setMounWalletPortal(true)
         const result = await connect(provider)
         if (result) {
-            handleSelectWallet(result, result.address)
+            SwitchWalletAccount({
+                walletId: result.id,
+                address: result.address,
+                providerName: result.providerName
+            }, provider)
         }
         setMounWalletPortal(false)
     }
