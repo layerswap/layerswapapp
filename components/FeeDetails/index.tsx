@@ -116,12 +116,12 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
                         }
                     </div>
                     <AnimatedValue value={displayGasFeeInUsd} className='text-sm text-primary-text' />
+                    <div className="ml-3 w-px h-3 bg-primary-text-placeholder rounded-2xl" />
                 </div>
             }
             {
                 averageCompletionTime &&
                 <>
-                    <div className="w-px h-3 bg-primary-text-placeholder rounded-2xl" />
                     <div className="text-right text-primary-text inline-flex items-center gap-1 text-sm">
                         <div className='h-4 w-4'>
                             <Clock className='h-4 w-4' />
