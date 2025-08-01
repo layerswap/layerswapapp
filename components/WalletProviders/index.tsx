@@ -10,6 +10,7 @@ import { WalletProvidersProvider } from "../../context/walletProviders";
 import { WalletModalProvider } from "../WalletModal";
 import FuelProviderWrapper from "./FuelProvider";
 import { BitcoinProvider } from "./BitcoinProvider";
+import { ActiveParadexAccountProvider } from "./ActiveParadexAccount";
 
 const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], basePath: string, themeData: ThemeData, appName: string | undefined }> = ({ children, basePath, themeData, appName }) => {
     return (
@@ -18,17 +19,19 @@ const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], basePath: st
                 <TronProvider>
                     <StarknetProvider>
                         <Wagmi>
-                            <FuelProviderWrapper>
-                                <ImtblPassportProvider>
-                                    <BitcoinProvider>
-                                        <WalletModalProvider>
-                                            <WalletProvidersProvider>
-                                                {children}
-                                            </WalletProvidersProvider>
-                                        </WalletModalProvider>
-                                    </BitcoinProvider>
-                                </ImtblPassportProvider>
-                            </FuelProviderWrapper>
+                            <ActiveParadexAccountProvider>
+                                <FuelProviderWrapper>
+                                    <ImtblPassportProvider>
+                                        <BitcoinProvider>
+                                            <WalletModalProvider>
+                                                <WalletProvidersProvider>
+                                                    {children}
+                                                </WalletProvidersProvider>
+                                            </WalletModalProvider>
+                                        </BitcoinProvider>
+                                    </ImtblPassportProvider>
+                                </FuelProviderWrapper>
+                            </ActiveParadexAccountProvider>
                         </Wagmi>
                     </StarknetProvider>
                 </TronProvider>

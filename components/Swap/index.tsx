@@ -5,15 +5,16 @@ import Withdraw from './Withdraw';
 import Processing from './Withdraw/Processing';
 import { BackendTransactionStatus, TransactionType } from '../../lib/apiClients/layerSwapApiClient';
 import { SwapStatus } from '../../Models/SwapStatus';
+import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
+import SubmitButton from '../buttons/submitButton';
+import ManualWithdraw from './Withdraw/ManualWithdraw';
 
 type Props = {
     type: "widget" | "contained",
 }
-import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
-import SubmitButton from '../buttons/submitButton';
 
 const SwapDetails: FC<Props> = ({ type }) => {
-    const { swapDetails, swapBasicData } = useSwapDataState()
+    const { swapDetails, swapBasicData, quote, refuel, depositActionsResponse } = useSwapDataState()
 
     const swapStatus = swapDetails?.status || SwapStatus.UserTransferPending;
     const storedWalletTransactions = useSwapTransactionStore()
@@ -42,7 +43,11 @@ const SwapDetails: FC<Props> = ({ type }) => {
             {
                 ((swapStatus === SwapStatus.UserTransferPending
                     && !(swapInputTransaction || storedWalletTransaction))) ?
-                    <Withdraw type={type} />
+                    (
+                        swapBasicData?.use_deposit_address === true
+                            ? <ManualWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} />
+                            : <Withdraw type={type} />
+                    )
                     :
                     <>
                         <Processing />

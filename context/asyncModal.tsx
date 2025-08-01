@@ -16,15 +16,17 @@ const AsyncModal: FC<AsyncModalProps> = ({ onConfirm, onDismiss, children, submi
     return (
         <VaulDrawer onClose={onDismiss} {...props}>
             <VaulDrawer.Snap id="item-1">
-                <div className="flex flex-col items-center gap-6 mt-2">
+                <div className="flex flex-col items-center gap-2 mt-2">
                     {children}
                     <div className="h-full w-full space-y-3">
                         <SubmitButton type="button" onClick={onConfirm}>
                             {submitText ?? 'Confirm'}
                         </SubmitButton>
-                        <SecondaryButton className="w-full h-full py-3 !text-base" onClick={onDismiss}>
-                            {dismissText ?? 'Cancel'}
-                        </SecondaryButton>
+                        {dismissText &&
+                            <SecondaryButton className="w-full h-full py-3 !text-base" onClick={onDismiss}>
+                                {dismissText}
+                            </SecondaryButton>
+                        }
                     </div>
                 </div>
             </VaulDrawer.Snap>
@@ -49,7 +51,6 @@ const AsyncModalProvider = ({ children }) => {
 
     const resetDialog = () => {
         setDialogOpen(false);
-        setDialogConfig(undefined);
     };
 
     const onConfirm = () => {
@@ -69,6 +70,7 @@ const AsyncModalProvider = ({ children }) => {
                 setShow={setDialogOpen}
                 onConfirm={onConfirm}
                 onDismiss={onDismiss}
+                onAnimationEnd={(v) => !v && setDialogConfig(undefined)}
                 submitText={dialogConfig?.submitText}
                 dismissText={dialogConfig?.dismissText}
                 modalId="asyncModal"
@@ -76,7 +78,7 @@ const AsyncModalProvider = ({ children }) => {
                 {dialogConfig?.content}
             </AsyncModal>
             {children}
-        </AsyncModalContext.Provider>
+        </AsyncModalContext.Provider >
     );
 };
 

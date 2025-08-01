@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useLayoutEffect, useMemo, useRef } from "react";
+import { forwardRef, useEffect, useMemo, useRef } from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import NumericInput from "../NumericInput";
 import useSWRGas from "@/lib/gases/useSWRGas";
@@ -11,9 +11,11 @@ import { formatUsd } from "@/components/utils/formatUsdAmount";
 
 interface AmountFieldProps {
     usdPosition?: "right" | "bottom";
+    onAmountFocus?: () => void;
+    onAmountBlur?: () => void;
 }
 
-const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: AmountFieldProps, ref: any) {
+const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", onAmountFocus, onAmountBlur }: AmountFieldProps, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
     const { fromAsset: fromCurrency, from, amount, toAsset: toCurrency, fromExchange } = values || {};
     const { provider } = useWallet(values.from, "withdrawal")
@@ -33,7 +35,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
         return formatUsd(sourceCurrencyPriceInUsd * amountNumber)
     }, [amount, sourceCurrencyPriceInUsd]);
 
-    useLayoutEffect(() => {
+    useEffect(() => {
         const input = amountRef.current;
         const suffix = suffixRef.current;
 
@@ -71,6 +73,8 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
                     placeholder={placeholder}
                     min={minAllowedAmount}
                     max={maxAllowedAmount || 0}
+                    onFocus={onAmountFocus}
+                    onBlur={onAmountBlur}
                     step={isNaN(step) ? 0.01 : step}
                     name={name}
                     ref={amountRef}
@@ -81,7 +85,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom" }: 
                     }}
                 />
                 <div className={`${usdPosition === "right" ? "absolute bottom-4" : "h-5"} usd-suffix text-base font-medium text-secondary-text pointer-events-none`} ref={suffixRef}>
-                    {`${requestedAmountInUsd ?? 0}`}
+                    {`${requestedAmountInUsd ?? '$0'}`}
                 </div>
             </div>
         </div>
