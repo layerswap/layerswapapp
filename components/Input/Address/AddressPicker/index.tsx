@@ -116,13 +116,12 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }
 
     useEffect(() => {
-        if (defaultAccount) {
-            updateDestAddress(defaultAccount?.address)
-            if (showAddressModal && defaultAccount) setShowAddressModal(false)
-        }
-        else {
+        if (!defaultAccount?.address) {
             updateDestAddress(undefined)
+            return
         }
+        updateDestAddress(defaultAccount?.address)
+        setShowAddressModal(false)
     }, [defaultAccount?.address])
 
     function updateDestAddress(address: string | undefined) {
@@ -204,7 +203,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                             <ConnectedWallets
                                 provider={provider}
                                 wallets={wallets}
-                                onClick={(_, address) => handleSelectAddress(address)}
+                                onClick={(props) => handleSelectAddress(props.address)}
                                 onConnect={onConnect}
                                 destination={destination}
                                 destination_address={destination_address}

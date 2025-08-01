@@ -13,22 +13,22 @@ type PickerAccountsProviderProps = {
 }
 
 type BalanceAccountsContextType = {
-    sourceAccounst: BalanceAccount[];
-    destinationAccounts: BalanceAccount[];
+    sourceAccounst: AccountIdentity[];
+    destinationAccounts: AccountIdentity[];
 }
 
 type BalanceAccountsUpdateContextType = {
-    selectDestinationAccount: (account: SelectedAccountBase) => void;
-    selectSourceAccount: (account: SelectedAccountBase) => void;
+    selectDestinationAccount: (account: BaseAccountIdentity) => void;
+    selectSourceAccount: (account: BaseAccountIdentity) => void;
 }
 
-type SelectedAccountBase = {
+type BaseAccountIdentity = {
     address: string;
     providerName: string;
     id: string;
 }
 
-export type BalanceAccount = SelectedAccountBase & {
+export type AccountIdentity = BaseAccountIdentity & {
     displayName: string,
     addresses: string[],
     provider: WalletProvider;
@@ -37,15 +37,15 @@ export type BalanceAccount = SelectedAccountBase & {
 
 export function BalanceAccountsProvider({ children }: PickerAccountsProviderProps) {
 
-    const [selectedDestAccounts, setSelectedDestinationAccounts] = useState<SelectedAccountBase[]>([])
+    const [selectedDestAccounts, setSelectedDestinationAccounts] = useState<BaseAccountIdentity[]>([])
 
     const { providers } = useWallet()
 
-    const sourceAccounst: BalanceAccount[] = useMemo(() => {
+    const sourceAccounst: AccountIdentity[] = useMemo(() => {
         return providers.filter(hasWallet).map(provider => ResolveWalletBalanceAccount(provider, provider.activeWallet, provider.activeWallet.address))
     }, [providers])
 
-    const destinationAccounts: BalanceAccount[] = useMemo(() => {
+    const destinationAccounts: AccountIdentity[] = useMemo(() => {
         return providers.map(provider => {
             const manuallyAdded = selectedDestAccounts.find(
                 acc => acc.providerName === provider.name && acc.id === 'manually_added'
@@ -65,10 +65,10 @@ export function BalanceAccountsProvider({ children }: PickerAccountsProviderProp
             const address = selectedAccountAddress ? selectedAccountAddress : wallet.address;
 
             return ResolveWalletBalanceAccount(provider, wallet, address);
-        }).filter(Boolean) as BalanceAccount[];
+        }).filter(Boolean) as AccountIdentity[];
     }, [providers, selectedDestAccounts]);
 
-    const selectDestinationAccount = useCallback((account: SelectedAccountBase) => {
+    const selectDestinationAccount = useCallback((account: BaseAccountIdentity) => {
         setSelectedDestinationAccounts(prev => {
             const existingAccountIndex = prev.findIndex(acc => acc.providerName === account.providerName);
             if (existingAccountIndex !== -1) {
@@ -80,7 +80,7 @@ export function BalanceAccountsProvider({ children }: PickerAccountsProviderProp
         });
     }, [])
 
-    const selectSourceAccount = useCallback((account: SelectedAccountBase) => {
+    const selectSourceAccount = useCallback((account: BaseAccountIdentity) => {
         const provider = providers.find(p => p.name === account.providerName);
         if (provider && provider.activeWallet && provider.activeWallet.address !== account.address) {
             provider.switchAccount?.(provider.activeWallet, account.address);
@@ -135,7 +135,7 @@ function hasWallet(
     return Boolean(p.activeWallet);
 }
 
-function ResolveWalletBalanceAccount(provider: WalletProvider, wallet: Wallet, address: string): BalanceAccount {
+function ResolveWalletBalanceAccount(provider: WalletProvider, wallet: Wallet, address: string): AccountIdentity {
     return {
         address,
         provider,
@@ -147,7 +147,7 @@ function ResolveWalletBalanceAccount(provider: WalletProvider, wallet: Wallet, a
     }
 }
 
-function ResolveManualBalanceAccount(provider: WalletProvider, address: string): BalanceAccount {
+function ResolveManualBalanceAccount(provider: WalletProvider, address: string): AccountIdentity {
     return {
         address,
         provider,

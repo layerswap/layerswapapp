@@ -1,16 +1,16 @@
-import { FC, useEffect, useMemo } from 'react'
-import { useSwapDataState } from '@/context/swap';
+import { FC, useMemo } from 'react'
 import WalletIcon from '@/components/icons/WalletIcon';
 import useWallet from '@/hooks/useWallet';
 import AddressWithIcon from '@/components/Input/Address/AddressPicker/AddressWithIcon';
 import { AddressGroup } from '@/components/Input/Address/AddressPicker';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import VaulDrawer from '@/components/modal/vaulModal';
-import { Wallet } from '@/Models/WalletProvider';
+import { SelectAccountProps, Wallet } from '@/Models/WalletProvider';
 import useSWRBalance from '@/lib/balances/useSWRBalance';
 import { useSettingsState } from '@/context/settings';
 import WalletsList from '@/components/Wallet/WalletsList';
 import { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
+import { SwitchWalletAccount } from '@/helpers/accountSelectHelper';
 
 type Props = {
     swapData: SwapBasicData
@@ -26,8 +26,8 @@ const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal, swapData })
     const selectedWallet = useMemo(() => provider?.activeWallet, [provider]);
     const availableWallets = provider?.connectedWallets?.filter(c => !c.isNotAvailable) || []
 
-    const changeWallet = async (wallet: Wallet, address: string) => {
-        provider?.switchAccount && provider.switchAccount(wallet, address)
+    const changeWallet = async (props: SelectAccountProps) => {
+        SwitchWalletAccount(props, provider)
         setOpenModal(false)
     }
 
