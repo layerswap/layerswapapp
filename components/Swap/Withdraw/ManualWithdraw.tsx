@@ -42,7 +42,6 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
     const destinationLogo = swapBasicData?.destination_network?.logo
     const [copied, copy] = useCopyClipboard()
     const query = useQueryState()
-    console.log(swapBasicData.destination_token)
     const depositAddress = depositActions?.find(da => true)?.to_address;
 
     const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == swapBasicData?.destination_address?.toLowerCase())?.icon;
