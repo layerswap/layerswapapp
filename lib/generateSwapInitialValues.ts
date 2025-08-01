@@ -21,7 +21,7 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
     const destinationNetwork = destinationRoutes.find(l => l.name.toUpperCase() === to?.toUpperCase())
 
     const initialSourceExchange = sourceExchanges.find(e => e.name.toLowerCase() === fromExchange?.toLowerCase())
-
+ 
     const initialSource = sourceNetwork ?? undefined
     const initialDestination = destinationNetwork ?? undefined
 
