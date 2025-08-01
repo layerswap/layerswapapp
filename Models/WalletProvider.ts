@@ -61,3 +61,10 @@ export type WalletProvider = {
     providerIcon?: string,
     unsupportedPlatforms?: string[],
 }
+
+
+export type SelectAccountProps = {
+    walletId: string;
+    address: string;
+    providerName: string;
+}

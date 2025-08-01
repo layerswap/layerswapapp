@@ -45,9 +45,10 @@ type NetworkTokenItemProps = {
 export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const { item, route, direction, allbalancesLoaded, type } = props
     const balanceAccounts = useBalanceAccounts(direction)
-    const selectedWallet = balanceAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.name));
+    const selectedAccount = balanceAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.name));
 
-    const { balances } = useBalance(selectedWallet?.address, route)
+    const { balances } = useBalance(selectedAccount?.address, route)
+
     const tokenbalance = balances?.find(b => b.token === item.symbol)
     const formatted_balance_amount = (tokenbalance?.amount || tokenbalance?.amount === 0) ? truncateDecimals(tokenbalance?.amount, item.precision) : ''
     const usdAmount = item?.price_in_usd * Number(formatted_balance_amount);
@@ -94,8 +95,8 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const { item, direction, allbalancesLoaded, hideTokenImages } = props
     const balanceAccounts = useBalanceAccounts(direction)
 
-    const selectedWallet = balanceAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(item.name));
-    const { balances, totalInUSD } = useBalance(selectedWallet?.address, item)
+    const selectedAccount = balanceAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(item.name));
+    const { balances, totalInUSD } = useBalance(selectedAccount?.address, item)
     const tokensWithBalance = balances?.filter(b => b.amount > 0)
         ?.map(b => b.token);
     const filteredNetworkTokens = item?.tokens?.filter(token =>

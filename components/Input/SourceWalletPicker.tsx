@@ -5,7 +5,7 @@ import useWallet from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
 import { ChevronDown, CircleHelp, QrCode } from "lucide-react";
 import VaulDrawer, { WalletFooterPortal } from "../modal/vaulModal";
-import { Wallet } from "../../Models/WalletProvider";
+import { SelectAccountProps, Wallet } from "../../Models/WalletProvider";
 import WalletIcon from "../icons/WalletIcon";
 import SubmitButton from "../buttons/submitButton";
 import { useConnectModal } from "../WalletModal";
@@ -13,6 +13,7 @@ import WalletsList from "../Wallet/WalletsList";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import FilledCheck from "../icons/FilledCheck";
 import clsx from "clsx";
+import { SwitchWalletAccount } from "@/helpers/accountSelectHelper";
 
 const Component: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -35,9 +36,9 @@ const Component: FC = () => {
         setOpenModal(true)
     }
 
-    const handleSelectWallet = useCallback((wallet?: Wallet | undefined, address?: string | undefined) => {
-        if (wallet && address && provider) {
-            provider?.switchAccount && provider?.switchAccount(wallet, address)
+    const handleSelectWallet = useCallback((props?: SelectAccountProps) => {
+        if (props) {
+            SwitchWalletAccount(props, provider)
             setFieldValue('depositMethod', 'wallet')
         }
         else {
@@ -167,9 +168,9 @@ export const FormSourceWalletButton: FC = () => {
         setOpenModal(true)
     }
 
-    const handleSelectWallet = (wallet?: Wallet, address?: string) => {
-        if (wallet && address && provider) {
-            provider?.switchAccount && provider?.switchAccount(wallet, address)
+    const handleSelectWallet = (props?: SelectAccountProps) => {
+        if (props) {
+            SwitchWalletAccount(props, provider)
             setFieldValue('depositMethod', 'wallet')
         }
         else {
@@ -183,7 +184,11 @@ export const FormSourceWalletButton: FC = () => {
         setMounWalletPortal(true)
         const result = await connect(provider)
         if (result) {
-            handleSelectWallet(result, result.address)
+            SwitchWalletAccount({
+                walletId: result.id,
+                address: result.address,
+                providerName: result.providerName
+            }, provider)
         }
         setMounWalletPortal(false)
     }

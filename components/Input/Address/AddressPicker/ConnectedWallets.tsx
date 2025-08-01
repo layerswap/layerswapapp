@@ -3,7 +3,7 @@ import { ChevronDown, Plus, RefreshCw } from "lucide-react";
 import { Network } from "@/Models/Network";
 import { FC, useState } from "react";
 import ResizablePanel from "@/components/ResizablePanel";
-import { Wallet, WalletProvider } from "@/Models/WalletProvider";
+import { SelectAccountProps, Wallet, WalletProvider } from "@/Models/WalletProvider";
 import WalletIcon from "@/components/icons/WalletIcon";
 import { WalletItem } from "@/components/Wallet/WalletsList";
 import { useConnectModal } from "@/components/WalletModal";
@@ -11,7 +11,7 @@ import { useConnectModal } from "@/components/WalletModal";
 type Props = {
     provider: WalletProvider,
     wallets: Wallet[],
-    onClick: (wallet: Wallet, address: string,) => void,
+    onClick: (props: SelectAccountProps) => void,
     onConnect?: (wallet: Wallet) => void,
     destination: Network,
     destination_address?: string | undefined
@@ -62,7 +62,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                     connectedWallets.map((wallet, index) => {
                         return <WalletItem
                             key={`${index}${wallet.providerName}`}
-                            wallet={wallet}
+                            account={wallet}
                             selectable
                             network={destination}
                             onWalletSelect={onClick}
@@ -109,7 +109,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                             notCompatibleWallets.map((wallet, index) => (
                                 <div key={`${index}${wallet.address}`} className="group/addressItem w-full rounded-md hover:bg-secondary-700! transition duration-200 opacity-50 cursor-not-allowed">
                                     <WalletItem
-                                        wallet={wallet}
+                                        account={wallet}
                                         selectable={true}
                                         network={destination}
                                         selectedAddress={undefined}
@@ -127,7 +127,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                     </div>
                     <div className="w-full z-10">
                         <WalletItem
-                            wallet={notCompatibleWallets[0]}
+                            account={notCompatibleWallets[0]}
                             selectable={true}
                             network={destination}
                             selectedAddress={undefined}
