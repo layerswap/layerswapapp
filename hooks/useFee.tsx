@@ -43,7 +43,7 @@ export function useQuoteData(formValues: Props | undefined): UseQuoteData {
             sourceToken: fromCurrency!,
             destinationNetwork: to!,
             destinationToken: toCurrency!,
-            depositMethod,
+            useDepositAddress: use_deposit_address,
             refuel
         }) : null
 
@@ -106,9 +106,9 @@ export function transformSwapDataToQuoteArgs(swapData: SwapBasicData | undefined
 
 export const getLimits = async (swapValues: LimitsQueryOptions) => {
     const apiClient = new LayerSwapApiClient()
-    const { sourceToken, sourceNetwork, destinationNetwork, destinationToken, refuel, depositMethod } = swapValues || {}
+    const { sourceToken, sourceNetwork, destinationNetwork, destinationToken, refuel, useDepositAddress } = swapValues || {}
 
-    if (!sourceNetwork || !destinationNetwork || !depositMethod || !destinationToken || !sourceToken)
+    if (!sourceNetwork || !destinationNetwork || !useDepositAddress || !destinationToken || !sourceToken)
         return { minAllowedAmount: undefined, maxAllowedAmount: undefined }
 
     const url = buildLimitsUrl({
@@ -116,7 +116,7 @@ export const getLimits = async (swapValues: LimitsQueryOptions) => {
         sourceToken,
         destinationNetwork,
         destinationToken,
-        depositMethod,
+        useDepositAddress,
         refuel
     })
 
@@ -138,7 +138,7 @@ interface LimitsQueryOptions {
     sourceToken?: string;
     destinationNetwork?: string;
     destinationToken?: string;
-    depositMethod?: "wallet" | "deposit_address";
+    useDepositAddress?: boolean;
     refuel?: boolean;
 }
 
@@ -147,7 +147,7 @@ export function buildLimitsUrl({
     sourceToken,
     destinationNetwork,
     destinationToken,
-    depositMethod = "wallet",
+    useDepositAddress,
     refuel = false
 }: LimitsQueryOptions): string {
 
@@ -155,13 +155,12 @@ export function buildLimitsUrl({
         throw new Error("Invalid parameters for building limits URL");
     }
 
-    const useDepositAddress = depositMethod === "wallet" ? "false" : "true";
     const params = new URLSearchParams({
         source_network: sourceNetwork,
         source_token: sourceToken,
         destination_network: destinationNetwork,
         destination_token: destinationToken,
-        use_deposit_address: useDepositAddress,
+        use_deposit_address: useDepositAddress ? 'true' : 'false',
         refuel: String(!!refuel),
     });
 

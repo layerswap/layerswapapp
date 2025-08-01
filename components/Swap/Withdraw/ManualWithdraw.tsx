@@ -69,15 +69,8 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
         try {
             setLoading(true);
 
-            await handleQuoteAndLimits({
-                swapValues,
-                network: swapBasicData.source_network,
-                token: swapBasicData.source_token,
-                getConfirmation
-            })
-
-            setNewNetwork(network);
             const swapData = await createSwap(swapValues, query);
+            setNewNetwork(network);
             const swapId = swapData?.swap?.id;
             if (!swapId) throw new Error('Swap ID is undefined');
 

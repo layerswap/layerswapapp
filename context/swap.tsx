@@ -189,19 +189,16 @@ export function SwapDataProvider({ children }) {
         if (!to || !fromCurrency || !toCurrency || !from || !amount || !destination_address || !depositMethod)
             throw new Error("Form data is missing")
 
-        const sourceLayer = from
-        const destinationLayer = to
-
         const sourceIsSupported = WalletIsSupportedForSource({
             providers: providers,
-            sourceNetwork: sourceLayer,
+            sourceNetwork: from,
             sourceWallet: selectedSourceAccount?.wallet
         })
 
         const data: CreateSwapParams = {
             amount: amount,
-            source_network: sourceLayer.name,
-            destination_network: destinationLayer.name,
+            source_network: from.name,
+            destination_network: to.name,
             source_token: fromCurrency.symbol,
             destination_token: toCurrency.symbol,
             source_exchange: fromExchange?.name,
@@ -213,8 +210,8 @@ export function SwapDataProvider({ children }) {
         }
 
         await handleQuoteAndLimits({
-            swapValues: values,
-            network: sourceLayer,
+            swapValues: data,
+            network: from,
             token: fromCurrency,
             formDataQuote: formDataQuote?.quote,
             confirmedQuote: confirmedQuote?.quote,

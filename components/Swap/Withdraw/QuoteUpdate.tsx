@@ -2,7 +2,7 @@ import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import AlertIcon from "@/components/icons/AlertIcon";
 import { useAsyncModal } from "@/context/asyncModal";
 import { getLimits } from "@/hooks/useFee";
-import { Quote, SwapQuote } from "@/lib/apiClients/layerSwapApiClient";
+import { CreateSwapParams, Quote, SwapQuote } from "@/lib/apiClients/layerSwapApiClient";
 import { FC } from "react";
 
 interface CommonProps {
@@ -103,7 +103,7 @@ export const QuoteUpdated: FC<QuoteUpdatedProps> = (props) => {
  * Unified handler to fetch limits, detect quote/limit changes, confirm with user, and adjust amount.
  */
 export async function handleQuoteAndLimits(params: {
-    swapValues: SwapFormValues;
+    swapValues: CreateSwapParams;
     formDataQuote?: SwapQuote;
     confirmedQuote?: SwapQuote;
     network?: { display_name: string };
@@ -111,18 +111,23 @@ export async function handleQuoteAndLimits(params: {
     getConfirmation: ReturnType<typeof useAsyncModal>['getConfirmation'];
 }): Promise<void> {
     const { minAllowedAmount, maxAllowedAmount } = await getLimits({
-        sourceNetwork: params.swapValues.from?.name,
-        sourceToken: params.swapValues.fromAsset?.symbol,
-        destinationNetwork: params.swapValues.to?.name,
-        destinationToken: params.swapValues.toAsset?.symbol,
-        depositMethod: params.swapValues.depositMethod,
+        sourceNetwork: params.swapValues.source_network,
+        sourceToken: params.swapValues.source_token,
+        destinationNetwork: params.swapValues.destination_network,
+        destinationToken: params.swapValues.destination_token,
+        useDepositAddress: params.swapValues.use_deposit_address,
         refuel: params.swapValues.refuel
     });
 
     const requestedAmount = parseFloat(params.swapValues.amount || "0");
 
     const needsQuoteConfirm =
-        params.confirmedQuote?.receive_amount !== params.formDataQuote?.receive_amount;
+        params.confirmedQuote?.receive_amount != null &&
+        params.formDataQuote?.receive_amount != null &&
+        (
+            (params.confirmedQuote.receive_amount - params.formDataQuote.receive_amount)
+            / params.confirmedQuote.receive_amount
+        ) >= 0.05;
 
     const belowMin =
         minAllowedAmount !== undefined && requestedAmount < minAllowedAmount;
@@ -144,8 +149,8 @@ export async function handleQuoteAndLimits(params: {
         content: (
             <QuoteUpdated
                 quote={params.formDataQuote!}
-                minAllowedAmount={needsLimitConfirm ? minAllowedAmount : undefined}
-                maxAllowedAmount={needsLimitConfirm ? maxAllowedAmount : undefined}
+                minAllowedAmount={needsLimitConfirm && belowMin ? minAllowedAmount : undefined}
+                maxAllowedAmount={needsLimitConfirm && aboveMax ? maxAllowedAmount : undefined}
                 isBelowMin={belowMin}
                 network={params.network?.display_name}
                 token={params.token?.symbol}
