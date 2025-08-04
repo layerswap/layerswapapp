@@ -1,5 +1,5 @@
 {
-  "count": 555,
+  "count": 557,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -1360,7 +1360,7 @@
         "shortName": null
       },
       "mobile": {
-        "native": "Roarwallet://",
+        "native": "roarwallet://",
         "universal": ""
       },
       "name": "R0AR Mobile Wallet",
@@ -8079,6 +8079,62 @@
       "versions": [
         "1",
         "2"
+      ]
+    },
+    "2fafea35bb471d22889ccb49c08d99dd0a18a37982602c33f696a5723934ba25": {
+      "app": {
+        "android": null,
+        "browser": null,
+        "chrome": "https://www.binance.com/en/download",
+        "edge": null,
+        "firefox": null,
+        "ios": null,
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "bip122:000000000019d6689c085ae165831e93",
+        "bip122:000000000933ea01ad0ee984209779ba"
+      ],
+      "description": "Binance Wallet is a keyless, multi-chain and self-custody wallet.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://www.binance.com/en/web3wallet",
+      "id": "2fafea35bb471d22889ccb49c08d99dd0a18a37982602c33f696a5723934ba25",
+      "image_id": "ebac7b39-688c-41e3-7912-a4fefba74600",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/ebac7b39-688c-41e3-7912-a4fefba74600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/ebac7b39-688c-41e3-7912-a4fefba74600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/ebac7b39-688c-41e3-7912-a4fefba74600?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": ""
+      },
+      "name": "Binance Wallet (Bitcoin)",
+      "rdns": "com.binance.wallet",
+      "sdks": [
+        "sign_v1"
+      ],
+      "slug": "binance-wallet-bitcoin",
+      "updatedAt": "2025-07-31T16:16:56.765388+00:00",
+      "versions": [
+        "1"
       ]
     },
     "303766b6cc6768b384c84d63a02c5f302e1faa1c8d26a624623060316fc1f68c": {
@@ -28220,6 +28276,66 @@
         "2"
       ]
     },
+    "bf842c1e1e729282583c4c53d5cd6bb01d7685ae8361fa20bdfa9a843ad2e46f": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.wallet.daily",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": null,
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:11155111",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:43114",
+        "eip155:56"
+      ],
+      "description": "Daily Wallet is a modern cryptocurrency wallet that allows users to manage their crypto assets safely, easily and quickly.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://wallet.dailychain.org",
+      "id": "bf842c1e1e729282583c4c53d5cd6bb01d7685ae8361fa20bdfa9a843ad2e46f",
+      "image_id": "8b54bbc5-5d39-4251-9b69-cde070bbd000",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/8b54bbc5-5d39-4251-9b69-cde070bbd000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/8b54bbc5-5d39-4251-9b69-cde070bbd000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/8b54bbc5-5d39-4251-9b69-cde070bbd000?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "dailywallet://",
+        "universal": ""
+      },
+      "name": "Daily Wallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1"
+      ],
+      "slug": "daily-wallet",
+      "updatedAt": "2025-08-01T11:52:50.507409+00:00",
+      "versions": [
+        "1"
+      ]
+    },
     "bfa6967fd05add7bb2b19a442ac37cedb6a6b854483729194f5d7185272c5594": {
       "app": {
         "android": null,
@@ -37718,5 +37834,5 @@
       ]
     }
   },
-  "total": 555
+  "total": 557
 }
