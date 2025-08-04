@@ -38,16 +38,17 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     const { provider } = useWallet(values.from, "withdrawal")
     const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
-    const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs)
+    const { minAllowedAmount, maxAllowedAmount, quoteError } = useQuoteData(quoteArgs)
 
-    const routeValidation = resolveRouteValidation();
+    const routeValidation = resolveRouteValidation(quoteError);
 
     const formValidation = resolveFormValidation({
         values,
         maxAllowedAmount,
         minAllowedAmount,
         sourceAddress: selectedSourceAccount?.address,
-        sameAccountNetwork
+        sameAccountNetwork,
+        quoteError
     })
 
     const value = useMemo(

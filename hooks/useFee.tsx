@@ -8,10 +8,19 @@ type UseQuoteData = {
     minAllowedAmount?: number
     maxAllowedAmount?: number
     quote?: Quote
+    quoteError?: QuoteError
     isQuoteLoading: boolean
     mutateFee: () => void
     mutateLimits: () => void
 }
+export type QuoteError = {
+    code: string;
+    message: string;
+    metadata?: {
+        StatusCode?: string;
+        [key: string]: any;
+    };
+};
 type Props = {
     from: string | undefined
     to: string | undefined
@@ -64,17 +73,17 @@ export function useQuoteData(formValues: Props | undefined): UseQuoteData {
     const quoteURL = canGetQuote ?
         `/quote?source_network=${from}&source_token=${fromCurrency}&destination_network=${to}&destination_token=${toCurrency}&amount=${debouncedAmount}&refuel=${!!refuel}&use_deposit_address=${use_deposit_address}` : null
 
-    const { data: quote, mutate: mutateFee, isLoading: isQuoteLoading, error: lsFeeError } = useSWR<ApiResponse<Quote>>(quoteURL, apiClient.fetcher, {
+    const { data: quote, mutate: mutateFee, isLoading: isQuoteLoading, error: quoteError } = useSWR<ApiResponse<Quote>>(quoteURL, apiClient.fetcher, {
         refreshInterval: 42000,
         dedupingInterval: 42000,
     })
-
 
     return {
         minAllowedAmount: amountRange?.data?.min_amount,
         maxAllowedAmount: amountRange?.data?.max_amount,
         quote: quote?.data,
         isQuoteLoading,
+        quoteError,
         mutateFee,
         mutateLimits,
     }
