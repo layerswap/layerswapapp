@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
 import React, { useMemo } from 'react'
 import { FC, ReactNode, useState } from 'react'
-import { Popover, PopoverContent, PopoverTrigger } from "../../shadcn/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
 import useExchangeNetworks from '@/hooks/useExchangeNetworks'
 import { ChevronDown } from 'lucide-react'
 import { CommandItem, CommandList, CommandWrapper } from '@/components/shadcn/command'
@@ -19,7 +19,7 @@ import { useQueryState } from '@/context/query'
 import { useSwapDataUpdate } from '@/context/swap'
 import { SwapFormValues } from '@/components/DTOs/SwapFormValues'
 import { useAsyncModal } from '@/context/asyncModal'
-import { handleQuoteAndLimits } from './QuoteUpdate'
+import { handleLimitsUpdate } from './QuoteUpdate'
 import SubmitButton from '@/components/buttons/submitButton'
 
 interface Props {
@@ -68,6 +68,13 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
 
         try {
             setLoading(true);
+
+            await handleLimitsUpdate({
+                swapValues,
+                network,
+                token,
+                getConfirmation
+            })
 
             const swapData = await createSwap(swapValues, query);
             setNewNetwork(network);

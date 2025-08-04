@@ -2,35 +2,17 @@ import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import AlertIcon from "@/components/icons/AlertIcon";
 import { useAsyncModal } from "@/context/asyncModal";
 import { getLimits } from "@/hooks/useFee";
-import { CreateSwapParams, Quote, SwapQuote } from "@/lib/apiClients/layerSwapApiClient";
 import { FC } from "react";
 
-interface CommonProps {
-    /** When true, show the Min/Max adjusted UI; when false or absent, show the quote details if available */
+interface QuoteUpdatedProps {
     isBelowMin?: boolean;
-}
-
-interface QuoteModeProps extends CommonProps {
-    quote: SwapQuote;
-    /** optional limits can accompany quote, but no network or token key */
-    minAllowedAmount?: number;
-    maxAllowedAmount?: number;
-    network?: string | undefined;
-    token?: string | undefined;
-}
-
-interface AmountAdjustedModeProps extends CommonProps {
-    quote?: never;
-    minAllowedAmount: number;
-    maxAllowedAmount: number;
+    minAllowedAmount: number | undefined;
+    maxAllowedAmount: number | undefined;
     network: string | undefined;
     token: string | undefined;
 }
 
-type QuoteUpdatedProps = QuoteModeProps | AmountAdjustedModeProps;
-
 export const QuoteUpdated: FC<QuoteUpdatedProps> = (props) => {
-    const isQuoteMode = Boolean((props as QuoteModeProps).quote);
 
     return (
         <div>
@@ -40,61 +22,21 @@ export const QuoteUpdated: FC<QuoteUpdatedProps> = (props) => {
 
             {/* Header */}
             <h2 className="text-primary-text text-xl font-medium text-center mb-3">
-                {isQuoteMode ? (
-                    "Quote updated"
-                ) : (
-                    <>
-                        <span>{props.isBelowMin ? "Minimum" : "Maximum"}</span>{" "}
-                        <span>Amount Adjusted</span>
-                    </>
-                )}
+                <span>{props.isBelowMin ? "Minimum" : "Maximum"}</span>{" "}
+                <span>Amount Adjusted</span>
             </h2>
 
             {/* Description */}
             <p className="text-center text-secondary-text text-base mb-6">
-                {isQuoteMode ? (
-                    "Some details were changed from the last time you viewed, please confirm the new quote to continue"
-                ) : (
-                    <>
-                        <span>The </span>
-                        <span>{props.isBelowMin ? "minimum" : "maximum"}</span>
-                        <span> amount you can send using </span>
-                        <span>{props.network}</span>
-                        <span> is </span>
-                        <span>{props.isBelowMin ? props.minAllowedAmount : props.maxAllowedAmount}</span>
-                        <span> {props.token}. We’ll adjust your transfer to this limit to proceed.</span>
-                    </>
-                )}
-            </p>
 
-            {/* Details for quote mode */}
-            {isQuoteMode && (
-                <div className="flex flex-col gap-3">
-                    <div className="p-3 rounded-xl bg-secondary-600 w-full flex items-center justify-between">
-                        <p className="text-secondary-text">Gas Fee</p>
-                        <p>${(props as QuoteModeProps).quote.total_fee_in_usd.toFixed(2)}</p>
-                    </div>
-                    <div className="p-3 rounded-xl bg-secondary-600 w-full flex items-center justify-between">
-                        <p className="text-secondary-text">You will receive</p>
-                        <p>
-                            <span>{(props as QuoteModeProps).quote.receive_amount}</span>{" "}
-                            <span>{(props as QuoteModeProps).quote.source_token?.symbol}</span>
-                        </p>
-                    </div>
-                    {(props as QuoteModeProps).minAllowedAmount !== undefined && (
-                        <div className="p-3 rounded-xl bg-secondary-600 w-full flex items-center justify-between">
-                            <p className="text-secondary-text">Minimum Allowed</p>
-                            <p>{(props as QuoteModeProps).minAllowedAmount}</p>
-                        </div>
-                    )}
-                    {(props as QuoteModeProps).maxAllowedAmount !== undefined && (
-                        <div className="p-3 rounded-xl bg-secondary-600 w-full flex items-center justify-between">
-                            <p className="text-secondary-text">Maximum Allowed</p>
-                            <p>{(props as QuoteModeProps).maxAllowedAmount}</p>
-                        </div>
-                    )}
-                </div>
-            )}
+                <span>The </span>
+                <span>{props.isBelowMin ? "minimum" : "maximum"}</span>
+                <span> amount you can send using </span>
+                <span>{props.network}</span>
+                <span> is </span>
+                <span>{props.isBelowMin ? props?.minAllowedAmount : props?.maxAllowedAmount}</span>
+                <span> {props.token}. We’ll adjust your transfer to this limit to proceed.</span>
+            </p>
         </div>
     );
 };
@@ -102,32 +44,24 @@ export const QuoteUpdated: FC<QuoteUpdatedProps> = (props) => {
 /**
  * Unified handler to fetch limits, detect quote/limit changes, confirm with user, and adjust amount.
  */
-export async function handleQuoteAndLimits(params: {
-    swapValues: CreateSwapParams;
-    formDataQuote?: SwapQuote;
-    confirmedQuote?: SwapQuote;
+export async function handleLimitsUpdate(params: {
+    swapValues: SwapFormValues;
     network?: { display_name: string };
     token?: { symbol: string };
     getConfirmation: ReturnType<typeof useAsyncModal>['getConfirmation'];
 }): Promise<void> {
+    const { swapValues, network, token } = params;
+
     const { minAllowedAmount, maxAllowedAmount } = await getLimits({
-        sourceNetwork: params.swapValues.source_network,
-        sourceToken: params.swapValues.source_token,
-        destinationNetwork: params.swapValues.destination_network,
-        destinationToken: params.swapValues.destination_token,
-        useDepositAddress: params.swapValues.use_deposit_address,
+        sourceNetwork: swapValues.from?.name,
+        sourceToken: swapValues.fromAsset?.symbol,
+        destinationNetwork: swapValues.to?.name,
+        destinationToken: swapValues.toAsset?.symbol,
+        useDepositAddress: swapValues.depositMethod == 'deposit_address',
         refuel: params.swapValues.refuel
     });
 
-    const requestedAmount = parseFloat(params.swapValues.amount || "0");
-
-    const needsQuoteConfirm =
-        params.confirmedQuote?.receive_amount != null &&
-        params.formDataQuote?.receive_amount != null &&
-        (
-            (params.confirmedQuote.receive_amount - params.formDataQuote.receive_amount)
-            / params.confirmedQuote.receive_amount
-        ) >= 0.05;
+    const requestedAmount = parseFloat(swapValues.amount || "0");
 
     const belowMin =
         minAllowedAmount !== undefined && requestedAmount < minAllowedAmount;
@@ -135,7 +69,7 @@ export async function handleQuoteAndLimits(params: {
         maxAllowedAmount !== undefined && requestedAmount > maxAllowedAmount;
     const needsLimitConfirm = belowMin || aboveMax;
 
-    if (!needsQuoteConfirm && !needsLimitConfirm) {
+    if (!needsLimitConfirm) {
         return;
     }
 
@@ -148,12 +82,11 @@ export async function handleQuoteAndLimits(params: {
     const confirmed = await params.getConfirmation({
         content: (
             <QuoteUpdated
-                quote={params.formDataQuote!}
-                minAllowedAmount={needsLimitConfirm && belowMin ? minAllowedAmount : undefined}
-                maxAllowedAmount={needsLimitConfirm && aboveMax ? maxAllowedAmount : undefined}
+                minAllowedAmount={minAllowedAmount}
+                maxAllowedAmount={maxAllowedAmount}
                 isBelowMin={belowMin}
-                network={params.network?.display_name}
-                token={params.token?.symbol}
+                network={network?.display_name}
+                token={token?.symbol}
             />
         ),
         submitText: "Continue",
@@ -161,10 +94,10 @@ export async function handleQuoteAndLimits(params: {
     });
 
     if (!confirmed) {
-        throw new Error(needsQuoteConfirm ? "Quote not confirmed" : "Transfer cancelled");
+        throw new Error("User cancelled the operation.");
     }
 
     if (needsLimitConfirm) {
-        params.swapValues.amount = newAmount.toString();
+        swapValues.amount = newAmount.toString();
     }
 }

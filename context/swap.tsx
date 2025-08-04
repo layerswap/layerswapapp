@@ -16,7 +16,6 @@ import { useSettingsState } from './settings';
 import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useRecentNetworksStore } from '@/stores/recentNetworksStore';
 import { useAsyncModal } from './asyncModal';
-import { handleQuoteAndLimits } from '@/components/Swap/Withdraw/QuoteUpdate';
 
 export const SwapDataStateContext = createContext<SwapContextData>({
     codeRequested: false,
@@ -208,15 +207,6 @@ export function SwapDataProvider({ children }) {
             use_deposit_address: depositMethod === 'wallet' ? false : true,
             source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined
         }
-
-        await handleQuoteAndLimits({
-            swapValues: data,
-            network: from,
-            token: fromCurrency,
-            formDataQuote: formDataQuote?.quote,
-            confirmedQuote: confirmedQuote?.quote,
-            getConfirmation
-        })
 
         const swapResponse = await layerswapApiClient.CreateSwapAsync(data)
         setConfirmedQuote(formDataQuote);
