@@ -135,6 +135,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
         const oldSourceWalletIsNotCompatible = destinationProvider && (selectedSourceAccount?.wallet.providerName !== destinationProvider?.name || !(newFrom && selectedSourceAccount?.wallet.withdrawalSupportedNetworks?.some(n => n.toLowerCase() === newFrom.name.toLowerCase())))
 
         const changeDestinationAddress = newTo && (oldDestinationWalletIsNotCompatible || oldSourceWalletIsNotCompatible) && destinationWalletIsAvailable
+        const newDepositMethod = newFrom?.deposit_methods?.some(dm => dm === values.depositMethod) && !newFromExchange ? values.depositMethod : undefined
 
         const newVales: SwapFormValues = {
             ...values,
@@ -146,7 +147,7 @@ const SwapForm: FC<Props> = ({ partner }) => {
             fromExchange: newFromExchange,
             currencyGroup: (fromExchange || toExchange) ? (fromExchange ? newToExchangeToken : newFromExchangeToken) : undefined,
             destination_address: (toExchange || fromExchange) ? undefined : values.destination_address,
-            depositMethod: undefined
+            depositMethod: newDepositMethod
         }
 
         if (changeDestinationAddress) {
