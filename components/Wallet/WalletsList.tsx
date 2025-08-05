@@ -31,14 +31,11 @@ const WalletsList: FC<Props> = (props) => {
     const { connect } = useConnectModal()
 
     const connectWallet = async () => {
-        if (!provider) {
-            throw new Error("Provider is required to connect a wallet");
-        }
         const result = await connect(provider)
 
         if (result && onSelect && result.withdrawalSupportedNetworks?.some(n => n === network?.name)) {
             onSelect({
-                providerName: provider.name,
+                providerName: result.providerName,
                 walletId: result.id,
                 address: result.address
             })
