@@ -12,6 +12,8 @@ type UseQuoteData = {
     isQuoteLoading: boolean
     mutateFee: () => void
     mutateLimits: () => void
+    limitsValidating: boolean
+    quoteValidating: boolean
 }
 export type QuoteError = {
     code: string;
@@ -56,14 +58,14 @@ export function useQuoteData(formValues: Props | undefined): UseQuoteData {
             refuel
         }) : null
 
-    const { data: amountRange, mutate: mutateLimits } = useSWR<ApiResponse<{
+    const { data: amountRange, mutate: mutateLimits, isValidating: limitsValidating } = useSWR<ApiResponse<{
         min_amount: number
         min_amount_in_usd: number
         max_amount: number
         max_amount_in_usd: number
     }>>(limitsURL, apiClient.fetcher, {
-        refreshInterval: 20000,
-        dedupingInterval: 20000,
+        refreshInterval: 5000,
+        dedupingInterval: 5000,
     })
 
     const canGetQuote = from && to && depositMethod && toCurrency && fromCurrency
@@ -73,11 +75,11 @@ export function useQuoteData(formValues: Props | undefined): UseQuoteData {
     const quoteURL = canGetQuote ?
         `/quote?source_network=${from}&source_token=${fromCurrency}&destination_network=${to}&destination_token=${toCurrency}&amount=${debouncedAmount}&refuel=${!!refuel}&use_deposit_address=${use_deposit_address}` : null
 
-    const { data: quote, mutate: mutateFee, isLoading: isQuoteLoading, error: quoteError } = useSWR<ApiResponse<Quote>>(quoteURL, apiClient.fetcher, {
-        refreshInterval: 42000,
-        dedupingInterval: 42000,
+    const { data: quote, mutate: mutateFee, isLoading: isQuoteLoading, error: quoteError, isValidating: quoteValidating } = useSWR<ApiResponse<Quote>>(quoteURL, apiClient.fetcher, {
+        refreshInterval: 5000,
+        dedupingInterval: 5000,
     })
-
+ 
     return {
         minAllowedAmount: amountRange?.data?.min_amount,
         maxAllowedAmount: amountRange?.data?.max_amount,
@@ -86,6 +88,8 @@ export function useQuoteData(formValues: Props | undefined): UseQuoteData {
         quoteError,
         mutateFee,
         mutateLimits,
+        limitsValidating,
+        quoteValidating
     }
 }
 export function transformFormValuesToQuoteArgs(values: SwapFormValues): Props | undefined {

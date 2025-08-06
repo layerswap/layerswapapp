@@ -20,6 +20,7 @@ import { useValidationContext } from "@/context/validationContext";
 import useWallet from "@/hooks/useWallet";
 import sleep from "@/lib/wallets/utils/sleep";
 import clsx from "clsx";
+import { useQuoteUpdate } from "@/hooks/useQuoteUpdate";
 
 type Props = {
     partner?: Partner;
@@ -37,7 +38,9 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     const { wallets } = useWallet();
     const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == destination_address?.toLowerCase())?.icon;
 
-    const { isQuoteLoading, quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(quoteArgs);
+    const { quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, quoteValidating } = useQuoteData(quoteArgs);
+    const { isUpdatingValues } = useQuoteUpdate(quote, values.amount)
+
     const { routeValidation, formValidation } = useValidationContext();
 
     const isValid = !formValidation.message;
@@ -115,7 +118,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                             {
                                 routeValidation.message
                                     ? <ValidationError />
-                                    : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                                    : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isUpdatingValues || quoteValidating} />
                             }
                         </div>
                     </div>

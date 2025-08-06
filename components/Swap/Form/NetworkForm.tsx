@@ -23,6 +23,7 @@ import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import { updateForm, updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
+import { useQuoteUpdate } from "@/hooks/useQuoteUpdate";
 
 const RefuelModal = dynamic(() => import("@/components/FeeDetails/RefuelModal"), {
     loading: () => <></>,
@@ -57,7 +58,8 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const { providers, wallets } = useWallet();
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
-    const { minAllowedAmount, isQuoteLoading, quote } = useQuoteData(quoteArgs);
+    const { minAllowedAmount, isQuoteLoading, quote, quoteValidating } = useQuoteData(quoteArgs);
+    const { isUpdatingValues } = useQuoteUpdate(quote, values.amount)
 
     const toAsset = values.toAsset;
     const fromAsset = values.fromAsset;
@@ -131,7 +133,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                             {
                                 routeValidation.message
                                     ? <ValidationError />
-                                    : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                                    : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isUpdatingValues || quoteValidating} />
                             }
                         </div>
                     </div>

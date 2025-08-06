@@ -1,29 +1,29 @@
-import { motion, AnimatePresence } from 'framer-motion'
-import { FC } from 'react'
+import { AnimatedNumber } from '@/lib/AnimatedNumber';
+import { FC, useMemo } from 'react';
 
 type AnimatedValueProps = {
     value: string | number | null | undefined;
     className?: string;
 };
 
+const isNumeric = (val: string | number | null | undefined): val is number =>
+    typeof val === 'number' || (!!val && !isNaN(Number(val)));
+
 export const AnimatedValue: FC<AnimatedValueProps> = ({ value, className }) => {
+    const display = useMemo(() => {
+        if (value === null || value === undefined) return 0;
+        return value;
+    }, [value]);
+
+    const numericOnly = isNumeric(display);
 
     return (
-        <span className={`relative inline-block overflow-hidden w-full ${className}`}>
-            <AnimatePresence>
-                <motion.span
-                    key={value}
-                    initial={{ opacity: 0, y: 15 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -30 }}
-                    transition={{ duration: 0.3 }}
-                    className="absolute inset-0 w-full"
-                >
-                    {value}
-                </motion.span>
-            </AnimatePresence>
-
-            <span className="invisible">{value}</span>
+        <span className={`relative inline-block min-w-[5ch] ${className}`}>
+            {numericOnly ? (
+                <AnimatedNumber value={Number(display)} />
+            ) : (
+                <span>{display}</span>
+            )}
         </span>
     );
 };

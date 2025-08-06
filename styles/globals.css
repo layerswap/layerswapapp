@@ -452,7 +452,7 @@ textarea:disabled::placeholder {
       filter: brightness(1);
     }
     50% {
-      filter: brightness(0.75);
+      filter: brightness(0.4);
     }
   }
 

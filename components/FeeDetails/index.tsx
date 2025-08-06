@@ -56,7 +56,7 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
                                         Details
                                     </p>
                                     :
-                                    <DetailsButton quote={quoteData} isQuoteLoading={isQuoteLoading} swapValues={values} destination={values.to} destinationAddress={destination_address} />
+                                    <DetailsButton quote={quoteData} isQuoteLoading={isQuoteLoading || isUpdatingValues} swapValues={values} destination={values.to} destinationAddress={destination_address} />
                             }
                             <ChevronDown className='h-3.5 w-3.5 text-secondary-text' />
                         </AccordionTrigger>
@@ -99,17 +99,11 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
         reward?.nft_contract_address || ''
     );
 
-    if (isQuoteLoading) {
-        return (
-            <div className='h-[20px] w-30 inline-flex bg-gray-500 rounded-xs animate-pulse' />
-        )
-    }
-
     return (
         <div className='flex items-center space-x-4'>
             {
                 displayGasFeeInUsd &&
-                <div className='inline-flex items-center gap-1'>
+                <div className={`${isQuoteLoading ? "animate-pulse-brightness" : ""} inline-flex items-center gap-1`}>
                     <div className='h-4 w-4'>
                         {!values.fromExchange ?
                             <GasIcon className='h-4 w-4' /> : <ExchangeGasIcon className='h-4 w-4' />
@@ -122,7 +116,7 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
                 averageCompletionTime &&
                 <>
                     <div className="w-px h-3 bg-primary-text-placeholder rounded-2xl" />
-                    <div className="text-right text-primary-text inline-flex items-center gap-1 text-sm">
+                    <div className={`${isQuoteLoading ? "animate-pulse-brightness" : ""} text-right text-primary-text inline-flex items-center gap-1 text-sm`}>
                         <div className='h-4 w-4'>
                             <Clock className='h-4 w-4' />
                         </div>

@@ -94,8 +94,8 @@ export function resolveRouteValidation(quoteError?: QuoteError) {
     }
 
     if (quoteError) {
-        validationMessage = quoteMessage || 'Unable to retrieve quote';
-        validationDetails = { title: '', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
+        validationMessage = '';
+        validationDetails = { title: quoteMessage || 'Unable to retrieve quote', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
     }
 
     const value = useMemo(() => ({
