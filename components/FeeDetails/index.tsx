@@ -110,6 +110,7 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
                         }
                     </div>
                     <AnimatedValue value={displayGasFeeInUsd} className='text-sm text-primary-text' />
+                    <div className="ml-3 w-px h-3 bg-primary-text-placeholder rounded-2xl" />
                 </div>
             }
             {

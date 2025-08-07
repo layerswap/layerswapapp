@@ -1,7 +1,7 @@
 import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, Quote, SwapBasicData, SwapQuote, Refuel, SwapDetails } from '@/lib/apiClients/layerSwapApiClient';
-import { useRouter } from 'next/router';
+import { NextRouter, useRouter } from 'next/router';
 import { QueryParams } from '../Models/QueryParams';
 import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
@@ -14,8 +14,10 @@ import { Network } from '../Models/Network';
 import { TrackEvent } from "@/pages/_document";
 import { useSettingsState } from './settings';
 import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
-import { useRecentNetworksStore } from '@/stores/recentNetworksStore';
 import { useAsyncModal } from './asyncModal';
+import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
+import { parse, ParsedUrlQuery } from 'querystring';
+import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
 
 export const SwapDataStateContext = createContext<SwapContextData>({
     codeRequested: false,
@@ -76,6 +78,16 @@ export function SwapDataProvider({ children }) {
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
     const { quote: formDataQuote } = useQuoteData(swapId ? undefined : quoteArgs);
 
+    const handleUpdateSwapid = useCallback((value: string | undefined) => {
+        setSwapId(value)
+        if (value) {
+            setSwapPath(value, router)
+        }
+        else {
+            removeSwapPath(router)
+        }
+    }, [router])
+
     const setSubmitedFormValues = useCallback((values: NonNullable<SwapFormValues>) => {
         const from = sourceRoutes.find(n => n.name === values.from?.name);
         const to = destinationRoutes.find(n => n.name === values.to?.name);
@@ -126,8 +138,9 @@ export function SwapDataProvider({ children }) {
     }, [data, swapBasicFormData, swapId])
 
     const swapDetails = useMemo(() => {
-        return data?.data?.swap
-    }, [data])
+        if (swapId)
+            return data?.data?.swap
+    }, [data, swapId])
 
     const quote = useMemo(() => {
         if (swapId) {
@@ -219,7 +232,10 @@ export function SwapDataProvider({ children }) {
         if (!swap?.swap.id)
             throw new Error("Could not create swap")
 
-        updateRecentTokens(fromExchange ? undefined : from.name, to.name);
+        updateRecentTokens({
+            from: !fromExchange ? { network: from.name, token: fromCurrency.symbol } : undefined,
+            to: { network: to.name, token: toCurrency.symbol }
+        });
 
         window.safary?.track({
             eventType: 'swap',
@@ -248,7 +264,7 @@ export function SwapDataProvider({ children }) {
         mutateSwap: mutate,
         setDepositAddressIsFromAccount,
         setWithdrawType,
-        setSwapId,
+        setSwapId: handleUpdateSwapid,
         setSelectedSourceAccount: handleChangeSelectedSourceAccount,
         setSubmitedFormValues
     };
@@ -293,4 +309,42 @@ export function useSwapDataUpdate() {
 const WalletIsSupportedForSource = ({ providers, sourceNetwork, sourceWallet }: { providers: WalletProvider[] | undefined, sourceWallet: Wallet | undefined, sourceNetwork: Network | undefined }) => {
     const isSupported = sourceWallet && providers?.find(p => p.name === sourceWallet.providerName)?.asSourceSupportedNetworks?.some(n => n === sourceNetwork?.name) || false
     return isSupported
+}
+
+
+const setSwapPath = (swapId: string, router: NextRouter) => {
+    //TODO: as path should be without basepath and host
+    const basePath = router?.basePath || ""
+    var swapURL = window.location.protocol + "//"
+        + window.location.host + `${basePath}/swap/${swapId}`;
+    const raw = window.location.search.startsWith("?")
+        ? window.location.search.slice(1)
+        : window.location.search;
+    const existing: ParsedUrlQuery = parse(raw);
+    const params = resolvePersistantQueryParams(existing)
+    if (params && Object.keys(params).length) {
+        const search = new URLSearchParams(params as any);
+        if (search)
+            swapURL += `?${search}`
+    }
+
+    window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
+}
+
+const removeSwapPath = (router: NextRouter) => {
+    const basePath = router?.basePath || ""
+    let homeURL = window.location.protocol + "//"
+        + window.location.host + basePath
+
+    const raw = window.location.search.startsWith("?")
+        ? window.location.search.slice(1)
+        : window.location.search;
+    const existing: ParsedUrlQuery = parse(raw);
+    const params = resolvePersistantQueryParams(existing)
+    if (params && Object.keys(params).length) {
+        const search = new URLSearchParams(params as any);
+        if (search)
+            homeURL += `?${search}`
+    }
+    window.history.replaceState({ ...window.history.state, as: router.asPath, url: homeURL }, '', homeURL);
 }

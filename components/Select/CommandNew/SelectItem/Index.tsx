@@ -11,7 +11,7 @@ const SelectItem = ({ children, className }: SelectItemWrapperProps) => {
     </div>
 }
 type SeelctItemLogoProps = {
-    imgSrc: string;
+    imgSrc?: string;
     altText: string;
     className?: string;
 }
@@ -28,7 +28,7 @@ const Logo = ({ imgSrc, altText, className = 'rounded-md' }: SeelctItemLogoProps
             />
         </div>
             :
-            <div className={`${className} object-contain bg-gray-200`} ></div>
+            <div className={`${className} object-contain bg-gray-200 h-9 w-9 rounded-full`} ></div>
         }
     </div>
 }
@@ -50,13 +50,14 @@ const Title = ({ children, className }: SelectItemTitleProps) => {
 type SelectItemDetailedTitleProps = {
     className?: string;
     children?: JSX.Element | JSX.Element[];
-    title: string;
+    title: string | React.ReactNode;
     secondary: string | JSX.Element | JSX.Element[];
-    secondaryLogoSrc?: string;
+    secondaryImageAlt: string;
+    secondaryLogoSrc: string | undefined;
     logoClassName?: string;
 }
 
-const DetailedTitle = ({ children, className, title, secondary, secondaryLogoSrc, logoClassName }: SelectItemDetailedTitleProps) => {
+const DetailedTitle = ({ children, className, title, secondary, secondaryImageAlt, secondaryLogoSrc, logoClassName }: SelectItemDetailedTitleProps) => {
     return <Title className={`py-2 ${className}`}>
         <>
             <div className="grid gap-0 leading-5 align-middle space-y-0.5 font-medium">
@@ -64,7 +65,7 @@ const DetailedTitle = ({ children, className, title, secondary, secondaryLogoSrc
                 <div className="flex items-center space-x-1 align-middle" >
                     {secondaryLogoSrc && <ImageWithFallback
                         src={secondaryLogoSrc}
-                        alt={title}
+                        alt={secondaryImageAlt}
                         height="36"
                         width="36"
                         loading="eager"

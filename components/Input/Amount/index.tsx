@@ -6,6 +6,7 @@ import useSWRGas from "@/lib/gases/useSWRGas";
 import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
+import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import useWallet from "@/hooks/useWallet";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 
@@ -72,7 +73,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", on
                     disabled={disabled}
                     placeholder={placeholder}
                     min={minAllowedAmount}
-                    max={maxAllowedAmount || 0}
+                    max={Number(truncateDecimals(maxAllowedAmount, fromCurrency?.precision)) || 0}
                     onFocus={onAmountFocus}
                     onBlur={onAmountBlur}
                     step={isNaN(step) ? 0.01 : step}

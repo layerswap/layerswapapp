@@ -33,6 +33,7 @@ interface BalanceStore {
 
   // new derived state + initializer
   allBalances: Record<string, NetworkBalance> | null
+  isLoading: boolean
   initAllBalances: (
     pairs: Array<{ address: string; network: NetworkWithTokens }>
   ) => void
@@ -55,7 +56,7 @@ export const useBalanceStore = create<BalanceStore>()(
     balances: {},
     lastFetchMap: {},
     allBalances: null,
-
+    isLoading: false,
     fetchBalance: (address, network, options) => {
       const key = getKey(address, network)
       const entry = get().balances[key]
@@ -117,8 +118,9 @@ export const useBalanceStore = create<BalanceStore>()(
 
     initAllBalances: pairs => {
       // reset the derived result
+      if (pairs.length > 0)
+        set({ isLoading: true })
       set({ allBalances: null })
-
       // kick off every fetch
       pairs.forEach(({ address, network }) => {
         get().fetchBalance(address, network, { dedupeInterval: 120_000, ignoreCache: true })
@@ -142,6 +144,7 @@ export const useBalanceStore = create<BalanceStore>()(
               {}
             )
             set({ allBalances: finalMap })
+            set({ isLoading: false })
             unsub()  // cleanup subscription
           }
         }

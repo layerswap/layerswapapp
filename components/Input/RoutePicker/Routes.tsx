@@ -11,6 +11,7 @@ import { useBalanceStore } from "@/stores/balanceStore";
 import { useBalanceAccounts } from "@/context/balanceAccounts";
 import clsx from "clsx";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
+import { motion } from "framer-motion";
 
 type TokenItemProps = {
     route: NetworkRoute;
@@ -19,7 +20,6 @@ type TokenItemProps = {
     selected: boolean;
     direction: SwapDirection;
     allbalancesLoaded?: boolean;
-    isGroupedToken?: boolean;
 };
 
 export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
@@ -45,15 +45,17 @@ type NetworkTokenItemProps = {
 export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const { item, route, direction, allbalancesLoaded, type } = props
     const balanceAccounts = useBalanceAccounts(direction)
-    const selectedWallet = balanceAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.name));
+    const selectedAccount = balanceAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.name));
 
-    const { balances } = useBalance(selectedWallet?.address, route)
+    const { balances } = useBalance(selectedAccount?.address, route)
+
     const tokenbalance = balances?.find(b => b.token === item.symbol)
     const formatted_balance_amount = (tokenbalance?.amount || tokenbalance?.amount === 0) ? truncateDecimals(tokenbalance?.amount, item.precision) : ''
     const usdAmount = item?.price_in_usd * Number(formatted_balance_amount);
-            
+
     return <SelectItem.DetailedTitle
         title={item.symbol}
+        secondaryImageAlt={route.display_name}
         secondary={route.display_name}
         secondaryLogoSrc={route.logo}
     >
@@ -61,7 +63,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
             <span className="text-sm text-secondary-text text-right my-auto leading-4 font-medium">
                 <div className={clsx("text-primary-text",
                     {
-                        'text-lg leading-[22px]': type === 'top_token',
+                        'text-lg leading-[22px]': type === 'suggested_token',
                     }
                 )}>
                     {formatted_balance_amount}
@@ -69,12 +71,12 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
                 {Number(tokenbalance?.amount) >= 0 && (
                     <div
                         className={clsx({
-                            'text-xs leading-4': type == 'top_token',
+                            'text-xs leading-4': type == 'suggested_token',
                         })}
                     >{formatUsd(usdAmount)}</div>
                 )}
             </span>
-        ) : balances ? (
+        ) : !allbalancesLoaded ? (
             <span className="px-0.5">-</span>
         ) : (
             <></>
@@ -94,8 +96,8 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const { item, direction, allbalancesLoaded, hideTokenImages } = props
     const balanceAccounts = useBalanceAccounts(direction)
 
-    const selectedWallet = balanceAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(item.name));
-    const { balances, totalInUSD } = useBalance(selectedWallet?.address, item)
+    const selectedAccount = balanceAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(item.name));
+    const { balances, totalInUSD } = useBalance(selectedAccount?.address, item)
     const tokensWithBalance = balances?.filter(b => b.amount > 0)
         ?.map(b => b.token);
     const filteredNetworkTokens = item?.tokens?.filter(token =>
@@ -140,7 +142,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                                 </div>
                             ) : <></>}
                         </div>
-                    ) : balances ? (
+                    ) : !allbalancesLoaded ? (
                         <span className="px-0.5">-</span>
                     ) : <></>}
 
