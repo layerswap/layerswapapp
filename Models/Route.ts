@@ -7,12 +7,8 @@ export type NetworkElement = {
     type: 'network';
     route: NetworkRoute;
 }
-export type PopularRouteElement = {
-    type: 'popular_route';
-    route: NetworkRoute;
-};
 export type NetworkTokenElement = {
-    type: 'network_token' | 'top_token';
+    type: 'network_token' | 'suggested_token';
     route: {
         token: NetworkRouteToken;
         route: NetworkRoute
@@ -34,11 +30,12 @@ export type GroupedTokenElement = {
     symbol: string;
     items: NetworkTokenElement[];
 }
+export type TokenSceletonElement = {
+    type: 'sceleton_token';
+}
 export type RowElement = {}
     & (NetworkElement
         | NetworkTokenElement
         | TitleElement
         | GroupedTokenElement
-        | PopularRouteElement);
-
-export type GroupTokensResult = (GroupedTokenElement | NetworkElement | NetworkTokenElement | TitleElement)[];
+        | TokenSceletonElement);

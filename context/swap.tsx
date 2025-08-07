@@ -14,7 +14,7 @@ import { Network } from '../Models/Network';
 import { TrackEvent } from "@/pages/_document";
 import { useSettingsState } from './settings';
 import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
-import { useRecentNetworksStore } from '@/stores/recentNetworksStore';
+import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
 
 export const SwapDataStateContext = createContext<SwapContextData>({
     codeRequested: false,
@@ -210,7 +210,10 @@ export function SwapDataProvider({ children }) {
         if (!swap?.swap.id)
             throw new Error("Could not create swap")
 
-        updateRecentTokens(fromExchange ? undefined : from.name, to.name);
+        updateRecentTokens({
+            from: !fromExchange ? { network: from.name, token: fromCurrency.symbol } : undefined,
+            to: { network: to.name, token: toCurrency.symbol }
+        });
 
         window.safary?.track({
             eventType: 'swap',

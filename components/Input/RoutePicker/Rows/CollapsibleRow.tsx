@@ -28,6 +28,11 @@ type GenericAccordionRowProps = {
   allbalancesLoaded?: boolean;
 };
 
+type ChildWrapper = {
+  token: NetworkRouteToken;
+  route: NetworkRoute;
+};
+
 export const CollapsibleRow = ({
   item,
   toggleContent,
@@ -39,17 +44,11 @@ export const CollapsibleRow = ({
   scrollContainerRef,
   allbalancesLoaded,
 }: GenericAccordionRowProps) => {
-  const isGrouped = item.type === "grouped_token";
-  const groupName = isGrouped ? (item as GroupedTokenElement).symbol : (item as NetworkElement).route.name;
+  const groupName = item.type === "grouped_token" ? item.symbol : item.route.name;
   const headerId = `${groupName}-header`;
 
-  type ChildWrapper = {
-    token: NetworkRouteToken;
-    route: NetworkRoute;
-  };
-
   const childrenList: ChildWrapper[] | undefined = useMemo(() => {
-    if (isGrouped) {
+    if (item.type === "grouped_token") {
       const grouped = item as GroupedTokenElement;
       return grouped.items.map((el) => ({
         token: el.route.token,
@@ -129,7 +128,6 @@ export const CollapsibleRow = ({
                       selected={isSelected}
                       route={route}
                       direction={direction}
-                      isGroupedToken={isGrouped}
                     />
                   </div>
                 );

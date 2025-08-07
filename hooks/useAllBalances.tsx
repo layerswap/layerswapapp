@@ -2,8 +2,9 @@ import useWallet from "./useWallet"
 import { useSettingsState } from "../context/settings"
 import { useBalanceStore } from "../stores/balanceStore"
 import { SwapDirection } from "../components/DTOs/SwapFormValues"
-import { useEffect, useMemo } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { NetworkWithTokens } from "../Models/Network"
+import { NetworkBalance } from "@/Models/Balance"
 
 type Props = {
     direction: SwapDirection
@@ -37,6 +38,15 @@ export default function useAllBalances({ direction }: Props) {
             useBalanceStore.getState().initAllBalances(walletNetworks)
     }, [walletNetworks])
 
+    const lastBalancesRef = useRef<Record<string, NetworkBalance> | null>(null)
     const allBalances = useBalanceStore(s => s.allBalances)
-    return allBalances
+    const isLoading = useBalanceStore(s => s.isLoading)
+
+    if (allBalances != null) {
+        lastBalancesRef.current = allBalances
+    }
+
+    const result = allBalances === null && isLoading ? lastBalancesRef.current : allBalances
+
+    return useMemo(() => ({ isLoading, balances: result }), [result, direction, isLoading])
 }
