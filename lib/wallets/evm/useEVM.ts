@@ -159,6 +159,8 @@ export default function useEVM(): WalletProvider {
         }
     }, [availableWalletsForConnect, disconnectAsync, networks, asSourceSupportedNetworks, autofillSupportedNetworks, withdrawalSupportedNetworks, name, config])
 
+    const connectedWalletsKey = [...config.state.connections.keys()].join('-')
+
     const resolvedConnectors: Wallet[] = useMemo(() => {
         const connections = getConnections(config)
         return connections.map((connection): Wallet | undefined => {
@@ -179,8 +181,8 @@ export default function useEVM(): WalletProvider {
             })
 
             return wallet
-        }).filter(w => w !== undefined) as Wallet[]
-    }, [activeConnection, config])
+        }).filter(w => w !== undefined)
+    }, [activeConnection, config, connectedWalletsKey])
 
     const switchAccount = useCallback(async (wallet: Wallet, address: string) => {
         const connector = getConnections(config).find(c => c.connector.name === wallet.id)?.connector
