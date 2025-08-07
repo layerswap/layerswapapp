@@ -66,6 +66,7 @@ export const SelectorContent = (props: SelectContentProps) => {
     >
         <VaulDrawer.Snap
             id="item-1"
+            className="pb-0"
             style={{ height: isMobile && windowSize.height ? `${(windowSize.height * 0.8).toFixed()}px` : '100%' }}
             fullheight={isDesktop}
         >
