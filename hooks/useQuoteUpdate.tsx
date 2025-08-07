@@ -8,10 +8,18 @@ export function useQuoteUpdate(quoteData: Quote | undefined, requested_amount: s
 
     useEffect(() => {
         (async () => {
-            if (!quoteData) return
+            if (!quoteData?.quote) return
             const requestedAmount = quoteData.quote.requested_amount
             const receiveAmount = quoteData.quote.receive_amount
-            if (newQuote?.quote.requested_amount == requestedAmount && newQuote?.quote.receive_amount !== receiveAmount) {
+
+            const quoteChanged =
+                newQuote?.quote.requested_amount === requestedAmount &&
+                newQuote?.quote.receive_amount !== receiveAmount;
+
+            const refuelChanged =
+                JSON.stringify(newQuote?.refuel) !== JSON.stringify(quoteData.refuel);
+
+            if (quoteChanged || refuelChanged) {
                 setIsUpdatingValues(true);
                 await sleep(3000);
                 setIsUpdatingValues(false);

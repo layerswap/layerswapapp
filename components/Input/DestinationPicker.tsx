@@ -20,7 +20,7 @@ const DestinationPicker = (props: Props) => {
     const { values } = useFormikContext<SwapFormValues>()
     const { fromExchange, destination_address, to, from, depositMethod, fromAsset: fromCurrency, toAsset: toCurrency } = values
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
-    const { quote: fee, isQuoteLoading: isFeeLoading } = useQuoteData(quoteArgs)
+    const { quote: fee, quoteValidating } = useQuoteData(quoteArgs)
     const { isUpdatingValues, quote: newQuote } = useQuoteUpdate(fee, values.amount)
     const sourceWalletNetwork = fromExchange ? undefined : from
     const destinationWalletNetwork = to
@@ -48,8 +48,8 @@ const DestinationPicker = (props: Props) => {
                         source_token={fromCurrency}
                         destination_token={toCurrency}
                         fee={newQuote}
-                        isFeeLoading={isFeeLoading}
-                        isUpdatingValues={isUpdatingValues}
+                        isFeeLoading={quoteValidating}
+                        isUpdatingValues={isUpdatingValues || quoteValidating}
                     />
                 </div>
                 <div className="col-span-3 flex items-center self-start justify-end">

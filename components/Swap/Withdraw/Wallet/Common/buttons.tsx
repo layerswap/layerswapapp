@@ -15,6 +15,9 @@ import { useRouter } from "next/router";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { BackendTransactionStatus, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { transformSwapDataToQuoteArgs, useQuoteData } from "@/hooks/useFee";
+import SpinIcon from "@/components/icons/spinIcon";
+import sleep from "@/lib/wallets/utils/sleep";
+import { useQuoteUpdate } from "@/hooks/useQuoteUpdate";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
@@ -156,14 +159,17 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { setSwapTransaction } = useSwapTransactionStore();
 
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapData, refuel), [swapData, refuel]);
-    const { isQuoteLoading } = useQuoteData(quoteArgs);
+    const { isQuoteLoading, quoteValidating, quote } = useQuoteData(quoteArgs);
+    const { isUpdatingValues } = useQuoteUpdate(quote, swapData.requested_amount.toString())
 
     const router = useRouter()
     const query = useQueryState()
 
     const handleClick = async () => {
-
         try {
+            if(isUpdatingValues) {
+                await sleep(3000)
+            }
             setSwapId(undefined)
             setLoading(true)
             window.safary?.track({
@@ -217,11 +223,21 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
     }
 
-    return <ButtonWrapper
-        {...props}
-        isSubmitting={props.isSubmitting || loading || isQuoteLoading}
-        onClick={handleClick}
-    >
-        {error ? 'Try again' : 'Send from wallet'}
-    </ButtonWrapper>
+    return (
+        <ButtonWrapper
+            {...props}
+            isSubmitting={props.isSubmitting || loading || isQuoteLoading}
+            onClick={handleClick}
+            isDisabled={isQuoteLoading || quoteValidating}
+        >
+            {(isQuoteLoading || quoteValidating) ? (
+                <div className="flex justify-center items-center space-x-1">
+                    <SpinIcon className="animate-spin h-5 w-5" />
+                    <span>Updating quote</span>
+                </div>
+            ) : (
+                error ? 'Try again' : 'Send from wallet'
+            )}
+        </ButtonWrapper>
+    )
 }

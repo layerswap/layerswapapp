@@ -8,10 +8,21 @@ type UseQuoteData = {
     minAllowedAmount?: number
     maxAllowedAmount?: number
     quote?: Quote
+    quoteError?: QuoteError
     isQuoteLoading: boolean
     mutateFee: () => void
     mutateLimits: () => void
+    limitsValidating: boolean
+    quoteValidating: boolean
 }
+export type QuoteError = {
+    code: string;
+    message: string;
+    metadata?: {
+        StatusCode?: string;
+        [key: string]: any;
+    };
+};
 type Props = {
     from: string | undefined
     to: string | undefined
@@ -38,16 +49,23 @@ export function useQuoteData(formValues: Props | undefined): UseQuoteData {
     const use_deposit_address = depositMethod === 'wallet' ? false : true
 
     const limitsURL = (from && to && depositMethod && toCurrency && fromCurrency) ?
-        `/limits?source_network=${from}&source_token=${fromCurrency}&destination_network=${to}&destination_token=${toCurrency}&use_deposit_address=${use_deposit_address}&refuel=${!!refuel}` : null
+        buildLimitsUrl({
+            sourceNetwork: from!,
+            sourceToken: fromCurrency!,
+            destinationNetwork: to!,
+            destinationToken: toCurrency!,
+            useDepositAddress: use_deposit_address,
+            refuel
+        }) : null
 
-    const { data: amountRange, mutate: mutateLimits } = useSWR<ApiResponse<{
+    const { data: amountRange, mutate: mutateLimits, isValidating: limitsValidating } = useSWR<ApiResponse<{
         min_amount: number
         min_amount_in_usd: number
         max_amount: number
         max_amount_in_usd: number
     }>>(limitsURL, apiClient.fetcher, {
-        refreshInterval: 20000,
-        dedupingInterval: 20000,
+        refreshInterval: 5000,
+        dedupingInterval: 5000,
     })
 
     const canGetQuote = from && to && depositMethod && toCurrency && fromCurrency
@@ -57,19 +75,21 @@ export function useQuoteData(formValues: Props | undefined): UseQuoteData {
     const quoteURL = canGetQuote ?
         `/quote?source_network=${from}&source_token=${fromCurrency}&destination_network=${to}&destination_token=${toCurrency}&amount=${debouncedAmount}&refuel=${!!refuel}&use_deposit_address=${use_deposit_address}` : null
 
-    const { data: quote, mutate: mutateFee, isLoading: isQuoteLoading, error: lsFeeError } = useSWR<ApiResponse<Quote>>(quoteURL, apiClient.fetcher, {
-        refreshInterval: 42000,
-        dedupingInterval: 42000,
+    const { data: quote, mutate: mutateFee, isLoading: isQuoteLoading, error: quoteError, isValidating: quoteValidating } = useSWR<ApiResponse<Quote>>(quoteURL, apiClient.fetcher, {
+        refreshInterval: 5000,
+        dedupingInterval: 5000,
     })
-
-
+ 
     return {
         minAllowedAmount: amountRange?.data?.min_amount,
         maxAllowedAmount: amountRange?.data?.max_amount,
         quote: quote?.data,
         isQuoteLoading,
+        quoteError,
         mutateFee,
         mutateLimits,
+        limitsValidating,
+        quoteValidating
     }
 }
 export function transformFormValuesToQuoteArgs(values: SwapFormValues): Props | undefined {
@@ -97,3 +117,65 @@ export function transformSwapDataToQuoteArgs(swapData: SwapBasicData | undefined
     }
 }
 
+export const getLimits = async (swapValues: LimitsQueryOptions) => {
+    const apiClient = new LayerSwapApiClient()
+    const { sourceToken, sourceNetwork, destinationNetwork, destinationToken, refuel, useDepositAddress } = swapValues || {}
+
+    if (!sourceNetwork || !destinationNetwork || !useDepositAddress || !destinationToken || !sourceToken)
+        return { minAllowedAmount: undefined, maxAllowedAmount: undefined }
+
+    const url = buildLimitsUrl({
+        sourceNetwork,
+        sourceToken,
+        destinationNetwork,
+        destinationToken,
+        useDepositAddress,
+        refuel
+    })
+
+    const response = await apiClient.fetcher(url) as ApiResponse<{
+        min_amount: number
+        max_amount: number
+        min_amount_in_usd: number
+        max_amount_in_usd: number
+    }>
+
+    return {
+        minAllowedAmount: response?.data?.min_amount,
+        maxAllowedAmount: response?.data?.max_amount
+    }
+}
+
+interface LimitsQueryOptions {
+    sourceNetwork?: string;
+    sourceToken?: string;
+    destinationNetwork?: string;
+    destinationToken?: string;
+    useDepositAddress?: boolean;
+    refuel?: boolean;
+}
+
+export function buildLimitsUrl({
+    sourceNetwork,
+    sourceToken,
+    destinationNetwork,
+    destinationToken,
+    useDepositAddress,
+    refuel = false
+}: LimitsQueryOptions): string {
+
+    if (!sourceNetwork || !sourceToken || !destinationNetwork || !destinationToken) {
+        throw new Error("Invalid parameters for building limits URL");
+    }
+
+    const params = new URLSearchParams({
+        source_network: sourceNetwork,
+        source_token: sourceToken,
+        destination_network: destinationNetwork,
+        destination_token: destinationToken,
+        use_deposit_address: useDepositAddress ? 'true' : 'false',
+        refuel: String(!!refuel),
+    });
+
+    return `/limits?${params.toString()}`;
+}

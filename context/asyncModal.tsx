@@ -23,7 +23,7 @@ const AsyncModal: FC<AsyncModalProps> = ({ onConfirm, onDismiss, children, submi
                             {submitText ?? 'Confirm'}
                         </SubmitButton>
                         {dismissText &&
-                            <SecondaryButton className="w-full h-full py-3 !text-base" onClick={onDismiss}>
+                            <SecondaryButton className="w-full h-full py-3 !text-base" size="xl" onClick={onDismiss}>
                                 {dismissText}
                             </SecondaryButton>
                         }
