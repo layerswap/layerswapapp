@@ -82,11 +82,11 @@ export function BalanceAccountsProvider({ children }: PickerAccountsProviderProp
 
     const selectSourceAccount = useCallback((account: BaseAccountIdentity) => {
         const provider = providers.find(p => p.name === account.providerName);
-        if (provider && provider.activeWallet && provider.activeWallet.address !== account.address) {
-            provider.switchAccount?.(provider.activeWallet, account.address);
+        const wallet = provider?.connectedWallets?.find(w => w.id === account.id)
+        if (provider && wallet) {
+            provider.switchAccount?.(wallet, account.address);
         }
     }, [providers])
-
 
     const stateValues: BalanceAccountsContextType = useMemo(() => ({
         sourceAccounst,
