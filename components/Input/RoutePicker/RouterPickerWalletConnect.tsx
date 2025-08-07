@@ -13,6 +13,7 @@ import { WalletsIcons } from "@/components/Wallet/ConnectedWallets";
 import { useFormikContext } from "formik";
 import { isValidAddress } from "@/lib/address/validator";
 import { AccountIdentity, useBalanceAccounts, useUpdateBalanceAccount } from "@/context/balanceAccounts";
+import { addressFormat } from "@/lib/address/formatter";
 
 const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -75,6 +76,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
                                     </label>
                                 </div>
                                 <AccountsList
+                                    network={direction === 'from' ? values.from : values.to}
                                     key={index}
                                     onSelect={handleSelectAccount}
                                     selectedAccount={account}
@@ -127,12 +129,12 @@ type Props = {
 
 const AccountsList: FC<Props> = (props) => {
 
-    const { selectedAccount, onSelect } = props
+    const { selectedAccount, onSelect, network } = props
     const provider = selectedAccount?.provider;
     const connectedWallets = provider?.connectedWallets || []
 
-    const isAccountDuplicate = selectedAccount && connectedWallets.some(
-        (w) => w.address.toLowerCase() === selectedAccount.address?.toLowerCase()
+    const isAccountDuplicate = selectedAccount && network && connectedWallets.some(
+        (w) => w.addresses.some((address) => addressFormat(address, network) === addressFormat(selectedAccount.address, network))
     )
 
     const accounts: (Wallet | AccountIdentity)[] = [
