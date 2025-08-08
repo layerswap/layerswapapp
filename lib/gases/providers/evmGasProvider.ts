@@ -281,7 +281,7 @@ export default class getOptimismGas extends getEVMGas {
             data: serializedTransaction,
             to: this.destination,
             account: this.account,
-            gasPriceOracleAddress: this.from.metadata.evm_oracle_contract as `0x${string}`,
+            gasPriceOracleAddress: this.from.metadata?.evm_oracle_contract as `0x${string}`,
             gasPrice: gasPrice as any
         })
 

@@ -49,7 +49,7 @@ const SwapDetails: FC<Props> = ({ type }) => {
                             : <Withdraw type={type} />
                     )
                     :
-                    <>
+                    <div className='space-y-3'>
                         <Processing />
                         {
                             storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
@@ -57,7 +57,7 @@ const SwapDetails: FC<Props> = ({ type }) => {
                                 Try again
                             </SubmitButton>
                         }
-                    </>
+                    </div>
             }
         </Container>
     )

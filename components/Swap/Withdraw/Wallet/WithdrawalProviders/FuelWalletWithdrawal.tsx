@@ -40,7 +40,7 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, r
 
             if (!source_network) throw Error("Network not found")
             if (!depositAddress) throw Error("Deposit address not found")
-            if (!source_network.metadata.watchdog_contract) throw Error("Watchdog contract not found")
+            if (!source_network.metadata?.watchdog_contract) throw Error("Watchdog contract not found")
             if (!amount) throw Error("Amount not found")
             if (!source_token) throw Error("Token not found")
             if (!callData) throw Error("Call data not found")

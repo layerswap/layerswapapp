@@ -1,5 +1,5 @@
 import { ExternalLink } from 'lucide-react';
-import { FC, useCallback, useEffect, useRef } from 'react'
+import React, { FC, useCallback, useEffect, useRef } from 'react'
 import { Widget } from '../../../Widget/Index';
 import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
@@ -12,7 +12,6 @@ import { Gauge } from '../../../gauge';
 import Failed from '../Failed';
 import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import FormattedAverageCompletionTime from '../../../Common/FormattedAverageCompletionTime';
 import CountdownTimer from '../../../Common/CountDownTimer';
 import useSWR from 'swr';
 import { ApiResponse } from '../../../../Models/ApiResponse';
@@ -20,6 +19,7 @@ import { datadogRum } from '@datadog/browser-rum';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../../context/authContext';
 import logError from '../../../../lib/logError';
+import SubmitButton from '../../../buttons/submitButton';
 
 type Props = {
     swapBasicData: SwapBasicData;
@@ -30,9 +30,10 @@ type Props = {
 
 const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) => {
 
-    const { boot, show, update } = useIntercom();
+    const { boot, show, update, showNewMessages } = useIntercom();
     const { email, userId } = useAuthState();
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
+    const [showSupportButton, setShowSupportButton] = React.useState(false);
 
     const {
         source_network,
@@ -47,6 +48,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
         show();
         updateWithProps();
     }, [boot, show, updateWithProps]);
+
 
     const input_tx_explorer = source_network?.transaction_explorer_template
     const output_tx_explorer = destination_network?.transaction_explorer_template
@@ -64,6 +66,21 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     const inputTxStatus = swapInputTransaction ? swapInputTransaction.status : inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus
 
     const loggedNotDetectedTxAt = useRef<number | null>(null);
+
+    const handleSupportClick = useCallback(() => {
+        const transactionHash = swapInputTransaction?.transaction_hash || storedWalletTransaction?.hash;
+        const message = `Hi! My transaction (Swap ID: ${swapDetails.id}) has been processing for longer than expected. ${transactionHash ? `Transaction hash: ${transactionHash}` : ''} Could you please help me check the status?`;
+
+        boot();
+        update({
+            userId,
+            customAttributes: {
+                email: email,
+                swapId: swapDetails.id,
+            }
+        });
+        showNewMessages(message)
+    }, [boot, show, update, userId, email, swapDetails.id, swapInputTransaction, storedWalletTransaction]);
 
     useEffect(() => {
         if (inputTxStatus === TransactionStatus.Completed || inputTxStatus === TransactionStatus.Pending) {
@@ -111,17 +128,12 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     const progressStatuses = getProgressStatuses(swapDetails, refuel, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
     const stepStatuses = progressStatuses.stepStatuses;
 
-    const outputPendingDetails = quote?.avg_completion_time && <div className='flex items-center space-x-1'>
-        <span>Estimated time:</span>
-        <div className='text-primary-text'>
-            <FormattedAverageCompletionTime avgCompletionTime={quote?.avg_completion_time} />
-        </div>
-    </div>
-
-    const countDownTimer = quote?.avg_completion_time && <div className='flex items-center space-x-1'>
-        <div className='text-primary-text'>
-            <CountdownTimer initialTime={String(quote?.avg_completion_time)} swapDetails={swapDetails} />
-        </div>
+    const countDownTimer = quote?.avg_completion_time && <div className='text-primary-text'>
+        <CountdownTimer
+            initialTime={String(quote?.avg_completion_time)}
+            swapDetails={swapDetails}
+            onThresholdChange={setShowSupportButton}
+        />
     </div>
 
     const progressStates: ProgressStates = {
@@ -291,43 +303,47 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     const swapStatus = swapDetails.status;
     return (
         <Widget.Content>
-            <div className={`w-full min-h-[422px] space-y-5 flex flex-col justify-between text-primary-text`}>
-                <div className='space-y-5'>
-                    <SwapSummary />
-                    <div className="bg-secondary-500 font-normal px-3 py-6 rounded-2xl flex flex-col w-full relative z-10 divide-y-2 divide-secondary-300 divide-dashed">
-                        <div className='pb-4'>
-                            <div className='flex flex-col gap-2 items-center'>
-                                <div className='flex items-center'>
-                                    <Gauge value={stepsProgressPercentage} size="small" showCheckmark={swapStatus === SwapStatus.Completed} />
-                                </div>
-                                <div className="flex-col text-center ">
-                                    <span className="font-medium text-primary-text">
-                                        {progressStatuses.generalStatus.title}
+            <div className={`w-full min-h-[410px] space-y-3 flex flex-col justify-between text-primary-text`}>
+                <SwapSummary />
+                <div className="bg-secondary-500 font-normal px-3 pt-6 pb-3 rounded-2xl space-y-4 flex flex-col w-full relative z-10 divide-y-2 divide-secondary-300 divide-dashed">
+                    <div className='pb-4'>
+                        <div className='flex flex-col gap-2 items-center'>
+                            <div className='flex items-center'>
+                                <Gauge value={stepsProgressPercentage} size="small" showCheckmark={swapStatus === SwapStatus.Completed} />
+                            </div>
+                            <div className="flex-col text-center ">
+                                <span className="font-medium text-primary-text">
+                                    {progressStatuses.generalStatus.title}
+                                </span>
+                                {swapOutputTransaction?.status != BackendTransactionStatus.Completed && (swapStatus !== SwapStatus.Cancelled && swapStatus !== SwapStatus.Expired && swapStatus !== SwapStatus.Failed) &&
+                                    <span className='text-sm block space-x-1 text-secondary-text'>
+                                        <span>{countDownTimer}</span>
                                     </span>
-                                    {!swapInputTransaction && (swapStatus !== SwapStatus.Cancelled && swapStatus !== SwapStatus.Expired && swapStatus !== SwapStatus.Failed) &&
-                                        <span className='text-sm block space-x-1 text-secondary-text'>
-                                            <span>{outputPendingDetails}</span>
-                                        </span>
-                                    }
-                                    {swapInputTransaction?.timestamp && swapOutputTransaction?.status != BackendTransactionStatus.Completed && (swapStatus !== SwapStatus.Cancelled && swapStatus !== SwapStatus.Expired && swapStatus !== SwapStatus.Failed) &&
-                                        <span className='text-sm block space-x-1 text-secondary-text'>
-                                            <span>{countDownTimer}</span>
-                                        </span>
-                                    }
+                                }
+                            </div>
+                        </div></div>
+                    <div className='pt-4'>
+                        {
+                            swapStatus != SwapStatus.Cancelled && swapStatus != SwapStatus.Expired && currentSteps.find(x => x.status != null) &&
+                            <div className='flex flex-col h-full justify-center space-y-4'>
+                                <Steps steps={currentSteps} />
+                            </div>
+                        }
+                        {
+                            ([SwapStatus.Expired, SwapStatus.Cancelled, SwapStatus.UserTransferDelayed].includes(swapStatus)) &&
+                            <Failed />
+                        }
+                        {
+                            showSupportButton && swapDetails.status !== SwapStatus.Completed && inputTxStatus !== TransactionStatus.Failed && (
+                                <div className='flex justify-center mt-6'>
+                                    <SubmitButton
+                                        onClick={handleSupportClick}
+                                        className="w-full max-w-xs"
+                                    >
+                                        Contact Support
+                                    </SubmitButton>
                                 </div>
-                            </div></div>
-                        <div className='pt-4'>
-                            {
-                                swapStatus != SwapStatus.Cancelled && swapStatus != SwapStatus.Expired && currentSteps.find(x => x.status != null) &&
-                                <div className='flex flex-col h-full justify-center'>
-                                    <Steps steps={currentSteps} />
-                                </div>
-                            }
-                            {
-                                ([SwapStatus.Expired, SwapStatus.Cancelled, SwapStatus.UserTransferDelayed].includes(swapStatus)) &&
-                                <Failed />
-                            }
-                        </div>
+                            )}
                     </div>
                 </div>
             </div>
