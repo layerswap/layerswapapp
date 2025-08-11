@@ -169,9 +169,9 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 </div>
             },
             complete: {
-                name: `Your deposit is confirmed`,
+                name: `Deposit confirmed`,
                 description: <div className='flex items-center space-x-1'>
-                    <span>We received your deposit. </span>
+                    <span>We’ve received your deposit. </span>
                     <LinkWithIcon
                         name={'View in explorer'}
                         url={input_tx_explorer?.replace("{0}", transactionHash)}
@@ -445,22 +445,16 @@ const getProgressStatuses = (swapDetails: SwapDetails, refuel: Refuel | undefine
                 : swapRefuelTransaction?.status == BackendTransactionStatus.Initiated || swapRefuelTransaction?.status == BackendTransactionStatus.Completed ? ProgressStatus.Complete
                     : ProgressStatus.Removed;
 
-    // Handle refund cases
     let refund_status = ProgressStatus.Removed;
-    if (swapStatus === SwapStatus.RefundPending || swapStatus === SwapStatus.RefundCompleted) {
-        refund_status = swapStatus === SwapStatus.RefundCompleted ? ProgressStatus.Complete : ProgressStatus.Current;
-    }
 
-
-    // Handle refund cases - override normal flow for 3-step refund progression
     if (swapStatus === SwapStatus.RefundPending || swapStatus === SwapStatus.RefundCompleted) {
         // For refund cases: 1) Deposit Confirmed 2) Processing Failed 3) Refund Pending/Completed
         input_transfer = ProgressStatus.Complete; // Step 1: Deposit Confirmed
         output_transfer = ProgressStatus.Failed; // Step 2: Processing Failed
         refuel_transfer = ProgressStatus.Removed; // Remove refuel step for refunds
         refund_status = swapStatus === SwapStatus.RefundCompleted ? ProgressStatus.Complete : ProgressStatus.Current;
-        generalTitle = swapStatus === SwapStatus.RefundCompleted ? "Refund completed" : "Processing refund";
-        subtitle = swapStatus === SwapStatus.RefundCompleted ? "Your transaction could not be processed. The full amount has been returned to your wallet." : "Your transaction could not be processed. The full amount will be returned to your wallet.";
+        generalTitle = swapStatus === SwapStatus.RefundCompleted ? "Refund complete" : "Processing refund";
+        subtitle = swapStatus === SwapStatus.RefundCompleted ? "We couldn’t complete your transaction. The full amount has been returned to your wallet." : "Your transaction could not be processed. The full amount will be returned to your wallet.";
     } else if (swapStatus === SwapStatus.Failed) {
         output_transfer = output_transfer == ProgressStatus.Complete ? ProgressStatus.Complete : ProgressStatus.Failed;
         refuel_transfer = refuel_transfer !== ProgressStatus.Complete ? ProgressStatus.Removed : refuel_transfer;
@@ -483,7 +477,7 @@ const getProgressStatuses = (swapDetails: SwapDetails, refuel: Refuel | undefine
     }
 
     if (swapStatus == SwapStatus.Completed) {
-        generalTitle = "Transfer completed"
+        generalTitle = "Transfer complete"
         subtitle = "Thanks for using Layerswap"
     }
     if (swapStatus == SwapStatus.Cancelled) {
