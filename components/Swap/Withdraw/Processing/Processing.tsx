@@ -295,7 +295,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             complete: {
                 name: 'Refund sent',
                 description: <div className='flex items-center space-x-1 text-secondary-text'>
-                    The full deposit amount has been sent back to your wallet.
+                    <span>The full deposit amount has been sent back to your wallet.</span>
                     {
                         swapRefundTransaction && (
                             <LinkWithIcon
