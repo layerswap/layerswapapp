@@ -551,3 +551,59 @@ export const Expired: Story = {
         }
     }
 };
+
+export const RefundPending: Story = {
+    args: {
+        settings: Settings,
+        swapData: {
+            swapBasicData: {
+                destination_address: swap.swapResponse.swap.destination_address,
+                destination_network: swap.swapResponse.swap.destination_network,
+                destination_token: swap.swapResponse.swap.destination_token,
+                refuel: !!swap.swapResponse.refuel,
+                requested_amount: swap.swapResponse.swap.requested_amount,
+                source_network: swap.swapResponse.swap.source_network,
+                source_token: swap.swapResponse.swap.source_token,
+                use_deposit_address: swap.swapResponse.swap.use_deposit_address,
+                source_exchange: swap.swapResponse.swap.source_exchange
+            }, ...swap,
+            ...(swap.swapResponse as SwapResponse),
+            swapDetails: {
+                ...(swap.swapResponse.swap as SwapItem),
+                status: SwapStatus.RefundPending,
+                transactions: [
+                    { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
+                ]
+            },
+            refuel: undefined // Remove refuel for refund cases
+        }
+    }
+};
+
+export const RefundCompleted: Story = {
+    args: {
+        settings: Settings,
+        swapData: {
+            swapBasicData: {
+                destination_address: swap.swapResponse.swap.destination_address,
+                destination_network: swap.swapResponse.swap.destination_network,
+                destination_token: swap.swapResponse.swap.destination_token,
+                refuel: false, // No refuel for refund cases
+                requested_amount: swap.swapResponse.swap.requested_amount,
+                source_network: swap.swapResponse.swap.source_network,
+                source_token: swap.swapResponse.swap.source_token,
+                use_deposit_address: swap.swapResponse.swap.use_deposit_address,
+                source_exchange: swap.swapResponse.swap.source_exchange
+            }, ...swap,
+            ...(swap.swapResponse as SwapResponse),
+            swapDetails: {
+                ...(swap.swapResponse.swap as SwapItem),
+                status: SwapStatus.RefundCompleted,
+                transactions: [
+                    { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
+                ]
+            },
+            refuel: undefined // Remove refuel for refund cases
+        }
+    }
+};

@@ -9,4 +9,6 @@ export enum SwapStatus {
     Failed = 'failed',
     Expired = "expired",
     Cancelled = "cancelled",
+    RefundPending = "refund_pending",
+    RefundCompleted = "refund_completed",
 }

@@ -1,7 +1,6 @@
-import { ExternalLink } from 'lucide-react';
+import LinkWithIcon from '../../../Common/LinkWithIcon';
 import React, { FC, useCallback, useEffect, useRef } from 'react'
 import { Widget } from '../../../Widget/Index';
-import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
 import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapResponse, Transaction, SwapBasicData, SwapDetails, SwapQuote, Refuel } from '../../../../lib/apiClients/layerSwapApiClient';
@@ -59,6 +58,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     const transactionHash = swapInputTransaction?.transaction_hash || storedWalletTransaction?.hash
     const swapOutputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Refuel)
+    const swapRefundTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Refund)
 
     const apiClient = new LayerSwapApiClient()
     const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>((transactionHash && swapInputTransaction?.status !== BackendTransactionStatus.Completed) ? [source_network?.name, transactionHash] : null, ([network, tx_id]) => apiClient.GetTransactionStatus(network, tx_id as any), { dedupingInterval: 6000 })
@@ -146,10 +146,10 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 name: 'Processing your deposit',
                 description: <div className='flex space-x-1'>
                     <div className='flex items-center space-x-1'>
-                        <div className='underline hover:no-underline flex items-center space-x-1'>
-                            <a target={"_blank"} href={input_tx_explorer?.replace("{0}", transactionHash)}>{shortenAddress(transactionHash)}</a>
-                            <ExternalLink className='h-4' />
-                        </div>
+                        <LinkWithIcon
+                            name={'View in explorer'}
+                            url={input_tx_explorer?.replace("{0}", transactionHash)}
+                        />
                     </div>
                     <div>
                         <span>
@@ -171,11 +171,11 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             complete: {
                 name: `Your deposit is confirmed`,
                 description: <div className='flex items-center space-x-1'>
-                    <span>Transaction: </span>
-                    <div className='underline hover:no-underline flex items-center space-x-1'>
-                        <a target={"_blank"} href={input_tx_explorer?.replace("{0}", transactionHash)}>{shortenAddress(transactionHash)}</a>
-                        <ExternalLink className='h-4' />
-                    </div>
+                    <span>We received your deposit. </span>
+                    <LinkWithIcon
+                        name={'View in explorer'}
+                        url={input_tx_explorer?.replace("{0}", transactionHash)}
+                    />
                 </div>
             },
             failed: {
@@ -185,10 +185,10 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                         {inputTxStatus === TransactionStatus.Failed ?
                             <div className="flex flex-col">
                                 <p>Check the transfer in the explorer</p>
-                                <div className='underline hover:no-underline flex items-center space-x-1'>
-                                    <a target={"_blank"} href={input_tx_explorer?.replace("{0}", transactionHash)}>{shortenAddress(transactionHash)}</a>
-                                    <ExternalLink className='h-4' />
-                                </div>
+                                <LinkWithIcon
+                                    name={'View in explorer'}
+                                    url={input_tx_explorer?.replace("{0}", transactionHash)}
+                                />
                             </div>
                             :
                             fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ?
@@ -221,24 +221,31 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 description: swapOutputTransaction ? <div className="flex flex-col">
                     <div className='flex items-center space-x-1'>
                         <span>Transaction: </span>
-                        <div className='underline hover:no-underline flex items-center space-x-1'>
-                            <a target={"_blank"} href={output_tx_explorer?.replace("{0}", swapOutputTransaction.transaction_hash)}>{shortenAddress(swapOutputTransaction.transaction_hash)}</a>
-                            <ExternalLink className='h-4' />
-                        </div>
+                        <LinkWithIcon
+                            name={'View in explorer'}
+                            url={output_tx_explorer?.replace("{0}", swapOutputTransaction.transaction_hash)}
+                        />
                     </div>
                 </div> : null,
             },
             failed: {
-                name: fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? `The transfer is on hold` : "The transfer has failed",
+                name: (swapDetails.status === SwapStatus.RefundPending || swapDetails.status === SwapStatus.RefundCompleted)
+                    ? "Processing Failed"
+                    : fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE
+                        ? `The transfer is on hold`
+                        : "The transfer has failed",
                 description: <div className='flex space-x-1'>
                     <div className='space-x-1 text-secondary-text'>
-                        {fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ?
-                            "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
-                            :
-                            fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
-                                "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
-                                :
-                                <div><span className='text-secondary-text'>Something went wrong while processing the transfer.</span> <a className='underline hover:cursor-pointer text-secondary-text' onClick={() => startIntercom()}> please contact our support.</a></div>
+                        {
+                            swapDetails.status === SwapStatus.RefundPending || swapDetails.status === SwapStatus.RefundCompleted ?
+                                "There was an issue completing the transfer. We're refunding your deposit." :
+                                fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ?
+                                    "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
+                                    :
+                                    fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
+                                        "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
+                                        :
+                                        <div><span className='text-secondary-text'>Something went wrong while processing the transfer.</span> <a className='underline hover:cursor-pointer text-secondary-text' onClick={() => startIntercom()}> please contact our support.</a></div>
                         }
                     </div>
                 </div>
@@ -261,17 +268,48 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 name: `${truncatedRefuelAmount} ${refuel?.token?.symbol} was sent to your address`,
                 description: <div className='flex items-center space-x-1'>
                     <span>Transaction: </span>
-                    <div className='underline hover:no-underline flex items-center space-x-1'>
-                        {swapRefuelTransaction && <>
-                            <a target={"_blank"} href={output_tx_explorer?.replace("{0}", swapRefuelTransaction.transaction_hash)}>{shortenAddress(swapRefuelTransaction?.transaction_hash)}</a>
-                            <ExternalLink className='h-4' />
-                        </>}
-                    </div>
+                    {swapRefuelTransaction &&
+                        <LinkWithIcon
+                            name={'View in explorer'}
+                            url={output_tx_explorer?.replace("{0}", swapRefuelTransaction.transaction_hash)}
+                        />
+                    }
                 </div>
             },
             delayed: {
                 name: `This transfers is being delayed`,
                 description: null
+            }
+        },
+        "refund": {
+            upcoming: {
+                name: 'Refund Pending',
+                description: null
+            },
+            current: {
+                name: 'Refund Pending',
+                description: <div className='text-secondary-text'>
+                    Your refund is being processed.
+                </div>
+            },
+            complete: {
+                name: 'Refund sent',
+                description: <div className='flex items-center space-x-1 text-secondary-text'>
+                    The full deposit amount has been sent back to your wallet.
+                    {
+                        swapRefundTransaction && (
+                            <LinkWithIcon
+                                name={'View in explorer'}
+                                url={output_tx_explorer?.replace("{0}", swapRefundTransaction?.transaction_hash || '')}
+                            />
+                        )}
+                </div>
+            },
+            failed: {
+                name: 'Refund Failed',
+                description: <div className='space-x-1 text-secondary-text'>
+                    <span>Something went wrong while processing the refund.</span> <a className='underline hover:cursor-pointer text-secondary-text' onClick={() => startIntercom()}> please contact our support.</a>
+                </div>
             }
         }
     }
@@ -294,6 +332,12 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             status: stepStatuses.refuel,
             description: progressStates.refuel?.[stepStatuses?.refuel]?.description,
             index: 3
+        },
+        {
+            name: progressStates.refund?.[stepStatuses?.refund]?.name,
+            status: stepStatuses.refund,
+            description: progressStates.refund?.[stepStatuses?.refund]?.description,
+            index: 4
         }
     ]
 
@@ -315,13 +359,20 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                                 <span className="font-medium text-primary-text">
                                     {progressStatuses.generalStatus.title}
                                 </span>
-                                {swapOutputTransaction?.status != BackendTransactionStatus.Completed && (swapStatus !== SwapStatus.Cancelled && swapStatus !== SwapStatus.Expired && swapStatus !== SwapStatus.Failed) &&
+                                {
+                                    progressStatuses.generalStatus.subTitle &&
+                                    <span className="text-sm block text-secondary-text">
+                                        {progressStatuses.generalStatus.subTitle}
+                                    </span>
+                                }
+                                {swapOutputTransaction?.status != BackendTransactionStatus.Completed && (swapStatus !== SwapStatus.Cancelled && swapStatus !== SwapStatus.Expired && swapStatus !== SwapStatus.Failed && swapStatus !== SwapStatus.RefundPending && swapStatus !== SwapStatus.RefundCompleted) &&
                                     <span className='text-sm block space-x-1 text-secondary-text'>
                                         <span>{countDownTimer}</span>
                                     </span>
                                 }
                             </div>
-                        </div></div>
+                        </div>
+                    </div>
                     <div className='pt-4'>
                         {
                             swapStatus != SwapStatus.Cancelled && swapStatus != SwapStatus.Expired && currentSteps.find(x => x.status != null) &&
@@ -334,7 +385,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                             <Failed />
                         }
                         {
-                            showSupportButton && swapDetails.status !== SwapStatus.Completed && inputTxStatus !== TransactionStatus.Failed && (
+                            showSupportButton && swapDetails.status !== SwapStatus.Completed && inputTxStatus !== TransactionStatus.Failed && swapDetails.status !== SwapStatus.RefundPending && swapDetails.status !== SwapStatus.RefundCompleted && (
                                 <div className='flex justify-center mt-6'>
                                     <SubmitButton
                                         onClick={handleSupportClick}
@@ -394,8 +445,23 @@ const getProgressStatuses = (swapDetails: SwapDetails, refuel: Refuel | undefine
                 : swapRefuelTransaction?.status == BackendTransactionStatus.Initiated || swapRefuelTransaction?.status == BackendTransactionStatus.Completed ? ProgressStatus.Complete
                     : ProgressStatus.Removed;
 
+    // Handle refund cases
+    let refund_status = ProgressStatus.Removed;
+    if (swapStatus === SwapStatus.RefundPending || swapStatus === SwapStatus.RefundCompleted) {
+        refund_status = swapStatus === SwapStatus.RefundCompleted ? ProgressStatus.Complete : ProgressStatus.Current;
+    }
 
-    if (swapStatus === SwapStatus.Failed) {
+
+    // Handle refund cases - override normal flow for 3-step refund progression
+    if (swapStatus === SwapStatus.RefundPending || swapStatus === SwapStatus.RefundCompleted) {
+        // For refund cases: 1) Deposit Confirmed 2) Processing Failed 3) Refund Pending/Completed
+        input_transfer = ProgressStatus.Complete; // Step 1: Deposit Confirmed
+        output_transfer = ProgressStatus.Failed; // Step 2: Processing Failed
+        refuel_transfer = ProgressStatus.Removed; // Remove refuel step for refunds
+        refund_status = swapStatus === SwapStatus.RefundCompleted ? ProgressStatus.Complete : ProgressStatus.Current;
+        generalTitle = swapStatus === SwapStatus.RefundCompleted ? "Refund completed" : "Processing refund";
+        subtitle = swapStatus === SwapStatus.RefundCompleted ? "Your transaction could not be processed. The full amount has been returned to your wallet." : "Your transaction could not be processed. The full amount will be returned to your wallet.";
+    } else if (swapStatus === SwapStatus.Failed) {
         output_transfer = output_transfer == ProgressStatus.Complete ? ProgressStatus.Complete : ProgressStatus.Failed;
         refuel_transfer = refuel_transfer !== ProgressStatus.Complete ? ProgressStatus.Removed : refuel_transfer;
         generalTitle = swapDetails?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? "Transfer on hold" : "Transfer failed";
@@ -433,6 +499,7 @@ const getProgressStatuses = (swapDetails: SwapDetails, refuel: Refuel | undefine
             "input_transfer": input_transfer,
             "output_transfer": output_transfer,
             "refuel": refuel_transfer,
+            "refund": refund_status,
         },
         generalStatus: {
             title: generalTitle,
