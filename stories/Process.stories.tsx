@@ -570,7 +570,7 @@ export const RefundPending: Story = {
             ...(swap.swapResponse as SwapResponse),
             swapDetails: {
                 ...(swap.swapResponse.swap as SwapItem),
-                status: SwapStatus.RefundPending,
+                status: SwapStatus.PendingRefund,
                 transactions: [
                     { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
                 ]
@@ -598,7 +598,7 @@ export const RefundCompleted: Story = {
             ...(swap.swapResponse as SwapResponse),
             swapDetails: {
                 ...(swap.swapResponse.swap as SwapItem),
-                status: SwapStatus.RefundCompleted,
+                status: SwapStatus.Refunded,
                 transactions: [
                     { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
                 ]

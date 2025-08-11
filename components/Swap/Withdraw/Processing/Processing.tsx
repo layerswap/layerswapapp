@@ -229,7 +229,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 </div> : null,
             },
             failed: {
-                name: (swapDetails.status === SwapStatus.RefundPending || swapDetails.status === SwapStatus.RefundCompleted)
+                name: (swapDetails.status === SwapStatus.PendingRefund || swapDetails.status === SwapStatus.Refunded)
                     ? "Processing Failed"
                     : fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE
                         ? `The transfer is on hold`
@@ -237,7 +237,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 description: <div className='flex space-x-1'>
                     <div className='space-x-1 text-secondary-text'>
                         {
-                            swapDetails.status === SwapStatus.RefundPending || swapDetails.status === SwapStatus.RefundCompleted ?
+                            swapDetails.status === SwapStatus.PendingRefund || swapDetails.status === SwapStatus.Refunded ?
                                 "There was an issue completing the transfer. We're refunding your deposit." :
                                 fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ?
                                     "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
@@ -365,7 +365,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                                         {progressStatuses.generalStatus.subTitle}
                                     </span>
                                 }
-                                {swapOutputTransaction?.status != BackendTransactionStatus.Completed && (swapStatus !== SwapStatus.Cancelled && swapStatus !== SwapStatus.Expired && swapStatus !== SwapStatus.Failed && swapStatus !== SwapStatus.RefundPending && swapStatus !== SwapStatus.RefundCompleted) &&
+                                {swapOutputTransaction?.status != BackendTransactionStatus.Completed && (swapStatus !== SwapStatus.Cancelled && swapStatus !== SwapStatus.Expired && swapStatus !== SwapStatus.Failed && swapStatus !== SwapStatus.PendingRefund && swapStatus !== SwapStatus.Refunded) &&
                                     <span className='text-sm block space-x-1 text-secondary-text'>
                                         <span>{countDownTimer}</span>
                                     </span>
@@ -385,7 +385,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                             <Failed />
                         }
                         {
-                            showSupportButton && swapDetails.status !== SwapStatus.Completed && inputTxStatus !== TransactionStatus.Failed && swapDetails.status !== SwapStatus.RefundPending && swapDetails.status !== SwapStatus.RefundCompleted && (
+                            showSupportButton && swapDetails.status !== SwapStatus.Completed && inputTxStatus !== TransactionStatus.Failed && swapDetails.status !== SwapStatus.PendingRefund && swapDetails.status !== SwapStatus.Refunded && (
                                 <div className='flex justify-center mt-6'>
                                     <SubmitButton
                                         onClick={handleSupportClick}
@@ -447,14 +447,14 @@ const getProgressStatuses = (swapDetails: SwapDetails, refuel: Refuel | undefine
 
     let refund_status = ProgressStatus.Removed;
 
-    if (swapStatus === SwapStatus.RefundPending || swapStatus === SwapStatus.RefundCompleted) {
+    if (swapStatus === SwapStatus.PendingRefund || swapStatus === SwapStatus.Refunded) {
         // For refund cases: 1) Deposit Confirmed 2) Processing Failed 3) Refund Pending/Completed
         input_transfer = ProgressStatus.Complete; // Step 1: Deposit Confirmed
         output_transfer = ProgressStatus.Failed; // Step 2: Processing Failed
         refuel_transfer = ProgressStatus.Removed; // Remove refuel step for refunds
-        refund_status = swapStatus === SwapStatus.RefundCompleted ? ProgressStatus.Complete : ProgressStatus.Current;
-        generalTitle = swapStatus === SwapStatus.RefundCompleted ? "Refund complete" : "Processing refund";
-        subtitle = swapStatus === SwapStatus.RefundCompleted ? "We couldn’t complete your transaction. The full amount has been returned to your wallet." : "Your transaction could not be processed. The full amount will be returned to your wallet.";
+        refund_status = swapStatus === SwapStatus.Refunded ? ProgressStatus.Complete : ProgressStatus.Current;
+        generalTitle = swapStatus === SwapStatus.Refunded ? "Refund complete" : "Processing refund";
+        subtitle = swapStatus === SwapStatus.Refunded ? "We couldn’t complete your transaction. The full amount has been returned to your wallet." : "Your transaction could not be processed. The full amount will be returned to your wallet.";
     } else if (swapStatus === SwapStatus.Failed) {
         output_transfer = output_transfer == ProgressStatus.Complete ? ProgressStatus.Complete : ProgressStatus.Failed;
         refuel_transfer = refuel_transfer !== ProgressStatus.Complete ? ProgressStatus.Removed : refuel_transfer;
