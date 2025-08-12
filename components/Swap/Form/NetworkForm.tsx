@@ -164,11 +164,13 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                     ? <ValidationError />
                                     : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                             }
-                            {
-                                (!routeValidation.message && insufficientBalance)
-                                    ? insufficientBalance
-                                    : null
-                            }
+                            <>
+                                {
+                                    (!routeValidation.message && insufficientBalance)
+                                        ? insufficientBalance
+                                        : null
+                                }
+                            </>
                         </div>
                     </div>
                 </Widget.Content>
