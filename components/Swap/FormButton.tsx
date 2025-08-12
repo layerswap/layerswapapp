@@ -1,15 +1,10 @@
-import dynamic from "next/dynamic";
 import { FormSourceWalletButton } from "../Input/SourceWalletPicker";
 import { PlusIcon } from "lucide-react";
 import SwapButton from "../buttons/swapButton";
-import { FormikErrors } from "formik";
-import { SwapFormValues } from "../DTOs/SwapFormValues";
 import SubmitButton from "../buttons/submitButton";
 import { useQueryState } from "@/context/query";
+import Address from "../Input/Address";
 
-const Address = dynamic(() => import("../Input/Address"), {
-    loading: () => <></>,
-});
 
 const FormButton = ({
     shouldConnectWallet,
