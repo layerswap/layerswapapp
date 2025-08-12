@@ -9,9 +9,9 @@ type Props = {
     swapBasicData: SwapBasicData,
     swapId: string | undefined,
     refuel: boolean,
-    warning?: JSX.Element | null
+    balanceWarning?: JSX.Element | null
 }
-const WalletTransferButton: FC<Props> = ({ swapBasicData: swapData, swapId, refuel, warning }) => {
+const WalletTransferButton: FC<Props> = ({ swapBasicData: swapData, swapId, refuel, balanceWarning }) => {
     const [openModal, setOpenModal] = useState(false);
 
     return <>
@@ -30,7 +30,7 @@ const WalletTransferButton: FC<Props> = ({ swapBasicData: swapData, swapId, refu
             </div>
             <div>
                 <WalletTransferContent openModal={openModal} setOpenModal={setOpenModal} swapData={swapData}/>
-                {warning && warning}
+                {balanceWarning && balanceWarning}
                 <WalletTransfer swapData={swapData} swapId={swapId} refuel={refuel} />
             </div>
         </div>

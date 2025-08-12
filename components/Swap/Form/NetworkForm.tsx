@@ -23,6 +23,9 @@ import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import { updateForm, updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
+import { resolveBalanceWarnings } from "@/components/insufficientBalance";
+import { truncateDecimals } from "@/components/utils/RoundDecimals";
+import useSWRBalance from "@/lib/balances/useSWRBalance";
 
 const RefuelModal = dynamic(() => import("@/components/FeeDetails/RefuelModal"), {
     loading: () => <></>,
@@ -67,6 +70,12 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const isValid = !formValidation.message;
     const error = formValidation.message;
 
+    const selectedWallet = useMemo(() => provider?.activeWallet, [provider]);
+
+    const { balances } = useSWRBalance(selectedWallet?.address, source)
+    const walletBalance = source && balances?.find(b => b?.network === source?.name && b?.token === fromAsset?.symbol)
+    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, fromAsset?.precision)
+
     useEffect(() => {
         if (!source || !toAsset || !toAsset.refuel) {
             setFieldValue('refuel', false, true);
@@ -93,6 +102,11 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     }, [setFieldValue]);
 
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
+
+    const balanceWarning = resolveBalanceWarnings({
+        requestAmount: Number(amount),
+        walletBalance: Number(walletBalanceAmount),
+    });
 
     return (
         <>
@@ -132,6 +146,11 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 routeValidation.message
                                     ? <ValidationError />
                                     : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                            }
+                            {
+                                (!routeValidation.message && balanceWarning)
+                                    ? balanceWarning
+                                    : null
                             }
                         </div>
                     </div>
