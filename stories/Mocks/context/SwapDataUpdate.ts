@@ -11,6 +11,7 @@ const MockFunctions: UpdateSwapInterface = {
     setSwapId: () => { throw new Error("Not implemented") },
     setSelectedSourceAccount: () => { throw new Error("Not implemented") },
     setSubmitedFormValues: () => { throw new Error("Not implemented") },
+    setQuoteLoading: () => { throw new Error("Not implemented") },
 }
 
 

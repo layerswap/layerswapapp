@@ -1,6 +1,6 @@
-import { FC, SVGProps } from "react";
+import { FC, SVGProps, forwardRef } from "react";
 
-const LayerswapLogo: FC<SVGProps<SVGSVGElement>> = (props) => {
+const LayerswapLogo = forwardRef<HTMLDivElement, SVGProps<SVGSVGElement>>((props) => {
     return (
         <>
             <svg xmlns="http://www.w3.org/2000/svg" width="302" height="77" viewBox="0 0 302 77" fill="none" {...props}>
@@ -21,6 +21,6 @@ const LayerswapLogo: FC<SVGProps<SVGSVGElement>> = (props) => {
             </svg>
         </>
     )
-}
+})
 
 export default LayerswapLogo;

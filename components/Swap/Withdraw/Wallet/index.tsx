@@ -1,4 +1,4 @@
-import { useSwapDataState } from "@/context/swap"
+import { useSwapDataState, useSwapDataUpdate } from "@/context/swap"
 import NetworkGas from "./Common/networkGas"
 import { WalletTransferContent } from "./WalletTransferContent"
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient"

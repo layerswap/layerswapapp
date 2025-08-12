@@ -23,6 +23,7 @@ import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import { updateForm, updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
+import { useSwapDataState } from "@/context/swap";
 
 const RefuelModal = dynamic(() => import("@/components/FeeDetails/RefuelModal"), {
     loading: () => <></>,
@@ -36,10 +37,9 @@ const RefuelToggle = dynamic(() => import("@/components/FeeDetails/Refuel"), {
 
 type Props = {
     partner?: Partner;
-    swapModalIsOpen?: boolean;
 };
 
-const NetworkForm: FC<Props> = ({ partner, swapModalIsOpen }) => {
+const NetworkForm: FC<Props> = ({ partner }) => {
     const [openRefuelModal, setOpenRefuelModal] = useState(false);
     const {
         values,
@@ -56,8 +56,9 @@ const NetworkForm: FC<Props> = ({ partner, swapModalIsOpen }) => {
     const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
 
     const { providers, wallets } = useWallet();
-    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
-    const quoteRefreshInterval = swapModalIsOpen ? 0 : undefined;
+    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
+    const { swapId } = useSwapDataState()
+    const quoteRefreshInterval = !!swapId ? 0 : undefined;
     const { minAllowedAmount, maxAllowedAmount, isQuoteLoading, quote } = useQuoteData(quoteArgs, quoteRefreshInterval);
 
     const toAsset = values.toAsset;

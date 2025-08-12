@@ -6,6 +6,7 @@ import { transformFormValuesToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { resolveFormValidation } from '@/hooks/useFormValidation';
 import { resolveRouteValidation } from '@/hooks/useRouteValidation';
 import useWallet from '@/hooks/useWallet';
+import { useSwapDataState } from './swap';
 
 interface ValidationDetails {
     title?: string;
@@ -30,25 +31,26 @@ const defaultContext: ValidationContextType = {
 
 const ValidationContext = createContext<ValidationContextType>(defaultContext);
 
-export const ValidationProvider: React.FC<{ children: ReactNode, swapModalIsOpen: boolean }> = ({ children, swapModalIsOpen }) => {
+export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { values } = useFormikContext<SwapFormValues>();
     const query = useQueryState();
     const { sameAccountNetwork } = query
-
+    const { swapId } = useSwapDataState()
     const { provider } = useWallet(values.from, "withdrawal")
     const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
-    const quoteRefreshInterval = swapModalIsOpen ? 0 : undefined;
-    const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs, quoteRefreshInterval)
+    const quoteRefreshInterval = !!swapId ? 0 : undefined;
+    const { minAllowedAmount, maxAllowedAmount, quoteError } = useQuoteData(quoteArgs, quoteRefreshInterval)
 
-    const routeValidation = resolveRouteValidation();
+    const routeValidation = resolveRouteValidation(quoteError);
 
     const formValidation = resolveFormValidation({
         values,
         maxAllowedAmount,
         minAllowedAmount,
         sourceAddress: selectedSourceAccount?.address,
-        sameAccountNetwork
+        sameAccountNetwork,
+        quoteError
     })
 
     const value = useMemo(

@@ -41,6 +41,7 @@ export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicDat
         catch (e) {
             setLoading(false)
             setError(e.message)
+            throw e
         }
     }, [wallet, source_network, userId, source_token])
 

@@ -13,6 +13,7 @@ import { WalletsIcons } from "@/components/Wallet/ConnectedWallets";
 import { useFormikContext } from "formik";
 import { isValidAddress } from "@/lib/address/validator";
 import { AccountIdentity, useBalanceAccounts, useUpdateBalanceAccount } from "@/context/balanceAccounts";
+import { addressFormat } from "@/lib/address/formatter";
 
 const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -56,7 +57,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
             header='Select wallet'
             modalId="connectedWallets"
         >
-            <VaulDrawer.Snap id="item-1" className="space-y-1 pb-6">
+            <VaulDrawer.Snap id="item-1" className="space-y-1 pb-4">
                 <button type='button' onClick={connectWallet} className="w-full flex justify-center p-2 bg-secondary-500 rounded-md hover:bg-secondary-400">
                     <div className="flex items-center text-secondary-text gap-1 px-3 py-1">
                         <Plus className="h-4 w-4" />
@@ -75,6 +76,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
                                     </label>
                                 </div>
                                 <AccountsList
+                                    network={direction === 'from' ? values.from : values.to}
                                     key={index}
                                     onSelect={handleSelectAccount}
                                     selectedAccount={account}
@@ -97,7 +99,7 @@ const AccountsPickerButton: FC<{ accounts: AccountIdentity[], onOpenModalClick: 
                     <div className="flex gap-2 items-center text-sm text-primary-text">
                         <firstWallet.icon className='h-5 w-5' />
                         {
-                            !firstWallet.address &&
+                            firstWallet.address &&
                             <p>{shortenAddress(firstWallet.address)}</p>
                         }
                         <ChevronDown className="h-5 w-5" />
@@ -127,12 +129,12 @@ type Props = {
 
 const AccountsList: FC<Props> = (props) => {
 
-    const { selectedAccount, onSelect } = props
+    const { selectedAccount, onSelect, network } = props
     const provider = selectedAccount?.provider;
     const connectedWallets = provider?.connectedWallets || []
 
-    const isAccountDuplicate = selectedAccount && connectedWallets.some(
-        (w) => w.address.toLowerCase() === selectedAccount.address?.toLowerCase()
+    const isAccountDuplicate = selectedAccount && network && connectedWallets.some(
+        (w) => w.addresses.some((address) => addressFormat(address, network) === addressFormat(selectedAccount.address, network))
     )
 
     const accounts: (Wallet | AccountIdentity)[] = [
