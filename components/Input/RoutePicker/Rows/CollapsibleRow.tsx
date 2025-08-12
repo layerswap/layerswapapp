@@ -108,8 +108,9 @@ export const CollapsibleRow = ({
         />
 
         <AccordionContent
-          className="AccordionContent mt-1"
+          className="AccordionContent"
           ref={contentRef}
+          itemsCount={childrenList?.length}
         >
           <div className="has-[.token-item]:mt-1 bg-secondary-400 rounded-xl overflow-hidden">
             <div className="overflow-y-auto styled-scroll">
