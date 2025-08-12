@@ -122,7 +122,7 @@ export const swap = {
                 },
                 "metadata": {
                     "listing_date": "2023-12-27T16:46:50.617075+00:00",
-                    "evm_oracle_contract": "0x420000000000000000000000000000000000000F"
+                    "evm_oracle_contract": "0x420000000000000000000000000000000000000F" as `0x${string}`
                 },
                 "deposit_methods": []
             },
@@ -279,7 +279,7 @@ export const failedSwap: any = {
             },
             "metadata": {
                 "listing_date": "2023-12-27T16:46:50.617075+00:00",
-                "evm_oracle_contract": "0x420000000000000000000000000000000000000F"
+                "evm_oracle_contract": "0x420000000000000000000000000000000000000F" as `0x${string}`
             },
             "deposit_methods": []
         },
@@ -434,7 +434,7 @@ export const failedInputSwap: any = {
             },
             "metadata": {
                 "listing_date": "2023-12-27T16:46:50.617075+00:00",
-                "evm_oracle_contract": "0x420000000000000000000000000000000000000F"
+                "evm_oracle_contract": "0x420000000000000000000000000000000000000F" as `0x${string}`
             },
             "deposit_methods": []
         },
@@ -589,7 +589,7 @@ export const failedSwapOutOfRange: any = {
             },
             "metadata": {
                 "listing_date": "2023-12-27T16:46:50.617075+00:00",
-                "evm_oracle_contract": "0x420000000000000000000000000000000000000F"
+                "evm_oracle_contract": "0x420000000000000000000000000000000000000F" as `0x${string}`
             },
             "deposit_methods": []
         },
@@ -757,7 +757,7 @@ export const cancelled: any = {
             },
             "metadata": {
                 "listing_date": "2023-12-27T16:46:50.617075+00:00",
-                "evm_oracle_contract": "0x420000000000000000000000000000000000000F"
+                "evm_oracle_contract": "0x420000000000000000000000000000000000000F" as `0x${string}`
             },
             "deposit_methods": []
         },
@@ -899,7 +899,7 @@ export const expired: any = {
             },
             "metadata": {
                 "listing_date": "2023-12-27T16:46:50.617075+00:00",
-                "evm_oracle_contract": "0x420000000000000000000000000000000000000F"
+                "evm_oracle_contract": "0x420000000000000000000000000000000000000F" as `0x${string}`
             },
             "deposit_methods": []
         },

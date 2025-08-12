@@ -18,12 +18,10 @@ import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
 import { useQueryState } from "@/context/query";
 import TokenService from "@/lib/TokenService";
 import LayerSwapAuthApiClient from "@/lib/apiClients/userAuthApiClient";
-import { AnimatePresence } from "framer-motion";
 import useWallet from "@/hooks/useWallet";
 import { DepositMethodProvider } from "@/context/depositMethodContext";
 import { dynamicWithRetries } from "@/lib/dynamicWithRetries";
 import { useAsyncModal } from "@/context/asyncModal";
-import { PendingSwap } from "./PendingSwap";
 import { QueryParams } from "@/Models/QueryParams";
 import VaulDrawer from "@/components/modal/vaulModal";
 import { addressFormat } from "@/lib/address/formatter";
@@ -148,15 +146,6 @@ export default function FormWrapper({ children, type }: { children?: React.React
             onSubmit={handleSubmit}
         >
             <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
-                <div className="rounded-r-lg cursor-pointer absolute z-10 md:mt-3 border-l-0">
-                    <AnimatePresence mode='wait'>
-                        {
-                            swapDetails &&
-                            !showSwapModal &&
-                            <PendingSwap key="pendingSwap" onClick={() => { setSwapPath(swapDetails.id, router); handleShowSwapModal(true) }} />
-                        }
-                    </AnimatePresence>
-                </div>
                 <Modal
                     height="fit"
                     show={showConnectNetworkModal}

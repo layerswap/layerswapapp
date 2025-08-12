@@ -21,7 +21,7 @@ export class Network {
     type: NetworkType;
     transaction_explorer_template: string;
     account_explorer_template: string;
-    metadata: Metadata;
+    metadata?: Metadata;
     deposit_methods: string[]
     token?: Token
     source_rank?: number | undefined;

@@ -5,25 +5,27 @@ import { useAuthState } from "../../context/authContext";
 import { SwapDetails, SwapItem, TransactionType } from "../../lib/apiClients/layerSwapApiClient";
 import { datadogRum } from "@datadog/browser-rum";
 
-const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails }> = ({ initialTime, swapDetails }) => {
+const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThresholdChange?: (threshold: boolean) => void }> = ({ initialTime, swapDetails, onThresholdChange }) => {
 
     const { email, userId } = useAuthState();
     const { boot, show, update } = useIntercom();
-    const [countdown, setCountdown] = useState<number>();
+    const [elapsedTimer, setElapsedTimer] = useState<number>(0);
     const [thresholdElapsed, setThresholdElapsed] = useState<boolean>(false);
     const swapInputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Input)
 
     useEffect(() => {
+        // Start timer immediately when component renders
+        const startTime = swapInputTransaction?.timestamp ? new Date(swapInputTransaction.timestamp).getTime() : Date.now();
+        
         const timer = setInterval(() => {
             const currentTime = new Date();
-            const elapsedTime = currentTime.getTime() - new Date(swapInputTransaction?.timestamp!).getTime();
-            const remainingTime = Math.max(timeStringToMilliseconds(initialTime) - Math.abs(elapsedTime), 0)
-            setCountdown(remainingTime);
+            const elapsedTime = currentTime.getTime() - startTime;
+            setElapsedTimer(Math.max(elapsedTime, 0));
 
-            if (elapsedTime > 2 * timeStringToMilliseconds(initialTime)) {
-                setThresholdElapsed(true);
-            } else {
-                setThresholdElapsed(false);
+            const newThreshold = elapsedTime > 2 * timeStringToMilliseconds(initialTime);
+            if (newThreshold !== thresholdElapsed) {
+                setThresholdElapsed(newThreshold);
+                onThresholdChange?.(newThreshold);
             }
         }, 1000);
 
@@ -48,7 +50,7 @@ const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails }> = ({
 
         return `${formattedHours}${formattedMinutes}:${formattedSeconds}`;
     };
-    const formatted = countdown && formatTime(countdown);
+    const formatted = formatTime(elapsedTimer);
 
     if (thresholdElapsed && swapDetails.status !== SwapStatus.Completed) {
         const renderingError = new Error("Transaction is taking longer than expected");
@@ -62,20 +64,19 @@ const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails }> = ({
             {
                 thresholdElapsed && swapDetails.status !== SwapStatus.UserTransferPending ? (
                     <div>
-                        <span>Transaction is taking longer than expected </span>
-                        <a className='underline hover:cursor-pointer' onClick={() => startIntercom()}>please contact our support.</a>
+                        <span>Transaction is taking longer than expected</span>
                     </div>
-                ) : countdown === 0 && swapDetails.status !== SwapStatus.Completed ? (
+                ) : elapsedTimer > timeStringToMilliseconds(initialTime) && swapDetails.status !== SwapStatus.Completed ? (
                     <div>
                         <span>Taking a bit longer than expected</span>
                     </div>
-                ) : swapDetails.status === SwapStatus.Completed && (!countdown || countdown === 0) ? (
+                ) : swapDetails.status === SwapStatus.Completed ? (
                     ""
                 ) : (
                     <div className='text-secondary-text flex items-center'>
-                        <span>Estimated time:</span>
+                        <span>Elapsed time:</span>
                         <span className='text-primary-text ml-0.5'>
-                            {countdown ? formatted : <div className="h-[10px] mt-1 w-16 ml-1 animate-pulse rounded-sm bg-gray-500" />}
+                            {formatted}
                         </span>
                     </div>
                 )

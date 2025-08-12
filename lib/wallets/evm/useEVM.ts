@@ -1,4 +1,4 @@
-import { useAccount, useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
+import { useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
 import { NetworkType, NetworkWithTokens } from "../../../Models/Network"
 import { useSettingsState } from "../../../context/settings"
 import KnownInternalNames from "../../knownIds"
@@ -39,7 +39,7 @@ export default function useEVM(): WalletProvider {
     const autofillSupportedNetworks = useMemo(() => [
         ...asSourceSupportedNetworks,
         KnownInternalNames.Networks.ImmutableXMainnet,
-        KnownInternalNames.Networks.ImmutableXGoerli,
+        KnownInternalNames.Networks.ImmutableXSepolia,
         KnownInternalNames.Networks.BrineMainnet,
     ], [asSourceSupportedNetworks])
 

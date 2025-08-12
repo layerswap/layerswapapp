@@ -1,7 +1,6 @@
-import { ExternalLink } from 'lucide-react';
-import { FC, useCallback, useEffect, useRef } from 'react'
+import LinkWithIcon from '../../../Common/LinkWithIcon';
+import React, { FC, useCallback, useEffect, useRef } from 'react'
 import { Widget } from '../../../Widget/Index';
-import shortenAddress from '../../../utils/ShortenAddress';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
 import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapResponse, Transaction, SwapBasicData, SwapDetails, SwapQuote, Refuel } from '../../../../lib/apiClients/layerSwapApiClient';
@@ -9,10 +8,10 @@ import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { SwapStatus } from '../../../../Models/SwapStatus';
 import { SwapFailReasons } from '../../../../Models/RangeError';
 import { Gauge } from '../../../gauge';
+import { Undo2 } from 'lucide-react';
 import Failed from '../Failed';
 import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import FormattedAverageCompletionTime from '../../../Common/FormattedAverageCompletionTime';
 import CountdownTimer from '../../../Common/CountDownTimer';
 import useSWR from 'swr';
 import { ApiResponse } from '../../../../Models/ApiResponse';
@@ -20,6 +19,7 @@ import { datadogRum } from '@datadog/browser-rum';
 import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../../context/authContext';
 import logError from '../../../../lib/logError';
+import SubmitButton from '../../../buttons/submitButton';
 
 type Props = {
     swapBasicData: SwapBasicData;
@@ -30,9 +30,10 @@ type Props = {
 
 const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) => {
 
-    const { boot, show, update } = useIntercom();
+    const { boot, show, update, showNewMessages } = useIntercom();
     const { email, userId } = useAuthState();
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
+    const [showSupportButton, setShowSupportButton] = React.useState(false);
 
     const {
         source_network,
@@ -48,6 +49,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
         updateWithProps();
     }, [boot, show, updateWithProps]);
 
+
     const input_tx_explorer = source_network?.transaction_explorer_template
     const output_tx_explorer = destination_network?.transaction_explorer_template
 
@@ -57,6 +59,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     const transactionHash = swapInputTransaction?.transaction_hash || storedWalletTransaction?.hash
     const swapOutputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Output)
     const swapRefuelTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Refuel)
+    const swapRefundTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Refund)
 
     const apiClient = new LayerSwapApiClient()
     const { data: inputTxStatusData } = useSWR<ApiResponse<{ status: TransactionStatus }>>((transactionHash && swapInputTransaction?.status !== BackendTransactionStatus.Completed) ? [source_network?.name, transactionHash] : null, ([network, tx_id]) => apiClient.GetTransactionStatus(network, tx_id as any), { dedupingInterval: 6000 })
@@ -64,6 +67,21 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     const inputTxStatus = swapInputTransaction ? swapInputTransaction.status : inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus
 
     const loggedNotDetectedTxAt = useRef<number | null>(null);
+
+    const handleSupportClick = useCallback(() => {
+        const transactionHash = swapInputTransaction?.transaction_hash || storedWalletTransaction?.hash;
+        const message = `Hi! My transaction (Swap ID: ${swapDetails.id}) has been processing for longer than expected. ${transactionHash ? `Transaction hash: ${transactionHash}` : ''} Could you please help me check the status?`;
+
+        boot();
+        update({
+            userId,
+            customAttributes: {
+                email: email,
+                swapId: swapDetails.id,
+            }
+        });
+        showNewMessages(message)
+    }, [boot, show, update, userId, email, swapDetails.id, swapInputTransaction, storedWalletTransaction]);
 
     useEffect(() => {
         if (inputTxStatus === TransactionStatus.Completed || inputTxStatus === TransactionStatus.Pending) {
@@ -111,17 +129,12 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     const progressStatuses = getProgressStatuses(swapDetails, refuel, inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus)
     const stepStatuses = progressStatuses.stepStatuses;
 
-    const outputPendingDetails = quote?.avg_completion_time && <div className='flex items-center space-x-1'>
-        <span>Estimated time:</span>
-        <div className='text-primary-text'>
-            <FormattedAverageCompletionTime avgCompletionTime={quote?.avg_completion_time} />
-        </div>
-    </div>
-
-    const countDownTimer = quote?.avg_completion_time && <div className='flex items-center space-x-1'>
-        <div className='text-primary-text'>
-            <CountdownTimer initialTime={String(quote?.avg_completion_time)} swapDetails={swapDetails} />
-        </div>
+    const countDownTimer = quote?.avg_completion_time && <div className='text-primary-text'>
+        <CountdownTimer
+            initialTime={String(quote?.avg_completion_time)}
+            swapDetails={swapDetails}
+            onThresholdChange={setShowSupportButton}
+        />
     </div>
 
     const progressStates: ProgressStates = {
@@ -134,10 +147,10 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 name: 'Processing your deposit',
                 description: <div className='flex space-x-1'>
                     <div className='flex items-center space-x-1'>
-                        <div className='underline hover:no-underline flex items-center space-x-1'>
-                            <a target={"_blank"} href={input_tx_explorer?.replace("{0}", transactionHash)}>{shortenAddress(transactionHash)}</a>
-                            <ExternalLink className='h-4' />
-                        </div>
+                        <LinkWithIcon
+                            name={'View in explorer'}
+                            url={input_tx_explorer?.replace("{0}", transactionHash)}
+                        />
                     </div>
                     <div>
                         <span>
@@ -157,13 +170,13 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 </div>
             },
             complete: {
-                name: `Your deposit is confirmed`,
+                name: `Deposit confirmed`,
                 description: <div className='flex items-center space-x-1'>
-                    <span>Transaction: </span>
-                    <div className='underline hover:no-underline flex items-center space-x-1'>
-                        <a target={"_blank"} href={input_tx_explorer?.replace("{0}", transactionHash)}>{shortenAddress(transactionHash)}</a>
-                        <ExternalLink className='h-4' />
-                    </div>
+                    <span>We’ve received your deposit. </span>
+                    <LinkWithIcon
+                        name={'View in explorer'}
+                        url={input_tx_explorer?.replace("{0}", transactionHash)}
+                    />
                 </div>
             },
             failed: {
@@ -173,10 +186,10 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                         {inputTxStatus === TransactionStatus.Failed ?
                             <div className="flex flex-col">
                                 <p>Check the transfer in the explorer</p>
-                                <div className='underline hover:no-underline flex items-center space-x-1'>
-                                    <a target={"_blank"} href={input_tx_explorer?.replace("{0}", transactionHash)}>{shortenAddress(transactionHash)}</a>
-                                    <ExternalLink className='h-4' />
-                                </div>
+                                <LinkWithIcon
+                                    name={'View in explorer'}
+                                    url={input_tx_explorer?.replace("{0}", transactionHash)}
+                                />
                             </div>
                             :
                             fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ?
@@ -209,24 +222,31 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 description: swapOutputTransaction ? <div className="flex flex-col">
                     <div className='flex items-center space-x-1'>
                         <span>Transaction: </span>
-                        <div className='underline hover:no-underline flex items-center space-x-1'>
-                            <a target={"_blank"} href={output_tx_explorer?.replace("{0}", swapOutputTransaction.transaction_hash)}>{shortenAddress(swapOutputTransaction.transaction_hash)}</a>
-                            <ExternalLink className='h-4' />
-                        </div>
+                        <LinkWithIcon
+                            name={'View in explorer'}
+                            url={output_tx_explorer?.replace("{0}", swapOutputTransaction.transaction_hash)}
+                        />
                     </div>
                 </div> : null,
             },
             failed: {
-                name: fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? `The transfer is on hold` : "The transfer has failed",
+                name: (swapDetails.status === SwapStatus.PendingRefund || swapDetails.status === SwapStatus.Refunded)
+                    ? "Processing Failed"
+                    : fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE
+                        ? `The transfer is on hold`
+                        : "The transfer has failed",
                 description: <div className='flex space-x-1'>
                     <div className='space-x-1 text-secondary-text'>
-                        {fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ?
-                            "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
-                            :
-                            fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
-                                "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
-                                :
-                                <div><span className='text-secondary-text'>Something went wrong while processing the transfer.</span> <a className='underline hover:cursor-pointer text-secondary-text' onClick={() => startIntercom()}> please contact our support.</a></div>
+                        {
+                            swapDetails.status === SwapStatus.PendingRefund || swapDetails.status === SwapStatus.Refunded ?
+                                "There was an issue completing the transfer. We're refunding your deposit." :
+                                fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ?
+                                    "Your deposit is higher than the max limit. We'll review and approve your transaction in up to 2 hours."
+                                    :
+                                    fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
+                                        "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
+                                        :
+                                        <div><span className='text-secondary-text'>Something went wrong while processing the transfer.</span> <a className='underline hover:cursor-pointer text-secondary-text' onClick={() => startIntercom()}> please contact our support.</a></div>
                         }
                     </div>
                 </div>
@@ -249,17 +269,48 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 name: `${truncatedRefuelAmount} ${refuel?.token?.symbol} was sent to your address`,
                 description: <div className='flex items-center space-x-1'>
                     <span>Transaction: </span>
-                    <div className='underline hover:no-underline flex items-center space-x-1'>
-                        {swapRefuelTransaction && <>
-                            <a target={"_blank"} href={output_tx_explorer?.replace("{0}", swapRefuelTransaction.transaction_hash)}>{shortenAddress(swapRefuelTransaction?.transaction_hash)}</a>
-                            <ExternalLink className='h-4' />
-                        </>}
-                    </div>
+                    {swapRefuelTransaction &&
+                        <LinkWithIcon
+                            name={'View in explorer'}
+                            url={output_tx_explorer?.replace("{0}", swapRefuelTransaction.transaction_hash)}
+                        />
+                    }
                 </div>
             },
             delayed: {
                 name: `This transfers is being delayed`,
                 description: null
+            }
+        },
+        "refund": {
+            upcoming: {
+                name: 'Refund Pending',
+                description: null
+            },
+            current: {
+                name: 'Refund Pending',
+                description: <div className='text-secondary-text'>
+                    Your refund is being processed.
+                </div>
+            },
+            complete: {
+                name: 'Refund sent',
+                description: <div className='flex items-center space-x-1 text-secondary-text'>
+                    <span>The full deposit amount has been sent back to your wallet.</span>
+                    {
+                        swapRefundTransaction && (
+                            <LinkWithIcon
+                                name={'View in explorer'}
+                                url={output_tx_explorer?.replace("{0}", swapRefundTransaction?.transaction_hash || '')}
+                            />
+                        )}
+                </div>
+            },
+            failed: {
+                name: 'Refund Failed',
+                description: <div className='space-x-1 text-secondary-text'>
+                    <span>Something went wrong while processing the refund.</span> <a className='underline hover:cursor-pointer text-secondary-text' onClick={() => startIntercom()}> please contact our support.</a>
+                </div>
             }
         }
     }
@@ -282,6 +333,12 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             status: stepStatuses.refuel,
             description: progressStates.refuel?.[stepStatuses?.refuel]?.description,
             index: 3
+        },
+        {
+            name: progressStates.refund?.[stepStatuses?.refund]?.name,
+            status: stepStatuses.refund,
+            description: progressStates.refund?.[stepStatuses?.refund]?.description,
+            index: 4
         }
     ]
 
@@ -291,43 +348,60 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     const swapStatus = swapDetails.status;
     return (
         <Widget.Content>
-            <div className={`w-full min-h-[422px] space-y-5 flex flex-col justify-between text-primary-text`}>
-                <div className='space-y-5'>
-                    <SwapSummary />
-                    <div className="bg-secondary-500 font-normal px-3 py-6 rounded-2xl flex flex-col w-full relative z-10 divide-y-2 divide-secondary-300 divide-dashed">
-                        <div className='pb-4'>
-                            <div className='flex flex-col gap-2 items-center'>
-                                <div className='flex items-center'>
-                                    <Gauge value={stepsProgressPercentage} size="small" showCheckmark={swapStatus === SwapStatus.Completed} />
-                                </div>
-                                <div className="flex-col text-center ">
-                                    <span className="font-medium text-primary-text">
-                                        {progressStatuses.generalStatus.title}
+            <div className={`w-full min-h-[410px] space-y-3 flex flex-col justify-between text-primary-text`}>
+                <SwapSummary />
+                <div className="bg-secondary-500 font-normal px-3 pt-6 pb-3 rounded-2xl space-y-4 flex flex-col w-full relative z-10 divide-y-2 divide-secondary-300 divide-dashed">
+                    <div className='pb-4'>
+                        <div className='flex flex-col gap-2 items-center'>
+                            <div className='flex items-center'>
+                                {(swapStatus === SwapStatus.PendingRefund || swapStatus === SwapStatus.Refunded) ? (
+                                    <span className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+                                        <Undo2 className="h-7 w-7 text-primary" aria-hidden="true" />
                                     </span>
-                                    {!swapInputTransaction && (swapStatus !== SwapStatus.Cancelled && swapStatus !== SwapStatus.Expired && swapStatus !== SwapStatus.Failed) &&
-                                        <span className='text-sm block space-x-1 text-secondary-text'>
-                                            <span>{outputPendingDetails}</span>
-                                        </span>
-                                    }
-                                    {swapInputTransaction?.timestamp && swapOutputTransaction?.status != BackendTransactionStatus.Completed && (swapStatus !== SwapStatus.Cancelled && swapStatus !== SwapStatus.Expired && swapStatus !== SwapStatus.Failed) &&
-                                        <span className='text-sm block space-x-1 text-secondary-text'>
-                                            <span>{countDownTimer}</span>
-                                        </span>
-                                    }
-                                </div>
-                            </div></div>
-                        <div className='pt-4'>
-                            {
-                                swapStatus != SwapStatus.Cancelled && swapStatus != SwapStatus.Expired && currentSteps.find(x => x.status != null) &&
-                                <div className='flex flex-col h-full justify-center'>
-                                    <Steps steps={currentSteps} />
-                                </div>
-                            }
-                            {
-                                ([SwapStatus.Expired, SwapStatus.Cancelled, SwapStatus.UserTransferDelayed].includes(swapStatus)) &&
-                                <Failed />
-                            }
+                                ) : (
+                                    <Gauge value={stepsProgressPercentage} size="small" showCheckmark={swapStatus === SwapStatus.Completed} />
+                                )}
+                            </div>
+                            <div className="flex-col text-center ">
+                                <span className="font-medium text-primary-text">
+                                    {progressStatuses.generalStatus.title}
+                                </span>
+                                {
+                                    progressStatuses.generalStatus.subTitle &&
+                                    <span className="text-sm block text-secondary-text">
+                                        {progressStatuses.generalStatus.subTitle}
+                                    </span>
+                                }
+                                {swapOutputTransaction?.status != BackendTransactionStatus.Completed && (swapStatus !== SwapStatus.Cancelled && swapStatus !== SwapStatus.Expired && swapStatus !== SwapStatus.Failed && swapStatus !== SwapStatus.PendingRefund && swapStatus !== SwapStatus.Refunded) &&
+                                    <span className='text-sm block space-x-1 text-secondary-text'>
+                                        <span>{countDownTimer}</span>
+                                    </span>
+                                }
+                            </div>
                         </div>
+                    </div>
+                    <div className='pt-4'>
+                        {
+                            swapStatus != SwapStatus.Cancelled && swapStatus != SwapStatus.Expired && currentSteps.find(x => x.status != null) &&
+                            <div className='flex flex-col h-full justify-center space-y-4'>
+                                <Steps steps={currentSteps} />
+                            </div>
+                        }
+                        {
+                            ([SwapStatus.Expired, SwapStatus.Cancelled, SwapStatus.UserTransferDelayed].includes(swapStatus)) &&
+                            <Failed />
+                        }
+                        {
+                            showSupportButton && swapDetails.status !== SwapStatus.Completed && inputTxStatus !== TransactionStatus.Failed && swapDetails.status !== SwapStatus.PendingRefund && swapDetails.status !== SwapStatus.Refunded && (
+                                <div className='flex justify-center mt-6'>
+                                    <SubmitButton
+                                        onClick={handleSupportClick}
+                                        className="w-full max-w-xs"
+                                    >
+                                        Contact Support
+                                    </SubmitButton>
+                                </div>
+                            )}
                     </div>
                 </div>
             </div>
@@ -378,8 +452,17 @@ const getProgressStatuses = (swapDetails: SwapDetails, refuel: Refuel | undefine
                 : swapRefuelTransaction?.status == BackendTransactionStatus.Initiated || swapRefuelTransaction?.status == BackendTransactionStatus.Completed ? ProgressStatus.Complete
                     : ProgressStatus.Removed;
 
+    let refund_status = ProgressStatus.Removed;
 
-    if (swapStatus === SwapStatus.Failed) {
+    if (swapStatus === SwapStatus.PendingRefund || swapStatus === SwapStatus.Refunded) {
+        // For refund cases: 1) Deposit Confirmed 2) Processing Failed 3) Refund Pending/Completed
+        input_transfer = ProgressStatus.Complete; // Step 1: Deposit Confirmed
+        output_transfer = ProgressStatus.Failed; // Step 2: Processing Failed
+        refuel_transfer = ProgressStatus.Removed; // Remove refuel step for refunds
+        refund_status = swapStatus === SwapStatus.Refunded ? ProgressStatus.Complete : ProgressStatus.Current;
+        generalTitle = swapStatus === SwapStatus.Refunded ? "Refund complete" : "Processing refund";
+        subtitle = swapStatus === SwapStatus.Refunded ? "We couldn’t complete your transaction. The full amount has been returned to your wallet." : "Your transaction could not be processed. The full amount will be returned to your wallet.";
+    } else if (swapStatus === SwapStatus.Failed) {
         output_transfer = output_transfer == ProgressStatus.Complete ? ProgressStatus.Complete : ProgressStatus.Failed;
         refuel_transfer = refuel_transfer !== ProgressStatus.Complete ? ProgressStatus.Removed : refuel_transfer;
         generalTitle = swapDetails?.fail_reason == SwapFailReasons.RECEIVED_MORE_THAN_VALID_RANGE ? "Transfer on hold" : "Transfer failed";
@@ -401,7 +484,7 @@ const getProgressStatuses = (swapDetails: SwapDetails, refuel: Refuel | undefine
     }
 
     if (swapStatus == SwapStatus.Completed) {
-        generalTitle = "Transfer completed"
+        generalTitle = "Transfer complete"
         subtitle = "Thanks for using Layerswap"
     }
     if (swapStatus == SwapStatus.Cancelled) {
@@ -417,6 +500,7 @@ const getProgressStatuses = (swapDetails: SwapDetails, refuel: Refuel | undefine
             "input_transfer": input_transfer,
             "output_transfer": output_transfer,
             "refuel": refuel_transfer,
+            "refund": refund_status,
         },
         generalStatus: {
             title: generalTitle,

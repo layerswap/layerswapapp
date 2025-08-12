@@ -27,6 +27,10 @@ export default function StatusIcon({ swap, withBg, short }: { swap: SwapItem, wi
       return <YellowComponent text="Delayed" withBg={withBg} short={short} />
     case SwapStatus.Created:
       return <YellowComponent text="Incomplete" withBg={withBg} short={short} />
+    case SwapStatus.PendingRefund:
+      return <YellowComponent text="Refund Pending" withBg={withBg} short={short} />
+    case SwapStatus.Refunded:
+      return <GreenComponent text="Refund Completed" withBg={withBg} short={short} />
     default:
       return <></>
   }
