@@ -1,6 +1,6 @@
 import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, Quote, SwapBasicData, SwapQuote, Refuel, SwapDetails } from '@/lib/apiClients/layerSwapApiClient';
+import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, Quote, SwapBasicData, SwapQuote, Refuel, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
 import { NextRouter, useRouter } from 'next/router';
 import { QueryParams } from '../Models/QueryParams';
 import useSWR, { KeyedMutator } from 'swr';
@@ -29,7 +29,8 @@ export const SwapDataStateContext = createContext<SwapContextData>({
     refuel: undefined,
     swapBasicData: undefined,
     swapDetails: undefined,
-    quoteIsLoading: false
+    quoteIsLoading: false,
+    swapId: undefined
 });
 
 export const SwapDataUpdateContext = createContext<UpdateSwapInterface | null>(null);
@@ -59,7 +60,8 @@ export type SwapContextData = {
     quote: SwapQuote | undefined,
     refuel: Refuel | undefined,
     swapDetails: SwapDetails | undefined,
-    quoteIsLoading: boolean
+    quoteIsLoading: boolean,
+    swapId: string | undefined
 }
 
 export function SwapDataProvider({ children }) {
@@ -164,8 +166,8 @@ export function SwapDataProvider({ children }) {
 
     const use_deposit_address = swapBasicData?.use_deposit_address
     const deposit_actions_endpoint = swapId ? `/swaps/${swapId}/deposit_actions${(use_deposit_address || !selectedSourceAccount || !sourceIsSupported) ? "" : `?source_address=${selectedSourceAccount?.address}`}` : null
-
-    const { data: depositActions } = useSWR<ApiResponse<DepositAction[]>>(deposit_actions_endpoint, layerswapApiClient.fetcher)
+    const inputTransfer = swapDetails?.transactions.find(t => t.type === TransactionType.Input);
+    const { data: depositActions } = useSWR<ApiResponse<DepositAction[]>>(!inputTransfer ? deposit_actions_endpoint : null, layerswapApiClient.fetcher)
 
     const depositActionsResponse = depositActions?.data
     const swapStatus = data?.data?.swap.status;
@@ -273,7 +275,8 @@ export function SwapDataProvider({ children }) {
             refuel,
             swapBasicData,
             swapDetails,
-            quoteIsLoading
+            quoteIsLoading,
+            swapId
         }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}
@@ -306,7 +309,7 @@ const WalletIsSupportedForSource = ({ providers, sourceNetwork, sourceWallet }: 
 }
 
 
-const setSwapPath = (swapId: string, router: NextRouter) => {
+export const setSwapPath = (swapId: string, router: NextRouter) => {
     //TODO: as path should be without basepath and host
     const basePath = router?.basePath || ""
     var swapURL = window.location.protocol + "//"
@@ -325,7 +328,7 @@ const setSwapPath = (swapId: string, router: NextRouter) => {
     window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
 }
 
-const removeSwapPath = (router: NextRouter) => {
+export const removeSwapPath = (router: NextRouter) => {
     const basePath = router?.basePath || ""
     let homeURL = window.location.protocol + "//"
         + window.location.host + basePath

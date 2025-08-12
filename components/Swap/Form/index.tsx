@@ -11,38 +11,43 @@ import { Widget } from "@/components/Widget/Index";
 import { ValidationProvider } from "@/context/validationContext";
 
 export default function Form() {
-    return <SwapDataProvider>
-        <BalanceAccountsProvider>
-            <Tabs defaultValue="cross-chain">
-                <TabsList>
-                    <TabsTrigger
-                        label="Swap"
-                        Icon={NetworkTabIcon}
-                        value="cross-chain" />
-                    <TabsTrigger
-                        label="Deposit from CEX"
-                        Icon={ExchangeTabIcon}
-                        value="exchange" />
-                </TabsList>
-                <FormWrapper type="cross-chain">
-                    <TabsContent value="cross-chain">
+    return <BalanceAccountsProvider>
+        <Tabs defaultValue="cross-chain">
+            <TabsList>
+                <TabsTrigger
+                    label="Swap"
+                    Icon={NetworkTabIcon}
+                    value="cross-chain" />
+                <TabsTrigger
+                    label="Deposit from CEX"
+                    Icon={ExchangeTabIcon}
+                    value="exchange" />
+            </TabsList>
+
+            <TabsContent value="cross-chain">
+                <SwapDataProvider>
+                    <FormWrapper type="cross-chain">
                         <Widget className="sm:min-h-[450px] h-full" >
                             <ValidationProvider>
                                 <NetworkForm />
                             </ValidationProvider>
                         </Widget>
-                    </TabsContent>
-                </FormWrapper>
-                <FormWrapper type="exchange">
-                    <TabsContent value="exchange">
+                    </FormWrapper>
+                </SwapDataProvider>
+            </TabsContent>
+
+            <TabsContent value="exchange">
+                <SwapDataProvider>
+                    <FormWrapper type="exchange">
                         <Widget className="sm:min-h-[450px] h-full" >
                             <ValidationProvider>
                                 <ExchangeForm />
                             </ValidationProvider>
                         </Widget>
-                    </TabsContent>
-                </FormWrapper>
-            </Tabs>
-        </BalanceAccountsProvider>
-    </SwapDataProvider>
+                    </FormWrapper>
+                </SwapDataProvider>
+            </TabsContent>
+
+        </Tabs>
+    </BalanceAccountsProvider>
 }

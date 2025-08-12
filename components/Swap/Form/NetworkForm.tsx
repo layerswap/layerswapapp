@@ -23,6 +23,7 @@ import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import { updateForm, updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
+import { useSwapDataState } from "@/context/swap";
 
 const RefuelModal = dynamic(() => import("@/components/FeeDetails/RefuelModal"), {
     loading: () => <></>,
@@ -48,7 +49,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const {
         to: destination,
         from: source,
-        amount,
         depositMethod
     } = values;
 
@@ -57,7 +57,9 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const { providers, wallets } = useWallet();
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
-    const { minAllowedAmount, isQuoteLoading, quote } = useQuoteData(quoteArgs);
+    const { swapId } = useSwapDataState()
+    const quoteRefreshInterval = !!swapId ? 0 : undefined;
+    const { minAllowedAmount, maxAllowedAmount, isQuoteLoading, quote } = useQuoteData(quoteArgs, quoteRefreshInterval);
 
     const toAsset = values.toAsset;
     const fromAsset = values.fromAsset;
@@ -103,7 +105,11 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                         <div>
                             <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
                                 {
-                                    !(query?.hideFrom && values?.from) && <SourcePicker />
+                                    !(query?.hideFrom && values?.from) && <SourcePicker
+                                        minAllowedAmount={minAllowedAmount}
+                                        maxAllowedAmount={maxAllowedAmount}
+                                        fee={quote}
+                                    />
                                 }
                                 {
                                     !query?.hideFrom && !query?.hideTo &&
@@ -115,18 +121,29 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                     />
                                 }
                                 {
-                                    !(query?.hideTo && values?.to) && <DestinationPicker partner={partner} />
+                                    !(query?.hideTo && values?.to) && <DestinationPicker
+                                        isFeeLoading={isQuoteLoading}
+                                        fee={quote}
+                                        partner={partner}
+                                    />
                                 }
                             </div>
                         </div>
                         <div className="space-y-3">
                             {
                                 values.amount &&
-                                <ReserveGasNote onSubmit={handleReserveGas} />
+                                <ReserveGasNote
+                                    maxAllowedAmount={minAllowedAmount}
+                                    minAllowedAmount={maxAllowedAmount}
+                                    onSubmit={handleReserveGas}
+                                />
                             }
                             {
                                 values.toAsset?.refuel && !query.hideRefuel &&
-                                <RefuelToggle onButtonClick={() => setOpenRefuelModal(true)} />
+                                <RefuelToggle
+                                    fee={quote}
+                                    onButtonClick={() => setOpenRefuelModal(true)}
+                                />
                             }
                             {
                                 routeValidation.message
@@ -146,7 +163,11 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                         partner={partner}
                     />
                 </Widget.Footer>
-                <RefuelModal openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} />
+                <RefuelModal
+                    openModal={openRefuelModal}
+                    setOpenModal={setOpenRefuelModal}
+                    fee={quote}
+                />
             </Form>
         </>
     );

@@ -2,7 +2,7 @@ import { Formik, FormikProps } from "formik";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { useSettingsState } from "@/context/settings";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
-import { UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
+import { removeSwapPath, setSwapPath, UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import React from "react";
 import ConnectNetwork from "@/components/ConnectNetwork";
 import toast from "react-hot-toast";
@@ -26,9 +26,9 @@ import { useAsyncModal } from "@/context/asyncModal";
 import { PendingSwap } from "./PendingSwap";
 import { QueryParams } from "@/Models/QueryParams";
 import VaulDrawer from "@/components/modal/vaulModal";
-import { transformSwapDataToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { addressFormat } from "@/lib/address/formatter";
 import AddressNote from "@/components/Input/Address/AddressNote";
+import useSWRBalance from "@/lib/balances/useSWRBalance";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -55,20 +55,24 @@ export default function FormWrapper({ children, type }: { children?: React.React
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const router = useRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
-    const { getProvider } = useWallet()
+    const settings = useSettingsState();
+    const { swapBasicData, swapDetails } = useSwapDataState()
+    const sourceNetworkWithTokens = settings.networks.find(n => n.name === swapBasicData?.source_network.name)
+    const { getProvider, provider } = useWallet(sourceNetworkWithTokens, "withdrawal")
+    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
+    const { mutate: mutateBalances } = useSWRBalance(selectedSourceAccount?.address, sourceNetworkWithTokens)
+
     const { getConfirmation } = useAsyncModal();
 
-    const settings = useSettingsState();
     const query = useQueryState()
     const { appName, destination_address: destinationAddressFromQuery } = query
     const { createSwap, setSwapId, setSubmitedFormValues } = useSwapDataUpdate()
 
+
+
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
     const partner = appName && partnerData?.data?.client_id?.toLowerCase() === (appName as string)?.toLowerCase() ? partnerData?.data : undefined
-    const { swapBasicData, swapDetails } = useSwapDataState()
-    const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicData, !!swapBasicData?.refuel), [swapBasicData]);
-    const { quote } = useQuoteData(quoteArgs)
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         const { destination_address, to } = values
@@ -125,13 +129,15 @@ export default function FormWrapper({ children, type }: { children?: React.React
         catch (error) {
             toast.error(error?.message)
         }
-    }, [createSwap, query, partner, router, updateAuthData, setUserType, swapBasicData, getProvider, settings, quote])
+    }, [createSwap, query, partner, router, updateAuthData, setUserType, swapBasicData, getProvider, settings])
 
     const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings)
         : generateSwapInitialValues(settings, query, type)
 
     const handleShowSwapModal = useCallback((value: boolean) => {
         setShowSwapModal(value)
+        if (!value)
+            removeSwapPath(router)
     }, [router, swapDetails])
 
     return <>
@@ -147,7 +153,7 @@ export default function FormWrapper({ children, type }: { children?: React.React
                         {
                             swapDetails &&
                             !showSwapModal &&
-                            <PendingSwap key="pendingSwap" onClick={() => handleShowSwapModal(true)} />
+                            <PendingSwap key="pendingSwap" onClick={() => { setSwapPath(swapDetails.id, router); handleShowSwapModal(true) }} />
                         }
                     </AnimatePresence>
                 </div>
@@ -167,6 +173,7 @@ export default function FormWrapper({ children, type }: { children?: React.React
                     show={showSwapModal}
                     setShow={handleShowSwapModal}
                     header={`Complete the swap`}
+                    onAnimationEnd={(v) => !v ? mutateBalances() : undefined}
                     modalId="showSwap">
                     <VaulDrawer.Snap id="item-1">
                         <SwapDetails type="contained" />

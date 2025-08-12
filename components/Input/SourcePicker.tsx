@@ -5,18 +5,22 @@ import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import MinMax from "./Amount/MinMax";
 import { LayoutGroup, motion } from "framer-motion";
-import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
-import { useMemo, useState } from "react";
+import { useQuoteData } from "@/hooks/useFee";
+import { useState } from "react";
 import clsx from "clsx";
 import sleep from "@/lib/wallets/utils/sleep";
 
-const SourcePicker = () => {
+type Props = {
+    minAllowedAmount: ReturnType<typeof useQuoteData>['minAllowedAmount'];
+    maxAllowedAmount: ReturnType<typeof useQuoteData>['maxAllowedAmount'];
+    fee: ReturnType<typeof useQuoteData>['quote'];
+}
+
+const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fee }: Props) => {
     const { values } = useFormikContext<SwapFormValues>();
 
     const { fromAsset: fromCurrency, from, to, amount } = values || {};
-    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const [isAmountFocused, setIsAmountFocused] = useState(false);
-    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(quoteArgs)
     const showMinMax = isAmountFocused || !amount;
 
     return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl py-4.5 px-4 space-y-8">
@@ -48,7 +52,13 @@ const SourcePicker = () => {
                         transition={{ duration: 0.25, ease: 'easeInOut' }}
                         className="col-span-5"
                     >
-                        <AmountField onAmountFocus={() => setIsAmountFocused(true)} onAmountBlur={async () => { await sleep(500); setIsAmountFocused(false) }} />
+                        <AmountField
+                            onAmountFocus={() => setIsAmountFocused(true)}
+                            onAmountBlur={async () => { await sleep(500); setIsAmountFocused(false) }}
+                            minAllowedAmount={minAllowedAmount}
+                            maxAllowedAmount={maxAmountFromApi}
+                            fee={fee}
+                        />
                     </motion.div>
                     <motion.div
                         transition={{ duration: 0.25, ease: 'easeInOut' }}
