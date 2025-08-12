@@ -54,6 +54,7 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
             setLoading(false)
             if (e?.message)
                 toast(e.message)
+            throw e
         }
     }, [wallet?.address, starknet, source_token])
 

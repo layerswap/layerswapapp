@@ -114,8 +114,8 @@ export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
             setLoading(false)
             if (e?.message) {
                 toast(e.message)
-                return
             }
+            throw e
         }
     }, [syncWallet, source_token])
 

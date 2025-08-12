@@ -97,7 +97,7 @@ const AccountsPickerButton: FC<{ accounts: AccountIdentity[], onOpenModalClick: 
                     <div className="flex gap-2 items-center text-sm text-primary-text">
                         <firstWallet.icon className='h-5 w-5' />
                         {
-                            !firstWallet.address &&
+                            firstWallet.address &&
                             <p>{shortenAddress(firstWallet.address)}</p>
                         }
                         <ChevronDown className="h-5 w-5" />

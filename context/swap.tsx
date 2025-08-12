@@ -29,6 +29,7 @@ export const SwapDataStateContext = createContext<SwapContextData>({
     refuel: undefined,
     swapBasicData: undefined,
     swapDetails: undefined,
+    quoteIsLoading: false
 });
 
 export const SwapDataUpdateContext = createContext<UpdateSwapInterface | null>(null);
@@ -36,6 +37,7 @@ export const SwapDataUpdateContext = createContext<UpdateSwapInterface | null>(n
 export type UpdateSwapInterface = {
     createSwap: (values: SwapFormValues, query: QueryParams, partner?: Partner) => Promise<SwapResponse>,
     setCodeRequested: (codeSubmitted: boolean) => void;
+    setQuoteLoading: (value: boolean) => void;
     setInterval: (value: number) => void,
     mutateSwap: KeyedMutator<ApiResponse<SwapResponse>>
     setDepositAddressIsFromAccount: (value: boolean) => void,
@@ -57,10 +59,12 @@ export type SwapContextData = {
     quote: SwapQuote | undefined,
     refuel: Refuel | undefined,
     swapDetails: SwapDetails | undefined,
+    quoteIsLoading: boolean
 }
 
 export function SwapDataProvider({ children }) {
     const [codeRequested, setCodeRequested] = useState<boolean>(false)
+    const [quoteIsLoading, setQuoteLoading] = useState<boolean>(false)
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
     const [depositAddressIsFromAccount, setDepositAddressIsFromAccount] = useState<boolean>()
     const router = useRouter();
@@ -124,7 +128,7 @@ export function SwapDataProvider({ children }) {
     }
 
     const swapBasicData = useMemo(() => {
-        if (swapId) {
+        if (swapId && data?.data) {
             return data?.data?.swap ? {
                 ...data.data.swap,
                 refuel: !!data.data.refuel
@@ -139,7 +143,7 @@ export function SwapDataProvider({ children }) {
     }, [data, swapId])
 
     const quote = useMemo(() => {
-        if (swapId) {
+        if (swapId && data?.data) {
             return data?.data?.quote
         }
         return formDataQuote?.quote
@@ -151,7 +155,6 @@ export function SwapDataProvider({ children }) {
         }
         return formDataQuote?.refuel
     }, [formDataQuote, data, swapId]);
-
 
     const sourceIsSupported = swapBasicData && WalletIsSupportedForSource({
         providers: providers,
@@ -191,19 +194,16 @@ export function SwapDataProvider({ children }) {
         if (!to || !fromCurrency || !toCurrency || !from || !amount || !destination_address || !depositMethod)
             throw new Error("Form data is missing")
 
-        const sourceLayer = from
-        const destinationLayer = to
-
         const sourceIsSupported = WalletIsSupportedForSource({
             providers: providers,
-            sourceNetwork: sourceLayer,
+            sourceNetwork: from,
             sourceWallet: selectedSourceAccount?.wallet
         })
 
         const data: CreateSwapParams = {
             amount: amount,
-            source_network: sourceLayer.name,
-            destination_network: destinationLayer.name,
+            source_network: from.name,
+            destination_network: to.name,
             source_token: fromCurrency.symbol,
             destination_token: toCurrency.symbol,
             source_exchange: fromExchange?.name,
@@ -215,6 +215,7 @@ export function SwapDataProvider({ children }) {
         }
 
         const swapResponse = await layerswapApiClient.CreateSwapAsync(data)
+
         if (swapResponse?.error) {
             throw swapResponse?.error
         }
@@ -246,7 +247,7 @@ export function SwapDataProvider({ children }) {
         plausible(TrackEvent.SwapInitiated)
 
         return swap;
-    }, [selectedSourceAccount])
+    }, [selectedSourceAccount, formDataQuote])
 
     const updateFns: UpdateSwapInterface = {
         createSwap,
@@ -257,7 +258,8 @@ export function SwapDataProvider({ children }) {
         setWithdrawType,
         setSwapId: handleUpdateSwapid,
         setSelectedSourceAccount: handleChangeSelectedSourceAccount,
-        setSubmitedFormValues
+        setSubmitedFormValues,
+        setQuoteLoading
     };
     return (
         <SwapDataStateContext.Provider value={{
@@ -270,7 +272,8 @@ export function SwapDataProvider({ children }) {
             quote,
             refuel,
             swapBasicData,
-            swapDetails
+            swapDetails,
+            quoteIsLoading
         }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}

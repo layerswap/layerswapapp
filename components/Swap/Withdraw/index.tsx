@@ -9,7 +9,7 @@ import { SwapQuoteDetails } from './SwapQuoteDetails';
 import WalletTransferButton from './WalletTransferButton';
 
 const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
-    const { swapBasicData, swapDetails, quote, refuel, depositActionsResponse } = useSwapDataState()
+    const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading } = useSwapDataState()
     const { appName, signature } = useQueryState()
     const sourceIsImmutableX = swapBasicData?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
         || swapBasicData?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
@@ -38,7 +38,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
                 <div className="w-full flex flex-col justify-between  text-secondary-text">
                     <div className='grid grid-cols-1 gap-3 '>
                         <SwapSummary />
-                        {quote && <SwapQuoteDetails swapBasicData={swapBasicData} quote={quote} refuel={refuel} />}
+                        <SwapQuoteDetails swapBasicData={swapBasicData} quote={quote} refuel={refuel} quoteIsLoading={quoteIsLoading} />
                         {withdraw?.content}
                     </div>
                 </div>

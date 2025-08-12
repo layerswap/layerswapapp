@@ -11,10 +11,10 @@ import { useConnectModal } from "@/components/WalletModal";
 import { Network, NetworkRoute } from "@/Models/Network";
 import { useQueryState } from "@/context/query";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
-import { useRouter } from "next/router";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { BackendTransactionStatus, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
-import { transformSwapDataToQuoteArgs, useQuoteData } from "@/hooks/useFee";
+import sleep from "@/lib/wallets/utils/sleep";
+import { isDiffByPercent } from "@/components/utils/numbers";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
@@ -151,21 +151,18 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     refuel,
     ...props
 }) => {
+    const [actionStateText, setActionStateText] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
-    const { createSwap, setSwapId } = useSwapDataUpdate()
+    const { quote, quoteIsLoading } = useSwapDataState()
+    const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
-
-    const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapData, refuel), [swapData, refuel]);
-    const { isQuoteLoading } = useQuoteData(quoteArgs);
-
-    const router = useRouter()
     const query = useQueryState()
 
     const handleClick = async () => {
-
         try {
-            setSwapId(undefined)
             setLoading(true)
+            setActionStateText("Preparing")
+            setSwapId(undefined)
             window.safary?.track({
                 eventName: 'click',
                 eventType: 'send_from_wallet',
@@ -182,46 +179,63 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 depositMethod: 'wallet',
             }
 
-            const _swapData = await createSwap(swapValues, query);
-            const swapId = _swapData?.swap?.id;
+            const newSwapData = await createSwap(swapValues, query);
+            const swapId = newSwapData?.swap?.id;
             if (!swapId) {
                 throw new Error('Swap ID is undefined');
             }
 
-            const depositAction = _swapData?.deposit_actions && _swapData?.deposit_actions[0];
+            if (isDiffByPercent(quote?.receive_amount, newSwapData.quote.receive_amount, 2)) {
+                setActionStateText("Updating quotes")
+                setQuoteLoading(true)
+                await sleep(3500)
+                setQuoteLoading(false)
+            }
+            setActionStateText("Opening Wallet")
+            setSwapId(swapId)
+            const depositAction = newSwapData?.deposit_actions && newSwapData?.deposit_actions[0];
 
             const transferProps: TransferProps = {
                 amount: depositAction?.amount,
                 callData: depositAction?.call_data,
                 depositAddress: depositAction?.to_address,
-                sequenceNumber: _swapData.swap?.metadata.sequence_number,
+                sequenceNumber: newSwapData.swap?.metadata.sequence_number,
                 swapId: swapId,
-                userDestinationAddress: _swapData.swap?.destination_address
+                userDestinationAddress: newSwapData.swap?.destination_address
             }
-
             const hash = await onClick(transferProps)
-
             if (hash) {
                 setSwapTransaction(swapId, BackendTransactionStatus.Pending, hash);
-                setSwapId(swapId)
             }
-
         }
         catch (e) {
+            setSwapId(undefined)
             console.log('Error in SendTransactionButton:', e)
-            throw new Error(e)
         }
         finally {
             setLoading(false)
         }
-
     }
 
-    return <ButtonWrapper
-        {...props}
-        isSubmitting={props.isSubmitting || loading || isQuoteLoading}
-        onClick={handleClick}
-    >
-        {error ? 'Try again' : 'Send from wallet'}
-    </ButtonWrapper>
+    if (quoteIsLoading || loading)
+        return (
+            <ButtonWrapper
+                {...props}
+                isSubmitting={true}
+                isDisabled={true}
+            >
+                {actionStateText || "Preparing"}
+            </ButtonWrapper>
+        )
+
+    return (
+        <ButtonWrapper
+            {...props}
+            isSubmitting={props.isSubmitting || loading || quoteIsLoading}
+            onClick={handleClick}
+            isDisabled={quoteIsLoading}
+        >
+            {error ? 'Try again' : 'Send from wallet'}
+        </ButtonWrapper>
+    )
 }

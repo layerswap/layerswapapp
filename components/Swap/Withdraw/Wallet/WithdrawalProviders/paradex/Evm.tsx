@@ -43,9 +43,10 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
             setLoading(false)
             if (e.message.includes('Contract not found')) {
                 toast.error('Account not found', { duration: 30000 })
-                return
+                throw e
             }
             toast.error(e.message, { duration: 30000 })
+            throw e
         }
     }
 

@@ -1,6 +1,5 @@
 import { FC, useCallback, useMemo, useState } from "react";
 import {
-    useAccount,
     useConfig,
 } from "wagmi";
 import { parseEther } from 'viem'
@@ -34,7 +33,7 @@ const TransferTokenButton: FC<Props> = ({
 
     const { provider } = useWallet(swapData.source_network, "withdrawal")
     const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
-    
+
     const clickHandler = useCallback(async ({ amount, callData, depositAddress }: TransferProps) => {
         setButtonClicked(true)
         setError(undefined)
@@ -71,6 +70,7 @@ const TransferTokenButton: FC<Props> = ({
             error.name = "TransferTokenError"
             error.cause = e
             datadogRum.addError(error);
+            throw e
         }
     }, [config, chainId, selectedSourceAccount?.address])
 
