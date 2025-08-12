@@ -7,10 +7,11 @@ import { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
 
 type Props = {
     swapBasicData: SwapBasicData,
-    swapId: string | undefined
-    refuel: boolean
+    swapId: string | undefined,
+    refuel: boolean,
+    balanceWarning?: JSX.Element | null
 }
-const WalletTransferButton: FC<Props> = ({ swapBasicData: swapData, swapId, refuel }) => {
+const WalletTransferButton: FC<Props> = ({ swapBasicData: swapData, swapId, refuel, balanceWarning }) => {
     const [openModal, setOpenModal] = useState(false);
 
     return <>
@@ -28,7 +29,8 @@ const WalletTransferButton: FC<Props> = ({ swapBasicData: swapData, swapId, refu
                 </button>
             </div>
             <div>
-                <WalletTransferContent openModal={openModal} setOpenModal={setOpenModal} swapData={swapData}/>
+                <WalletTransferContent openModal={openModal} setOpenModal={setOpenModal} swapData={swapData} />
+                {balanceWarning}
                 <WalletTransfer swapData={swapData} swapId={swapId} refuel={refuel} />
             </div>
         </div>

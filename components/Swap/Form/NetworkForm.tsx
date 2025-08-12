@@ -23,6 +23,8 @@ import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import { updateForm, updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
+import { resolveBalanceWarnings } from "@/components/insufficientBalance";
+import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { useSwapDataState } from "@/context/swap";
 
 const RefuelModal = dynamic(() => import("@/components/FeeDetails/RefuelModal"), {
@@ -49,6 +51,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const {
         to: destination,
         from: source,
+        amount,
         depositMethod
     } = values;
 
@@ -69,6 +72,12 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const isValid = !formValidation.message;
     const error = formValidation.message;
 
+    const selectedWallet = useMemo(() => provider?.activeWallet, [provider]);
+
+    const { balances } = useSWRBalance(selectedWallet?.address, source)
+    const walletBalance = source && balances?.find(b => b?.network === source?.name && b?.token === fromAsset?.symbol)
+    const walletBalanceAmount = walletBalance?.amount
+
     useEffect(() => {
         if (!source || !toAsset || !toAsset.refuel) {
             setFieldValue('refuel', false, true);
@@ -85,16 +94,21 @@ const NetworkForm: FC<Props> = ({ partner }) => {
         }
     }, [values.refuel, destination, minAllowedAmount]);
 
-    const handleReserveGas = useCallback((walletBalance: TokenBalance, networkGas: number) => {
-        if (walletBalance && networkGas)
+    const handleReserveGas = useCallback((nativeTokenBalance: TokenBalance, networkGas: number) => {
+        if (nativeTokenBalance && networkGas)
             updateForm({
                 formDataKey: 'amount',
-                formDataValue: (walletBalance?.amount - networkGas).toString(),
+                formDataValue: (nativeTokenBalance?.amount - networkGas).toString(),
                 setFieldValue
             });
     }, [setFieldValue]);
 
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
+
+    const insufficientBalance = resolveBalanceWarnings({
+        requestAmount: Number(amount),
+        walletBalance: Number(walletBalanceAmount),
+    });
 
     return (
         <>
@@ -149,6 +163,11 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 routeValidation.message
                                     ? <ValidationError />
                                     : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                            }
+                            {
+                                (!routeValidation.message && insufficientBalance)
+                                    ? insufficientBalance
+                                    : null
                             }
                         </div>
                     </div>
