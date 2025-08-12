@@ -26,7 +26,10 @@ window.plausible = () => { }
 const Comp: FC<{ settings: any, swapData: SwapContextData, failedSwap?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues, timestamp?: string }> = ({ swapData, theme, initialValues }) => {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const appSettings = new LayerSwapAppSettings(Settings)
-    const swapContextInitialValues: SwapContextData = { codeRequested: false, swapBasicData: swapData.swapBasicData, quote: swapData.quote, refuel: swapData.refuel, swapDetails: swapData.swapDetails, depositAddressIsFromAccount: false, withdrawType: undefined, swapTransaction: undefined }
+    const swapContextInitialValues: SwapContextData = {
+        codeRequested: false, swapBasicData: swapData.swapBasicData, quote: swapData.quote, refuel: swapData.refuel, swapDetails: swapData.swapDetails, depositAddressIsFromAccount: false, withdrawType: undefined, swapTransaction: undefined,
+        quoteIsLoading: false
+    }
 
     if (!appSettings) {
         return <div>Loading...</div>
@@ -166,6 +169,7 @@ export const UserTransferInitiated: Story = {
                 ]
             },
             refuel: swap.swapResponse.refuel,
+            quoteIsLoading: false
         }
     },
     loaders: [
@@ -198,7 +202,8 @@ export const UserTransferDetected: Story = {
                     { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Initiated, type: TransactionType.Input, confirmations: 2, max_confirmations: 3 },
                 ]
             },
-            refuel: swap.swapResponse.refuel
+            refuel: swap.swapResponse.refuel,
+            quoteIsLoading: false
         }
     }
 };
@@ -225,7 +230,8 @@ export const UserTransferPendingInputCompleted: Story = {
                     { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
                 ]
             },
-            refuel: swap.swapResponse.refuel
+            refuel: swap.swapResponse.refuel,
+            quoteIsLoading: false
         }
     },
 };
@@ -254,7 +260,8 @@ export const LsTransferPending: Story = {
                     { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Pending, type: TransactionType.Output },
                 ]
             },
-            refuel: swap.swapResponse.refuel
+            refuel: swap.swapResponse.refuel,
+            quoteIsLoading: false
         }
     }
 };
@@ -284,7 +291,8 @@ export const LsTransferPendingWithRefuel: Story = {
                     { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Pending, type: TransactionType.Refuel },
                 ]
             },
-            refuel: swap.swapResponse.refuel
+            refuel: swap.swapResponse.refuel,
+            quoteIsLoading: false
         }
     }
 };
@@ -314,7 +322,8 @@ export const LsTransferInitiated: Story = {
                     { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Initiated, type: TransactionType.Refuel, confirmations: 1, max_confirmations: 5 },
                 ]
             },
-            refuel: swap.swapResponse.refuel
+            refuel: swap.swapResponse.refuel,
+            quoteIsLoading: false
         }
     }
 };
@@ -344,7 +353,8 @@ export const Completed: Story = {
                     { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Refuel },
                 ]
             },
-            refuel: swap.swapResponse.refuel
+            refuel: swap.swapResponse.refuel,
+            quoteIsLoading: false
         },
     }
 };
@@ -374,7 +384,8 @@ export const OnlyRefuelCompleted: Story = {
                     { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Refuel },
                 ]
             },
-            refuel: swap.swapResponse.refuel
+            refuel: swap.swapResponse.refuel,
+            quoteIsLoading: false
         }
     }
 };
@@ -403,7 +414,8 @@ export const UserTransferDelayed: Story = {
                     { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Pending, type: TransactionType.Input },
                 ]
             },
-            refuel: swap.swapResponse.refuel
+            refuel: swap.swapResponse.refuel,
+            quoteIsLoading: false
         }
     }
 };
@@ -431,7 +443,8 @@ export const Failed: Story = {
                     { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
                 ]
             },
-            refuel: swap.swapResponse.refuel
+            refuel: swap.swapResponse.refuel,
+            quoteIsLoading: false
         }
     }
 };
@@ -460,7 +473,8 @@ export const FailedInput: Story = {
                     { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Pending, type: TransactionType.Output },
                 ]
             },
-            refuel: swap.swapResponse.refuel
+            refuel: swap.swapResponse.refuel,
+            quoteIsLoading: false
         }
     },
     loaders: [
@@ -493,7 +507,8 @@ export const FailedOutOfRangeAmount: Story = {
                     { ...DUMMY_TRANSACTION, status: BackendTransactionStatus.Completed, type: TransactionType.Input },
                 ]
             },
-            refuel: swap.swapResponse.refuel
+            refuel: swap.swapResponse.refuel,
+            quoteIsLoading: false
         }
     }
 };
@@ -517,10 +532,10 @@ export const Cancelled: Story = {
             swapDetails: {
                 ...(swap.swapResponse.swap as SwapItem),
                 status: SwapStatus.Cancelled,
-                transactions: [
-                ]
+                transactions: []
             },
-            refuel: swap.swapResponse.refuel
+            refuel: swap.swapResponse.refuel,
+            quoteIsLoading: false
         }
     }
 };
@@ -544,10 +559,10 @@ export const Expired: Story = {
             swapDetails: {
                 ...(swap.swapResponse.swap as SwapItem),
                 status: SwapStatus.Expired,
-                transactions: [
-                ]
+                transactions: []
             },
-            refuel: swap.swapResponse.refuel
+            refuel: swap.swapResponse.refuel,
+            quoteIsLoading: false
         }
     }
 };
@@ -576,6 +591,8 @@ export const RefundPending: Story = {
                 ]
             },
             refuel: undefined // Remove refuel for refund cases
+            ,
+            quoteIsLoading: false
         }
     }
 };
@@ -604,6 +621,8 @@ export const RefundCompleted: Story = {
                 ]
             },
             refuel: undefined // Remove refuel for refund cases
+            ,
+            quoteIsLoading: false
         }
     }
 };
