@@ -47,7 +47,7 @@ type Props = {
     withDelay?: boolean
 }
 
-export function useQuoteData(formValues: Props | undefined): UseQuoteData {
+export function useQuoteData(formValues: Props | undefined, refreshInterval?: number): UseQuoteData {
     const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod, withDelay } = formValues || {}
     const [debouncedAmount, setDebouncedAmount] = useState(amount)
     const [isDebouncing, setIsDebouncing] = useState(false)
@@ -84,8 +84,8 @@ export function useQuoteData(formValues: Props | undefined): UseQuoteData {
         max_amount: number
         max_amount_in_usd: number
     }>>(limitsURL, apiClient.fetcher, {
-        refreshInterval: 42000,
-        dedupingInterval: 42000,
+        refreshInterval: (refreshInterval || refreshInterval == 0) ? refreshInterval : 20000,
+        dedupingInterval: 20000,
     })
 
     const canGetQuote = from && to && depositMethod && toCurrency && fromCurrency
@@ -113,12 +113,12 @@ export function useQuoteData(formValues: Props | undefined): UseQuoteData {
     }, [quoteURL, apiClient.fetcher])
 
     const { data: quote, mutate: mutateFee, error: quoteError } = useSWR<ApiResponse<Quote>>(quoteURL, quoteFetchWrapper, {
-        refreshInterval: 42000,
+        refreshInterval: (refreshInterval || refreshInterval == 0) ? refreshInterval : 42000,
         dedupingInterval: 42000,
         keepPreviousData: true
     })
 
-    
+
     return {
         minAllowedAmount: amountRange?.data?.min_amount,
         maxAllowedAmount: amountRange?.data?.max_amount,
