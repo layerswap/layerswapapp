@@ -447,16 +447,12 @@ textarea:disabled::placeholder {
 }
     
 @layer utilities {
-  @keyframes pulse-brightness {
-    0%, 100% {
-      filter: brightness(1);
-    }
+  @keyframes pulse-strong {
     50% {
-      filter: brightness(0.4);
+      opacity: 0.4; 
     }
   }
-
-  .animate-pulse-brightness {
-    animation: pulse-brightness 1.5s ease-in-out 2;
+  .animate-pulse-strong {
+    animation: pulse-strong 1.4s cubic-bezier(0.77, 0, 0.17, 1) infinite;
   }
 }

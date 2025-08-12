@@ -82,8 +82,8 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, r
                     txError.cause = e;
                     datadogRum.addError(txError);
                 }
-                return
             }
+            throw e
         }
     }, [source_network, selectedSourceAccount, source_token, fuel])
 

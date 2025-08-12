@@ -1,8 +1,21 @@
-import { useEffect, useState } from 'react'
-import useSWR from 'swr'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import useSWR, { useSWRConfig } from 'swr'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues'
 import LayerSwapApiClient, { Quote, SwapBasicData } from '../lib/apiClients/layerSwapApiClient'
 import { ApiResponse } from '../Models/ApiResponse'
+import { sleep } from 'fuels'
+import { create } from 'zustand';
+import { isDiffByPercent } from '@/components/utils/numbers'
+
+type LoadingState = {
+    isLoading: boolean;
+    setLoading: (loading: boolean) => void;
+};
+
+export const useLoadingStore = create<LoadingState>((set) => ({
+    isLoading: false,
+    setLoading: (loading) => set({ isLoading: loading }),
+}));
 
 type UseQuoteData = {
     minAllowedAmount?: number
@@ -13,7 +26,6 @@ type UseQuoteData = {
     mutateFee: () => void
     mutateLimits: () => void
     limitsValidating: boolean
-    quoteValidating: boolean
 }
 export type QuoteError = {
     code: string;
@@ -21,8 +33,9 @@ export type QuoteError = {
     metadata?: {
         StatusCode?: string;
         [key: string]: any;
-    };
-};
+    }
+}
+
 type Props = {
     from: string | undefined
     to: string | undefined
@@ -31,18 +44,25 @@ type Props = {
     amount: string | number | undefined
     refuel: boolean | undefined
     depositMethod: "wallet" | "deposit_address" | undefined
+    withDelay?: boolean
 }
 
 export function useQuoteData(formValues: Props | undefined): UseQuoteData {
-    const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod } = formValues || {}
+    const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod, withDelay } = formValues || {}
     const [debouncedAmount, setDebouncedAmount] = useState(amount)
+    const [isDebouncing, setIsDebouncing] = useState(false)
 
     useEffect(() => {
+        setIsDebouncing(true)
+
         const handler = setTimeout(() => {
             setDebouncedAmount(amount)
-        }, 500)
+            setIsDebouncing(false)
+        }, 300)
 
-        return () => clearTimeout(handler)
+        return () => {
+            clearTimeout(handler)
+        }
     }, [amount])
 
     const apiClient = new LayerSwapApiClient()
@@ -64,35 +84,54 @@ export function useQuoteData(formValues: Props | undefined): UseQuoteData {
         max_amount: number
         max_amount_in_usd: number
     }>>(limitsURL, apiClient.fetcher, {
-        refreshInterval: 5000,
-        dedupingInterval: 5000,
+        refreshInterval: 42000,
+        dedupingInterval: 42000,
     })
 
     const canGetQuote = from && to && depositMethod && toCurrency && fromCurrency
         && Number(debouncedAmount) > 0
         && (!amountRange || Number(debouncedAmount) >= (amountRange?.data?.min_amount || 0) && Number(debouncedAmount) <= (amountRange?.data?.max_amount || 0))
 
-    const quoteURL = canGetQuote ?
+    const quoteURL = (canGetQuote && !isDebouncing) ?
         `/quote?source_network=${from}&source_token=${fromCurrency}&destination_network=${to}&destination_token=${toCurrency}&amount=${debouncedAmount}&refuel=${!!refuel}&use_deposit_address=${use_deposit_address}` : null
 
-    const { data: quote, mutate: mutateFee, isLoading: isQuoteLoading, error: quoteError, isValidating: quoteValidating } = useSWR<ApiResponse<Quote>>(quoteURL, apiClient.fetcher, {
-        refreshInterval: 5000,
-        dedupingInterval: 5000,
+    const { cache } = useSWRConfig();
+    const isQuoteLoading = useLoadingStore((state) => state.isLoading);
+
+    const quoteFetchWrapper = useCallback(async (url: string): Promise<ApiResponse<Quote>> => {
+        if (!quoteURL)
+            return await apiClient.fetcher(url)
+        const previousData = cache.get(quoteURL)?.data as ApiResponse<Quote>
+        const newData = await apiClient.fetcher(url)
+        if (previousData?.data?.quote && isDiffByPercent(previousData?.data?.quote.receive_amount, newData.data?.quote.receive_amount, 2)) {
+            const { setLoading } = useLoadingStore.getState()
+            setLoading(true)
+            await sleep(3500)
+            setLoading(false)
+        }
+        return newData
+    }, [quoteURL, apiClient.fetcher])
+
+    const { data: quote, mutate: mutateFee, error: quoteError } = useSWR<ApiResponse<Quote>>(quoteURL, quoteFetchWrapper, {
+        refreshInterval: 42000,
+        dedupingInterval: 42000,
+        keepPreviousData: true
     })
- 
+
+    
     return {
         minAllowedAmount: amountRange?.data?.min_amount,
         maxAllowedAmount: amountRange?.data?.max_amount,
-        quote: quote?.data,
-        isQuoteLoading,
+        quote: (quoteError || !canGetQuote) ? undefined : quote?.data,
+        isQuoteLoading: isQuoteLoading,
         quoteError,
         mutateFee,
         mutateLimits,
         limitsValidating,
-        quoteValidating
     }
 }
-export function transformFormValuesToQuoteArgs(values: SwapFormValues): Props | undefined {
+
+export function transformFormValuesToQuoteArgs(values: SwapFormValues, withDelay?: boolean): Props | undefined {
     if (values.fromAsset?.status !== 'active' || values.toAsset?.status !== 'active') return undefined
     return {
         amount: values.amount,
@@ -101,7 +140,8 @@ export function transformFormValuesToQuoteArgs(values: SwapFormValues): Props | 
         fromCurrency: values.fromAsset?.symbol,
         to: values.to?.name,
         toCurrency: values.toAsset?.symbol,
-        refuel: values.refuel
+        refuel: values.refuel,
+        withDelay
     }
 }
 

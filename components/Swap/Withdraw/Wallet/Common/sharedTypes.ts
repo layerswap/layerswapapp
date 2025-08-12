@@ -1,4 +1,3 @@
-import { Network, Token } from "@/Models/Network";
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 
 export type ActionData = {

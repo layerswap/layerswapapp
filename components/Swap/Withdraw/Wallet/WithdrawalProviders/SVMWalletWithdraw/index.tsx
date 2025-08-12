@@ -82,8 +82,8 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
             if (e?.message) {
                 if (e?.logs?.some(m => m?.includes('insufficient funds')) || e.message.includes('Attempt to debit an account')) setError('insufficientFunds')
                 else setError(e.message)
-                return
             }
+            throw e
         }
     }, [walletPublicKey, signTransaction, source_network, source_token])
 

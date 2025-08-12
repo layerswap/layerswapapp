@@ -20,7 +20,6 @@ import { useValidationContext } from "@/context/validationContext";
 import useWallet from "@/hooks/useWallet";
 import sleep from "@/lib/wallets/utils/sleep";
 import clsx from "clsx";
-import { useQuoteUpdate } from "@/hooks/useQuoteUpdate";
 
 type Props = {
     partner?: Partner;
@@ -32,14 +31,13 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     } = useFormikContext<SwapFormValues>();
 
     const { fromAsset: fromCurrency, from, to: destination, destination_address, amount } = values || {};
-    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
+    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
     const [isAmountFocused, setIsAmountFocused] = useState(false);
 
     const { wallets } = useWallet();
     const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == destination_address?.toLowerCase())?.icon;
 
-    const { quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, quoteValidating } = useQuoteData(quoteArgs);
-    const { isUpdatingValues } = useQuoteUpdate(quote, values.amount)
+    const { quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, isQuoteLoading } = useQuoteData(quoteArgs);
 
     const { routeValidation, formValidation } = useValidationContext();
 
@@ -118,7 +116,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                             {
                                 routeValidation.message
                                     ? <ValidationError />
-                                    : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isUpdatingValues || quoteValidating} />
+                                    : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                             }
                         </div>
                     </div>

@@ -13,18 +13,19 @@ import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/Addres
 import { isValidAddress } from "@/lib/address/validator";
 import shortenAddress from "@/components/utils/ShortenAddress";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
-import { useQuoteUpdate } from "@/hooks/useQuoteUpdate";
-import { transformSwapDataToQuoteArgs, useQuoteData } from "@/hooks/useFee";
+import NumberFlow from "@number-flow/react";
+import clsx from "clsx";
 
 type SwapInfoProps = Omit<SwapResponse, 'quote' | 'swap'> & {
     swap: SwapBasicData
     quote: Quote,
     sourceAccountAddress: string,
     receiveAmount?: number
+    quoteIsLoading: boolean
 }
 
 const Summary: FC<SwapInfoProps> = (props) => {
-    const { swap, quote, sourceAccountAddress, receiveAmount } = props
+    const { swap, quote, sourceAccountAddress, receiveAmount, quoteIsLoading } = props
     const { refuel } = quote
     const { source_token: sourceCurrency, destination_token: destinationCurrency, source_network: from, destination_network: to, requested_amount: requestedAmount, destination_address: destinationAddress, source_exchange: sourceExchange } = swap
     const {
@@ -41,10 +42,6 @@ const Summary: FC<SwapInfoProps> = (props) => {
 
     const source = (hideFrom && partner && account) ? partner : from
     const destination = (hideTo && partner && account) ? partner : to
-
-    const { isUpdatingValues } = useQuoteUpdate(quote, requestedAmount.toString())
-    const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swap, !!refuel), [swap, refuel]);
-    const { isQuoteLoading, quoteValidating } = useQuoteData(quoteArgs);
 
     const requestedAmountInUsd = requestedAmount && (sourceCurrency?.price_in_usd * requestedAmount).toFixed(2)
     const receiveAmountInUsd = receiveAmount ? (destinationCurrency?.price_in_usd * receiveAmount).toFixed(2) : undefined
@@ -93,8 +90,15 @@ const Summary: FC<SwapInfoProps> = (props) => {
                     {
                         receiveAmount != undefined ?
                             <div className="flex flex-col justify-end items-end w-full col-start-7 col-span-4">
-                                <p className={`${(isQuoteLoading || quoteValidating) ? "animate-pulse-brightness" : ""} text-primary-text text-sm text-end`}>{receiveAmount} {destinationCurrency.symbol}</p>
-                                <p className="text-secondary-text text-sm">${receiveAmountInUsd}</p>
+                                <p className={clsx(
+                                    "text-primary-text text-sm text-end",
+                                    { "animate-pulse-strong": quoteIsLoading }
+                                )}>
+                                    <NumberFlow value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
+                                </p>
+                                <p className="text-secondary-text text-sm">
+                                    <NumberFlow value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD' }} trend={0} />
+                                </p>
                             </div>
                             :
                             <div className="flex flex-col justify-end">

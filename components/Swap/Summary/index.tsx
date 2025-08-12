@@ -14,7 +14,7 @@ const SwapSummary: FC = () => {
         account,
     } = useQueryState()
 
-    const { swapBasicData, swapDetails, quote, refuel } = useSwapDataState()
+    const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading } = useSwapDataState()
 
     const { source_network, destination_network, source_token, destination_token, source_exchange } = swapBasicData || {}
     const { provider } = useWallet(source_network, "withdrawal")
@@ -67,6 +67,7 @@ const SwapSummary: FC = () => {
 
     return <Summary
         {...swapData}
+        quoteIsLoading={quoteIsLoading}
     />
 }
 export default SwapSummary
