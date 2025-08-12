@@ -24,7 +24,7 @@ export default function Form() {
                         Icon={ExchangeTabIcon}
                         value="exchange" />
                 </TabsList>
-                <FormWrapper>
+                <FormWrapper type="cross-chain">
                     <TabsContent value="cross-chain">
                         <Widget className="sm:min-h-[450px] h-full" >
                             <ValidationProvider>
@@ -33,7 +33,7 @@ export default function Form() {
                         </Widget>
                     </TabsContent>
                 </FormWrapper>
-                <FormWrapper>
+                <FormWrapper type="exchange">
                     <TabsContent value="exchange">
                         <Widget className="sm:min-h-[450px] h-full" >
                             <ValidationProvider>

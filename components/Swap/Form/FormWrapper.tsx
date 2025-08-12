@@ -46,7 +46,7 @@ const SwapDetails = dynamicWithRetries(() => import(".."),
     </div>
 )
 
-export default function FormWrapper({ children }: { children?: React.ReactNode }) {
+export default function FormWrapper({ children, type }: { children?: React.ReactNode, type: 'cross-chain' | 'exchange' }) {
 
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
@@ -128,7 +128,7 @@ export default function FormWrapper({ children }: { children?: React.ReactNode }
     }, [createSwap, query, partner, router, updateAuthData, setUserType, swapBasicData, getProvider, settings, quote])
 
     const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings)
-        : generateSwapInitialValues(settings, query)
+        : generateSwapInitialValues(settings, query, type)
 
     const handleShowSwapModal = useCallback((value: boolean) => {
         setShowSwapModal(value)
