@@ -8,6 +8,7 @@ import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { SwapStatus } from '../../../../Models/SwapStatus';
 import { SwapFailReasons } from '../../../../Models/RangeError';
 import { Gauge } from '../../../gauge';
+import { Undo2 } from 'lucide-react';
 import Failed from '../Failed';
 import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
@@ -353,7 +354,13 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                     <div className='pb-4'>
                         <div className='flex flex-col gap-2 items-center'>
                             <div className='flex items-center'>
-                                <Gauge value={stepsProgressPercentage} size="small" showCheckmark={swapStatus === SwapStatus.Completed} />
+                                {(swapStatus === SwapStatus.PendingRefund || swapStatus === SwapStatus.Refunded) ? (
+                                    <span className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
+                                        <Undo2 className="h-7 w-7 text-primary" aria-hidden="true" />
+                                    </span>
+                                ) : (
+                                    <Gauge value={stepsProgressPercentage} size="small" showCheckmark={swapStatus === SwapStatus.Completed} />
+                                )}
                             </div>
                             <div className="flex-col text-center ">
                                 <span className="font-medium text-primary-text">
