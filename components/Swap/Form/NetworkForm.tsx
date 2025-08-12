@@ -24,8 +24,8 @@ import { updateForm, updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
 import { resolveBalanceWarnings } from "@/components/insufficientBalance";
-import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import useSWRBalance from "@/lib/balances/useSWRBalance";
+import { useSwapDataState } from "@/context/swap";
 
 const RefuelModal = dynamic(() => import("@/components/FeeDetails/RefuelModal"), {
     loading: () => <></>,
@@ -59,8 +59,10 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
 
     const { providers, wallets } = useWallet();
-    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
-    const { minAllowedAmount, isQuoteLoading, quote } = useQuoteData(quoteArgs);
+    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
+    const { swapId } = useSwapDataState()
+    const quoteRefreshInterval = !!swapId ? 0 : undefined;
+    const { minAllowedAmount, maxAllowedAmount, isQuoteLoading, quote } = useQuoteData(quoteArgs, quoteRefreshInterval);
 
     const toAsset = values.toAsset;
     const fromAsset = values.fromAsset;
@@ -117,7 +119,11 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                         <div>
                             <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
                                 {
-                                    !(query?.hideFrom && values?.from) && <SourcePicker />
+                                    !(query?.hideFrom && values?.from) && <SourcePicker
+                                        minAllowedAmount={minAllowedAmount}
+                                        maxAllowedAmount={maxAllowedAmount}
+                                        fee={quote}
+                                    />
                                 }
                                 {
                                     !query?.hideFrom && !query?.hideTo &&
@@ -129,18 +135,29 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                     />
                                 }
                                 {
-                                    !(query?.hideTo && values?.to) && <DestinationPicker partner={partner} />
+                                    !(query?.hideTo && values?.to) && <DestinationPicker
+                                        isFeeLoading={isQuoteLoading}
+                                        fee={quote}
+                                        partner={partner}
+                                    />
                                 }
                             </div>
                         </div>
                         <div className="space-y-3">
                             {
                                 values.amount &&
-                                <ReserveGasNote onSubmit={handleReserveGas} />
+                                <ReserveGasNote
+                                    maxAllowedAmount={minAllowedAmount}
+                                    minAllowedAmount={maxAllowedAmount}
+                                    onSubmit={handleReserveGas}
+                                />
                             }
                             {
                                 values.toAsset?.refuel && !query.hideRefuel &&
-                                <RefuelToggle onButtonClick={() => setOpenRefuelModal(true)} />
+                                <RefuelToggle
+                                    fee={quote}
+                                    onButtonClick={() => setOpenRefuelModal(true)}
+                                />
                             }
                             {
                                 routeValidation.message
@@ -165,7 +182,11 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                         partner={partner}
                     />
                 </Widget.Footer>
-                <RefuelModal openModal={openRefuelModal} setOpenModal={setOpenRefuelModal} />
+                <RefuelModal
+                    openModal={openRefuelModal}
+                    setOpenModal={setOpenRefuelModal}
+                    fee={quote}
+                />
             </Form>
         </>
     );

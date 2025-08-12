@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
 import React, { useMemo } from 'react'
 import { FC, ReactNode, useState } from 'react'
-import { Popover, PopoverContent, PopoverTrigger } from "../../shadcn/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
 import useExchangeNetworks from '@/hooks/useExchangeNetworks'
 import { ChevronDown } from 'lucide-react'
 import { CommandItem, CommandList, CommandWrapper } from '@/components/shadcn/command'
@@ -19,8 +19,8 @@ import { useQueryState } from '@/context/query'
 import { useSwapDataUpdate } from '@/context/swap'
 import { SwapFormValues } from '@/components/DTOs/SwapFormValues'
 import { useAsyncModal } from '@/context/asyncModal'
-import QuoteUpdated from './QuoteUpdated'
-import { getLimits } from '@/components/utils/getLimits'
+import { handleLimitsUpdate } from './QuoteUpdate'
+import SubmitButton from '@/components/buttons/submitButton'
 
 interface Props {
     swapBasicData: SwapBasicData;
@@ -42,7 +42,6 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
     const destinationLogo = swapBasicData?.destination_network?.logo
     const [copied, copy] = useCopyClipboard()
     const query = useQueryState()
-
     const depositAddress = depositActions?.find(da => true)?.to_address;
 
     const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == swapBasicData?.destination_address?.toLowerCase())?.icon;
@@ -67,45 +66,18 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
             depositMethod: 'deposit_address',
         };
 
-        const { maxAllowedAmount, minAllowedAmount } = await getLimits(swapValues)
-
-        const requestedAmount = parseFloat(swapValues.amount || "0");
-
-        if ((minAllowedAmount && requestedAmount < minAllowedAmount) || (maxAllowedAmount && requestedAmount > maxAllowedAmount)) {
-            const isBelowMin = minAllowedAmount !== undefined && requestedAmount < minAllowedAmount;
-            const isAboveMax = maxAllowedAmount !== undefined && requestedAmount > maxAllowedAmount;
-
-            const newAmount = isBelowMin ? minAllowedAmount : isAboveMax ? maxAllowedAmount : requestedAmount;
-
-            const confirmed = await getConfirmation({
-                content: (
-                    <QuoteUpdated
-                        minAllowedAmount={minAllowedAmount}
-                        maxAllowedAmount={maxAllowedAmount}
-                        network={network?.display_name}
-                        token={token?.symbol}
-                        isBelowMin={isBelowMin}
-                    />
-                ),
-                submitText: "Continue with new amount",
-                dismissText: "Cancel",
-            });
-
-            if (!confirmed) return;
-
-            swapValues.amount = newAmount.toString();
-        }
-
         try {
             setLoading(true);
 
-            window.safary?.track?.({
-                eventName: 'click',
-                eventType: 'send_from_wallet',
-            });
+            await handleLimitsUpdate({
+                swapValues,
+                network,
+                token,
+                getConfirmation
+            })
 
-            setNewNetwork(network);
             const swapData = await createSwap(swapValues, query);
+            setNewNetwork(network);
             const swapId = swapData?.swap?.id;
             if (!swapId) throw new Error('Swap ID is undefined');
 
@@ -149,7 +121,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
 
     const requestAmount = (
         <span className='inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg'>
-            {swapBasicData?.requested_amount} {swapBasicData?.source_token?.symbol}
+            <span>{swapBasicData?.requested_amount}</span> <span>{swapBasicData?.source_token?.symbol}</span>
             <CopyButton toCopy={swapBasicData?.requested_amount} iconClassName='text-secondary-text' />
         </span>
     )
@@ -189,7 +161,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
             <PopoverContent side='top' className="bg-secondary-300! space-y-1 p-1! rounded-lg!">
                 <CommandWrapper>
                     <CommandList>
-                        {withdrawalNetworks?.map((item, index) => {
+                        {withdrawalNetworks?.map((item) => {
                             return (
                                 <CommandItem
                                     className='hover:bg-secondary-100 rounded-md p-1! cursor-pointer'
@@ -228,8 +200,8 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
     )
 
     return (
-        <div className="rounded-lg space-y-4 text-white">
-            <div className="space-y-3">
+        <div className="rounded-lg space-y-3 text-white">
+            <>
                 {(loading || exchangeSourceNetworksLoading) ? (
                     <>
                         <SkeletonStep number={1} />
@@ -262,7 +234,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                             number={2}
                             label={
                                 <span>
-                                    <span className='inline-flex items-center gap-1'>
+                                    <span className='inline-flex items-center'>
                                         <span>Send</span>
                                         {requestAmount}
                                     </span>
@@ -292,7 +264,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                             number={3}
                             label={
                                 <span className='flex items-center gap-1'>
-                                    Receive {quote?.receive_amount} {swapBasicData?.destination_token?.symbol} at {destinationNetwork}
+                                    <span>Receive</span> <span>{quote?.receive_amount}</span> <span>{swapBasicData?.destination_token?.symbol}</span> <span>at</span> <span>{destinationNetwork}</span>
                                 </span>
                             }
                             value={
@@ -301,7 +273,6 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                                         <WalletIcon className="w-4 h-4 p-0.5 bg-white rounded-sm" />
                                         :
                                         <AddressIcon className="h-4 w-4" address={swapBasicData.destination_address} size={36} rounded='4px' />
-
                                     }
                                     {shortenAddress(swapBasicData.destination_address)}
                                 </span>
@@ -309,16 +280,16 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                         />
                     </>
                 )}
-            </div>
-            <button onClick={handleCopy} className="bg-primary hover:bg-primary/90 w-full py-2 rounded-md font-semibold">
-                Copy deposit address
-            </button>
+            </>
+            <SubmitButton onClick={handleCopy}>
+                {copied ? 'Copied!' : 'Copy deposit address'}
+            </SubmitButton>
         </div>
     )
 }
 
 const Step = ({ number, label, value }: { number: number, label: ReactNode, value?: ReactNode }) => (
-    <div className="flex items-start space-x-3 bg-secondary-500 p-3 rounded-lg">
+    <div className="flex items-start space-x-3 bg-secondary-500 p-3 rounded-xl">
         <div className="w-6 h-6 rounded-md bg-secondary-400 text-primary-text flex items-center justify-center text-base font-normal leading-6">
             {number}
         </div>
@@ -334,7 +305,7 @@ const SkeletonStep = ({ number }: { number: number }) => (
         <div className="w-6 h-6 rounded-md bg-secondary-400 text-primary-text flex items-center justify-center text-base font-normal leading-6">
             {number}
         </div>
-        <div className="flex-1 space-y-2">
+        <div className="flex-1 space-y-3">
             <div className="h-5 bg-secondary-300 rounded w-3/4"></div>
             <div className="h-4 bg-secondary-300 rounded w-1/2"></div>
         </div>

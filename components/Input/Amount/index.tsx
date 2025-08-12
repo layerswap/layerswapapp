@@ -5,7 +5,7 @@ import NumericInput from "../NumericInput";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { resolveMaxAllowedAmount } from "./helpers";
-import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
+import { useQuoteData } from "@/hooks/useFee";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import useWallet from "@/hooks/useWallet";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
@@ -14,15 +14,16 @@ interface AmountFieldProps {
     usdPosition?: "right" | "bottom";
     onAmountFocus?: () => void;
     onAmountBlur?: () => void;
+    minAllowedAmount: ReturnType<typeof useQuoteData>['minAllowedAmount'];
+    maxAllowedAmount: ReturnType<typeof useQuoteData>['maxAllowedAmount'];
+    fee: ReturnType<typeof useQuoteData>['quote'];
 }
 
-const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", onAmountFocus, onAmountBlur }: AmountFieldProps, ref: any) {
+const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", onAmountFocus, onAmountBlur, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fee }: AmountFieldProps, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
     const { fromAsset: fromCurrency, from, amount, toAsset: toCurrency, fromExchange } = values || {};
     const { provider } = useWallet(values.from, "withdrawal")
     const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
-    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
-    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, quote: fee } = useQuoteData(quoteArgs)
     const name = "amount"
     const amountRef = useRef(ref)
     const suffixRef = useRef<HTMLDivElement>(null);

@@ -42,6 +42,7 @@ export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
             setLoading(false)
             if (e?.message)
                 toast(e.message)
+            throw e
         }
     }, [imxAccount, source_network, source_token])
 
