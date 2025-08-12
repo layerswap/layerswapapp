@@ -103,7 +103,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
-    const balanceWarning = resolveBalanceWarnings({
+    const insufficientBalance = resolveBalanceWarnings({
         requestAmount: Number(amount),
         walletBalance: Number(walletBalanceAmount),
     });
@@ -148,8 +148,8 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                     : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                             }
                             {
-                                (!routeValidation.message && balanceWarning)
-                                    ? balanceWarning
+                                (!routeValidation.message && insufficientBalance)
+                                    ? insufficientBalance
                                     : null
                             }
                         </div>

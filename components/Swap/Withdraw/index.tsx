@@ -34,14 +34,14 @@ const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
         footer?: JSX.Element | JSX.Element[],
     } = {}
 
-    const balanceWarning = resolveBalanceWarnings({
+    const insufficientBalance = resolveBalanceWarnings({
         requestAmount: swapBasicData?.requested_amount,
         walletBalance: Number(walletBalanceAmount),
     });
 
     if (swapBasicData?.use_deposit_address === false) {
         withdraw = {
-            footer: <WalletTransferButton swapBasicData={swapBasicData} swapId={swapDetails?.id} refuel={!!refuel} balanceWarning={balanceWarning} />
+            footer: <WalletTransferButton swapBasicData={swapBasicData} swapId={swapDetails?.id} refuel={!!refuel} balanceWarning={insufficientBalance} />
         }
     }
 
