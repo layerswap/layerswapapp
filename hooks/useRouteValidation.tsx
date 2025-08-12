@@ -5,6 +5,7 @@ import { useSettingsState } from '@/context/settings';
 import { useQueryState } from '@/context/query';
 import { useFormikContext } from 'formik';
 import useWallet from './useWallet';
+import { QuoteError } from './useFee';
 
 interface ValidationDetails {
     title?: string;
@@ -12,7 +13,7 @@ interface ValidationDetails {
     icon?: React.ReactNode;
 }
 
-export function resolveRouteValidation() {
+export function resolveRouteValidation(quoteError?: QuoteError) {
     const { values } = useFormikContext<SwapFormValues>();
     const { destinationRoutes: allDestinations, sourceRoutes: allSources } = useSettingsState()
     const { to, from, fromAsset: fromCurrency, toAsset: toCurrency, fromExchange, currencyGroup, validatingSource, validatingDestination, validatingCurrencyGroup, destination_address } = values;
@@ -21,6 +22,7 @@ export function resolveRouteValidation() {
     const query = useQueryState();
     const fromDisplayName = fromExchange ? fromExchange.display_name : from?.display_name;
     const toDisplayName = to?.display_name;
+    const quoteMessage = quoteError?.message
 
     let validationMessage: string = '';
     let validationDetails: ValidationDetails = {};
@@ -90,6 +92,12 @@ export function resolveRouteValidation() {
         }
 
     }
+
+    if (quoteError) {
+        validationMessage = '';
+        validationDetails = { title: quoteMessage || 'Unable to retrieve quote', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
+    }
+
     const value = useMemo(() => ({
         message: validationMessage,
         details: validationDetails

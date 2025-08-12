@@ -1,3 +1,4 @@
+
 import useSWR from "swr";
 import { useEffect, useMemo, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../components/DTOs/SwapFormValues";
@@ -305,7 +306,7 @@ function getSuggestedRoutes(routes: NetworkRoute[], balances: Record<string, Net
             return Array(limit).fill({ type: "sceleton_token" });
     }
 
-    const tokenElements = extractTokenElementsAsSuggested(routes)
+    const tokenElements = extractTokenElementsAsSuggested(routes).filter(t => t.route.token.status === "active")
     const sorted = tokenElements.sort(sortSuggestedTokenElements(direction, balances, routesHistory))
     return sorted.slice(0, limit)
 }

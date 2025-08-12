@@ -6,13 +6,14 @@ type Props = {
     swapBasicData: SwapBasicData | undefined,
     quote: SwapQuote | undefined,
     refuel: Refuel | undefined,
+    quoteIsLoading: boolean
 }
 
-export const SwapQuoteDetails: FC<Props> = ({ swapBasicData: swapData, quote, refuel }) => {
+export const SwapQuoteDetails: FC<Props> = ({ swapBasicData: swapData, quote, refuel, quoteIsLoading }) => {
     const { source_network, destination_network, use_deposit_address, destination_token, requested_amount, source_token, destination_address } = swapData || {}
 
     if (!requested_amount || !source_network || !destination_network || !quote) return null
-    
+
     const values: SwapValues = {
         amount: requested_amount.toString(),
         from: source_network,
@@ -23,6 +24,6 @@ export const SwapQuoteDetails: FC<Props> = ({ swapBasicData: swapData, quote, re
         destination_address,
     }
 
-    return <QuoteDetails quote={{ quote, refuel }} swapValues={values} />
+    return <QuoteDetails quote={{ quote, refuel }} swapValues={values} isQuoteLoading={quoteIsLoading} />
 
 }

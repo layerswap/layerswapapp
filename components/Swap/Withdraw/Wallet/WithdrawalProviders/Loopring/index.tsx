@@ -45,6 +45,7 @@ export const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, r
         }
         catch (e) {
             toast(e.message)
+            throw e
         }
         finally {
             setLoading(false)
@@ -165,7 +166,8 @@ export const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, r
                             <>
                                 {shouldActivate &&
                                     <ActivationTokenPicker
-                                        onChange={setSelectedActivationAsset}
+                                        onSelect={setSelectedActivationAsset}
+                                        selectedValue={selectedActivationAsset}
                                         availableBalances={availableBalances}
                                         defaultValue={defaultValue}
                                         feeData={feeData}

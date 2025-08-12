@@ -1,7 +1,7 @@
 import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, Quote, SwapBasicData, SwapQuote, Refuel, SwapDetails } from '@/lib/apiClients/layerSwapApiClient';
-import { useRouter } from 'next/router';
+import { NextRouter, useRouter } from 'next/router';
 import { QueryParams } from '../Models/QueryParams';
 import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
@@ -15,6 +15,8 @@ import { TrackEvent } from "@/pages/_document";
 import { useSettingsState } from './settings';
 import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
+import { parse, ParsedUrlQuery } from 'querystring';
+import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
 
 export const SwapDataStateContext = createContext<SwapContextData>({
     codeRequested: false,
@@ -27,6 +29,7 @@ export const SwapDataStateContext = createContext<SwapContextData>({
     refuel: undefined,
     swapBasicData: undefined,
     swapDetails: undefined,
+    quoteIsLoading: false
 });
 
 export const SwapDataUpdateContext = createContext<UpdateSwapInterface | null>(null);
@@ -34,6 +37,7 @@ export const SwapDataUpdateContext = createContext<UpdateSwapInterface | null>(n
 export type UpdateSwapInterface = {
     createSwap: (values: SwapFormValues, query: QueryParams, partner?: Partner) => Promise<SwapResponse>,
     setCodeRequested: (codeSubmitted: boolean) => void;
+    setQuoteLoading: (value: boolean) => void;
     setInterval: (value: number) => void,
     mutateSwap: KeyedMutator<ApiResponse<SwapResponse>>
     setDepositAddressIsFromAccount: (value: boolean) => void,
@@ -55,10 +59,12 @@ export type SwapContextData = {
     quote: SwapQuote | undefined,
     refuel: Refuel | undefined,
     swapDetails: SwapDetails | undefined,
+    quoteIsLoading: boolean
 }
 
 export function SwapDataProvider({ children }) {
     const [codeRequested, setCodeRequested] = useState<boolean>(false)
+    const [quoteIsLoading, setQuoteLoading] = useState<boolean>(false)
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
     const [depositAddressIsFromAccount, setDepositAddressIsFromAccount] = useState<boolean>()
     const router = useRouter();
@@ -72,6 +78,16 @@ export function SwapDataProvider({ children }) {
 
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
     const { quote: formDataQuote } = useQuoteData(swapId ? undefined : quoteArgs);
+
+    const handleUpdateSwapid = useCallback((value: string | undefined) => {
+        setSwapId(value)
+        if (value) {
+            setSwapPath(value, router)
+        }
+        else {
+            removeSwapPath(router)
+        }
+    }, [router])
 
     const setSubmitedFormValues = useCallback((values: NonNullable<SwapFormValues>) => {
         const from = sourceRoutes.find(n => n.name === values.from?.name);
@@ -112,7 +128,7 @@ export function SwapDataProvider({ children }) {
     }
 
     const swapBasicData = useMemo(() => {
-        if (swapId) {
+        if (swapId && data?.data) {
             return data?.data?.swap ? {
                 ...data.data.swap,
                 refuel: !!data.data.refuel
@@ -122,11 +138,12 @@ export function SwapDataProvider({ children }) {
     }, [data, swapBasicFormData, swapId])
 
     const swapDetails = useMemo(() => {
-        return data?.data?.swap
-    }, [data])
+        if (swapId)
+            return data?.data?.swap
+    }, [data, swapId])
 
     const quote = useMemo(() => {
-        if (swapId) {
+        if (swapId && data?.data) {
             return data?.data?.quote
         }
         return formDataQuote?.quote
@@ -138,7 +155,6 @@ export function SwapDataProvider({ children }) {
         }
         return formDataQuote?.refuel
     }, [formDataQuote, data, swapId]);
-
 
     const sourceIsSupported = swapBasicData && WalletIsSupportedForSource({
         providers: providers,
@@ -178,19 +194,16 @@ export function SwapDataProvider({ children }) {
         if (!to || !fromCurrency || !toCurrency || !from || !amount || !destination_address || !depositMethod)
             throw new Error("Form data is missing")
 
-        const sourceLayer = from
-        const destinationLayer = to
-
         const sourceIsSupported = WalletIsSupportedForSource({
             providers: providers,
-            sourceNetwork: sourceLayer,
+            sourceNetwork: from,
             sourceWallet: selectedSourceAccount?.wallet
         })
 
         const data: CreateSwapParams = {
             amount: amount,
-            source_network: sourceLayer.name,
-            destination_network: destinationLayer.name,
+            source_network: from.name,
+            destination_network: to.name,
             source_token: fromCurrency.symbol,
             destination_token: toCurrency.symbol,
             source_exchange: fromExchange?.name,
@@ -202,6 +215,7 @@ export function SwapDataProvider({ children }) {
         }
 
         const swapResponse = await layerswapApiClient.CreateSwapAsync(data)
+
         if (swapResponse?.error) {
             throw swapResponse?.error
         }
@@ -233,7 +247,7 @@ export function SwapDataProvider({ children }) {
         plausible(TrackEvent.SwapInitiated)
 
         return swap;
-    }, [selectedSourceAccount])
+    }, [selectedSourceAccount, formDataQuote])
 
     const updateFns: UpdateSwapInterface = {
         createSwap,
@@ -242,9 +256,10 @@ export function SwapDataProvider({ children }) {
         mutateSwap: mutate,
         setDepositAddressIsFromAccount,
         setWithdrawType,
-        setSwapId,
+        setSwapId: handleUpdateSwapid,
         setSelectedSourceAccount: handleChangeSelectedSourceAccount,
-        setSubmitedFormValues
+        setSubmitedFormValues,
+        setQuoteLoading
     };
     return (
         <SwapDataStateContext.Provider value={{
@@ -257,7 +272,8 @@ export function SwapDataProvider({ children }) {
             quote,
             refuel,
             swapBasicData,
-            swapDetails
+            swapDetails,
+            quoteIsLoading
         }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}
@@ -287,4 +303,42 @@ export function useSwapDataUpdate() {
 const WalletIsSupportedForSource = ({ providers, sourceNetwork, sourceWallet }: { providers: WalletProvider[] | undefined, sourceWallet: Wallet | undefined, sourceNetwork: Network | undefined }) => {
     const isSupported = sourceWallet && providers?.find(p => p.name === sourceWallet.providerName)?.asSourceSupportedNetworks?.some(n => n === sourceNetwork?.name) || false
     return isSupported
+}
+
+
+const setSwapPath = (swapId: string, router: NextRouter) => {
+    //TODO: as path should be without basepath and host
+    const basePath = router?.basePath || ""
+    var swapURL = window.location.protocol + "//"
+        + window.location.host + `${basePath}/swap/${swapId}`;
+    const raw = window.location.search.startsWith("?")
+        ? window.location.search.slice(1)
+        : window.location.search;
+    const existing: ParsedUrlQuery = parse(raw);
+    const params = resolvePersistantQueryParams(existing)
+    if (params && Object.keys(params).length) {
+        const search = new URLSearchParams(params as any);
+        if (search)
+            swapURL += `?${search}`
+    }
+
+    window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
+}
+
+const removeSwapPath = (router: NextRouter) => {
+    const basePath = router?.basePath || ""
+    let homeURL = window.location.protocol + "//"
+        + window.location.host + basePath
+
+    const raw = window.location.search.startsWith("?")
+        ? window.location.search.slice(1)
+        : window.location.search;
+    const existing: ParsedUrlQuery = parse(raw);
+    const params = resolvePersistantQueryParams(existing)
+    if (params && Object.keys(params).length) {
+        const search = new URLSearchParams(params as any);
+        if (search)
+            homeURL += `?${search}`
+    }
+    window.history.replaceState({ ...window.history.state, as: router.asPath, url: homeURL }, '', homeURL);
 }

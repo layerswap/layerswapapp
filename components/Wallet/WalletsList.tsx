@@ -22,11 +22,12 @@ type Props = {
     network?: Network;
     provider?: WalletProvider | undefined;
     onSelect?: (props: SelectAccountProps) => void;
+    selectedDepositMethod?: "wallet" | "deposit_address";
 }
 
 const WalletsList: FC<Props> = (props) => {
 
-    const { wallets, token, network, provider, selectable, onSelect } = props
+    const { wallets, token, network, provider, selectable, onSelect, selectedDepositMethod } = props
 
     const { connect } = useConnectModal()
 
@@ -44,7 +45,7 @@ const WalletsList: FC<Props> = (props) => {
     }
 
     const { provider: sourceProvider } = useWallet(network, "withdrawal")
-    const selectedSourceAccount = useMemo(() => sourceProvider?.activeWallet, [provider]);
+    const selectedSourceAccount = useMemo(() => selectedDepositMethod == 'wallet' ? sourceProvider?.activeWallet : undefined, [provider, selectedDepositMethod]);
 
     return (
         <div className="space-y-3">

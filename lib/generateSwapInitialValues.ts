@@ -4,7 +4,7 @@ import { isValidAddress } from "./address/validator";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { SwapBasicData, SwapResponse } from "./apiClients/layerSwapApiClient";
 
-export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams): SwapFormValues {
+export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams, type: 'cross-chain' | 'exchange'): SwapFormValues {
     const { destination_address, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, depositMethod, fromExchange } = queryParams
     const { sourceExchanges, sourceRoutes, destinationRoutes } = settings || {}
 
@@ -46,10 +46,10 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
 
     const result: SwapFormValues = {
         fromExchange: initialSourceExchange,
-        from: initialSource,
+        from: type === 'cross-chain' ? initialSource : undefined,
         to: initialDestination,
         amount: initialAmount,
-        fromAsset: initialSourceCurrency,
+        fromAsset: type === 'cross-chain' ? initialSourceCurrency : undefined,
         toAsset: initialDestinationCurrency,
         destination_address: initialAddress ? initialAddress : '',
         depositMethod: (depositMethod === "wallet" || depositMethod === "deposit_address") ? depositMethod : undefined,

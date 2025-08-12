@@ -6,7 +6,15 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { UserBalanceInfo } from '@/lib/loopring/defs';
 import { ImageWithFallback } from '@/components/Common/ImageWithFallback';
 
-export const ActivationTokenPicker = ({ availableBalances, defaultValue, onChange, feeData }: { availableBalances: UserBalanceInfo[] | undefined, defaultValue: UserBalanceInfo | undefined, feeData: FeeData | undefined, onChange: (v: string | undefined) => void }) => {
+type Props = {
+    availableBalances: UserBalanceInfo[] | undefined,
+    defaultValue: UserBalanceInfo | undefined,
+    feeData: FeeData | undefined,
+    onSelect: (v: string | undefined) => void
+    selectedValue: string | undefined
+}
+
+export const ActivationTokenPicker = ({ availableBalances, defaultValue, onSelect, feeData, selectedValue }: Props) => {
     const { tokens } = useLoopringTokens()
 
     const resource_storage_url = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL;
@@ -30,11 +38,9 @@ export const ActivationTokenPicker = ({ availableBalances, defaultValue, onChang
             }
         }) || []
 
-    const [selectedValue, setSelectedValue] = useState<string>(activationCurrencyValues?.[0]?.name)
 
     const handleChange = (v: string) => {
-        onChange(v)
-        setSelectedValue(v)
+        onSelect(v)
     }
 
 

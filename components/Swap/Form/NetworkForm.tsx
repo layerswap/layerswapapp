@@ -56,7 +56,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
 
     const { providers, wallets } = useWallet();
-    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
+    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
     const { minAllowedAmount, isQuoteLoading, quote } = useQuoteData(quoteArgs);
 
     const toAsset = values.toAsset;

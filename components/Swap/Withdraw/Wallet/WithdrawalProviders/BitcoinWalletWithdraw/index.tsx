@@ -70,6 +70,7 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData
         catch (e) {
             setLoading(false)
             setTransactionErrorMessage(e.message)
+            throw e
         }
     }, [source_network, source_token, wallet, connector, rpcClient, isTestnet])
 

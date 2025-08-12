@@ -1,15 +1,17 @@
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { isValidAddress } from '../lib/address/validator';
+import { QuoteError } from './useFee';
 
 interface Params {
     values: SwapFormValues;
     minAllowedAmount: number | undefined,
     maxAllowedAmount: number | undefined,
     sourceAddress: string | undefined,
-    sameAccountNetwork?: string | undefined
+    sameAccountNetwork?: string | undefined,
+    quoteError?: QuoteError
 }
 
-export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmount, sourceAddress, sameAccountNetwork }: Params) {
+export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmount, sourceAddress, sameAccountNetwork, quoteError }: Params) {
     let amount = values.amount ? Number(values.amount) : undefined;
 
     if (!values.from && !values.fromExchange) {
@@ -89,6 +91,10 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
         if (values.depositMethod === "deposit_address") {
             return { message: 'Manual Transfer is not supported' };
         }
+    }
+
+    if (quoteError) {
+        return { message: 'Unable to retrieve quote' };
     }
 
     return { message: '' };
