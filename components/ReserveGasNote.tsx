@@ -5,16 +5,20 @@ import { truncateDecimals } from "./utils/RoundDecimals"
 import { TokenBalance } from "../Models/Balance"
 import useSWRBalance from "../lib/balances/useSWRBalance"
 import useSWRGas from "../lib/gases/useSWRGas"
-import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee"
+import { useQuoteData } from "@/hooks/useFee"
 import { useMemo } from "react"
 import useWallet from "@/hooks/useWallet"
 
-const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: TokenBalance, networkGas: number) => void }) => {
+type Props = {
+    onSubmit: (walletBalance: TokenBalance, networkGas: number) => void
+    minAllowedAmount: ReturnType<typeof useQuoteData>['minAllowedAmount']
+    maxAllowedAmount: ReturnType<typeof useQuoteData>['maxAllowedAmount']
+}
+
+const ReserveGasNote = ({ onSubmit, minAllowedAmount, maxAllowedAmount }: Props) => {
     const {
         values,
     } = useFormikContext<SwapFormValues>();
-    const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
-    const { minAllowedAmount, maxAllowedAmount } = useQuoteData(quoteArgs)
     const { provider } = useWallet(values.from, "withdrawal")
     const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
     const { balances } = useSWRBalance(selectedSourceAccount?.address, values.from)

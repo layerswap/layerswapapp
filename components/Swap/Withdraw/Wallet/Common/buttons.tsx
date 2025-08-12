@@ -11,7 +11,6 @@ import { useConnectModal } from "@/components/WalletModal";
 import { Network, NetworkRoute } from "@/Models/Network";
 import { useQueryState } from "@/context/query";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
-import { useRouter } from "next/router";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { BackendTransactionStatus, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { transformSwapDataToQuoteArgs, useQuoteData } from "@/hooks/useFee";
@@ -158,7 +157,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapData, refuel), [swapData, refuel]);
     const { isQuoteLoading } = useQuoteData(quoteArgs);
 
-    const router = useRouter()
     const query = useQueryState()
 
     const handleClick = async () => {

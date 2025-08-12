@@ -32,11 +32,11 @@ import ExchangeForm from "./ExchangeForm";
 import { Widget } from "@/components/Widget/Index";
 import NetworkTabIcon from "@/components/icons/NetworkTabIcon";
 import ExchangeTabIcon from "@/components/icons/ExchangeTabIcon";
-import { transformSwapDataToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { ValidationProvider } from "@/context/validationContext";
 import { BalanceAccountsProvider } from "@/context/balanceAccounts";
 import { addressFormat } from "@/lib/address/formatter";
 import AddressNote from "@/components/Input/Address/AddressNote";
+import useSWRBalance from "@/lib/balances/useSWRBalance";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -63,7 +63,6 @@ export default function Form() {
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const router = useRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
-    const { getProvider } = useWallet()
     const { getConfirmation } = useAsyncModal();
 
     const settings = useSettingsState();
@@ -75,8 +74,11 @@ export default function Form() {
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
     const partner = appName && partnerData?.data?.client_id?.toLowerCase() === (appName as string)?.toLowerCase() ? partnerData?.data : undefined
     const { swapBasicData, swapDetails } = useSwapDataState()
-    const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicData, !!swapBasicData?.refuel), [swapBasicData]);
-    const { quote } = useQuoteData(quoteArgs)
+
+    const sourceNetworkWithTokens = settings.networks.find(n => n.name === swapBasicData?.source_network.name)
+    const { getProvider, provider } = useWallet(sourceNetworkWithTokens, "withdrawal")
+    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
+    const { mutate: mutateBalances } = useSWRBalance(selectedSourceAccount?.address, sourceNetworkWithTokens)
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         const { destination_address, to } = values
@@ -133,7 +135,7 @@ export default function Form() {
         catch (error) {
             toast.error(error?.message)
         }
-    }, [createSwap, query, partner, router, updateAuthData, setUserType, swapBasicData, getProvider, settings, quote])
+    }, [createSwap, query, partner, router, updateAuthData, setUserType, swapBasicData, getProvider, settings])
 
     const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings)
         : generateSwapInitialValues(settings, query)
@@ -169,6 +171,7 @@ export default function Form() {
                 show={showSwapModal}
                 setShow={handleShowSwapModal}
                 header={`Complete the swap`}
+                onAnimationEnd={(v) => !v ? mutateBalances() : undefined}
                 modalId="showSwap">
                 <VaulDrawer.Snap id="item-1">
                     <SwapDetails type="contained" />
@@ -193,8 +196,11 @@ export default function Form() {
                             validateOnMount={true}
                             onSubmit={handleSubmit}
                         >
-                            <ValidationProvider>
-                                <NetworkForm partner={partner} />
+                            <ValidationProvider swapModalIsOpen={showSwapModal}>
+                                <NetworkForm
+                                    swapModalIsOpen={showSwapModal}
+                                    partner={partner}
+                                />
                             </ValidationProvider>
                         </Formik>
                     </TabsContent>
@@ -205,8 +211,10 @@ export default function Form() {
                             validateOnMount={true}
                             onSubmit={handleSubmit}
                         >
-                            <ValidationProvider>
-                                <ExchangeForm />
+                            <ValidationProvider swapModalIsOpen={showSwapModal}>
+                                <ExchangeForm
+                                    swapModalIsOpen={showSwapModal}
+                                />
                             </ValidationProvider>
                         </Formik>
                     </TabsContent>

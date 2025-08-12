@@ -12,7 +12,7 @@ type UseQuoteData = {
     mutateFee: () => void
     mutateLimits: () => void
 }
-type Props = {
+type FormValues = {
     from: string | undefined
     to: string | undefined
     fromCurrency: string | undefined
@@ -22,7 +22,7 @@ type Props = {
     depositMethod: "wallet" | "deposit_address" | undefined
 }
 
-export function useQuoteData(formValues: Props | undefined): UseQuoteData {
+export function useQuoteData(formValues: FormValues | undefined, refreshInterval?: number): UseQuoteData {
     const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod } = formValues || {}
     const [debouncedAmount, setDebouncedAmount] = useState(amount)
 
@@ -46,7 +46,7 @@ export function useQuoteData(formValues: Props | undefined): UseQuoteData {
         max_amount: number
         max_amount_in_usd: number
     }>>(limitsURL, apiClient.fetcher, {
-        refreshInterval: 20000,
+        refreshInterval: (refreshInterval || refreshInterval == 0) ? refreshInterval : 20000,
         dedupingInterval: 20000,
     })
 
@@ -58,7 +58,7 @@ export function useQuoteData(formValues: Props | undefined): UseQuoteData {
         `/quote?source_network=${from}&source_token=${fromCurrency}&destination_network=${to}&destination_token=${toCurrency}&amount=${debouncedAmount}&refuel=${!!refuel}&use_deposit_address=${use_deposit_address}` : null
 
     const { data: quote, mutate: mutateFee, isLoading: isQuoteLoading, error: lsFeeError } = useSWR<ApiResponse<Quote>>(quoteURL, apiClient.fetcher, {
-        refreshInterval: 42000,
+        refreshInterval: (refreshInterval || refreshInterval == 0) ? refreshInterval : 42000,
         dedupingInterval: 42000,
     })
 
@@ -72,7 +72,7 @@ export function useQuoteData(formValues: Props | undefined): UseQuoteData {
         mutateLimits,
     }
 }
-export function transformFormValuesToQuoteArgs(values: SwapFormValues): Props | undefined {
+export function transformFormValuesToQuoteArgs(values: SwapFormValues): FormValues | undefined {
     if (values.fromAsset?.status !== 'active' || values.toAsset?.status !== 'active') return undefined
     return {
         amount: values.amount,
@@ -85,7 +85,7 @@ export function transformFormValuesToQuoteArgs(values: SwapFormValues): Props | 
     }
 }
 
-export function transformSwapDataToQuoteArgs(swapData: SwapBasicData | undefined, refuel: boolean): Props | undefined {
+export function transformSwapDataToQuoteArgs(swapData: SwapBasicData | undefined, refuel: boolean): FormValues | undefined {
     return {
         refuel,
         amount: swapData?.requested_amount,

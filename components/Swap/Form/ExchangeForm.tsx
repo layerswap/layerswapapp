@@ -23,9 +23,10 @@ import clsx from "clsx";
 
 type Props = {
     partner?: Partner;
+    swapModalIsOpen?: boolean;
 };
 
-const ExchangeForm: FC<Props> = ({ partner }) => {
+const ExchangeForm: FC<Props> = ({ partner, swapModalIsOpen }) => {
     const {
         values, isSubmitting
     } = useFormikContext<SwapFormValues>();
@@ -37,7 +38,8 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     const { wallets } = useWallet();
     const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == destination_address?.toLowerCase())?.icon;
 
-    const { isQuoteLoading, quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(quoteArgs);
+    const quoteRefreshInterval = swapModalIsOpen ? 0 : undefined;
+    const { isQuoteLoading, quote, minAllowedAmount, maxAllowedAmount: maxAmountFromApi } = useQuoteData(quoteArgs, quoteRefreshInterval);
     const { routeValidation, formValidation } = useValidationContext();
 
     const isValid = !formValidation.message;
@@ -107,7 +109,14 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                             }
                                         </div>
                                         <div className="relative group exchange-amount-field px-1">
-                                            <AmountField usdPosition="right" onAmountFocus={() => setIsAmountFocused(true)} onAmountBlur={async () => { await sleep(500); setIsAmountFocused(false) }} />
+                                            <AmountField
+                                                fee={quote}
+                                                minAllowedAmount={minAllowedAmount}
+                                                maxAllowedAmount={maxAmountFromApi}
+                                                usdPosition="right"
+                                                onAmountFocus={() => setIsAmountFocused(true)}
+                                                onAmountBlur={async () => { await sleep(500); setIsAmountFocused(false) }}
+                                            />
                                         </div>
                                     </div>
                                 </div>
