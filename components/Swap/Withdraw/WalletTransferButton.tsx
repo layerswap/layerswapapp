@@ -29,8 +29,8 @@ const WalletTransferButton: FC<Props> = ({ swapBasicData: swapData, swapId, refu
                 </button>
             </div>
             <div>
-                <WalletTransferContent openModal={openModal} setOpenModal={setOpenModal} swapData={swapData}/>
-                {balanceWarning && balanceWarning}
+                <WalletTransferContent openModal={openModal} setOpenModal={setOpenModal} swapData={swapData} />
+                {balanceWarning}
                 <WalletTransfer swapData={swapData} swapId={swapId} refuel={refuel} />
             </div>
         </div>

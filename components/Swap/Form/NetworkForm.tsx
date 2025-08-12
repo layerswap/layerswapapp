@@ -74,7 +74,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const { balances } = useSWRBalance(selectedWallet?.address, source)
     const walletBalance = source && balances?.find(b => b?.network === source?.name && b?.token === fromAsset?.symbol)
-    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, fromAsset?.precision)
+    const walletBalanceAmount = walletBalance?.amount
 
     useEffect(() => {
         if (!source || !toAsset || !toAsset.refuel) {

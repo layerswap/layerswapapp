@@ -27,7 +27,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
 
     const { balances } = useSWRBalance(selectedWallet?.address, source_network)
     const walletBalance = source_network && balances?.find(b => b?.network === source_network?.name && b?.token === swapBasicData?.source_token?.symbol)
-    const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, swapBasicData?.source_token?.precision)
+    const walletBalanceAmount = walletBalance?.amount
 
     let withdraw: {
         content?: JSX.Element | JSX.Element[],
