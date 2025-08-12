@@ -3,7 +3,6 @@ import { PersistantQueryParams } from "../Models/QueryParams";
 
 
 export const resolvePersistantQueryParams = (query: ParsedUrlQuery): ParsedUrlQuery | null => {
-    debugger
     if (!query)
         return null
     const persiatantParams = new PersistantQueryParams()

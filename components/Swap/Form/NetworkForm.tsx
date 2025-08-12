@@ -83,11 +83,11 @@ const NetworkForm: FC<Props> = ({ partner }) => {
         }
     }, [values.refuel, destination, minAllowedAmount]);
 
-    const handleReserveGas = useCallback((walletBalance: TokenBalance, networkGas: number) => {
-        if (walletBalance && networkGas)
+    const handleReserveGas = useCallback((nativeTokenBalance: TokenBalance, networkGas: number) => {
+        if (nativeTokenBalance && networkGas)
             updateForm({
                 formDataKey: 'amount',
-                formDataValue: (walletBalance?.amount - networkGas).toString(),
+                formDataValue: (nativeTokenBalance?.amount - networkGas).toString(),
                 setFieldValue
             });
     }, [setFieldValue]);
