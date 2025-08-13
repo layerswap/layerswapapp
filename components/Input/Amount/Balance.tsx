@@ -43,7 +43,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
                 (network && token && truncatedBalance) ?
                     <motion.div
                         layoutId="affect"
-                        className="w-4/5 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs text-primary-text-placeholder">
+                        className="w-4/5 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs text-secondary-text leading-[18px]">
                         <span>{truncatedBalance}</span>
                     </motion.div>
                     : null
