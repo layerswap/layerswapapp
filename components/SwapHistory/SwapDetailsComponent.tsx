@@ -51,6 +51,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
+    const refundTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refund)
 
     const source = (hideFrom && partner && account) ? partner : source_network
     const destination = (hideTo && partner && account) ? partner : destination_network
@@ -334,24 +335,51 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                     }
                                 </div >
                                 <div className="flex justify-between items-baseline">
-                                    <p className="text-left text-secondary-text">Destination transaction</p>
                                     {
-                                        swapOutputTransaction?.transaction_hash ?
-                                            (
-                                                (swapOutputTransaction?.transaction_hash && swap?.destination_exchange?.name === KnownInternalNames.Exchanges.Coinbase && (isGuid(swapOutputTransaction?.transaction_hash))) ?
-                                                    <span><CopyButton toCopy={swapOutputTransaction.transaction_hash} iconClassName="text-primary-text order-2">{shortenAddress(swapOutputTransaction.transaction_hash)}</CopyButton></span>
-                                                    :
-                                                    <Link
-                                                        target="_blank"
-                                                        href={output_tx_explorer_template?.replace("{0}", swapOutputTransaction.transaction_hash)}
-                                                        className='flex items-center space-x-1'
-                                                    >
-                                                        <span>{shortenAddress(swapOutputTransaction.transaction_hash)}</span>
-                                                        <ExternalLink className='h-4' />
-                                                    </Link>
-                                            )
+                                        swap.status == SwapStatus.Refunded ?
+                                            <>
+                                                <p className="text-left text-secondary-text">Refund transaction</p>
+                                                {
+                                                    refundTransaction?.transaction_hash ?
+                                                        (
+                                                            (refundTransaction?.transaction_hash && swap?.destination_exchange?.name === KnownInternalNames.Exchanges.Coinbase && (isGuid(refundTransaction?.transaction_hash))) ?
+                                                                <span><CopyButton toCopy={refundTransaction.transaction_hash} iconClassName="text-primary-text order-2">{shortenAddress(refundTransaction.transaction_hash)}</CopyButton></span>
+                                                                :
+                                                                <Link
+                                                                    target="_blank"
+                                                                    href={output_tx_explorer_template?.replace("{0}", refundTransaction.transaction_hash)}
+                                                                    className='flex items-center space-x-1'
+                                                                >
+                                                                    <span>{shortenAddress(refundTransaction.transaction_hash)}</span>
+                                                                    <ExternalLink className='h-4' />
+                                                                </Link>
+                                                        )
+                                                        :
+                                                        <span>-</span>
+                                                }
+                                            </>
                                             :
-                                            <span>-</span>
+                                            <>
+                                                <p className="text-left text-secondary-text">Destination transaction</p>
+                                                {
+                                                    swapOutputTransaction?.transaction_hash ?
+                                                        (
+                                                            (swapOutputTransaction?.transaction_hash && swap?.destination_exchange?.name === KnownInternalNames.Exchanges.Coinbase && (isGuid(swapOutputTransaction?.transaction_hash))) ?
+                                                                <span><CopyButton toCopy={swapOutputTransaction.transaction_hash} iconClassName="text-primary-text order-2">{shortenAddress(swapOutputTransaction.transaction_hash)}</CopyButton></span>
+                                                                :
+                                                                <Link
+                                                                    target="_blank"
+                                                                    href={output_tx_explorer_template?.replace("{0}", swapOutputTransaction.transaction_hash)}
+                                                                    className='flex items-center space-x-1'
+                                                                >
+                                                                    <span>{shortenAddress(swapOutputTransaction.transaction_hash)}</span>
+                                                                    <ExternalLink className='h-4' />
+                                                                </Link>
+                                                        )
+                                                        :
+                                                        <span>-</span>
+                                                }
+                                            </>
                                     }
                                 </div >
                             </div>
