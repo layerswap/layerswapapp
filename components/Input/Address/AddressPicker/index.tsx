@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, forwardRef, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { FC, forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AddressBookItem } from "@/lib/apiClients/layerSwapApiClient";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { isValidAddress } from "@/lib/address/validator";
@@ -110,8 +110,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         close()
     }, [close, setFieldValue, groupedAddresses])
 
-    const onConnect = (wallet: Wallet) => {
-        updateDestAddress(wallet.address)
+    const onConnect = () => {
         close()
     }
 
@@ -120,13 +119,14 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             updateDestAddress(undefined)
             return
         }
-        updateDestAddress(defaultAccount?.address)
-        setShowAddressModal(false)
+        if (destination_address?.toLowerCase() !== defaultAccount?.address?.toLowerCase()) {
+            updateDestAddress(defaultAccount?.address)
+            setShowAddressModal(false)
+        }
     }, [defaultAccount?.address])
 
-    function updateDestAddress(address: string | undefined) {
+    const updateDestAddress = useCallback((address: string | undefined) => {
         const wallet = destination && connectedWallets?.find(w => w.addresses?.find(a => addressFormat(a, destination) === addressFormat(address || '', destination)))
-
         setFieldValue('destination_address', address)
 
         if (destination && address && provider) {
@@ -143,7 +143,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                     providerName: provider.name,
                 });
         }
-    }
+    }, [destination, connectedWallets, provider]);
 
     useEffect(() => {
         if (canFocus) {
