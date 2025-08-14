@@ -174,9 +174,8 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                     ...resolvePersistantQueryParams(router.query),
                                 }
                             }, undefined, { shallow: false })}
-                            className='w-full inline-flex items-center gap-2 justify-center py-2.5 px-3 text-xl font-semibold bg-primary-text-placeholder hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-lg text-secondary-950'
+                            className='w-full inline-flex items-center gap-2 justify-center py-3 px-6 text-base font-semibold bg-primary-text-placeholder hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-xl text-white'
                         >
-                            <RefreshCw className='h-6 w-6' />
                             <p>
                                 Repeat Swap
                             </p>

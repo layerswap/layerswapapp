@@ -170,19 +170,4 @@ const HistorySummary: FC<SwapInfoProps> = ({
     )
 }
 
-const smartDecimalTruncate = (value: number, price_in_usd: number) => {
-    let decimals = findIndexOfFirstNonZeroAfterComma((0.01 / Number(price_in_usd.toFixed()))) || 0
-    let truncatedAmount = truncateDecimals(value, decimals)
-
-    if (truncatedAmount === "0") {
-        while (truncatedAmount === "0") {
-            decimals += 1
-            truncatedAmount = truncateDecimals(value, decimals)
-        }
-    }
-
-    return truncateDecimals(value, decimals)
-}
-
-
 export default HistorySummary
