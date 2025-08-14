@@ -1,5 +1,6 @@
 import { SwapStatus } from "../../Models/SwapStatus"
 import { PublishedSwapTransactions, SwapItem, TransactionType } from "../../lib/apiClients/layerSwapApiClient"
+import CheckIcon from "../icons/CheckIcon";
 
 export default function StatusIcon({ swap, withBg, short }: { swap: SwapItem, withBg?: boolean, short?: boolean }) {
   const status = swap.status;
@@ -38,7 +39,7 @@ export default function StatusIcon({ swap, withBg, short }: { swap: SwapItem, wi
 
 const IconComponentWrapper = ({ children, withBg, classNames }: { children: React.ReactNode, withBg?: boolean, classNames?: string }) => {
   return (
-    <div className={`inline-flex items-center gap-2 font-bold ${classNames} ${withBg ? 'py-1 w-full justify-center rounded-lg' : 'bg-transparent!'}`}>
+    <div className={`inline-flex items-center gap-1 font-bold ${classNames} ${withBg ? 'py-1 w-full justify-center rounded-lg' : 'bg-transparent!'}`}>
       {children}
     </div>
   )
@@ -46,10 +47,8 @@ const IconComponentWrapper = ({ children, withBg, classNames }: { children: Reac
 
 const GreenComponent = ({ text, withBg, short }: IconComponentProps) => {
   return (
-    <IconComponentWrapper withBg={withBg} classNames="bg-[#54b487]/20 text-[#54b487]">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 60 60" fill="none">
-        <circle cx="30" cy="30" r="30" fill="#54b487" />
-      </svg>
+    <IconComponentWrapper withBg={withBg} classNames="bg-[#54b487]/20 text-[#569735]">
+      <CheckIcon />
       {!short && <p>{text}</p>}
     </IconComponentWrapper>
   )

@@ -15,6 +15,7 @@ import { addressFormat } from "../../lib/address/formatter";
 import { SwapStatus } from "../../Models/SwapStatus";
 import { Wallet } from "../../Models/WalletProvider";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip"
 
 type SwapInfoProps = {
     className?: string,
@@ -91,10 +92,22 @@ const HistorySummary: FC<SwapInfoProps> = ({
                         </div>
 
                         <div className="flex min-w-0 flex-col items-start space-y-0.5">
-                            <span className="text-white text-lg leading-5 whitespace-nowrap">
-                                {requested_amount} {source_token.symbol}
+                            <span className="text-white text-lg leading-5 flex min-w-0">
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span className="truncate overflow-hidden whitespace-nowrap max-w-[90px]">
+                                            {requested_amount}
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        {requested_amount}
+                                    </TooltipContent>
+                                </Tooltip>
+
+                                &nbsp;{source_token.symbol}
                             </span>
-                            <span className="text-secondary-text text-sm leading-3.5">
+
+                            <span className="text-secondary-text text-sm leading-[14px]">
                                 {source?.display_name || ""}
                             </span>
                         </div>
@@ -108,10 +121,22 @@ const HistorySummary: FC<SwapInfoProps> = ({
 
                     <div className="col-span-6 flex items-center justify-end gap-2 bg-secondary-400 p-3 rounded-xl">
                         <div className="flex min-w-0 flex-col items-end space-y-0.5">
-                            <span className="text-white text-lg leading-5 whitespace-nowrap">
-                                {calculatedReceiveAmount} {destination_token.symbol}
+                            <span className="text-white text-lg leading-5 flex min-w-0">
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span className="truncate overflow-hidden whitespace-nowrap max-w-[90px]">
+                                            {calculatedReceiveAmount}
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        {calculatedReceiveAmount}
+                                    </TooltipContent>
+                                </Tooltip>
+
+                                &nbsp;{destination_token.symbol}
                             </span>
-                            <span className="text-secondary-text text-sm leading-3.5">
+
+                            <span className="text-secondary-text text-sm leading-[14px]">
                                 {destination?.display_name || ""}
                             </span>
                         </div>

@@ -22,6 +22,8 @@ import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
 import { Popover, PopoverContent, PopoverTrigger } from '../shadcn/popover';
 import { ImageWithFallback } from '../Common/ImageWithFallback';
+import { getDateDifferenceString } from '../utils/dateDifference';
+import QuoteDetails from '../FeeDetails';
 
 type Props = {
     swapResponse: SwapResponse
@@ -84,30 +86,19 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
     return (
         <>
+            {/* Swap */}
             <section className='pb-3 space-y-3'>
-                {/* Date and Status */}
                 <div className='p-3 bg-secondary-500 rounded-xl'>
                     <div className='text-sm flex flex-col gap-3'>
                         <div className="flex justify-between items-center text-sm text-primary-text">
-                            <p className="text-left text-secondary-text">Swap Id</p>
-                            <CopyButton toCopy={swap?.id} iconClassName='order-2 ml-1'>
+                            <p className="text-left text-secondary-text">Transaction ID</p>
+                            <CopyButton toCopy={swap?.id} iconClassName='order-2 ml-1 text-primary-text'>
                                 {shortenAddress(swap?.id)}
                             </CopyButton>
                         </div>
                         <div className="flex justify-between items-baseline">
                             <span className="text-left text-secondary-text">Date & Time</span>
-                            <span className='text-primary-text'>{(new Date(swap.created_date)).toLocaleString()}</span>
-                        </div>
-                        <div className="flex justify-between items-baseline">
-                            <span className="text-left text-secondary-text">Completion Time</span>
-                            <span className='text-primary-text'>
-                                {
-                                    (swapInputTransaction?.timestamp && swapOutputTransaction?.timestamp) ?
-                                        calculateDatesDifference(swapInputTransaction?.timestamp, swapOutputTransaction?.timestamp)
-                                        :
-                                        '-'
-                                }
-                            </span>
+                            <span className='text-primary-text'>{(new Date(swap.created_date)).toLocaleString()} <span className='text-primary-text-placeholder'>({getDateDifferenceString(new Date(swap.created_date))})</span></span>
                         </div>
                         <div className="flex justify-between p items-baseline">
                             <span className="text-left text-secondary-text">Status </span>
@@ -117,7 +108,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                         </div>
                     </div>
                 </div>
-            </section >
+            </section>
 
             <section className='pb-3'>
                 <div className='flex flex-col justify-between w-full h-full gap-3'>

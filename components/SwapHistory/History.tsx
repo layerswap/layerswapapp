@@ -190,8 +190,8 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                                 </button>
                                             </div>
                                         }
-                                        <AccordionItem value={swapId} className="border-none">
-                                            <AccordionTrigger>
+                                        <AccordionItem value={swapId} className="border-none mb-4">
+                                            <AccordionTrigger className="relative z-10">
                                                 <div className="cursor-pointer">
                                                     <HistorySummary swapResponse={swap} wallets={wallets} />
                                                     {collapsedPendingSwap &&
@@ -199,7 +199,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                                     }
                                                 </div>
                                             </AccordionTrigger>
-                                            <AccordionContent className="pt-0! -mt-4 mb-1 rounded-b-3xl bg-secondary-900">
+                                            <AccordionContent className="-mt-3 rounded-b-3xl bg-secondary-900">
                                                 <div className="flex items-center justify-between px-4 pt-5">
                                                     <span className="text-secondary-text text-sm">
                                                         Transaction Details
