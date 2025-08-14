@@ -153,7 +153,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                             data-index={virtualRow.index}
                                             ref={rowVirtualizer.measureElement}
                                         >
-                                            <div className="w-full pb-1">
+                                            <div className="w-full pb-3 pt-3">
                                                 {data !== 'Pending' &&
                                                     <p className="text-sm text-secondary-text font-normal pl-2">
                                                         {resolveDate(data)}
