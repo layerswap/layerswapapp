@@ -2,28 +2,19 @@ import { useFormikContext } from "formik";
 import { forwardRef, useEffect, useMemo, useRef } from "react";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import NumericInput from "../NumericInput";
-import useSWRGas from "@/lib/gases/useSWRGas";
-import useSWRBalance from "@/lib/balances/useSWRBalance";
-import { resolveMaxAllowedAmount } from "./helpers";
 import { useQuoteData } from "@/hooks/useFee";
-import { truncateDecimals } from "@/components/utils/RoundDecimals";
-import useWallet from "@/hooks/useWallet";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
+import clsx from "clsx";
 
 interface AmountFieldProps {
     usdPosition?: "right" | "bottom";
-    onAmountFocus?: () => void;
-    onAmountBlur?: () => void;
-    minAllowedAmount: ReturnType<typeof useQuoteData>['minAllowedAmount'];
-    maxAllowedAmount: ReturnType<typeof useQuoteData>['maxAllowedAmount'];
     fee: ReturnType<typeof useQuoteData>['quote'];
+    actionValue?: number;
 }
 
-const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", onAmountFocus, onAmountBlur, minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fee }: AmountFieldProps, ref: any) {
+const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", actionValue, fee }: AmountFieldProps, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
-    const { fromAsset: fromCurrency, from, amount, toAsset: toCurrency, fromExchange } = values || {};
-    const { provider } = useWallet(values.from, "withdrawal")
-    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
+    const { fromAsset: fromCurrency, amount, toAsset: toCurrency, fromExchange } = values || {};
     const name = "amount"
     const amountRef = useRef(ref)
     const suffixRef = useRef<HTMLDivElement>(null);
@@ -48,39 +39,23 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", on
 
         suffix.style.left = `${width + 16}px`;
     }, [amount, requestedAmountInUsd]);
-
-    const sourceAddress = selectedSourceAccount?.address
-
-    const { balances } = useSWRBalance(sourceAddress, from)
-    const { gas } = useSWRGas(sourceAddress, from, fromCurrency)
-    const gasAmount = gas || 0;
-    const native_currency = from?.token
-
-    const walletBalance = balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
-    let maxAllowedAmount: number = useMemo(() => {
-        if (!fromCurrency || !minAllowedAmount || !maxAmountFromApi) return 0
-        return resolveMaxAllowedAmount({ fromCurrency, limitsMinAmount: minAllowedAmount, limitsMaxAmount: maxAmountFromApi, walletBalance, gasAmount, native_currency })
-    }, [fromCurrency, minAllowedAmount, maxAmountFromApi, walletBalance, gasAmount, native_currency])
-
     const placeholder = '0'
+
     const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
 
     const disabled = Boolean(fromExchange && !toCurrency)
 
     return (<>
         <div className="flex flex-col w-full bg-secondary-500 rounded-lg">
-            <div className={`relative w-full group-[.exchange-amount-field]:pb-2 group ${usdPosition === "right" ? "focus-within:[&_.usd-suffix]:invisible" : ""}`}>
+            <div className={`space-y-0.5 relative w-full group-[.exchange-amount-field]:pb-2 group ${usdPosition === "right" ? "focus-within:[&_.usd-suffix]:invisible" : ""}`}>
                 <NumericInput
                     disabled={disabled}
                     placeholder={placeholder}
-                    min={minAllowedAmount}
-                    max={Number(truncateDecimals(maxAllowedAmount, fromCurrency?.precision)) || 0}
-                    onFocus={onAmountFocus}
-                    onBlur={onAmountBlur}
                     step={isNaN(step) ? 0.01 : step}
                     name={name}
                     ref={amountRef}
                     precision={fromCurrency?.precision}
+                    tempValue={actionValue}
                     className="w-full text-[28px] text-primary-text placeholder:!text-primary-text leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal group-[.exchange-amount-field]:px-2.5 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! pl-0"
                     onChange={e => {
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);

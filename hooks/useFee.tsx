@@ -7,19 +7,6 @@ import { sleep } from 'fuels'
 import { create } from 'zustand';
 import { isDiffByPercent } from '@/components/utils/numbers'
 
-type LoadingState = {
-    key: string | null;
-    setKey: (value: string | null) => void;
-    isLoading: boolean;
-    setLoading: (loading: boolean) => void;
-};
-
-export const useLoadingStore = create<LoadingState>((set) => ({
-    key: null,
-    setKey: (value) => set({ key: value }),
-    isLoading: false,
-    setLoading: (loading) => set({ isLoading: loading }),
-}));
 
 type UseQuoteData = {
     minAllowedAmount?: number
@@ -101,22 +88,32 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
 
     const { cache } = useSWRConfig();
     const isQuoteLoading = useLoadingStore((state) => state.isLoading);
-
+    //TODO: implement middleware that handles the delay logic
     const quoteFetchWrapper = useCallback(async (url: string): Promise<ApiResponse<Quote>> => {
         const { setLoading, key, setKey } = useLoadingStore.getState()
-        if (key !== url) {
-            setLoading(true)
+        try {
+            if (key !== url) {
+                setLoading(true)
+            }
+            const previousData = cache.get(url)?.data as ApiResponse<Quote>
+            const newData = await apiClient.fetcher(url) as ApiResponse<Quote>
+            if (previousData?.data?.quote && isDiffByPercent(previousData?.data?.quote.receive_amount, newData.data?.quote.receive_amount, 2)) {
+                const { setLoading } = useLoadingStore.getState()
+                setLoading(true)
+                await sleep(3500)
+            }
+            setKey(url)
+            setLoading(false)
+            return newData
         }
-        const previousData = cache.get(url)?.data as ApiResponse<Quote>
-        const newData = await apiClient.fetcher(url)
-        if (previousData?.data?.quote && isDiffByPercent(previousData?.data?.quote.receive_amount, newData.data?.quote.receive_amount, 2)) {
-            const { setLoading } = useLoadingStore.getState()
-            setLoading(true)
-            await sleep(3500)
+        catch (error) {
+            setKey(null)
+            throw error
         }
-        setKey(url)
-        setLoading(false)
-        return newData
+        finally {
+            setLoading(false)
+        }
+
     }, [cache])
 
     const { data: quote, mutate: mutateFee, error: quoteError } = useSWR<ApiResponse<Quote>>(quoteURL, quoteFetchWrapper, {
@@ -226,3 +223,16 @@ export function buildLimitsUrl({
 
     return `/limits?${params.toString()}`;
 }
+type LoadingState = {
+    key: string | null;
+    setKey: (value: string | null) => void;
+    isLoading: boolean;
+    setLoading: (loading: boolean) => void;
+};
+
+export const useLoadingStore = create<LoadingState>((set) => ({
+    key: null,
+    setKey: (value) => set({ key: value }),
+    isLoading: false,
+    setLoading: (loading) => set({ isLoading: loading }),
+}));
