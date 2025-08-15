@@ -39,7 +39,7 @@ export default function StatusIcon({ swap, withBg, short }: { swap: SwapItem, wi
 
 const IconComponentWrapper = ({ children, withBg, classNames }: { children: React.ReactNode, withBg?: boolean, classNames?: string }) => {
   return (
-    <div className={`inline-flex items-center gap-1 font-bold ${classNames} ${withBg ? 'py-1 w-full justify-center rounded-lg' : 'bg-transparent!'}`}>
+    <div className={`inline-flex items-center gap-1 pt-3 font-bold ${classNames} ${withBg ? 'py-1.5 w-full justify-center rounded-b-2xl' : 'bg-transparent!'}`}>
       {children}
     </div>
   )
@@ -83,11 +83,11 @@ const SecondaryComponent = ({ text, withBg, short }: IconComponentProps) => {
 
 const YellowComponent = ({ text, withBg, short }: IconComponentProps) => {
   return (
-    <IconComponentWrapper withBg={withBg} classNames="bg-yellow-950/40 text-yellow-600">
+    <IconComponentWrapper withBg={withBg} classNames="bg-[#614713] text-[#D69A22]">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 60 60" fill="none">
         <circle cx="30" cy="30" r="30" fill="#DF8B16" />
       </svg>
-      {!short && <p>{text}</p>}
+      {!short && <p className="text-sm font-bold">{text}</p>}
     </IconComponentWrapper>
   )
 }

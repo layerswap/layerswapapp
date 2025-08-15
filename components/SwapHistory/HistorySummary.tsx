@@ -70,7 +70,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
     return (
         source_token && <>
             <div className={`${className || ""} bg-secondary-500 relative z-10 w-full rounded-xl overflow-hidden hover:bg-secondary-400`}>
-                <div className="grid grid-cols-12 items-center gap-2">
+                <div className="grid grid-cols-12 items-center gap-2 relative z-50">
                     <div className="col-span-6 flex items-center gap-2 p-3">
                         <div className="w-8 h-8 relative">
                             <ImageWithFallback
@@ -161,11 +161,13 @@ const HistorySummary: FC<SwapInfoProps> = ({
                         </div>
                     </div>
                 </div>
-                {
-                    swap.status !== SwapStatus.Completed &&
-                    <StatusIcon swap={swap} withBg />
-                }
             </div>
+            {
+                //swap.status !== SwapStatus.Completed &&
+                <div className="-mt-2 z-0 relative">
+                    <StatusIcon swap={swap} withBg />
+                </div>
+            }
         </>
     )
 }

@@ -99,6 +99,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
     const pendingSwaps = pendingSwapPages?.map(p => p?.data).flat(1) || []
 
     const pendingHaveMorepages = (pendingSwapPages && Number(pendingSwapPages[pendingSwapPages.length - 1]?.data?.length) == PAGE_SIZE);
+    const hiddenPendingCount = Math.max(0, pendingSwaps.length - 1)
 
     const flattenedSwaps = grouppedSwaps?.flatMap(g => {
         return [g.key, ...g.values]
@@ -172,31 +173,20 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                 const collapsablePendingSwap = pendingSwaps.length > 1 && virtualRow.index === 0
                                 const collapsedPendingSwap = !showAll && collapsablePendingSwap
 
+                                const pendingRegionLength = showAll ? pendingSwaps.length : Math.min(1, pendingSwaps.length)
+                                const atEndOfPendingRegion = virtualRow.index === (pendingRegionLength - 1)
+                                const shouldShowToggleButtonBelow = hiddenPendingCount > 0 && atEndOfPendingRegion
+
                                 return (
                                     <div
                                         key={virtualRow.key}
                                         data-index={virtualRow.index}
                                         ref={rowVirtualizer.measureElement}
                                     >
-                                        {collapsablePendingSwap &&
-                                            <div className="w-full flex justify-end pb-2">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowAll(!showAll)}
-                                                    className='flex items-center gap-1 text-xs font-normal text-secondary-text hover:text-primary-text pr-2'
-                                                >
-                                                    <p className="select-none">See all incomplete swaps</p>
-                                                    <ChevronDown className={`${showAll && 'rotate-180'} transition-transform duation-200 w-4 h-4`} />
-                                                </button>
-                                            </div>
-                                        }
-                                        <AccordionItem value={swapId} className="border-none mb-4">
+                                        <AccordionItem value={swapId} className="border-none mb-7">
                                             <AccordionTrigger className="relative z-10">
                                                 <div className="cursor-pointer">
                                                     <HistorySummary swapResponse={swap} wallets={wallets} />
-                                                    {collapsedPendingSwap &&
-                                                        <div className="z-0 h-6 -top-4 opacity-65 shadow-lg relative bg-secondary-500 p-3 w-[95%] mx-auto font-normal space-y-3 hover:bg-secondary-400 rounded-xl overflow-hidden cursor-pointer" />
-                                                    }
                                                 </div>
                                             </AccordionTrigger>
                                             <AccordionContent className="-mt-3 rounded-b-3xl bg-secondary-900">
@@ -213,11 +203,32 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                                         <ChevronUp className="w-3 h-3" />
                                                     </button>
                                                 </div>
-                                                <div className="px-4 py-2"> 
+                                                <div className="px-4 py-2">
                                                     <SwapDetails swapResponse={swap} />
                                                 </div>
                                             </AccordionContent>
                                         </AccordionItem>
+
+                                        {shouldShowToggleButtonBelow && (
+                                            <div className="w-full flex justify-center mt-6">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowAll(!showAll)}
+                                                    className="flex items-center gap-1 text-sm font-normal text-secondary-text hover:text-primary-text px-3 py-1 rounded-lg bg-secondary-400"
+                                                >
+                                                    {showAll ? (
+                                                        <>
+                                                            <ChevronUp className="transition-transform duration-200 w-6 h-6" />
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <span className="select-none">+{hiddenPendingCount} more</span>
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        )}
+
                                         {pendingHaveMorepages && virtualRow.index === pendingSwaps.length - 1 &&
                                             <button
                                                 disabled={pendingSwapsLoading || pendingSwapsValidating}
