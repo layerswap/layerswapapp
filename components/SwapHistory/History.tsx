@@ -154,7 +154,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                             data-index={virtualRow.index}
                                             ref={rowVirtualizer.measureElement}
                                         >
-                                            <div className="w-full pb-3 pt-3">
+                                            <div className="w-full pb-3">
                                                 {data !== 'Pending' &&
                                                     <p className="text-sm text-secondary-text font-normal pl-2">
                                                         {resolveDate(data)}
@@ -183,7 +183,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                         data-index={virtualRow.index}
                                         ref={rowVirtualizer.measureElement}
                                     >
-                                        <AccordionItem value={swapId} className="border-none mb-7">
+                                        <AccordionItem value={swapId} className="border-none mb-6">
                                             <AccordionTrigger className="relative z-10">
                                                 <div className="cursor-pointer">
                                                     <HistorySummary swapResponse={swap} wallets={wallets} />
@@ -210,7 +210,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                         </AccordionItem>
 
                                         {shouldShowToggleButtonBelow && (
-                                            <div className="w-full flex justify-center mt-6">
+                                            <div className="w-full flex justify-center mt-6 mb-4">
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowAll(!showAll)}

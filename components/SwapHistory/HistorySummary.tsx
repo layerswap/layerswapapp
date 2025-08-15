@@ -95,7 +95,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                             <span className="text-white text-lg leading-5 flex min-w-0">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <span className="truncate overflow-hidden whitespace-nowrap max-w-[90px]">
+                                        <span className="truncate overflow-hidden whitespace-nowrap max-w-[100px]">
                                             {requested_amount}
                                         </span>
                                     </TooltipTrigger>
@@ -124,7 +124,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                             <span className="text-white text-lg leading-5 flex min-w-0">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <span className="truncate overflow-hidden whitespace-nowrap max-w-[90px]">
+                                        <span className="truncate overflow-hidden whitespace-nowrap max-w-[100px]">
                                             {calculatedReceiveAmount}
                                         </span>
                                     </TooltipTrigger>

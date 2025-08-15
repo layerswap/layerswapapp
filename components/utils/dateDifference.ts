@@ -27,9 +27,9 @@ export const getDateDifferenceString = (fromDate: Date, toDate: Date = new Date(
     } else if (months > 0) {
         parts.push(`${months} month${months !== 1 ? "s" : ""}`);
         if (days > 0) parts.push(`${days} day${days !== 1 ? "s" : ""}`);
-    } else {
+    } else if (days > 0) {
         parts.push(`${days} day${days !== 1 ? "s" : ""}`);
     }
 
-    return parts.join(", ") + " ago";
-}
+    return parts.length > 0 ? `(${parts.join(", ")} ago)` : ``;
+};
