@@ -174,9 +174,9 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                 const collapsablePendingSwap = pendingSwaps.length > 1 && virtualRow.index === 0
                                 const collapsedPendingSwap = !showAll && collapsablePendingSwap
 
-                                const pendingRegionLength = showAll ? pendingSwaps.length : Math.min(1, pendingSwaps.length)
-                                const atEndOfPendingRegion = virtualRow.index === (pendingRegionLength - 1)
-                                const shouldShowToggleButtonBelow = hiddenPendingCount > 0 && atEndOfPendingRegion
+                                const pendingSwapsLength = showAll ? pendingSwaps.length : Math.min(1, pendingSwaps.length)
+                                const endOfPendingSwaps = virtualRow.index === (pendingSwapsLength - 1)
+                                const shouldShowToggleButton = hiddenPendingCount > 0 && endOfPendingSwaps
 
                                 return (
                                     <div
@@ -211,7 +211,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                             </AccordionContent>
                                         </AccordionItem>
 
-                                        {shouldShowToggleButtonBelow && (
+                                        {shouldShowToggleButton && (
                                             <div className="w-full flex justify-center my-4">
                                                 <button
                                                     type="button"
