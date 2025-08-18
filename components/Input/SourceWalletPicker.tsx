@@ -170,7 +170,7 @@ export const FormSourceWalletButton: FC = () => {
     }
 
     const handleSelectWallet = (props?: SelectAccountProps) => {
-        if (props) {
+        if (props?.address) {
             SwitchWalletAccount(props, provider)
             setFieldValue('depositMethod', 'wallet')
         }
