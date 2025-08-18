@@ -6,9 +6,9 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import MinMax from "./Amount/MinMax";
 import { LayoutGroup, motion } from "framer-motion";
 import { useQuoteData } from "@/hooks/useFee";
-import { useState } from "react";
 import clsx from "clsx";
-import sleep from "@/lib/wallets/utils/sleep";
+import { useClickOutside } from "@/hooks/useClickOutside";
+import { useState } from "react";
 
 type Props = {
     minAllowedAmount: ReturnType<typeof useQuoteData>['minAllowedAmount'];
@@ -17,48 +17,47 @@ type Props = {
 }
 
 const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fee }: Props) => {
-    const { values } = useFormikContext<SwapFormValues>();
+    const { values } = useFormikContext<SwapFormValues>()
 
-    const { fromAsset: fromCurrency, from, to, amount } = values || {};
-    const [isAmountFocused, setIsAmountFocused] = useState(false);
-    const showMinMax = isAmountFocused || !amount;
+    const { fromAsset: fromCurrency, from } = values || {}
+    const { ref: parentRef, isActive: showQuickActions, activate: setShowQuickActions } = useClickOutside<HTMLDivElement>(false)
+    const [actiontempValue, setActionTempValue] = useState<number | undefined>(0)
 
-    return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl py-4.5 px-4 space-y-8">
-        <div className="flex justify-between items-center">
-            <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5">
+    const handleActionHover = (value: number | undefined) => {
+        setActionTempValue(value)
+    }
+
+    return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl pt-4 pb-3.5 px-4 space-y-8 group" onClick={setShowQuickActions} ref={parentRef}>
+        <div className="flex justify-between items-center h-7">
+            <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5 mt-0.5">
                 Send from
             </label>
-            <div className="hover:bg-secondary-400 rounded-lg p-1.5 -m-1.5">
+            <div className="hover:bg-secondary-400 rounded-lg py-1 pl-2 pr-0.5">
                 <SourceWalletPicker />
             </div>
         </div>
-        <div className="relative group">
+        <div className="relative">
             {
-                from && to && fromCurrency && minAllowedAmount && maxAmountFromApi &&
+                from && fromCurrency &&
                 <div className={clsx(
-                    "absolute z-10 -top-6 left-0",
+                    "absolute z-10 -top-[26px] left-0",
                     {
-                        "hidden": !showMinMax,
-                        "block": showMinMax
-                    }
+                        "hidden": !showQuickActions,
+                        "block": showQuickActions
+                    },
+                    "group-hover:block"
                 )}>
-                    <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />
+                    <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} />
                 </div>
             }
             <LayoutGroup>
-                <div className="grid grid-cols-8 gap-2 group">
+                <div className="grid grid-cols-8 gap-2">
                     <motion.div
                         layout
                         transition={{ duration: 0.25, ease: 'easeInOut' }}
                         className="col-span-5"
                     >
-                        <AmountField
-                            onAmountFocus={() => setIsAmountFocused(true)}
-                            onAmountBlur={async () => { await sleep(500); setIsAmountFocused(false) }}
-                            minAllowedAmount={minAllowedAmount}
-                            maxAllowedAmount={maxAmountFromApi}
-                            fee={fee}
-                        />
+                        <AmountField fee={fee} actionValue={actiontempValue} />
                     </motion.div>
                     <motion.div
                         transition={{ duration: 0.25, ease: 'easeInOut' }}

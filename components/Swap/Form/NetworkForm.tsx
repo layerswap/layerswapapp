@@ -278,7 +278,7 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
             aria-label="Reverse the source and destination"
             disabled={valuesSwapperDisabled}
             onClick={valuesSwapper}
-            className="hover:text-primary absolute right-[calc(50%-16px)] top-[144px] z-10 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none">
+            className="hover:text-primary absolute right-[calc(50%-16px)] top-[150px] z-10 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none">
             <motion.div
                 animate={animate}
                 transition={{ duration: 0.3 }}

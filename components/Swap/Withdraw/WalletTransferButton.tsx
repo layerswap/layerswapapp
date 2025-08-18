@@ -1,9 +1,9 @@
 import SwitchIcon from '@/components/icons/SwitchIcon';
-import WalletTransfer from './Wallet';
 import WalletTransferContent from './WalletTransferContent';
 import { FC, useState } from 'react';
 import ManualTransferNote from './Wallet/Common/manualTransferNote';
 import { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
+import { WalletTransferAction } from './Wallet';
 
 type Props = {
     swapBasicData: SwapBasicData,
@@ -15,8 +15,8 @@ const WalletTransferButton: FC<Props> = ({ swapBasicData: swapData, swapId, refu
     const [openModal, setOpenModal] = useState(false);
 
     return <>
-        <div className='rounded-xl bg-secondary-500 divide-y divide-secondary-300 px-3'>
-            <div className="py-3 flex justify-between">
+        <div className='rounded-xl bg-secondary-500 divide-y divide-secondary-300 p-3'>
+            <div className="flex justify-between pb-3">
                 <p className="text-base  text-secondary-text font-normal">
                     Sending from wallet
                 </p>
@@ -31,7 +31,7 @@ const WalletTransferButton: FC<Props> = ({ swapBasicData: swapData, swapId, refu
             <div>
                 <WalletTransferContent openModal={openModal} setOpenModal={setOpenModal} swapData={swapData} />
                 {balanceWarning}
-                <WalletTransfer swapData={swapData} swapId={swapId} refuel={refuel} />
+                <WalletTransferAction swapData={swapData} swapId={swapId} refuel={refuel} />
             </div>
         </div>
         <div className="flex justify-center">

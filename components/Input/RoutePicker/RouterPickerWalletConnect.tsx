@@ -132,9 +132,12 @@ const AccountsList: FC<Props> = (props) => {
     const { selectedAccount, onSelect, network } = props
     const provider = selectedAccount?.provider;
     const connectedWallets = provider?.connectedWallets || []
+    const networkName = provider?.autofillSupportedNetworks ? { name: provider?.autofillSupportedNetworks[0] } : undefined
 
-    const isAccountDuplicate = selectedAccount && network && connectedWallets.some(
-        (w) => w.addresses.some((address) => addressFormat(address, network) === addressFormat(selectedAccount.address, network))
+    const walletNetwork = network || networkName;
+
+    const isAccountDuplicate = selectedAccount && walletNetwork && connectedWallets.some(
+        (w) => w.addresses.some((address) => addressFormat(address, walletNetwork) === addressFormat(selectedAccount.address, walletNetwork))
     )
 
     const accounts: (Wallet | AccountIdentity)[] = [

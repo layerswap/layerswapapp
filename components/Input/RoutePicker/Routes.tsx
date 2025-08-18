@@ -11,7 +11,7 @@ import { useBalanceStore } from "@/stores/balanceStore";
 import { useBalanceAccounts } from "@/context/balanceAccounts";
 import clsx from "clsx";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
-import { motion } from "framer-motion";
+import ArrowIcon from "@/components/icons/ArrowIcon";
 
 type TokenItemProps = {
     route: NetworkRoute;
@@ -342,8 +342,8 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
             ) : (
                 <SelectedRoutePlaceholder placeholder={placeholder} />
             )}
-            <span className="absolute right-0 pr-2 pl-1 pointer-events-none text-primary-text">
-                <ChevronDown className="h-3.5 w-3.5 text-secondary-text" aria-hidden="true" />
+            <span className="absolute right-0 px-1 pointer-events-none text-primary-text">
+                <ArrowIcon className="h-6 w-6 text-secondary-text" aria-hidden="true" />
             </span>
         </span>
     )

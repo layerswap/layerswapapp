@@ -15,7 +15,7 @@ import FilledCheck from "../icons/FilledCheck";
 import clsx from "clsx";
 import { SwitchWalletAccount } from "@/helpers/accountSelectHelper";
 
-const Component: FC = () => {
+const SourceWalletPicker: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
 
     const {
@@ -55,7 +55,7 @@ const Component: FC = () => {
             values.depositMethod === 'deposit_address' ?
                 (
                     provider
-                        ? <div className="flex items-center space-x-2 text-sm leading-4">
+                        ? <div className="flex items-center space-x-2 text-sm">
                             <div onClick={handleWalletChange} className="flex space-x-1 items-center cursor-pointer">
                                 <div className="text-secondary-text">
                                     Manual Transfer
@@ -70,7 +70,7 @@ const Component: FC = () => {
                         </div>
                 )
                 :
-                <div className="rounded-lg flex items-center space-x-2 text-sm leading-4">
+                <div className="rounded-lg flex items-center space-x-2 text-sm">
                     {
                         selectedSourceAccount && selectedSourceAccount?.address && <>
                             <div onClick={handleWalletChange} className="rounded-lg flex space-x-1 items-center cursor-pointer">
@@ -283,4 +283,4 @@ const ContinueWithoutWallet: FC<{ onClick: () => void }> = ({ onClick }) => {
     )
 }
 
-export default Component
+export default SourceWalletPicker

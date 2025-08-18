@@ -33,8 +33,8 @@ const DestinationPicker = (props: Props) => {
 
     const showAddDestinationAddress = !destination_address && to && ((from && autofilProvider?.id !== withdrawalProvider?.id) || depositMethod === 'deposit_address')
 
-    return <div className='flex flex-col w-full bg-secondary-500 rounded-2xl py-4.5 px-4 space-y-8'>
-        <div className="flex justify-between items-center h-[20px]">
+    return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl pt-4 pb-3.5 px-4 space-y-8">
+        <div className="flex justify-between items-center h-7">
             <label htmlFor="To" className="block font-normal text-secondary-text text-base leading-5 w-30">
                 Receive at
             </label>
