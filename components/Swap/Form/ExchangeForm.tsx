@@ -34,6 +34,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     const { fromAsset: fromCurrency, from, to: destination, destination_address, amount } = values || {};
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
     const [isAmountFocused, setIsAmountFocused] = useState(false);
+    const [actiontempValue, setActionTempValue] = useState<number | undefined>(0)
 
     const { wallets } = useWallet();
     const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == destination_address?.toLowerCase())?.icon;
@@ -46,6 +47,10 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     const isValid = !formValidation.message;
     const error = formValidation.message;
     const showMinMax = isAmountFocused || !amount;
+
+    const handleActionHover = (value: number | undefined) => {
+        setActionTempValue(value)
+    }
 
     return (
         <>
@@ -104,18 +109,15 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                                 "block": showMinMax
                                             }
                                             )}>
-                                                <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />
+                                                <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} />
                                             </div>
                                         }
                                     </div>
                                     <div className="relative group exchange-amount-field px-1">
                                         <AmountField
                                             fee={quote}
-                                            minAllowedAmount={minAllowedAmount}
-                                            maxAllowedAmount={maxAmountFromApi}
                                             usdPosition="right"
-                                            onAmountFocus={() => setIsAmountFocused(true)}
-                                            onAmountBlur={async () => { await sleep(500); setIsAmountFocused(false) }}
+                                            actionValue={actiontempValue}
                                         />
                                     </div>
                                 </div>
