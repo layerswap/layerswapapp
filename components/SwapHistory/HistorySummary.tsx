@@ -163,7 +163,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                 </div>
             </div>
             {
-                //swap.status !== SwapStatus.Completed &&
+                swap.status !== SwapStatus.Completed &&
                 <div className="-mt-2 z-0 relative">
                     <StatusIcon swap={swap} withBg />
                 </div>
