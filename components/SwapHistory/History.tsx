@@ -153,8 +153,9 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                             key={virtualRow.key}
                                             data-index={virtualRow.index}
                                             ref={rowVirtualizer.measureElement}
+                                            className=""
                                         >
-                                            <div className="w-full pb-3">
+                                            <div className="w-full pb-3 mt-6 last:mb-0">
                                                 {data !== 'Pending' &&
                                                     <p className="text-sm text-secondary-text font-normal pl-2">
                                                         {resolveDate(data)}
@@ -182,9 +183,10 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                         key={virtualRow.key}
                                         data-index={virtualRow.index}
                                         ref={rowVirtualizer.measureElement}
+                                        className="mb-3 last:mb-0"
                                     >
-                                        <AccordionItem value={swapId} className="border-none mb-6">
-                                            <AccordionTrigger className="relative z-10">
+                                        <AccordionItem value={swapId} className="border-none">
+                                            <AccordionTrigger className="relative z-10 mb-3 last:mb-0">
                                                 <div className="cursor-pointer">
                                                     <HistorySummary swapResponse={swap} wallets={wallets} />
                                                 </div>
@@ -210,7 +212,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                         </AccordionItem>
 
                                         {shouldShowToggleButtonBelow && (
-                                            <div className="w-full flex justify-center mt-6 mb-4">
+                                            <div className="w-full flex justify-center my-4">
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowAll(!showAll)}
