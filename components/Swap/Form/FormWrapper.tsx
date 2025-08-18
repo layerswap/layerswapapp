@@ -190,9 +190,9 @@ type SubmitProps = {
 }
 
 const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, createSwap, setNetworkToConnect, setShowConnectNetworkModal, setSwapId, setSubmitedFormValues }: SubmitProps) => {
+    setSubmitedFormValues(values)
     if (values.depositMethod == 'wallet') {
         setSwapId(undefined)
-        setSubmitedFormValues(values)
         setShowSwapModal(true)
         return
     }

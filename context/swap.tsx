@@ -114,7 +114,7 @@ export function SwapDataProvider({ children }) {
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `/swaps/${swapId}?exclude_deposit_actions=true`
     const [interval, setInterval] = useState(0)
-    const { data, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval, keepPreviousData: true })
+    const { data, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
 
     const handleChangeSelectedSourceAccount = (props: { wallet: Wallet, address: string } | undefined) => {
         if (!props) {
@@ -139,7 +139,7 @@ export function SwapDataProvider({ children }) {
         return swapBasicFormData
     }, [data, swapBasicFormData, swapId])
 
-    const swapDetails = useMemo(() => {
+     const swapDetails = useMemo(() => {
         if (swapId)
             return data?.data?.swap
     }, [data, swapId])
