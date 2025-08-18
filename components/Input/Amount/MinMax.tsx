@@ -68,12 +68,11 @@ const MinMax = (props: MinMaxProps) => {
     }
 
     return (
-        <div className="flex gap-1.5 text-xs">
+        <div className="flex gap-1.5 text-xs group" onMouseLeave={() => onActionHover(undefined)}>
             {
                 Number(limitsMinAmount) > 0 &&
                 <button
                     onMouseEnter={() => onActionHover(limitsMinAmount)}
-                    onMouseLeave={() => onActionHover(undefined)}
                     disabled={!limitsMinAmount}
                     onClick={handleSetMinAmount}
                     typeof="button"
@@ -87,7 +86,6 @@ const MinMax = (props: MinMaxProps) => {
                 Number(walletBalance?.amount) > 0 &&
                 <button
                     onMouseEnter={() => onActionHover((walletBalance?.amount || 0) / 2)}
-                    onMouseLeave={() => onActionHover(undefined)}
                     onClick={handleSetHalfAmount}
                     typeof="button"
                     type="button"
@@ -100,7 +98,6 @@ const MinMax = (props: MinMaxProps) => {
                 Number(maxAllowedAmount) > 0 &&
                 <button
                     onMouseEnter={() => onActionHover(maxAllowedAmount)}
-                    onMouseLeave={() => onActionHover(undefined)}
                     disabled={!maxAllowedAmount}
                     onClick={handleSetMaxAmount}
                     typeof="button"
