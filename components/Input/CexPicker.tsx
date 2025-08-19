@@ -1,10 +1,10 @@
 import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
-import { Selector, SelectorContent, SelectorTrigger, useSelectorState } from "../Select/CommandNew/Index";
+import { Selector, SelectorContent, SelectorTrigger, useSelectorState } from "../Select/Selector/Index";
 import { Exchange } from "../../Models/Exchange";
 import React from "react";
-import { SelectItem } from "../Select/CommandNew/SelectItem/Index";
+import { SelectItem } from "../Select/Selector/SelectItem";
 import useFormRoutes from "@/hooks/useFormRoutes";
 import { SelectedRoutePlaceholder } from "./RoutePicker/Routes";
 import { LayoutGroup, motion } from "framer-motion";
@@ -78,7 +78,7 @@ const CexPicker: FC = () => {
                 <SelectorTrigger disabled={false} className="bg-secondary-500">
                     <SelectedNetworkDisplay exchange={fromExchange} placeholder="Select Exchange" />
                 </SelectorTrigger>
-                <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search" header="">
+                <SelectorContent isLoading={isLoading} searchHint="Search" header="">
                     {({ closeModal }) => (
                         <div className="overflow-y-auto flex flex-col h-full z-40" >
                             <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={isOpen} />

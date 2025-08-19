@@ -6,7 +6,7 @@ import { CollapsibleRow } from "./CollapsibleRow";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import RouteTokenSwitch from "../RouteTokenSwitch";
 import clsx from "clsx";
-import { SelectItem } from "@/components/Select/CommandNew/SelectItem/Index";
+import { SelectItem } from "@/components/Select/Selector/SelectItem";
 
 type Props = {
     item: RowElement;

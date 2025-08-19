@@ -41,11 +41,6 @@ export default function CommandSelect({ values, setValue, show, setShow, searchH
     const { isDesktop, isMobile, windowSize } = useWindowDimensions();
 
     let groups: SelectMenuItemGroup[] = valueGrouper(values);
-    const handleSelectValue = useCallback((item: ISelectMenuItem) => {
-        setValue(item);
-        setShow(false);
-    }, [setValue, setShow]);
-
     const inputRef = React.useRef<HTMLInputElement>(null);
 
     return (
@@ -59,7 +54,7 @@ export default function CommandSelect({ values, setValue, show, setShow, searchH
             <VaulDrawer.Snap
                 id='item-1'
                 style={{ height: isMobile && windowSize.height ? `${(windowSize.height * 0.8).toFixed()}px` : '' }}
-                fullheight={isDesktop}
+                openFullHeight={isDesktop || (isMobile && !windowSize.height)}
             >
                 <CommandWrapper>
                     {searchHint &&

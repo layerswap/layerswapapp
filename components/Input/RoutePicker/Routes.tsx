@@ -1,7 +1,7 @@
 import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
 import { SwapDirection } from "../../DTOs/SwapFormValues";
 import { truncateDecimals } from "../../utils/RoundDecimals";
-import { SelectItem } from "../../Select/CommandNew/SelectItem/Index";
+import { SelectItem } from "../../Select/Selector/SelectItem";
 import { ChevronDown } from "lucide-react";
 import RoutePickerIcon from "../../icons/RoutePickerPlaceholder";
 import { useBalance } from "../../../lib/balances/providers/useBalance";
