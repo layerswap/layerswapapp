@@ -197,16 +197,17 @@ const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement> & { id: `item-${nu
 
     let [ref, { height }] = useMeasure();
     const { setSnapElemenetsHeight } = useSnapPoints()
+    const { isMobile } = useWindowDimensions();
 
     useEffect(() => {
-        if (!height) return;
+        if (!height || isMobile) return;
 
         setSnapElemenetsHeight((prev) => {
             const id = Number(props.id?.replace('item-', ''));
             return [{ id, height: height as number, fullHeight: fullheight }, ...prev.filter((item) => item.id !== id)]
         })
 
-    }, [height])
+    }, [height, isMobile])
 
     return (
         <div {...domProps} className={props.className ?? 'pb-4'} id={props.id} ref={ref}>

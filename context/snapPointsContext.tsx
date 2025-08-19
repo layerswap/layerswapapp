@@ -51,6 +51,12 @@ export const SnapPointsProvider: FC<{ children: ReactNode, isMobile: boolean }> 
 
 const resolveSnapPoints = ({ isMobile, snapPointsCount, childrenHeights, headerHeight, footerHeight }: { snapPointsCount: number, isMobile: boolean, childrenHeights: SnapElement[], headerHeight: number, footerHeight: number }) => {
 
+    if (isMobile && typeof window !== "undefined") {
+        return [
+            { id: 1, height: `${Math.floor(window.innerHeight * 0.8)}px` } 
+        ];
+    }
+
     let points: SnapElement[] = [];
 
     function sumBeforeIndex(arr, n) {
