@@ -4,7 +4,7 @@ import { SwapDirection, SwapFormValues } from "../components/DTOs/SwapFormValues
 export const resolveExchangesURLForSelectedToken = (direction: SwapDirection, values: SwapFormValues) => {
 
     const include_unmatched = 'true'
-    const include_swaps = 'true'
+    const include_swaps = 'false'
     const include_unavailable = 'true'
 
     const { from, to, fromAsset: fromCurrency, toAsset: toCurrency } = values
@@ -49,17 +49,20 @@ export const resolveExchangeHistoricalNetworksURL = (direction: SwapDirection, {
 
 export const resolveNetworkRoutesURL = (direction: SwapDirection, values: SwapFormValues, networkTypes?: string[]) => {
 
-    const { from, to, fromAsset: fromCurrency, toAsset: toCurrency } = values
+    const { from, to, fromAsset: fromCurrency, toAsset: toCurrency, fromExchange, toExchange } = values
 
     const selectednetwork = direction === "from" ? to : from
     const selectedToken = direction === "from" ? toCurrency?.symbol : fromCurrency?.symbol
-    return resolveRoutesURLForSelectedToken({ direction, network: selectednetwork?.name, token: selectedToken, includes: { unmatched: true, unavailable: true }, networkTypes })
+    
+    const includeSwaps = !(fromExchange || toExchange)
+    
+    return resolveRoutesURLForSelectedToken({ direction, network: selectednetwork?.name, token: selectedToken, includes: { unmatched: true, unavailable: true }, networkTypes, includeSwaps })
 }
 
-export const resolveRoutesURLForSelectedToken = ({ direction, network, token, includes, networkTypes }: { direction: SwapDirection, network: string | undefined, token: string | undefined, includes: { unavailable: boolean, unmatched: boolean }, networkTypes?: string[] }) => {
+export const resolveRoutesURLForSelectedToken = ({ direction, network, token, includes, networkTypes, includeSwaps = true }: { direction: SwapDirection, network: string | undefined, token: string | undefined, includes: { unavailable: boolean, unmatched: boolean }, networkTypes?: string[], includeSwaps?: boolean }) => {
 
     const include_unmatched = includes.unmatched ? 'true' : 'false'
-    const include_swaps = 'true'
+    const include_swaps = includeSwaps ? 'true' : 'false'
     const include_unavailable = includes.unavailable ? 'true' : 'false'
 
     const params = new URLSearchParams({
