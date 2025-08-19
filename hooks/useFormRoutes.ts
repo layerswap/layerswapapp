@@ -142,32 +142,17 @@ function resolveSearch(routes: NetworkRoute[], search: string): RowElement[] {
     ];
 }
 
-const searchInNetworks = (routes: NetworkRoute[], search: string): NetworkElement[] => {
-    const lower = search.toLowerCase().trim();
 
-    return routes.filter(r => {
-        const internalNameMatch = r.name.toLowerCase().includes(lower);
-        const displayNameMatch = r.display_name?.toLowerCase().includes(lower);
-        return internalNameMatch || displayNameMatch;
-    }).map(r => ({ type: 'network', route: r }));
+const searchInNetworks = (routes: NetworkRoute[], search: string): NetworkElement[] => {
+    return routes.filter(r =>
+        r.name.toLowerCase().includes(search.toLowerCase())
+    ).map(r => ({ type: 'network', route: r }));
 }
 
 const searchInTokens = (routes: NetworkRoute[], search: string): NetworkTokenElement[] => {
-    const lower = search.toLowerCase().trim();
-
-    return extractTokenElementsAsSuggested(routes).filter(e => {
-        const { token, route } = e.route;
-
-        const symbolMatch = token.symbol.toLowerCase().includes(lower);
-        const contractMatch = token.contract?.toLowerCase().includes(lower);
-        const nameMatch = token.symbol?.toLowerCase().includes(lower);
-
-        const comboInternal = `${token.symbol} ${route.name}`.toLowerCase().includes(lower);
-        const comboDisplay = `${token.symbol} ${route.display_name}`.toLowerCase().includes(lower);
-
-        return symbolMatch || contractMatch || nameMatch || comboInternal || comboDisplay;
-    });
-};
+    return extractTokenElementsAsSuggested(routes).filter(e =>
+        e.route.token.symbol.toLowerCase().includes(search.toLowerCase()))
+}
 // ---------- Route Grouping ----------
 
 function groupRoutes(
