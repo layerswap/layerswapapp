@@ -22,11 +22,12 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
     const sourceCurrencyPriceInUsd = fee?.quote.source_token?.price_in_usd || fromCurrency?.price_in_usd;
 
     const requestedAmountInUsd = useMemo(() => {
-        const amountNumber = Number(amount);
+        const baseAmount = actionValue ?? amount;
+        const amountNumber = Number(baseAmount);
         if (isNaN(amountNumber) || amountNumber <= 0 || !sourceCurrencyPriceInUsd)
             return undefined;
         return formatUsd(sourceCurrencyPriceInUsd * amountNumber)
-    }, [amount, sourceCurrencyPriceInUsd]);
+    }, [amount, actionValue, sourceCurrencyPriceInUsd]);
 
     useEffect(() => {
         const input = amountRef.current;
