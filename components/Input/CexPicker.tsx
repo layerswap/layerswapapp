@@ -23,6 +23,7 @@ const CexPicker: FC = () => {
 
     const { exchanges, exchangesRoutesLoading: isLoading, selectedRoute, selectedToken, exchangeNetworks } = useFormRoutes({ direction, values });
     const { fromExchange, toAsset } = values;
+    const { shouldFocus } = useSelectorState();
 
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -78,9 +79,7 @@ const CexPicker: FC = () => {
                     <SelectedNetworkDisplay exchange={fromExchange} placeholder="Select Exchange" />
                 </SelectorTrigger>
                 <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search" header="">
-                    {({ closeModal }) => {
-                        const { shouldFocus } = useSelectorState();
-
+                    {({ closeModal, shouldFocus }) => {
                         return (
                             <div className="overflow-y-auto flex flex-col h-full z-40" >
                                 <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={shouldFocus} />
