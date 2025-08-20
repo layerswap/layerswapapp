@@ -1,6 +1,5 @@
 import { createContext, ReactNode, SetStateAction, useContext, useState } from "react";
 import { LeafletHeight } from "../../modal/leaflet";
-import Modal from "../../modal/modal";
 import VaulDrawer from "@/components/modal/vaulModal";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 
