@@ -66,7 +66,8 @@ const MinMax = (props: MinMaxProps) => {
             throw new Error("Wallet balance is not available");
         handleSetValue(maxAllowedAmount.toString())
     }
-
+    const halfOfBalance = (walletBalance?.amount || 0) / 2;
+    
     return (
         <div className="flex gap-1.5 text-xs group" onMouseLeave={() => onActionHover(undefined)}>
             {
@@ -83,9 +84,9 @@ const MinMax = (props: MinMaxProps) => {
                 </button>
             }
             {
-                Number(walletBalance?.amount) > 0 &&
+                halfOfBalance > 0 && (halfOfBalance < (maxAllowedAmount || Infinity)) &&
                 <button
-                    onMouseEnter={() => onActionHover((walletBalance?.amount || 0) / 2)}
+                    onMouseEnter={() => onActionHover(halfOfBalance)}
                     onClick={handleSetHalfAmount}
                     typeof="button"
                     type="button"

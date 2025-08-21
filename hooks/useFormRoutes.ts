@@ -27,24 +27,18 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const { exchangesRoutes, isLoading: exchangesRoutesLoading } = useExchangeRoutes({ direction, values })
     const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks({
         fromExchange: values.fromExchange?.name,
-        currencyGroup: values.currencyGroup?.symbol,
         to: values.to?.name,
         toAsset: values.toAsset?.symbol
     });
     const groupByToken = useRouteTokenSwitchStore((s) => s.showTokens)
     const { balances, isLoading: balancesLoading } = useAllBalances({ direction });
-    const exchange = values.fromExchange
     const routesHistory = useRecentNetworksStore(state => state.recentRoutes)
     const routeElements = useMemo(() => groupRoutes(routes, direction, balances, groupByToken ? "token" : "network", routesHistory, balancesLoading, search), [balancesLoading, routes, balances, direction, search, groupByToken, routesHistory]);
 
     const exchanges = useMemo(() => {
-        const grouped = groupExchanges(exchangesRoutes, search);
-        return grouped;
-    }, [exchangesRoutes, direction, search, values]);
+        return groupExchanges(exchangesRoutes, search);
+    }, [exchangesRoutes, search]);
 
-    const exchangeNetworks = useMemo(() => {
-        return withdrawalNetworks;
-    }, [withdrawalNetworks, exchange, search, values]);
 
     const selectedRoute = useMemo(() => resolveSelectedRoute(values, direction), [values, direction]);
     const selectedToken = useMemo(() => resolveSelectedToken(values, direction), [values, direction]);
@@ -55,7 +49,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         routeElements,
         exchanges,
         exchangesRoutesLoading,
-        exchangeNetworks,
+        exchangeNetworks: withdrawalNetworks,
         exchangeSourceNetworksLoading,
         selectedRoute,
         selectedToken,
@@ -66,7 +60,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         routeElements,
         exchanges,
         exchangesRoutesLoading,
-        exchangeNetworks,
+        withdrawalNetworks,
         exchangeSourceNetworksLoading,
         selectedRoute,
         selectedToken,
