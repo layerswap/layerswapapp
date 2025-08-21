@@ -33,8 +33,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
 
     const { fromAsset: fromCurrency, from, to: destination, destination_address, amount } = values || {};
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
-    const [isAmountFocused, setIsAmountFocused] = useState(false);
-    const [actiontempValue, setActionTempValue] = useState<number | undefined>(0)
+    const [actionTempValue, setActionTempValue] = useState<number | undefined>(0)
 
     const { wallets } = useWallet();
     const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == destination_address?.toLowerCase())?.icon;
@@ -118,7 +117,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                         <AmountField
                                             fee={quote}
                                             usdPosition="right"
-                                            actionValue={actiontempValue}
+                                            actionValue={actionTempValue}
                                         />
                                     </div>
                                 </div>

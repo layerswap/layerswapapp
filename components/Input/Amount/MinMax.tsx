@@ -63,7 +63,7 @@ const MinMax = (props: MinMaxProps) => {
 
     const handleSetMaxAmount = async () => {
         if (!maxAllowedAmount)
-            throw new Error("Wallet balance is not available");
+            throw new Error("Max amount is not available");
         handleSetValue(maxAllowedAmount.toString())
     }
     const halfOfBalance = (walletBalance?.amount || 0) / 2;

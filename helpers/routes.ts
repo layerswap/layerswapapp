@@ -53,9 +53,15 @@ export const resolveNetworkRoutesURL = (direction: SwapDirection, values: SwapFo
     const selectednetwork = direction === "from" ? to : from
     const selectedToken = direction === "from" ? toCurrency?.symbol : fromCurrency?.symbol
 
-    const includeSwaps = !(fromExchange || toExchange)
+    const isCEX = fromExchange || toExchange
 
-    return resolveRoutesURLForSelectedToken({ direction, network: selectednetwork?.name, token: selectedToken, includes: { unmatched: true, unavailable: true, swaps: includeSwaps }, networkTypes })
+    return resolveRoutesURLForSelectedToken({
+        direction,
+        network: isCEX ? undefined : selectednetwork?.name,
+        token: isCEX ? undefined : selectedToken,
+        includes: { unmatched: true, unavailable: true, swaps: !isCEX },
+        networkTypes
+    })
 }
 
 type IncludeOptions = {
