@@ -4,7 +4,6 @@ import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import NumericInput from "../NumericInput";
 import { useQuoteData } from "@/hooks/useFee";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
-import clsx from "clsx";
 
 interface AmountFieldProps {
     usdPosition?: "right" | "bottom";
