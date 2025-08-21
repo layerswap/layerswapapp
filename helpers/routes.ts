@@ -53,16 +53,30 @@ export const resolveNetworkRoutesURL = (direction: SwapDirection, values: SwapFo
 
     const selectednetwork = direction === "from" ? to : from
     const selectedToken = direction === "from" ? toCurrency?.symbol : fromCurrency?.symbol
-    
+
     const includeSwaps = !(fromExchange || toExchange)
-    
-    return resolveRoutesURLForSelectedToken({ direction, network: selectednetwork?.name, token: selectedToken, includes: { unmatched: true, unavailable: true }, networkTypes, includeSwaps })
+
+    return resolveRoutesURLForSelectedToken({ direction, network: selectednetwork?.name, token: selectedToken, includes: { unmatched: true, unavailable: true, swaps: includeSwaps }, networkTypes })
 }
 
-export const resolveRoutesURLForSelectedToken = ({ direction, network, token, includes, networkTypes, includeSwaps = true }: { direction: SwapDirection, network: string | undefined, token: string | undefined, includes: { unavailable: boolean, unmatched: boolean }, networkTypes?: string[], includeSwaps?: boolean }) => {
+type IncludeOptions = {
+    unavailable: boolean,
+    unmatched: boolean,
+    swaps: boolean
+}
+
+type ResolveRoutesURLForSelectedTokenProps = {
+    direction: SwapDirection,
+    network: string | undefined,
+    token: string | undefined,
+    includes: IncludeOptions,
+    networkTypes?: string[]
+}
+
+export const resolveRoutesURLForSelectedToken = ({ direction, network, token, includes, networkTypes }: ResolveRoutesURLForSelectedTokenProps) => {
 
     const include_unmatched = includes.unmatched ? 'true' : 'false'
-    const include_swaps = includeSwaps ? 'true' : 'false'
+    const include_swaps = includes.swaps ? 'true' : 'false'
     const include_unavailable = includes.unavailable ? 'true' : 'false'
 
     const params = new URLSearchParams({
