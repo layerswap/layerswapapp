@@ -20,6 +20,7 @@ import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../../context/authContext';
 import logError from '../../../../lib/logError';
 import SubmitButton from '../../../buttons/submitButton';
+import { usePostHog } from 'posthog-js/react';
 
 type Props = {
     swapBasicData: SwapBasicData;
@@ -34,6 +35,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     const { email, userId } = useAuthState();
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
     const [showSupportButton, setShowSupportButton] = React.useState(false);
+    const posthog = usePostHog()
 
     const {
         source_network,
@@ -110,19 +112,16 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     }, [inputTxStatus, transactionHash, swapDetails?.id])
 
     useEffect(() => {
-        if (swapDetails?.status === SwapStatus.Completed || swapDetails.status === SwapStatus.Failed) {
-            window.safary?.track({
-                eventName: "swap_status",
-                eventType: "status",
-                parameters: {
-                    custom_str_1_label: "swap_id",
-                    custom_str_1_value: swapDetails?.id,
-                    custom_str_2_label: "status",
-                    custom_str_2_value: swapDetails?.status,
-                }
+        if (
+            swapDetails?.status === SwapStatus.Completed ||
+            swapDetails?.status === SwapStatus.Failed
+        ) {
+            posthog?.capture("swap_status", {
+                swap_id: swapDetails?.id,
+                status: swapDetails?.status,
             })
         }
-    }, [swapDetails.status])
+    }, [swapDetails?.status, swapDetails?.id, posthog])
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 

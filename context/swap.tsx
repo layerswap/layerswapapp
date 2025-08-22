@@ -17,6 +17,7 @@ import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
 import { parse, ParsedUrlQuery } from 'querystring';
 import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
+import { usePostHog } from "posthog-js/react"
 
 export const SwapDataStateContext = createContext<SwapContextData>({
     codeRequested: false,
@@ -77,6 +78,7 @@ export function SwapDataProvider({ children }) {
     const { sourceRoutes, destinationRoutes } = useSettingsState()
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
+    const posthog = usePostHog()
 
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
     const { quote: formDataQuote } = useQuoteData(swapId ? undefined : quoteArgs);
@@ -139,7 +141,7 @@ export function SwapDataProvider({ children }) {
         return swapBasicFormData
     }, [data, swapBasicFormData, swapId])
 
-     const swapDetails = useMemo(() => {
+    const swapDetails = useMemo(() => {
         if (swapId)
             return data?.data?.swap
     }, [data, swapId])
@@ -231,21 +233,19 @@ export function SwapDataProvider({ children }) {
             to: { network: to.name, token: toCurrency.symbol }
         });
 
-        window.safary?.track({
-            eventType: 'swap',
-            eventName: 'swap_created',
-            parameters: {
-                custom_str_1_label: "from",
-                custom_str_1_value: fromExchange?.display_name || from?.display_name!,
-                custom_str_2_label: "to",
-                walletAddress: (fromExchange || depositMethod !== 'wallet') ? '' : selectedSourceAccount?.address!,
-                custom_str_2_value: to?.display_name!,
-                fromCurrency: fromExchange ? currencyGroup?.symbol! : fromCurrency?.symbol!,
-                toCurrency: toCurrency?.symbol!,
-                fromAmount: amount!,
-                toAmount: amount!
-            }
+        posthog?.capture("swap_created", {
+            from: fromExchange?.display_name || from?.display_name,
+            to: to?.display_name,
+            walletAddress:
+                fromExchange || depositMethod !== "wallet"
+                    ? ""
+                    : selectedSourceAccount?.address,
+            fromCurrency: fromExchange ? currencyGroup?.symbol : fromCurrency?.symbol,
+            toCurrency: toCurrency?.symbol,
+            fromAmount: amount,
+            toAmount: amount,
         })
+        debugger
         plausible(TrackEvent.SwapInitiated)
 
         return swap;

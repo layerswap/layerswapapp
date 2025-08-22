@@ -18,6 +18,12 @@ import ColorSchema from "./ColorSchema";
 import { IsExtensionError } from "../helpers/errorHelper";
 import { AsyncModalProvider } from "../context/asyncModal";
 import WalletsProviders from "./WalletProviders";
+import posthog from 'posthog-js'
+
+posthog.init('phc_YsHZuSbfiyqPpDb5SLgjRxcSNy3NV5JeDgOFNwTG7SJ', {
+  api_host: 'https://us.i.posthog.com',
+  defaults: '2025-05-24'
+})
 // import { datadogRum } from '@datadog/browser-rum';
 
 type Props = {

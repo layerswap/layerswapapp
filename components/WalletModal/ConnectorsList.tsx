@@ -16,6 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
 import { Checkbox } from "../shadcn/checkbox";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
+import { usePostHog } from "posthog-js/react"
 
 const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { isMobile } = useWindowDimensions()
@@ -27,6 +28,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const [isFocused, setIsFocused] = useState(false)
     const [showEcosystemSeletion, setShowEcosystemSelection] = useState(false)
     const [selectedMultiChainConnector, setSelectedMultiChainConnector] = useState<InternalConnector | undefined>(undefined)
+    const posthog = usePostHog()
 
     const [isScrolling, setIsScrolling] = useState(false);
     const scrollTimeout = useRef<any>(null);
@@ -57,17 +59,10 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
 
             const result = provider?.connectWallet && await provider.connectWallet({ connector })
 
-            window.safary?.track({
-                eventName: 'connected_wallet',
-                eventType: 'connect',
-                parameters: {
-                    custom_str_1_label: 'wallet_name',
-                    custom_str_1_value: connector.name,
-                    custom_str_2_label: 'network',
-                    custom_str_2_value: provider.id,
-                    custom_str_3_label: 'address',
-                    custom_str_3_value: result?.address || '',
-                }
+            posthog?.capture("connected_wallet", {
+                wallet_name: connector.name,
+                network: provider.id,
+                address: result?.address || "",
             })
 
             if (result && connector && provider) {

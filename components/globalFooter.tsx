@@ -3,8 +3,10 @@ import TwitterLogo from "./icons/TwitterLogo";
 import DiscordLogo from "./icons/DiscordLogo";
 import GitHubLogo from "./icons/GitHubLogo";
 import YoutubeLogo from "./icons/YoutubeLogo";
+import { usePostHog } from "posthog-js/react";
 
 const GLobalFooter = () => {
+    const posthog = usePostHog();
 
     const footerNavigation = {
         main: [
@@ -73,15 +75,10 @@ const GLobalFooter = () => {
                                 key={item.name}
                                 href={item.href}
                                 onClick={() => {
-                                    if(item.sendEvent) {
-                                        window.safary?.track({
-                                            eventType: 'click',
-                                            eventName: 'footer_social_click',
-                                            parameters: {
-                                                custom_str_1_label: 'social',
-                                                custom_str_1_value: item.name,
-                                            }
-                                        })
+                                    if (item.sendEvent) {
+                                        posthog?.capture("footer_social_click", {
+                                            social: item.name,
+                                        });
                                     }
                                 }}
                                 className="text-gray-400 hover:text-gray-500"

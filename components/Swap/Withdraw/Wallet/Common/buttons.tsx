@@ -15,6 +15,7 @@ import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { BackendTransactionStatus, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
+import { usePostHog } from "posthog-js/react"
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
@@ -157,15 +158,15 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
     const query = useQueryState()
+    const posthog = usePostHog()
 
     const handleClick = async () => {
         try {
             setLoading(true)
             setActionStateText("Preparing")
             setSwapId(undefined)
-            window.safary?.track({
-                eventName: 'click',
-                eventType: 'send_from_wallet',
+            posthog?.capture("send_from_wallet_click", {
+                action: "send_from_wallet",
             })
 
             const swapValues: SwapFormValues = {
