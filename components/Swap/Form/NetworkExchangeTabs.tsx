@@ -1,6 +1,7 @@
 import React, { createContext, useContext, FC, ReactNode, useState, SVGProps } from 'react'
 import { motion } from 'framer-motion'
 import clsx from 'clsx'
+import useWindowDimensions from '@/hooks/useWindowDimensions'
 
 interface TabsContextType {
     activeId: string
@@ -23,20 +24,22 @@ export const Tabs: FC<TabsProps> = ({ defaultValue, children }) => {
 
 interface TabsListProps { children: ReactNode }
 export const TabsList: FC<TabsListProps> = ({ children }) => {
+    const { isDesktop } = useWindowDimensions()
     const [hovered, setHovered] = useState(false)
+    const hoveredOnDesktop = isDesktop && hovered
     return (
         <div className="relative">
             <motion.div
                 onHoverStart={() => setHovered(true)}
                 onHoverEnd={() => setHovered(false)}
-                animate={{ width: hovered ? 180 : 48 }}
-                className="absolute right-full top-24 overflow-hidden rounded-l-xl max-sm:right-19 max-sm:z-20 max-sm:top-[13px] max-sm:w-fit! max-sm:rounded-lg"
+                animate={{ width: hoveredOnDesktop ? 180 : 48 }}
+                className="absolute right-full top-24 overflow-hidden rounded-l-xl max-sm:right-19 max-sm:z-20 max-sm:top-0 max-sm:w-fit! max-sm:rounded-lg"
                 transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
             >
                 <div className="flex flex-col bg-secondary-500 h-full p-1.5 sm:p-2 w-full space-y-2 max-sm:flex-row max-sm:space-y-0 max-sm:space-x-2">
                     {React.Children.map(children, child =>
                         React.isValidElement(child)
-                            ? React.cloneElement(child as React.ReactElement<TabsTriggerProps>, { isHovered: hovered })
+                            ? React.cloneElement(child as React.ReactElement<TabsTriggerProps>, { isHovered: hoveredOnDesktop })
                             : child
                     )}
                 </div>

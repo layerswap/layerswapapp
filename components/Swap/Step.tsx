@@ -46,8 +46,8 @@ function Step({ step, isLastStep }: { step: StatusStep, isLastStep: boolean }) {
             <div className="flex items-center justify-between w-full">
                 {!isLastStep && (
                     <div className={clsx(`absolute top-1/2 left-4 -ml-px mt-0.5 h-[40%] w-0.5 `, {
-                        "bg-primary": step.status === "complete",
-                        "bg-primary/20": step.status !== "complete"
+                        "bg-primary/20": step.status !== "complete" && step.status !== "failed",
+                        "bg-primary": step.status === "complete" || step.status === "failed"
                     })}
                         aria-hidden="true" />
                 )}

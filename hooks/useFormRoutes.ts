@@ -27,24 +27,18 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const { exchangesRoutes, isLoading: exchangesRoutesLoading } = useExchangeRoutes({ direction, values })
     const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks({
         fromExchange: values.fromExchange?.name,
-        currencyGroup: values.currencyGroup?.symbol,
         to: values.to?.name,
         toAsset: values.toAsset?.symbol
     });
     const groupByToken = useRouteTokenSwitchStore((s) => s.showTokens)
     const { balances, isLoading: balancesLoading } = useAllBalances({ direction });
-    const exchange = values.fromExchange
     const routesHistory = useRecentNetworksStore(state => state.recentRoutes)
     const routeElements = useMemo(() => groupRoutes(routes, direction, balances, groupByToken ? "token" : "network", routesHistory, balancesLoading, search), [balancesLoading, routes, balances, direction, search, groupByToken, routesHistory]);
 
     const exchanges = useMemo(() => {
-        const grouped = groupExchanges(exchangesRoutes, search);
-        return grouped;
-    }, [exchangesRoutes, direction, search, values]);
+        return groupExchanges(exchangesRoutes, search);
+    }, [exchangesRoutes, search]);
 
-    const exchangeNetworks = useMemo(() => {
-        return withdrawalNetworks;
-    }, [withdrawalNetworks, exchange, search, values]);
 
     const selectedRoute = useMemo(() => resolveSelectedRoute(values, direction), [values, direction]);
     const selectedToken = useMemo(() => resolveSelectedToken(values, direction), [values, direction]);
@@ -55,7 +49,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         routeElements,
         exchanges,
         exchangesRoutesLoading,
-        exchangeNetworks,
+        exchangeNetworks: withdrawalNetworks,
         exchangeSourceNetworksLoading,
         selectedRoute,
         selectedToken,
@@ -66,7 +60,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         routeElements,
         exchanges,
         exchangesRoutesLoading,
-        exchangeNetworks,
+        withdrawalNetworks,
         exchangeSourceNetworksLoading,
         selectedRoute,
         selectedToken,
@@ -144,15 +138,41 @@ function resolveSearch(routes: NetworkRoute[], search: string): RowElement[] {
 
 
 const searchInNetworks = (routes: NetworkRoute[], search: string): NetworkElement[] => {
-    return routes.filter(r =>
-        r.name.toLowerCase().includes(search.toLowerCase())
-    ).map(r => ({ type: 'network', route: r }));
+    const lower = search.toLowerCase().trim();
+
+    return routes.filter(r => {
+        const internalNameMatch = r.name.toLowerCase().includes(lower);
+        const displayNameMatch = r.display_name?.toLowerCase().includes(lower);
+        return internalNameMatch || displayNameMatch;
+    }).map(r => ({ type: 'network', route: r }));
 }
 
 const searchInTokens = (routes: NetworkRoute[], search: string): NetworkTokenElement[] => {
-    return extractTokenElementsAsSuggested(routes).filter(e =>
-        e.route.token.symbol.toLowerCase().includes(search.toLowerCase()))
-}
+    const lower = search.toLowerCase().replace(/\s+/g, " ").trim();
+
+    return extractTokenElementsAsSuggested(routes).filter(e => {
+        const { token, route } = e.route;
+
+        const symbolMatch = token.symbol.toLowerCase().includes(lower);
+        const contractMatch = token.contract?.toLowerCase().includes(lower);
+        const nameMatch = token.symbol?.toLowerCase().includes(lower);
+        const splitted = lower.split(' ')
+        const firstpart = splitted?.[0]
+        const secondpart = splitted?.[1]
+
+        const combo = (firstpart && secondpart) ? (
+            (token.symbol.toLowerCase().includes(firstpart) && route.name.toLowerCase().includes(secondpart))
+            ||
+            (token.symbol.toLowerCase().includes(secondpart) && route.name.toLowerCase().includes(firstpart))
+            ||
+            (token.symbol.toLowerCase().includes(firstpart) && route.display_name.toLowerCase().includes(secondpart))
+            ||
+            (token.symbol.toLowerCase().includes(secondpart) && route.display_name.toLowerCase().includes(firstpart))
+        ) : false
+
+        return symbolMatch || contractMatch || nameMatch || combo;
+    });
+};
 // ---------- Route Grouping ----------
 
 function groupRoutes(
