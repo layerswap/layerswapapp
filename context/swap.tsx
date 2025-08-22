@@ -139,7 +139,7 @@ export function SwapDataProvider({ children }) {
         return swapBasicFormData
     }, [data, swapBasicFormData, swapId])
 
-     const swapDetails = useMemo(() => {
+    const swapDetails = useMemo(() => {
         if (swapId)
             return data?.data?.swap
     }, [data, swapId])
@@ -192,7 +192,7 @@ export function SwapDataProvider({ children }) {
         if (!values)
             throw new Error("No swap data")
 
-        const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, refuel, fromExchange, depositMethod, amount, destination_address, currencyGroup } = values
+        const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, refuel, fromExchange, depositMethod, amount, destination_address } = values
         if (!to || !fromCurrency || !toCurrency || !from || !amount || !destination_address || !depositMethod)
             throw new Error("Form data is missing")
 
@@ -240,7 +240,7 @@ export function SwapDataProvider({ children }) {
                 custom_str_2_label: "to",
                 walletAddress: (fromExchange || depositMethod !== 'wallet') ? '' : selectedSourceAccount?.address!,
                 custom_str_2_value: to?.display_name!,
-                fromCurrency: fromExchange ? currencyGroup?.symbol! : fromCurrency?.symbol!,
+                fromCurrency: fromCurrency?.symbol!,
                 toCurrency: toCurrency?.symbol!,
                 fromAmount: amount!,
                 toAmount: amount!

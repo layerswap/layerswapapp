@@ -13,6 +13,7 @@ import { ImageWithFallback } from "../Common/ImageWithFallback";
 import { ChevronDown } from "lucide-react";
 import { updateForm } from "../Swap/Form/updateForm";
 import { NetworkRoute } from "@/Models/Network";
+import { useSettingsState } from "@/context/settings";
 
 const CexPicker: FC = () => {
     const {
@@ -22,24 +23,19 @@ const CexPicker: FC = () => {
     const direction = "from"
 
     const { exchanges, exchangesRoutesLoading: isLoading, selectedRoute, selectedToken, exchangeNetworks } = useFormRoutes({ direction, values });
-    const { fromExchange, toAsset } = values;
-    const { shouldFocus } = useSelectorState();
-
+    const { fromExchange } = values;
     const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
         const updateValues = async () => {
             if (!fromExchange) return;
-
-            const currencyGroup = fromExchange?.token_groups?.find(group => group.symbol === toAsset?.symbol);
             const sourceRoute = exchangeNetworks?.[0]
 
             const sourceRouteToken = sourceRoute?.token
             //TODO refactor form types
-            if (values.currencyGroup !== currencyGroup || sourceRouteToken !== selectedToken) {
-                setFieldValue('currencyGroup', currencyGroup, true)
+            if (sourceRouteToken !== selectedToken) {
                 setFieldValue('from', sourceRoute?.network, true)
-                setFieldValue('fromAsset', sourceRouteToken, false)
+                setFieldValue('fromAsset', sourceRouteToken, true)
             }
         };
 

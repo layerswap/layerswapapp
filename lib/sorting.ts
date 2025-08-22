@@ -1,4 +1,4 @@
-import { Exchange, ExchangeToken } from "../Models/Exchange";
+import { Exchange } from "../Models/Exchange";
 import { NetworkRoute, NetworkRouteToken } from "../Models/Network";
 import { SwapDirection } from "../components/DTOs/SwapFormValues";
 import CurrencySettings from "./CurrencySettings";
@@ -85,12 +85,7 @@ export function ResolveExchangeOrder(exchange: Exchange, direction: SwapDirectio
     const initial_order = resolveInitialWeightedOrder(ExchangeSettings.KnownSettings[exchange.name]?.[orderProp], 1)
     return initial_order;
 }
-export function ResolveCEXCurrencyOrder(token: ExchangeToken) {
 
-    const initial_order = resolveInitialWeightedOrder(CurrencySettings.KnownSettings[token.symbol]?.Order, 1)
-
-    return initial_order;
-}
 export function ResolveCurrencyOrder(currency: NetworkRouteToken) {
 
     const initial_order = resolveInitialWeightedOrder(CurrencySettings.KnownSettings[currency.symbol]?.Order, 1)

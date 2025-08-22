@@ -75,10 +75,6 @@ export function generateSwapInitialValuesFromSwap(swapResponse: SwapBasicData, r
     const from = sourceRoutes.find(l => l.name === source_network.name);
     const to = destinationRoutes.find(l => l.name === destination_network.name);
 
-    const direction = source_exchange ? 'from' : 'to';
-    const availableAssetGroups = source_exchange?.token_groups;
-    const currencyGroup = availableAssetGroups?.find(a => a.symbol === (direction === 'from' ? source_token.symbol : destination_token.symbol))
-
     const fromCurrency = from?.tokens.find(c => c.symbol === source_token.symbol);
     const toCurrency = to?.tokens.find(c => c.symbol === destination_token.symbol);
 
@@ -91,7 +87,6 @@ export function generateSwapInitialValuesFromSwap(swapResponse: SwapBasicData, r
         destination_address,
         refuel: !!refuel,
         fromExchange: type === "exchange" ? source_exchange : undefined,
-        currencyGroup: type === "exchange" ? currencyGroup : undefined,
     }
 
     return result

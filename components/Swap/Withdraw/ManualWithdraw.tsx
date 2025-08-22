@@ -62,7 +62,6 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
             refuel: !!refuel,
             destination_address: swapBasicData?.destination_address,
             fromExchange: swapBasicData?.source_exchange,
-            currencyGroup: swapBasicData?.source_token,
             depositMethod: 'deposit_address',
         };
 
@@ -91,7 +90,6 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
     };
 
     const exchangeNetworkParams = useMemo(() => ({
-        currencyGroup: swapBasicData?.source_token?.symbol,
         fromExchange: swapBasicData?.source_exchange?.name,
         to: swapBasicData?.destination_network?.name,
         toAsset: swapBasicData?.destination_token?.symbol

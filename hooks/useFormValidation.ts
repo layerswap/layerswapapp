@@ -26,18 +26,6 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
     if (!values.toAsset) {
         return { message: 'Select destination asset' };
     }
-    if (values.currencyGroup &&
-        (values.fromExchange && !values.from && values.to)) {
-        return { message: 'Select withdrawal network' };
-    }
-    if (values.currencyGroup &&
-        !values.to && values.from) {
-        return { message: 'Select deposit network' };
-    }
-    if (values.fromExchange && !values.currencyGroup) {
-        return { message: 'Select source asset' };
-    }
-
     if (!amount) {
         return { message: 'Enter an amount' };
     }
@@ -62,16 +50,14 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
 
     if (
         values.fromAsset?.status === 'not_found' ||
-        values.toAsset?.status === 'not_found' ||
-        values.currencyGroup?.status === 'not_found'
+        values.toAsset?.status === 'not_found'
     ) {
         return { message: `Route unavailable` };
     }
 
     if (
         values.fromAsset?.status === 'inactive' ||
-        values.toAsset?.status === 'inactive' ||
-        values.currencyGroup?.status === 'inactive'
+        values.toAsset?.status === 'inactive'
     ) {
         return { message: `Route unavailable` };
     }

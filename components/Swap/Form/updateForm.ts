@@ -8,7 +8,6 @@ const fieldMapping: Record<string, string> = {
     from: "name",
     fromAsset: "symbol",
     toAsset: "symbol",
-    currencyGroup: "symbol",
     fromExchange: "name",
 };
 

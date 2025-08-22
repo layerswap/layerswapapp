@@ -1,8 +1,6 @@
-import { Exchange, ExchangeToken } from "./Exchange";
+import { Exchange } from "./Exchange";
 import { NetworkRouteToken, NetworkRoute } from "./Network";
 
-export type RouteToken = NetworkRouteToken | ExchangeToken
-export type Route = ({ cex: true } & Exchange | { cex?: false } & NetworkRoute)
 export type NetworkElement = {
     type: 'network';
     route: NetworkRoute;
@@ -12,13 +10,6 @@ export type NetworkTokenElement = {
     route: {
         token: NetworkRouteToken;
         route: NetworkRoute
-    }
-}
-export type ExchangeTokenElement = {
-    type: 'exchange_token';
-    route: {
-        token: RouteToken;
-        route: Exchange & { cex: true };
     }
 }
 export type TitleElement = {

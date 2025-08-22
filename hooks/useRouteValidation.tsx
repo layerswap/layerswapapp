@@ -16,7 +16,7 @@ interface ValidationDetails {
 export function resolveRouteValidation(quoteError?: QuoteError) {
     const { values } = useFormikContext<SwapFormValues>();
     const { destinationRoutes: allDestinations, sourceRoutes: allSources } = useSettingsState()
-    const { to, from, fromAsset: fromCurrency, toAsset: toCurrency, fromExchange, currencyGroup, validatingSource, validatingDestination, validatingCurrencyGroup, destination_address } = values;
+    const { to, from, fromAsset: fromCurrency, toAsset: toCurrency, fromExchange, validatingSource, validatingDestination, destination_address } = values;
     const { provider } = useWallet(from, "withdrawal")
     const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
     const query = useQueryState();
@@ -28,12 +28,12 @@ export function resolveRouteValidation(quoteError?: QuoteError) {
     let validationDetails: ValidationDetails = {};
 
     if (query?.lockToAsset) {
-        if (fromCurrency?.status === 'not_found' || (currencyGroup?.status === 'not_found' && fromExchange)) {
-            validationMessage = `Transfers from ${fromDisplayName} ${fromCurrency?.symbol || currencyGroup?.symbol} to this token are not supported`;
+        if (fromCurrency?.status === 'not_found') {
+            validationMessage = `Transfers from ${fromDisplayName} ${fromCurrency?.symbol || fromCurrency?.symbol} to this token are not supported`;
             validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
         }
-        else if (fromCurrency?.status === 'inactive' || (currencyGroup?.status === 'inactive' && fromExchange)) {
-            validationMessage = `Sorry, transfers of ${fromCurrency?.symbol || currencyGroup?.symbol} from ${fromDisplayName} are not available at the moment. Please try later.`;
+        else if (fromCurrency?.status === 'inactive') {
+            validationMessage = `Sorry, transfers of ${fromCurrency?.symbol} from ${fromDisplayName} are not available at the moment. Please try later.`;
             validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info stroke='#f8974b' className='w-4 h-4 ' /> };
         }
         else if (!toCurrency) {
@@ -55,7 +55,7 @@ export function resolveRouteValidation(quoteError?: QuoteError) {
             validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info stroke='#f8974b' className='w-4 h-4 ' /> };
         }
     }
-    else if (toCurrency?.status === 'inactive' || fromCurrency?.status === 'inactive' || currencyGroup?.status === 'inactive') {
+    else if (toCurrency?.status === 'inactive' || fromCurrency?.status === 'inactive') {
         const unfilteredDestinationRoute = allDestinations?.find(r => r.name === to?.name)
         const unfilteredDestinationCurrency = unfilteredDestinationRoute?.tokens?.find(t => t.symbol === toCurrency?.symbol)
         const unfilteredSourceRoute = allSources?.find(r => r.name === from?.name)
@@ -74,7 +74,7 @@ export function resolveRouteValidation(quoteError?: QuoteError) {
             validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info stroke='#f8974b' className='w-4 h-4 ' /> };
         }
     }
-    else if (!validatingSource && !validatingDestination && !validatingCurrencyGroup && (currencyGroup?.status === 'not_found' || toCurrency?.status === 'not_found' || fromCurrency?.status === 'not_found')) {
+    else if (!validatingSource && !validatingDestination && (toCurrency?.status === 'not_found' || fromCurrency?.status === 'not_found')) {
         validationMessage = 'Please change one of the selected tokens';
         validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff stroke='#f8974b' className='w-4 h-4 ' /> };
     }
