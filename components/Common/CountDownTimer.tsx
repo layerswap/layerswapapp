@@ -1,14 +1,10 @@
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { SwapStatus } from "../../Models/SwapStatus";
-import { useIntercom } from "react-use-intercom";
-import { useAuthState } from "../../context/authContext";
-import { SwapDetails, SwapItem, TransactionType } from "../../lib/apiClients/layerSwapApiClient";
+import { SwapDetails, TransactionType } from "../../lib/apiClients/layerSwapApiClient";
 import { datadogRum } from "@datadog/browser-rum";
 
 const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThresholdChange?: (threshold: boolean) => void }> = ({ initialTime, swapDetails, onThresholdChange }) => {
 
-    const { email, userId } = useAuthState();
-    const { boot, show, update } = useIntercom();
     const [elapsedTimer, setElapsedTimer] = useState<number>(0);
     const [thresholdElapsed, setThresholdElapsed] = useState<boolean>(false);
     const swapInputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Input)
@@ -16,13 +12,13 @@ const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThre
     useEffect(() => {
         // Start timer immediately when component renders
         const startTime = swapInputTransaction?.timestamp ? new Date(swapInputTransaction.timestamp).getTime() : Date.now();
-        
+
         const timer = setInterval(() => {
             const currentTime = new Date();
             const elapsedTime = currentTime.getTime() - startTime;
             setElapsedTimer(Math.max(elapsedTime, 0));
 
-            const newThreshold = elapsedTime > 2 * timeStringToMilliseconds(initialTime);
+            const newThreshold = elapsedTime > 3 * timeStringToMilliseconds(initialTime);
             if (newThreshold !== thresholdElapsed) {
                 setThresholdElapsed(newThreshold);
                 onThresholdChange?.(newThreshold);
@@ -31,13 +27,6 @@ const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThre
 
         return () => clearInterval(timer);
     }, [initialTime, swapDetails.status, swapInputTransaction, thresholdElapsed]);
-
-    const updateWithProps = () => update({ userId, customAttributes: { email: email, swapId: swapDetails.id } })
-    const startIntercom = useCallback(() => {
-        boot();
-        show();
-        updateWithProps();
-    }, [boot, show, updateWithProps]);
 
     const formatTime = (milliseconds: number): string => {
         const totalSeconds = Math.floor(milliseconds / 1000);
@@ -65,10 +54,6 @@ const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThre
                 thresholdElapsed && swapDetails.status !== SwapStatus.UserTransferPending ? (
                     <div>
                         <span>Transaction is taking longer than expected</span>
-                    </div>
-                ) : elapsedTimer > timeStringToMilliseconds(initialTime) && swapDetails.status !== SwapStatus.Completed ? (
-                    <div>
-                        <span>Taking a bit longer than expected</span>
                     </div>
                 ) : swapDetails.status === SwapStatus.Completed ? (
                     ""
