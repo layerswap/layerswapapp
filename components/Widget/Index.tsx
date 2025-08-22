@@ -31,17 +31,15 @@ const Widget = ({ children, className, hideMenu }: Props) => {
    return <div className="relative">
       <div className="invisible sm:visible absolute inset-0 rounded-[25px] bg-gradient-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
       <div id="widget" className='md:shadow-lg rounded-3xl w-full sm:overflow-hidden relative bg-gradient-to-b from-secondary-700 to-secondary-700'>
-         <div className="relative z-20">
-            {
-               AppSettings.ApiVersion === 'sandbox' &&
-               <div>
-                  <div className="h-0.5 bg-[#D95E1B]" />
-                  <div className="absolute -top-0.5 right-[calc(50%-68px)] bg-[#D95E1B] py-0.5 px-10 rounded-b-md text-xs scale-75">
-                     TESTNET
-                  </div>
+         {
+            AppSettings.ApiVersion === 'sandbox' &&
+            <div className="relative z-20">
+               <div className="absolute sm:top-0 -top-4 right-[calc(50%-68px)] bg-[#D95E1B] py-0.5 px-10 rounded-b-md text-xs scale-75">
+                  TESTNET
                </div>
-            }
-         </div>
+            </div>
+         }
+
          {
             !hideMenu &&
             <HeaderWithMenu goBack={handleBack} />
