@@ -185,13 +185,13 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                         ref={rowVirtualizer.measureElement}
                                         className="mb-3 last:mb-0"
                                     >
-                                        <AccordionItem value={swapId} className="border-none">
+                                        <AccordionItem value={swapId} className="border-none bg-secondary-900 rounded-3xl">
                                             <AccordionTrigger className="relative z-10 mb-3 last:mb-0">
                                                 <div className="cursor-pointer">
                                                     <HistorySummary swapResponse={swap} wallets={wallets} />
                                                 </div>
                                             </AccordionTrigger>
-                                            <AccordionContent className="-mt-3 rounded-b-3xl bg-secondary-900">
+                                            <AccordionContent className="-mt-3">
                                                 <div className="flex items-center justify-between px-4 pt-5">
                                                     <span className="text-secondary-text text-sm">
                                                         Transaction Details
