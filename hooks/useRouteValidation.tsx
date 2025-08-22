@@ -22,7 +22,7 @@ export function resolveRouteValidation(quoteError?: QuoteError) {
     const query = useQueryState();
     const fromDisplayName = fromExchange ? fromExchange.display_name : from?.display_name;
     const toDisplayName = to?.display_name;
-    const quoteMessage = quoteError?.message
+    const quoteMessage = quoteError?.response?.data?.error?.message || quoteError?.message
 
     let validationMessage: string = '';
     let validationDetails: ValidationDetails = {};

@@ -21,6 +21,17 @@ type UseQuoteData = {
 export type QuoteError = {
     code: string;
     message: string;
+    response?: {
+        data?: {
+            error?: {
+                code?: string;
+                message?: string;
+                metadata?: {
+                    AmountLimit: number
+                }
+            }
+        };
+    }
     metadata?: {
         StatusCode?: string;
         [key: string]: any;
