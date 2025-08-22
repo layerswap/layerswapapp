@@ -38,7 +38,7 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
     return (
         <>
             {
-                (quoteData || (!quoteData && isQuoteLoading)) &&
+                quoteData &&
                 <Accordion type='single' collapsible className='w-full' value={isAccordionOpen ? 'quote' : ''} onValueChange={(value) => { setIsAccordionOpen(value === 'quote') }}>
                     <AccordionItem value='quote' className='bg-secondary-500 rounded-2xl'>
                         <AccordionTrigger className={clsx(
