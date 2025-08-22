@@ -138,15 +138,41 @@ function resolveSearch(routes: NetworkRoute[], search: string): RowElement[] {
 
 
 const searchInNetworks = (routes: NetworkRoute[], search: string): NetworkElement[] => {
-    return routes.filter(r =>
-        r.name.toLowerCase().includes(search.toLowerCase())
-    ).map(r => ({ type: 'network', route: r }));
+    const lower = search.toLowerCase().trim();
+
+    return routes.filter(r => {
+        const internalNameMatch = r.name.toLowerCase().includes(lower);
+        const displayNameMatch = r.display_name?.toLowerCase().includes(lower);
+        return internalNameMatch || displayNameMatch;
+    }).map(r => ({ type: 'network', route: r }));
 }
 
 const searchInTokens = (routes: NetworkRoute[], search: string): NetworkTokenElement[] => {
-    return extractTokenElementsAsSuggested(routes).filter(e =>
-        e.route.token.symbol.toLowerCase().includes(search.toLowerCase()))
-}
+    const lower = search.toLowerCase().replace(/\s+/g, " ").trim();
+
+    return extractTokenElementsAsSuggested(routes).filter(e => {
+        const { token, route } = e.route;
+
+        const symbolMatch = token.symbol.toLowerCase().includes(lower);
+        const contractMatch = token.contract?.toLowerCase().includes(lower);
+        const nameMatch = token.symbol?.toLowerCase().includes(lower);
+        const splitted = lower.split(' ')
+        const firstpart = splitted?.[0]
+        const secondpart = splitted?.[1]
+
+        const combo = (firstpart && secondpart) ? (
+            (token.symbol.toLowerCase().includes(firstpart) && route.name.toLowerCase().includes(secondpart))
+            ||
+            (token.symbol.toLowerCase().includes(secondpart) && route.name.toLowerCase().includes(firstpart))
+            ||
+            (token.symbol.toLowerCase().includes(firstpart) && route.display_name.toLowerCase().includes(secondpart))
+            ||
+            (token.symbol.toLowerCase().includes(secondpart) && route.display_name.toLowerCase().includes(firstpart))
+        ) : false
+
+        return symbolMatch || contractMatch || nameMatch || combo;
+    });
+};
 // ---------- Route Grouping ----------
 
 function groupRoutes(
