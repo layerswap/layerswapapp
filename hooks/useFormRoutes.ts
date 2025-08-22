@@ -154,7 +154,7 @@ const searchInNetworks = (routes: NetworkRoute[], search: string): NetworkElemen
 }
 
 const searchInTokens = (routes: NetworkRoute[], search: string): NetworkTokenElement[] => {
-    const lower = search.toLowerCase().trim();
+    const lower = search.toLowerCase().replace(/\s+/g, " ").trim();
 
     return extractTokenElementsAsSuggested(routes).filter(e => {
         const { token, route } = e.route;
@@ -162,11 +162,21 @@ const searchInTokens = (routes: NetworkRoute[], search: string): NetworkTokenEle
         const symbolMatch = token.symbol.toLowerCase().includes(lower);
         const contractMatch = token.contract?.toLowerCase().includes(lower);
         const nameMatch = token.symbol?.toLowerCase().includes(lower);
+        const splitted = lower.split(' ')
+        const firstpart = splitted?.[0]
+        const secondpart = splitted?.[1]
 
-        const comboInternal = `${token.symbol} ${route.name}`.toLowerCase().includes(lower);
-        const comboDisplay = `${token.symbol} ${route.display_name}`.toLowerCase().includes(lower);
+        const combo = (firstpart && secondpart) ? (
+            (token.symbol.toLowerCase().includes(firstpart) && route.name.toLowerCase().includes(secondpart))
+            ||
+            (token.symbol.toLowerCase().includes(secondpart) && route.name.toLowerCase().includes(firstpart))
+            ||
+            (token.symbol.toLowerCase().includes(firstpart) && route.display_name.toLowerCase().includes(secondpart))
+            ||
+            (token.symbol.toLowerCase().includes(secondpart) && route.display_name.toLowerCase().includes(firstpart))
+        ) : false
 
-        return symbolMatch || contractMatch || nameMatch || comboInternal || comboDisplay;
+        return symbolMatch || contractMatch || nameMatch || combo;
     });
 };
 // ---------- Route Grouping ----------
