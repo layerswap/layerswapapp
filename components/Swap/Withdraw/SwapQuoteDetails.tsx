@@ -12,7 +12,7 @@ type Props = {
 export const SwapQuoteDetails: FC<Props> = ({ swapBasicData: swapData, quote, refuel, quoteIsLoading }) => {
     const { source_network, destination_network, use_deposit_address, destination_token, requested_amount, source_token, destination_address } = swapData || {}
 
-    if (!requested_amount || !source_network || !destination_network || !quote) return null
+    if (!requested_amount || !source_network || !destination_network || !quote) return <div className='h-[56px] w-full rounded-xl bg-secondary-500 animate-pulse'/>
 
     const values: SwapValues = {
         amount: requested_amount.toString(),

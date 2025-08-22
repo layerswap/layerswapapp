@@ -99,26 +99,6 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
 
     const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks(exchangeNetworkParams);
 
-    const qrCode = (
-        <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: -10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.8, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="absolute right-full mr-3 top-0 z-50 bg-secondary-300 p-2 rounded-xl"
-        >
-            <div className="bg-white p-2 rounded-xl shadow-lg">
-                <QRCodeSVG
-                    className="rounded-lg"
-                    value={depositAddress || ''}
-                    includeMargin={true}
-                    size={160}
-                    level="H"
-                />
-            </div>
-        </motion.div>
-    )
-
     const requestAmount = (
         <span className='inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg'>
             <span>{swapBasicData?.requested_amount}</span> <span>{swapBasicData?.source_token?.symbol}</span>
@@ -216,11 +196,30 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                                 <div className="flex items-center justify-between gap-2 relative">
                                     <span>Copy the deposit address</span>
                                     <div className="relative">
-                                        <QRIcon
-                                            className="bg-secondary-300 p-1 rounded-lg cursor-pointer hover:opacity-80"
-                                            onClick={() => setShowQR(!showQR)}
-                                        />
-                                        {showQR && qrCode}
+                                        <Popover open={showQR} onOpenChange={setShowQR}>
+                                            <PopoverTrigger asChild>
+                                                <div className="relative">
+                                                    <QRIcon
+                                                        className="bg-secondary-300 p-1 rounded-lg cursor-pointer hover:opacity-80"
+                                                    />
+                                                </div>
+                                            </PopoverTrigger>
+                                            <PopoverContent
+                                                side="left"
+                                                align="start"
+                                                className="bg-secondary-300 p-2 rounded-xl z-50"
+                                            >
+                                                <div className="bg-white p-2 rounded-xl shadow-lg">
+                                                    <QRCodeSVG
+                                                        className="rounded-lg"
+                                                        value={depositAddress || ''}
+                                                        includeMargin={true}
+                                                        size={160}
+                                                        level="H"
+                                                    />
+                                                </div>
+                                            </PopoverContent>
+                                        </Popover>
                                     </div>
                                 </div>
                             }

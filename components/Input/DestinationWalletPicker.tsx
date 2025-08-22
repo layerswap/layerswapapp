@@ -6,12 +6,12 @@ import AddressIcon from "../AddressIcon";
 import { Wallet } from "../../Models/WalletProvider";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
 
-const Component = (props: AddressTriggerProps) => {
+const DestinationWalletPicker = (props: AddressTriggerProps) => {
     const { addressItem, connectedWallet, partner } = props
     return <>
         {
             addressItem &&
-            <div className="flex items-center space-x-2 text-sm leading-4 hover:bg-secondary-400 rounded-lg p-1.5 -m-1.5">
+            <div className="flex items-center space-x-2 text-sm hover:bg-secondary-400 rounded-lg py-1 pl-2 pr-0.5">
                 <div className="rounded-lg flex space-x-1 items-center cursor-pointer">
                     <div className="inline-flex items-center relative px-0.5">
                         <ResolvedIcon addressItem={addressItem} partner={partner} wallet={connectedWallet} />
@@ -19,7 +19,7 @@ const Component = (props: AddressTriggerProps) => {
                     <div className="text-secondary-text">
                         {shortenAddress(addressItem.address)}
                     </div>
-                    <div className="w-5 h-5 items-center flex text-primary-text">
+                    <div className="w-4 h-4 items-center flex text-primary-text">
                         <ChevronDown className="h-4 w-4" aria-hidden="true" />
                     </div>
                 </div>
@@ -56,4 +56,4 @@ const ResolvedIcon = (props: AdderssIconprops) => {
     }
 }
 
-export default Component
+export default DestinationWalletPicker

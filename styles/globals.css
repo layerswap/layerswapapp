@@ -457,4 +457,13 @@ textarea:disabled::placeholder {
   .animate-pulse-strong {
     animation: pulse-strong 1.4s cubic-bezier(0.77, 0, 0.17, 1) infinite;
   }
+
+  @keyframes pulse-stronger {
+    50% {
+      opacity: 0.15; 
+    }
+  }
+  .animate-pulse-stronger {
+    animation: pulse-stronger 1.4s cubic-bezier(0.77, 0, 0.17, 1) infinite;
+  }
 }

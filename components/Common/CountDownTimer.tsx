@@ -60,7 +60,7 @@ const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThre
     }
 
     return (
-        <div className='flex items-center space-x-1'>
+        <div className='flex items-center justify-center space-x-1'>
             {
                 thresholdElapsed && swapDetails.status !== SwapStatus.UserTransferPending ? (
                     <div>

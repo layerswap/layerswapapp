@@ -28,7 +28,7 @@ type ListProps = {
     onNewTransferClick?: () => void
 }
 
-type Status = "Completed" | "PendingWithdrawal" | "PendingDeposit"
+type Status = "Completed" | "PendingWithdrawal" | "PendingDeposit" | "PendingRefund" | "Refunded"
 
 const getSwapsKey = () => (index: number, statuses: Status[], addresses?: string[]) => {
     const addressesParams = addresses?.map(a => `&addresses=${a}`).join('') || ''
@@ -60,10 +60,10 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
             apiClient.fetcher,
             { revalidateAll: false }
         )
-    const getCompletedSSwapsKey = useCallback((index) => getKey(index, ["Completed", "PendingWithdrawal"], addresses), [addresses])
+    const getCompletedSwapsKey = useCallback((index) => getKey(index, ["Completed", "PendingWithdrawal", "Refunded", "PendingRefund"], addresses), [addresses])
     const { data: userSwapPages, size, setSize, isLoading: userSwapsLoading, isValidating, mutate } =
         useSWRInfinite<ApiResponse<Swap[]>>(
-            getCompletedSSwapsKey,
+            getCompletedSwapsKey,
             apiClient.fetcher,
             { revalidateAll: false, revalidateFirstPage: false, dedupingInterval: 3000 }
         )

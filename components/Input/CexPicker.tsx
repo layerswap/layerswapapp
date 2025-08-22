@@ -1,10 +1,10 @@
 import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
-import { Selector, SelectorContent, SelectorTrigger, useSelectorState } from "../Select/CommandNew/Index";
+import { Selector, SelectorContent, SelectorTrigger, useSelectorState } from "../Select/Selector/Index";
 import { Exchange } from "../../Models/Exchange";
 import React from "react";
-import { SelectItem } from "../Select/CommandNew/SelectItem/Index";
+import { SelectItem } from "../Select/Selector/SelectItem";
 import useFormRoutes from "@/hooks/useFormRoutes";
 import { SelectedRoutePlaceholder } from "./RoutePicker/Routes";
 import { LayoutGroup, motion } from "framer-motion";
@@ -23,7 +23,7 @@ const CexPicker: FC = () => {
 
     const { exchanges, exchangesRoutesLoading: isLoading, selectedRoute, selectedToken, exchangeNetworks } = useFormRoutes({ direction, values });
     const { fromExchange, toAsset } = values;
-    const { isOpen } = useSelectorState();
+    const { shouldFocus } = useSelectorState();
 
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -32,31 +32,14 @@ const CexPicker: FC = () => {
             if (!fromExchange) return;
 
             const currencyGroup = fromExchange?.token_groups?.find(group => group.symbol === toAsset?.symbol);
-            const sourceRoute = exchangeNetworks?.find(route =>
-                route?.token
-            );
+            const sourceRoute = exchangeNetworks?.[0]
 
             const sourceRouteToken = sourceRoute?.token
             //TODO refactor form types
             if (values.currencyGroup !== currencyGroup || sourceRouteToken !== selectedToken) {
-                await updateForm({
-                    formDataKey: 'currencyGroup',
-                    formDataValue: currencyGroup,
-                    shouldValidate: true,
-                    setFieldValue
-                });
-                await updateForm({
-                    formDataKey: 'from',
-                    formDataValue: sourceRoute?.network as NetworkRoute,
-                    shouldValidate: true,
-                    setFieldValue
-                });
-                await updateForm({
-                    formDataKey: 'fromAsset',
-                    formDataValue: sourceRouteToken,
-                    shouldValidate: false,
-                    setFieldValue
-                });
+                setFieldValue('currencyGroup', currencyGroup, true)
+                setFieldValue('from', sourceRoute?.network, true)
+                setFieldValue('fromAsset', sourceRouteToken, false)
             }
         };
 
@@ -78,30 +61,32 @@ const CexPicker: FC = () => {
                 <SelectorTrigger disabled={false} className="bg-secondary-500">
                     <SelectedNetworkDisplay exchange={fromExchange} placeholder="Select Exchange" />
                 </SelectorTrigger>
-                <SelectorContent isLoading={isLoading} modalHeight="full" searchHint="Search" header="">
-                    {({ closeModal }) => (
-                        <div className="overflow-y-auto flex flex-col h-full z-40" >
-                            <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={isOpen} />
-                            <LayoutGroup>
-                                <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full">
-                                    <div className="relative">
-                                        {exchanges.map((exchange) => {
-                                            return <div className="py-1 box-border" key={exchange.name}>
-                                                <ExchangeNetwork
-                                                    route={exchange}
-                                                    direction={direction}
-                                                    onSelect={(n) => {
-                                                        handleSelect(n);
-                                                        closeModal();
-                                                    }}
-                                                />
-                                            </div>
-                                        })}
-                                    </div>
-                                </motion.div>
-                            </LayoutGroup>
-                        </div >
-                    )}
+                <SelectorContent isLoading={isLoading} searchHint="Search" header="">
+                    {({ closeModal, shouldFocus }) => {
+                        return (
+                            <div className="overflow-y-auto flex flex-col h-full z-40" >
+                                <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={shouldFocus} />
+                                <LayoutGroup>
+                                    <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full">
+                                        <div className="relative">
+                                            {exchanges.map((exchange) => {
+                                                return <div className="py-1 box-border" key={exchange.name}>
+                                                    <ExchangeNetwork
+                                                        route={exchange}
+                                                        direction={direction}
+                                                        onSelect={(n) => {
+                                                            handleSelect(n);
+                                                            closeModal();
+                                                        }}
+                                                    />
+                                                </div>
+                                            })}
+                                        </div>
+                                    </motion.div>
+                                </LayoutGroup>
+                            </div>
+                        )
+                    }}
                 </SelectorContent>
             </Selector>
         </div>

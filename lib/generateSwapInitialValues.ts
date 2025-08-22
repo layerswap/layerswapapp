@@ -45,7 +45,7 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
         (lockedDestinationCurrency && amount) || (initialDestinationCurrency ? amount : '')
 
     const result: SwapFormValues = {
-        fromExchange: initialSourceExchange,
+        fromExchange: type === 'exchange' ? initialSourceExchange : undefined,
         from: type === 'cross-chain' ? initialSource : undefined,
         to: initialDestination,
         amount: initialAmount,
@@ -59,7 +59,7 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
 }
 
 
-export function generateSwapInitialValuesFromSwap(swapResponse: SwapBasicData, refuel: boolean, settings: LayerSwapAppSettings): SwapFormValues {
+export function generateSwapInitialValuesFromSwap(swapResponse: SwapBasicData, refuel: boolean, settings: LayerSwapAppSettings, type: 'cross-chain' | 'exchange'): SwapFormValues {
     const {
         destination_address,
         requested_amount,
@@ -90,8 +90,8 @@ export function generateSwapInitialValuesFromSwap(swapResponse: SwapBasicData, r
         toAsset: toCurrency,
         destination_address,
         refuel: !!refuel,
-        fromExchange: source_exchange,
-        currencyGroup
+        fromExchange: type === "exchange" ? source_exchange : undefined,
+        currencyGroup: type === "exchange" ? currencyGroup : undefined,
     }
 
     return result

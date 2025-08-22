@@ -3,8 +3,7 @@ import { Token } from "../../../Models/Network"
 
 
 type ResoleMaxAllowedAmountProps = {
-    limitsMinAmount: number
-    limitsMaxAmount: number
+    limitsMaxAmount: number | undefined
     walletBalance: TokenBalance | undefined
     gasAmount: number
     fromCurrency: Token
@@ -12,15 +11,15 @@ type ResoleMaxAllowedAmountProps = {
 }
 
 export const resolveMaxAllowedAmount = (props: ResoleMaxAllowedAmountProps) => {
-    const { limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, fromCurrency, native_currency } = props
+    const { limitsMaxAmount, walletBalance, gasAmount, fromCurrency, native_currency } = props
 
-    if (!walletBalance || !isInRange({ value: walletBalance.amount, min: limitsMinAmount, max: limitsMaxAmount }))
+    if (!walletBalance || !walletBalance.amount || (limitsMaxAmount && !isInRange({ value: walletBalance.amount, min: 0, max: limitsMaxAmount })))
         return limitsMaxAmount
 
     //calculate balance with reduced gas amount, if it is not in range we do not force the limits api min amount
     const shouldPayGasWithTheToken = (native_currency?.symbol === fromCurrency?.symbol) || !native_currency
     const payableAmount = walletBalance.amount - gasAmount
-    const payableIsInRange = isInRange({ value: payableAmount, min: limitsMinAmount, max: limitsMaxAmount })
+    const payableIsInRange = isInRange({ value: payableAmount, min: 0, max: limitsMaxAmount || Infinity })
 
     if (!shouldPayGasWithTheToken || !payableIsInRange)
         return walletBalance.amount

@@ -18,9 +18,9 @@ import MinMax from "@/components/Input/Amount/MinMax";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
 import useWallet from "@/hooks/useWallet";
-import sleep from "@/lib/wallets/utils/sleep";
 import clsx from "clsx";
 import { useSwapDataState } from "@/context/swap";
+import { useClickOutside } from "@/hooks/useClickOutside";
 
 type Props = {
     partner?: Partner;
@@ -33,7 +33,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
 
     const { fromAsset: fromCurrency, from, to: destination, destination_address, amount } = values || {};
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
-    const [isAmountFocused, setIsAmountFocused] = useState(false);
+    const [actionTempValue, setActionTempValue] = useState<number | undefined>(0)
 
     const { wallets } = useWallet();
     const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == destination_address?.toLowerCase())?.icon;
@@ -45,7 +45,11 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
 
     const isValid = !formValidation.message;
     const error = formValidation.message;
-    const showMinMax = isAmountFocused || !amount;
+    const { ref: parentRef, isActive: showQuickActions, activate: setShowQuickActions } = useClickOutside<HTMLDivElement>(false)
+
+    const handleActionHover = (value: number | undefined) => {
+        setActionTempValue(value)
+    }
 
     return (
         <>
@@ -92,30 +96,28 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                         }</Address>
                                     </div>
                                 </div>
-                                <div className="bg-secondary-500 rounded-lg p-1 pt-1.5 group">
-                                    <div className="flex justify-between items-center mb-2 px-2">
+                                <div className="bg-secondary-500 rounded-lg p-1 pt-1.5 group" onClick={setShowQuickActions} ref={parentRef}>
+                                    <div className="flex justify-between items-center mb-2 px-2 h-6">
                                         <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5">
                                             Enter amount
                                         </label>
                                         {
                                             from && fromCurrency && minAllowedAmount && maxAmountFromApi &&
                                             <div className={clsx({
-                                                "hidden": !showMinMax,
-                                                "block": showMinMax
-                                            }
+                                                "hidden": !showQuickActions,
+                                                "block": showQuickActions,
+                                            },
+                                                "group-hover:block"
                                             )}>
-                                                <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />
+                                                <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} />
                                             </div>
                                         }
                                     </div>
                                     <div className="relative group exchange-amount-field px-1">
                                         <AmountField
                                             fee={quote}
-                                            minAllowedAmount={minAllowedAmount}
-                                            maxAllowedAmount={maxAmountFromApi}
                                             usdPosition="right"
-                                            onAmountFocus={() => setIsAmountFocused(true)}
-                                            onAmountBlur={async () => { await sleep(500); setIsAmountFocused(false) }}
+                                            actionValue={actionTempValue}
                                         />
                                     </div>
                                 </div>

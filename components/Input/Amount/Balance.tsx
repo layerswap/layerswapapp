@@ -28,28 +28,22 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     useEffect(() => {
         previouslySelectedDestination.current = to
     }, [to, destination_address])
+    
+    if (!isBalanceLoading && !(network && token && truncatedBalance && tokenBalance))
+        return null;
 
-    if (isBalanceLoading)
-        return <motion.div
-            layoutId="affect"
-            className="w-4/5 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs text-primary-text-placeholder">
-            <div className='h-[10px] w-12 inline-flex bg-gray-500 rounded-xs animate-pulse' />
-        </motion.div>
+    return <motion.div
+        layoutId="affect"
+        className="w-4/5 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-sm text-secondary-text">
+        {
 
-
-    return (
-        <>
-            {
-                (network && token && truncatedBalance) ?
-                    <motion.div
-                        layoutId="affect"
-                        className="w-4/5 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs text-primary-text-placeholder">
-                        <span>{truncatedBalance}</span>
-                    </motion.div>
-                    : null
-            }
-        </>
-    )
+            isBalanceLoading ?
+                <div className='h-[10px] w-12 inline-flex bg-gray-500 rounded-xs animate-pulse' />
+                : (network && token && truncatedBalance) ?
+                    <span>{truncatedBalance}</span>
+                    : <span></span>
+        }
+    </motion.div>
 }
 
 export default Balance

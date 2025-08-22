@@ -1,6 +1,4 @@
 import { createContext, ReactNode, SetStateAction, useContext, useState } from "react";
-import { LeafletHeight } from "../../modal/leaflet";
-import Modal from "../../modal/modal";
 import VaulDrawer from "@/components/modal/vaulModal";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 
@@ -34,12 +32,12 @@ export const useSelectorState = () => {
 
 type ContentChildProps = {
     closeModal: () => void;
+    shouldFocus?: boolean;
 }
 
 type SelectContentProps = {
     header?: ReactNode;
     searchHint?: string;
-    modalHeight?: LeafletHeight;
     modalContent?: React.ReactNode;
     children: ((props: ContentChildProps) => JSX.Element);
     isLoading: boolean;
@@ -47,7 +45,7 @@ type SelectContentProps = {
 
 export const SelectorContent = (props: SelectContentProps) => {
     const { children, modalContent, header } = props
-    const { isOpen, setIsOpen, setShouldFocus } = useSelectorState();
+    const { isOpen, setIsOpen, setShouldFocus, shouldFocus } = useSelectorState();
     const { isDesktop, isMobile, windowSize } = useWindowDimensions();
     const closeModal = () => { setIsOpen(false); setShouldFocus(false) };
 
@@ -68,11 +66,11 @@ export const SelectorContent = (props: SelectContentProps) => {
             id="item-1"
             className="pb-0"
             style={{ height: isMobile && windowSize.height ? `${(windowSize.height * 0.8).toFixed()}px` : '100%' }}
-            fullheight={isDesktop}
+            openFullHeight={isDesktop || (isMobile && !windowSize.height)}
         >
             <>
                 {modalContent}
-                {children({ closeModal })}
+                {children({ closeModal, shouldFocus })}
             </>
         </VaulDrawer.Snap>
     </VaulDrawer>

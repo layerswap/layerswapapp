@@ -129,7 +129,7 @@ export default function FormWrapper({ children, type }: { children?: React.React
         }
     }, [createSwap, query, partner, router, updateAuthData, setUserType, swapBasicData, getProvider, settings])
 
-    const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings)
+    const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings, type)
         : generateSwapInitialValues(settings, query, type)
 
     const handleShowSwapModal = useCallback((value: boolean) => {
@@ -190,9 +190,9 @@ type SubmitProps = {
 }
 
 const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, createSwap, setNetworkToConnect, setShowConnectNetworkModal, setSwapId, setSubmitedFormValues }: SubmitProps) => {
+    setSubmitedFormValues(values)
     if (values.depositMethod == 'wallet') {
         setSwapId(undefined)
-        setSubmitedFormValues(values)
         setShowSwapModal(true)
         return
     }
