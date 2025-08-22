@@ -45,7 +45,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
         <LayoutGroup>
             <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full" ref={parentRef}>
                 {
-                    wallets.length === 0 && direction === 'from' &&
+                    wallets.length === 0 && direction === 'from' && !searchQuery &&
                     <ConnectWalletButton
                         descriptionText="Connect your wallet to browse your assets and choose easier"
                         className="w-full my-2.5"

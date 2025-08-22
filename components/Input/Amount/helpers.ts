@@ -13,7 +13,7 @@ type ResoleMaxAllowedAmountProps = {
 export const resolveMaxAllowedAmount = (props: ResoleMaxAllowedAmountProps) => {
     const { limitsMaxAmount, walletBalance, gasAmount, fromCurrency, native_currency } = props
 
-    if (!walletBalance || !walletBalance.amount)
+    if (!walletBalance || !walletBalance.amount || (limitsMaxAmount && !isInRange({ value: walletBalance.amount, min: 0, max: limitsMaxAmount })))
         return limitsMaxAmount
 
     //calculate balance with reduced gas amount, if it is not in range we do not force the limits api min amount

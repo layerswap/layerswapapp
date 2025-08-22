@@ -32,31 +32,14 @@ const CexPicker: FC = () => {
             if (!fromExchange) return;
 
             const currencyGroup = fromExchange?.token_groups?.find(group => group.symbol === toAsset?.symbol);
-            const sourceRoute = exchangeNetworks?.find(route =>
-                route?.token
-            );
+            const sourceRoute = exchangeNetworks?.[0]
 
             const sourceRouteToken = sourceRoute?.token
             //TODO refactor form types
             if (values.currencyGroup !== currencyGroup || sourceRouteToken !== selectedToken) {
-                await updateForm({
-                    formDataKey: 'currencyGroup',
-                    formDataValue: currencyGroup,
-                    shouldValidate: true,
-                    setFieldValue
-                });
-                await updateForm({
-                    formDataKey: 'from',
-                    formDataValue: sourceRoute?.network as NetworkRoute,
-                    shouldValidate: true,
-                    setFieldValue
-                });
-                await updateForm({
-                    formDataKey: 'fromAsset',
-                    formDataValue: sourceRouteToken,
-                    shouldValidate: false,
-                    setFieldValue
-                });
+                setFieldValue('currencyGroup', currencyGroup, true)
+                setFieldValue('from', sourceRoute?.network, true)
+                setFieldValue('fromAsset', sourceRouteToken, false)
             }
         };
 

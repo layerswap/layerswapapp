@@ -129,7 +129,7 @@ export default function FormWrapper({ children, type }: { children?: React.React
         }
     }, [createSwap, query, partner, router, updateAuthData, setUserType, swapBasicData, getProvider, settings])
 
-    const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings)
+    const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings, type)
         : generateSwapInitialValues(settings, query, type)
 
     const handleShowSwapModal = useCallback((value: boolean) => {

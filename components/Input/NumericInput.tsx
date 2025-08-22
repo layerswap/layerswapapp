@@ -38,9 +38,11 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                 {
                     Number(tempValue) > 0 &&
                     <span className={classNames(
-                        'py-2 flex text-secondary-text/45 items-center h-12 leading-4 bg-secondary-700 min-w-0 rounded-lg font-semibold border-0',
+                        'py-2 flex text-secondary-text/45 items-center h-12 leading-4 bg-secondary-700 min-w-0 rounded-lg font-semibold border-0 ',
                         className
-                    )}>
+                    )}
+                        ref={ref}
+                    >
                         <span>{tempValue}</span>
                     </span>
                 }
