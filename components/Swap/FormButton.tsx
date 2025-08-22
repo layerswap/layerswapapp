@@ -21,7 +21,7 @@ const FormButton = ({
         return <FormSourceWalletButton />;
     }
 
-    if (values?.to && !values?.destination_address) {
+    if (values?.to && !values?.destination_address && !error) {
         return (
             <Address partner={partner}>
                 {() => (
