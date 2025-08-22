@@ -29,6 +29,14 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
         return formatUsd(sourceCurrencyPriceInUsd * amountNumber)
     }, [amount, actionValue, sourceCurrencyPriceInUsd]);
 
+    const actionValueInUsd = useMemo(() => {
+        const amountNumber = Number(actionValue);
+        if (isNaN(amountNumber) || amountNumber <= 0 || !sourceCurrencyPriceInUsd)
+            return undefined;
+        return formatUsd(sourceCurrencyPriceInUsd * amountNumber)
+    }, [actionValue, sourceCurrencyPriceInUsd]);
+
+
     useEffect(() => {
         const input = amountRef.current;
         const suffix = suffixRef.current;
@@ -36,10 +44,11 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
         if (!input || !suffix) return;
 
         const font = getFontFromElement(input);
-        const width = getTextWidth(input.value || "0", font);
+        const width = getTextWidth(actionValue?.toString() || amount || "0", font);
 
         suffix.style.left = `${width + 16}px`;
-    }, [amount, requestedAmountInUsd]);
+    }, [amount, requestedAmountInUsd, actionValue]);
+    
     const placeholder = '0'
 
     const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
@@ -62,11 +71,20 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
                         /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                     }}
                 />
-                <div className={`${usdPosition === "right" ? "absolute bottom-4" : "h-5"} usd-suffix text-base font-medium text-secondary-text pointer-events-none`} ref={suffixRef}>
-                    {`${requestedAmountInUsd ?? '$0'}`}
+
+                <div className={clsx(
+                    "usd-suffix text-base font-medium text-secondary-text pointer-events-none",
+                    {
+                        "absolute bottom-4": usdPosition === "right",
+                        "h-5": usdPosition !== "right",
+                        "text-secondary-text/45": !!actionValueInUsd
+                    },
+                    "group-hover:block"
+                )} ref={suffixRef}>
+                    {`${actionValueInUsd ?? requestedAmountInUsd ?? '$0'}`}
                 </div>
             </div>
-        </div>
+        </div >
     </>)
 });
 

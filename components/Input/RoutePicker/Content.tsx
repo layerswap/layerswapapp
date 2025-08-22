@@ -6,7 +6,7 @@ import { Accordion } from "../../shadcn/accordion";
 import Row from "./Rows";
 import { LayoutGroup, motion } from "framer-motion";
 import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
-import { useSelectorState } from "../../Select/CommandNew/Index";
+import { useSelectorState } from "../../Select/Selector/Index";
 import useWallet from "@/hooks/useWallet";
 import ConnectWalletButton from "../../Common/ConnectWalletButton";
 import { SearchComponent } from "../Search";
@@ -45,7 +45,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
         <LayoutGroup>
             <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full" ref={parentRef}>
                 {
-                    wallets.length === 0 && direction === 'from' &&
+                    wallets.length === 0 && direction === 'from' && !searchQuery &&
                     <ConnectWalletButton
                         descriptionText="Connect your wallet to browse your assets and choose easier"
                         className="w-full my-2.5"

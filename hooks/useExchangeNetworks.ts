@@ -7,13 +7,12 @@ import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 
 type Props = {
     fromExchange?: string | undefined;
-    currencyGroup?: string | undefined;
     to?: string | undefined;
     toAsset?: string | undefined;
 }
 
-export default function useExchangeNetworks({ fromExchange, currencyGroup, to, toAsset }: Props) {
-    const exchangeNetworksURL = resolveExchangeHistoricalNetworksURL("from", { fromExchange, currencyGroup, to, toAsset });
+export default function useExchangeNetworks({ fromExchange, to, toAsset }: Props) {
+    const exchangeNetworksURL = resolveExchangeHistoricalNetworksURL("from", { fromExchange, to, toAsset });
 
     const apiClient = new LayerSwapApiClient()
     const {

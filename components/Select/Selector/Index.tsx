@@ -1,5 +1,4 @@
 import { createContext, ReactNode, SetStateAction, useContext, useState } from "react";
-import { LeafletHeight } from "../../modal/leaflet";
 import VaulDrawer from "@/components/modal/vaulModal";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 
@@ -39,7 +38,6 @@ type ContentChildProps = {
 type SelectContentProps = {
     header?: ReactNode;
     searchHint?: string;
-    modalHeight?: LeafletHeight;
     modalContent?: React.ReactNode;
     children: ((props: ContentChildProps) => JSX.Element);
     isLoading: boolean;
@@ -68,7 +66,7 @@ export const SelectorContent = (props: SelectContentProps) => {
             id="item-1"
             className="pb-0"
             style={{ height: isMobile && windowSize.height ? `${(windowSize.height * 0.8).toFixed()}px` : '100%' }}
-            fullheight={isDesktop}
+            openFullHeight={isDesktop || (isMobile && !windowSize.height)}
         >
             <>
                 {modalContent}
