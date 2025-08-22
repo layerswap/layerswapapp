@@ -11,16 +11,9 @@ import { WalletModalProvider } from "../WalletModal";
 import FuelProviderWrapper from "./FuelProvider";
 import { BitcoinProvider } from "./BitcoinProvider";
 import { ActiveParadexAccountProvider } from "./ActiveParadexAccount";
-import { PostHogProvider } from "posthog-js/react";
 
 const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], basePath: string, themeData: ThemeData, appName: string | undefined }> = ({ children, basePath, themeData, appName }) => {
     return (
-        <PostHogProvider
-            apiKey={process.env.NEXT_PUBLIC_POSTHOG_KEY ?? ''}
-            options={{
-                api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
-            }}
-        >
             <TonConnectProvider basePath={basePath} themeData={themeData} appName={appName}>
                 <SolanaProvider>
                     <TronProvider>
@@ -44,7 +37,6 @@ const WalletsProviders: FC<{ children: JSX.Element | JSX.Element[], basePath: st
                     </TronProvider>
                 </SolanaProvider>
             </TonConnectProvider>
-        </PostHogProvider>
     )
 }
 
