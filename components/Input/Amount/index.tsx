@@ -22,12 +22,11 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
     const sourceCurrencyPriceInUsd = fee?.quote.source_token?.price_in_usd || fromCurrency?.price_in_usd;
 
     const requestedAmountInUsd = useMemo(() => {
-        const baseAmount = actionValue ?? amount;
-        const amountNumber = Number(baseAmount);
+        const amountNumber = Number(amount);
         if (isNaN(amountNumber) || amountNumber <= 0 || !sourceCurrencyPriceInUsd)
             return undefined;
         return formatUsd(sourceCurrencyPriceInUsd * amountNumber)
-    }, [amount, actionValue, sourceCurrencyPriceInUsd]);
+    }, [amount, sourceCurrencyPriceInUsd]);
 
     const actionValueInUsd = useMemo(() => {
         const amountNumber = Number(actionValue);
@@ -35,7 +34,6 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
             return undefined;
         return formatUsd(sourceCurrencyPriceInUsd * amountNumber)
     }, [actionValue, sourceCurrencyPriceInUsd]);
-
 
     useEffect(() => {
         const input = amountRef.current;
@@ -48,7 +46,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
 
         suffix.style.left = `${width + 16}px`;
     }, [amount, requestedAmountInUsd, actionValue]);
-    
+
     const placeholder = '0'
 
     const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
