@@ -2,6 +2,7 @@ import { useField, useFormikContext } from "formik";
 import { ChangeEvent, FC, forwardRef } from "react";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
+import { truncateDecimals } from "../utils/RoundDecimals";
 
 type Input = {
     tempValue?: number;
@@ -43,7 +44,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     )}
                         ref={ref}
                     >
-                        <span>{tempValue}</span>
+                        <span>{truncateDecimals(Number(tempValue), precision ?? 0)}</span>
                     </span>
                 }
                 {

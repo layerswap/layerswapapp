@@ -32,6 +32,7 @@ export const useSelectorState = () => {
 
 type ContentChildProps = {
     closeModal: () => void;
+    shouldFocus?: boolean;
 }
 
 type SelectContentProps = {
@@ -44,7 +45,7 @@ type SelectContentProps = {
 
 export const SelectorContent = (props: SelectContentProps) => {
     const { children, modalContent, header } = props
-    const { isOpen, setIsOpen, setShouldFocus } = useSelectorState();
+    const { isOpen, setIsOpen, setShouldFocus, shouldFocus } = useSelectorState();
     const { isDesktop, isMobile, windowSize } = useWindowDimensions();
     const closeModal = () => { setIsOpen(false); setShouldFocus(false) };
 
@@ -69,7 +70,7 @@ export const SelectorContent = (props: SelectContentProps) => {
         >
             <>
                 {modalContent}
-                {children({ closeModal })}
+                {children({ closeModal, shouldFocus })}
             </>
         </VaulDrawer.Snap>
     </VaulDrawer>

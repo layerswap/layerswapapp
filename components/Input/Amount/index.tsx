@@ -35,7 +35,6 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
         return formatUsd(sourceCurrencyPriceInUsd * amountNumber)
     }, [actionValue, sourceCurrencyPriceInUsd]);
 
-
     useEffect(() => {
         const input = amountRef.current;
         const suffix = suffixRef.current;
@@ -47,7 +46,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
 
         suffix.style.left = `${width + 16}px`;
     }, [amount, requestedAmountInUsd, actionValue]);
-    
+
     const placeholder = '0'
 
     const step = 1 / Math.pow(10, fromCurrency?.precision || 1)

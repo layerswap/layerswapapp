@@ -23,7 +23,7 @@ const CexPicker: FC = () => {
 
     const { exchanges, exchangesRoutesLoading: isLoading, selectedRoute, selectedToken, exchangeNetworks } = useFormRoutes({ direction, values });
     const { fromExchange, toAsset } = values;
-    const { isOpen } = useSelectorState();
+    const { shouldFocus } = useSelectorState();
 
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -62,29 +62,31 @@ const CexPicker: FC = () => {
                     <SelectedNetworkDisplay exchange={fromExchange} placeholder="Select Exchange" />
                 </SelectorTrigger>
                 <SelectorContent isLoading={isLoading} searchHint="Search" header="">
-                    {({ closeModal }) => (
-                        <div className="overflow-y-auto flex flex-col h-full z-40" >
-                            <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={isOpen} />
-                            <LayoutGroup>
-                                <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full">
-                                    <div className="relative">
-                                        {exchanges.map((exchange) => {
-                                            return <div className="py-1 box-border" key={exchange.name}>
-                                                <ExchangeNetwork
-                                                    route={exchange}
-                                                    direction={direction}
-                                                    onSelect={(n) => {
-                                                        handleSelect(n);
-                                                        closeModal();
-                                                    }}
-                                                />
-                                            </div>
-                                        })}
-                                    </div>
-                                </motion.div>
-                            </LayoutGroup>
-                        </div >
-                    )}
+                    {({ closeModal, shouldFocus }) => {
+                        return (
+                            <div className="overflow-y-auto flex flex-col h-full z-40" >
+                                <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={shouldFocus} />
+                                <LayoutGroup>
+                                    <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full">
+                                        <div className="relative">
+                                            {exchanges.map((exchange) => {
+                                                return <div className="py-1 box-border" key={exchange.name}>
+                                                    <ExchangeNetwork
+                                                        route={exchange}
+                                                        direction={direction}
+                                                        onSelect={(n) => {
+                                                            handleSelect(n);
+                                                            closeModal();
+                                                        }}
+                                                    />
+                                                </div>
+                                            })}
+                                        </div>
+                                    </motion.div>
+                                </LayoutGroup>
+                            </div>
+                        )
+                    }}
                 </SelectorContent>
             </Selector>
         </div>
