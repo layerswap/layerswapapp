@@ -82,7 +82,8 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
 
 const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoading, swapValues: values, destination, destinationAddress }) => {
     const { quote, reward } = quoteData || {}
-    const { provider } = useWallet(values.from, 'withdrawal')
+    const isCEX = !!values.fromExchange;
+    const { provider } = useWallet(!isCEX ? values.from : undefined, 'withdrawal')
     const wallet = provider?.activeWallet
     const { gas } = useSWRGas(wallet?.address, values.from, values.fromAsset)
     const gasFeeInUsd = (values?.from?.token && gas) ? gas * values?.from?.token?.price_in_usd : null;

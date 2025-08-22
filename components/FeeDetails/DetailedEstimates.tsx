@@ -17,8 +17,9 @@ import { ApiResponse } from "@/Models/ApiResponse";
 
 export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoading, destination, destinationAddress, swapValues: values }) => {
     const { quote, reward } = quoteData || {}
-    const { from, fromAsset } = values;
-    const { provider } = useWallet(values.from, 'withdrawal')
+    const { from, fromAsset, fromExchange } = values;
+    const isCEX = !!fromExchange;
+    const { provider } = useWallet(!isCEX ? values.from : undefined, 'withdrawal')
     const wallet = provider?.activeWallet
     const { gas, isGasLoading } = useSWRGas(wallet?.address, from, fromAsset)
 
