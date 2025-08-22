@@ -65,9 +65,11 @@
 }
 
 @utility styled-scroll {
-  @apply scrollbar:w-1.5! scrollbar:h-1.5! scrollbar:bg-secondary-500  scrollbar-thumb:rounded-sm! scrollbar-thumb:bg-slate-500/50!;
+  @apply scrollbar:w-1.5! scrollbar:h-1.5! scrollbar:bg-secondary-500 scrollbar:absolute scrollbar-thumb:rounded-sm! scrollbar-thumb:bg-slate-500/50!;
 }
-
+.styled-scroll::-webkit-scrollbar{
+  position:absolute
+}
 @utility rdxCommandList {
   max-height: var(--radix-popper-available-height);
 }
