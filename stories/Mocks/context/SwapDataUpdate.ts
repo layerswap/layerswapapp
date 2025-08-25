@@ -9,7 +9,6 @@ const MockFunctions: UpdateSwapInterface = {
     setWithdrawType: () => { },
     setInterval: () => { console.log("set interval called") },
     setSwapId: () => { throw new Error("Not implemented") },
-    setSelectedSourceAccount: () => { throw new Error("Not implemented") },
     setSubmitedFormValues: () => { throw new Error("Not implemented") },
     setQuoteLoading: () => { throw new Error("Not implemented") },
 }
