@@ -80,10 +80,7 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                     )}
                 </SelectorContent>
             </Selector>
-            {
-                direction === 'from' &&
-                <Balance values={values} direction="from" />
-            }
+            <Balance values={values} direction={direction} />
         </div>
     )
 };
