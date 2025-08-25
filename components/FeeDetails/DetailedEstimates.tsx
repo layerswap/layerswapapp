@@ -57,7 +57,7 @@ export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, i
                             <div className="w-5">
                                 <item.icon />
                             </div>
-                            <label>
+                            <label className="text-sm sm:text-base">
                                 {item.name}
                             </label>
                         </div>

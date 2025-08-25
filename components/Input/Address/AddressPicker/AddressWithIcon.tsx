@@ -45,7 +45,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
         },
         {
             group: AddressGroup.ConnectedWallet,
-            text: <p className={`${maxWalletNameWidth} text-ellipsis sm:max-w-full text-nowrap overflow-hidden`}>{connectedWallet?.displayName || 'Connected wallet'}</p>,
+            text: <p className={`${maxWalletNameWidth} text-ellipsis sm:max-w-full text-nowrap overflow-hidden text-[10px]`}>{connectedWallet?.displayName || 'Connected wallet'}</p>,
             icon: connectedWallet?.icon || WalletIcon
         },
         {

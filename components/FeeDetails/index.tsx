@@ -104,7 +104,7 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
                     "inline-flex items-center gap-1",
                     { "animate-pulse-strong": isQuoteLoading }
                 )}>
-                    <div className='h-4 w-4'>
+                    <div className='h-4 w-4 text-sm'>
                         {!values.fromExchange ?
                             <GasIcon className='h-4 w-4' /> : <ExchangeGasIcon className='h-4 w-4' />
                         }
