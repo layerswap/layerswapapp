@@ -1,7 +1,7 @@
-import { FC, useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import Modal from "../../../modal/modal";
+import { FC } from "react";
+import { ChevronDown } from "lucide-react";
 import FailIcon from "../../../icons/FailIcon";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcn/accordion";
 
 export type WalletMessageProps = {
     header: string;
@@ -10,8 +10,6 @@ export type WalletMessageProps = {
     showInModal?: boolean;
 }
 const WalletMessage: FC<WalletMessageProps> = ({ header, details, status, showInModal }) => {
-    const [showErrorModal, setShowErrorModal] = useState(false);
-
     return <div className="flex text-center space-x-2">
         <div className='relative -mt-0.5'>
             {
@@ -25,37 +23,39 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status, showIn
                     </>
             }
         </div>
-        {
-            showInModal ?
-                <div className="text-left space-y-1 w-full max-w-2xl">
-                    <button type="button" onClick={() => setShowErrorModal(true)} className="flex justify-between w-full">
-                        <p className="text-md font-semibold self-center text-primary-text">
-                            {header}
-                        </p>
-                        {showErrorModal ? <ChevronDown className="text-primary-text" /> : <ChevronUp className="text-primary-text" />}
-                    </button>
-                    {/* TODO handle overflow */}
-                    <Modal height="fit" show={showErrorModal} setShow={setShowErrorModal} modalId="walletMessage">
-                        <div className="text-left space-y-1">
+        {showInModal ? (
+            <div className="text-left space-y-1 w-full max-w-2xl">
+                <Accordion type="single" collapsible>
+                    <AccordionItem value="wallet-message">
+                        <AccordionTrigger className="flex justify-between w-full items-center">
                             <p className="text-md font-semibold self-center text-primary-text">
                                 {header}
                             </p>
-                            <p className="text-sm text-secondary-text break-normal whitespace-pre-wrap">
-                                {details}
-                            </p>
-                        </div>
-                    </Modal>
-                </div>
-                :
-                <div className="text-left space-y-1">
-                    <p className="text-md font-semibold self-center text-primary-text">
-                        {header}
-                    </p>
-                    <p className={`text-sm text-secondary-text ${details.length > 200 ? 'break-words' : ''}`}>
-                        {details}
-                    </p>
-                </div>
-        }
+                            <ChevronDown className="h-4 w-4 shrink-0 text-primary-text transition-transform duration-200 data-[state=open]:rotate-180" />
+                        </AccordionTrigger>
+                        <AccordionContent>
+                            <div className="text-left space-y-1">
+                                <p className="text-sm text-secondary-text break-normal whitespace-pre-wrap">
+                                    {details}
+                                </p>
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+            </div>
+        ) : (
+            <div className="text-left space-y-1">
+                <p className="text-md font-semibold self-center text-primary-text">
+                    {header}
+                </p>
+                <p
+                    className={`text-sm text-secondary-text ${details.length > 200 ? "break-words" : ""
+                        }`}
+                >
+                    {details}
+                </p>
+            </div>
+        )}
     </div>
 }
 
