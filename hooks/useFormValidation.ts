@@ -38,7 +38,9 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
     if (maxAllowedAmount != undefined && amount > maxAllowedAmount) {
         return { message: `Max amount is ${maxAllowedAmount}` };
     }
-
+    if (minAllowedAmount != undefined && amount < minAllowedAmount) {
+        return { message: `Min amount is ${minAllowedAmount}` };
+    }
 
     if (values.to) {
         if (values.destination_address && !isValidAddress(values.destination_address, values.to)) {
