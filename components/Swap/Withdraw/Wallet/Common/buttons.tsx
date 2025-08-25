@@ -211,6 +211,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         catch (e) {
             setSwapId(undefined)
             console.log('Error in SendTransactionButton:', e)
+            throw new Error(e.message || 'Error in SendTransactionButton')
         }
         finally {
             setLoading(false)

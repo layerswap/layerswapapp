@@ -44,7 +44,6 @@ export type UpdateSwapInterface = {
     setDepositAddressIsFromAccount: (value: boolean) => void,
     setWithdrawType: (value: WithdrawType) => void
     setSwapId: (value: string | undefined) => void
-    setSelectedSourceAccount: (value: { wallet: Wallet, address: string } | undefined) => void
     setSwapDataFromQuery?: (swapData: SwapResponse | undefined) => void,
     setSubmitedFormValues: (values: NonNullable<SwapFormValues>) => void,
 }
@@ -70,13 +69,14 @@ export function SwapDataProvider({ children }) {
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
     const [depositAddressIsFromAccount, setDepositAddressIsFromAccount] = useState<boolean>()
     const router = useRouter();
-    const { providers } = useWallet()
     const [swapId, setSwapId] = useState<string | undefined>(router.query.swapId?.toString())
-    const [selectedSourceAccount, setSelectedSourceAccount] = useState<{ wallet: Wallet, address: string } | undefined>()
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
     const { sourceRoutes, destinationRoutes } = useSettingsState()
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
+    const { providers, provider } = useWallet(swapBasicFormData?.source_network, 'asSource')
+
+    const selectedSourceAccount = useMemo(() =>  provider?.activeWallet, [provider]);
 
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
     const { quote: formDataQuote } = useQuoteData(swapId ? undefined : quoteArgs);
@@ -116,19 +116,6 @@ export function SwapDataProvider({ children }) {
     const [interval, setInterval] = useState(0)
     const { data, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
 
-    const handleChangeSelectedSourceAccount = (props: { wallet: Wallet, address: string } | undefined) => {
-        if (!props) {
-            setSelectedSourceAccount(undefined)
-            return
-        }
-        const { wallet, address } = props || {}
-        const provider = providers?.find(p => p.name === wallet.providerName)
-        if (provider?.activeWallet?.address.toLowerCase() !== address.toLowerCase()) {
-            provider?.switchAccount && provider?.switchAccount(wallet, address)
-        }
-        setSelectedSourceAccount({ wallet, address })
-    }
-
     const swapBasicData = useMemo(() => {
         if (swapId && data?.data) {
             return data?.data?.swap ? {
@@ -161,7 +148,7 @@ export function SwapDataProvider({ children }) {
     const sourceIsSupported = swapBasicData && WalletIsSupportedForSource({
         providers: providers,
         sourceNetwork: swapBasicData.source_network,
-        sourceWallet: selectedSourceAccount?.wallet
+        sourceWallet: selectedSourceAccount
     })
 
     const use_deposit_address = swapBasicData?.use_deposit_address
@@ -199,7 +186,7 @@ export function SwapDataProvider({ children }) {
         const sourceIsSupported = WalletIsSupportedForSource({
             providers: providers,
             sourceNetwork: from,
-            sourceWallet: selectedSourceAccount?.wallet
+            sourceWallet: selectedSourceAccount
         })
 
         const data: CreateSwapParams = {
@@ -259,7 +246,6 @@ export function SwapDataProvider({ children }) {
         setDepositAddressIsFromAccount,
         setWithdrawType,
         setSwapId: handleUpdateSwapid,
-        setSelectedSourceAccount: handleChangeSelectedSourceAccount,
         setSubmitedFormValues,
         setQuoteLoading
     };
