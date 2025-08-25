@@ -136,8 +136,8 @@ const RouteTokenPair: FC<{ route: { logo: string, display_name: string }, networ
                 <ImageWithFallback
                     src={token.logo}
                     alt="Token Logo"
-                    height="32"
-                    width="32"
+                    height="28"
+                    width="28"
                     loading="eager"
                     fetchPriority="high"
                     className="rounded-full object-contain"
@@ -145,16 +145,16 @@ const RouteTokenPair: FC<{ route: { logo: string, display_name: string }, networ
                 <ImageWithFallback
                     src={route.logo}
                     alt="Route Logo"
-                    height="20"
-                    width="20"
+                    height="16"
+                    width="16"
                     loading="eager"
                     fetchPriority="high"
                     className="absolute -right-1.5 -bottom-1.5 object-contain rounded-md border-1 border-secondary-300"
                 />
             </div>
             <div className="flex flex-col font-medium text-primary-buttonTextColor overflow-hidden">
-                <span className="leading-4">{token.symbol}</span>
-                <div className="flex items-center gap-1 leading-3 text-sm">
+                <span className="leading-4 text-sm ">{token.symbol}</span>
+                <div className="flex items-center gap-1 leading-3 text-sm sm:text-base">
                     <p className="text-secondary-text text-sm truncate whitespace-nowrap">
                         {route.display_name}
                     </p>
