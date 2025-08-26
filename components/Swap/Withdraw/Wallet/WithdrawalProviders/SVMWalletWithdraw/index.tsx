@@ -1,10 +1,8 @@
 import { FC, useCallback, useState } from 'react'
-import { BackendTransactionStatus } from '@/lib/apiClients/layerSwapApiClient';
 import { Transaction, Connection, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import useWallet from '@/hooks/useWallet';
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
-import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import WalletIcon from '@/components/icons/WalletIcon';
 import useSWRBalance from '@/lib/balances/useSWRBalance';
 import { useSettingsState } from '@/context/settings';
@@ -22,7 +20,6 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
     const { source_network, source_token } = swapBasicData;
 
     const { provider } = useWallet(source_network, 'withdrawal');
-    const { setSwapTransaction } = useSwapTransactionStore();
 
     const wallet = provider?.activeWallet
     const { wallet: solanaWallet, signTransaction } = useSolanaWallet();
