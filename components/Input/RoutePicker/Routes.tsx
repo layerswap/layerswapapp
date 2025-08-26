@@ -51,7 +51,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
 
     const tokenbalance = balances?.find(b => b.token === item.symbol)
     const formatted_balance_amount = (tokenbalance?.amount || tokenbalance?.amount === 0) ? truncateDecimals(tokenbalance?.amount, item.precision) : ''
-    const usdAmount = item?.price_in_usd * Number(formatted_balance_amount);
+    const usdAmount = (tokenbalance?.amount && item?.price_in_usd) ? item?.price_in_usd * tokenbalance?.amount : undefined;
 
     return <SelectItem.DetailedTitle
         title={item.symbol}
@@ -59,7 +59,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
         secondary={route.display_name}
         secondaryLogoSrc={route.logo}
     >
-        {(allbalancesLoaded && tokenbalance && Number(formatted_balance_amount) >= 0) ? (
+        {(allbalancesLoaded && tokenbalance && Number(tokenbalance?.amount) >= 0) ? (
             <span className="text-sm text-secondary-text text-right my-auto leading-4 font-medium">
                 <div className={clsx("text-primary-text",
                     {
@@ -68,7 +68,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
                 )}>
                     {formatted_balance_amount}
                 </div>
-                {Number(tokenbalance?.amount) >= 0 && (
+                {Number(usdAmount) >= 0 && (
                     <div
                         className={clsx({
                             'text-xs leading-4': type == 'suggested_token',
