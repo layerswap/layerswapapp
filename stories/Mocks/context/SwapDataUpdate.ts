@@ -11,6 +11,9 @@ const MockFunctions: UpdateSwapInterface = {
     setSwapId: () => { throw new Error("Not implemented") },
     setSubmitedFormValues: () => { throw new Error("Not implemented") },
     setQuoteLoading: () => { throw new Error("Not implemented") },
+    setSwapModalOpen: function (value: boolean): void {
+        throw new Error("Function not implemented.")
+    }
 }
 
 
