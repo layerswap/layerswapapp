@@ -14,7 +14,7 @@ const TonConnectProvider = ({ children, basePath, themeData, appName }: { childr
 
         return "#" + componentToHex(Number(rgbArray[0])) + componentToHex(Number(rgbArray[1])) + componentToHex(Number(rgbArray[2]));
     }
-    const manifestUrl = `https://${process.env.NEXT_PUBLIC_VERCEL_URL ? `${process.env.NEXT_PUBLIC_VERCEL_URL}${basePath ? `/${basePath}` : ''}` : 'layerswap.io/app'}/tonconnect-manifest.json`
+    const manifestUrl = `https://${process.env.NEXT_PUBLIC_VERCEL_URL ? `${process.env.NEXT_PUBLIC_VERCEL_URL}${basePath ? `${basePath}` : ''}` : 'layerswap.io/app'}/tonconnect-manifest.json`
 
     return (
         <TonConnectUIProvider
