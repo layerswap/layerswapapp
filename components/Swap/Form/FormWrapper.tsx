@@ -1,8 +1,8 @@
 import { Formik, FormikProps } from "formik";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useSettingsState } from "@/context/settings";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
-import { removeSwapPath, setSwapPath, UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
+import { removeSwapPath, UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import React from "react";
 import ConnectNetwork from "@/components/ConnectNetwork";
 import toast from "react-hot-toast";
@@ -26,7 +26,6 @@ import { QueryParams } from "@/Models/QueryParams";
 import VaulDrawer from "@/components/modal/vaulModal";
 import { addressFormat } from "@/lib/address/formatter";
 import AddressNote from "@/components/Input/Address/AddressNote";
-import useSWRBalance from "@/lib/balances/useSWRBalance";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -48,23 +47,20 @@ export default function FormWrapper({ children, type }: { children?: React.React
 
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
-    const [showSwapModal, setShowSwapModal] = useState(false);
     const [isAddressFromQueryConfirmed, setIsAddressFromQueryConfirmed] = useState(false);
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const router = useRouter();
     const { updateAuthData, setUserType } = useAuthDataUpdate()
     const settings = useSettingsState();
-    const { swapBasicData, swapDetails } = useSwapDataState()
+    const { swapBasicData, swapDetails, swapModalOpen } = useSwapDataState()
     const sourceNetworkWithTokens = settings.networks.find(n => n.name === swapBasicData?.source_network.name)
-    const { getProvider, provider } = useWallet(sourceNetworkWithTokens, "withdrawal")
-    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
-    const { mutate: mutateBalances } = useSWRBalance(selectedSourceAccount?.address, sourceNetworkWithTokens)
+    const { getProvider } = useWallet(sourceNetworkWithTokens, "withdrawal")
 
     const { getConfirmation } = useAsyncModal();
 
     const query = useQueryState()
     const { appName, destination_address: destinationAddressFromQuery } = query
-    const { createSwap, setSwapId, setSubmitedFormValues } = useSwapDataUpdate()
+    const { createSwap, setSwapId, setSubmitedFormValues, setSwapModalOpen } = useSwapDataUpdate()
 
 
 
@@ -133,7 +129,7 @@ export default function FormWrapper({ children, type }: { children?: React.React
         : generateSwapInitialValues(settings, query, type)
 
     const handleShowSwapModal = useCallback((value: boolean) => {
-        setShowSwapModal(value)
+        setSwapModalOpen(value)
         if (!value)
             removeSwapPath(router)
     }, [router, swapDetails])
@@ -159,10 +155,9 @@ export default function FormWrapper({ children, type }: { children?: React.React
                     }
                 </Modal>
                 <VaulDrawer
-                    show={showSwapModal}
+                    show={swapModalOpen}
                     setShow={handleShowSwapModal}
                     header={`Complete the swap`}
-                    onAnimationEnd={(v) => !v ? mutateBalances() : undefined}
                     modalId="showSwap">
                     <VaulDrawer.Snap id="item-1">
                         <SwapDetails type="contained" />
