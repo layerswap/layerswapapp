@@ -17,7 +17,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     const tokenBalance = balances?.find(
         b => b?.network === network?.name && b?.token === token?.symbol
     )
-    console.log(balances)
+    
     const truncatedBalance = tokenBalance?.amount !== undefined ? truncateDecimals(tokenBalance?.amount, token?.precision) : ''
 
     const previouslySelectedSource = useRef(from);
