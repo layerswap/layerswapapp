@@ -45,7 +45,7 @@ const DestinationPicker = (props: Props) => {
             </div>
         </div>
         <div className="rounded-xl items-center space-y-2">
-            <div className="grid grid-cols-8 gap-2">
+            <div className="grid grid-cols-9 sm:grid-cols-8 gap-2">
                 <div className="col-span-5">
                     <ReceiveAmount
                         source_token={fromCurrency}
@@ -54,7 +54,7 @@ const DestinationPicker = (props: Props) => {
                         isFeeLoading={isQuoteLoading}
                     />
                 </div>
-                <div className="col-span-3 flex items-center self-start justify-end">
+                <div className="col-span-4 sm:col-span-3 flex items-center self-start justify-end">
                     <RoutePicker direction="to" />
                 </div>
             </div>

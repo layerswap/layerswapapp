@@ -51,7 +51,7 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fe
                 </div>
             }
             <LayoutGroup>
-                <div className="grid grid-cols-8 gap-2">
+                <div className="grid grid-cols-9 sm:grid-cols-8 gap-2">
                     <motion.div
                         layout
                         transition={{ duration: 0.25, ease: 'easeInOut' }}
@@ -61,7 +61,7 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fe
                     </motion.div>
                     <motion.div
                         transition={{ duration: 0.25, ease: 'easeInOut' }}
-                        className="col-span-3 flex items-center self-start justify-end"
+                        className="col-span-4 sm:col-span-3 flex items-center self-start justify-end"
                     >
                         <RoutePicker direction="from" />
                     </motion.div>

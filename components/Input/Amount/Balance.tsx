@@ -14,7 +14,10 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     const network = direction === 'from' ? from : to
     const address = direction === 'from' ? selectedSourceAccount?.address : destination_address
     const { balances, isBalanceLoading } = useSWRBalance(address, network, { refreshInterval: 20000 })
-    const tokenBalance = balances?.find(b => b?.network === from?.name && b?.token === token?.symbol)
+    const tokenBalance = balances?.find(
+        b => b?.network === network?.name && b?.token === token?.symbol
+    )
+    
     const truncatedBalance = tokenBalance?.amount !== undefined ? truncateDecimals(tokenBalance?.amount, token?.precision) : ''
 
     const previouslySelectedSource = useRef(from);
@@ -28,13 +31,13 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     useEffect(() => {
         previouslySelectedDestination.current = to
     }, [to, destination_address])
-    
+
     if (!isBalanceLoading && !(network && token && truncatedBalance && tokenBalance))
         return null;
 
     return <motion.div
         layoutId="affect"
-        className="w-4/5 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-sm text-secondary-text">
+        className="w-4/5 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs sm:text-sm text-secondary-text ">
         {
 
             isBalanceLoading ?
