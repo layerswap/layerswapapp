@@ -37,7 +37,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
 
     return <motion.div
         layoutId="affect"
-        className="w-4/5 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-sm text-secondary-text">
+        className="w-4/5 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs sm:text-sm text-secondary-text ">
         {
 
             isBalanceLoading ?
