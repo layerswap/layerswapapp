@@ -75,11 +75,13 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
     if (!loaded) return null;
 
+    const container = isMobile ? document.body : document.getElementById('widget');
+
     return (
         <Drawer.Root
             open={show}
             onOpenChange={handleOpenChange}
-            container={isMobile ? undefined : document.getElementById('widget')}
+            container={container}
             snapPoints={snapPointsHeight}
             activeSnapPoint={snap}
             setActiveSnapPoint={setSnap}
@@ -89,18 +91,35 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             }}
             modal={isMobile ? true : false}
             repositionInputs={false}
-            onAnimationEnd={onAnimationEnd}
+            onAnimationEnd={(e) => { onAnimationEnd && onAnimationEnd(e) }}
             handleOnly={isMobile}
         >
+            <DesktopBackdropPortal isOpen={show} container={container} isMobile={isMobile}>
+                <AnimatePresence mode='wait'>
+                    {
+                        show &&
+                        <motion.div
+                            onClick={() => setShow(false)}
+                            key="backdrop"
+                            className='absolute inset-0 z-40 bg-black/50 block'
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                        />
+                    }
+                </AnimatePresence>
+            </DesktopBackdropPortal>
+
             <Drawer.Portal>
-                <Drawer.Close asChild>
-                    <Drawer.Overlay
-                        className={clsx('inset-0 z-50 bg-black/50 block', {
-                            'fixed': isMobile,
-                            'absolute': !isMobile
-                        })}
-                    />
-                </Drawer.Close>
+                {
+                    isMobile &&
+                    <Drawer.Close asChild>
+                        <Drawer.Overlay
+                            className='fixed inset-0 z-50 bg-black/50 block'
+                        />
+                    </Drawer.Close>
+
+                }
 
                 <Drawer.Content
                     data-testid="content"
@@ -123,7 +142,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                                 {header}
                             </Drawer.Title>
                             <Drawer.Close asChild>
-                                <div className=''>
+                                <div>
                                     <IconButton className='inline-flex' icon={
                                         <X strokeWidth={3} />
                                     }>
@@ -236,7 +255,7 @@ type Props = {
     isWalletModalOpen?: boolean
 }
 
-export const WalletFooterPortal: FC<Props> = ({ children, isWalletModalOpen }) => {
+export const ModalFooterPortal: FC<Props> = ({ children, isWalletModalOpen }) => {
     const ref = useRef<Element | null>(null);
     const [mounted, setMounted] = useState(false)
 
@@ -253,5 +272,43 @@ export const WalletFooterPortal: FC<Props> = ({ children, isWalletModalOpen }) =
     return ref.current && mounted ? createPortal(children, ref.current) : null;
 };
 
+const DesktopBackdropPortal = ({ isOpen, container, children, isMobile }: { isOpen: boolean, container?: Element | null, children: React.ReactNode, isMobile: boolean }) => {
+    const ref = useRef<Element | null>(null);
+    const [mounted, setMounted] = useState(false)
+
+    useEffect(() => {
+        if (!isMobile && isOpen) {
+            const observer = new MutationObserver(() => {
+                if (window.document.body.style.pointerEvents === 'none') {
+                    window.document.body.style.pointerEvents = 'auto';
+                }
+            });
+
+            observer.observe(window.document.body, {
+                attributes: true,
+                attributeFilter: ['style']
+            });
+
+            // Also set it immediately
+            window.document.body.style.pointerEvents = 'auto';
+
+            return () => {
+                observer.disconnect();
+                window.document.body.style.pointerEvents = '';
+            }
+        }
+    }, [isMobile, isOpen])
+
+    useEffect(() => {
+
+        if (container && isOpen) {
+            ref.current = container
+            setMounted(true)
+        }
+
+    }, [isOpen, container]);
+
+    return ref.current && mounted ? createPortal(children, ref.current) : null;
+}
 
 export default VaulDrawer;

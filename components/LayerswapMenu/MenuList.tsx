@@ -1,4 +1,4 @@
-import { BookOpen, Gift, Map, Home, LogIn, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus, UserCircle2 } from "lucide-react";
+import { BookOpen, Gift, Map, Home, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus } from "lucide-react";
 import { useRouter } from "next/router";
 import { FC, useCallback, useEffect, useState } from "react";
 import { useAuthDataUpdate, useAuthState, UserType } from "../../context/authContext";
@@ -14,7 +14,6 @@ import Link from "next/link";
 import Popover from "../modal/popover";
 import SendFeedback from "../sendFeedback";
 import YoutubeLogo from "../icons/YoutubeLogo";
-import { shortenEmail } from '../utils/ShortenAddress';
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import Menu from "./Menu";
 import dynamic from "next/dynamic";
@@ -142,33 +141,6 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
                     </Link>
                 ))}
             </div>
-            {
-                router.pathname != '/auth' &&
-                <Menu.Footer>
-                    <Menu.Group>
-                        {
-                            userType == UserType.AuthenticatedUser ?
-                                <div>
-                                    <div
-                                        className={`gap-4 flex justify-between items-center relative select-none px-4 py-3 outline-hidden w-full text-primary-text`}
-                                    >
-                                        <div className="font-normal flex gap-2 items-center">
-                                            <UserCircle2 className="h-5 w-5" />
-                                            <p>{email && shortenEmail(email, 22)}</p>
-                                        </div>
-                                        <button type="button" className="text-primary hover:text-primary-600" onClick={handleLogout}>
-                                            Sign out
-                                        </button>
-                                    </div>
-                                </div>
-                                :
-                                <Menu.Item pathname='/auth' icon={<LogIn className="h-5 w-5" />} >
-                                    Sign in
-                                </Menu.Item>
-                        }
-                    </Menu.Group>
-                </Menu.Footer>
-            }
         </Menu>
     </div>
 }
