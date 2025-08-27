@@ -12,7 +12,7 @@ import PickerWalletConnect from "./RouterPickerWalletConnect";
 import { swapInProgress } from "@/components/utils/swapUtils";
 import { updateForm } from "@/components/Swap/Form/updateForm";
 
-const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
+const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean }> = ({ direction, isExchange = false }) => {
     const {
         values,
         setFieldValue,
@@ -80,7 +80,10 @@ const RoutePicker: FC<{ direction: SwapDirection }> = ({ direction }) => {
                     )}
                 </SelectorContent>
             </Selector>
-            <Balance values={values} direction={direction} />
+            {
+                !isExchange &&
+                <Balance values={values} direction={direction} />
+            }
         </div>
     )
 };

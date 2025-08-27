@@ -74,7 +74,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                     </label>
                                 </div>
                                 <div className="relative group exchange-picker">
-                                    <RoutePicker direction="to" />
+                                    <RoutePicker direction="to" isExchange={true} />
                                 </div>
 
                                 <div className="hover:bg-secondary-300 bg-secondary-500 rounded-xl px-2 py-3 mb-4">
