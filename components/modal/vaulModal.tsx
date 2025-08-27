@@ -118,7 +118,6 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                             className='fixed inset-0 z-50 bg-black/50 block'
                         />
                     </Drawer.Close>
-
                 }
 
                 <Drawer.Content
@@ -132,13 +131,13 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         className='w-full relative'>
                         {
                             isMobile &&
-                            <div className="absolute top-2 left-[calc(50%-24px)]" >
-                                <Drawer.Handle className='!w-12 bg-primary-text-muted' />
+                            <div className="flex justify-center w-full mt-2 mb-[6px]" >
+                                <Drawer.Handle className='!w-12 !bg-primary-text-placeholder' />
                             </div>
                         }
 
-                        <div className='flex items-center w-full text-left justify-between px-4 pt-3 pb-2'>
-                            <Drawer.Title className="text-lg text-secondary-text font-semibold w-full">
+                        <div className='flex items-center w-full text-left justify-between px-4 sm:pt-3 pb-2'>
+                            <Drawer.Title className="text-sm leading-4 text-secondary-text font-semibold w-full">
                                 {header}
                             </Drawer.Title>
                             <Drawer.Close asChild>
