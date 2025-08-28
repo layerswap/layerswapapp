@@ -16,7 +16,6 @@ export const resolveMaxAllowedAmount = (props: ResoleMaxAllowedAmountProps) => {
     if (!walletBalance || !walletBalance.amount || (limitsMaxAmount && walletBalance.amount > limitsMaxAmount))
         return limitsMaxAmount
 
-    //calculate balance with reduced gas amount, if it is not in range we do not force the limits api min amount
     const shouldPayGasWithTheToken = (native_currency?.symbol === fromCurrency?.symbol) || !native_currency
     const payableAmount = walletBalance.amount - gasAmount
 
