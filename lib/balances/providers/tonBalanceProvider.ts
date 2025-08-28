@@ -1,4 +1,4 @@
-import { datadogRum } from "@datadog/browser-rum";
+import posthog from "posthog-js";
 import { TokenBalance } from "../../../Models/Balance";
 import { Network, NetworkWithTokens, Token } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
@@ -80,7 +80,14 @@ const getNativeAssetBalance = async ({ network, token, address }: { network: Net
         const error = new Error(e)
         error.name = "TonNativeAssetBalanceError"
         error.cause = e
-        datadogRum.addError(error);
+        posthog.capture('$exception', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+            cause: error.cause,
+            where: 'tonBalanceProvider',
+            severity: 'error',
+        });
         return null;
     }
 }
@@ -121,7 +128,14 @@ const getJettonBalance = async ({ network, token, address }: { network: Network,
         const error = new Error(e)
         error.name = "TonJettonBalanceError"
         error.cause = e
-        datadogRum.addError(error);
+        posthog.capture('$exception', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+            cause: error.cause,
+            where: 'tonJettonBalanceProvider',
+            severity: 'error',
+        });
         return null;
     }
 }

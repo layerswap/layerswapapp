@@ -7,10 +7,10 @@ import {
     useFuel,
     useNetwork,
 } from '@fuels/react';
-import { datadogRum } from '@datadog/browser-rum';
 import { coinQuantityfy, CoinQuantityLike, Provider, ScriptTransactionRequest } from 'fuels';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import TransactionMessages from '../../messages/TransactionMessages';
+import posthog from 'posthog-js';
 
 export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -80,7 +80,14 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, r
                     const txError = new Error(e.message);
                     txError.name = `SwapWithdrawalError`;
                     txError.cause = e;
-                    datadogRum.addError(txError);
+                    posthog.capture('$exception', {
+                        name: txError.name,
+                        message: txError.message,
+                        stack: txError.stack,
+                        cause: txError.cause,
+                        where: 'swapWithdrawalError',
+                        severity: 'error',
+                    });
                 }
             }
             throw e
@@ -172,7 +179,14 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
         const renderingError = new Error(error);
         renderingError.name = `SwapWithdrawalError`;
         renderingError.cause = error;
-        datadogRum.addError(renderingError);
+        posthog.capture('$exception', {
+            name: renderingError.name,
+            message: renderingError.message,
+            stack: renderingError.stack,
+            cause: renderingError.cause,
+            where: 'swapWithdrawalError',
+            severity: 'error',
+        });
 
         return <TransactionMessages.UexpectedErrorMessage message={error} />
     }

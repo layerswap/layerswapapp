@@ -2,7 +2,6 @@ import { FC, useCallback, useState } from 'react'
 import useWallet from '@/hooks/useWallet';
 import { useWallet as useTronWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
 import { useSettingsState } from '@/context/settings';
-import { datadogRum } from '@datadog/browser-rum';
 import { TronWeb } from 'tronweb'
 import useSWRGas from '@/lib/gases/useSWRGas';
 import { ContractParamter, Transaction, TransferContract } from 'tronweb/lib/esm/types';
@@ -11,6 +10,7 @@ import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import TransactionMessages from '../../messages/TransactionMessages';
 import WalletIcon from '@/components/icons/WalletIcon';
+import { posthog } from 'posthog-js';
 
 export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -100,7 +100,14 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
         const swapWithdrawalError = new Error(error);
         swapWithdrawalError.name = `SwapWithdrawalError`;
         swapWithdrawalError.cause = error;
-        datadogRum.addError(swapWithdrawalError);
+        posthog.capture('$exception', {
+            name: swapWithdrawalError.name,
+            message: swapWithdrawalError.message,
+            stack: swapWithdrawalError.stack,
+            cause: swapWithdrawalError.cause,
+            where: 'swapWithdrawalError',
+            severity: 'error',
+        });
 
         return <TransactionMessages.UexpectedErrorMessage message={error} />
     }

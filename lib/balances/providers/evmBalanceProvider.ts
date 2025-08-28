@@ -8,9 +8,9 @@ import { erc20Abi } from 'viem'
 import { multicall } from '@wagmi/core'
 import { getBalance, GetBalanceReturnType } from '@wagmi/core'
 import resolveChain from "../../resolveChain"
-import { datadogRum } from "@datadog/browser-rum"
 import BalanceGetterAbi from "../../abis/BALANCEGETTERABI.json"
 import KnownInternalNames from "../../knownIds"
+import { posthog } from "posthog-js"
 
 export class EVMBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
@@ -237,7 +237,14 @@ export const getErc20Balances = async ({
         const error = new Error(e)
         error.name = "ERC20BalanceError"
         error.cause = e
-        datadogRum.addError(error);
+        posthog.capture('$exception', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+            cause: error.cause,
+            where: 'evmBalanceProvider',
+            severity: 'error',
+        });
         return null;
     }
 
@@ -265,7 +272,14 @@ export const getTokenBalance = async (address: `0x${string}`, network: Network, 
         const error = new Error(e)
         error.name = "TokenBalanceError"
         error.cause = e
-        datadogRum.addError(error);
+        posthog.capture('$exception', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+            cause: error.cause,
+            where: 'tokenBalanceProvider',
+            severity: 'error',
+        });
         return null
     }
 

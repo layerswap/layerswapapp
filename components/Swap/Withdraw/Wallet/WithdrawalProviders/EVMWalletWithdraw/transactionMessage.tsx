@@ -1,9 +1,9 @@
 import { FC } from "react"
 import { ActionData } from "../../Common/sharedTypes"
 import { BaseError } from 'viem'
-import { datadogRum } from '@datadog/browser-rum';
 import TransactionMessages from "../../../messages/TransactionMessages";
 import resolveError from "./resolveError";
+import { posthog } from "posthog-js";
 
 type TransactionMessageProps = {
     wait?: ActionData,
@@ -42,7 +42,15 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
         const renderingError = new Error(unexpectedError.message);
         renderingError.name = `SwapWithdrawalError`;
         renderingError.cause = unexpectedError;
-        datadogRum.addError(renderingError);
+        posthog.capture('$exception', {
+            name: renderingError.name,
+            message: renderingError.message,
+            stack: renderingError.stack,
+            cause: renderingError.cause,
+            where: 'swapWithdrawalError',
+            severity: 'error',
+            sessionId: posthog.get_distinct_id(),
+        });
 
         return <TransactionMessages.UexpectedErrorMessage message={unexpectedError?.message} />
     }

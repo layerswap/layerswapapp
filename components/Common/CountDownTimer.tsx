@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from "react";
 import { SwapStatus } from "../../Models/SwapStatus";
 import { SwapDetails, TransactionType } from "../../lib/apiClients/layerSwapApiClient";
-import { datadogRum } from "@datadog/browser-rum";
+import posthog from "posthog-js";
 
 const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThresholdChange?: (threshold: boolean) => void }> = ({ initialTime, swapDetails, onThresholdChange }) => {
 
@@ -45,7 +45,15 @@ const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThre
         const renderingError = new Error("Transaction is taking longer than expected");
         renderingError.name = `LongTransactionError`;
         renderingError.cause = renderingError;
-        datadogRum.addError(renderingError);
+
+        posthog.capture('$exception', {
+            name: renderingError.name,
+            message: renderingError.message,
+            stack: renderingError.stack,
+            cause: renderingError.cause,
+            where: 'longTransactionError',
+            severity: 'error',
+        });
     }
 
     return (

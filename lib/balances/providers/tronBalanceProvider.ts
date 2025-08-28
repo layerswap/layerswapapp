@@ -1,10 +1,10 @@
-import { datadogRum } from "@datadog/browser-rum";
 import { TokenBalance } from "../../../Models/Balance";
 import { Network, NetworkWithTokens, Token } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
 import { TronWeb } from 'tronweb'
 import { insertIfNotExists } from "./helpers";
+import { posthog } from "posthog-js";
 
 export class TronBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
@@ -74,7 +74,14 @@ const getNativeAssetBalance = async ({ network, token, address, provider }: GetB
         const error = new Error(e)
         error.name = "TronNativeAssetBalanceError"
         error.cause = e
-        datadogRum.addError(error);
+        posthog.capture('$exception', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+            cause: error.cause,
+            where: 'tronBalanceProvider',
+            severity: 'error',
+        });
         return null;
     }
 }
@@ -104,7 +111,14 @@ const getTRC20Balance = async ({ network, token, address, provider }: GetBalance
         const error = new Error(e)
         error.name = "TronTRC20BalanceError"
         error.cause = e
-        datadogRum.addError(error);
+        posthog.capture('$exception', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+            cause: error.cause,
+            where: 'tronBalanceProvider',
+            severity: 'error',
+        });
         return null;
     }
 }

@@ -6,12 +6,12 @@ import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
 import WalletIcon from '@/components/icons/WalletIcon';
 import useSWRBalance from '@/lib/balances/useSWRBalance';
 import { useSettingsState } from '@/context/settings';
-import { datadogRum } from '@datadog/browser-rum';
 import { transactionSenderAndConfirmationWaiter } from './transactionSender';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../../Common/buttons';
 import TransactionMessages from '../../../messages/TransactionMessages';
 import WalletMessage from '../../../messages/Message';
+import { posthog } from 'posthog-js';
 
 export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -128,7 +128,14 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined, in
         const swapWithdrawalError = new Error(error);
         swapWithdrawalError.name = `SwapWithdrawalError`;
         swapWithdrawalError.cause = error;
-        datadogRum.addError(swapWithdrawalError);
+        posthog.capture('$exception', {
+            name: swapWithdrawalError.name,
+            message: swapWithdrawalError.message,
+            stack: swapWithdrawalError.stack,
+            cause: swapWithdrawalError.cause,
+            where: 'swapWithdrawalError',
+            severity: 'error',
+        });
 
         return <TransactionMessages.UexpectedErrorMessage message={error} />
     }

@@ -3,7 +3,7 @@ import { parseJwt } from "./jwtParser";
 import TokenService from "./TokenService";
 import { AuthRefreshFailedError } from './Errors/AuthRefreshFailedError';
 import LayerSwapApiClient from "./apiClients/layerSwapApiClient";
-import { datadogRum } from "@datadog/browser-rum";
+import posthog from "posthog-js";
 
 type TokenStates = {
     AccessTokenExpires: number;
@@ -47,7 +47,14 @@ export const InitializeAuthInstance = (baseURL?: string) => {
             const apiError = new Error(`Could not refresh token`);
             apiError.name = `Identity API Error`;
             apiError.cause = e;
-            datadogRum.addError(apiError);
+            posthog.capture('$exception', {
+                name: apiError.name,
+                message: apiError.message,
+                stack: apiError.stack,
+                cause: apiError.cause,
+                where: 'identityApiError',
+                severity: 'error',
+            });
             return false
         }
         finally {

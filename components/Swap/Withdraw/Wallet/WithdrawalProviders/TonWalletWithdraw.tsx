@@ -6,11 +6,11 @@ import { useTonConnectUI } from '@tonconnect/ui-react';
 import { Address, JettonMaster, beginCell, toNano } from '@ton/ton'
 import { Token } from '@/Models/Network';
 import tonClient from '@/lib/wallets/ton/client';
-import { datadogRum } from '@datadog/browser-rum';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import TransactionMessages from '../../messages/TransactionMessages';
 import { useConnectModal } from '@/components/WalletModal';
+import posthog from 'posthog-js';
 
 export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -98,7 +98,14 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
         const swapWithdrawalError = new Error(error);
         swapWithdrawalError.name = `SwapWithdrawalError`;
         swapWithdrawalError.cause = error;
-        datadogRum.addError(swapWithdrawalError);
+        posthog.capture('$exception', {
+            name: swapWithdrawalError.name,
+            message: swapWithdrawalError.message,
+            stack: swapWithdrawalError.stack,
+            cause: swapWithdrawalError.cause,
+            where: 'swapWithdrawalError',
+            severity: 'error',
+        });
 
         return <TransactionMessages.UexpectedErrorMessage message={error} />
     }
