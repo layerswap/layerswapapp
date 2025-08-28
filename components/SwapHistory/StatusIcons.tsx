@@ -47,7 +47,7 @@ const IconComponentWrapper = ({ children, withBg, classNames }: { children: Reac
 
 const GreenComponent = ({ text, withBg, short }: IconComponentProps) => {
   return (
-    <IconComponentWrapper withBg={withBg} classNames="bg-[#54b487]/20 text-[#569735]">
+    <IconComponentWrapper withBg={withBg} classNames="bg-[#54b487]/20 text-[#569735] text-sm">
       <CheckIcon />
       {!short && <p>{text}</p>}
     </IconComponentWrapper>
@@ -56,7 +56,7 @@ const GreenComponent = ({ text, withBg, short }: IconComponentProps) => {
 
 const PrimaryComponent = ({ text, withBg, short }: IconComponentProps) => {
   return (
-    <IconComponentWrapper withBg={withBg} classNames="bg-primary-900/30 text-primary-500">
+    <IconComponentWrapper withBg={withBg} classNames="bg-primary-900 text-primary-500 text-sm">
       <div className='relative'>
         <div className='absolute top-0.5 left-0.5 w-3 h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
         <div className='relative top-0 left-0 w-4 h-4 scale-75 bg bg-primary rounded-full'></div>
@@ -68,7 +68,7 @@ const PrimaryComponent = ({ text, withBg, short }: IconComponentProps) => {
 
 const SecondaryComponent = ({ text, withBg, short }: IconComponentProps) => {
   return (
-    <IconComponentWrapper withBg={withBg} classNames="text-primary-text-muted bg-secondary-700">
+    <IconComponentWrapper withBg={withBg} classNames="text-primary-text-muted bg-secondary-700 text-sm">
       {
         short ?
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 60 60" fill="currentColor" className="text-primary-text-muted">
@@ -83,7 +83,7 @@ const SecondaryComponent = ({ text, withBg, short }: IconComponentProps) => {
 
 const YellowComponent = ({ text, withBg, short }: IconComponentProps) => {
   return (
-    <IconComponentWrapper withBg={withBg} classNames="bg-[#614713] text-[#D69A22]">
+    <IconComponentWrapper withBg={withBg} classNames="bg-[#614713] text-[#D69A22] text-sm">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 60 60" fill="none">
         <circle cx="30" cy="30" r="30" fill="#DF8B16" />
       </svg>
@@ -94,7 +94,7 @@ const YellowComponent = ({ text, withBg, short }: IconComponentProps) => {
 
 const RedComponenet = ({ text, withBg, short }: IconComponentProps) => {
   return (
-    <IconComponentWrapper withBg={withBg} classNames="bg-red-950/40 text-red-600">
+    <IconComponentWrapper withBg={withBg} classNames="bg-red-950/40 text-red-600 text-sm">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 60 60" fill="none">
         <circle cx="30" cy="30" r="30" fill="#E43636" />
       </svg>
