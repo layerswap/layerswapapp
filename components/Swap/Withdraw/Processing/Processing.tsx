@@ -1,5 +1,5 @@
 import LinkWithIcon from '../../../Common/LinkWithIcon';
-import React, { FC, useCallback, useEffect, useRef } from 'react'
+import React, { FC, useCallback, useEffect, useMemo, useRef } from 'react'
 import { Widget } from '../../../Widget/Index';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
@@ -20,6 +20,9 @@ import { useIntercom } from 'react-use-intercom';
 import { useAuthState } from '../../../../context/authContext';
 import logError from '../../../../lib/logError';
 import SubmitButton from '../../../buttons/submitButton';
+import useSWRBalance from '@/lib/balances/useSWRBalance';
+import useWallet from '@/hooks/useWallet';
+import { useSettingsState } from '@/context/settings';
 
 type Props = {
     swapBasicData: SwapBasicData;
@@ -29,7 +32,7 @@ type Props = {
 }
 
 const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) => {
-
+    const { networks } = useSettingsState()
     const { boot, show, update, showNewMessages } = useIntercom();
     const { email, userId } = useAuthState();
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
@@ -38,7 +41,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     const {
         source_network,
         destination_network,
-        destination_token
+        destination_token,
     } = swapBasicData
     const { fail_reason } = swapDetails
 
@@ -49,6 +52,10 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
         updateWithProps();
     }, [boot, show, updateWithProps]);
 
+    const { provider } = useWallet(source_network, 'withdrawal')
+    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider])
+    const sourceNetworkWithTokens = useMemo(() => networks.find(n => n.name == source_network.name), [source_network])
+    const { mutate: mutateBalances } = useSWRBalance(selectedSourceAccount?.address, sourceNetworkWithTokens)
 
     const input_tx_explorer = source_network?.transaction_explorer_template
     const output_tx_explorer = destination_network?.transaction_explorer_template
@@ -85,6 +92,9 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
 
     useEffect(() => {
         if (inputTxStatus === TransactionStatus.Completed || inputTxStatus === TransactionStatus.Pending) {
+            if (inputTxStatus === TransactionStatus.Completed) {
+                mutateBalances()
+            }
             if (swapDetails?.transactions?.find(t => t.type === TransactionType.Input) || !swapDetails) {
                 return
             }

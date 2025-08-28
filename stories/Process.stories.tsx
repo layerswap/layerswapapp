@@ -29,7 +29,8 @@ const Comp: FC<{ settings: any, swapData: SwapContextData, failedSwap?: SwapItem
     const swapContextInitialValues: SwapContextData = {
         codeRequested: false, swapBasicData: swapData.swapBasicData, quote: swapData.quote, refuel: swapData.refuel, swapDetails: swapData.swapDetails, depositAddressIsFromAccount: false, withdrawType: undefined, swapTransaction: undefined,
         quoteIsLoading: false,
-        swapId: undefined
+        swapId: undefined,
+        swapModalOpen: false
     }
 
     if (!appSettings) {
@@ -171,7 +172,8 @@ export const UserTransferInitiated: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     },
     loaders: [
@@ -206,7 +208,8 @@ export const UserTransferDetected: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -235,7 +238,8 @@ export const UserTransferPendingInputCompleted: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     },
 };
@@ -266,7 +270,8 @@ export const LsTransferPending: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -298,7 +303,8 @@ export const LsTransferPendingWithRefuel: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -330,7 +336,8 @@ export const LsTransferInitiated: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -362,7 +369,8 @@ export const Completed: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         },
     }
 };
@@ -394,7 +402,8 @@ export const OnlyRefuelCompleted: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -425,7 +434,8 @@ export const UserTransferDelayed: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -455,7 +465,8 @@ export const Failed: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -486,7 +497,8 @@ export const FailedInput: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     },
     loaders: [
@@ -521,7 +533,8 @@ export const FailedOutOfRangeAmount: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -549,7 +562,8 @@ export const Cancelled: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -577,7 +591,8 @@ export const Expired: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -607,8 +622,10 @@ export const RefundPending: Story = {
             },
             refuel: undefined // Remove refuel for refund cases
             ,
+
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -638,8 +655,10 @@ export const RefundCompleted: Story = {
             },
             refuel: undefined // Remove refuel for refund cases
             ,
+
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
