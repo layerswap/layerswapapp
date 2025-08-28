@@ -16,7 +16,6 @@ type Props = {
 const SendFeedback: FC<Props> = ({ onSend }) => {
     const initialValues: SendFeedbackFormValues = { Feedback: '' }
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update()
 
     const handleSendFeedback = useCallback(async (values: SendFeedbackFormValues) => {
         try {
@@ -72,7 +71,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
                             onClick={() => {
                                 boot();
                                 show();
-                                updateWithProps()
+                                update()
                             }}
                             className="text-center disabled:text-primary-800 text-primary border-0 font-semibold rounded-md focus:outline-hidden transform hover:-translate-y-0.5 transition duration-200 ease-in-out"
                         >

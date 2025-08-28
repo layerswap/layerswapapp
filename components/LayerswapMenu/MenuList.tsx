@@ -30,11 +30,10 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
         setEmbedded(inIframe())
     }, [])
 
-    const updateWithProps = () => update()
-
     const handleCloseFeedback = () => {
         setOpenFeedbackModal(false)
     }
+
     return <div className="text-sm font-medium focus:outline-hidden h-full">
         <Menu>
 
@@ -68,7 +67,7 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
                 <Menu.Item onClick={() => {
                     boot();
                     show();
-                    updateWithProps();
+                    update();
                 }} target="_blank" icon={<ChatIcon strokeWidth={2} className="h-5 w-5" />} >
                     Help
                 </Menu.Item>

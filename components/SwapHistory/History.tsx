@@ -109,7 +109,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
 
     const items = rowVirtualizer.getVirtualItems()
     if ((userSwapsLoading && !(Number(userSwaps?.length) > 0))) return <Snippet />
-    if (!wallets.length) return <ConnectOrSignIn />
+    if (!wallets.length) return <ConnectWalletCard />
     if (!list.length) return <BlankHistory onNewTransferClick={onNewTransferClick} />
 
     return (
@@ -287,7 +287,7 @@ const BlankHistory = ({ onNewTransferClick }: BlankHistoryProps) => {
 
 }
 
-const ConnectOrSignIn = () => {
+const ConnectWalletCard = () => {
 
     return <div className="w-full h-full flex flex-col justify-between items-center space-y-10">
         <div className="flex flex-col items-center justify-center text-center w-full h-full">
@@ -295,10 +295,10 @@ const ConnectOrSignIn = () => {
             <HistoryItemSceleton className="scale-[.63] -mt-12 shadow-card ml-7 w-full" />
             <div className="mt-4 text-center space-y-3">
                 <h1 className="text-secondary-text text-[28px] font-bold tracking-wide" >
-                    Connect wallet or sign in
+                    Connect wallet
                 </h1>
                 <p className="max-w-xs text-center text-primary-text-muted text-base font-normal mx-auto">
-                    In order to see your transfer history you need to connect your wallet or Sign in with your email.
+                    In order to see your transfer history you need to connect your wallet.
                 </p>
             </div>
         </div>
