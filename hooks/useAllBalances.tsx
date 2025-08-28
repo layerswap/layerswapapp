@@ -12,8 +12,7 @@ type Props = {
 export default function useAllBalances({ direction }: Props) {
     const wallets = useWallet().wallets
     const networks = useSettingsState().networks
-    const walletAddresses = useMemo(() => wallets.map(w => w.address).join(":"), [wallets])
-    const activeWallets = useMemo(() => wallets.filter(w => w.isActive), [walletAddresses])
+    const activeWallets = useMemo(() => wallets.filter(w => w.isActive), [wallets])
 
     const walletNetworks = useMemo(() => {
         return activeWallets.map(wallet => {
