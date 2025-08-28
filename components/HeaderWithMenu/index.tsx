@@ -1,5 +1,4 @@
 import { useIntercom } from "react-use-intercom"
-import { useAuthState } from "../../context/authContext"
 import IconButton from "../buttons/iconButton"
 import GoHomeButton from "../utils/GoHome"
 import { ArrowLeft } from 'lucide-react'
@@ -13,9 +12,7 @@ const WalletsHeader = dynamic(() => import("../Wallet/ConnectedWallets").then((c
 })
 
 function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null }) {
-   const { email, userId } = useAuthState()
    const { boot, show, update } = useIntercom()
-   const updateWithProps = () => update({ userId, customAttributes: { email: email, } })
    const query = useQueryState()
 
    return (
@@ -40,7 +37,7 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
             <IconButton className="relative hidden md:inline" onClick={() => {
                boot();
                show();
-               updateWithProps()
+               update()
             }}
                icon={
                   <ChatIcon className="h-6 w-6" strokeWidth="2" />

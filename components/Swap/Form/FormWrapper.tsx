@@ -13,11 +13,8 @@ import useSWR from "swr";
 import { useRouter } from "next/router";
 import { ApiResponse } from "@/Models/ApiResponse";
 import { Partner } from "@/Models/Partner";
-import { UserType, useAuthDataUpdate } from "@/context/authContext";
 import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
 import { useQueryState } from "@/context/query";
-import TokenService from "@/lib/TokenService";
-import LayerSwapAuthApiClient from "@/lib/apiClients/userAuthApiClient";
 import useWallet from "@/hooks/useWallet";
 import { DepositMethodProvider } from "@/context/depositMethodContext";
 import { dynamicWithRetries } from "@/lib/dynamicWithRetries";
@@ -50,7 +47,6 @@ export default function FormWrapper({ children, type }: { children?: React.React
     const [isAddressFromQueryConfirmed, setIsAddressFromQueryConfirmed] = useState(false);
     const [networkToConnect, setNetworkToConnect] = useState<NetworkToConnect>();
     const router = useRouter();
-    const { updateAuthData, setUserType } = useAuthDataUpdate()
     const settings = useSettingsState();
     const { swapBasicData, swapDetails, swapModalOpen } = useSwapDataState()
     const sourceNetworkWithTokens = settings.networks.find(n => n.name === swapBasicData?.source_network.name)
@@ -95,19 +91,6 @@ export default function FormWrapper({ children, type }: { children?: React.React
             }
         }
         try {
-            const accessToken = TokenService.getAuthData()?.access_token
-            if (!accessToken) {
-                try {
-                    var apiClient = new LayerSwapAuthApiClient();
-                    const res = await apiClient.guestConnectAsync()
-                    updateAuthData(res)
-                    setUserType(UserType.GuestUser)
-                }
-                catch (error) {
-                    toast.error(error.response?.data?.error || error.message)
-                    return;
-                }
-            }
             await handleCreateSwap({
                 setSwapId,
                 values,
@@ -123,7 +106,7 @@ export default function FormWrapper({ children, type }: { children?: React.React
         catch (error) {
             toast.error(error?.message)
         }
-    }, [createSwap, query, partner, router, updateAuthData, setUserType, swapBasicData, getProvider, settings])
+    }, [createSwap, query, partner, router, swapBasicData, getProvider, settings])
 
     const initialValues: SwapFormValues = swapBasicData ? generateSwapInitialValuesFromSwap(swapBasicData, swapBasicData.refuel, settings, type)
         : generateSwapInitialValues(settings, query, type)

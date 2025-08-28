@@ -17,7 +17,6 @@ import useSWR from 'swr';
 import { ApiResponse } from '../../../../Models/ApiResponse';
 import { datadogRum } from '@datadog/browser-rum';
 import { useIntercom } from 'react-use-intercom';
-import { useAuthState } from '../../../../context/authContext';
 import logError from '../../../../lib/logError';
 import SubmitButton from '../../../buttons/submitButton';
 import useSWRBalance from '@/lib/balances/useSWRBalance';
@@ -34,7 +33,6 @@ type Props = {
 const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) => {
     const { networks } = useSettingsState()
     const { boot, show, update, showNewMessages } = useIntercom();
-    const { email, userId } = useAuthState();
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
     const [showSupportButton, setShowSupportButton] = React.useState(false);
 
@@ -45,7 +43,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     } = swapBasicData
     const { fail_reason } = swapDetails
 
-    const updateWithProps = () => update({ userId, customAttributes: { swapId: swapDetails.id, email: email, } });
+    const updateWithProps = () => update({ customAttributes: { swapId: swapDetails.id } });
     const startIntercom = useCallback(() => {
         boot();
         show();
@@ -81,14 +79,12 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
 
         boot();
         update({
-            userId,
             customAttributes: {
-                email: email,
                 swapId: swapDetails.id,
             }
         });
         showNewMessages(message)
-    }, [boot, show, update, userId, email, swapDetails.id, swapInputTransaction, storedWalletTransaction]);
+    }, [boot, show, update, swapDetails.id, swapInputTransaction, storedWalletTransaction]);
 
     useEffect(() => {
         if (inputTxStatus === TransactionStatus.Completed || inputTxStatus === TransactionStatus.Pending) {
