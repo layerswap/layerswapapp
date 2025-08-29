@@ -42,7 +42,7 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
         const renderingError = new Error(unexpectedError.message);
         renderingError.name = `SwapWithdrawalError`;
         renderingError.cause = unexpectedError;
-        posthog.capture('$exception', {
+        posthog.captureException('$exception', {
             name: renderingError.name,
             message: renderingError.message,
             stack: renderingError.stack,

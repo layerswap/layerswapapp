@@ -111,7 +111,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             const renderingError = new Error(`Swap:${swapDetails?.id} transaction:${transactionHash} failed`);
             renderingError.name = `TransactionFailed`;
             renderingError.cause = err;
-            posthog.capture('$exception', {
+            posthog.captureException('$exception', {
                 name: renderingError.name,
                 message: renderingError.message,
                 stack: renderingError.stack,

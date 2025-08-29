@@ -179,7 +179,7 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
         const renderingError = new Error(error);
         renderingError.name = `SwapWithdrawalError`;
         renderingError.cause = error;
-        posthog.capture('$exception', {
+        posthog.captureException('$exception', {
             name: renderingError.name,
             message: renderingError.message,
             stack: renderingError.stack,
