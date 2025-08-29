@@ -1,5 +1,4 @@
 import { FC, useCallback, useState } from 'react'
-import { useAuthState } from '@/context/authContext';
 import useWallet from '@/hooks/useWallet';
 import WalletIcon from '@/components/icons/WalletIcon';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
@@ -13,7 +12,6 @@ export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicDat
     const [transferDone, setTransferDone] = useState<boolean>()
     const { source_network, source_token } = swapBasicData
     const { provider } = useWallet(source_network, 'withdrawal')
-    const { userId } = useAuthState()
 
     const wallet = provider?.activeWallet
 
@@ -43,7 +41,7 @@ export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicDat
             setError(e.message)
             throw e
         }
-    }, [wallet, source_network, userId, source_token])
+    }, [wallet, source_network, source_token])
 
     if (!wallet) {
         return <ConnectWalletButton />

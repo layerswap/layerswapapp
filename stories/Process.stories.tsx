@@ -8,13 +8,11 @@ import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 import { swap } from './Data/swaps'
 import { Settings } from './Data/settings';
 import { initialValues } from './Data/initialValues';
-import { AuthDataUpdateContext, AuthStateContext, UserType } from '../context/authContext';
 import { IntercomProvider } from 'react-use-intercom';
 import { THEME_COLORS } from '../Models/Theme';
 import Layout from '../components/layout';
 import SwapDetails from '../components/Swap';
 import SwapMockFunctions from './Mocks/context/SwapDataUpdate';
-import AuthMockFunctions from './Mocks/context/AuthDataUpdate';
 import { Formik, FormikProps } from 'formik';
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { useArgs } from 'storybook/preview-api';
@@ -29,7 +27,8 @@ const Comp: FC<{ settings: any, swapData: SwapContextData, failedSwap?: SwapItem
     const swapContextInitialValues: SwapContextData = {
         codeRequested: false, swapBasicData: swapData.swapBasicData, quote: swapData.quote, refuel: swapData.refuel, swapDetails: swapData.swapDetails, depositAddressIsFromAccount: false, withdrawType: undefined, swapTransaction: undefined,
         quoteIsLoading: false,
-        swapId: undefined
+        swapId: undefined,
+        swapModalOpen: false
     }
 
     if (!appSettings) {
@@ -45,20 +44,16 @@ const Comp: FC<{ settings: any, swapData: SwapContextData, failedSwap?: SwapItem
                         <TimerProvider>
                             <WalletsProviders basePath={'/'} themeData={THEME_COLORS['default']} appName={'Layerswap'}>
                                 <SwapDataStateContext.Provider value={swapContextInitialValues}>
-                                    <AuthStateContext.Provider value={{ authData: undefined, email: "asd@gmail.com", codeRequested: false, guestAuthData: undefined, tempEmail: undefined, userId: "1", userLockedOut: false, userType: UserType.AuthenticatedUser }}>
-                                        <AuthDataUpdateContext.Provider value={AuthMockFunctions}>
-                                            <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
-                                                <Formik
-                                                    innerRef={formikRef}
-                                                    initialValues={initialValues!}
-                                                    validateOnMount={true}
-                                                    onSubmit={() => { }}
-                                                >
-                                                    <Component initialValues={initialValues} />
-                                                </Formik>
-                                            </SwapDataUpdateContext.Provider>
-                                        </AuthDataUpdateContext.Provider>
-                                    </AuthStateContext.Provider>
+                                    <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
+                                        <Formik
+                                            innerRef={formikRef}
+                                            initialValues={initialValues!}
+                                            validateOnMount={true}
+                                            onSubmit={() => { }}
+                                        >
+                                            <Component initialValues={initialValues} />
+                                        </Formik>
+                                    </SwapDataUpdateContext.Provider>
                                 </SwapDataStateContext.Provider >
                             </WalletsProviders>
                         </TimerProvider>
@@ -171,7 +166,8 @@ export const UserTransferInitiated: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     },
     loaders: [
@@ -206,7 +202,8 @@ export const UserTransferDetected: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -235,7 +232,8 @@ export const UserTransferPendingInputCompleted: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     },
 };
@@ -266,7 +264,8 @@ export const LsTransferPending: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -298,7 +297,8 @@ export const LsTransferPendingWithRefuel: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -330,7 +330,8 @@ export const LsTransferInitiated: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -362,7 +363,8 @@ export const Completed: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         },
     }
 };
@@ -394,7 +396,8 @@ export const OnlyRefuelCompleted: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -425,7 +428,8 @@ export const UserTransferDelayed: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -455,7 +459,8 @@ export const Failed: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -486,7 +491,8 @@ export const FailedInput: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     },
     loaders: [
@@ -521,7 +527,8 @@ export const FailedOutOfRangeAmount: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -549,7 +556,8 @@ export const Cancelled: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -577,7 +585,8 @@ export const Expired: Story = {
             },
             refuel: swap.swapResponse.refuel,
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -607,8 +616,10 @@ export const RefundPending: Story = {
             },
             refuel: undefined // Remove refuel for refund cases
             ,
+
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };
@@ -638,8 +649,10 @@ export const RefundCompleted: Story = {
             },
             refuel: undefined // Remove refuel for refund cases
             ,
+
             quoteIsLoading: false,
-            swapId: swap.swapResponse.swap.id
+            swapId: swap.swapResponse.swap.id,
+            swapModalOpen: false
         }
     }
 };

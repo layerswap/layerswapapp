@@ -9,7 +9,6 @@ import { SwapQuoteDetails } from './SwapQuoteDetails';
 import WalletTransferButton from './WalletTransferButton';
 import useWallet from '@/hooks/useWallet';
 import useSWRBalance from '@/lib/balances/useSWRBalance';
-import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import { useSettingsState } from '@/context/settings';
 import { resolveBalanceWarnings } from '@/components/insufficientBalance';
 

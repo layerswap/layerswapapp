@@ -5,7 +5,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { AxiosInstance, Method } from "axios";
 import { AuthRefreshFailedError } from "../Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse";
-import LayerSwapAuthApiClient from "./userAuthApiClient";
 import { NetworkWithTokens, Network, Token } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
 import posthog from "posthog-js";
@@ -18,7 +17,7 @@ export default class LayerSwapApiClient {
     _authInterceptor: AxiosInstance;
     _unauthInterceptor: AxiosInstance
     constructor() {
-        this._authInterceptor = InitializeAuthInstance(LayerSwapAuthApiClient.identityBaseEndpoint);
+        this._authInterceptor = InitializeAuthInstance();
         this._unauthInterceptor = InitializeUnauthInstance(LayerSwapApiClient.apiBaseEndpoint)
     }
 
