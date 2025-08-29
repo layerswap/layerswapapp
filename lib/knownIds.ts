@@ -198,6 +198,8 @@ export default class KnownInternalNames {
 
         public static readonly BitcoinTestnet: string = "BITCOIN_TESTNET"
 
+        public static readonly ZircuitMainnet: string = "ZIRCUIT_MAINNET"
+
     }
 
     static Currencies = class {
