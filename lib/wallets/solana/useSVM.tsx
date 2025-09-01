@@ -135,11 +135,11 @@ function resolveSupportedNetworks(supportedNetworks: string[], connectorId: stri
     const supportedNetworksForWallet: string[] = [];
 
     supportedNetworks.forEach((network) => {
-        const networkName = network.split("_")[0].toLowerCase();
-        if (networkName === "solana") {
-            supportedNetworksForWallet.push(networkName);
-        } else if (networkSupport[networkName] && networkSupport[networkName].includes(connectorId?.toLowerCase())) {
-            supportedNetworksForWallet.push(networkName);
+        const lowerCaseName = network.split("_")[0].toLowerCase();
+        if (lowerCaseName === "solana") {
+            supportedNetworksForWallet.push(network);
+        } else if (networkSupport[network] && networkSupport[lowerCaseName].includes(connectorId?.toLowerCase())) {
+            supportedNetworksForWallet.push(network);
         }
     });
 
