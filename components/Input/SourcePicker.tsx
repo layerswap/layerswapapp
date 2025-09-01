@@ -19,7 +19,7 @@ type Props = {
 const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fee }: Props) => {
     const { values } = useFormikContext<SwapFormValues>()
 
-    const { fromAsset: fromCurrency, from } = values || {}
+    const { fromAsset: fromCurrency, from, depositMethod } = values || {}
     const { ref: parentRef, isActive: showQuickActions, activate: setShowQuickActions } = useClickOutside<HTMLDivElement>(false)
     const [actiontempValue, setActionTempValue] = useState<number | undefined>(0)
 
@@ -47,7 +47,7 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fe
                     },
                     "group-hover:block"
                 )}>
-                    <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} />
+                    <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} depositMethod={depositMethod} />
                 </div>
             }
             <div className="grid grid-cols-9 sm:grid-cols-8 gap-2">

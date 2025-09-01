@@ -29,6 +29,10 @@ export default function useBitcoin(): WalletProvider {
     const config = useConfig()
     const { setSelectedConnector } = useConnectModal()
 
+    const switchAccount = async (wallet: Wallet, address: string) => {
+        // as we do not have multiple accounts management we will leave the method empty
+    }
+
     const disconnectWallet = async (connectorName: string) => {
         try {
             const connector = connectors.find(w => w.name.toLowerCase() === connectorName.toLowerCase())
@@ -81,7 +85,7 @@ export default function useBitcoin(): WalletProvider {
             const wallet = resolveWallet({
                 activeConnection: { address: address, id: connector.id },
                 connector,
-                addresses: result.accounts as unknown as string[],
+                addresses: [address],
                 networks,
                 discconnect: disconnectWallet,
                 supportedNetworks: {
@@ -111,7 +115,7 @@ export default function useBitcoin(): WalletProvider {
         const wallet = resolveWallet({
             activeConnection: { address: account.address || '', id: connector.id },
             connector,
-            addresses: account.addresses as string[],
+            addresses: account.address ? [account.address] : [],
             networks,
             discconnect: disconnectWallet,
             supportedNetworks: {
@@ -141,7 +145,8 @@ export default function useBitcoin(): WalletProvider {
         name,
         id,
         providerIcon,
-        unsupportedPlatforms: ["mobile"]
+        unsupportedPlatforms: ["mobile"],
+        switchAccount
     }
 
     return provider
@@ -179,7 +184,7 @@ const resolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
         internalId: connector.id,
         isActive: accountIsActive,
         address: addresses[0],
-        addresses: addresses,
+        addresses: [addresses[0]],
         displayName: walletname,
         providerName,
         icon: resolveWalletConnectorIcon({ connector: connector.name, address: addresses[0], iconUrl: connector.icon }),

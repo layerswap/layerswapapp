@@ -109,7 +109,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                             },
                                                 "group-hover:block"
                                             )}>
-                                                <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} />
+                                                <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} depositMethod="deposit_address" />
                                             </div>
                                         }
                                     </div>

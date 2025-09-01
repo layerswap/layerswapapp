@@ -82,7 +82,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
                 </SelectorContent>
             </Selector>
             {
-                !isExchange &&
+                (direction === 'to' || values.depositMethod === 'wallet') && !isExchange &&
                 <Balance values={values} direction={direction} />
             }
         </div>
