@@ -17,7 +17,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     const tokenBalance = balances?.find(
         b => b?.network === network?.name && b?.token === token?.symbol
     )
-    
+
     const truncatedBalance = tokenBalance?.amount !== undefined ? truncateDecimals(tokenBalance?.amount, token?.precision) : ''
 
     const previouslySelectedSource = useRef(from);
@@ -35,18 +35,15 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     if (!isBalanceLoading && !(network && token && truncatedBalance && tokenBalance))
         return null;
 
-    return <motion.div
-        layoutId="affect"
-        className="w-4/5 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs sm:text-sm text-secondary-text ">
+    return <div className="w-4/5 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs sm:text-sm text-secondary-text ">
         {
-
             isBalanceLoading ?
                 <div className='h-[10px] w-12 inline-flex bg-gray-500 rounded-xs animate-pulse' />
                 : (network && token && truncatedBalance) ?
                     <span>{truncatedBalance}</span>
                     : <span></span>
         }
-    </motion.div>
+    </div>
 }
 
 export default Balance

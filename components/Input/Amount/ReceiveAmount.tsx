@@ -1,7 +1,7 @@
 import { FC } from "react";
 import { Token } from "@/Models/Network";
 import { Quote } from "@/lib/apiClients/layerSwapApiClient";
-import NumberFlow, { type Value } from "@number-flow/react";
+import NumberFlow from "@number-flow/react";
 import clsx from "clsx";
 
 type ReceiveAmountProps = {
@@ -17,7 +17,7 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ source_token, destinatio
 
     return (<>
         <div className="flex flex-col min-w-0 rounded-lg font-normal border-0 text-[28px] leading-7 text-primary-text w-full relative truncate">
-            <div className="flex items-center justify-start w-full relative mb-0.5">
+            <div className="flex items-center justify-start w-full relative">
                 <div className={clsx(
                     "w-full flex items-center py-[3px] pr-3",
                     { "animate-pulse-stronger": isFeeLoading }
