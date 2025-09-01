@@ -152,7 +152,7 @@ const RouteTokenPair: FC<{ route: { logo: string, display_name: string }, networ
                     className="absolute -right-1.5 -bottom-1.5 object-contain rounded-md border-1 border-secondary-300"
                 />
             </div>
-            <div className="flex flex-col font-medium text-primary-buttonTextColor overflow-hidden">
+            <div className="flex flex-col font-medium text-primary-text overflow-hidden">
                 <span className="leading-4 text-sm ">{token.symbol}</span>
                 <div className="flex items-center gap-1 leading-3 text-sm sm:text-base">
                     <p className="text-secondary-text text-sm truncate whitespace-nowrap">

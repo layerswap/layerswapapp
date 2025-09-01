@@ -1,7 +1,7 @@
 import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
-import { Selector, SelectorContent, SelectorTrigger, useSelectorState } from "../Select/Selector/Index";
+import { Selector, SelectorContent, SelectorTrigger } from "../Select/Selector/Index";
 import { Exchange } from "../../Models/Exchange";
 import React from "react";
 import { SelectItem } from "../Select/Selector/SelectItem";
@@ -12,8 +12,6 @@ import { SearchComponent } from "./Search";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
 import { ChevronDown } from "lucide-react";
 import { updateForm } from "../Swap/Form/updateForm";
-import { NetworkRoute } from "@/Models/Network";
-import { useSettingsState } from "@/context/settings";
 
 const CexPicker: FC = () => {
     const {
@@ -129,7 +127,7 @@ export const SelectedNetworkDisplay = (props: SelectedNetworkDisplayProps) => {
                             className="rounded-full object-contain"
                         />
                     </div>
-                    <span className="ml-3 flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0 max-w-3/5">
+                    <span className="ml-3 flex flex-col font-medium text-primary-text overflow-hidden min-w-0 max-w-3/5">
                         {exchange.display_name}
                     </span>
                 </>

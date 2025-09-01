@@ -115,15 +115,15 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }
 
     useEffect(() => {
-        if (!defaultAccount?.address) {
+        if (destinationAddressItem && !defaultAccount?.address && destinationAddressItem?.group == AddressGroup.ConnectedWallet) {
             updateDestAddress(undefined)
             return
         }
-        if (destination_address?.toLowerCase() !== defaultAccount?.address?.toLowerCase()) {
+        if (destination_address?.toLowerCase() !== defaultAccount?.address?.toLowerCase() && destinationAddressItem?.group === AddressGroup.ConnectedWallet) {
             updateDestAddress(defaultAccount?.address)
             setShowAddressModal(false)
         }
-    }, [defaultAccount?.address])
+    }, [defaultAccount?.address, destinationAddressItem])
 
     const updateDestAddress = useCallback((address: string | undefined) => {
         const wallet = destination && connectedWallets?.find(w => w.addresses?.find(a => addressFormat(a, destination) === addressFormat(address || '', destination)))
