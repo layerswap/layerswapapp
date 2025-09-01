@@ -21,7 +21,7 @@ export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, i
     const isCEX = !!fromExchange;
     const { provider } = useWallet(!isCEX ? values.from : undefined, 'withdrawal')
     const wallet = provider?.activeWallet
-    const { gas, isGasLoading } = useSWRGas(wallet?.address, from, fromAsset)
+    const { gasData, isGasLoading } = useSWRGas(wallet?.address, from, fromAsset)
 
     const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && reward?.nft_contract_address;
     const { balance: nftBalance, isLoading, error } = useSWRNftBalance(
@@ -41,7 +41,7 @@ export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, i
     const displayLsFee = quote?.total_fee !== undefined ? truncateDecimals(quote.total_fee, fromAsset?.decimals) : undefined
     const currencyName = fromAsset?.symbol || ""
     const lsFeeAmountInUsd = quote?.total_fee_in_usd
-    const gasFeeInUsd = (quote?.source_network?.token && gas) ? gas * quote?.source_network?.token?.price_in_usd : null;
+    const gasFeeInUsd = gasData ? gasData.gas * gasData.token.price_in_usd : null;
     const displayLsFeeInUsd = lsFeeAmountInUsd ? (lsFeeAmountInUsd < 0.01 ? '<$0.01' : `$${lsFeeAmountInUsd?.toFixed(2)}`) : null
     const displayGasFeeInUsd = gasFeeInUsd ? (gasFeeInUsd < 0.01 ? '<$0.01' : `$${gasFeeInUsd?.toFixed(2)}`) : null
 
@@ -62,7 +62,7 @@ export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, i
                             </label>
                         </div>
                         <div className="text-right text-primary-text">
-                            {item.content({ gas, currencyName, nativeCurrencyName: from?.token?.symbol, displayGasFeeInUsd, quote, displayLsFee, displayLsFeeInUsd, isGasLoading, isQuoteLoading, reward })}
+                            {item.content({ gas: gasData?.gas, currencyName, nativeCurrencyName: gasData?.token?.symbol, displayGasFeeInUsd, quote, displayLsFee, displayLsFeeInUsd, isGasLoading, isQuoteLoading, reward })}
                         </div>
                     </div>
                 )

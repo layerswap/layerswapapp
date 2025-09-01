@@ -1,9 +1,10 @@
 import useSWR from "swr"
 import { Network, Token } from "../../Models/Network"
 import { GasResolver } from "./gasResolver"
+import { GasWithToken } from "./providers/types"
 
 //TODO: Add type for address
-const useSWRGas = (address: any, network: Network | undefined, token?: Token): { gas: number | undefined, isGasLoading: boolean, gasError: any } => {
+const useSWRGas = (address: any, network: Network | undefined, token?: Token): { gasData: GasWithToken | undefined, isGasLoading: boolean, gasError: any } => {
 
     const { data: gasData, error: gasError, isLoading } = useSWR((network && address) ? `/gases/${address}/${network.name}/${token?.symbol}` : null, () => {
         if (!network || !token || !address) return
@@ -11,7 +12,7 @@ const useSWRGas = (address: any, network: Network | undefined, token?: Token): {
     }, { refreshInterval: 60000 })
 
     return {
-        gas: gasData,
+        gasData: gasData,
         isGasLoading: isLoading,
         gasError: gasError
     }
