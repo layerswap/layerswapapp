@@ -39,7 +39,7 @@ export class HyperliquidBalanceProvider {
                         network: network.name,
                         amount: withdrawableAmount,
                         decimals: usdcToken.decimals,
-                        isNativeCurrency: true,
+                        isNativeCurrency: false,
                         token: usdcToken.symbol,
                         request_time: new Date().toJSON(),
                     });
