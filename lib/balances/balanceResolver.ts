@@ -2,6 +2,7 @@ import { NetworkWithTokens } from "../../Models/Network";
 import { BitcoinBalanceProvider } from "./providers/bitcoinBalanceProvider";
 import { EVMBalanceProvider } from "./providers/evmBalanceProvider";
 import { FuelBalanceProvider } from "./providers/fuelBalanceProvider";
+import { HyperliquidBalanceProvider } from "./providers/hyperliquidBalanceProvider";
 import { ImmutableXBalanceProvider } from "./providers/immutableXBalanceProvider";
 import { LoopringBalanceProvider } from "./providers/loopringBalanceProvider";
 import { ParadexBalanceProvider } from "./providers/paradexBalanceProvider";
@@ -25,7 +26,8 @@ export class BalanceResolver {
         new ZkSyncBalanceProvider(),
         new TronBalanceProvider(),
         new ParadexBalanceProvider(),
-        new BitcoinBalanceProvider()
+        new BitcoinBalanceProvider(),
+        new HyperliquidBalanceProvider()
     ];
 
     getBalance(address: string, network: NetworkWithTokens) {
