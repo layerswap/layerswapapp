@@ -288,7 +288,7 @@ export const SelectedCurrencyDisplay = (props: SelectedCurrencyDisplayProps) => 
             </div>
         }
         {value ?
-            <span className="ml-3 flex font-medium flex-auto space-x-1 text-primary-buttonTextColor items-center">
+            <span className="ml-3 flex font-medium flex-auto space-x-1 text-primary-text items-center">
                 {value.symbol}
             </span>
             :
@@ -332,7 +332,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                             className="h-3.5 w-3.5 absolute -right-1.5 -bottom-1.5 object-contain rounded border-1 border-secondary-300"
                         />
                     </div>
-                    <span className="ml-3 flex flex-col font-medium text-primary-buttonTextColor overflow-hidden min-w-0 max-w-3/5">
+                    <span className="ml-3 flex flex-col font-medium text-primary-text overflow-hidden min-w-0 max-w-3/5">
                         <span className="leading-5">{token.symbol}</span>
                         <span className="text-secondary-text font-normal text-sm leading-4 truncate whitespace-nowrap max-w-[60px] sm:max-w-[100px]">
                             {route.display_name}

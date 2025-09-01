@@ -38,7 +38,7 @@ const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isR
                         }
                         {
                             isRecent &&
-                            <p className='text-xs text-primary-text font-semibold bg-primary-700 px-1 py-0.5 rounded-md'>Recent</p>
+                            <p className='text-xs text-primary-buttonTextColor font-semibold bg-primary-700 px-1 py-0.5 rounded-md'>Recent</p>
                         }
                     </div>
                     {

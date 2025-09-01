@@ -51,7 +51,7 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                         max-sm:bg-secondary-700 
                         max-sm:shadow-widget-footer 
                         max-sm:p-4 
-                        max-sm:px-6 
+                        max-sm:px-4 
                         max-sm:w-full ${hidden ? 'animation-slide-out' : ''}`}>
                     {children}
                     <div className="flex justify-center  text-primary-text-placeholder">
