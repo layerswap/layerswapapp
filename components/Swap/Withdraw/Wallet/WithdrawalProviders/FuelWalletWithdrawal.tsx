@@ -73,6 +73,9 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, r
         }
         catch (e) {
             setLoading(false)
+            if (e?.message) {
+                setError(e.message)
+            }
             throw e
         }
     }, [source_network, selectedSourceAccount, source_token, fuel])
