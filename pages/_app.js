@@ -18,6 +18,8 @@ const progress = new ProgressBar({
 
 if (typeof window !== "undefined") {
   posthog.init('phc_KyI0bPCry0a8vJjQ7rIQESL8u2EVnyjrX19ZR4uqQgq', {
+    capture_pageview: 'history_change',
+    capture_pageleave: true,
     api_host: 'https://us.i.posthog.com',
     defaults: '2025-05-24'
   })
