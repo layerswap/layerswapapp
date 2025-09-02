@@ -63,10 +63,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
     }
 
     const destAddress = (hideAddress && hideTo && account) ? account : destination_address
-
-    const source_wallet = sourceAddressFromInput ? wallets.find(w => (addressFormat(w.address, source_network) === addressFormat(sourceAddressFromInput, source_network))) : null
-    const destination_wallet = wallets.find(w => addressFormat(w.address, destination_network) === addressFormat(destAddress, destination_network))
-
+    
     return (
         source_token && <>
             <div className={`${className || ""} bg-secondary-500 relative z-10 w-full rounded-xl overflow-hidden hover:bg-secondary-400`}>

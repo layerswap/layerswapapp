@@ -106,7 +106,7 @@ const WalletsMenuWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
         <button onClick={() => setOpenModal(true)} type="button" className="py-3 px-4 bg-secondary-500 flex items-center w-full rounded-md space-x-1 disabled:text-secondary-text/40 disabled:bg-primary-900 disabled:cursor-not-allowed relative font-semibold transform border border-secondary-500 hover:bg-secondary-400 transition duration-200 ease-in-out">
             {
                 wallets.length === 1 ?
-                    <div className="flex gap-4 items-start">
+                    <div className="flex gap-4 items-start text-primary-text">
                         <wallet.icon className='h-5 w-5' />
                         {!wallet.isLoading && wallet.address && <p>{shortenAddress(wallet.address)}</p>}
                     </div>

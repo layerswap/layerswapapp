@@ -14,13 +14,14 @@ type MinMaxProps = {
     from: NetworkRoute,
     limitsMaxAmount: number | undefined,
     limitsMinAmount: number | undefined,
-    onActionHover: (value: number | undefined) => void
+    onActionHover: (value: number | undefined) => void,
+    depositMethod: 'wallet' | 'deposit_address' | undefined
 }
 
 const MinMax = (props: MinMaxProps) => {
 
     const { setFieldValue } = useFormikContext<SwapFormValues>();
-    const { fromCurrency, from, limitsMinAmount, limitsMaxAmount, onActionHover } = props;
+    const { fromCurrency, from, limitsMinAmount, limitsMaxAmount, onActionHover, depositMethod } = props;
 
     const { provider } = useWallet(from, "withdrawal")
     const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
@@ -39,8 +40,8 @@ const MinMax = (props: MinMaxProps) => {
     const shouldPayGasWithTheToken = (native_currency?.symbol === fromCurrency?.symbol) || !native_currency
 
     let maxAllowedAmount: number | undefined = useMemo(() => {
-        return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, native_currency })
-    }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency])
+        return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod })
+    }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod])
 
     const handleSetValue = (value: string) => {
         mutateBalances()
@@ -69,8 +70,8 @@ const MinMax = (props: MinMaxProps) => {
         handleSetValue(maxAllowedAmount.toString())
     }
     const halfOfBalance = (walletBalance?.amount || 0) / 2;
-    const showMaxTooltip = walletBalance && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount)
-
+    const showMaxTooltip = depositMethod === 'wallet' && walletBalance && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount)
+    
     return (
         <div className="flex gap-1.5 text-xs group" onMouseLeave={() => onActionHover(undefined)}>
             {
@@ -87,7 +88,7 @@ const MinMax = (props: MinMaxProps) => {
                 </button>
             }
             {
-                halfOfBalance > 0 && (halfOfBalance < (maxAllowedAmount || Infinity)) &&
+                depositMethod === 'wallet' && halfOfBalance > 0 && (halfOfBalance < (maxAllowedAmount || Infinity)) &&
                 <button
                     onMouseEnter={() => onActionHover(halfOfBalance)}
                     onClick={handleSetHalfAmount}
@@ -113,7 +114,7 @@ const MinMax = (props: MinMaxProps) => {
                     </button>
                     {
                         showMaxTooltip &&
-                        <div className="opacity-0 w-80 grow group-hover/tooltip:opacity-100 -left-3 absolute bottom-full mb-3 p-2 bg-secondary-300 text-xs rounded-xl transition-opacity duration-300">
+                        <div className="opacity-0 hidden w-80 grow group-hover/tooltip:opacity-100 group-hover/tooltip:block -left-3 absolute bottom-full mb-3 p-2 bg-secondary-300 text-xs rounded-xl transition-opacity duration-300">
                             <p>Max is calculated based on your balance minus gas fee for the transaction</p>
                             <div className="absolute left-6 -bottom-2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[8px] border-l-transparent border-r-transparent border-t-secondary-300"></div>
                         </div>

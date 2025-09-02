@@ -33,10 +33,10 @@ const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
         footer?: JSX.Element | JSX.Element[],
     } = {}
 
-    const insufficientBalance = resolveBalanceWarnings({
+    const insufficientBalance = swapBasicData?.use_deposit_address === false ? resolveBalanceWarnings({
         requestAmount: swapBasicData?.requested_amount,
         walletBalance: Number(walletBalanceAmount),
-    });
+    }) : null;
 
     if (swapBasicData?.use_deposit_address === false) {
         withdraw = {
