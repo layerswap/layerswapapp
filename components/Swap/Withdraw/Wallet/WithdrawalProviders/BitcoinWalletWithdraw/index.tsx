@@ -3,7 +3,6 @@ import toast from 'react-hot-toast';
 import useWallet from '@/hooks/useWallet';
 import WalletIcon from '@/components/icons/WalletIcon';
 import { ConnectWalletButton, SendTransactionButton } from '../../Common/buttons';
-import { datadogRum } from '@datadog/browser-rum';
 import { useAccount, useConfig } from '@bigmi/react';
 import KnownInternalNames from '@/lib/knownIds';
 import { JsonRpcClient } from '@/lib/apiClients/jsonRpcClient';
@@ -11,6 +10,7 @@ import { sendTransaction } from './sendTransaction';
 import { useConnectModal } from '@/components/WalletModal';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import TransactionMessages from '../../../messages/TransactionMessages';
+import { posthog } from 'posthog-js';
 
 export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -110,7 +110,14 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
         const swapWithdrawalError = new Error(error);
         swapWithdrawalError.name = `SwapWithdrawalError`;
         swapWithdrawalError.cause = error;
-        datadogRum.addError(swapWithdrawalError);
+        posthog.captureException('$exception', {
+            name: swapWithdrawalError.name,
+            message: swapWithdrawalError.message,
+            stack: swapWithdrawalError.stack,
+            cause: swapWithdrawalError.cause,
+            where: 'swapWithdrawalError',
+            severity: 'error',
+        });
 
         return <TransactionMessages.UexpectedErrorMessage message={error} />
     }

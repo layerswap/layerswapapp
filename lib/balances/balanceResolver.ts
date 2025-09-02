@@ -1,3 +1,4 @@
+import posthog from "posthog-js";
 import { NetworkBalance } from "../../Models/Balance";
 import { IBalanceProvider } from "../../Models/BalanceProvider";
 import { NetworkWithTokens } from "../../Models/Network";
@@ -52,6 +53,18 @@ export class BalanceResolver {
             return { balances, totalInUSD };
         }
         catch (e) {
+            const error = new Error(e)
+            error.name = "BalanceError"
+            error.cause = e
+            posthog.capture('$exception', {
+                name: error.name,
+                message: error.message,
+                stack: error.stack,
+                cause: error.cause,
+                where: 'BalanceProviderError',
+                severity: 'error',
+            });
+
             return { balances: [], totalInUSD: 0 }
         }
     }

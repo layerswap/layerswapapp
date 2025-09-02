@@ -15,6 +15,7 @@ import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { BackendTransactionStatus, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
+import posthog from "posthog-js";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
@@ -211,7 +212,19 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         catch (e) {
             setSwapId(undefined)
             console.log('Error in SendTransactionButton:', e)
-            throw new Error(e.message || 'Error in SendTransactionButton')
+
+            const swapWithdrawalError = new Error(e);
+            swapWithdrawalError.name = `SwapWithdrawalError`;
+            swapWithdrawalError.cause = e;
+            posthog.capture('$exception', {
+                name: swapWithdrawalError.name,
+                cause: swapWithdrawalError.cause,
+                message: swapWithdrawalError.message,
+                stack: swapWithdrawalError.stack,
+                where: 'TransactionError',
+                severity: 'error',
+            });
+
         }
         finally {
             setLoading(false)

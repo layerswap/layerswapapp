@@ -7,7 +7,6 @@ import {
     useFuel,
     useNetwork,
 } from '@fuels/react';
-import { datadogRum } from '@datadog/browser-rum';
 import { coinQuantityfy, CoinQuantityLike, Provider, ScriptTransactionRequest } from 'fuels';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import TransactionMessages from '../../messages/TransactionMessages';
@@ -76,12 +75,6 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, r
             setLoading(false)
             if (e?.message) {
                 setError(e.message)
-                if (e.message !== "User rejected the transaction!") {
-                    const txError = new Error(e.message);
-                    txError.name = `SwapWithdrawalError`;
-                    txError.cause = e;
-                    datadogRum.addError(txError);
-                }
             }
             throw e
         }
@@ -169,11 +162,6 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
         return <TransactionMessages.TransactionRejectedMessage />
     }
     else if (error) {
-        const renderingError = new Error(error);
-        renderingError.name = `SwapWithdrawalError`;
-        renderingError.cause = error;
-        datadogRum.addError(renderingError);
-
         return <TransactionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>

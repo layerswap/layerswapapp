@@ -3,7 +3,6 @@ import useWallet from '@/hooks/useWallet';
 import WalletIcon from '@/components/icons/WalletIcon';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import TransactionMessages from '../../messages/TransactionMessages';
-import { datadogRum } from '@datadog/browser-rum';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 
 export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
@@ -82,11 +81,6 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
         return <TransactionMessages.TransactionFailedMessage />
     }
     else if (error) {
-        const swapWithdrawalError = new Error(error);
-        swapWithdrawalError.name = `SwapWithdrawalError`;
-        swapWithdrawalError.cause = error;
-        datadogRum.addError(swapWithdrawalError);
-
         return <TransactionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>

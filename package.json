@@ -19,7 +19,6 @@
     "@bigmi/react": "^0.3.1",
     "@bitcoinerlab/secp256k1": "^1.2.0",
     "@bitget-wallet/web3-sdk": "^0.0.8",
-    "@datadog/browser-rum": "^5.9.0",
     "@fuel-ts/address": "^0.96.1",
     "@fuels/react": "^0.36.1",
     "@headlessui/react": "^2.1.1",
@@ -76,6 +75,7 @@
     "lucide-react": "^0.379.0",
     "memoizee": "^0.4.17",
     "next": "^14.0.4",
+    "posthog-js": "^1.261.0",
     "qrcode.react": "^3.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -97,8 +97,8 @@
     "zustand": "^4.4.1"
   },
   "devDependencies": {
-    "@datadog/datadog-ci": "^2.41.0",
     "@next/bundle-analyzer": "^13.5.4",
+    "@storybook/addon-docs": "^9.1.1",
     "@storybook/addon-links": "^9.1.1",
     "@storybook/addon-onboarding": "^9.1.1",
     "@storybook/nextjs": "^9.1.1",

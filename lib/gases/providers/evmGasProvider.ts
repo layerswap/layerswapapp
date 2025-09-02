@@ -4,10 +4,10 @@ import { NetworkType, Network, Token } from "../../../Models/Network"
 import { GasProvider } from "./types"
 import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, http, parseEther, serializeTransaction } from "viem";
 import { erc20Abi } from "viem";
-import { datadogRum } from "@datadog/browser-rum";
 import formatAmount from "../../formatAmount";
 import { publicActionsL2 } from 'viem/op-stack'
 import resolveChain from "../../resolveChain";
+import posthog from "posthog-js";
 
 export class EVMGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
@@ -128,7 +128,14 @@ abstract class getEVMGas {
             const error = new Error(e)
             error.name = "GasPriceError"
             error.cause = e
-            datadogRum.addError(error);
+            posthog.capture('$exception', {
+                name: error.name,
+                message: error.message,
+                stack: error.stack,
+                cause: error.cause,
+                where: 'getGasPrice',
+                severity: 'error',
+            })
         }
     }
     private async estimateFeesPerGas() {
@@ -139,7 +146,14 @@ abstract class getEVMGas {
             const error = new Error(e)
             error.name = "FeesPerGasError"
             error.cause = e
-            datadogRum.addError(error);
+            posthog.capture('$exception', {
+                name: error.name,
+                message: error.message,
+                stack: error.stack,
+                cause: error.cause,
+                where: 'feesPerGasError',
+                severity: 'error',
+            })
         }
     }
     private async estimateMaxPriorityFeePerGas() {
@@ -150,7 +164,14 @@ abstract class getEVMGas {
             const error = new Error(e)
             error.name = "MaxPriorityFeePerGasError"
             error.cause = e
-            datadogRum.addError(error);
+            posthog.capture('$exception', {
+                name: error.name,
+                message: error.message,
+                stack: error.stack,
+                cause: error.cause,
+                where: 'maxPriorityFeePerGasError',
+                severity: 'error',
+            })
         }
     }
 

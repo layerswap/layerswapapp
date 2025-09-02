@@ -1,7 +1,6 @@
 import { FC } from "react"
 import { ActionData } from "../../Common/sharedTypes"
 import { BaseError } from 'viem'
-import { datadogRum } from '@datadog/browser-rum';
 import TransactionMessages from "../../../messages/TransactionMessages";
 import resolveError from "./resolveError";
 
@@ -38,11 +37,6 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     else if (hasError) {
         const unexpectedError = transaction?.error?.['data']?.message || transaction?.error
             || wait?.error
-
-        const renderingError = new Error(unexpectedError.message);
-        renderingError.name = `SwapWithdrawalError`;
-        renderingError.cause = unexpectedError;
-        datadogRum.addError(renderingError);
 
         return <TransactionMessages.UexpectedErrorMessage message={unexpectedError?.message} />
     }

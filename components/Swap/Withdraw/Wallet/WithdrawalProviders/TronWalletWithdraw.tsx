@@ -2,7 +2,6 @@ import { FC, useCallback, useState } from 'react'
 import useWallet from '@/hooks/useWallet';
 import { useWallet as useTronWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
 import { useSettingsState } from '@/context/settings';
-import { datadogRum } from '@datadog/browser-rum';
 import { TronWeb } from 'tronweb'
 import useSWRGas from '@/lib/gases/useSWRGas';
 import { ContractParamter, Transaction, TransferContract } from 'tronweb/lib/esm/types';
@@ -97,11 +96,6 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
         return <TransactionMessages.TransactionRejectedMessage />
     }
     else if (error) {
-        const swapWithdrawalError = new Error(error);
-        swapWithdrawalError.name = `SwapWithdrawalError`;
-        swapWithdrawalError.cause = error;
-        datadogRum.addError(swapWithdrawalError);
-
         return <TransactionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>

@@ -6,7 +6,6 @@ import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
 import WalletIcon from '@/components/icons/WalletIcon';
 import useSWRBalance from '@/lib/balances/useSWRBalance';
 import { useSettingsState } from '@/context/settings';
-import { datadogRum } from '@datadog/browser-rum';
 import { transactionSenderAndConfirmationWaiter } from './transactionSender';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../../Common/buttons';
@@ -125,11 +124,6 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined, in
         return <TransactionMessages.TransactionRejectedMessage />
     }
     else if (error) {
-        const swapWithdrawalError = new Error(error);
-        swapWithdrawalError.name = `SwapWithdrawalError`;
-        swapWithdrawalError.cause = error;
-        datadogRum.addError(swapWithdrawalError);
-
         return <TransactionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>

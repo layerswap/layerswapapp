@@ -1,4 +1,3 @@
-import { datadogRum } from "@datadog/browser-rum";
 import { TokenBalance } from "../../../Models/Balance";
 import { Network, NetworkWithTokens, Token } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
@@ -71,10 +70,6 @@ const getNativeAssetBalance = async ({ network, token, address, provider }: GetB
         })
     }
     catch (e) {
-        const error = new Error(e)
-        error.name = "TronNativeAssetBalanceError"
-        error.cause = e
-        datadogRum.addError(error);
         return null;
     }
 }
@@ -100,11 +95,6 @@ const getTRC20Balance = async ({ network, token, address, provider }: GetBalance
         return balance
     }
     catch (e) {
-        console.log(e)
-        const error = new Error(e)
-        error.name = "TronTRC20BalanceError"
-        error.cause = e
-        datadogRum.addError(error);
         return null;
     }
 }

@@ -1,4 +1,3 @@
-import { datadogRum } from "@datadog/browser-rum";
 import { TokenBalance } from "../../../Models/Balance";
 import { Network, NetworkWithTokens, Token } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
@@ -77,10 +76,6 @@ const getNativeAssetBalance = async ({ network, token, address }: { network: Net
         })
     }
     catch (e) {
-        const error = new Error(e)
-        error.name = "TonNativeAssetBalanceError"
-        error.cause = e
-        datadogRum.addError(error);
         return null;
     }
 }
@@ -118,10 +113,6 @@ const getJettonBalance = async ({ network, token, address }: { network: Network,
         return balance
     }
     catch (e) {
-        const error = new Error(e)
-        error.name = "TonJettonBalanceError"
-        error.cause = e
-        datadogRum.addError(error);
         return null;
     }
 }

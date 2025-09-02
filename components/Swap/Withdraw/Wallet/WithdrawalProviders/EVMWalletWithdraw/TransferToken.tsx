@@ -7,7 +7,6 @@ import WalletIcon from "@/components/icons/WalletIcon";
 import { ActionData, TransferProps } from "../../Common/sharedTypes";
 import TransactionMessage from "./transactionMessage";
 import { SendTransactionButton } from "../../Common/buttons";
-import { datadogRum } from "@datadog/browser-rum";
 import { isMobile } from "@/lib/openLink";
 import { sendTransaction } from '@wagmi/core'
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
@@ -66,10 +65,7 @@ const TransferTokenButton: FC<Props> = ({
         } catch (e) {
             setLoading(false)
             setError(e)
-            const error = new Error(e)
-            error.name = "TransferTokenError"
-            error.cause = e
-            datadogRum.addError(error);
+
             throw e
         }
     }, [config, chainId, selectedSourceAccount?.address])

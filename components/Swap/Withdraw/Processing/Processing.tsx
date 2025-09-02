@@ -15,10 +15,10 @@ import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore
 import CountdownTimer from '../../../Common/CountDownTimer';
 import useSWR from 'swr';
 import { ApiResponse } from '../../../../Models/ApiResponse';
-import { datadogRum } from '@datadog/browser-rum';
 import { useIntercom } from 'react-use-intercom';
 import logError from '../../../../lib/logError';
 import SubmitButton from '../../../buttons/submitButton';
+import { posthog } from 'posthog-js';
 import useSWRBalance from '@/lib/balances/useSWRBalance';
 import useWallet from '@/hooks/useWallet';
 import { useSettingsState } from '@/context/settings';
@@ -111,7 +111,14 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             const renderingError = new Error(`Swap:${swapDetails?.id} transaction:${transactionHash} failed`);
             renderingError.name = `TransactionFailed`;
             renderingError.cause = err;
-            datadogRum.addError(renderingError);
+            posthog.capture('$exception', {
+                name: renderingError.name,
+                message: renderingError.message,
+                stack: renderingError.stack,
+                cause: renderingError.cause,
+                where: 'TransactionError',
+                severity: 'error',
+            });
         }
     }, [inputTxStatus, transactionHash, swapDetails?.id])
 
