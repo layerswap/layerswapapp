@@ -5,7 +5,6 @@ import DestinationWalletPicker from "./DestinationWalletPicker";
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { Partner } from "../../Models/Partner";
-import useWallet from "../../hooks/useWallet";
 import { ReceiveAmount } from "./Amount/ReceiveAmount";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useMemo } from "react";
@@ -18,20 +17,13 @@ type Props = {
 }
 
 const DestinationPicker = (props: Props) => {
-    const { partner, fee, isFeeLoading } = props
+    const { partner } = props
     const { values } = useFormikContext<SwapFormValues>()
-    const { fromExchange, destination_address, to, from, depositMethod, fromAsset: fromCurrency, toAsset: toCurrency } = values
+    const { fromAsset: fromCurrency, toAsset: toCurrency } = values
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
     const { quote, isQuoteLoading } = useQuoteData(quoteArgs, quoteRefreshInterval)
-    const sourceWalletNetwork = fromExchange ? undefined : from
-    const destinationWalletNetwork = to
-
-    const { provider: withdrawalProvider } = useWallet(sourceWalletNetwork, 'withdrawal')
-    const { provider: autofilProvider } = useWallet(destinationWalletNetwork, 'autofil')
-
-    const showAddDestinationAddress = !destination_address && to && ((from && autofilProvider?.id !== withdrawalProvider?.id) || depositMethod === 'deposit_address')
 
     return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl pt-4 pb-3.5 px-4 space-y-8">
         <div className="flex justify-between items-center h-7">
@@ -58,12 +50,6 @@ const DestinationPicker = (props: Props) => {
                     <RoutePicker direction="to" />
                 </div>
             </div>
-            {
-                showAddDestinationAddress &&
-                <div className="flex items-center col-span-6">
-                    <Address partner={partner} >{SecondDestinationWalletPicker}</Address>
-                </div>
-            }
         </div>
     </div>
 };
