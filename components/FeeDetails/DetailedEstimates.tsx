@@ -14,6 +14,7 @@ import useSWRNftBalance from "@/lib/nft/useSWRNftBalance";
 import { QuoteComponentProps } from ".";
 import useSWR from "swr";
 import { ApiResponse } from "@/Models/ApiResponse";
+import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 
 export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoading, destination, destinationAddress, swapValues: values }) => {
     const { quote, reward } = quoteData || {}
@@ -41,8 +42,8 @@ export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, i
     const displayLsFee = quote?.total_fee !== undefined ? truncateDecimals(quote.total_fee, fromAsset?.decimals) : undefined
     const currencyName = fromAsset?.symbol || ""
     const lsFeeAmountInUsd = quote?.total_fee_in_usd
-    const feeToken = quote?.source_network?.token?.symbol == gasData?.token.symbol ? quote?.source_network?.token : (quote?.source_token?.symbol == gasData?.token.symbol ? quote?.source_token : undefined)
-    const gasFeeInUsd = (gasData && feeToken) ? gasData.gas * feeToken.price_in_usd : null;
+    const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quote)
+    const gasFeeInUsd = (gasData && gasTokenPriceInUsd) ? gasData.gas * gasTokenPriceInUsd : null;
     const displayLsFeeInUsd = lsFeeAmountInUsd ? (lsFeeAmountInUsd < 0.01 ? '<$0.01' : `$${lsFeeAmountInUsd?.toFixed(2)}`) : null
     const displayGasFeeInUsd = gasFeeInUsd ? (gasFeeInUsd < 0.01 ? '<$0.01' : `$${gasFeeInUsd?.toFixed(2)}`) : null
 

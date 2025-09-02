@@ -5,6 +5,7 @@ import NumericInput from "../NumericInput";
 import { useQuoteData } from "@/hooks/useFee";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import clsx from "clsx";
+import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 
 interface AmountFieldProps {
     usdPosition?: "right" | "bottom";
@@ -20,7 +21,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
     const amountRef = useRef(ref)
     const suffixRef = useRef<HTMLDivElement>(null);
 
-    const sourceCurrencyPriceInUsd = fee?.quote.source_token?.price_in_usd || fromCurrency?.price_in_usd;
+    const sourceCurrencyPriceInUsd = resolveTokenUsdPrice(fromCurrency, fee?.quote)
 
     const requestedAmountInUsd = useMemo(() => {
         const amountNumber = Number(amount);

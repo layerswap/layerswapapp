@@ -3,6 +3,7 @@ import { Token } from "../../Models/Network";
 import { ArrowRight, Fuel } from "lucide-react";
 import { roundDecimals, truncateDecimals } from "../utils/RoundDecimals";
 import { Quote } from "@/lib/apiClients/layerSwapApiClient";
+import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 
 type WillReceiveProps = {
     destination_token: Token | undefined;
@@ -14,8 +15,8 @@ type WillReceiveProps = {
 export const ReceiveAmounts: FC<WillReceiveProps> = ({ source_token, destination_token, fee, isFeeLoading }) => {
     const receive_amount = fee?.quote.receive_amount
     const parsedReceiveAmount = truncateDecimals(receive_amount ?? 0, destination_token?.precision);
-
-    const receiveAmountInUsd = receive_amount && destination_token && fee.quote?.destination_token?.price_in_usd ? (receive_amount * fee.quote.destination_token.price_in_usd).toFixed(2) : undefined
+    const receiveTokenPriceInUsd = resolveTokenUsdPrice(destination_token, fee?.quote)
+    const receiveAmountInUsd = receive_amount && receiveTokenPriceInUsd ? (receive_amount * receiveTokenPriceInUsd).toFixed(2) : undefined
 
     return <div className="w-full h-full mt-3">
         <div className="flex flex-col justify-between w-full px-2 pb-2">
