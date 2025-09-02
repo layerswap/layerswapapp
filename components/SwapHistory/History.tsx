@@ -1,6 +1,6 @@
 import LayerSwapApiClient, { SwapResponse } from "../../lib/apiClients/layerSwapApiClient"
 import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse"
-import { ChevronDown, ChevronUp, Plus, RefreshCw } from 'lucide-react'
+import { ChevronUp, Plus, RefreshCw } from 'lucide-react'
 import { FC, useCallback, useMemo, useState } from "react"
 import HistorySummary from "./HistorySummary";
 import useSWRInfinite from 'swr/infinite'
@@ -8,12 +8,7 @@ import useWallet from "../../hooks/useWallet"
 import Link from "next/link"
 import Snippet, { HistoryItemSceleton } from "./Snippet"
 import { groupBy } from "../utils/groupBy"
-import { useAuthState, UserType } from "../../context/authContext"
 import ConnectButton from "../buttons/connectButton"
-import { FormWizardProvider } from "../../context/formWizardProvider"
-import { TimerProvider } from "../../context/timerContext"
-import GuestCard from "../guestCard"
-import { AuthStep } from "../../Models/Wizard"
 import React from "react"
 import { useVirtualizer } from '../../lib/virtual'
 import SwapDetails from "./SwapDetailsComponent"
@@ -42,7 +37,6 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
     const { networks } = useSettingsState()
     const [showAll, setShowAll] = useState(false)
     const { wallets } = useWallet()
-    const { userId } = useAuthState()
 
     const [expanded, setExpanded] = useState<string | undefined>(undefined)
 
@@ -115,8 +109,8 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
 
     const items = rowVirtualizer.getVirtualItems()
     if ((userSwapsLoading && !(Number(userSwaps?.length) > 0))) return <Snippet />
-    if (!wallets.length && !userId) return <ConnectOrSignIn onLogin={() => { mutate(); mutatePendingSwaps(); }} />
-    if (!list.length) return <BlankHistory onNewTransferClick={onNewTransferClick} onLogin={() => { mutate(); mutatePendingSwaps(); }} />
+    if (!wallets.length) return <ConnectWalletCard />
+    if (!list.length) return <BlankHistory onNewTransferClick={onNewTransferClick} />
 
     return (
         <div className="relative">
@@ -266,10 +260,9 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
 
 type BlankHistoryProps = {
     onNewTransferClick?: () => void,
-    onLogin: () => void
 }
 
-const BlankHistory = ({ onNewTransferClick, onLogin }: BlankHistoryProps) => {
+const BlankHistory = ({ onNewTransferClick }: BlankHistoryProps) => {
 
     return <div className="w-full h-full min-h-[inherit] flex flex-col justify-between items-center space-y-10">
         <div />
@@ -290,14 +283,11 @@ const BlankHistory = ({ onNewTransferClick, onLogin }: BlankHistoryProps) => {
             </Link>
 
         </div>
-        <div className="w-full">
-            <SignIn onLogin={onLogin} />
-        </div>
     </div>
 
 }
 
-const ConnectOrSignIn = ({ onLogin }: SignInProps) => {
+const ConnectWalletCard = () => {
 
     return <div className="w-full h-full flex flex-col justify-between items-center space-y-10">
         <div className="flex flex-col items-center justify-center text-center w-full h-full">
@@ -305,10 +295,10 @@ const ConnectOrSignIn = ({ onLogin }: SignInProps) => {
             <HistoryItemSceleton className="scale-[.63] -mt-12 shadow-card ml-7 w-full" />
             <div className="mt-4 text-center space-y-3">
                 <h1 className="text-secondary-text text-[28px] font-bold tracking-wide" >
-                    Connect wallet or sign in
+                    Connect wallet
                 </h1>
                 <p className="max-w-xs text-center text-primary-text-muted text-base font-normal mx-auto">
-                    In order to see your transfer history you need to connect your wallet or Sign in with your email.
+                    In order to see your transfer history you need to connect your wallet.
                 </p>
             </div>
         </div>
@@ -318,37 +308,8 @@ const ConnectOrSignIn = ({ onLogin }: SignInProps) => {
                     <div className="text-center text-xl font-semibold">Connect Wallet</div>
                 </div>
             </ConnectButton>
-            <div className="w-full overflow-hidden">
-                <SignIn onLogin={onLogin} />
-            </div>
         </div>
     </div>
-}
-type SignInProps = {
-    onLogin: () => void
-}
-const SignIn = ({ onLogin }: SignInProps) => {
-
-    const { userType } = useAuthState()
-    const [showGuestCard, setShowGuestCard] = useState(false)
-
-    if (!(userType && userType != UserType.AuthenticatedUser)) return null
-
-    return <FormWizardProvider initialStep={AuthStep.Email} initialLoading={false} hideMenu noToolBar>
-        <TimerProvider>
-            {
-                showGuestCard ?
-                    <div className="animate-fade-in">
-                        <GuestCard onLogin={onLogin} />
-                    </div>
-                    :
-                    <button type="button" onClick={() => setShowGuestCard(true)} className="text-secondary-text w-fit mx-auto flex justify-center mt-2 underline hover:no-underline">
-                        <span>Sign in with your email</span>
-                    </button>
-            }
-        </TimerProvider>
-    </FormWizardProvider>
-
 }
 
 function resolveDate(dateInput) {

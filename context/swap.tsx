@@ -30,7 +30,8 @@ export const SwapDataStateContext = createContext<SwapContextData>({
     swapBasicData: undefined,
     swapDetails: undefined,
     quoteIsLoading: false,
-    swapId: undefined
+    swapId: undefined,
+    swapModalOpen: false
 });
 
 export const SwapDataUpdateContext = createContext<UpdateSwapInterface | null>(null);
@@ -46,6 +47,7 @@ export type UpdateSwapInterface = {
     setSwapId: (value: string | undefined) => void
     setSwapDataFromQuery?: (swapData: SwapResponse | undefined) => void,
     setSubmitedFormValues: (values: NonNullable<SwapFormValues>) => void,
+    setSwapModalOpen: (value: boolean) => void
 }
 
 export type SwapContextData = {
@@ -60,7 +62,8 @@ export type SwapContextData = {
     refuel: Refuel | undefined,
     swapDetails: SwapDetails | undefined,
     quoteIsLoading: boolean,
-    swapId: string | undefined
+    swapId: string | undefined,
+    swapModalOpen: boolean
 }
 
 export function SwapDataProvider({ children }) {
@@ -74,6 +77,7 @@ export function SwapDataProvider({ children }) {
     const { sourceRoutes, destinationRoutes } = useSettingsState()
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
+    const [swapModalOpen, setSwapModalOpen] = useState(false)
     const { providers, provider } = useWallet(swapBasicFormData?.source_network, 'asSource')
 
     const selectedSourceAccount = useMemo(() =>  provider?.activeWallet, [provider]);
@@ -247,7 +251,8 @@ export function SwapDataProvider({ children }) {
         setWithdrawType,
         setSwapId: handleUpdateSwapid,
         setSubmitedFormValues,
-        setQuoteLoading
+        setQuoteLoading,
+        setSwapModalOpen
     };
     return (
         <SwapDataStateContext.Provider value={{
@@ -262,7 +267,8 @@ export function SwapDataProvider({ children }) {
             swapBasicData,
             swapDetails,
             quoteIsLoading,
-            swapId
+            swapId,
+            swapModalOpen
         }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}

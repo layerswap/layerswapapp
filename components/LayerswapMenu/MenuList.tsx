@@ -1,8 +1,6 @@
 import { BookOpen, Gift, Map, Home, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus } from "lucide-react";
 import { useRouter } from "next/router";
-import { FC, useCallback, useEffect, useState } from "react";
-import { useAuthDataUpdate, useAuthState, UserType } from "../../context/authContext";
-import TokenService from "../../lib/TokenService";
+import { FC, useEffect, useState } from "react";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../icons/ChatIcon";
 import inIframe from "../utils/inIframe";
@@ -14,7 +12,6 @@ import Link from "next/link";
 import Popover from "../modal/popover";
 import SendFeedback from "../sendFeedback";
 import YoutubeLogo from "../icons/YoutubeLogo";
-import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import Menu from "./Menu";
 import dynamic from "next/dynamic";
 import { MenuStep } from "../../Models/Wizard";
@@ -24,8 +21,6 @@ const WalletsMenu = dynamic(() => import("../Wallet/ConnectedWallets").then((com
 })
 
 const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ goToStep }) => {
-    const { email, userType, userId } = useAuthState()
-    const { setUserType } = useAuthDataUpdate()
     const router = useRouter();
     const { boot, show, update } = useIntercom()
     const [embedded, setEmbedded] = useState<boolean>()
@@ -35,24 +30,10 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
         setEmbedded(inIframe())
     }, [])
 
-    const updateWithProps = () => update({ userId, customAttributes: { email: email, } })
-
-    const handleLogout = useCallback(() => {
-        TokenService.removeAuthData()
-        if (router.pathname != '/') {
-            router.push({
-                pathname: '/',
-                query: resolvePersistantQueryParams(router.query)
-            })
-        } else {
-            router.reload()
-        }
-        setUserType(UserType.NotAuthenticatedUser)
-    }, [router.query])
-
     const handleCloseFeedback = () => {
         setOpenFeedbackModal(false)
     }
+
     return <div className="text-sm font-medium focus:outline-hidden h-full">
         <Menu>
 
@@ -86,7 +67,7 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
                 <Menu.Item onClick={() => {
                     boot();
                     show();
-                    updateWithProps();
+                    update();
                 }} target="_blank" icon={<ChatIcon strokeWidth={2} className="h-5 w-5" />} >
                     Help
                 </Menu.Item>

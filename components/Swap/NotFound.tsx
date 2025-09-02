@@ -2,7 +2,6 @@ import { FC, useCallback, useEffect } from "react";
 import MessageComponent from "../MessageComponent";
 import SubmitButton, { DoubleLineText } from "../buttons/submitButton";
 import GoHomeButton from "../utils/GoHome";
-import { useAuthState } from "../../context/authContext";
 import { useIntercom } from "react-use-intercom";
 import { TrackEvent } from '../../pages/_document';
 import { Home, MessageSquare } from "lucide-react";
@@ -10,10 +9,9 @@ import { useRouter } from "next/router";
 
 const NotFound: FC = () => {
 
-    const { email, userId } = useAuthState()
     const { boot, show, update } = useIntercom()
     const { query } = useRouter()
-    const updateWithProps = () => update({ userId, customAttributes: { swapId: query?.swapId, email: email, } })
+    const updateWithProps = () => update({ customAttributes: { swapId: query?.swapId } })
 
     useEffect(() => {
         plausible(TrackEvent.SwapFailed)

@@ -60,7 +60,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const { providers, wallets } = useWallet();
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
-    const { swapId } = useSwapDataState()
+    const { swapId, swapModalOpen } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
     const { minAllowedAmount, maxAllowedAmount, isQuoteLoading, quote } = useQuoteData(quoteArgs, quoteRefreshInterval);
 
@@ -105,10 +105,10 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
-    const insufficientBalance = resolveBalanceWarnings({
+    const insufficientBalance = values.depositMethod === 'wallet' ? resolveBalanceWarnings({
         requestAmount: Number(amount),
         walletBalance: Number(walletBalanceAmount),
-    });
+    }) : null;
 
     return (
         <>
@@ -166,7 +166,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                             }
                             <>
                                 {
-                                    (!routeValidation.message && insufficientBalance)
+                                    (!routeValidation.message && insufficientBalance && !swapModalOpen)
                                         ? insufficientBalance
                                         : null
                                 }

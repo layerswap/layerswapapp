@@ -10,9 +10,10 @@ interface AmountFieldProps {
     usdPosition?: "right" | "bottom";
     fee: ReturnType<typeof useQuoteData>['quote'];
     actionValue?: number;
+    className?: string;
 }
 
-const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", actionValue, fee }: AmountFieldProps, ref: any) {
+const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", actionValue, fee, className }: AmountFieldProps, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
     const { fromAsset: fromCurrency, amount, toAsset: toCurrency, fromExchange } = values || {};
     const name = "amount"
@@ -42,10 +43,10 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
         if (!input || !suffix) return;
 
         const font = getFontFromElement(input);
-        const width = getTextWidth(actionValue?.toString() || amount || "0", font);
+        const width = getTextWidth(amount?.toString() || amount || "0", font);
 
         suffix.style.left = `${width + 16}px`;
-    }, [amount, requestedAmountInUsd, actionValue]);
+    }, [amount, requestedAmountInUsd]);
 
     const placeholder = '0'
 
@@ -54,35 +55,39 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
     const disabled = Boolean(fromExchange && !toCurrency)
 
     return (<>
-        <div className="flex flex-col w-full bg-secondary-500 rounded-lg">
-            <div className={`space-y-0.5 relative w-full group-[.exchange-amount-field]:pb-2 group ${usdPosition === "right" ? "focus-within:[&_.usd-suffix]:invisible" : ""}`}>
-                <NumericInput
-                    disabled={disabled}
-                    placeholder={placeholder}
-                    step={isNaN(step) ? 0.01 : step}
-                    name={name}
-                    ref={amountRef}
-                    precision={fromCurrency?.precision}
-                    tempValue={actionValue}
-                    className="w-full text-[28px] text-primary-text placeholder:!text-primary-text leading-normal focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal group-[.exchange-amount-field]:px-2.5 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! pl-0"
-                    onChange={e => {
-                        /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
-                    }}
-                />
+        <div className={clsx("flex flex-col bg-secondary-500 rounded-lg space-y-0.5 relative w-full group-[.exchange-amount-field]:pb-2 group",
+            className,
+            {
+                'focus-within:[&_.usd-suffix]:invisible': usdPosition === "right"
+            }
+        )}
+        >
+            <NumericInput
+                disabled={disabled}
+                placeholder={placeholder}
+                step={isNaN(step) ? 0.01 : step}
+                name={name}
+                ref={amountRef}
+                precision={fromCurrency?.precision}
+                tempValue={actionValue}
+                className="w-full text-[28px] leading-[34px] text-primary-text placeholder:!text-primary-text focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal group-[.exchange-amount-field]:px-2.5 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! pl-0"
+                onChange={e => {
+                    /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
+                }}
+            />
 
-                <div className={clsx(
-                    "usd-suffix text-base font-medium text-secondary-text pointer-events-none leading-5",
-                    {
-                        "absolute bottom-4": usdPosition === "right",
-                        "h-5": usdPosition !== "right",
-                        "text-secondary-text/45": !!actionValueInUsd
-                    },
-                    "group-hover:block"
-                )} ref={suffixRef}>
-                    {`${actionValueInUsd ?? requestedAmountInUsd ?? '$0'}`}
-                </div>
+            <div className={clsx(
+                "usd-suffix text-base font-medium text-secondary-text pointer-events-none",
+                {
+                    "absolute bottom-4": usdPosition === "right",
+                    "h-5": usdPosition !== "right",
+                    "text-secondary-text/45": !!actionValueInUsd
+                },
+                "group-hover:block"
+            )} ref={suffixRef}>
+                {`${actionValueInUsd ?? requestedAmountInUsd ?? '$0'}`}
             </div>
-        </div >
+        </div>
     </>)
 });
 

@@ -62,8 +62,8 @@ export const TabsTrigger: FC<TabsTriggerProps> = ({ value, isHovered, label, Ico
             type="button"
             onClick={() => ctx.setActiveId(value)}
             className={clsx(
-                'w-full text-primary-text flex items-center justify-start !p-1 hover:bg-secondary-100 overflow-hidden rounded-md max-sm:justify-center max-sm:px-0 gap-1.5',
-                { 'bg-secondary-300': isActive }
+                'w-full flex items-center justify-start !p-1 hover:bg-secondary-100 text-secondary-text hover:text-primary-text overflow-hidden rounded-md max-sm:justify-center max-sm:px-0 gap-1.5',
+                { 'bg-secondary-300 !text-primary-text': isActive }
             )}
         >
             <div className="h-6 w-6 max-sm:h-5 max-sm:w-5">

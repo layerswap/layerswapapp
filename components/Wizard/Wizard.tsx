@@ -36,7 +36,7 @@ const Wizard: FC<Props> = ({ children, wizardId }) => {
             </div>}
          </div>
          {!hideMenu && <HeaderWithMenu goBack={goBack} />}
-         <div className={noToolBar ? 'relative w-full h-full' : `relative px-6 `}>
+         <div className={noToolBar ? 'relative w-full h-full' : `relative px-4`}>
             <div className="flex items-start w-full h-full"
                ref={wrapper}>
                <AnimatePresence initial={false} custom={{ direction: moving === "forward" ? 1 : -1, width: wrapperWidth }}>

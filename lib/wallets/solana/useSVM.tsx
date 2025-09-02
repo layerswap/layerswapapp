@@ -47,6 +47,10 @@ export default function useSVM(): WalletProvider {
     }, [connectedAddress, connectedAdapterName])
 
 
+    const switchAccount = async (wallet: Wallet, address: string) => {
+        // as we do not have multiple accounts management we will leave the method empty
+    }
+
     const connectWallet = async ({ connector }: { connector: InternalConnector }) => {
         const solanaConnector = wallets.find(w => w.adapter.name.includes(connector.name))
         if (!solanaConnector) throw new Error('Connector not found')
@@ -114,7 +118,8 @@ export default function useSVM(): WalletProvider {
         asSourceSupportedNetworks: commonSupportedNetworks,
         name,
         id,
-        providerIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo
+        providerIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo,
+        switchAccount
     }
 
     return provider
@@ -135,11 +140,11 @@ function resolveSupportedNetworks(supportedNetworks: string[], connectorId: stri
     const supportedNetworksForWallet: string[] = [];
 
     supportedNetworks.forEach((network) => {
-        const networkName = network.split("_")[0].toLowerCase();
-        if (networkName === "solana") {
-            supportedNetworksForWallet.push(networkName);
-        } else if (networkSupport[networkName] && networkSupport[networkName].includes(connectorId?.toLowerCase())) {
-            supportedNetworksForWallet.push(networkName);
+        const lowerCaseName = network.split("_")[0].toLowerCase();
+        if (lowerCaseName === "solana") {
+            supportedNetworksForWallet.push(network);
+        } else if (networkSupport[lowerCaseName] && networkSupport[lowerCaseName].includes(connectorId?.toLowerCase())) {
+            supportedNetworksForWallet.push(network);
         }
     });
 

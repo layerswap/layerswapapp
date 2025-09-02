@@ -1,5 +1,5 @@
 import { SwapDataProvider } from "@/context/swap";
-import React from "react";
+import React, { useMemo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./NetworkExchangeTabs";
 import NetworkForm from "./NetworkForm";
 import ExchangeForm from "./ExchangeForm";
@@ -9,10 +9,18 @@ import { BalanceAccountsProvider } from "@/context/balanceAccounts";
 import FormWrapper from "./FormWrapper";
 import { Widget } from "@/components/Widget/Index";
 import { ValidationProvider } from "@/context/validationContext";
+import { useQueryState } from "@/context/query";
+import { useSettingsState } from "@/context/settings";
 
 export default function Form() {
+    const { from } = useQueryState()
+    const { sourceExchanges } = useSettingsState()
+    const defaultTab = useMemo(() => {
+        return defaultTabResolver({ from, sourceExchanges })
+    }, [from, sourceExchanges])
+
     return <BalanceAccountsProvider>
-        <Tabs defaultValue="cross-chain">
+        <Tabs defaultValue={defaultTab}>
             <TabsList>
                 <TabsTrigger
                     label="Swap"
@@ -50,4 +58,14 @@ export default function Form() {
 
         </Tabs>
     </BalanceAccountsProvider>
+}
+
+const defaultTabResolver = ({ from, sourceExchanges }: { from: string | undefined, sourceExchanges: ReturnType<typeof useSettingsState>['sourceExchanges'] }) => {
+    if (from) {
+        const isCex = sourceExchanges.some(exchange => exchange.name === from);
+        if (isCex) {
+            return "exchange";
+        }
+    }
+    return "cross-chain";
 }
