@@ -4,7 +4,7 @@ import { Dispatch, FC, SetStateAction, useCallback, useMemo, useState } from "re
 import useWallet from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
 import { ChevronDown, CircleHelp, QrCode } from "lucide-react";
-import VaulDrawer, { WalletFooterPortal } from "../modal/vaulModal";
+import VaulDrawer, { ModalFooterPortal } from "../modal/vaulModal";
 import { SelectAccountProps, Wallet } from "../../Models/WalletProvider";
 import WalletIcon from "../icons/WalletIcon";
 import SubmitButton from "../buttons/submitButton";
@@ -200,9 +200,9 @@ export const FormSourceWalletButton: FC = () => {
             <Connect connectFn={handleConnect} />
             {
                 mountWalletPortal && values.from?.deposit_methods?.includes('deposit_address') && values.depositMethod !== 'deposit_address' && !selectedConnector &&
-                <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
+                <ModalFooterPortal isWalletModalOpen={isWalletModalOpen}>
                     <ContinueWithoutWallet onClick={handleSelectWallet} />
-                </WalletFooterPortal>
+                </ModalFooterPortal>
             }
         </>
 
@@ -231,9 +231,9 @@ export const FormSourceWalletButton: FC = () => {
             </VaulDrawer >
             {
                 mountWalletPortal && values.from?.deposit_methods?.includes('deposit_address') && values.depositMethod !== 'deposit_address' && !selectedConnector &&
-                <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
+                <ModalFooterPortal isWalletModalOpen={isWalletModalOpen}>
                     <ContinueWithoutWallet onClick={handleSelectWallet} />
-                </WalletFooterPortal>
+                </ModalFooterPortal>
             }
         </>
     }
@@ -241,9 +241,9 @@ export const FormSourceWalletButton: FC = () => {
         <Connect setMountWalletPortal={setMounWalletPortal} />
         {
             mountWalletPortal && !selectedConnector &&
-            <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
+            <ModalFooterPortal isWalletModalOpen={isWalletModalOpen}>
                 <ContinueWithoutWallet onClick={handleSelectWallet} />
-            </WalletFooterPortal>
+            </ModalFooterPortal>
         }
     </>
 }

@@ -2,7 +2,7 @@ import { SwapFormValues } from "../components/DTOs/SwapFormValues";
 import { QueryParams } from "../Models/QueryParams";
 import { isValidAddress } from "./address/validator";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
-import { SwapBasicData, SwapResponse } from "./apiClients/layerSwapApiClient";
+import { SwapBasicData } from "./apiClients/layerSwapApiClient";
 
 export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams, type: 'cross-chain' | 'exchange'): SwapFormValues {
     const { destination_address, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, depositMethod, fromExchange } = queryParams
@@ -20,7 +20,7 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
     const sourceNetwork = sourceRoutes.find(l => l.name.toUpperCase() === from?.toUpperCase())
     const destinationNetwork = destinationRoutes.find(l => l.name.toUpperCase() === to?.toUpperCase())
 
-    const initialSourceExchange = sourceExchanges.find(e => e.name.toLowerCase() === fromExchange?.toLowerCase())
+    const initialSourceExchange = sourceExchanges.find(e => e.name.toLowerCase() === from?.toLowerCase())
 
     const initialSource = sourceNetwork ?? undefined
     const initialDestination = destinationNetwork ?? undefined
@@ -37,8 +37,14 @@ export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryP
         destination_address && initialDestination && isValidAddress(destination_address, destinationNetwork) ? destination_address : "";
 
     let initialSourceCurrency = filteredSourceCurrencies?.find(c => c.symbol?.toUpperCase() == fromAsset?.toUpperCase())
+    if (!initialSourceCurrency && !fromAsset && sourceNetwork) {
+        initialSourceCurrency = filteredSourceCurrencies?.[0]
+    }
 
     let initialDestinationCurrency = filteredDestinationCurrencies?.find(c => c.symbol?.toUpperCase() == toAsset?.toUpperCase())
+    if (!initialDestinationCurrency && !toAsset && destinationNetwork) {
+        initialDestinationCurrency = filteredDestinationCurrencies?.[0]
+    }
 
     //TODO this looks wrong
     let initialAmount =

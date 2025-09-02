@@ -19,7 +19,7 @@ type Props = {
 const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fee }: Props) => {
     const { values } = useFormikContext<SwapFormValues>()
 
-    const { fromAsset: fromCurrency, from } = values || {}
+    const { fromAsset: fromCurrency, from, depositMethod } = values || {}
     const { ref: parentRef, isActive: showQuickActions, activate: setShowQuickActions } = useClickOutside<HTMLDivElement>(false)
     const [actiontempValue, setActionTempValue] = useState<number | undefined>(0)
 
@@ -47,26 +47,13 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fe
                     },
                     "group-hover:block"
                 )}>
-                    <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} />
+                    <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} depositMethod={depositMethod} />
                 </div>
             }
-            <LayoutGroup>
-                <div className="grid grid-cols-9 sm:grid-cols-8 gap-2">
-                    <motion.div
-                        layout
-                        transition={{ duration: 0.25, ease: 'easeInOut' }}
-                        className="col-span-5"
-                    >
-                        <AmountField fee={fee} actionValue={actiontempValue} />
-                    </motion.div>
-                    <motion.div
-                        transition={{ duration: 0.25, ease: 'easeInOut' }}
-                        className="col-span-4 sm:col-span-3 flex items-center self-start justify-end"
-                    >
-                        <RoutePicker direction="from" />
-                    </motion.div>
-                </div>
-            </LayoutGroup>
+            <div className="grid grid-cols-9 sm:grid-cols-8 gap-2">
+                <AmountField fee={fee} actionValue={actiontempValue} className="col-span-5" />
+                <RoutePicker direction="from" className="col-span-4 sm:col-span-3 flex items-center self-start justify-end" />
+            </div>
         </div>
     </div>
 }

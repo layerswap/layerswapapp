@@ -29,9 +29,9 @@ const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, icon, c
             type={type}
             onClick={onClick}
 
-            className={clsx('text-primary border border-primary disabled:border-primary-900 items-center space-x-1 disabled:bg-primary-800 disabled:text-primary-text/40 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-2xl transform hover:brightness-125 transition duration-200 ease-in-out', {
+            className={clsx('text-primary border border-primary disabled:border-primary-900 items-center space-x-1 disabled:bg-primary-800 disabled:text-primary-buttonTextColor/40 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-2xl transform hover:brightness-125 transition duration-200 ease-in-out', {
                 className,
-                'text-primary-text bg-primary-500': buttonStyle === 'filled',
+                'text-primary-buttonTextColor bg-primary-500': buttonStyle === 'filled',
                 'py-4 px-4': size === 'large',
                 'py-3 px-2 md:px-3': size === 'medium',
                 'py-1.5 px-1.5': size === 'small',

@@ -33,7 +33,7 @@ export const TabsList: FC<TabsListProps> = ({ children }) => {
                 onHoverStart={() => setHovered(true)}
                 onHoverEnd={() => setHovered(false)}
                 animate={{ width: hoveredOnDesktop ? 180 : 48 }}
-                className="absolute right-full top-24 overflow-hidden rounded-l-xl max-sm:right-19 max-sm:z-20 max-sm:top-3.5 max-sm:w-fit! max-sm:rounded-lg"
+                className="absolute right-full top-24 overflow-hidden rounded-l-xl max-sm:right-19 max-sm:z-20 max-sm:top-[13px] max-sm:w-fit! max-sm:rounded-lg"
                 transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
             >
                 <div className="flex flex-col bg-secondary-500 h-full p-1.5 sm:p-2 w-full space-y-2 max-sm:flex-row max-sm:space-y-0 max-sm:space-x-2">
@@ -62,8 +62,8 @@ export const TabsTrigger: FC<TabsTriggerProps> = ({ value, isHovered, label, Ico
             type="button"
             onClick={() => ctx.setActiveId(value)}
             className={clsx(
-                'w-full text-primary-text flex items-center justify-start !p-1 hover:bg-secondary-100 overflow-hidden rounded-md max-sm:justify-center max-sm:px-0 gap-1.5',
-                { 'bg-secondary-300': isActive }
+                'w-full flex items-center justify-start !p-1 hover:bg-secondary-100 text-secondary-text hover:text-primary-text overflow-hidden rounded-md max-sm:justify-center max-sm:px-0 gap-1.5',
+                { 'bg-secondary-300 !text-primary-text': isActive }
             )}
         >
             <div className="h-6 w-6 max-sm:h-5 max-sm:w-5">

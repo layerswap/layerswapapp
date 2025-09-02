@@ -29,7 +29,9 @@ export default function useImtblX(): WalletProvider {
         }
         return undefined
     }
-
+    const switchAccount = async (wallet: Wallet, address: string) => {
+        // as we do not have multiple accounts management we will leave the method empty
+    }
     const connectWallet = async () => {
         const isMainnet = networks?.some(network => network.name === KnownInternalNames.Networks.ImmutableXMainnet)
         const chain = (isMainnet ? KnownInternalNames.Networks.ImmutableXMainnet : KnownInternalNames.Networks.ImmutableXGoerli)
@@ -86,7 +88,8 @@ export default function useImtblX(): WalletProvider {
         name,
         id,
         hideFromList: true,
-        availableWalletsForConnect
+        availableWalletsForConnect,
+        switchAccount
     }
 
     return provider

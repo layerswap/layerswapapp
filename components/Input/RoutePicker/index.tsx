@@ -11,8 +11,9 @@ import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import PickerWalletConnect from "./RouterPickerWalletConnect";
 import { swapInProgress } from "@/components/utils/swapUtils";
 import { updateForm } from "@/components/Swap/Form/updateForm";
+import clsx from "clsx";
 
-const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean }> = ({ direction, isExchange = false }) => {
+const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, className?: string }> = ({ direction, isExchange = false, className }) => {
     const {
         values,
         setFieldValue,
@@ -60,7 +61,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean }> = ({ d
     }, [currencyFieldName, direction, values])
 
     return (
-        <div className="flex w-full flex-col self-end relative ml-auto items-center">
+        <div className={clsx("flex w-full flex-col self-end relative ml-auto items-center", className)}>
             <Selector>
                 <SelectorTrigger disabled={false} className="group-[.exchange-picker]:bg-secondary-500">
                     <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select Token" />
@@ -81,7 +82,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean }> = ({ d
                 </SelectorContent>
             </Selector>
             {
-                !isExchange &&
+                (direction === 'to' || values.depositMethod === 'wallet') && !isExchange &&
                 <Balance values={values} direction={direction} />
             }
         </div>
