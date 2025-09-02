@@ -1,4 +1,3 @@
-import SecondaryButton from "../../buttons/secondaryButton"
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import useSWRBalance from "@/lib/balances/useSWRBalance";
@@ -27,16 +26,16 @@ const MinMax = (props: MinMaxProps) => {
     const { provider } = useWallet(from, "withdrawal")
     const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
 
-    const { gas } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency)
+    const { gasData } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency)
     const { balances, mutate: mutateBalances } = useSWRBalance(selectedSourceAccount?.address, from)
 
     const walletBalance = useMemo(() => {
         return selectedSourceAccount?.address ? balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol) : undefined
     }, [selectedSourceAccount?.address, balances, from?.name, fromCurrency?.symbol])
 
-    const gasAmount = gas || 0;
+    const gasAmount = gasData?.gas || 0;
 
-    const native_currency = from?.token
+    const native_currency = gasData?.token || from?.token
 
     const shouldPayGasWithTheToken = (native_currency?.symbol === fromCurrency?.symbol) || !native_currency
 

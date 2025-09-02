@@ -24,7 +24,7 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refue
     const networkName = source_network?.name
     const { networks } = useSettingsState()
     const networkWithTokens = networks.find(n => n.name === networkName)
-    const { gas, isGasLoading } = useSWRGas(walletAddress, networkWithTokens, source_token)
+    const { gasData, isGasLoading } = useSWRGas(walletAddress, networkWithTokens, source_token)
 
     const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setError(undefined)
@@ -38,7 +38,7 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refue
 
             const amountInWei = Math.pow(10, source_token?.decimals) * amount
 
-            const initialTransaction = await buildInitialTransaction({ tronWeb, token: source_token, depositAddress, amountInWei, gas, issuerAddress: walletAddress })
+            const initialTransaction = await buildInitialTransaction({ tronWeb, token: source_token, depositAddress, amountInWei, gas: gasData?.gas, issuerAddress: walletAddress })
             const data = Buffer.from(callData).toString('hex')
             const transaction = await tronWeb.transactionBuilder.addUpdateData(initialTransaction, data, "hex")
             const signature = await signTransaction(transaction)
@@ -58,7 +58,7 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refue
             }
             throw e
         }
-    }, [walletAddress, signTransaction, source_network, gas, source_token])
+    }, [walletAddress, signTransaction, source_network, gasData, source_token])
 
     if (!wallet || !walletAddress) {
         return <ConnectWalletButton />

@@ -6,9 +6,9 @@ import InternalApiClient from "../../apiClients/internalApiClient";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { EstimateFee } from "starknet";
 import { useRouter } from "next/router";
-import { Provider } from "./types";
+import { GasProvider } from "./types";
 
-export class StarknetGasProvider implements Provider {
+export class StarknetGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
         return (KnownInternalNames.Networks.StarkNetMainnet.includes(network.name) || KnownInternalNames.Networks.StarkNetGoerli.includes(network.name) || KnownInternalNames.Networks.StarkNetSepolia.includes(network.name))
     }
@@ -40,6 +40,6 @@ export class StarknetGasProvider implements Provider {
         const feeInWei = feeEstimateResponse.data.suggestedMaxFee.toString();
         const gas = formatAmount(feeInWei, network.token.decimals)
 
-        return gas
+        if (gas) return { gas, token: network.token }
     }
 }

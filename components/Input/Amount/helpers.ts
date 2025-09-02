@@ -20,10 +20,8 @@ export const resolveMaxAllowedAmount = (props: ResoleMaxAllowedAmountProps) => {
     const shouldPayGasWithTheToken = (native_currency?.symbol === fromCurrency?.symbol) || !native_currency
     const payableAmount = walletBalance.amount - gasAmount
 
-    if (!shouldPayGasWithTheToken)
+    if (!shouldPayGasWithTheToken )
         return walletBalance.amount
 
     return Number(payableAmount.toFixed(fromCurrency?.decimals))
 }
-
-

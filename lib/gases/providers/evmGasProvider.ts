@@ -1,7 +1,7 @@
 
 import { GasProps } from "../../../Models/Balance"
 import { NetworkType, Network, Token } from "../../../Models/Network"
-import { Provider } from "./types"
+import { GasProvider } from "./types"
 import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, http, parseEther, serializeTransaction } from "viem";
 import { erc20Abi } from "viem";
 import { datadogRum } from "@datadog/browser-rum";
@@ -9,7 +9,7 @@ import formatAmount from "../../formatAmount";
 import { publicActionsL2 } from 'viem/op-stack'
 import resolveChain from "../../resolveChain";
 
-export class EVMGasProvider implements Provider {
+export class EVMGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
         return network.type === NetworkType.EVM && !!network.token
     }
@@ -50,7 +50,9 @@ export class EVMGasProvider implements Provider {
 
             const gas = await gasProvider.resolveGas()
 
-            return gas
+            if (gas) {
+                return { gas, token: network.token }
+            }
         }
         catch (e) {
             console.log(e)

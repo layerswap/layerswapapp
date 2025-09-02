@@ -22,24 +22,24 @@ const ReserveGasNote = ({ onSubmit, minAllowedAmount, maxAllowedAmount }: Props)
     const { provider } = useWallet(values.from, "withdrawal")
     const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
     const { balances } = useSWRBalance(selectedSourceAccount?.address, values.from)
-    const { gas: networkGas } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset)
+    const { gasData } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset)
 
     const nativeTokenBalance = balances?.find(b => b.token == values?.from?.token?.symbol)
 
-    const mightBeOutOfGas = !!(networkGas && nativeTokenBalance?.isNativeCurrency && (Number(values.amount)
-        + networkGas) > nativeTokenBalance.amount
+    const mightBeOutOfGas = !!(gasData && nativeTokenBalance?.isNativeCurrency && (Number(values.amount)
+        + gasData.gas) > nativeTokenBalance.amount
         && minAllowedAmount
         && nativeTokenBalance.amount > minAllowedAmount
-        && !(maxAllowedAmount && (nativeTokenBalance.amount > (maxAllowedAmount + networkGas)))
+        && !(maxAllowedAmount && (nativeTokenBalance.amount > (maxAllowedAmount + gasData.gas)))
     )
-    const gasToReserveFormatted = mightBeOutOfGas ? truncateDecimals(networkGas, values?.fromAsset?.precision) : ''
+    const gasToReserveFormatted = mightBeOutOfGas ? truncateDecimals(gasData.gas, values?.fromAsset?.precision) : ''
 
     return (
         <>
             {
                 mightBeOutOfGas && gasToReserveFormatted &&
                 (
-                    (Number(nativeTokenBalance.amount) < Number(networkGas)) ?
+                    (Number(nativeTokenBalance.amount) < Number(gasData)) ?
                         <WarningMessage messageType="warning">
                             <div className="font-normal text-primary-text">
                                 You don&apos;t have enough funds to cover gas fees.
@@ -51,7 +51,7 @@ const ReserveGasNote = ({ onSubmit, minAllowedAmount, maxAllowedAmount }: Props)
                                 <div>
                                     You might not be able to complete the transaction.
                                 </div>
-                                <div onClick={() => onSubmit(nativeTokenBalance, networkGas)} className="cursor-pointer border-b border-dotted border-primary-text w-fit hover:text-primary hover:border-primary text-primary-text">
+                                <div onClick={() => onSubmit(nativeTokenBalance, gasData.gas)} className="cursor-pointer border-b border-dotted border-primary-text w-fit hover:text-primary hover:border-primary text-primary-text">
                                     <span>Reserve</span> <span>{gasToReserveFormatted}</span> <span>{values?.fromAsset?.symbol}</span> <span>for gas.</span>
                                 </div>
                             </div>

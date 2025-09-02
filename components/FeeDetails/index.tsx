@@ -17,6 +17,7 @@ import { Network } from '@/Models/Network';
 import ExchangeGasIcon from '../icons/ExchangeGasIcon';
 import useSWRNftBalance from '@/lib/nft/useSWRNftBalance';
 import NumberFlow from '@number-flow/react';
+import { resolveTokenUsdPrice } from '@/helpers/tokenHelper';
 
 export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
     from?: Network;
@@ -85,8 +86,9 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
     const isCEX = !!values.fromExchange;
     const { provider } = useWallet(!isCEX ? values.from : undefined, 'withdrawal')
     const wallet = provider?.activeWallet
-    const { gas } = useSWRGas(wallet?.address, values.from, values.fromAsset)
-    const gasFeeInUsd = (values?.from?.token && gas) ? gas * values?.from?.token?.price_in_usd : null;
+    const { gasData: gasData } = useSWRGas(wallet?.address, values.from, values.fromAsset)
+    const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quote)
+    const gasFeeInUsd = (gasData && gasTokenPriceInUsd) ? gasData.gas * gasTokenPriceInUsd : null;
     const averageCompletionTime = quote?.avg_completion_time;
 
     const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && reward?.nft_contract_address;
