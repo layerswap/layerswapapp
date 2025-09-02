@@ -86,7 +86,8 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
     const { provider } = useWallet(!isCEX ? values.from : undefined, 'withdrawal')
     const wallet = provider?.activeWallet
     const { gasData: gasData } = useSWRGas(wallet?.address, values.from, values.fromAsset)
-    const gasFeeInUsd = gasData ? gasData.gas * gasData.token?.price_in_usd : null;
+    const feeToken = quote?.source_network?.token?.symbol == gasData?.token.symbol ? quote?.source_network?.token : (quote?.source_token?.symbol == gasData?.token.symbol ? quote?.source_token : undefined)
+    const gasFeeInUsd = (gasData && feeToken) ? gasData.gas * feeToken.price_in_usd : null;
     const averageCompletionTime = quote?.avg_completion_time;
 
     const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && reward?.nft_contract_address;
