@@ -75,7 +75,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
     if (!loaded) return null;
 
-    const container = isMobile ? document.body : document.getElementById('widget');
+    const container = isMobile ? undefined : document.getElementById('widget');
 
     return (
         <Drawer.Root
@@ -94,7 +94,11 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             onAnimationEnd={(e) => { onAnimationEnd && onAnimationEnd(e) }}
             handleOnly={isMobile}
         >
-            <DesktopBackdropPortal isOpen={show} container={container} isMobile={isMobile}>
+            <DesktopBackdropPortal
+                isOpen={show}
+                container={container}
+                isMobile={isMobile}
+            >
                 <AnimatePresence mode='wait'>
                     {
                         show &&
