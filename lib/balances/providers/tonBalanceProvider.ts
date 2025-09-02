@@ -1,4 +1,3 @@
-import posthog from "posthog-js";
 import { TokenBalance } from "../../../Models/Balance";
 import { Network, NetworkWithTokens, Token } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
@@ -77,17 +76,6 @@ const getNativeAssetBalance = async ({ network, token, address }: { network: Net
         })
     }
     catch (e) {
-        const error = new Error(e)
-        error.name = "TonNativeAssetBalanceError"
-        error.cause = e
-        posthog.capture('$exception', {
-            name: error.name,
-            message: error.message,
-            stack: error.stack,
-            cause: error.cause,
-            where: 'tonBalanceProvider',
-            severity: 'error',
-        });
         return null;
     }
 }
@@ -125,17 +113,6 @@ const getJettonBalance = async ({ network, token, address }: { network: Network,
         return balance
     }
     catch (e) {
-        const error = new Error(e)
-        error.name = "TonJettonBalanceError"
-        error.cause = e
-        posthog.capture('$exception', {
-            name: error.name,
-            message: error.message,
-            stack: error.stack,
-            cause: error.cause,
-            where: 'tonJettonBalanceProvider',
-            severity: 'error',
-        });
         return null;
     }
 }

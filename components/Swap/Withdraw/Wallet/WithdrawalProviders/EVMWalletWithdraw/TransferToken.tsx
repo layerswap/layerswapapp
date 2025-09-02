@@ -11,7 +11,6 @@ import { isMobile } from "@/lib/openLink";
 import { sendTransaction } from '@wagmi/core'
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import useWallet from "@/hooks/useWallet";
-import { posthog } from "posthog-js";
 
 type Props = {
     savedTransactionHash?: string;
@@ -66,17 +65,7 @@ const TransferTokenButton: FC<Props> = ({
         } catch (e) {
             setLoading(false)
             setError(e)
-            const error = new Error(e)
-            error.name = "TransferTokenError"
-            error.cause = e
-            posthog.capture('$exception', {
-                name: error.name,
-                message: error.message,
-                stack: error.stack,
-                cause: error.cause,
-                where: 'transferTokenError',
-                severity: 'error',
-            });
+
             throw e
         }
     }, [config, chainId, selectedSourceAccount?.address])

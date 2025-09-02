@@ -10,7 +10,6 @@ import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import TransactionMessages from '../../messages/TransactionMessages';
 import { useConnectModal } from '@/components/WalletModal';
-import posthog from 'posthog-js';
 
 export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -95,18 +94,6 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
         return <TransactionMessages.TransactionFailedMessage />
     }
     else if (error) {
-        const swapWithdrawalError = new Error(error);
-        swapWithdrawalError.name = `SwapWithdrawalError`;
-        swapWithdrawalError.cause = error;
-        posthog.capture('$exception', {
-            name: swapWithdrawalError.name,
-            message: swapWithdrawalError.message,
-            stack: swapWithdrawalError.stack,
-            cause: swapWithdrawalError.cause,
-            where: 'swapWithdrawalError',
-            severity: 'error',
-        });
-
         return <TransactionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>

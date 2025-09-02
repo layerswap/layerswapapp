@@ -35,7 +35,7 @@ const WalletMessage: FC<WalletMessageProps> = ({ header, details, status, showIn
                         </AccordionTrigger>
                         <AccordionContent>
                             <div className="text-left space-y-1">
-                                <p className="text-sm text-secondary-text break-normal whitespace-pre-wrap">
+                                <p className="text-sm text-secondary-text wrap-anywhere whitespace-pre-wrap">
                                     {details}
                                 </p>
                             </div>

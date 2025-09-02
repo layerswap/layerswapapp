@@ -11,7 +11,6 @@ import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../../Common/buttons';
 import TransactionMessages from '../../../messages/TransactionMessages';
 import WalletMessage from '../../../messages/Message';
-import { posthog } from 'posthog-js';
 
 export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -125,18 +124,6 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined, in
         return <TransactionMessages.TransactionRejectedMessage />
     }
     else if (error) {
-        const swapWithdrawalError = new Error(error);
-        swapWithdrawalError.name = `SwapWithdrawalError`;
-        swapWithdrawalError.cause = error;
-        posthog.captureException('$exception', {
-            name: swapWithdrawalError.name,
-            message: swapWithdrawalError.message,
-            stack: swapWithdrawalError.stack,
-            cause: swapWithdrawalError.cause,
-            where: 'swapWithdrawalError',
-            severity: 'error',
-        });
-
         return <TransactionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>

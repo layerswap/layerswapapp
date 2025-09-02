@@ -10,7 +10,6 @@ import {
 import { coinQuantityfy, CoinQuantityLike, Provider, ScriptTransactionRequest } from 'fuels';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import TransactionMessages from '../../messages/TransactionMessages';
-import posthog from 'posthog-js';
 
 export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -74,22 +73,6 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, r
         }
         catch (e) {
             setLoading(false)
-            if (e?.message) {
-                setError(e.message)
-                if (e.message !== "User rejected the transaction!") {
-                    const txError = new Error(e.message);
-                    txError.name = `SwapWithdrawalError`;
-                    txError.cause = e;
-                    posthog.capture('$exception', {
-                        name: txError.name,
-                        message: txError.message,
-                        stack: txError.stack,
-                        cause: txError.cause,
-                        where: 'swapWithdrawalError',
-                        severity: 'error',
-                    });
-                }
-            }
             throw e
         }
     }, [source_network, selectedSourceAccount, source_token, fuel])
@@ -176,18 +159,6 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
         return <TransactionMessages.TransactionRejectedMessage />
     }
     else if (error) {
-        const renderingError = new Error(error);
-        renderingError.name = `SwapWithdrawalError`;
-        renderingError.cause = error;
-        posthog.captureException('$exception', {
-            name: renderingError.name,
-            message: renderingError.message,
-            stack: renderingError.stack,
-            cause: renderingError.cause,
-            where: 'swapWithdrawalError',
-            severity: 'error',
-        });
-
         return <TransactionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>

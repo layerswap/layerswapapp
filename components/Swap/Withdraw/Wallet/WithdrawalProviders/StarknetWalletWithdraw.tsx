@@ -4,7 +4,6 @@ import WalletIcon from '@/components/icons/WalletIcon';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import TransactionMessages from '../../messages/TransactionMessages';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
-import posthog from 'posthog-js';
 
 export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [error, setError] = useState<string | undefined>()
@@ -82,18 +81,6 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
         return <TransactionMessages.TransactionFailedMessage />
     }
     else if (error) {
-        const swapWithdrawalError = new Error(error);
-        swapWithdrawalError.name = `SwapWithdrawalError`;
-        swapWithdrawalError.cause = error;
-        posthog.captureException('$exception', {
-            name: swapWithdrawalError.name,
-            message: swapWithdrawalError.message,
-            stack: swapWithdrawalError.stack,
-            cause: swapWithdrawalError.cause,
-            where: 'swapWithdrawalError',
-            severity: 'error',
-        });
-
         return <TransactionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>
