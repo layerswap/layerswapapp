@@ -218,6 +218,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             swapWithdrawalError.cause = e;
             posthog.capture('$exception', {
                 name: swapWithdrawalError.name,
+                cause: swapWithdrawalError.cause,
                 message: swapWithdrawalError.message,
                 stack: swapWithdrawalError.stack,
                 where: 'TransactionError',
