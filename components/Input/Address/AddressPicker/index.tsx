@@ -119,7 +119,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             updateDestAddress(undefined)
             return
         }
-        if (destination_address?.toLowerCase() !== defaultAccount?.address?.toLowerCase() && destinationAddressItem?.group === AddressGroup.ConnectedWallet) {
+        if (destination_address?.toLowerCase() !== defaultAccount?.address?.toLowerCase() && (!destinationAddressItem || destinationAddressItem?.group === AddressGroup.ConnectedWallet)) {
             updateDestAddress(defaultAccount?.address)
             setShowAddressModal(false)
         }
