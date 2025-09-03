@@ -16,7 +16,6 @@ import { Partner } from "@/Models/Partner";
 import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
 import { useQueryState } from "@/context/query";
 import useWallet from "@/hooks/useWallet";
-import { DepositMethodProvider } from "@/context/depositMethodContext";
 import { dynamicWithRetries } from "@/lib/dynamicWithRetries";
 import { useAsyncModal } from "@/context/asyncModal";
 import { QueryParams } from "@/Models/QueryParams";
@@ -122,32 +121,30 @@ export default function FormWrapper({ children, type }: { children?: React.React
             validateOnMount={true}
             onSubmit={handleSubmit}
         >
-            <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
-                <Modal
-                    height="fit"
-                    show={showConnectNetworkModal}
-                    setShow={setShowConnectNetworkModal}
-                    header={`${networkToConnect?.DisplayName} connect`}
-                    modalId="showNetwork"
-                >
-                    {
-                        networkToConnect &&
-                        <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
-                    }
-                </Modal>
-                <VaulDrawer
-                    show={swapModalOpen}
-                    setShow={handleShowSwapModal}
-                    header={`Complete the swap`}
-                    modalId="showSwap">
-                    <VaulDrawer.Snap id="item-1">
-                        <SwapDetails type="contained" />
-                    </VaulDrawer.Snap>
-                </VaulDrawer>
-                <>
-                    {children}
-                </>
-            </DepositMethodProvider>
+            <Modal
+                height="fit"
+                show={showConnectNetworkModal}
+                setShow={setShowConnectNetworkModal}
+                header={`${networkToConnect?.DisplayName} connect`}
+                modalId="showNetwork"
+            >
+                {
+                    networkToConnect &&
+                    <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
+                }
+            </Modal>
+            <VaulDrawer
+                show={swapModalOpen}
+                setShow={handleShowSwapModal}
+                header={`Complete the swap`}
+                modalId="showSwap">
+                <VaulDrawer.Snap id="item-1">
+                    <SwapDetails type="contained" />
+                </VaulDrawer.Snap>
+            </VaulDrawer>
+            <>
+                {children}
+            </>
         </Formik>
     </>
 }

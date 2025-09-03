@@ -1,14 +1,9 @@
 import { useFormikContext } from "formik";
-import React, { FC, useCallback, useEffect, useRef } from "react";
+import React, { FC, useEffect, useRef } from "react";
 import { Network } from "@/Models/Network";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
-import WalletIcon from "@/components/icons/WalletIcon";
-import { AlignLeft, ChevronDown } from "lucide-react"
-import { motion } from "framer-motion";
 import { useQueryState } from "@/context/query";
 import useWallet from "@/hooks/useWallet";
 import { WalletProvider } from "@/Models/WalletProvider";
-import { useDepositMethod } from "@/context/depositMethodContext";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 
 const variants = {
@@ -32,7 +27,6 @@ const DepositMethodComponent: FC = () => {
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
-    const { setShowModal, showModal } = useDepositMethod()
     const { depositMethod: defaultDepositMethod, hideDepositMethod } = useQueryState()
     const { from, depositMethod, fromExchange } = values
     const { provider } = useWallet(from, 'withdrawal')
@@ -59,14 +53,6 @@ const DepositMethodComponent: FC = () => {
             return
         }
     }, [from, fromExchange])
-
-
-    const handleSelect = useCallback((item: string) => {
-        setFieldValue(name, item, true)
-        setShowModal(false)
-    }, [name, depositMethod, menuItems])
-
-    const selectedMethod = menuItems?.find(i => i.id === depositMethod)?.display_name
 
     const hasOptions = Number(menuItems?.length) > 1 && !fromExchange
 
