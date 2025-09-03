@@ -14,7 +14,7 @@ const WalletTransferButton: FC<Props> = ({ swapBasicData: swapData, swapId, refu
     const [openModal, setOpenModal] = useState(false);
 
     return <>
-        <div className='rounded-xl bg-secondary-500 divide-y divide-secondary-300 p-3'>
+        <div className='rounded-2xl bg-secondary-500 divide-y divide-secondary-300 p-3'>
             <div className="flex justify-between pb-3">
                 <p className="text-base  text-secondary-text font-normal">
                     Sending from wallet
