@@ -121,28 +121,28 @@ export default function FormWrapper({ children, type }: { children?: React.React
             validateOnMount={true}
             onSubmit={handleSubmit}
         >
-            <Modal
-                height="fit"
-                show={showConnectNetworkModal}
-                setShow={setShowConnectNetworkModal}
-                header={`${networkToConnect?.DisplayName} connect`}
-                modalId="showNetwork"
-            >
-                {
-                    networkToConnect &&
-                    <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
-                }
-            </Modal>
-            <VaulDrawer
-                show={swapModalOpen}
-                setShow={handleShowSwapModal}
-                header={`Complete the swap`}
-                modalId="showSwap">
-                <VaulDrawer.Snap id="item-1">
-                    <SwapDetails type="contained" />
-                </VaulDrawer.Snap>
-            </VaulDrawer>
             <>
+                <Modal
+                    height="fit"
+                    show={showConnectNetworkModal}
+                    setShow={setShowConnectNetworkModal}
+                    header={`${networkToConnect?.DisplayName} connect`}
+                    modalId="showNetwork"
+                >
+                    {
+                        networkToConnect &&
+                        <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
+                    }
+                </Modal>
+                <VaulDrawer
+                    show={swapModalOpen}
+                    setShow={handleShowSwapModal}
+                    header={`Complete the swap`}
+                    modalId="showSwap">
+                    <VaulDrawer.Snap id="item-1">
+                        <SwapDetails type="contained" />
+                    </VaulDrawer.Snap>
+                </VaulDrawer>
                 {children}
             </>
         </Formik>
