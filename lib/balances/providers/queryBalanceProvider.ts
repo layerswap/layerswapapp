@@ -1,3 +1,4 @@
+import { BalanceFetchError, TokenBalance } from "@/Models/Balance";
 import { NetworkWithTokens } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import { insertIfNotExists } from "./helpers";
@@ -40,21 +41,37 @@ export class QueryBalanceProvider {
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
-        if (!network) return null;
+        if (!network) return undefined;
+
+        const balances: TokenBalance[] = [];
+        const errors: BalanceFetchError[] = [];
+
         const tokens = insertIfNotExists(network.tokens || [], network.token)
 
         const asset = tokens?.find(a => a.symbol === this.query.fromAsset);
         const balancesFromQueries = this.query.balances ? JSON.parse(this.query.balances) : null;
 
-        if (!balancesFromQueries || !asset) return null;
+        if (!balancesFromQueries || !asset) return undefined;
 
-        return [{
-            network: network.name,
-            amount: formatAmount(balancesFromQueries[asset.symbol], asset.decimals),
-            decimals: asset.decimals,
-            isNativeCurrency: network.token?.symbol === asset.symbol,
-            token: asset.symbol,
-            request_time: new Date().toJSON(),
-        }];
+        try {
+            balances.push({
+                network: network.name,
+                amount: formatAmount(balancesFromQueries[asset.symbol], asset.decimals),
+                decimals: asset.decimals,
+                isNativeCurrency: network.token?.symbol === asset.symbol,
+                token: asset.symbol,
+                request_time: new Date().toJSON(),
+            });
+        } catch (e: any) {
+            errors.push({
+                network: network.name,
+                token: asset.symbol,
+                message: e?.message ?? "Failed to format amount from query",
+                code: e?.code,
+                cause: e,
+            });
+        }
+
+        return { balances, errors };
     };
 }

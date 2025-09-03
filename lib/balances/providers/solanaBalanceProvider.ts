@@ -1,4 +1,4 @@
-import { TokenBalance } from "../../../Models/Balance";
+import { BalanceFetchError, TokenBalance } from "../../../Models/Balance";
 import { NetworkType, NetworkWithTokens } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import { insertIfNotExists } from "./helpers";
@@ -17,7 +17,9 @@ export class SolanaBalanceProvider {
         class SolanaConnection extends Connection { }
         const { getAssociatedTokenAddress } = await import('@solana/spl-token');
         const walletPublicKey = new PublicKey(address)
-        let balances: TokenBalance[] = []
+
+        const balances: TokenBalance[] = [];
+        const errors: BalanceFetchError[] = [];
 
         if (!network?.tokens || !walletPublicKey) return
 
@@ -55,27 +57,28 @@ export class SolanaBalanceProvider {
                 }
 
                 if (result != null && !isNaN(result)) {
-                    const balance = {
+                    balances.push({
                         network: network.name,
                         token: token.symbol,
                         amount: result,
                         request_time: new Date().toJSON(),
                         decimals: Number(token?.decimals),
                         isNativeCurrency: false
-                    }
-
-                    balances = [
-                        ...balances,
-                        balance
-                    ]
+                    });
                 }
 
             }
             catch (e) {
-                console.log(e)
+                errors.push({
+                    network: network.name,
+                    token: token?.symbol ?? null,
+                    message: e?.message ?? "Failed to fetch Solana balance",
+                    code: e?.code ?? e?.response?.status,
+                    cause: e,
+                })
             }
         }
 
-        return balances
+        return { balances, errors }
     }
 }

@@ -1,4 +1,4 @@
-import { TokenBalance } from "../../../Models/Balance";
+import { BalanceFetchError, TokenBalance } from "../../../Models/Balance";
 import { NetworkWithTokens } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import Erc20Abi from '../../abis/ERC20.json'
@@ -18,7 +18,8 @@ export class StarknetBalanceProvider {
         } = await import("starknet");
         const { BigNumber } = await import("ethers");
 
-        let balances: TokenBalance[] = []
+        const balances: TokenBalance[] = [];
+        const errors: BalanceFetchError[] = [];
 
         if (!network?.tokens) return
 
@@ -35,24 +36,25 @@ export class StarknetBalanceProvider {
                 const balanceResult = await erc20.balanceOf(address);
                 const balanceInWei = BigNumber.from(uint256.uint256ToBN(balanceResult.balance).toString()).toString();
 
-                const balance = {
+                balances.push({
                     network: network.name,
                     token: token.symbol,
                     amount: formatAmount(balanceInWei, token.decimals),
                     request_time: new Date().toJSON(),
                     decimals: token.decimals,
                     isNativeCurrency: false,
-                }
-                balances = [
-                    ...balances,
-                    balance
-                ]
-                
+                });
             }
             catch (e) {
-                console.log(e)
+                errors.push({
+                    network: network.name,
+                    token: token?.symbol ?? null,
+                    message: e?.message ?? "Failed to fetch Starknet token balance",
+                    code: e?.code,
+                    cause: e,
+                });
             }
         }
-        return balances
+        return { balances, errors };
     }
 }

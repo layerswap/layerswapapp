@@ -1,4 +1,4 @@
-import { TokenBalance } from "../../../Models/Balance";
+import { BalanceFetchError, TokenBalance } from "../../../Models/Balance";
 import { Network, NetworkWithTokens, Token } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 
@@ -13,27 +13,29 @@ export class TonBalanceProvider {
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
-        let balances: TokenBalance[] = []
+        const balances: TokenBalance[] = [];
+        const errors: BalanceFetchError[] = [];
+
         const tokens = insertIfNotExists(network.tokens || [], network.token)
 
         for (const token of tokens) {
             try {
-                const balance = await resolveBalance({ network, address, token })
+                const balance = await resolveBalance({ network, address, token });
+                if (!balance) continue
 
-                if (!balance) return
-
-                balances = [
-                    ...balances,
-                    balance,
-                ]
-
-            }
-            catch (e) {
-                console.log(e)
+                balances.push(balance);
+            } catch (e: any) {
+                errors.push({
+                    network: network.name,
+                    token: token?.symbol ?? null,
+                    message: e?.message ?? "Failed to fetch balance",
+                    code: e?.code ?? e?.response?.status,
+                    cause: e,
+                });
             }
         }
 
-        return balances
+        return { balances, errors };
     }
 }
 

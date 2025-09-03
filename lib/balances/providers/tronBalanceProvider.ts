@@ -1,4 +1,4 @@
-import { TokenBalance } from "../../../Models/Balance";
+import { BalanceFetchError, TokenBalance } from "../../../Models/Balance";
 import { Network, NetworkWithTokens, Token } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
@@ -11,7 +11,8 @@ export class TronBalanceProvider {
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
-        let balances: TokenBalance[] = []
+        const balances: TokenBalance[] = [];
+        const errors: BalanceFetchError[] = [];
         const provider = new TronWeb({ fullNode: network.node_url, solidityNode: network.node_url, privateKey: '01' });
         const tokens = insertIfNotExists(network.tokens, network.token)
 
@@ -19,20 +20,22 @@ export class TronBalanceProvider {
             try {
                 const balance = await resolveBalance({ network, address, token, provider })
 
-                if (!balance) return
+                if (!balance) continue
 
-                balances = [
-                    ...balances,
-                    balance,
-                ]
-
+                balances.push(balance);
             }
             catch (e) {
-                console.log(e)
+                errors.push({
+                    network: network.name,
+                    token: token.symbol,
+                    message: e?.message ?? "Failed to fetch Tron balance",
+                    code: e?.code,
+                    cause: e,
+                });
             }
         }
 
-        return balances
+        return { balances, errors };
     }
 }
 

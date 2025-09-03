@@ -4,7 +4,7 @@ import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
 import { LOOPRING_URLs } from "../../loopring/defs";
 import { LoopringAPI } from "../../loopring/LoopringAPI";
-import { TokenBalance } from "../../../Models/Balance";
+import { BalanceFetchError, TokenBalance } from "../../../Models/Balance";
 import { insertIfNotExists } from "./helpers";
 
 export class LoopringBalanceProvider {
@@ -14,7 +14,8 @@ export class LoopringBalanceProvider {
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
 
-        let balances: TokenBalance[] = [];
+        const balances: TokenBalance[] = [];
+        const errors: BalanceFetchError[] = [];
 
         if (!network?.tokens) return
 
@@ -25,28 +26,35 @@ export class LoopringBalanceProvider {
             const tokens = insertIfNotExists(network.tokens || [], network.token)
             const tokensString = tokens?.map(obj => obj.contract).join(',');
             const result: { data: LpBalance[] } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.GET_USER_EXCHANGE_BALANCES}?accountId=${accInfo.accountId}&tokens=${tokensString}`)
-            
-            const loopringBalances = tokens?.map(asset => {
-                const amount = result.data.find(d => d.tokenId == Number(asset.contract))?.total;
-                return ({
-                    network: network.name,
-                    token: asset?.symbol,
-                    amount: amount ? formatAmount(amount, Number(asset?.decimals)) : 0,
-                    request_time: new Date().toJSON(),
-                    decimals: Number(asset?.decimals),
-                    isNativeCurrency: false
-                })
-            });
 
-            balances = [
-                ...loopringBalances,
-            ]
+            for (const asset of tokens) {
+                try {
+                    const amount = result.data.find(d => d.tokenId == Number(asset.contract))?.total;
+
+                    balances.push({
+                        network: network.name,
+                        token: asset.symbol,
+                        amount: amount ? formatAmount(amount, Number(asset?.decimals)) : 0,
+                        request_time: new Date().toJSON(),
+                        decimals: Number(asset?.decimals ?? 0),
+                        isNativeCurrency: network.token?.symbol === asset.symbol,
+                    });
+                } catch (e: any) {
+                    errors.push({
+                        network: network.name,
+                        token: asset?.symbol ?? null,
+                        message: e?.message ?? "Failed to parse Loopring balance",
+                        code: e?.code ?? e?.response?.status,
+                        cause: e,
+                    });
+                }
+            }
         }
         catch (e) {
             console.log(e)
         }
 
-        return balances
+        return { balances, errors };
     }
 }
 

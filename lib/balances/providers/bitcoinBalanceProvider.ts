@@ -1,4 +1,4 @@
-import { TokenBalance } from "@/Models/Balance";
+import { BalanceFetchError, TokenBalance } from "@/Models/Balance";
 import { NetworkWithTokens } from "@/Models/Network";
 import KnownInternalNames from "../../knownIds";
 import axios from "axios";
@@ -16,49 +16,40 @@ export class BitcoinBalanceProvider {
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
-        let balances: TokenBalance[] = []
+        const balances: TokenBalance[] = [];
+        const errors: BalanceFetchError[] = [];
 
-        if (!network?.tokens) return
+        if (!network?.tokens) return 
 
+        const token = network.tokens.find(t => t.symbol == 'BTC')
         try {
 
-            const token = network.tokens.find(t => t.symbol == 'BTC')
-            try {
+            const utxos = await fetchUtxos(address, network.name)
+            const balanceSats = sumUtxos(utxos)
+            const formattedBalance = formatBtc(balanceSats)
 
-                const utxos = await fetchUtxos(address, network.name)
-                const balanceSats = sumUtxos(utxos)
-                const formattedBalance = formatBtc(balanceSats)
+            if (!token) throw new Error(`Token not found for network ${network.name}`)
 
-                if (!token) throw new Error(`Token not found for network ${network.name}`)
-
-                const balanceObj: TokenBalance = {
-                    network: network.name,
-                    amount: formattedBalance,
-                    decimals: token.decimals,
-                    isNativeCurrency: network.token?.symbol === token.symbol,
-                    token: token.symbol,
-                    request_time: new Date().toJSON()
-                }
-                balances.push(balanceObj)
-            }
-            catch (e) {
-                balances.push({
-                    network: network.name,
-                    amount: 0,
-                    decimals: token?.decimals || 0,
-                    isNativeCurrency: network.token?.symbol === 'BTC',
-                    token: token?.symbol || 'BTC',
-                    request_time: new Date().toJSON()
-                })
-                console.log(e)
-            }
-
-
-        } catch (e) {
-            console.log(e)
+            balances.push({
+                network: network.name,
+                amount: formattedBalance,
+                decimals: token.decimals ?? 8,
+                isNativeCurrency: network.token?.symbol === token.symbol,
+                token: token.symbol,
+                request_time: new Date().toJSON(),
+            });
+        }
+        catch (e) {
+            errors.push({
+                network: network.name,
+                token: token?.symbol || 'BTC',
+                message: e?.message ?? "Failed to fetch Bitcoin UTXOs",
+                code: e?.code ?? e?.response?.status,
+                cause: e,
+            });
         }
 
-        return balances
+        return { balances, errors };
     }
 }
 

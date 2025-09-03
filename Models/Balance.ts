@@ -29,9 +29,22 @@ export type TokenBalance = {
     request_time: string,
 }
 
+export type BalanceFetchError = {
+  network: string
+  token: string | null
+  message: string
+  code?: string | number
+  cause?: unknown
+}
+
+export type BalanceResult = {
+  balances: TokenBalance[]
+  errors: BalanceFetchError[]
+}
+
 export type NetworkBalance = {
-    balances?: TokenBalance[] | null,
-    totalInUSD?: number,
+  balances?: TokenBalance[] | null,
+  totalInUSD?: number,
 }
 
 export type Gas = {

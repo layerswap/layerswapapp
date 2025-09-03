@@ -1,4 +1,4 @@
-import { TokenBalance } from "../../../Models/Balance";
+import { BalanceFetchError, TokenBalance } from "../../../Models/Balance";
 import { NetworkWithTokens } from "../../../Models/Network";
 import KnownInternalNames from "../../knownIds";
 import * as Paradex from "../../wallets/paradex/lib";
@@ -17,7 +17,8 @@ export class ParadexBalanceProvider {
 
             const paraclearProvider = new Paradex.ParaclearProvider.DefaultProvider(config);
 
-            const result: TokenBalance[] = []
+            const balances: TokenBalance[] = []
+            const errors: BalanceFetchError[] = []
 
             for (const token of tokens) {
                 try {
@@ -28,21 +29,26 @@ export class ParadexBalanceProvider {
                         token: token.symbol,
                     });
 
-                    const balance = {
+                    balances.push({
                         network: network.name,
                         token: token.symbol,
                         amount: Number(getBalanceResult.size),
+                        decimals: token.precision ?? 18,
+                        isNativeCurrency: false,
                         request_time: new Date().toJSON(),
-                        decimals: Number(token?.decimals),
-                        isNativeCurrency: false
-                    }
-                    result.push(balance)
+                    })
                 }
                 catch (e) {
-                    console.log(`Error fetching balance for token ${token.symbol}:`, e)
+                    errors.push({
+                        network: network.name,
+                        token: token?.symbol ?? null,
+                        message: e?.message ?? "Unknown balance error",
+                        code: e?.code,
+                        cause: e, 
+                    })
                 }
             }
-            return result
+            return { balances, errors }
         }
         catch (e) {
             console.log(e)

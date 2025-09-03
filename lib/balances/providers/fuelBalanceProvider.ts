@@ -1,4 +1,4 @@
-import { TokenBalance } from "../../../Models/Balance";
+import { BalanceFetchError, TokenBalance } from "../../../Models/Balance";
 import { NetworkWithTokens } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
@@ -10,7 +10,8 @@ export class FuelBalanceProvider {
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
-        let balances: TokenBalance[] = []
+        const balances: TokenBalance[] = [];
+        const errors: BalanceFetchError[] = [];
 
         if (!network?.tokens) return
 
@@ -52,31 +53,32 @@ export class FuelBalanceProvider {
                 }
             } = await response.json();
 
-            for (let i = 0; i < network.tokens.length; i++) {
+            for (const token of network.tokens) {
+                try {
+                    const balance = json.data.balances.nodes.find(b => b?.assetId === token.contract) || null
 
-                const token = network.tokens[i]
-                const balance = json.data.balances.nodes.find(b => b?.assetId === token.contract) || null
-
-                const balanceObj: TokenBalance = {
-                    network: network.name,
-                    amount: formatAmount(Number(balance?.amount || 0), token.decimals),
-                    decimals: token.decimals,
-                    isNativeCurrency: network.token?.symbol === token.symbol,
-                    token: token.symbol,
-                    request_time: new Date().toJSON()
+                    balances.push({
+                        network: network.name,
+                        amount: formatAmount(Number(balance?.amount || 0), token.decimals),
+                        decimals: token.decimals,
+                        isNativeCurrency: network.token?.symbol === token.symbol,
+                        token: token.symbol,
+                        request_time: new Date().toJSON(),
+                    });
+                } catch (e: any) {
+                    errors.push({
+                        network: network.name,
+                        token: token?.symbol,
+                        message: e?.message ?? "Failed to parse/format token balance",
+                        code: e?.code,
+                        cause: e,
+                    });
                 }
-
-                balances = [
-                    ...balances,
-                    balanceObj,
-                ]
-
             }
-
         } catch (e) {
             console.log(e)
         }
 
-        return balances
+        return { balances, errors };
     }
 }

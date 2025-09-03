@@ -1,5 +1,5 @@
 import posthog from "posthog-js";
-import { NetworkBalance } from "../../Models/Balance";
+import { BalanceFetchError, BalanceResult, NetworkBalance } from "../../Models/Balance";
 import { IBalanceProvider } from "../../Models/BalanceProvider";
 import { NetworkWithTokens } from "../../Models/Network";
 import { truncateDecimals } from "../../components/utils/RoundDecimals";
@@ -16,6 +16,7 @@ import { TonBalanceProvider } from "./providers/tonBalanceProvider";
 import { TronBalanceProvider } from "./providers/tronBalanceProvider";
 import { ZkSyncBalanceProvider } from "./providers/zkSyncBalanceProvider";
 
+const EMPTY_RESULT: BalanceResult = { balances: [], errors: [] };
 export class BalanceResolver {
 
     private providers: IBalanceProvider[] = [
@@ -33,7 +34,7 @@ export class BalanceResolver {
         new BitcoinBalanceProvider()
     ];
 
-    async getBalance(network: NetworkWithTokens, address?: string,): Promise<NetworkBalance> {
+    async getBalance(network: NetworkWithTokens, address?: string): Promise<NetworkBalance> {
         try {
             if (!address)
                 throw new Error(`No address provided for network ${network.name}`)
@@ -41,7 +42,8 @@ export class BalanceResolver {
             //TODO: create interface for balance providers in case of empty state they shoudl throw error 
             //never return undefined as SWR does not set loading state if undefined is returned
             if (!provider) throw new Error(`No balance provider found for network ${network.name}`)
-            const balances = await provider.fetchBalance(address, network)
+
+            const { balances, errors } = (await provider.fetchBalance(address, network)) ?? EMPTY_RESULT;
 
             const totalInUSD = balances?.reduce((acc, b) => {
                 const token = network.tokens.find(t => t?.symbol === b?.token);
@@ -50,6 +52,21 @@ export class BalanceResolver {
                 const formattedBalance = Number(truncateDecimals(b?.amount, tokenPrecision));
                 return acc + (formattedBalance * tokenPriceInUsd);
             }, 0)
+
+            if (errors.length > 0) {
+                for (const err of errors) {
+                    posthog.capture("balance_fetch_error", {
+                        where: "BalanceProvider",
+                        severity: "warn",
+                        network: err.network,
+                        token: err.token ?? undefined,
+                        message: err.message,
+                        code: err.code,
+                        cause: err.cause,
+                    });
+                }
+            }
+
             return { balances, totalInUSD };
         }
         catch (e) {
