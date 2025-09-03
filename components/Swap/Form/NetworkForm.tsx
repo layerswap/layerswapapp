@@ -116,8 +116,8 @@ const NetworkForm: FC<Props> = ({ partner }) => {
             <Form className="h-full grow flex flex-col justify-between">
                 <Widget.Content>
                     <div className="w-full min-h-[79svh] sm:min-h-[480px] flex flex-col justify-between">
-                        <div>
-                            <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4'>
+                        <div className="mb-3">
+                            <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
                                 {
                                     !(query?.hideFrom && values?.from) && <SourcePicker
                                         minAllowedAmount={minAllowedAmount}
@@ -144,6 +144,13 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                             </div>
                         </div>
                         <div className="space-y-3">
+                            <>
+                                {
+                                    (!routeValidation.message && insufficientBalance && !swapModalOpen)
+                                        ? insufficientBalance
+                                        : null
+                                }
+                            </>
                             {
                                 values.amount &&
                                 <ReserveGasNote
@@ -164,13 +171,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                     ? <ValidationError />
                                     : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                             }
-                            <>
-                                {
-                                    (!routeValidation.message && insufficientBalance && !swapModalOpen)
-                                        ? insufficientBalance
-                                        : null
-                                }
-                            </>
+
                         </div>
                     </div>
                 </Widget.Content>
@@ -278,7 +279,7 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
             aria-label="Reverse the source and destination"
             disabled={valuesSwapperDisabled}
             onClick={valuesSwapper}
-            className="hover:text-primary absolute right-[calc(50%-16px)] top-[150px] z-10 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none">
+            className="hover:text-primary absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none">
             <motion.div
                 animate={animate}
                 transition={{ duration: 0.3 }}

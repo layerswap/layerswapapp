@@ -16,7 +16,7 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ source_token, destinatio
     const receiveAmountInUsd = receive_amount && destination_token && fee.quote?.destination_token?.price_in_usd ? (receive_amount * fee.quote.destination_token.price_in_usd).toFixed(2) : undefined
 
     return (<>
-        <div className="flex flex-col min-w-0 rounded-lg font-normal border-0 text-[28px] leading-7 text-primary-text w-full relative truncate">
+        <div className="flex flex-col min-w-0 font-normal border-0 text-[28px] leading-7 text-primary-text w-full relative truncate">
             <div className="flex items-center justify-start w-full relative">
                 <div className={clsx(
                     "w-full flex items-center py-[3px] pr-3",
@@ -25,8 +25,8 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ source_token, destinatio
                     <NumberFlow value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: fee?.quote.destination_token?.decimals || 2 }} />
                 </div>
             </div>
-            <span className="text-base leading-5 font-medium text-secondary-text">
-                <NumberFlow value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD', maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
+            <span className="text-base leading-5 font-medium text-secondary-text h-5">
+                <NumberFlow className="p-0"  value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD', maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
             </span>
         </div>
     </>)

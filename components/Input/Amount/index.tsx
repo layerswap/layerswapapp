@@ -78,7 +78,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
             />
 
             <div className={clsx(
-                "usd-suffix text-base font-medium text-secondary-text pointer-events-none",
+                "usd-suffix text-base leading-5 font-medium text-secondary-text pointer-events-none",
                 {
                     "absolute bottom-4": usdPosition === "right",
                     "h-5": usdPosition !== "right",

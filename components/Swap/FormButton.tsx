@@ -1,6 +1,5 @@
 import { FormSourceWalletButton } from "../Input/SourceWalletPicker";
 import { PlusIcon } from "lucide-react";
-import SwapButton from "../buttons/swapButton";
 import SubmitButton from "../buttons/submitButton";
 import { useQueryState } from "@/context/query";
 import Address from "../Input/Address";
@@ -15,7 +14,7 @@ const FormButton = ({
     partner,
 }) => {
     const query = useQueryState();
-    const actionDisplayName = error || query?.actionButtonText || "Swap now";
+    const actionDisplayName = error || query?.actionButtonText || "Next";
 
     if (shouldConnectWallet) {
         return <FormSourceWalletButton />;
@@ -34,14 +33,14 @@ const FormButton = ({
     }
 
     return (
-        <SwapButton
+        <SubmitButton
             className="plausible-event-name=Swap+initiated"
             type="submit"
             isDisabled={!isValid}
             isSubmitting={isSubmitting}
         >
             {actionDisplayName}
-        </SwapButton>
+        </SubmitButton>
     );
 };
 

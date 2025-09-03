@@ -35,7 +35,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     if (!isBalanceLoading && !(network && token && truncatedBalance && tokenBalance))
         return null;
 
-    return <div className="w-4/5 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs sm:text-sm text-secondary-text ">
+    return <div className="w-4/5 -top-[1px] relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs text-secondary-text leading-[18px] font-normal">
         {
             isBalanceLoading ?
                 <div className='h-[10px] w-12 inline-flex bg-gray-500 rounded-xs animate-pulse' />

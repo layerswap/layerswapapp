@@ -11,12 +11,17 @@ export function resolveBalanceWarnings({
 }: ResolverArgs) {
     if (requestAmount && walletBalance < requestAmount) {
         return (
-            <div className="p-2.5 my-2.5 relative rounded-xl bg-secondary-400">
-                <div className='flex items-center'>
-                    <InfoIcon className='w-4 h-4' />
-                    <p className='text-white font-semibold ml-2.5'>Insufficient Balance</p>
+            <div className="p-2 my-3 relative rounded-xl bg-secondary-400 flex flex-row">
+                <div className='grow'>
+                    <InfoIcon className='w-6 h-6 p-0.5 ' />
                 </div>
-                <p className="text-secondary-text ml-[26px] mt-1 text-sm">You don&apos;t have enough balance to complete this transaction, this might cause the transaction to fail please try to enter a smaller amount.</p>
+
+                <div className='px-2'>
+                    <p className='text-white font-semibold text-base'>Insufficient Balance</p>
+                    <p className="text-secondary-text mt-1 text-sm">
+                        You don&apos;t have enough balance to complete this transaction, this might cause the transaction to fail please try to enter a smaller amount.
+                    </p>
+                </div>
             </div>
         );
     }

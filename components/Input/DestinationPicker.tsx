@@ -25,7 +25,7 @@ const DestinationPicker = (props: Props) => {
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
     const { quote, isQuoteLoading } = useQuoteData(quoteArgs, quoteRefreshInterval)
 
-    return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl pt-4 pb-3.5 px-4 space-y-8">
+    return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl p-4 pb-[15px] space-y-[27px]">
         <div className="flex justify-between items-center h-7">
             <label htmlFor="To" className="block font-normal text-secondary-text text-base leading-5 w-30">
                 Receive at
@@ -36,7 +36,7 @@ const DestinationPicker = (props: Props) => {
                 </Address>
             </div>
         </div>
-        <div className="rounded-xl items-center space-y-2">
+        <div className="items-center space-y-2">
             <div className="grid grid-cols-9 sm:grid-cols-8 gap-2">
                 <div className="col-span-5">
                     <ReceiveAmount
