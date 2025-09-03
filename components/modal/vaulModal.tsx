@@ -1,12 +1,12 @@
-import { clsx } from 'clsx';
 import { Dispatch, FC, ReactNode, SetStateAction, useEffect, useRef, useState } from 'react';
-import useWindowDimensions from '../../hooks/useWindowDimensions';
+import { createPortal } from 'react-dom';
+import { clsx } from 'clsx';
+import useWindowDimensions from '@/hooks/useWindowDimensions';
 import IconButton from '../buttons/iconButton';
 import { ChevronUp, X } from 'lucide-react';
 import { useMeasure } from '@uidotdev/usehooks';
-import { SnapElement, SnapPointsProvider, useSnapPoints } from '../../context/snapPointsContext';
+import { SnapElement, SnapPointsProvider, useSnapPoints } from '@/context/snapPointsContext';
 import { AnimatePresence, motion } from 'framer-motion';
-import { createPortal } from 'react-dom';
 import { Drawer } from './vaul';
 
 export type VaulDrawerProps = {

@@ -3,6 +3,7 @@ import { useDepositMethod } from "@/context/depositMethodContext"
 import SubmitButton from "@/components/buttons/submitButton"
 import ManualTransferSVG from "@/components/icons/ManualTransferSVG"
 import VaulDrawer from "@/components/modal/vaulModal"
+import SecondaryButton from "@/components/buttons/secondaryButton"
 
 const ManualTransferNote = () => {
     const { redirect, canRedirect } = useDepositMethod()
@@ -18,9 +19,11 @@ const ManualTransferNote = () => {
             </div>
             <VaulDrawer show={open} setShow={setOpen} header="Transfer manually" modalId="manualTransferNote">
                 <VaulDrawer.Snap id="item-1">
-                    <div className="mt-2 space-y-5">
+                    <div className="space-y-5">
                         <p className="text-sm text-secondary-text">To complete the transaction manually, switch the transfer method to “Deposit address”.</p>
-                        <ManualTransferSVG />
+                        <div className="overflow-hidden w-fit mx-auto">
+                            <ManualTransferSVG className="w-[350px] h-auto" />
+                        </div>
                         <div className="space-y-3">
                             {
                                 canRedirect &&
@@ -31,9 +34,9 @@ const ManualTransferNote = () => {
                                     Take me there
                                 </SubmitButton>
                             }
-                            <button type="button" onClick={() => { setOpen(false) }} className="flex justify-center w-full">
+                            <SecondaryButton type="button" size="xl" onClick={() => { setOpen(false) }} className="flex justify-center w-full py-3">
                                 <span>Close</span>
-                            </button>
+                            </SecondaryButton>
                         </div>
                     </div>
                 </VaulDrawer.Snap>

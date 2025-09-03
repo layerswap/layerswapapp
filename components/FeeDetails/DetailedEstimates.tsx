@@ -57,7 +57,7 @@ export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, i
                     <div key={item.name} className="flex items-center w-full justify-between gap-1 pb-2 px-1">
                         <div className="inline-flex items-center text-left text-secondary-text gap-1 pr-4">
                             <div className="w-5">
-                                <item.icon />
+                                <item.icon className="text-secondary-text" />
                             </div>
                             <label className="text-sm sm:text-base">
                                 {item.name}

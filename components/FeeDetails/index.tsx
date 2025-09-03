@@ -103,10 +103,10 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
             {
                 gasFeeInUsd &&
                 <div className={clsx(
-                    "inline-flex items-center gap-1",
+                    "inline-flex items-center gap-1 text-primary-text",
                     { "animate-pulse-strong": isQuoteLoading }
                 )}>
-                    <div className='h-4 w-4 text-sm'>
+                    <div className='h-4 w-4 text-sm text-secondary-text'>
                         {!values.fromExchange ?
                             <GasIcon className='h-4 w-4' /> : <ExchangeGasIcon className='h-4 w-4' />
                         }
@@ -122,7 +122,7 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
                         "text-right text-primary-text inline-flex items-center gap-1 text-sm",
                         { "animate-pulse-strong": isQuoteLoading }
                     )}>
-                        <div className='h-4 w-4'>
+                        <div className='h-4 w-4 text-secondary-text'>
                             <Clock className='h-4 w-4' />
                         </div>
                         <AverageCompletionTime avgCompletionTime={quote.avg_completion_time} />
