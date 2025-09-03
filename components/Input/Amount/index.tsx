@@ -44,10 +44,10 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
         if (!input || !suffix) return;
 
         const font = getFontFromElement(input);
-        const width = getTextWidth(amount?.toString() || amount || "0", font);
+        const width = getTextWidth(actionValue?.toString() || amount || "0", font);
 
         suffix.style.left = `${width + 16}px`;
-    }, [amount, requestedAmountInUsd]);
+    }, [amount, requestedAmountInUsd, actionValue]);
 
     const placeholder = '0'
 
