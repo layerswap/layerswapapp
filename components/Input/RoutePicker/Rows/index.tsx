@@ -55,7 +55,7 @@ export default function Row({
             const isSelected = selectedRoute === route.name && selectedToken === token.symbol;
 
             return (
-                <div className={clsx("cursor-pointer hover:bg-secondary-300 outline-none disabled:cursor-not-allowed rounded-lg", { "bg-secondary-300": isSelected })} onClick={() => onSelect(route, token)} >
+                <div className={clsx("cursor-pointer hover:bg-secondary-500 outline-none disabled:cursor-not-allowed rounded-lg")} onClick={() => onSelect(route, token)} >
                     <CurrencySelectItemDisplay
                         allbalancesLoaded={allbalancesLoaded}
                         item={token}
