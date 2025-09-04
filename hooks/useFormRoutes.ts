@@ -15,8 +15,6 @@ import useExchangeNetworks from "./useExchangeNetworks";
 import { RoutesHistory, useRecentNetworksStore } from "@/stores/recentRoutesStore";
 import { useRouteTokenSwitchStore } from "@/stores/routeTokenSwitchStore";
 
-
-
 type Props = {
     direction: SwapDirection;
     values: SwapFormValues;
@@ -131,8 +129,8 @@ function resolveSearch(routes: NetworkRoute[], search: string): RowElement[] {
     const matchedNetworks = searchInNetworks(routes, search)
     const matchedTokens = searchInTokens(routes, search)
     return [
-        ...(matchedNetworks.length ? [resolveTitle('Tokens'), ...matchedNetworks] : []),
-        ...(matchedTokens.length ? [resolveTitle('Networks'), ...matchedTokens] : [])
+        ...(matchedNetworks.length ? [resolveTitle('Networks'), ...matchedNetworks] : []),
+        ...(matchedTokens.length ? [resolveTitle('Tokens'), ...matchedTokens] : [])
     ];
 }
 
@@ -202,7 +200,7 @@ function groupRoutes(
 const mergeGroups = (suggestedRoutes: (NetworkTokenElement | TokenSceletonElement)[], allRoutes: GroupedTokenElement[] | NetworkElement[]) => {
     const allRoutesTitle = allRoutes.find(() => true)?.type === "grouped_token" ? 'All Tokens' : 'All Networks'
     return [
-        ...(suggestedRoutes.length ? [resolveTitle('Suggested routes'), ...suggestedRoutes] : []),
+        ...(suggestedRoutes.length ? [resolveTitle('Suggestions'), ...suggestedRoutes] : []),
         resolveTitle(allRoutesTitle),
         ...allRoutes
     ]
