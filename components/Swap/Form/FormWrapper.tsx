@@ -16,7 +16,6 @@ import { Partner } from "@/Models/Partner";
 import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
 import { useQueryState } from "@/context/query";
 import useWallet from "@/hooks/useWallet";
-import { DepositMethodProvider } from "@/context/depositMethodContext";
 import { dynamicWithRetries } from "@/lib/dynamicWithRetries";
 import { useAsyncModal } from "@/context/asyncModal";
 import { QueryParams } from "@/Models/QueryParams";
@@ -57,8 +56,6 @@ export default function FormWrapper({ children, type }: { children?: React.React
     const query = useQueryState()
     const { appName, destination_address: destinationAddressFromQuery } = query
     const { createSwap, setSwapId, setSubmitedFormValues, setSwapModalOpen } = useSwapDataUpdate()
-
-
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
@@ -124,7 +121,7 @@ export default function FormWrapper({ children, type }: { children?: React.React
             validateOnMount={true}
             onSubmit={handleSubmit}
         >
-            <DepositMethodProvider canRedirect onRedirect={() => handleShowSwapModal(false)}>
+            <>
                 <Modal
                     height="fit"
                     show={showConnectNetworkModal}
@@ -146,10 +143,8 @@ export default function FormWrapper({ children, type }: { children?: React.React
                         <SwapDetails type="contained" />
                     </VaulDrawer.Snap>
                 </VaulDrawer>
-                <>
-                    {children}
-                </>
-            </DepositMethodProvider>
+                {children}
+            </>
         </Formik>
     </>
 }

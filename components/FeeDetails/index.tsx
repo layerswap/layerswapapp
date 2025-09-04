@@ -103,7 +103,7 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
             {
                 gasFeeInUsd &&
                 <div className={clsx(
-                    "inline-flex items-center gap-1",
+                    "inline-flex items-center gap-1 text-primary-text",
                     { "animate-pulse-strong": isQuoteLoading }
                 )}>
                     <div className='p-0.5'>

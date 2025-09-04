@@ -1,7 +1,6 @@
 import SwitchIcon from '@/components/icons/SwitchIcon';
 import WalletTransferContent from './WalletTransferContent';
 import { FC, useState } from 'react';
-import ManualTransferNote from './Wallet/Common/manualTransferNote';
 import { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
 import { WalletTransferAction } from './Wallet';
 
@@ -15,7 +14,7 @@ const WalletTransferButton: FC<Props> = ({ swapBasicData: swapData, swapId, refu
     const [openModal, setOpenModal] = useState(false);
 
     return <>
-        <div className='rounded-xl bg-secondary-500 divide-y divide-secondary-300 p-3'>
+        <div className='rounded-2xl bg-secondary-500 divide-y divide-secondary-300 p-3'>
             <div className="flex justify-between pb-3">
                 <p className="text-base  text-secondary-text font-normal">
                     Sending from wallet
@@ -33,9 +32,6 @@ const WalletTransferButton: FC<Props> = ({ swapBasicData: swapData, swapId, refu
                 {balanceWarning}
                 <WalletTransferAction swapData={swapData} swapId={swapId} refuel={refuel} />
             </div>
-        </div>
-        <div className="flex justify-center">
-            <ManualTransferNote />
         </div>
     </>
 }
