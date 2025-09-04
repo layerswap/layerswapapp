@@ -2,7 +2,7 @@ import { FC, useState } from "react"
 import { AddressGroup, AddressItem } from ".";
 import AddressIcon from "../../../AddressIcon";
 import shortenAddress from "../../../utils/ShortenAddress";
-import { History, ExternalLink, Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, Power } from "lucide-react";
+import { History, Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, Unplug, SquareArrowOutUpRight, Info } from "lucide-react";
 import { Partner } from "../../../../Models/Partner";
 import { Network } from "../../../../Models/Network";
 import { Popover, PopoverContent, PopoverTrigger } from "../../../shadcn/popover";
@@ -79,7 +79,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
 
             <div className="flex flex-col items-start grow min-w-0 ml-3 text-sm">
                 <div className="flex w-full min-w-0">
-                    <ExtendedAddress address={addressItem.address} network={network} onDisconnect={onDisconnect} addressClassNames="font-normal" />
+                    <ExtendedAddress address={addressItem.address} network={network} onDisconnect={onDisconnect} addressClassNames="font-normal" showDetails={true} title="USDC" description="Circle USD Coin" logoSrc="https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/arusdc.png" />
                 </div>
                 <div className="text-secondary-text w-full min-w-0">
                     <div className="flex items-center gap-1 text-xs">
@@ -120,6 +120,10 @@ type ExtendedAddressProps = {
     isForCurrency?: boolean;
     addressClassNames?: string;
     onDisconnect?: () => void;
+    showDetails?: boolean;
+    title?: string;
+    description?: string;
+    logoSrc?: string;
 }
 
 const calculateMaxWidth = (balance: string | undefined) => {
@@ -134,13 +138,13 @@ const calculateMaxWidth = (balance: string | undefined) => {
     }
 };
 
-export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, isForCurrency, addressClassNames, onDisconnect }) => {
+export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, isForCurrency, addressClassNames, onDisconnect, showDetails = false, title, description, logoSrc }) => {
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
 
     return (
         <div onClick={(e) => e.stopPropagation()}>
-            <Popover open={isPopoverOpen} onOpenChange={() => setPopoverOpen(!isPopoverOpen)} >
+            <Popover open={isPopoverOpen} onOpenChange={() => setPopoverOpen(!isPopoverOpen)} modal={true}>
                 <PopoverTrigger asChild>
                     <div>
                         <Tooltip>
@@ -153,40 +157,90 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
                                 </div>
                             </TooltipTrigger>
                             <TooltipContent side="bottom">
-                                <p>{address}</p>
+                                <p>View address details</p>
                             </TooltipContent>
                         </Tooltip>
                     </div>
                 </PopoverTrigger>
-                <PopoverContent className="w-full p-2 flex flex-col gap-1 items-stretch" side="top">
-                    {!isForCurrency && (<div onClick={(e) => { e.stopPropagation(), setCopied(address) }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-400 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
-                        <p>
-                            Copy address
-                        </p>
-                        {
-                            isCopied ?
-                                <Check className="h-4 w-4" />
-                                : <Copy className="w-4 h-4" />
-                        }
-                    </div>)}
-                    {
-                        network &&
-                        <Link href={network?.account_explorer_template?.replace('{0}', address)} target="_blank" className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-400 rounded-sm transition-all duartion-200 flex items-center justify-between gap-5 w-full">
-                            <p>
-                                Open in explorer
-                            </p>
-                            <ExternalLink className="w-4 h-4" />
-                        </Link>
-                    }
-                    {
-                        onDisconnect &&
-                        <div onClick={(e) => { e.stopPropagation(), onDisconnect() }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-400 rounded-sm transition-all duartion-200 flex items-center justify-between gap-5 w-full">
-                            <p>
-                                Disconnect
-                            </p>
-                            <Power className="w-4 h-4" />
-                        </div>
-                    }
+                <PopoverContent 
+                    className="w-auto p-2 min-w-48 flex flex-col gap-1 items-stretch" 
+                    side="top" 
+                    avoidCollisions={true} 
+                    collisionPadding={8}
+                    sticky="always"
+                >
+                    {!isForCurrency && (
+                        <>
+                            {showDetails && (title || description) && (
+                                <div className="mb-2 pt-2 flex items-center gap-3">
+                                    {logoSrc ? (
+                                        <ImageWithFallback
+                                            src={logoSrc}
+                                            alt={title || "Token logo"}
+                                            height="28"
+                                            width="28"
+                                            loading="eager"
+                                            fetchPriority="high"
+                                            className="rounded-full object-contain flex-shrink-0"
+                                        />
+                                    ) : (
+                                        <Info className="w-5 h-5 text-secondary-text flex-shrink-0" />
+                                    )}
+                                    <div className="flex-1">
+                                        {title && <h3 className="text-sm font-semibold text-primary-text">{title}</h3>}
+                                        {description && <p className="text-xs text-secondary-text font-sans">{description}</p>}
+                                    </div>
+                                </div>
+                            )}
+                            <div className="relative px-2 py-6 bg-gradient-to-b from-secondary-500 to-secondary-600 rounded-lg text-sm font-mono break-all leading-relaxed shadow-lg text-left">
+                                <div className="grid grid-cols-1 gap-0 text-secondary-text tracking-wide">
+                                    {Array.from({ length: Math.ceil(address.length / 15) }, (_, i) => {
+                                        const start = i * 15;
+                                        const end = Math.min(start + 15, address.length);
+                                        const chunk = address.slice(start, end);
+                                        
+                                        return (
+                                            <div key={i}>
+                                                {i === 0 && chunk.length >= 4 ? (
+                                                    <>
+                                                        <span className="text-primary-text font-medium">{chunk.slice(0, 4)}</span>
+                                                        {chunk.slice(4)}
+                                                    </>
+                                                ) : i === Math.ceil(address.length / 15) - 1 && chunk.length >= 4 ? (
+                                                    <>
+                                                        {chunk.slice(0, -4)}
+                                                        <span className="text-primary-text font-medium">{chunk.slice(-4)}</span>
+                                                    </>
+                                                ) : chunk}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                            <div className="flex gap-1">
+                                <div onClick={(e) => { e.stopPropagation(), setCopied(address) }} className="cursor-pointer text-secondary-text hover:text-primary-text px-2.5 py-2 bg-secondary-500 hover:bg-secondary-400 rounded transition-all duartion-200 flex items-center gap-1 flex-1 justify-center">
+                                    {
+                                        isCopied ?
+                                            <Check className="h-3 w-3" />
+                                            : <Copy className="w-3 h-3" />
+                                    }
+                                    <p className="text-xs whitespace-nowrap">Copy</p>
+                                </div>
+                                {network && (
+                                    <Link href={network?.account_explorer_template?.replace('{0}', address)} target="_blank" className="cursor-pointer text-secondary-text hover:text-primary-text px-2.5 py-2 bg-secondary-500 hover:bg-secondary-400 rounded transition-all duartion-200 flex items-center gap-1 flex-1 justify-center">
+                                        <SquareArrowOutUpRight className="w-3 h-3" />
+                                        <p className="text-xs whitespace-nowrap">View</p>
+                                    </Link>
+                                )}
+                                {onDisconnect && (
+                                    <div onClick={(e) => { e.stopPropagation(), onDisconnect() }} className="cursor-pointer text-secondary-text hover:text-primary-text px-2.5 py-2 bg-secondary-500 hover:bg-secondary-400 rounded transition-all duartion-200 flex items-center gap-1 flex-1 justify-center">
+                                        <Unplug className="w-3 h-3" />
+                                        <p className="text-xs whitespace-nowrap">Disconnect</p>
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
                 </PopoverContent>
             </Popover>
         </div>

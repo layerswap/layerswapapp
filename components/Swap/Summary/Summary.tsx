@@ -165,7 +165,7 @@ const RouteTokenPair: FC<{ route: { logo: string, display_name: string }, networ
                                 {
                                     (isValidAddress(address, network) ?
                                         <div className="text-sm group/addressItem text-secondary-text">
-                                            <ExtendedAddress address={addressFormat(address, network)} network={network} />
+                                            <ExtendedAddress address={addressFormat(address, network)} network={network} showDetails={true} title="USDC" description="Circle USD Coin" logoSrc="https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/arusdc.png" />
                                         </div>
                                         :
                                         <p className="text-sm text-secondary-text">{shortenAddress(address)}</p>)

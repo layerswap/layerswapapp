@@ -159,7 +159,7 @@ const AddressButton = ({ addressItem, network, disabled, WalletIcon }) => {
                     <AddressIcon className="scale-150 h-3 w-3" address={addressItem.address} size={36} />
                 )}
             </div>
-            <ExtendedAddress address={addressItem.address} network={network} />
+            <ExtendedAddress address={addressItem.address} network={network} showDetails={true} title="USDC" description="Circle USD Coin" logoSrc="https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/arusdc.png" />
         </div>
         <span className="justify-self-end right-0 flex items-center pointer-events-none  text-primary-text">
             {!disabled && <span className="absolute right-0 pl-1 pointer-events-none text-primary-text">
