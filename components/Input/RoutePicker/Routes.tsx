@@ -61,20 +61,22 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     >
         {(allbalancesLoaded && tokenbalance && Number(tokenbalance?.amount) >= 0) ? (
             <span className="text-sm text-secondary-text text-right my-auto leading-4 font-medium">
-                <div className={clsx("text-primary-text",
-                    {
-                        'text-lg leading-[22px]': type === 'suggested_token',
-                    }
-                )}>
-                    {formatted_balance_amount}
-                </div>
                 {Number(usdAmount) >= 0 && (
                     <div
-                        className={clsx({
-                            'text-xs leading-4': type == 'suggested_token',
-                        })}
+                        className={clsx("text-primary-text",
+                            {
+                                'text-lg leading-[22px]': type === 'suggested_token',
+                            }
+                        )}
                     >{formatUsd(usdAmount)}</div>
                 )}
+                <div
+                    className={clsx({
+                        'text-xs leading-4': type == 'suggested_token',
+                    })}
+                >
+                    {formatted_balance_amount}
+                </div>
             </span>
         ) : !allbalancesLoaded ? (
             <span className="px-0.5">-</span>
