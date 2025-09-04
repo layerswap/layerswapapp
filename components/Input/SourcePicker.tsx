@@ -28,11 +28,11 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fe
     }
 
     return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl p-4 pb-[15px] space-y-[27px] group" onClick={setShowQuickActions} ref={parentRef}>
-        <div className="flex justify-between items-center h-7">
-            <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5 mt-0.5">
+        <div className="grid grid-cols-9 sm:grid-cols-8 gap-2 items-center h-7">
+            <label htmlFor="From" className="block col-span-5 font-normal text-secondary-text text-base leading-5 mt-0.5">
                 Send from
             </label>
-            <div className="hover:bg-secondary-400 rounded-lg py-1 pl-2 pr-0.5">
+            <div className="hover:bg-secondary-400 col-span-4 sm:col-span-3 rounded-lg py-1 pl-2 pr-1.5">
                 <SourceWalletPicker />
             </div>
         </div>

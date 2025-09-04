@@ -60,7 +60,7 @@ const SourceWalletPicker: FC = () => {
                                 <div className="text-secondary-text">
                                     Manual Transfer
                                 </div>
-                                <div className="w-5 h-5 items-center flex">
+                                <div className="w-5 h-5 items-center flex text-secondary-text">
                                     <ChevronDown className="h-4 w-4" aria-hidden="true" />
                                 </div>
                             </div>
@@ -80,7 +80,7 @@ const SourceWalletPicker: FC = () => {
                                 <div className="text-secondary-text">
                                     {shortenAddress(selectedSourceAccount.address)}
                                 </div>
-                                <div className="w-4 h-4 items-center flex text-primary-text">
+                                <div className="w-4 h-4 items-center flex text-secondary-text">
                                     <ChevronDown className="h-4 w-4" aria-hidden="true" />
                                 </div>
                             </div>

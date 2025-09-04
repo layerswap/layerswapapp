@@ -1,31 +1,52 @@
 import shortenAddress from "../utils/ShortenAddress";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, PlusIcon } from "lucide-react";
 import { AddressGroup, AddressItem, AddressTriggerProps } from "./Address/AddressPicker";
 import { Partner } from "../../Models/Partner";
 import AddressIcon from "../AddressIcon";
 import { Wallet } from "../../Models/WalletProvider";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
+import clsx from 'clsx';
 
 const DestinationWalletPicker = (props: AddressTriggerProps) => {
     const { addressItem, connectedWallet, partner } = props
-    return <>
+    return <div className={clsx(
+        "flex items-center space-x-2 text-sm  rounded-lg py-1 pl-2 pr-1.5",
         {
-            addressItem &&
-            <div className="flex items-center space-x-2 text-sm hover:bg-secondary-400 rounded-lg py-1 pl-2 pr-0.5">
-                <div className="rounded-lg flex space-x-1 items-center cursor-pointer">
+            "hover:bg-secondary-400": addressItem,
+            "bg-secondary-400 hover:bg-secondary-300": !addressItem
+        }
+    )}>
+        <div className="rounded-lg flex space-x-1 items-center cursor-pointer">
+            {
+                addressItem &&
+                <>
                     <div className="inline-flex items-center relative px-0.5">
                         <ResolvedIcon addressItem={addressItem} partner={partner} wallet={connectedWallet} />
                     </div>
                     <div className="text-secondary-text">
                         {shortenAddress(addressItem.address)}
                     </div>
-                    <div className="w-4 h-4 items-center flex text-primary-text">
+                    <div className="w-4 h-4 items-center flex text-secondary-text">
                         <ChevronDown className="h-4 w-4" aria-hidden="true" />
                     </div>
-                </div>
-            </div>
-        }
-    </>
+                </>
+            }
+            {
+                !addressItem &&
+                <>
+                    <div className="inline-flex items-center relative px-0.5">
+                        <PlusIcon className="w-5 h-5 p-0.5" />
+                    </div>
+                    <div className="text-secondary-text">
+                        Add Address
+                    </div>
+                    <div className="w-4 h-4 items-center flex text-secondary-text">
+                        <ChevronDown className="h-4 w-4" aria-hidden="true" />
+                    </div>
+                </>
+            }
+        </div>
+    </div>
 }
 type AdderssIconprops = {
     addressItem: AddressItem,
