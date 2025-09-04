@@ -87,10 +87,10 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     }, [boot, show, update, swapDetails.id, swapInputTransaction, storedWalletTransaction]);
 
     useEffect(() => {
+        if (inputTxStatus) {
+            mutateBalances()
+        }
         if (inputTxStatus === TransactionStatus.Completed || inputTxStatus === TransactionStatus.Pending) {
-            if (inputTxStatus === TransactionStatus.Completed) {
-                mutateBalances()
-            }
             if (swapDetails?.transactions?.find(t => t.type === TransactionType.Input) || !swapDetails) {
                 return
             }
@@ -99,7 +99,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 logError(`Transaction not detected in ${source_network.name}. Tx hash: \`${transactionHash}\`. Tx status: ${inputTxStatus}. Swap id: \`${swapDetails.id}\`. ${source_network.display_name} explorer: ${source_network?.transaction_explorer_template?.replace("{0}", transactionHash)} . LS explorer: https://layerswap.io/explorer/${storedWalletTransaction?.hash} `);
             }
         }
-    }, [swapDetails, storedWalletTransaction, source_network]);
+    }, [swapDetails, storedWalletTransaction, source_network, inputTxStatus]);
 
     useEffect(() => {
         if (storedWalletTransaction?.status !== inputTxStatus) setSwapTransaction(swapDetails?.id, inputTxStatus, storedWalletTransaction?.hash)
