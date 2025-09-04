@@ -49,7 +49,7 @@ export function findIndexOfFirstNonZeroAfterComma(number) {
     return null;
 }
 
-function isScientific(x) {
+export function isScientific(x) {
     const s = String(x);
 
     // 1) If it’s already a string that “looks like” sci-notation, catch it:

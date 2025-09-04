@@ -43,7 +43,7 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
                 <Accordion type='single' collapsible className='w-full' value={isAccordionOpen ? 'quote' : ''} onValueChange={(value) => { setIsAccordionOpen(value === 'quote') }}>
                     <AccordionItem value='quote' className='bg-secondary-500 rounded-2xl'>
                         <AccordionTrigger className={clsx(
-                            'p-4 w-full rounded-2xl flex items-center justify-between transition-colors duration-200 hover:bg-secondary-400',
+                            'p-3.5 pr-5 w-full rounded-2xl flex items-center justify-between transition-colors duration-200 hover:bg-secondary-400',
                             {
                                 'bg-secondary-500': !isAccordionOpen,
                                 'bg-secondary-400': isAccordionOpen,
@@ -106,12 +106,12 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
                     "inline-flex items-center gap-1 text-primary-text",
                     { "animate-pulse-strong": isQuoteLoading }
                 )}>
-                    <div className='h-4 w-4 text-sm text-secondary-text'>
+                    <div className='p-0.5'>
                         {!values.fromExchange ?
-                            <GasIcon className='h-4 w-4' /> : <ExchangeGasIcon className='h-4 w-4' />
+                            <GasIcon className='h-4 w-4' /> : <ExchangeGasIcon className='h-5 w-5' />
                         }
                     </div>
-                    <NumberFlow value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} format={{ style: 'currency', currency: 'USD' }} prefix={gasFeeInUsd < 0.01 ? '<' : undefined} />
+                    <NumberFlow className="text-primary-text text-sm leading-6" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} format={{ style: 'currency', currency: 'USD' }} prefix={gasFeeInUsd < 0.01 ? '<' : undefined} />
                     <div className="ml-3 w-px h-3 bg-primary-text-placeholder rounded-2xl" />
                 </div>
             }
@@ -119,13 +119,13 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
                 averageCompletionTime &&
                 <>
                     <div className={clsx(
-                        "text-right text-primary-text inline-flex items-center gap-1 text-sm",
+                        "text-right text-secondary-text inline-flex items-center gap-1 text-sm",
                         { "animate-pulse-strong": isQuoteLoading }
                     )}>
-                        <div className='h-4 w-4 text-secondary-text'>
+                        <div className='p-0.5'>
                             <Clock className='h-4 w-4' />
                         </div>
-                        <AverageCompletionTime avgCompletionTime={quote.avg_completion_time} />
+                        <AverageCompletionTime className="text-primary-text" avgCompletionTime={quote.avg_completion_time} />
                     </div>
                 </>
             }

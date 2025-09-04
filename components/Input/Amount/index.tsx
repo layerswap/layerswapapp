@@ -44,10 +44,10 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
         if (!input || !suffix) return;
 
         const font = getFontFromElement(input);
-        const width = getTextWidth(amount?.toString() || amount || "0", font);
+        const width = getTextWidth(actionValue?.toString() || amount || "0", font);
 
         suffix.style.left = `${width + 16}px`;
-    }, [amount, requestedAmountInUsd]);
+    }, [amount, requestedAmountInUsd, actionValue]);
 
     const placeholder = '0'
 
@@ -78,7 +78,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
             />
 
             <div className={clsx(
-                "usd-suffix text-base font-medium text-secondary-text pointer-events-none",
+                "usd-suffix text-base leading-5 font-medium text-secondary-text pointer-events-none",
                 {
                     "absolute bottom-4": usdPosition === "right",
                     "h-5": usdPosition !== "right",

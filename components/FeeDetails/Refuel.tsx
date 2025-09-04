@@ -38,31 +38,31 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, fee: quote }) => {
     }
 
     return (
-        <ResizablePanel>
-            <div className={`gap-4 flex relative items-center outline-hidden w-full text-primary-text px-3.5 py-2.5 bg-secondary-500 border border-transparent transition-colors duration-200 rounded-2xl ${needRefuel && '!border-primary'}`}>
-                <div className="flex items-center justify-between w-full">
-                    <button type="button" onClick={() => onButtonClick()}>
-                        <div className="font- flex items-center text-base">
-                            <p className="text-primary-text">Refuel</p>
-                            <Info className="h-3.5 text-secondary-text hover:text-primary-text" aria-hidden="true" strokeWidth={2.5} />
+        <div className={`gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3 bg-secondary-500 border border-transparent transition-colors duration-200 rounded-2xl ${needRefuel && '!border-primary'}`}>
+            <div className="flex  justify-between w-full text-secondary-text ">
+                <button className="space-y-1 mt-1 mb-0.5" type="button" onClick={() => onButtonClick()}>
+                    <div className="flex items-center text-base space-x-1">
+                        <p className="leading-4">Refuel</p>
+                        <div className="p-0.5">
+                            <Info className="h-3 w-3 text-secondary-text hover:text-primary-text" aria-hidden="true" strokeWidth={2.5} />
                         </div>
-                        {
-                            !needRefuel && !refuel &&
-                            <p className="text-secondary-text text-sm"><span>Get</span> <span>{to?.display_name}</span> <span>gas</span></p>
-                        }
-                        {
-                            needRefuel && !refuel &&
-                            <p className="text-secondary-text text-sm"><span>You need gas on</span> <span>{to.display_name}</span></p>
-                        }
-                        {
-                            refuel &&
-                            <p className="text-secondary-text text-sm"><span>You will receive </span>{quote?.refuel ? <span>${quote.refuel.amount_in_usd}</span> : <span className="w-5 h-3 rounded animate-pulse bg-secondary-200 text-transparent" >token</span>}<span> worth of {to?.token?.symbol}</span></p>
-                        }
-                    </button>
-                    <ToggleButton value={!!refuel} onChange={handleConfirmToggleChange} />
-                </div>
+                    </div>
+                    {
+                        !needRefuel && !refuel &&
+                        <p className="text-xs"><span>Get</span> <span>{to?.display_name}</span> <span>gas</span></p>
+                    }
+                    {
+                        needRefuel && !refuel &&
+                        <p className="text-xs"><span>You need gas on</span> <span>{to.display_name}</span></p>
+                    }
+                    {
+                        refuel &&
+                        <p className="text-xs"><span>You will receive </span>{quote?.refuel ? <span>${quote.refuel.amount_in_usd}</span> : <span className="w-5 h-3 rounded animate-pulse bg-secondary-200 text-transparent" >token</span>}<span> worth of {to?.token?.symbol}</span></p>
+                    }
+                </button>
+                <ToggleButton value={!!refuel} onChange={handleConfirmToggleChange} />
             </div>
-        </ResizablePanel>
+        </div>
     )
 }
 

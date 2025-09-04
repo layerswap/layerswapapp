@@ -33,7 +33,7 @@
   --color-primary-900: rgb(var(--ls-colors-primary-900, 46, 7, 19));
   --color-primary-background: rgb(var(--ls-colors-backdrop, 62, 18, 64));
   --color-primary-text: rgb(var(--ls-colors-primary-text, 225, 227, 230));
-  --color-primary-text-muted: rgb(var(--ls-colors-primary-text-muted, 163, 173, 194));
+  --color-primary-text-muted: rgb(var(--ls-colors-primary-text-muted, 86, 97, 123));
   --color-primary-text-placeholder: rgb(var(--ls-colors-text-placeholder, 118, 128, 147));
   --color-primary-actionButtonText: rgb(var(--ls-colors-actionButtonText, 220, 2, 90));
   --color-primary-buttonTextColor: rgb(var(--ls-colors-buttonTextColor, 228, 229, 240));

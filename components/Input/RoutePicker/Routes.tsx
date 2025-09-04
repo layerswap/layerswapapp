@@ -329,7 +329,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                             width="12"
                             loading="eager"
                             fetchPriority="high"
-                            className="h-3.5 w-3.5 absolute -right-1.5 -bottom-1.5 object-contain rounded border-1 border-secondary-300"
+                            className="h-3.5 w-3.5 absolute left-3.5 top-3.5 object-contain rounded border-1 border-secondary-300"
                         />
                     </div>
                     <span className="ml-3 flex flex-col font-medium text-primary-text overflow-hidden min-w-0 max-w-3/5">

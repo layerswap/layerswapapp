@@ -2,7 +2,7 @@ import { useField, useFormikContext } from "formik";
 import { ChangeEvent, FC, forwardRef } from "react";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
-import { truncateDecimals } from "../utils/RoundDecimals";
+import { isScientific, truncateDecimals } from "../utils/RoundDecimals";
 
 type Input = {
     tempValue?: number;
@@ -29,6 +29,10 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const { handleChange } = useFormikContext<SwapFormValues>();
         const [field] = useField(name)
 
+        const formattedTempValue = isScientific(tempValue) 
+            ? tempValue?.toFixed(precision ?? 0).replace(/\.?0+$/, '')
+            : tempValue?.toString();
+
         return <div>
             {label &&
                 <label htmlFor={name} className="block font-semibold text-secondary-text text-sm mb-1.5 w-full">
@@ -44,7 +48,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     )}
                         ref={ref}
                     >
-                        <span>{truncateDecimals(Number(tempValue), precision ?? 0)}</span>
+                        <span>{formattedTempValue}</span>
                     </span>
                 }
                 {

@@ -27,7 +27,7 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fe
         setActionTempValue(value)
     }
 
-    return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl pt-4 pb-3.5 px-4 space-y-8 group" onClick={setShowQuickActions} ref={parentRef}>
+    return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl p-4 pb-[15px] space-y-[27px] group" onClick={setShowQuickActions} ref={parentRef}>
         <div className="flex justify-between items-center h-7">
             <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5 mt-0.5">
                 Send from

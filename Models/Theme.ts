@@ -125,7 +125,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             '800': '88, 14, 37',
             '900': '46, 7, 19',
             'text': '225, 227, 230',
-            'textMuted': '163, 173, 194',
+            'textMuted': '86, 97, 123',
         },
         secondary: {
             DEFAULT: '17, 29, 54',
