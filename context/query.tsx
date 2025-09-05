@@ -15,6 +15,7 @@ function mapLegacyQueryParams(params: QueryParams): QueryParams {
   return {
     ...params,
     ...(params.destAddress ? { destination_address: params.destAddress } : {}),
+    ...(params.fromExchange ? { from: params.fromExchange } : {}),
     ...(params.sourceExchangeName ? { from: params.sourceExchangeName } : {}),
     ...(params.destNetwork ? { to: params.destNetwork } : {}),
     ...(params.lockExchange ? { lockFrom: params.lockExchange } : {}),

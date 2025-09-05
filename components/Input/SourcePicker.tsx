@@ -4,7 +4,6 @@ import AmountField from "./Amount";
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import MinMax from "./Amount/MinMax";
-import { LayoutGroup, motion } from "framer-motion";
 import { useQuoteData } from "@/hooks/useFee";
 import clsx from "clsx";
 import { useClickOutside } from "@/hooks/useClickOutside";

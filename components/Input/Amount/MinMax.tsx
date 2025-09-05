@@ -73,7 +73,7 @@ const MinMax = (props: MinMaxProps) => {
     const showMaxTooltip = depositMethod === 'wallet' && walletBalance && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount)
     
     return (
-        <div className="flex gap-1.5 text-xs group" onMouseLeave={() => onActionHover(undefined)}>
+        <div className="flex gap-1.5 group text-xs leading-4" onMouseLeave={() => onActionHover(undefined)}>
             {
                 Number(limitsMinAmount) > 0 &&
                 <button
@@ -82,7 +82,7 @@ const MinMax = (props: MinMaxProps) => {
                     onClick={handleSetMinAmount}
                     typeof="button"
                     type="button"
-                    className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 border border-secondary-300 hover:border-secondary-100 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer"}
+                    className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer"}
                 >
                     Min
                 </button>
@@ -94,7 +94,7 @@ const MinMax = (props: MinMaxProps) => {
                     onClick={handleSetHalfAmount}
                     typeof="button"
                     type="button"
-                    className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 border border-secondary-300 hover:border-secondary-100 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer"}
+                    className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer"}
                 >
                     50%
                 </button>
@@ -108,7 +108,7 @@ const MinMax = (props: MinMaxProps) => {
                         onClick={handleSetMaxAmount}
                         typeof="button"
                         type="button"
-                        className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 border border-secondary-300 hover:border-secondary-100 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer"}
+                        className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer"}
                     >
                         Max
                     </button>

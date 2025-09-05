@@ -63,7 +63,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
     return (
         <div className={clsx("flex w-full flex-col self-end relative ml-auto items-center", className)}>
             <Selector>
-                <SelectorTrigger disabled={false} className="group-[.exchange-picker]:bg-secondary-500">
+                <SelectorTrigger disabled={false} className="group-[.exchange-picker]:bg-secondary-500 group-[.exchange-picker]:!p-3">
                     <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select Token" />
                 </SelectorTrigger>
                 <SelectorContent isLoading={isLoading} searchHint="Search" header={<PickerWalletConnect direction={direction} />}>
