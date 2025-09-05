@@ -10,7 +10,7 @@ import clsx from 'clsx';
 const DestinationWalletPicker = (props: AddressTriggerProps) => {
     const { addressItem, connectedWallet, partner, destination } = props
     return destination && <div className={clsx(
-        "flex items-center space-x-2 text-sm  rounded-lg py-1 pl-2 pr-1.5",
+        "flex items-center space-x-2 text-sm  rounded-lg py-1 px-2 justify-self-end",
         {
             "hover:bg-secondary-400": addressItem,
             "bg-secondary-400 hover:bg-secondary-300": !addressItem

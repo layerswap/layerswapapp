@@ -31,7 +31,7 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fe
             <label htmlFor="From" className="block col-span-5 font-normal text-secondary-text text-base leading-5 mt-0.5">
                 Send from
             </label>
-            <div className="hover:bg-secondary-400 col-span-4 sm:col-span-3 rounded-lg py-1 pl-2 pr-1.5">
+            <div className="col-span-4 sm:col-span-3 justify-self-end">
                 <SourceWalletPicker />
             </div>
         </div>

@@ -55,7 +55,7 @@ const SourceWalletPicker: FC = () => {
             values.depositMethod === 'deposit_address' ?
                 (
                     provider
-                        ? <div className="flex items-center space-x-2 text-sm">
+                        ? <div className="flex items-center space-x-2 text-sm  rounded-lg hover:bg-secondary-400 py-1 pl-2 pr-1">
                             <div onClick={handleWalletChange} className="flex space-x-1 items-center cursor-pointer">
                                 <div className="text-secondary-text">
                                     Manual Transfer
@@ -65,12 +65,12 @@ const SourceWalletPicker: FC = () => {
                                 </div>
                             </div>
                         </div>
-                        : <div className="text-secondary-text text-sm">
+                        : <div className="text-secondary-text text-sm  rounded-lg hover:bg-secondary-400 py-1 pl-2 pr-1">
                             Manual Transfer
                         </div>
                 )
                 :
-                <div className="rounded-lg flex items-center space-x-2 text-sm">
+                <div className="rounded-lg flex items-center space-x-2 text-sm  hover:bg-secondary-400 py-1 pl-2 pr-2">
                     {
                         selectedSourceAccount && selectedSourceAccount?.address && <>
                             <div onClick={handleWalletChange} className="rounded-lg flex space-x-1 items-center cursor-pointer">
