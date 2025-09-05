@@ -20,7 +20,7 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fe
 
     const { fromAsset: fromCurrency, from, depositMethod } = values || {}
     const { ref: parentRef, isActive: showQuickActions, activate: setShowQuickActions } = useClickOutside<HTMLDivElement>(false)
-    const [actiontempValue, setActionTempValue] = useState<number | undefined>(0)
+    const [actiontempValue, setActionTempValue] = useState<number | undefined>(undefined)
 
     const handleActionHover = (value: number | undefined) => {
         setActionTempValue(value)
