@@ -27,7 +27,10 @@ export const SearchComponent = ({ searchQuery, setSearchQuery, isOpen }: { searc
         {searchQuery && (
             <FilledX
                 className="w-4 h-4 text-primary-text-placeholder cursor-pointer ml-2"
-                onClick={() => setSearchQuery('')}
+                onMouseDown={(e) => {
+                    e.preventDefault();
+                    setSearchQuery('');
+                }}
             />
         )}
     </div>
