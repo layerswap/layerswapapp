@@ -88,7 +88,7 @@ export const WalletsMenu = () => {
 
     return (
         <ConnectButton>
-            <div className=" border border-primary disabled:border-primary-900 items-center space-x-1 disabled:text-primary/40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md transform hover:brightness-125 transition duration-200 ease-in-out py-3 md:px-3 bg-primary/20 border-none text-primary! px-4!" >
+            <div className=" border border-primary disabled:border-primary-900 items-center space-x-1 disabled:text-primary/40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-xl transform hover:brightness-125 transition duration-200 ease-in-out py-3 md:px-3 bg-primary/20 border-none text-primary! px-4!" >
                 <span className="order-first absolute left-0 inset-y-0 flex items-center pl-3">
                     <WalletIcon className="h-6 w-6" strokeWidth="2" />
                 </span>
@@ -103,7 +103,7 @@ const WalletsMenuWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
     const [openModal, setOpenModal] = useState<boolean>(false)
 
     return <>
-        <button onClick={() => setOpenModal(true)} type="button" className="py-3 px-4 bg-secondary-500 flex items-center w-full rounded-md space-x-1 disabled:text-secondary-text/40 disabled:bg-primary-900 disabled:cursor-not-allowed relative font-semibold transform border border-secondary-500 hover:bg-secondary-400 transition duration-200 ease-in-out">
+        <button onClick={() => setOpenModal(true)} type="button" className="py-3 px-4 bg-secondary-500 flex items-center w-full rounded-xl space-x-1 disabled:text-secondary-text/40 disabled:bg-primary-900 disabled:cursor-not-allowed relative font-semibold transform border border-secondary-500 hover:bg-secondary-400 transition duration-200 ease-in-out">
             {
                 wallets.length === 1 ?
                     <div className="flex gap-4 items-start text-primary-text">

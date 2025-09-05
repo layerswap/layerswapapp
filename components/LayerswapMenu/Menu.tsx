@@ -13,7 +13,7 @@ const Menu = ({ children }: { children: ReactNode }) => {
 const Group = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
     return (
         <div>
-            <div className="divide-y divide-secondary-300 rounded-md bg-secondary-500 overflow-hidden">
+            <div className="divide-y divide-secondary-300 rounded-xl bg-secondary-500 overflow-hidden">
                 {children}
             </div>
         </div>
