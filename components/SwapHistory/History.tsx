@@ -52,14 +52,29 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
         useSWRInfinite<ApiResponse<Swap[]>>(
             (index) => getKey(index, ["PendingDeposit"], addresses),
             apiClient.fetcher,
-            { revalidateAll: false }
+            {
+                revalidateAll: false,
+                refreshInterval: (data?: ApiResponse<Swap[]>[]) => {
+                    const pendingSwaps =
+                        !!data?.some(p => (p?.data?.length ?? 0) > 0)
+                    return pendingSwaps ? 2000 : 30000
+                },
+            }
         )
     const getCompletedSwapsKey = useCallback((index) => getKey(index, ["Completed", "PendingWithdrawal", "Refunded", "PendingRefund"], addresses), [addresses])
+
+    const hasPendingSwaps = !!pendingSwapPages?.some(p => (p?.data?.length ?? 0) > 0)
+
     const { data: userSwapPages, size, setSize, isLoading: userSwapsLoading, isValidating, mutate } =
         useSWRInfinite<ApiResponse<Swap[]>>(
             getCompletedSwapsKey,
             apiClient.fetcher,
-            { revalidateAll: false, revalidateFirstPage: false, dedupingInterval: 3000 }
+            {
+                revalidateAll: false,
+                revalidateFirstPage: false,
+                dedupingInterval: 3000,
+                refreshInterval: hasPendingSwaps ? 2000 : 30000,
+            }
         )
 
     const userSwaps = (!(userSwapPages?.[0] instanceof EmptyApiResponse) && userSwapPages?.map(p => {
