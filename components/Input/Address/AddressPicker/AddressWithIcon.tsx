@@ -1,4 +1,4 @@
-import { FC, useState } from "react"
+import { FC, ReactNode, useState } from "react"
 import { AddressGroup, AddressItem } from ".";
 import AddressIcon from "@/components//AddressIcon";
 import shortenAddress from "@/components//utils/ShortenAddress";
@@ -124,6 +124,7 @@ type ExtendedAddressProps = {
     title?: string;
     description?: string;
     logoSrc?: string;
+    children?: ReactNode
 }
 
 const calculateMaxWidth = (balance: string | undefined) => {
@@ -138,7 +139,7 @@ const calculateMaxWidth = (balance: string | undefined) => {
     }
 };
 
-export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, isForCurrency, addressClassNames, onDisconnect, showDetails = false, title, description, logoSrc }) => {
+export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, isForCurrency, children, onDisconnect, showDetails = false, title, description, logoSrc }) => {
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
 
@@ -149,12 +150,15 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
                     <div>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <div className="group-hover/addressItem:underline hover:text-secondary-text transition duration-200 no-underline flex gap-1 items-center cursor-pointer">
-                                    <p className={`${isForCurrency ? "text-xs self-end" : "text-sm"} block font-medium`}>
-                                        {shortenAddress(address)}
-                                    </p>
-                                    <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4" />
-                                </div>
+                                {
+                                    children ??
+                                    <div className="group-hover/addressItem:underline hover:text-secondary-text transition duration-200 no-underline flex gap-1 items-center cursor-pointer">
+                                        <p className={`${isForCurrency ? "text-xs self-end" : "text-sm"} block font-medium`}>
+                                            {shortenAddress(address)}
+                                        </p>
+                                        <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4" />
+                                    </div>
+                                }
                             </TooltipTrigger>
                             <TooltipContent side="bottom">
                                 <p>View address details</p>
@@ -162,85 +166,83 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
                         </Tooltip>
                     </div>
                 </PopoverTrigger>
-                <PopoverContent 
-                    className="w-auto p-2 min-w-48 flex flex-col gap-1 items-stretch" 
-                    side="top" 
-                    avoidCollisions={true} 
+                <PopoverContent
+                    className="w-auto p-2 min-w-48 flex flex-col gap-1 items-stretch"
+                    side="top"
+                    avoidCollisions={true}
                     collisionPadding={8}
                     sticky="always"
                 >
-                    {!isForCurrency && (
-                        <>
-                            {showDetails && (title || description) && (
-                                <div className="mb-2 pt-2 flex items-center gap-3">
-                                    {logoSrc ? (
-                                        <ImageWithFallback
-                                            src={logoSrc}
-                                            alt={title || "Token logo"}
-                                            height="28"
-                                            width="28"
-                                            loading="eager"
-                                            fetchPriority="high"
-                                            className="rounded-full object-contain flex-shrink-0"
-                                        />
-                                    ) : (
-                                        <Info className="w-5 h-5 text-secondary-text flex-shrink-0" />
-                                    )}
-                                    <div className="flex-1">
-                                        {title && <h3 className="text-sm font-semibold text-primary-text">{title}</h3>}
-                                        {description && <p className="text-xs text-secondary-text font-sans">{description}</p>}
-                                    </div>
+                    <>
+                        {showDetails && (title || description) && (
+                            <div className="mb-2 pt-2 flex items-center gap-3">
+                                {logoSrc ? (
+                                    <ImageWithFallback
+                                        src={logoSrc}
+                                        alt={title || "Token logo"}
+                                        height="28"
+                                        width="28"
+                                        loading="eager"
+                                        fetchPriority="high"
+                                        className="rounded-full object-contain flex-shrink-0"
+                                    />
+                                ) : (
+                                    <Info className="w-5 h-5 text-secondary-text flex-shrink-0" />
+                                )}
+                                <div className="flex-1">
+                                    {title && <h3 className="text-sm font-semibold text-primary-text">{title}</h3>}
+                                    {description && <p className="text-xs text-secondary-text font-sans">{description}</p>}
+                                </div>
+                            </div>
+                        )}
+                        <div className="relative px-2 py-6 bg-gradient-to-b from-secondary-500 to-secondary-600 rounded-lg text-sm font-mono break-all leading-relaxed shadow-lg text-left">
+                            <div className="grid grid-cols-1 gap-0 text-secondary-text tracking-wide">
+                                {Array.from({ length: Math.ceil(address.length / 15) }, (_, i) => {
+                                    const start = i * 15;
+                                    const end = Math.min(start + 15, address.length);
+                                    const chunk = address.slice(start, end);
+
+                                    return (
+                                        <div key={i}>
+                                            {i === 0 && chunk.length >= 4 ? (
+                                                <>
+                                                    <span className="text-primary-text font-medium">{chunk.slice(0, 4)}</span>
+                                                    {chunk.slice(4)}
+                                                </>
+                                            ) : i === Math.ceil(address.length / 15) - 1 && chunk.length >= 4 ? (
+                                                <>
+                                                    {chunk.slice(0, -4)}
+                                                    <span className="text-primary-text font-medium">{chunk.slice(-4)}</span>
+                                                </>
+                                            ) : chunk}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                        <div className="flex gap-1">
+                            <div onClick={(e) => { e.stopPropagation(), setCopied(address) }} className="cursor-pointer text-secondary-text hover:text-primary-text px-2.5 py-2 bg-secondary-500 hover:bg-secondary-400 rounded-md transition-all duartion-200 flex items-center gap-1 flex-1 justify-center">
+                                {
+                                    isCopied ?
+                                        <Check className="h-3 w-3" />
+                                        : <Copy className="w-3 h-3" />
+                                }
+                                <p className="text-xs whitespace-nowrap">Copy</p>
+                            </div>
+                            {network && (
+                                <Link href={network?.account_explorer_template?.replace('{0}', address)} target="_blank" className="cursor-pointer text-secondary-text hover:text-primary-text px-2.5 py-2 bg-secondary-500 hover:bg-secondary-400 rounded-md transition-all duartion-200 flex items-center gap-1 flex-1 justify-center">
+                                    <SquareArrowOutUpRight className="w-3 h-3" />
+                                    <p className="text-xs whitespace-nowrap">View</p>
+                                </Link>
+                            )}
+                            {onDisconnect && (
+                                <div onClick={(e) => { e.stopPropagation(), onDisconnect() }} className="cursor-pointer text-secondary-text hover:text-primary-text px-2.5 py-2 bg-secondary-500 hover:bg-secondary-400 rounded-md transition-all duartion-200 flex items-center gap-1 flex-1 justify-center">
+                                    <Unplug className="w-3 h-3" />
+                                    <p className="text-xs whitespace-nowrap">Disconnect</p>
                                 </div>
                             )}
-                            <div className="relative px-2 py-6 bg-gradient-to-b from-secondary-500 to-secondary-600 rounded-lg text-sm font-mono break-all leading-relaxed shadow-lg text-left">
-                                <div className="grid grid-cols-1 gap-0 text-secondary-text tracking-wide">
-                                    {Array.from({ length: Math.ceil(address.length / 15) }, (_, i) => {
-                                        const start = i * 15;
-                                        const end = Math.min(start + 15, address.length);
-                                        const chunk = address.slice(start, end);
-                                        
-                                        return (
-                                            <div key={i}>
-                                                {i === 0 && chunk.length >= 4 ? (
-                                                    <>
-                                                        <span className="text-primary-text font-medium">{chunk.slice(0, 4)}</span>
-                                                        {chunk.slice(4)}
-                                                    </>
-                                                ) : i === Math.ceil(address.length / 15) - 1 && chunk.length >= 4 ? (
-                                                    <>
-                                                        {chunk.slice(0, -4)}
-                                                        <span className="text-primary-text font-medium">{chunk.slice(-4)}</span>
-                                                    </>
-                                                ) : chunk}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                            <div className="flex gap-1">
-                                <div onClick={(e) => { e.stopPropagation(), setCopied(address) }} className="cursor-pointer text-secondary-text hover:text-primary-text px-2.5 py-2 bg-secondary-500 hover:bg-secondary-400 rounded transition-all duartion-200 flex items-center gap-1 flex-1 justify-center">
-                                    {
-                                        isCopied ?
-                                            <Check className="h-3 w-3" />
-                                            : <Copy className="w-3 h-3" />
-                                    }
-                                    <p className="text-xs whitespace-nowrap">Copy</p>
-                                </div>
-                                {network && (
-                                    <Link href={network?.account_explorer_template?.replace('{0}', address)} target="_blank" className="cursor-pointer text-secondary-text hover:text-primary-text px-2.5 py-2 bg-secondary-500 hover:bg-secondary-400 rounded transition-all duartion-200 flex items-center gap-1 flex-1 justify-center">
-                                        <SquareArrowOutUpRight className="w-3 h-3" />
-                                        <p className="text-xs whitespace-nowrap">View</p>
-                                    </Link>
-                                )}
-                                {onDisconnect && (
-                                    <div onClick={(e) => { e.stopPropagation(), onDisconnect() }} className="cursor-pointer text-secondary-text hover:text-primary-text px-2.5 py-2 bg-secondary-500 hover:bg-secondary-400 rounded transition-all duartion-200 flex items-center gap-1 flex-1 justify-center">
-                                        <Unplug className="w-3 h-3" />
-                                        <p className="text-xs whitespace-nowrap">Disconnect</p>
-                                    </div>
-                                )}
-                            </div>
-                        </>
-                    )}
+                        </div>
+                    </>
                 </PopoverContent>
             </Popover>
         </div>
