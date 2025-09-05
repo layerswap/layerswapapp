@@ -18,7 +18,7 @@ const AddressIcon: FC<Props> = ({ address, size, className, rounded }) => {
                 iconElement.style.display = 'block'
                 iconElement.style.width = "100%"
                 iconElement.style.height = "100%"
-                iconElement.style.borderRadius = rounded || "50%"
+                iconElement.style.borderRadius = rounded || "3px"
                 ref.current.appendChild(iconElement);
             }
         }
