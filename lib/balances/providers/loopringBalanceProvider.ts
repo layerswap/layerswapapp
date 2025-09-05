@@ -52,6 +52,7 @@ export class LoopringBalanceProvider {
         }
         catch (e) {
             console.log(e)
+            throw e
         }
 
         return { balances, errors };
