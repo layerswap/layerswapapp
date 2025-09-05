@@ -120,7 +120,7 @@ export const CollapsibleRow = ({
                 return (
                   <div
                     key={`${groupName}-${index}`}
-                    className={`token-item pl-5 cursor-pointer hover:bg-secondary-300 ${isSelected ? "bg-secondary-300" : ""} outline-none disabled:cursor-not-allowed`}
+                    className={`token-item pl-5 cursor-pointer hover:bg-secondary-300 outline-none disabled:cursor-not-allowed`}
                     onClick={() => onSelect(route, token)}
                   >
                     <CurrencySelectItemDisplay

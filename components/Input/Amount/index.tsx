@@ -56,7 +56,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
     const disabled = Boolean(fromExchange && !toCurrency)
 
     return (<>
-        <div className={clsx("flex flex-col bg-secondary-500 rounded-lg space-y-0.5 relative w-full group-[.exchange-amount-field]:pb-2 group",
+        <div className={clsx("flex flex-col bg-secondary-500 space-y-0.5 relative w-full group",
             className,
             {
                 'focus-within:[&_.usd-suffix]:invisible': usdPosition === "right"
@@ -71,16 +71,15 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
                 ref={amountRef}
                 precision={fromCurrency?.precision}
                 tempValue={actionValue}
-                className="w-full text-[28px] leading-[34px] text-primary-text placeholder:!text-primary-text focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal group-[.exchange-amount-field]:px-2.5 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! pl-0"
+                className="w-full text-[28px] leading-[34px] rounded-xl text-primary-text placeholder:!text-primary-text focus:outline-none focus:border-none focus:ring-0 transition-all duration-300 ease-in-out !bg-secondary-500 !font-normal group-[.exchange-amount-field]:px-2.5 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! pl-0"
                 onChange={e => {
                     /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                 }}
             />
-
             <div className={clsx(
                 "usd-suffix text-base leading-5 font-medium text-secondary-text pointer-events-none",
                 {
-                    "absolute bottom-4": usdPosition === "right",
+                    "absolute bottom-3": usdPosition === "right",
                     "h-5": usdPosition !== "right",
                     "text-secondary-text/45": !!actionValueInUsd
                 },

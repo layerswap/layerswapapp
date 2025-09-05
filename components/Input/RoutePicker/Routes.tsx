@@ -11,7 +11,6 @@ import { useBalanceStore } from "@/stores/balanceStore";
 import { useBalanceAccounts } from "@/context/balanceAccounts";
 import clsx from "clsx";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
-import ArrowIcon from "@/components/icons/ArrowIcon";
 
 type TokenItemProps = {
     route: NetworkRoute;
@@ -61,20 +60,22 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     >
         {(allbalancesLoaded && tokenbalance && Number(tokenbalance?.amount) >= 0) ? (
             <span className="text-sm text-secondary-text text-right my-auto leading-4 font-medium">
-                <div className={clsx("text-primary-text",
-                    {
-                        'text-lg leading-[22px]': type === 'suggested_token',
-                    }
-                )}>
-                    {formatted_balance_amount}
-                </div>
                 {Number(usdAmount) >= 0 && (
                     <div
-                        className={clsx({
-                            'text-xs leading-4': type == 'suggested_token',
-                        })}
+                        className={clsx("text-primary-text",
+                            {
+                                'text-lg leading-[22px]': type === 'suggested_token',
+                            }
+                        )}
                     >{formatUsd(usdAmount)}</div>
                 )}
+                <div
+                    className={clsx({
+                        'text-xs leading-4': type == 'suggested_token',
+                    })}
+                >
+                    {formatted_balance_amount}
+                </div>
             </span>
         ) : !allbalancesLoaded ? (
             <span className="px-0.5">-</span>
@@ -342,8 +343,8 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
             ) : (
                 <SelectedRoutePlaceholder placeholder={placeholder} />
             )}
-            <span className="absolute right-0 px-1 pointer-events-none text-primary-text">
-                <ArrowIcon className="h-6 w-6 text-secondary-text" aria-hidden="true" />
+            <span className="absolute right-0 px-1 pr-2 pointer-events-none text-primary-text">
+                <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
             </span>
         </span>
     )

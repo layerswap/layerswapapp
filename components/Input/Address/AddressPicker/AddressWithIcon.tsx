@@ -1,15 +1,15 @@
 import { FC, useState } from "react"
 import { AddressGroup, AddressItem } from ".";
-import AddressIcon from "../../../AddressIcon";
-import shortenAddress from "../../../utils/ShortenAddress";
-import { History, Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, Unplug, SquareArrowOutUpRight, Info } from "lucide-react";
-import { Partner } from "../../../../Models/Partner";
-import { Network } from "../../../../Models/Network";
-import { Popover, PopoverContent, PopoverTrigger } from "../../../shadcn/popover";
-import useCopyClipboard from "../../../../hooks/useCopyClipboard";
+import AddressIcon from "@/components//AddressIcon";
+import shortenAddress from "@/components//utils/ShortenAddress";
+import { History, Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, SquareArrowOutUpRight, Unplug, Info } from "lucide-react";
+import { Partner } from "@/Models/Partner";
+import { Network } from "@/Models/Network";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components//shadcn/popover";
+import useCopyClipboard from "@/hooks/useCopyClipboard";
 import Link from "next/link";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../../../shadcn/tooltip";
-import { Wallet } from "../../../../Models/WalletProvider";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components//shadcn/tooltip";
+import { Wallet } from "@/Models/WalletProvider";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 type Props = {

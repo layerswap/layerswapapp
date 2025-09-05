@@ -6,7 +6,6 @@ import { Exchange } from "../../Models/Exchange";
 import React from "react";
 import { SelectItem } from "../Select/Selector/SelectItem";
 import useFormRoutes from "@/hooks/useFormRoutes";
-import { SelectedRoutePlaceholder } from "./RoutePicker/Routes";
 import { LayoutGroup, motion } from "framer-motion";
 import { SearchComponent } from "./Search";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
@@ -52,8 +51,8 @@ const CexPicker: FC = () => {
     return (
         <div className="flex w-full flex-col self-end relative ml-auto items-center">
             <Selector>
-                <SelectorTrigger disabled={false} className="bg-secondary-500">
-                    <SelectedNetworkDisplay exchange={fromExchange} placeholder="Select Exchange" />
+                <SelectorTrigger disabled={false} className="bg-secondary-500 !p-3">
+                    <SelectedExchangeDisplay exchange={fromExchange} placeholder="Select Exchange" />
                 </SelectorTrigger>
                 <SelectorContent isLoading={isLoading} searchHint="Search" header="">
                     {({ closeModal, shouldFocus }) => {
@@ -109,36 +108,47 @@ type SelectedNetworkDisplayProps = {
     placeholder: string;
 }
 
-export const SelectedNetworkDisplay = (props: SelectedNetworkDisplayProps) => {
+export const SelectedExchangeDisplay = (props: SelectedNetworkDisplayProps) => {
     const { exchange, placeholder } = props
 
     return (
         <span className="flex grow text-left items-center text-xs md:text-base relative">
             {exchange ? (
                 <>
-                    <div className="inline-flex items-center relative shrink-0">
+                    <div className="inline-flex items-center relative shrink-0 h-7 w-7">
                         <ImageWithFallback
                             src={exchange.logo}
                             alt="Token Logo"
-                            height="24"
-                            width="24"
+                            height="28"
+                            width="28"
                             loading="eager"
                             fetchPriority="high"
-                            className="rounded-full object-contain"
+                            className="rounded-md object-contain"
                         />
                     </div>
-                    <span className="ml-3 flex flex-col font-medium text-primary-text overflow-hidden min-w-0 max-w-3/5">
+                    <span className="ml-2 flex flex-col font-medium text-primary-text overflow-hidden min-w-0 max-w-3/5">
                         {exchange.display_name}
                     </span>
                 </>
             ) : (
-                <SelectedRoutePlaceholder placeholder={placeholder} />
+                <SelectedEchangePlaceholder placeholder={placeholder} />
             )}
-            <span className="absolute right-0 pr-2 pl-1 pointer-events-none text-primary-text">
-                <ChevronDown className="h-3.5 w-3.5 text-secondary-text" aria-hidden="true" />
+            <span className="absolute right-0 px-1 pr-2 pointer-events-none text-primary-text">
+                <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
             </span>
         </span>
     )
 }
+
+export const SelectedEchangePlaceholder = ({ placeholder }: { placeholder: string }) => (
+    <>
+        <div className="inline-flex w-7 h-7 items-center relative">
+            <div className="w-7 h-7 rounded-lg bg-secondary-100" />
+        </div>
+        <span className="flex text-secondary-text text-base font-normal leading-5 flex-auto items-center max-w-2/3">
+            <span className="ml-2 text-sm sm:text-base sm:leading-5">{placeholder}</span>
+        </span>
+    </>
+)
 
 export default CexPicker
