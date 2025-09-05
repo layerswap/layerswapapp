@@ -38,7 +38,7 @@ export class NetworkRoute extends Network {
 
 export class Token {
     symbol: string;
-    display_asset: string
+    display_asset?: string
     logo: string;
     //TODO may be plain string
     contract: string | null | undefined;
