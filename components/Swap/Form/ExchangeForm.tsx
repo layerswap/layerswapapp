@@ -56,7 +56,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
             <DepositMethodComponent />
             <Form className="h-full grow flex flex-col justify-between">
                 <Widget.Content>
-                    <div className="w-full min-h-[79svh] sm:min-h-[480px] flex flex-col justify-between mt-2 sm:mt-0">
+                    <div className="w-full max-sm:min-h-[79svh] flex flex-col justify-between mt-2 sm:mt-0">
                         <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3 leading-4'>
                             <div className="flex flex-col w-full space-y-4">
                                 <div className="space-y-2">
@@ -67,8 +67,6 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                         <CexPicker />
                                     </div>
                                 </div>
-
-
                                 <div className="space-y-2">
                                     <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5">
                                         Send to
