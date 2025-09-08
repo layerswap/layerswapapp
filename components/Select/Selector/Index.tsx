@@ -76,7 +76,7 @@ export const SelectorContent = (props: SelectContentProps) => {
                 </div>
             </div>
 
-            <div className="flex flex-col w-full h-fit max-h-[90dvh] px-4 styled-scroll overflow-x-hidden overflow-y-auto relative">
+            <div className="flex flex-col w-full h-fit max-h-[90dvh] px-4 styled-scroll overflow-x-hidden overflow-y-auto relative pb-3">
                 {children({ closeModal, shouldFocus })}
             </div>
         </div>
