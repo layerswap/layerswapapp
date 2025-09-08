@@ -1,5 +1,5 @@
 import { NetworkWithTokens } from "../../../Models/Network";
-import { Balance } from "../../../Models/Balance";
+import { TokenBalance } from "../../../Models/Balance";
 import KnownInternalNames from "../../knownIds";
 import { HyperliquidClient } from "../../apiClients/hyperliquidClient";
 
@@ -15,7 +15,7 @@ export class HyperliquidBalanceProvider {
             network.name === KnownInternalNames.Networks.HyperliquidTestnet;
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens): Promise<Balance[] | undefined> => {
+    fetchBalance = async (address: string, network: NetworkWithTokens): Promise<TokenBalance[] | undefined> => {
         if (!network?.tokens && !network.token) return;
 
         try {
@@ -27,7 +27,7 @@ export class HyperliquidBalanceProvider {
 
             const clearinghouseState = await this.client.getClearinghouseState(address, nodeUrl);
 
-            const balances: Balance[] = [];
+            const balances: TokenBalance[] = [];
 
             // Only support USDC balances for now
             const usdcToken = network.tokens.find(token => token.symbol === 'USDC');

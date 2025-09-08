@@ -119,9 +119,14 @@ export default function useStarknet(): WalletProvider {
         }
     })
 
+    const switchAccount = async (wallet: Wallet, address: string) => {
+        // as we do not have multiple accounts management we will leave the method empty
+    }
+
     const provider: WalletProvider = {
         connectWallet,
         disconnectWallets,
+        switchAccount,
         connectedWallets: getWallet(),
         activeWallet: getWallet()?.[0],
         withdrawalSupportedNetworks,
@@ -130,7 +135,7 @@ export default function useStarknet(): WalletProvider {
         availableWalletsForConnect,
         name,
         id,
-        providerIcon: networks.find(n => starknetNames.some(name => name === n.name))?.logo
+        providerIcon: networks.find(n => starknetNames.some(name => name === n.name))?.logo,
     }
 
     return provider

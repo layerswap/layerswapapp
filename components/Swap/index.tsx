@@ -5,28 +5,28 @@ import Withdraw from './Withdraw';
 import Processing from './Withdraw/Processing';
 import { BackendTransactionStatus, TransactionType } from '../../lib/apiClients/layerSwapApiClient';
 import { SwapStatus } from '../../Models/SwapStatus';
+import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
+import SubmitButton from '../buttons/submitButton';
+import ManualWithdraw from './Withdraw/ManualWithdraw';
 
 type Props = {
     type: "widget" | "contained",
 }
-import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
-import SubmitButton from '../buttons/submitButton';
 
 const SwapDetails: FC<Props> = ({ type }) => {
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
+    const { swapDetails, swapBasicData, quote, refuel, depositActionsResponse } = useSwapDataState()
 
-    const swapStatus = swap?.status;
+    const swapStatus = swapDetails?.status || SwapStatus.UserTransferPending;
     const storedWalletTransactions = useSwapTransactionStore()
 
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
-    const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swap?.id || '']
+    const swapInputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Input)
+    const storedWalletTransaction = storedWalletTransactions.swapTransactions?.[swapDetails?.id || '']
 
     const removeStoredTransaction = useCallback(() => {
-        useSwapTransactionStore.getState().removeSwapTransaction(swap?.id || '');
-    }, [swap?.id, storedWalletTransactions])
+        useSwapTransactionStore.getState().removeSwapTransaction(swapDetails?.id || '');
+    }, [swapDetails?.id, storedWalletTransactions])
 
-    if (!swap) return <>
+    if (!swapBasicData) return <>
         <div className="w-full h-[430px]">
             <div className="animate-pulse flex space-x-4">
                 <div className="flex-1 space-y-6 py-1">
@@ -39,25 +39,27 @@ const SwapDetails: FC<Props> = ({ type }) => {
     </>
 
     return (
-        <>
-            <Container type={type}>
-                {
-                    ((swapStatus === SwapStatus.UserTransferPending
-                        && !(swapInputTransaction || storedWalletTransaction))) ?
-                        <Withdraw />
-                        :
-                        <>
-                            <Processing />
-                            {
-                                storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
-                                <SubmitButton isDisabled={false} isSubmitting={false} onClick={removeStoredTransaction}>
-                                    Try again
-                                </SubmitButton>
-                            }
-                        </>
-                }
-            </Container>
-        </>
+        <Container type={type}>
+            {
+                ((swapStatus === SwapStatus.UserTransferPending
+                    && !(swapInputTransaction || storedWalletTransaction))) ?
+                    (
+                        swapBasicData?.use_deposit_address === true
+                            ? <ManualWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} />
+                            : <Withdraw type={type} />
+                    )
+                    :
+                    <div className='space-y-3'>
+                        <Processing />
+                        {
+                            storedWalletTransaction?.status == BackendTransactionStatus.Failed &&
+                            <SubmitButton isDisabled={false} isSubmitting={false} onClick={removeStoredTransaction}>
+                                Try again
+                            </SubmitButton>
+                        }
+                    </div>
+            }
+        </Container>
     )
 }
 
@@ -67,10 +69,9 @@ const Container = ({ type, children }: Props & {
     if (type === "widget")
         return <Widget><>{children}</></Widget>
     else
-        return <div className="w-full flex flex-col justify-between h-full space-y-5 text-secondary-text">
+        return <div className="w-full flex flex-col justify-between h-full space-y-3 text-secondary-text">
             {children}
         </div>
-
 }
 
 export default SwapDetails

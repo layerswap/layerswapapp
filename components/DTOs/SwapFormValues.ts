@@ -1,22 +1,20 @@
-import { RouteNetwork, RouteToken } from "../../Models/Network";
-import { Exchange, ExchangeToken } from "../../Models/Exchange";
+import { NetworkRoute, NetworkRouteToken } from "../../Models/Network";
+import { Exchange } from "../../Models/Exchange";
 
 export type SwapFormValues = {
   amount?: string;
   destination_address?: string;
   //TODO: refactor
-  fromCurrency?: RouteToken & { manuallySet?: boolean };
-  toCurrency?: RouteToken & { manuallySet?: boolean };
+  fromAsset?: NetworkRouteToken & { manuallySet?: boolean };
+  toAsset?: NetworkRouteToken & { manuallySet?: boolean };
   refuel?: boolean;
-  from?: RouteNetwork;
-  to?: RouteNetwork;
+  from?: NetworkRoute;
+  to?: NetworkRoute;
   fromExchange?: Exchange;
   toExchange?: Exchange;
-  currencyGroup?: ExchangeToken & { manuallySet?: boolean };
   depositMethod?: 'wallet' | 'deposit_address',
   validatingSource?: boolean;
   validatingDestination?: boolean;
-  validatingCurrencyGroup?: boolean;
 }
 
 

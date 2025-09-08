@@ -17,7 +17,9 @@ export default function useTron(): WalletProvider {
     const { wallets, wallet: tronWallet, disconnect, select } = useWallet();
 
     const address = tronWallet?.adapter.address
-
+    const switchAccount = async (wallet: Wallet, address: string) => {
+        // as we do not have multiple accounts management we will leave the method empty
+    }
     const wallet: Wallet | undefined = address ? {
         id: tronWallet.adapter.name,
         addresses: [address],
@@ -101,7 +103,8 @@ export default function useTron(): WalletProvider {
         asSourceSupportedNetworks: commonSupportedNetworks,
         name,
         id,
-        providerIcon: network?.logo
+        providerIcon: network?.logo,
+        switchAccount
     }
 
     return provider

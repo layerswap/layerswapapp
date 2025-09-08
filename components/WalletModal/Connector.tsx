@@ -23,7 +23,7 @@ const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isR
             <button
                 type="button"
                 disabled={!!connectingConnector}
-                className="w-full h-fit flex items-center justify-between bg-secondary-700 hover:bg-secondary-500 transition-colors duration-200 rounded-xl p-3"
+                className="w-full h-fit flex items-center justify-between bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl p-3"
                 onClick={onClick}
                 {...props}
             >
@@ -40,7 +40,7 @@ const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isR
                         }
                         {
                             isRecent &&
-                            <p className='text-xs text-primary-text font-semibold bg-primary-700 px-1 py-0.5 rounded-md'>Recent</p>
+                            <p className='text-xs text-primary-buttonTextColor font-semibold bg-primary-700 px-1 py-0.5 rounded-md'>Recent</p>
                         }
                     </div>
                     {

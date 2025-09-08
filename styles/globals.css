@@ -1,6 +1,78 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@config '../tailwind.config.js';
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: transparent;
+  }
+}
+
+@theme static {
+  --color-primary: rgb(var(--ls-colors-primary, 228, 37, 117));
+  /* --color-primary-50: rgb(var(--ls-colors-primary-50, 248, 200, 220)); */
+  --color-primary-100: rgb(var(--ls-colors-primary-100, 255, 158, 187));
+  --color-primary-200: rgb(var(--ls-colors-primary-200, 245, 108, 149));
+  --color-primary-300: rgb(var(--ls-colors-primary-300, 224, 85, 127));
+  --color-primary-400: rgb(var(--ls-colors-primary-400, 224, 63, 111));
+  --color-primary-500: rgb(var(--ls-colors-primary-500, 188, 42, 88));
+  --color-primary-600: rgb(var(--ls-colors-primary-600, 173, 28, 71));
+  --color-primary-700: rgb(var(--ls-colors-primary-700, 140, 22, 58));
+  --color-primary-800: rgb(var(--ls-colors-primary-800, 88, 14, 37));
+  --color-primary-900: rgb(var(--ls-colors-primary-900, 46, 7, 19));
+  --color-primary-background: rgb(var(--ls-colors-backdrop, 62, 18, 64));
+  --color-primary-text: rgb(var(--ls-colors-primary-text, 225, 227, 230));
+  --color-primary-text-muted: rgb(var(--ls-colors-primary-text-muted, 86, 97, 123));
+  --color-primary-text-placeholder: rgb(var(--ls-colors-text-placeholder, 118, 128, 147));
+  --color-primary-actionButtonText: rgb(var(--ls-colors-actionButtonText, 220, 2, 90));
+  --color-primary-buttonTextColor: rgb(var(--ls-colors-buttonTextColor, 228, 229, 240));
+  --color-primary-logoColor: rgb(var(--ls-colors-logo, 255, 0, 147));
+
+  --color-secondary: rgb(var(--ls-colors-secondary, 17, 29, 54));
+  /* --color-secondary-50: rgb(var(--ls-colors-secondary-50, 49, 60, 155)); */
+  --color-secondary-100: rgb(var(--ls-colors-secondary-100, 60, 72, 97));
+  --color-secondary-200: rgb(var(--ls-colors-secondary-200, 52, 63, 87));
+  --color-secondary-300: rgb(var(--ls-colors-secondary-300, 40, 50, 71));
+  --color-secondary-400: rgb(var(--ls-colors-secondary-400, 31, 40, 61));
+  --color-secondary-500: rgb(var(--ls-colors-secondary-500, 23, 31, 49));
+  --color-secondary-600: rgb(var(--ls-colors-secondary-600, 18, 25, 41));
+  --color-secondary-700: rgb(var(--ls-colors-secondary-700, 14, 21, 36));
+  --color-secondary-800: rgb(var(--ls-colors-secondary-800, 11, 17, 31));
+  --color-secondary-900: rgb(var(--ls-colors-secondary-900, 6, 10, 20));
+  --color-secondary-950: rgb(var(--ls-colors-secondary-900, 11, 17, 35));
+  --color-secondary-text: rgb(var(--ls-colors-secondary-text, 163, 173, 194));
+
+  --color-coinbase-primary: rgb(74, 108, 238);
+  --color-coinbase-diabled: rgb(25, 26, 69);
+}
+
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
+@utility styled-scroll {
+  @apply scrollbar:w-1.5! scrollbar:h-1.5! scrollbar:bg-secondary-500 scrollbar:absolute scrollbar-thumb:rounded-sm! scrollbar-thumb:bg-slate-500/50!;
+}
+.styled-scroll::-webkit-scrollbar{
+  position:absolute
+}
+@utility rdxCommandList {
+  max-height: var(--radix-popper-available-height);
+}
 
 @layer utilities {
 
@@ -14,10 +86,11 @@
   /* Firefox */
   input[type="number"] {
     -moz-appearance: textfield;
+    appearance: textfield;
   }
   
   .styled-scroll {
-    @apply scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-secondary-500  scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-500/50 ;
+    @apply scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar:bg-secondary-500 scrollbar-thumb:!rounded scrollbar-thumb:!bg-slate-500/50 ;
   }
   
   .rdxCommandList {
@@ -28,7 +101,7 @@
 @layer base {
 
   body {
-    @apply bg-secondary-900 sm:bg-secondary-950;
+    @apply bg-secondary-900 sm:bg-gradient-to-b to-secondary-500 from-secondary-900;
   }
 
   /* On iOS disabled inputs have default opacitiy */
@@ -41,25 +114,6 @@
 iframe body {
   display: none;
 }
-
-.light .top-backdrop {
-  display: none;
-}
-
-.top-backdrop {
-  width: 1325px;
-  height: 1164px;
-  position: absolute;
-  filter: blur(133px);
-  transform: translate(-50%, -50%) translate3d(0, 0, 0);
-  left: 50%;
-  top: -5%;
-  border-radius: 50%;
-  z-index: -1;
-  opacity: 80%;
-  background: theme('colors.primary.background');
-}
-
 
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
@@ -101,7 +155,7 @@ hr.horizontal-gradient {
 
 .strong-highlight::after {
   /* Highlight color */
-  background-color: theme('colors.secondary.500');
+  background-color: var(--color-secondary-500);
   content: "";
   position: absolute;
   width: calc(100% + 10px);
@@ -276,6 +330,7 @@ input::-webkit-input-placeholder {
 
 body {
   overflow: overlay;
+  background-color: rgb(var(--ls-colors-secondary-700));
 }
 
 body::-webkit-scrollbar {
@@ -307,7 +362,7 @@ input:disabled,
 textarea:disabled,
 input:disabled::placeholder,
 textarea:disabled::placeholder {
-  -webkit-text-fill-color: theme('colors.primary.text-placeholder');
+  -webkit-text-fill-color: var(--color-primary-text-placeholder);
   /* 1. sets text fill to 'primary-text': '#a4afc8' */
   opacity: 1;
   /* 2. correct opacity on iOS */
@@ -319,6 +374,44 @@ textarea:disabled::placeholder {
 
 .space-y-reverse {
   --space-y-reverse: 1
+}
+/* styles.css */
+.AccordionContent {
+	overflow: hidden;
+  transform-origin: top;
+}
+.layout-animating .AccordionContent[data-state="open"],
+.layout-animating .AccordionContent[data-state="closed"] {
+  animation: none !important;
+}
+.AccordionContent[data-state="open"] {
+	animation: slideDown 300ms ease-out;
+}
+.AccordionContent[data-state="closed"] {
+	animation: slideUp 300ms ease-out;
+}
+.AccordionContent.NoAnimation {
+  animation-play-state: paused !important;
+}
+.no-anchor {
+  overflow-anchor: none;
+}
+@keyframes slideDown {
+	from {
+		height: 0;
+	}
+	to {
+		height: var(--radix-accordion-content-height);
+	}
+}
+
+@keyframes slideUp {
+	from {
+		height: var(--radix-accordion-content-height);
+	}
+	to {
+		height: 0;
+	}
 }
 
 .loader, .loader:before, .loader:after {
@@ -355,3 +448,22 @@ textarea:disabled::placeholder {
   40% { box-shadow: 0 2.5em 0 0 }
 }
     
+@layer utilities {
+  @keyframes pulse-strong {
+    50% {
+      opacity: 0.4; 
+    }
+  }
+  .animate-pulse-strong {
+    animation: pulse-strong 1.4s cubic-bezier(0.77, 0, 0.17, 1) infinite;
+  }
+
+  @keyframes pulse-stronger {
+    50% {
+      opacity: 0.15; 
+    }
+  }
+  .animate-pulse-stronger {
+    animation: pulse-stronger 1.4s cubic-bezier(0.77, 0, 0.17, 1) infinite;
+  }
+}

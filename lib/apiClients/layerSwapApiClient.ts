@@ -5,10 +5,9 @@ import { v4 as uuidv4 } from 'uuid';
 import { AxiosInstance, Method } from "axios";
 import { AuthRefreshFailedError } from "../Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse";
-import LayerSwapAuthApiClient from "./userAuthApiClient";
 import { NetworkWithTokens, Network, Token } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
-import { datadogRum } from '@datadog/browser-rum';
+import posthog from "posthog-js";
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;
@@ -18,7 +17,7 @@ export default class LayerSwapApiClient {
     _authInterceptor: AxiosInstance;
     _unauthInterceptor: AxiosInstance
     constructor() {
-        this._authInterceptor = InitializeAuthInstance(LayerSwapAuthApiClient.identityBaseEndpoint);
+        this._authInterceptor = InitializeAuthInstance();
         this._unauthInterceptor = InitializeUnauthInstance(LayerSwapApiClient.apiBaseEndpoint)
     }
 
@@ -91,7 +90,14 @@ export default class LayerSwapApiClient {
                     const renderingError = new Error(`API request error with uri:${uri}`);
                     renderingError.name = `APIError`;
                     renderingError.cause = reason;
-                    datadogRum.addError(renderingError);
+                    posthog.capture('$exception', {
+                        name: renderingError.name,
+                        message: renderingError.message,
+                        stack: renderingError.stack,
+                        cause: renderingError.cause,
+                        where: 'apiClient',
+                        severity: 'error',
+                    });
                     return Promise.reject(reason);
                 }
             });
@@ -142,6 +148,7 @@ export type CreateSwapParams = {
 }
 
 export type SwapResponse = {
+    deposit_actions?: DepositAction[];
     swap: SwapItem;
     quote: SwapQuote
     refuel?: Refuel,
@@ -154,29 +161,61 @@ export type Refuel = {
     amount_in_usd: number
 }
 
-export type SwapItem = {
-    id: string,
-    created_date: string,
+export type SwapBasicData = {
     source_network: Network,
     source_token: Token,
     source_exchange?: Exchange,
     destination_network: Network,
     destination_token: Token,
-    destination_exchange?: Exchange,
-    status: SwapStatus,
-    source_address: `0x${string}`,
-    destination_address: `0x${string}`,
+    destination_address: string,
     requested_amount: number,
-    use_deposit_address: boolean
+    use_deposit_address: boolean,
+
+}
+
+export type SwapDetails = {
+    id: string,
+    created_date: string,
+    status: SwapStatus,
     transactions: Transaction[]
     exchange_account_connected: boolean;
     exchange_account_name?: string;
+
     fail_reason?: string;
     metadata: {
         reference_id: string | null;
         app: string | null;
         sequence_number: number
     }
+}
+
+export type SwapItem = {
+    id: string,
+    created_date: string,
+
+    source_network: Network,
+    source_token: Token,
+    source_exchange?: Exchange,
+    destination_network: Network,
+    destination_token: Token,
+    destination_address: string,
+    requested_amount: number,
+    use_deposit_address: boolean
+
+
+    status: SwapStatus,
+    transactions: Transaction[]
+    exchange_account_connected: boolean;
+    exchange_account_name?: string;
+
+    fail_reason?: string;
+    metadata: {
+        reference_id: string | null;
+        app: string | null;
+        sequence_number: number
+    },
+
+    destination_exchange?: Exchange,
 }
 
 export type DepositAction = {
@@ -194,8 +233,8 @@ export type DepositAction = {
 
 export type Quote = {
     quote: SwapQuote,
-    refuel: Refuel,
-    reward: QuoteReward
+    refuel?: Refuel,
+    reward?: QuoteReward
 }
 
 export type QuoteReward = {
@@ -225,6 +264,7 @@ export type SwapQuote = {
     source_token?: Token,
     destination_network?: Network,
     destination_token?: Token,
+    requested_amount?: number
     receive_amount: number,
     min_receive_amount: number,
     fee_discount?: number
@@ -263,7 +303,8 @@ export type Transaction = {
 export enum TransactionType {
     Input = 'input',
     Output = 'output',
-    Refuel = 'refuel'
+    Refuel = 'refuel',
+    Refund = 'refund'
 }
 
 export enum BackendTransactionStatus {

@@ -1,4 +1,8 @@
+import { createRequire } from "node:module";
 import type { StorybookConfig } from "@storybook/nextjs";
+import path, { dirname, join } from "path";
+
+const require = createRequire(import.meta.url);
 
 const config: StorybookConfig = {
   env: () => ({
@@ -9,32 +13,42 @@ const config: StorybookConfig = {
     NEXT_PUBLIC_API_KEY: "sandbox",
     NEXT_PUBLIC_API_VERSION: "sandbox"
   }),
+
   stories: [
     "../stories/**/*.mdx",
     "../stories/**/*.stories.@(js|jsx|mjs|ts|tsx)",
   ],
+
   addons: [
-    "@storybook/addon-links",
-    "@storybook/addon-essentials",
-    "@storybook/addon-onboarding",
-    "@storybook/addon-interactions",
-    "@storybook/addon-mdx-gfm",
-    "storybook-addon-mock"
+    getAbsolutePath("@storybook/addon-links"),
+    getAbsolutePath("@storybook/addon-onboarding"),
+    getAbsolutePath("storybook-addon-mock"),
+    getAbsolutePath("@storybook/addon-docs")
   ],
+
   framework: {
-    name: "@storybook/nextjs",
+    name: getAbsolutePath("@storybook/nextjs"),
     options: {},
   },
-  docs: {
-    autodocs: "tag",
-  },
+
   webpackFinal: async (config) => {
     config.module?.rules?.push({
       test: /\.scss$/,
       use: ["style-loader", "css-loader", "postcss-loader", "sass-loader"],
     });
 
+    if (config.resolve) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        '@': path.resolve(__dirname, '../'),
+      };
+    }
+
     return config;
-  },
+  }
 };
 export default config;
+
+function getAbsolutePath(value: string): any {
+  return dirname(require.resolve(join(value, "package.json")));
+}

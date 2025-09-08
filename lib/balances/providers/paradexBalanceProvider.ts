@@ -1,4 +1,4 @@
-import { Balance } from "../../../Models/Balance";
+import { TokenBalance } from "../../../Models/Balance";
 import { NetworkWithTokens } from "../../../Models/Network";
 import KnownInternalNames from "../../knownIds";
 import * as Paradex from "../../wallets/paradex/lib";
@@ -17,7 +17,7 @@ export class ParadexBalanceProvider {
 
             const paraclearProvider = new Paradex.ParaclearProvider.DefaultProvider(config);
 
-            const result: Balance[] = []
+            const result: TokenBalance[] = []
 
             for (const token of tokens) {
                 try {

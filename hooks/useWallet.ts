@@ -1,6 +1,6 @@
 import { Network } from "../Models/Network"
 import { Wallet, WalletProvider } from "../Models/WalletProvider";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 import { useWalletProviders } from "../context/walletProviders";
 
 export type WalletPurpose = "autofil" | "withdrawal" | "asSource"
@@ -24,16 +24,18 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
         return connectedWallets;
     }, [walletProviders, network]);
 
-    const getProvider = (network: Network, purpose: WalletPurpose) => {
+    const getProvider = useCallback((network: Network, purpose: WalletPurpose) => {
         return network && resolveProvider(network, walletProviders, purpose)
-    }
+    }, [walletProviders, purpose]);
 
-    return {
+    const res = useMemo(() => ({
         wallets,
         provider,
         providers: walletProviders,
         getProvider
-    }
+    }), [wallets, provider, walletProviders, getProvider])
+
+    return res
 }
 
 const resolveProvider = (network: Network | undefined, walletProviders: WalletProvider[], purpose?: WalletPurpose) => {

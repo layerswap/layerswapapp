@@ -1,6 +1,5 @@
 import { useRouter } from "next/router"
 import { FC, useCallback } from "react"
-import Image from 'next/image'
 import { Gift } from "lucide-react"
 import LayerSwapApiClient, { Campaign } from "../../../lib/apiClients/layerSwapApiClient"
 import useSWR from "swr"
@@ -14,6 +13,7 @@ import Rewards from "./Rewards";
 import SpinIcon from "../../icons/spinIcon"
 import useWallet from "../../../hooks/useWallet"
 import { useConnectModal } from "../../WalletModal"
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback"
 
 function CampaignDetails() {
     const router = useRouter();
@@ -48,7 +48,7 @@ function CampaignDetails() {
                 <div className="space-y-5">
                     <div className="flex items-center gap-1">
                         <div className="h-7 w-7 relative">
-                            {(campaign.logo_url || network?.logo) && <Image
+                            {(campaign.logo_url || network?.logo) && <ImageWithFallback
                                 src={(campaign.logo_url || network?.logo) as string}
                                 alt="Project Logo"
                                 height="40"

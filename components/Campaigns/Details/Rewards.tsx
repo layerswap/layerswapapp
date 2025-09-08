@@ -1,5 +1,4 @@
 import { FC } from "react"
-import Image from 'next/image'
 import BackgroundField from "../../backgroundField";
 import { Clock } from "lucide-react"
 import LayerSwapApiClient, { Campaign, Reward, RewardPayout } from "../../../lib/apiClients/layerSwapApiClient"
@@ -10,6 +9,7 @@ import ClickTooltip from "../../Tooltips/ClickTooltip"
 import shortenAddress from "../../utils/ShortenAddress"
 import { Progress } from "../../ProgressBar";
 import useWallet from "../../../hooks/useWallet";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 type Props = {
     campaign: Campaign
@@ -64,13 +64,13 @@ const Rewards: FC<Props> = ({ campaign }) => {
                     }
                 </span>
             </div>
-            <div className="bg-secondary-700 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
+            <div className="bg-secondary-500 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-500 hover:border-secondary-400 transition duration-200">
                 {!campaignIsEnded &&
                     <BackgroundField header={<span className="flex justify-between"><span className="flex items-center"><span>Pending Earnings&nbsp;</span><ClickTooltip text={`${campaign.token.symbol} tokens that will be airdropped periodically.`} /> </span><span>Next Airdrop</span></span>} withoutBorder>
                         <div className="flex justify-between w-full text-2xl">
                             <div className="flex items-center space-x-1">
                                 <div className="h-5 w-5 relative">
-                                    <Image
+                                    <ImageWithFallback
                                         src={campaign.token?.logo || ''}
                                         alt="Project Logo"
                                         height="40"
@@ -95,7 +95,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
                     <div className="flex justify-between w-full text-slate-300 text-2xl">
                         <div className="flex items-center space-x-1">
                             <div className="h-5 w-5 relative">
-                                <Image
+                                <ImageWithFallback
                                     src={campaign.token?.logo || ''}
                                     alt="Project Logo"
                                     height="40"
@@ -124,7 +124,7 @@ const Rewards: FC<Props> = ({ campaign }) => {
                 <p className="font-bold text-lg text-left">Payouts</p>
                 <div className=" bg-secondary-700 divide-y divide-secondary-300 rounded-lg shadow-lg border border-secondary-700 hover:border-secondary-500 transition duration-200">
                     <div className="inline-block min-w-full align-middle">
-                        <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                        <div className="overflow-hidden shadow-sm ring-1 ring-black/5 sm:rounded-lg">
                             <table className="min-w-full divide-y divide-secondary-500">
                                 <thead className="bg-secondary-800/70">
                                     <tr>

@@ -36,7 +36,9 @@ export default function useTON(): WalletProvider {
         asSourceSupportedNetworks: commonSupportedNetworks,
         networkIcon: networks.find(n => commonSupportedNetworks.some(name => name === n.name))?.logo
     } : undefined
-
+    const switchAccount = async (wallet: Wallet, address: string) => {
+        // as we do not have multiple accounts management we will leave the method empty
+    }
     const getWallet = () => {
         if (wallet) {
             return [wallet]
@@ -130,6 +132,7 @@ export default function useTON(): WalletProvider {
         asSourceSupportedNetworks: commonSupportedNetworks,
         name,
         id,
+        switchAccount
     }
 
     return provider

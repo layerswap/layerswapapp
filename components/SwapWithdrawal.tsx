@@ -5,17 +5,18 @@ import { Widget } from "./Widget/Index";
 import NotFound from "./Swap/NotFound";
 
 const SwapWithdrawal: FC = () => {
-    const { swapResponse: swap, swapApiError } = useSwapDataState()
+    const { swapBasicData, swapApiError } = useSwapDataState()
     const { mutateSwap } = useSwapDataUpdate()
 
     useEffect(() => {
         mutateSwap()
     }, [])
 
-    if (!swap)
+    if (!swapBasicData)
         return <Widget>
             <div className={`pb-6 rounded-lg w-full overflow-hidden relative h-[548px]`}>
-                {swapApiError &&
+                {
+                    swapApiError &&
                     <NotFound />
                 }
             </div>

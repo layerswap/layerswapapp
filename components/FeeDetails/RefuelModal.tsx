@@ -1,68 +1,55 @@
 import { SwapFormValues } from '../DTOs/SwapFormValues';
-import { Dispatch, FC, SetStateAction } from 'react';
-import useWallet from '../../hooks/useWallet';
+import { Dispatch, FC, SetStateAction, useMemo } from 'react';
 import Modal from '../modal/modal';
 import { Fuel } from 'lucide-react';
 import { roundDecimals, truncateDecimals } from '../utils/RoundDecimals';
 import SubmitButton from '../buttons/submitButton';
 import SecondaryButton from '../buttons/secondaryButton';
 import { useFormikContext } from 'formik';
-import { useFee } from '../../context/feeContext';
 import useSWRBalance from '../../lib/balances/useSWRBalance';
-import { useSwapDataState } from '../../context/swap';
+import { useQuoteData } from '@/hooks/useFee';
+import GasIcon from '../icons/GasIcon';
 
 type RefuelModalProps = {
     openModal: boolean,
     setOpenModal: Dispatch<SetStateAction<boolean>>
+    fee: ReturnType<typeof useQuoteData>['quote']
 }
 
-const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
+const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal, fee }) => {
     const {
         values,
         setFieldValue
     } = useFormikContext<SwapFormValues>();
 
-    const { to, toCurrency, refuel, destination_address } = values || {};
-
-    const { fee } = useFee()
+    const { to, toAsset: toCurrency, refuel, destination_address } = values || {};
 
     const nativeAsset = to?.token
     const token_usd_price = fee?.quote?.destination_network?.token?.price_in_usd || nativeAsset?.price_in_usd
 
-    const { balance } = useSWRBalance(destination_address, to)
-    const destNativeTokenBalance = balance?.find(b => b.token === nativeAsset?.symbol && b.network === to?.name)
+    const { balances } = useSWRBalance(destination_address, to)
+    const destNativeTokenBalance = balances?.find(b => b.token === nativeAsset?.symbol && b.network === to?.name)
     const amountInUsd = (destNativeTokenBalance && token_usd_price) ? (destNativeTokenBalance.amount * token_usd_price).toFixed(2) : undefined
-
-    const closeModal = () => {
-        setOpenModal(false)
-    }
-
-    const enabldeRefuel = () => {
-        setFieldValue('refuel', true)
-        setOpenModal(false)
-    }
 
     return (
         <Modal height="fit" show={openModal} setShow={setOpenModal} modalId={"refuel"}>
-            <div className="flex flex-col items-center gap-6 mt-2">
-                <div className="relative z-10 flex h-28 w-28 items-center justify-center rounded-xl p-2 bg-primary/20">
-                    <Fuel className="h-16 w-16 text-primary" aria-hidden="true" />
+            <div className="flex flex-col items-center gap-2 text-center space-y-3">
+                <div className="relative z-10 flex items-center justify-center rounded-xl p-3 bg-secondary-500">
+                    <GasIcon className="h-[52px] w-[52px] text-primary-200" aria-hidden="true" />
                 </div>
-                <div className="text-center max-w-72">
-                    <p className="text-2xl">About Refuel</p>
-                    <p className="text-secondary-text">
-                        <span>You can get a small amount of</span> <span>{nativeAsset?.symbol}</span> <span>that can be used for covering gas fees on</span> <span>{to?.display_name}.</span>
-                    </p>
-                </div>
+                <p className="text-2xl">About Refuel</p>
+                <p className="text-secondary-text">
+                    <span>You can get a small amount of</span> <span>{nativeAsset?.symbol}</span> <span>that can be used for covering gas fees on</span> <span>{to?.display_name}.</span>
+                </p>
                 {
                     (values.refuel || destNativeTokenBalance) &&
-                    <div className="flex flex-col divide-y-2 divide-secondary-900 w-full rounded-lg bg-secondary-700 overflow-hidden">
+                    <div className="flex flex-col space-y-2 w-full bg-secondary-700 overflow-hidden ">
                         {
                             destNativeTokenBalance &&
-                            <div className="gap-4 flex relative items-center outline-none w-full text-primary-text px-4 py-3">
+                            <div className="gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3 bg-secondary-500 rounded-xl">
                                 <div className="flex items-center justify-between w-full">
                                     <div className="text-secondary-text">
-                                        <span>Your current balance</span>
+                                        <span>Current balance</span>
                                     </div>
                                     <p className='text-end'>
                                         <span>{truncateDecimals(destNativeTokenBalance.amount, nativeAsset?.precision)} {nativeAsset?.symbol}</span> <span className="text-secondary-text">(${amountInUsd})</span>
@@ -72,7 +59,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
                         }
                         {
                             toCurrency?.refuel && nativeAsset &&
-                            <div className="gap-4 flex relative items-center outline-none w-full text-primary-text px-4 py-3">
+                            <div className="gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3 bg-secondary-500 rounded-xl">
                                 <div className="flex items-center justify-between w-full">
                                     <div className="text-secondary-text">
                                         You will receive
@@ -85,17 +72,6 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal }) => {
                         }
                     </div>
                 }
-                <div className='flex flex-col gap-3 w-full h-full'>
-                    {
-                        !refuel &&
-                        <SubmitButton type="button" onClick={enabldeRefuel}>
-                            Enable Refuel
-                        </SubmitButton>
-                    }
-                    <SecondaryButton type="button" className='h-full w-full py-3' onClick={closeModal}>
-                        Close
-                    </SecondaryButton>
-                </div>
             </div>
         </Modal>
     )

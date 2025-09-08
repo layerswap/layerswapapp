@@ -1,38 +1,36 @@
-import { FC } from "react"
-import { useSwapDataState } from "../../../context/swap"
+import { FC, useMemo } from "react"
+import { useSwapDataState } from "@/context/swap"
 import Summary from "./Summary"
-import { TransactionType } from "../../../lib/apiClients/layerSwapApiClient"
-import { shortenEmail } from "../../utils/ShortenAddress"
-import KnownInternalNames from "../../../lib/knownIds"
-import useWallet from "../../../hooks/useWallet"
-import { useQueryState } from "../../../context/query"
+import { SwapResponse, TransactionType } from "@/lib/apiClients/layerSwapApiClient"
+import { shortenEmail } from "@/components/utils/ShortenAddress"
+import KnownInternalNames from "@/lib/knownIds"
+import { useQueryState } from "@/context/query"
+import useWallet from "@/hooks/useWallet"
 
 const SwapSummary: FC = () => {
-    const { swapResponse, selectedSourceAccount } = useSwapDataState()
-    const { swap, quote: swapQuote, refuel: swapRefuel } = swapResponse || {}
-    const { source_network, destination_network, source_token, destination_token } = swap || {}
 
     const {
         hideFrom,
         account,
     } = useQueryState()
 
-    const sourceExchange = swap?.source_exchange
-    const destExchange = swap?.destination_exchange
+    const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading } = useSwapDataState()
 
+    const { source_network, destination_network, source_token, destination_token, source_exchange } = swapBasicData || {}
+    const { provider } = useWallet(source_network, "withdrawal")
+    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
 
-    if (!swap || !source_network || !source_token || !destination_token || !destination_network) {
+    if (!swapBasicData || !source_network || !source_token || !destination_token || !destination_network) {
         return <></>
     }
 
-    const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
-    const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
+    const swapInputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Input)
+    const swapOutputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Output)
 
-    const requested_amount = (swapInputTransaction?.amount ?? swap.requested_amount) || undefined
+    const requested_amount = (swapInputTransaction?.amount ?? swapBasicData.requested_amount) || undefined
 
-    const receiveAmount = swapQuote?.receive_amount
+    const receiveAmount = quote?.receive_amount
     const calculatedReceiveAmount = swapOutputTransaction?.amount ?? receiveAmount
-
     let sourceAccountAddress = ""
     if (hideFrom && account) {
         sourceAccountAddress = account;
@@ -43,30 +41,33 @@ const SwapSummary: FC = () => {
     else if (selectedSourceAccount?.address) {
         sourceAccountAddress = selectedSourceAccount.address;
     }
-    else if (source_network?.name === KnownInternalNames.Exchanges.Coinbase && swap?.exchange_account_connected) {
-        sourceAccountAddress = shortenEmail(swap?.exchange_account_name, 10);
+    else if (source_network?.name === KnownInternalNames.Exchanges.Coinbase && swapDetails?.exchange_account_connected) {
+        sourceAccountAddress = shortenEmail(swapDetails?.exchange_account_name, 10);
     }
-    else if (sourceExchange) {
+    else if (source_exchange) {
         sourceAccountAddress = "Exchange"
     }
     else {
         sourceAccountAddress = "Network"
     }
 
+    const swapData = {
+        swap: {
+            ...swapBasicData,
+            requested_amount: requested_amount!
+        },
+        quote: {
+            quote: quote!,
+            refuel
+        },
+        sourceAccountAddress,
+        receiveAmount: calculatedReceiveAmount
+    }
+
+
     return <Summary
-        sourceCurrency={source_token}
-        destinationCurrency={destination_token}
-        source={source_network}
-        sourceExchange={sourceExchange}
-        destination={destination_network}
-        destExchange={destExchange}
-        requestedAmount={requested_amount}
-        receiveAmount={calculatedReceiveAmount}
-        destinationAddress={swap.destination_address}
-        refuel={swapRefuel}
-        exchange_account_connected={swap?.exchange_account_connected}
-        exchange_account_name={swap?.exchange_account_name}
-        sourceAccountAddress={sourceAccountAddress}
+        {...swapData}
+        quoteIsLoading={quoteIsLoading}
     />
 }
 export default SwapSummary

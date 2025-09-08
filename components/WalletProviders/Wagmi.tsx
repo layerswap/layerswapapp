@@ -1,13 +1,14 @@
 import { useSettingsState } from "../../context/settings";
 import { NetworkType } from "../../Models/Network";
 import resolveChain from "../../lib/resolveChain";
-import React from "react";
+import React, { useMemo } from "react";
 import NetworkSettings from "../../lib/NetworkSettings";
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createConfig } from 'wagmi';
 import { Chain, http } from 'viem';
 import { useEvmConnectors } from "../../context/evmConnectorsContext";
+import { ActiveEvmAccountProvider } from "./ActiveEvmAccount";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -46,10 +47,13 @@ function WagmiComponent({ children }: Props) {
         transports: transports,
     });
 
+
     return (
         <WagmiProvider config={config} >
             <QueryClientProvider client={queryClient}>
-                {children}
+                <ActiveEvmAccountProvider>
+                    {children}
+                </ActiveEvmAccountProvider>
             </QueryClientProvider>
         </WagmiProvider >
     )

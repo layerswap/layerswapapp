@@ -32,7 +32,7 @@ export type Wallet = {
     }
     chainId?: string | number,
     isLoading?: boolean,
-    disconnect: () => Promise<void> | undefined | void;
+    disconnect?: () => Promise<void> | undefined | void;
     connect?: () => Promise<Wallet | undefined>;
     isNotAvailable?: boolean;
     //TODO: refactor
@@ -47,7 +47,8 @@ export type WalletProvider = {
     hideFromList?: boolean,
     connectWallet: (props?: { connector?: InternalConnector }) => Promise<Wallet | undefined> | undefined,
     disconnectWallets?: () => Promise<void> | undefined | void,
-    switchAccount?: (connector: Wallet, address: string) => Promise<void>,
+    switchAccount: (connector: Wallet, address: string) => Promise<void>,
+    switchChain?: (connector: Wallet, chainId: string | number) => Promise<void>
     isNotAvailableCondition?: (connector: string, network: string) => boolean,
     availableWalletsForConnect?: InternalConnector[],
     availableHiddenWalletsForConnect?: InternalConnector[],
@@ -60,4 +61,11 @@ export type WalletProvider = {
     id: string,
     providerIcon?: string,
     unsupportedPlatforms?: string[],
+}
+
+
+export type SelectAccountProps = {
+    walletId: string;
+    address: string;
+    providerName: string;
 }

@@ -35,7 +35,7 @@ const Comp = () => {
 
     return <>
         <div className="text-secondary-text cursor-pointer relative">
-            <IconButton onClick={() => setOpenTopModal(true)} icon={
+            <IconButton className="inline-flex" onClick={() => setOpenTopModal(true)} icon={
                 <MenuIcon strokeWidth="2" />
             }>
             </IconButton>
@@ -48,7 +48,7 @@ const Comp = () => {
                         {
                             goBack &&
                             <div className="-ml-2">
-                                <IconButton onClick={goBack} icon={
+                                <IconButton className="inline-flex" onClick={goBack} icon={
                                     <ChevronLeft strokeWidth="2" />
                                 }>
                                 </IconButton>
