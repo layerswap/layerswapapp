@@ -38,9 +38,7 @@ export default function Form() {
                     <FormWrapper type="cross-chain">
                         <Widget className="h-full" >
                             <ValidationProvider>
-                                <ResizablePanel>
-                                    <NetworkForm />
-                                </ResizablePanel>
+                                <NetworkForm />
                             </ValidationProvider>
                         </Widget>
                     </FormWrapper>
@@ -52,9 +50,7 @@ export default function Form() {
                     <FormWrapper type="exchange">
                         <Widget className="h-full" >
                             <ValidationProvider>
-                                <ResizablePanel>
-                                    <ExchangeForm />
-                                </ResizablePanel>
+                                <ExchangeForm />
                             </ValidationProvider>
                         </Widget>
                     </FormWrapper>

@@ -38,13 +38,12 @@ type ContentChildProps = {
 type SelectContentProps = {
     header?: ReactNode;
     searchHint?: string;
-    modalContent?: React.ReactNode;
     children: ((props: ContentChildProps) => JSX.Element);
     isLoading: boolean;
 }
 
 export const SelectorContent = (props: SelectContentProps) => {
-    const { children, modalContent, header } = props
+    const { children, header } = props
     const { isOpen, setIsOpen, setShouldFocus, shouldFocus } = useSelectorState();
     const { isDesktop } = useWindowDimensions();
     const closeModal = () => { setIsOpen(false); setShouldFocus(false) };
@@ -53,37 +52,32 @@ export const SelectorContent = (props: SelectContentProps) => {
 
     const modalElement = (
         <div className="absolute inset-0 z-50 bg-secondary-700 rounded-t-3xl sm:rounded-3xl flex flex-col">
-            {/* Header */}
-            {header && (
-                <div className="w-full relative">
-                    <div className="flex items-center w-full text-left justify-between px-4 sm:pt-3 pb-2">
-                        <div className="flex-1 text-lg text-secondary-text font-semibold w-full flex justify-end">
-                            {header}
-                        </div>
-                        <button
-                            onClick={closeModal}
-                            className="inline-flex p-2 text-secondary-text hover:text-white transition-colors"
-                            aria-label="Close modal"
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
+            <div className="w-full relative">
+                <div className="flex items-center w-full text-left justify-between px-4 sm:pt-3 pb-2">
+                    <div className="flex-1 text-lg text-secondary-text font-semibold w-full flex justify-end">
+                        {header}
                     </div>
+                    <button
+                        type="button"
+                        onClick={closeModal}
+                        className="inline-flex p-2 text-secondary-text hover:text-white transition-colors"
+                        aria-label="Close modal"
+                    >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
                 </div>
-            )}
-            
-            {/* Content */}
+            </div>
+
             <div className="flex flex-col w-full h-fit max-h-[90dvh] px-4 styled-scroll overflow-x-hidden overflow-y-auto relative">
-                {modalContent}
                 {children({ closeModal, shouldFocus: isDesktop && shouldFocus })}
             </div>
         </div>
     );
 
-    // Find the widget container and render the modal there
     const widgetElement = document.getElementById('widget');
-    
+
     if (!widgetElement) {
         console.warn('Widget element not found, modal will not render');
         return null;

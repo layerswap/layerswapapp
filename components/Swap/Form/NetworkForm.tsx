@@ -117,36 +117,36 @@ const NetworkForm: FC<Props> = ({ partner }) => {
         <>
             <DepositMethodComponent />
             <Form className="h-full grow flex flex-col justify-between">
-                <Widget.Content>
-                    <div className="w-full max-sm:min-h-[79svh] flex flex-col justify-between">
-                        <div className="mb-3">
-                            <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
-                                {
-                                    !(query?.hideFrom && values?.from) && <SourcePicker
-                                        minAllowedAmount={minAllowedAmount}
-                                        maxAllowedAmount={maxAllowedAmount}
-                                        fee={quote}
-                                    />
-                                }
-                                {
-                                    !query?.hideFrom && !query?.hideTo &&
-                                    <ValueSwapperButton
-                                        values={values}
-                                        setValues={setValues}
-                                        providers={providers}
-                                        query={query}
-                                    />
-                                }
-                                {
-                                    !(query?.hideTo && values?.to) && <DestinationPicker
-                                        isFeeLoading={isQuoteLoading}
-                                        fee={quote}
-                                        partner={partner}
-                                    />
-                                }
+                <ResizablePanel>
+                    <Widget.Content>
+                        <div className="w-full max-sm:min-h-[79svh] flex flex-col justify-between">
+                            <div className="mb-3">
+                                <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
+                                    {
+                                        !(query?.hideFrom && values?.from) && <SourcePicker
+                                            minAllowedAmount={minAllowedAmount}
+                                            maxAllowedAmount={maxAllowedAmount}
+                                            fee={quote}
+                                        />
+                                    }
+                                    {
+                                        !query?.hideFrom && !query?.hideTo &&
+                                        <ValueSwapperButton
+                                            values={values}
+                                            setValues={setValues}
+                                            providers={providers}
+                                            query={query}
+                                        />
+                                    }
+                                    {
+                                        !(query?.hideTo && values?.to) && <DestinationPicker
+                                            isFeeLoading={isQuoteLoading}
+                                            fee={quote}
+                                            partner={partner}
+                                        />
+                                    }
+                                </div>
                             </div>
-                        </div>
-                        <ResizablePanel>
                             <div className="space-y-3">
                                 <>
                                     {
@@ -175,9 +175,9 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                         : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                                 }
                             </div>
-                        </ResizablePanel>
-                    </div>
-                </Widget.Content>
+                        </div>
+                    </Widget.Content>
+                </ResizablePanel>
                 <Widget.Footer>
                     <FormButton
                         shouldConnectWallet={shouldConnectWallet}
