@@ -262,6 +262,7 @@ export default function useEVM(): WalletProvider {
             withdrawalSupportedNetworks,
             asSourceSupportedNetworks,
             availableWalletsForConnect: availableFeaturedWalletsForConnect,
+            availableHiddenWalletsForConnect: walletConnectConnectors,
             name,
             id,
             providerIcon
