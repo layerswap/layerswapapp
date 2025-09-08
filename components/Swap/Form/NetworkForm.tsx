@@ -182,7 +182,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                     <FormButton
                         shouldConnectWallet={shouldConnectWallet}
                         values={values}
-                        isValid={isValid}
+                        disabled={!isValid || isSubmitting || !quote || isQuoteLoading}
                         error={error}
                         isSubmitting={isSubmitting}
                         partner={partner}

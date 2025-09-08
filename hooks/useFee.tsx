@@ -128,8 +128,8 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     }, [cache])
 
     const { data: quote, mutate: mutateFee, error: quoteError } = useSWR<ApiResponse<Quote>>(quoteURL, quoteFetchWrapper, {
-        refreshInterval: (refreshInterval || refreshInterval == 0) ? refreshInterval : 42000,
-        dedupingInterval: 42000,
+        refreshInterval: (refreshInterval || refreshInterval == 0) ? refreshInterval : 10000,
+        dedupingInterval: 10000,
         keepPreviousData: true
     })
 
