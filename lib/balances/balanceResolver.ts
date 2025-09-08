@@ -2,6 +2,7 @@ import { NetworkWithTokens } from "../../Models/Network";
 import { BitcoinBalanceProvider } from "./providers/bitcoinBalanceProvider";
 import { EVMBalanceProvider } from "./providers/evmBalanceProvider";
 import { FuelBalanceProvider } from "./providers/fuelBalanceProvider";
+import { HyperliquidBalanceProvider } from "./providers/hyperliquidBalanceProvider";
 import { ImmutableXBalanceProvider } from "./providers/immutableXBalanceProvider";
 import { LoopringBalanceProvider } from "./providers/loopringBalanceProvider";
 import { ParadexBalanceProvider } from "./providers/paradexBalanceProvider";
@@ -25,12 +26,13 @@ export class BalanceResolver {
         new ZkSyncBalanceProvider(),
         new TronBalanceProvider(),
         new ParadexBalanceProvider(),
-        new BitcoinBalanceProvider()
+        new BitcoinBalanceProvider(),
+        new HyperliquidBalanceProvider()
     ];
 
     getBalance(address: string, network: NetworkWithTokens) {
         const provider = this.providers.find(p => p.supportsNetwork(network));
-        //TODO: create interface for balance providers in case of empty state they shoudl throw error 
+        //TODO: create interface for balance providers in case of empty state they should throw error 
         //never return undefined as SWR does not set loading state if undefined is returned
         if (!provider) throw new Error(`No balance provider found for network ${network.name}`);
 

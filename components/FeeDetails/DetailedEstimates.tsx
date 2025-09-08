@@ -3,6 +3,7 @@ import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { useFee } from "../../context/feeContext";
 import AverageCompletionTime from "../Common/AverageCompletionTime";
+import { truncateDecimals } from "../utils/RoundDecimals";
 
 const DetailedEstimates: FC = () => {
 
@@ -16,7 +17,7 @@ const DetailedEstimates: FC = () => {
     const fullFeeAmount = fee?.quote.total_fee || 0;
     const fullParsedFeeAmount = fullFeeAmount && parseFloat(Number(fullFeeAmount).toFixed(fromCurrency?.precision))
 
-    const parsedFee = fee && parseFloat(Number(fee_amount).toFixed(fromCurrency?.precision))
+    const parsedFee = fee && truncateDecimals(Number(fee_amount), fromCurrency?.precision)
     const currencyName = fromCurrency?.symbol || " "
     const feeAmountInUsd = fee?.quote.total_fee_in_usd && (fee?.quote.total_fee_in_usd - feeDiscountInUsd)
 

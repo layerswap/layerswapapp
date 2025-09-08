@@ -225,24 +225,26 @@ export default class getOptimismGas extends getEVMGas {
 
     resolveGas = async () => {
         const feeData = await this.resolveFeeData()
-
+        
         const estimatedGasLimit = this.contract_address ?
             await this.estimateERC20GasLimit()
             : await this.estimateNativeGasLimit()
 
         const multiplier = feeData.maxFeePerGas || feeData.gasPrice
 
-        if (!multiplier)
+        if (!multiplier || !feeData.gasPrice)
             return undefined
 
-        let totalGas = (multiplier * estimatedGasLimit) + await this.GetOpL1Fee(feeData.gasPrice!)
+        const l1OpFee = await this.GetOpL1Fee(feeData.gasPrice)
+
+        let totalGas = (multiplier * estimatedGasLimit) + l1OpFee
 
         const formattedGas = formatAmount(totalGas, this.nativeToken?.decimals)
         return formattedGas
     }
 
     private GetOpL1Fee = async (gasPrice: bigint): Promise<bigint> => {
-        const amount = BigInt(1000)
+        const amount = BigInt(1000000000000)
         let serializedTransaction: TransactionSerializedEIP1559
 
         if (this.contract_address) {
@@ -283,7 +285,7 @@ export default class getOptimismGas extends getEVMGas {
             account: this.account,
             gasPriceOracleAddress: this.from.metadata.evm_oracle_contract as `0x${string}`,
             gasPrice: gasPrice as any
-        }) 
+        })
 
         return fee;
     }

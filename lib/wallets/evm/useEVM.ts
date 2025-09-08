@@ -40,6 +40,8 @@ export default function useEVM(): WalletProvider {
         KnownInternalNames.Networks.ImmutableXMainnet,
         KnownInternalNames.Networks.ImmutableXGoerli,
         KnownInternalNames.Networks.BrineMainnet,
+        KnownInternalNames.Networks.HyperliquidMainnet,
+        KnownInternalNames.Networks.HyperliquidTestnet,
     ]
 
     const { disconnectAsync } = useDisconnect()
