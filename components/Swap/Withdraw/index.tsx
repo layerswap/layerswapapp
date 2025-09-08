@@ -10,7 +10,7 @@ import WalletTransferButton from './WalletTransferButton';
 import useWallet from '@/hooks/useWallet';
 import useSWRBalance from '@/lib/balances/useSWRBalance';
 import { useSettingsState } from '@/context/settings';
-import { resolveBalanceWarnings } from '@/components/insufficientBalance';
+import { InsufficientBalanceWarning } from '@/components/insufficientBalance';
 
 const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading } = useSwapDataState()
@@ -33,14 +33,14 @@ const Withdraw: FC<{ type: 'widget' | 'contained' }> = ({ type }) => {
         footer?: JSX.Element | JSX.Element[],
     } = {}
 
-    const insufficientBalance = swapBasicData?.use_deposit_address === false ? resolveBalanceWarnings({
-        requestAmount: swapBasicData?.requested_amount,
-        walletBalance: Number(walletBalanceAmount),
-    }) : null;
+    const showInsufficientBalanceWarning = swapBasicData?.use_deposit_address === false
+        && swapBasicData?.requested_amount
+        && Number(swapBasicData?.requested_amount)
+        && Number(walletBalanceAmount) < Number(swapBasicData?.requested_amount)
 
     if (swapBasicData?.use_deposit_address === false) {
         withdraw = {
-            footer: <WalletTransferButton swapBasicData={swapBasicData} swapId={swapDetails?.id} refuel={!!refuel} balanceWarning={insufficientBalance} />
+            footer: <WalletTransferButton swapBasicData={swapBasicData} swapId={swapDetails?.id} refuel={!!refuel} balanceWarning={showInsufficientBalanceWarning ? <InsufficientBalanceWarning /> : null} />
         }
     }
 

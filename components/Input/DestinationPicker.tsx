@@ -26,18 +26,18 @@ const DestinationPicker = (props: Props) => {
     const { quote, isQuoteLoading } = useQuoteData(quoteArgs, quoteRefreshInterval)
 
     return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl p-4 pb-[15px] space-y-[27px]">
-        <div className="grid grid-cols-9 sm:grid-cols-8 gap-2 justify-between items-center h-7">
+        <div className="grid grid-cols-9 gap-2 justify-between items-center h-7">
             <label htmlFor="To" className="block col-span-5 font-normal text-secondary-text text-base leading-5 w-30">
                 Receive at
             </label>
-            <div className="col-span-4 sm:col-span-3">
+            <div className="col-span-4">
                 <Address partner={partner}>
                     {({ destination, disabled, addressItem, connectedWallet, partner }) => <DestinationWalletPicker destination={destination} disabled={disabled} addressItem={addressItem} connectedWallet={connectedWallet} partner={partner} />}
                 </Address>
             </div>
         </div>
         <div className="items-center space-y-2">
-            <div className="grid grid-cols-9 sm:grid-cols-8 gap-2">
+            <div className="grid grid-cols-9 gap-2">
                 <div className="col-span-5">
                     <ReceiveAmount
                         source_token={fromCurrency}
@@ -46,7 +46,7 @@ const DestinationPicker = (props: Props) => {
                         isFeeLoading={isQuoteLoading}
                     />
                 </div>
-                <div className="col-span-4 sm:col-span-3 flex items-center self-start justify-end">
+                <div className="col-span-4 flex items-center self-start justify-end">
                     <RoutePicker direction="to" />
                 </div>
             </div>

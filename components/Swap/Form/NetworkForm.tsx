@@ -23,19 +23,13 @@ import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import { updateForm, updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
-import { resolveBalanceWarnings } from "@/components/insufficientBalance";
+import { InsufficientBalanceWarning } from "@/components/insufficientBalance";
 import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { useSwapDataState } from "@/context/swap";
-
-const RefuelModal = dynamic(() => import("@/components/FeeDetails/RefuelModal"), {
-    loading: () => <></>,
-});
-const ReserveGasNote = dynamic(() => import("@/components/ReserveGasNote"), {
-    loading: () => <></>,
-});
-const RefuelToggle = dynamic(() => import("@/components/FeeDetails/Refuel"), {
-    loading: () => <></>,
-});
+import ResizablePanel from "@/components/ResizablePanel";
+import RefuelToggle from "@/components/FeeDetails/Refuel";
+import ReserveGasNote from "@/components/ReserveGasNote";
+import RefuelModal from "@/components/FeeDetails/RefuelModal";
 
 type Props = {
     partner?: Partner;
@@ -105,17 +99,18 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
-    const insufficientBalance = values.depositMethod === 'wallet' ? resolveBalanceWarnings({
-        requestAmount: Number(amount),
-        walletBalance: Number(walletBalanceAmount),
-    }) : null;
-
+    const showInsufficientBalanceWarning = values.depositMethod === 'wallet'
+        && !routeValidation.message
+        && !swapModalOpen
+        && Number(amount) > 0
+        && Number(walletBalanceAmount) < Number(amount)
+    
     return (
         <>
             <DepositMethodComponent />
             <Form className="h-full grow flex flex-col justify-between">
                 <Widget.Content>
-                    <div className="w-full min-h-[79svh] sm:min-h-[480px] flex flex-col justify-between">
+                    <div className="w-full max-sm:min-h-[79svh] flex flex-col justify-between">
                         <div className="mb-3">
                             <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
                                 {
@@ -143,43 +138,44 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 }
                             </div>
                         </div>
-                        <div className="space-y-3">
-                            <>
+                        <ResizablePanel>
+                            <div className="space-y-3">
+                                <>
+                                    {
+                                        showInsufficientBalanceWarning &&
+                                        <InsufficientBalanceWarning />
+                                    }
+                                </>
                                 {
-                                    (!routeValidation.message && insufficientBalance && !swapModalOpen)
-                                        ? insufficientBalance
-                                        : null
+                                    Number(values.amount) > 0 &&
+                                    <ReserveGasNote
+                                        maxAllowedAmount={minAllowedAmount}
+                                        minAllowedAmount={maxAllowedAmount}
+                                        onSubmit={handleReserveGas}
+                                    />
                                 }
-                            </>
-                            {
-                                values.amount &&
-                                <ReserveGasNote
-                                    maxAllowedAmount={minAllowedAmount}
-                                    minAllowedAmount={maxAllowedAmount}
-                                    onSubmit={handleReserveGas}
-                                />
-                            }
-                            {
-                                values.toAsset?.refuel && !query.hideRefuel &&
-                                <RefuelToggle
-                                    fee={quote}
-                                    onButtonClick={() => setOpenRefuelModal(true)}
-                                />
-                            }
-                            {
-                                routeValidation.message
-                                    ? <ValidationError />
-                                    : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
-                            }
+                                {
+                                    quote && values.toAsset?.refuel && !query.hideRefuel &&
+                                    <RefuelToggle
+                                        fee={quote}
+                                        onButtonClick={() => setOpenRefuelModal(true)}
+                                    />
+                                }
+                                {
+                                    routeValidation.message
+                                        ? <ValidationError />
+                                        : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                                }
+                            </div>
+                        </ResizablePanel>
 
-                        </div>
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
                     <FormButton
                         shouldConnectWallet={shouldConnectWallet}
                         values={values}
-                        isValid={isValid}
+                        disabled={!isValid || isSubmitting || !quote || isQuoteLoading}
                         error={error}
                         isSubmitting={isSubmitting}
                         partner={partner}

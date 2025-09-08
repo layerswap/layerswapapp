@@ -57,7 +57,7 @@ const CexPicker: FC = () => {
                 <SelectorContent isLoading={isLoading} searchHint="Search" header="">
                     {({ closeModal, shouldFocus }) => {
                         return (
-                            <div className="overflow-y-auto flex flex-col h-full z-40" >
+                            <div className="overflow-y-auto flex flex-col h-full z-40 openpicker" >
                                 <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={shouldFocus} />
                                 <LayoutGroup>
                                     <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full">

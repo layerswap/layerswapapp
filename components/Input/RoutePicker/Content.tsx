@@ -40,7 +40,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
     })
     const items = virtualizer.getVirtualItems()
 
-    return <div className="overflow-y-auto flex flex-col h-full z-40" >
+    return <div className="overflow-y-auto flex flex-col h-full z-40 openpicker" >
         <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={shouldFocus} />
         <LayoutGroup>
             <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full" ref={parentRef}>

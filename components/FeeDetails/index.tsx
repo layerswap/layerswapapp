@@ -103,12 +103,12 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
             {
                 gasFeeInUsd &&
                 <div className={clsx(
-                    "inline-flex items-center gap-1 text-primary-text",
+                    "inline-flex items-center gap-1",
                     { "animate-pulse-strong": isQuoteLoading }
                 )}>
                     <div className='p-0.5'>
                         {!values.fromExchange ?
-                            <GasIcon className='h-4 w-4' /> : <ExchangeGasIcon className='h-5 w-5' />
+                            <GasIcon className='h-4 w-4 text-secondary-text' /> : <ExchangeGasIcon className='h-5 w-5 text-secondary-text' />
                         }
                     </div>
                     <NumberFlow className="text-primary-text text-sm leading-6" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} format={{ style: 'currency', currency: 'USD' }} prefix={gasFeeInUsd < 0.01 ? '<' : undefined} />
@@ -119,11 +119,11 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
                 averageCompletionTime &&
                 <>
                     <div className={clsx(
-                        "text-right text-secondary-text inline-flex items-center gap-1 text-sm",
+                        "text-right inline-flex items-center gap-1 text-sm",
                         { "animate-pulse-strong": isQuoteLoading }
                     )}>
                         <div className='p-0.5'>
-                            <Clock className='h-4 w-4' />
+                            <Clock className='h-4 w-4 text-secondary-text' />
                         </div>
                         <AverageCompletionTime className="text-primary-text" avgCompletionTime={quote.avg_completion_time} />
                     </div>
