@@ -1,6 +1,8 @@
-import { createContext, ReactNode, SetStateAction, useContext, useState } from "react";
+import { createContext, ReactNode, SetStateAction, useContext, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
+import IconButton from "@/components/buttons/iconButton";
+import { X } from 'lucide-react';
 
 type SelectorProps = {
     setIsOpen: (value: SetStateAction<boolean>) => void;
@@ -48,6 +50,17 @@ export const SelectorContent = (props: SelectContentProps) => {
     const { isDesktop } = useWindowDimensions();
     const closeModal = () => { setIsOpen(false); setShouldFocus(false) };
 
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                closeModal();
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+        return () => document.removeEventListener("keydown", handleKeyDown);
+    }, [closeModal]);
+
     if (!isOpen) return null;
 
     const modalElement = (
@@ -57,16 +70,10 @@ export const SelectorContent = (props: SelectContentProps) => {
                     <div className="flex-1 text-lg text-secondary-text font-semibold w-full flex justify-end">
                         {header}
                     </div>
-                    <button
-                        type="button"
-                        onClick={closeModal}
-                        className="inline-flex p-2 text-secondary-text hover:text-white transition-colors"
-                        aria-label="Close modal"
-                    >
-                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+                    <IconButton onClick={closeModal} icon={
+                        <X strokeWidth={3} />
+                    }>
+                    </IconButton>
                 </div>
             </div>
 
