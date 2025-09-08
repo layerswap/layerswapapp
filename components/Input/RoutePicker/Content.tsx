@@ -74,7 +74,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                                         const data = rowElements?.[virtualRow.index]
                                         const key = ((data as any)?.route as any)?.name || virtualRow.key;
                                         return <div
-                                            className="py-1 box-border"
+                                            className="py-1 box-border w-full overflow-hidden"
                                             key={key}
                                             data-index={virtualRow.index}
                                             ref={virtualizer.measureElement}>

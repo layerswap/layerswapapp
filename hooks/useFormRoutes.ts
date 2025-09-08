@@ -153,7 +153,7 @@ const searchInTokens = (routes: NetworkRoute[], search: string): NetworkTokenEle
 
         const symbolMatch = token.symbol.toLowerCase().includes(lower);
         const contractMatch = token.contract?.toLowerCase().includes(lower);
-        const nameMatch = token.symbol?.toLowerCase().includes(lower);
+        const nameMatch = token.display_asset?.toLowerCase().includes(lower);
         const splitted = lower.split(' ')
         const firstpart = splitted?.[0]
         const secondpart = splitted?.[1]
