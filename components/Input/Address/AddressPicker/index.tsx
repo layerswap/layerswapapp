@@ -252,7 +252,7 @@ const resolveAddressGroups = ({
             addresses.push(...(wallet.addresses.map(a => ({ address: a, group: AddressGroup.ConnectedWallet, wallet })) || []))
         }
     })
-    if (addressFromQuery) {
+    if (addressFromQuery && isValidAddress(addressFromQuery, destination)) {
         addresses.push({ address: addressFromQuery, group: AddressGroup.FromQuery })
     }
 
