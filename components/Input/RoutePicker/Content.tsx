@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RowElement } from "../../../Models/Route";
 import { SwapDirection } from "../../DTOs/SwapFormValues";
 import { useVirtualizer } from "../../../lib/virtual";
@@ -40,6 +40,10 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
     })
     const items = virtualizer.getVirtualItems()
 
+    useEffect(() => {
+        return () => setSearchQuery('')
+    }, [])
+    
     return <div className="overflow-y-auto flex flex-col h-full z-40 openpicker" >
         <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={shouldFocus} />
         <LayoutGroup>

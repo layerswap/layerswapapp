@@ -34,7 +34,7 @@ export const useSelectorState = () => {
 
 type ContentChildProps = {
     closeModal: () => void;
-    shouldFocus?: boolean;
+    shouldFocus: boolean;
 }
 
 type SelectContentProps = {
@@ -47,7 +47,6 @@ type SelectContentProps = {
 export const SelectorContent = (props: SelectContentProps) => {
     const { children, header } = props
     const { isOpen, setIsOpen, setShouldFocus, shouldFocus } = useSelectorState();
-    const { isDesktop } = useWindowDimensions();
     const closeModal = () => { setIsOpen(false); setShouldFocus(false) };
 
     useEffect(() => {
@@ -78,7 +77,7 @@ export const SelectorContent = (props: SelectContentProps) => {
             </div>
 
             <div className="flex flex-col w-full h-fit max-h-[90dvh] px-4 styled-scroll overflow-x-hidden overflow-y-auto relative">
-                {children({ closeModal, shouldFocus: isDesktop && shouldFocus })}
+                {children({ closeModal, shouldFocus })}
             </div>
         </div>
     );
@@ -101,9 +100,12 @@ type SelectTriggerProps = {
 
 export const SelectorTrigger = (props: SelectTriggerProps) => {
     const { disabled, children, className } = props
-    const { setIsOpen } = useContext(SelectorContext);
+    const { setIsOpen, setShouldFocus } = useContext(SelectorContext);
+    const { isDesktop } = useWindowDimensions();
+
     function openModal() {
         setIsOpen(true)
+        isDesktop && setShouldFocus(true)
     }
     return <div className="shadow-sm/30 rounded-2xl flex items-center relative w-full z-10 self-end ">
         <button

@@ -125,9 +125,9 @@ function sortGroupedTokensByBalance(tokenElements: GroupedTokenElement[], balanc
     }).sort((a, b) => b.totalUSD - a.totalUSD)
 }
 
-function resolveSearch(routes: NetworkRoute[], search: string): RowElement[] {
+function resolveSearch(routes: NetworkRoute[], search: string, direction: SwapDirection, balances: Record<string, NetworkBalance> | null, routesHistory: RoutesHistory): RowElement[] {
     const matchedNetworks = searchInNetworks(routes, search)
-    const matchedTokens = searchInTokens(routes, search)
+    const matchedTokens = searchInTokens(routes, search).sort(sortSuggestedTokenElements(direction, balances, routesHistory))
     return [
         ...(matchedNetworks.length ? [resolveTitle('Networks'), ...matchedNetworks] : []),
         ...(matchedTokens.length ? [resolveTitle('Tokens'), ...matchedTokens] : [])
@@ -184,7 +184,7 @@ function groupRoutes(
 ): RowElement[] {
 
     if (search) {
-        return resolveSearch(routes, search)
+        return resolveSearch(routes, search, direction, balances, recents)
     }
 
     const suggestedRoutes = getSuggestedRoutes(routes, balances, recents, direction, balancesLoading)
