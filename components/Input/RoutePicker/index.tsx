@@ -59,7 +59,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
             setFieldValue
         })
     }, [currencyFieldName, direction, values])
-
+    const showbalance = !isExchange && (direction === 'to' || values.depositMethod === 'wallet')
     return (
         <div className={clsx("flex w-full flex-col self-end relative ml-auto items-center", className)}>
             <Selector>
@@ -82,7 +82,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
                 </SelectorContent>
             </Selector>
             {
-                (direction === 'to' || values.depositMethod === 'wallet') && !isExchange &&
+                showbalance &&
                 <Balance values={values} direction={direction} />
             }
         </div>
