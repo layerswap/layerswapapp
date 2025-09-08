@@ -11,7 +11,7 @@ import { coinQuantityfy, CoinQuantityLike, Provider, ScriptTransactionRequest } 
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import TransactionMessages from '../../messages/TransactionMessages';
 
-export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
+export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel, handleClearAmount }) => {
     const [loading, setLoading] = useState(false);
     const [buttonClicked, setButtonClicked] = useState(false)
     const [error, setError] = useState<string | undefined>()
@@ -67,6 +67,7 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, r
             const transactionResponse = await fuelWallet.sendTransaction(scriptTransaction);
 
             if (swapId && transactionResponse) {
+                handleClearAmount?.()
                 return transactionResponse.id;
             }
 

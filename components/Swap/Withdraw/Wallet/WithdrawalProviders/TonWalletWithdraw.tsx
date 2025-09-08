@@ -11,7 +11,7 @@ import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import TransactionMessages from '../../messages/TransactionMessages';
 import { useConnectModal } from '@/components/WalletModal';
 
-export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
+export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel, handleClearAmount }) => {
     const [loading, setLoading] = useState(false);
     const { connect } = useConnectModal()
     const { source_network, source_token } = swapBasicData;
@@ -47,6 +47,7 @@ export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
             const res = await tonConnectUI.sendTransaction(transaction)
 
             if (res) {
+                handleClearAmount?.()
                 return res.boc
             }
         }

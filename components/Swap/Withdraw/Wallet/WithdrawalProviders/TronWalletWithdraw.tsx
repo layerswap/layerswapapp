@@ -11,7 +11,7 @@ import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import TransactionMessages from '../../messages/TransactionMessages';
 import WalletIcon from '@/components/icons/WalletIcon';
 
-export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
+export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel, handleClearAmount }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | undefined>()
     const { source_network, source_token } = swapBasicData;
@@ -44,6 +44,7 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refue
             const res = await tronWeb.trx.sendRawTransaction(signature)
 
             if (signature && res.result) {
+                handleClearAmount?.()
                 return signature.txID
             } else {
                 throw new Error(res.code.toString())

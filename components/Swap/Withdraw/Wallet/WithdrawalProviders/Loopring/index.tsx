@@ -14,7 +14,7 @@ import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactio
 import SignatureIcon from '@/components/icons/SignatureIcon';
 import WalletIcon from '@/components/icons/WalletIcon';
 
-export const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
+export const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel, handleClearAmount }) => {
     const [loading, setLoading] = useState(false);
     const [transferDone, setTransferDone] = useState<boolean>();
     const [activationPubKey, setActivationPubKey] = useState<{ x: string; y: string }>()
@@ -90,6 +90,7 @@ export const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, r
             }, config)
             if (transferResult.hash) {
                 setTransferDone(true)
+                handleClearAmount?.()
                 return transferResult.hash
             }
             else {

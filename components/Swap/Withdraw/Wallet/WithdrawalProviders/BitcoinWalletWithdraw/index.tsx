@@ -12,7 +12,7 @@ import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import TransactionMessages from '../../../messages/TransactionMessages';
 import { posthog } from 'posthog-js';
 
-export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
+export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel, handleClearAmount }) => {
     const [loading, setLoading] = useState(false);
     const { connect } = useConnectModal()
     const { source_network, source_token } = swapBasicData;
@@ -64,6 +64,7 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData
                 publicClient
             });
 
+            handleClearAmount?.()
             return txHash;
 
         }

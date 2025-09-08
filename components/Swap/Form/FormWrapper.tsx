@@ -1,4 +1,4 @@
-import { Formik, FormikProps } from "formik";
+import { Formik, FormikProps, useFormikContext } from "formik";
 import { useCallback, useRef, useState } from "react";
 import { useSettingsState } from "@/context/settings";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
@@ -52,7 +52,6 @@ export default function FormWrapper({ children, type }: { children?: React.React
     const { getProvider } = useWallet(sourceNetworkWithTokens, "withdrawal")
 
     const { getConfirmation } = useAsyncModal();
-
     const query = useQueryState()
     const { appName, destination_address: destinationAddressFromQuery } = query
     const { createSwap, setSwapId, setSubmitedFormValues, setSwapModalOpen } = useSwapDataUpdate()
@@ -114,6 +113,10 @@ export default function FormWrapper({ children, type }: { children?: React.React
             removeSwapPath(router)
     }, [router, swapDetails])
 
+    const handleClearAmount = useCallback(() => {
+        formikRef?.current?.setFieldValue('amount', 0, false);
+    }, []);
+
     return <>
         <Formik
             innerRef={formikRef}
@@ -140,7 +143,7 @@ export default function FormWrapper({ children, type }: { children?: React.React
                     header={`Complete the swap`}
                     modalId="showSwap">
                     <VaulDrawer.Snap id="item-1">
-                        <SwapDetails type="contained" />
+                        <SwapDetails type="contained" handleClearAmount={handleClearAmount} />
                     </VaulDrawer.Snap>
                 </VaulDrawer>
                 {children}

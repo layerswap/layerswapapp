@@ -16,24 +16,25 @@ type Props = {
     savedTransactionHash?: string;
     chainId?: number;
     swapData: SwapBasicData,
-    refuel: boolean
+    refuel: boolean,
+    handleClearAmount?: () => void
 }
 const TransferTokenButton: FC<Props> = ({
     savedTransactionHash,
     chainId,
     swapData,
-    refuel
+    refuel,
+    handleClearAmount
 }) => {
     const [buttonClicked, setButtonClicked] = useState(false)
     const config = useConfig()
     const [error, setError] = useState<any | undefined>()
     const [loading, setLoading] = useState(false)
 
-
     const { provider } = useWallet(swapData.source_network, "withdrawal")
     const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
 
-    const clickHandler = useCallback(async ({ amount, callData, depositAddress }: TransferProps) => {
+    const clickHandler = useCallback(async ({ amount, callData, depositAddress, handleClearAmount }: TransferProps) => {
         setButtonClicked(true)
         setError(undefined)
         setLoading(true)
@@ -59,6 +60,7 @@ const TransferTokenButton: FC<Props> = ({
             const hash = await sendTransaction(config, tx)
 
             if (hash) {
+                handleClearAmount?.()
                 return hash
             }
 
@@ -89,7 +91,7 @@ const TransferTokenButton: FC<Props> = ({
         {
             !loading &&
             <SendTransactionButton
-                onClick={clickHandler}
+                onClick={(args) => clickHandler({ ...args, handleClearAmount })}
                 icon={<WalletIcon className="stroke-2 w-6 h-6" />}
                 error={!!error && buttonClicked}
                 swapData={swapData}

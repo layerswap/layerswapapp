@@ -11,7 +11,8 @@ import { WithdrawPageProps } from "../../Common/sharedTypes";
 export const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
     swapBasicData,
     refuel,
-    swapId
+    swapId,
+    handleClearAmount
 }) => {
 
     const { source_network, destination_network, destination_address } = swapBasicData
@@ -59,6 +60,7 @@ export const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
             refuel={refuel}
             chainId={networkChainId}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
+            handleClearAmount={handleClearAmount}
         />
     }
 }

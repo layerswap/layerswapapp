@@ -14,7 +14,7 @@ export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicDat
 
     const wallet = provider?.activeWallet
 
-    const handleTransfer = useCallback(async ({ callData, swapId }: TransferProps) => {
+    const handleTransfer = useCallback(async ({ callData, swapId, handleClearAmount }: TransferProps) => {
         if (!swapId || !source_token) {
             return
         }
@@ -28,6 +28,7 @@ export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicDat
 
             if (transferTxHash) {
                 setTransferDone(true)
+                handleClearAmount?.()
                 return transferTxHash
             }
             else {

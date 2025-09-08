@@ -10,9 +10,10 @@ type Props = {
     swapData: SwapBasicData
     swapId: string | undefined
     refuel: boolean
+    handleClearAmount?: () => void
 };
 //TODO have separate components for evm and none_evm as others are sweepless anyway
-export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel }) => {
+export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, handleClearAmount }) => {
     const { source_network } = swapData
     const source_network_internal_name = source_network?.name;
 
@@ -106,6 +107,7 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel }) =>
                 swapId={swapId}
                 swapBasicData={swapData}
                 refuel={refuel}
+                handleClearAmount={handleClearAmount}
             />
         }
     </>;

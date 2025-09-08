@@ -10,7 +10,7 @@ import useWallet from '@/hooks/useWallet';
 import WalletIcon from '@/components/icons/WalletIcon';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 
-const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
+const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel, handleClearAmount }) => {
 
     const [loading, setLoading] = useState(false)
 
@@ -37,6 +37,7 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
             const res = await account.execute(JSON.parse(callData || ""), undefined, { maxFee: '1000000000000000' });
 
             if (res.transaction_hash) {
+                handleClearAmount?.()
                 return res.transaction_hash
             }
         } catch (e) {

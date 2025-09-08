@@ -152,12 +152,12 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 }
                             </>
                             {
-                                values.amount &&
+                                values.amount ?
                                 <ReserveGasNote
                                     maxAllowedAmount={minAllowedAmount}
                                     minAllowedAmount={maxAllowedAmount}
                                     onSubmit={handleReserveGas}
-                                />
+                                /> : null
                             }
                             {
                                 values.toAsset?.refuel && !query.hideRefuel &&

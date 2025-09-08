@@ -45,7 +45,6 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
 
         const font = getFontFromElement(input);
         const width = getTextWidth(actionValue?.toString() || amount || "0", font);
-        console.log(actionValue,"actionValue")
         suffix.style.left = `${width + 16}px`;
     }, [amount, requestedAmountInUsd, actionValue]);
 
