@@ -16,7 +16,7 @@ const progress = new ProgressBar({
   delay: 100,
 });
 
-if (typeof window !== "undefined") {
+if (typeof window !== "undefined" && process.env.NODE_ENV === 'production') {
   posthog.init('phc_KyI0bPCry0a8vJjQ7rIQESL8u2EVnyjrX19ZR4uqQgq', {
     capture_pageview: 'history_change',
     capture_pageleave: true,
