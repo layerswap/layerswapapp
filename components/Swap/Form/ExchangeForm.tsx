@@ -59,7 +59,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                 <ResizablePanel>
                     <Widget.Content>
                         <div className="w-full max-sm:min-h-[79svh] flex flex-col justify-between mt-2 sm:mt-0">
-                            <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3 leading-4'>
+                            <div className='flex-col relative flex justify-between gap-1.5 w-full leading-4'>
                                 <div className="flex flex-col w-full space-y-4">
                                     <div className="space-y-2">
                                         <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5">
@@ -124,17 +124,17 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                     </div>
                                 </div>
                             </div>
-                            <div className="space-y-3">
-                                {
-                                    routeValidation.message
-                                        ? <ValidationError />
-                                        : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
-                                }
-                            </div>
                         </div>
                     </Widget.Content>
                 </ResizablePanel>
                 <Widget.Footer>
+                    <div className="space-y-3 mb-3">
+                        {
+                            routeValidation.message
+                                ? <ValidationError />
+                                : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                        }
+                    </div>
                     <FormButton
                         shouldConnectWallet={false}
                         values={values}
