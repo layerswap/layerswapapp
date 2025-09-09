@@ -176,6 +176,7 @@ module.exports = {
       addVariant('scrollbar-thumb', '&::-webkit-scrollbar-thumb')
       addVariant('focus-peer', '.focus-peer &')
       addVariant('wide-page', '.wide-page &')
+      addVariant('has-openpicker', '&:has(.openpicker)')
     })
   ],
 };

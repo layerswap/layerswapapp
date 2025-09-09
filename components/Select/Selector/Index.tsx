@@ -1,6 +1,8 @@
-import { createContext, ReactNode, SetStateAction, useContext, useState } from "react";
-import VaulDrawer from "@/components/modal/vaulModal";
+import { createContext, ReactNode, SetStateAction, useContext, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import useWindowDimensions from "@/hooks/useWindowDimensions";
+import IconButton from "@/components/buttons/iconButton";
+import { X } from 'lucide-react';
 
 type SelectorProps = {
     setIsOpen: (value: SetStateAction<boolean>) => void;
@@ -32,48 +34,62 @@ export const useSelectorState = () => {
 
 type ContentChildProps = {
     closeModal: () => void;
-    shouldFocus?: boolean;
+    shouldFocus: boolean;
 }
 
 type SelectContentProps = {
     header?: ReactNode;
     searchHint?: string;
-    modalContent?: React.ReactNode;
     children: ((props: ContentChildProps) => JSX.Element);
     isLoading: boolean;
 }
 
 export const SelectorContent = (props: SelectContentProps) => {
-    const { children, modalContent, header } = props
+    const { children, header } = props
     const { isOpen, setIsOpen, setShouldFocus, shouldFocus } = useSelectorState();
-    const { isDesktop, isMobile, windowSize } = useWindowDimensions();
     const closeModal = () => { setIsOpen(false); setShouldFocus(false) };
 
-    return <VaulDrawer
-        header={
-            header ?
-                <div className="flex-1 text-lg text-secondary-text font-semibold w-full flex justify-end">
-                    {header}
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                closeModal();
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+        return () => document.removeEventListener("keydown", handleKeyDown);
+    }, [closeModal]);
+
+    if (!isOpen) return null;
+
+    const modalElement = (
+        <div className="absolute inset-0 z-50 bg-secondary-700 rounded-t-3xl sm:rounded-3xl flex flex-col">
+            <div className="w-full relative">
+                <div className="flex items-center w-full text-left justify-between px-4 sm:pt-3 pb-2">
+                    <div className="flex-1 text-lg text-secondary-text font-semibold w-full flex justify-end">
+                        {header}
+                    </div>
+                    <IconButton onClick={closeModal} icon={
+                        <X strokeWidth={3} />
+                    }>
+                    </IconButton>
                 </div>
-                : <></>
-        }
-        show={isOpen}
-        setShow={(v) => { setIsOpen(v); v == false && setShouldFocus(v) }}
-        modalId='comandSelect'
-        onAnimationEnd={() => { isDesktop && isOpen && setShouldFocus(true) }}
-    >
-        <VaulDrawer.Snap
-            id="item-1"
-            className="pb-4 sm:pb-0"
-            style={{ height: isMobile && windowSize.height ? `${(windowSize.height * 0.8).toFixed()}px` : '100%' }}
-            openFullHeight={isDesktop || (isMobile && !windowSize.height)}
-        >
-            <>
-                {modalContent}
+            </div>
+
+            <div className="flex flex-col w-full h-fit max-h-[90dvh] px-4 styled-scroll overflow-x-hidden overflow-y-auto relative pb-3">
                 {children({ closeModal, shouldFocus })}
-            </>
-        </VaulDrawer.Snap>
-    </VaulDrawer>
+            </div>
+        </div>
+    );
+
+    const widgetElement = document.getElementById('widget');
+
+    if (!widgetElement) {
+        console.warn('Widget element not found, modal will not render');
+        return null;
+    }
+
+    return createPortal(modalElement, widgetElement);
 }
 
 type SelectTriggerProps = {
@@ -84,9 +100,12 @@ type SelectTriggerProps = {
 
 export const SelectorTrigger = (props: SelectTriggerProps) => {
     const { disabled, children, className } = props
-    const { setIsOpen } = useContext(SelectorContext);
+    const { setIsOpen, setShouldFocus } = useContext(SelectorContext);
+    const { isDesktop } = useWindowDimensions();
+
     function openModal() {
         setIsOpen(true)
+        isDesktop && setShouldFocus(true)
     }
     return <div className="shadow-sm/30 rounded-2xl flex items-center relative w-full z-10 self-end ">
         <button

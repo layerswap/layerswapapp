@@ -27,11 +27,11 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fe
     }
 
     return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl p-4 pb-[15px] space-y-[27px] group" onClick={setShowQuickActions} ref={parentRef}>
-        <div className="grid grid-cols-9 sm:grid-cols-8 gap-2 items-center h-7">
+        <div className="grid grid-cols-9 gap-2 items-center h-7">
             <label htmlFor="From" className="block col-span-5 font-normal text-secondary-text text-base leading-5 mt-0.5">
                 Send from
             </label>
-            <div className="col-span-4 sm:col-span-3 justify-self-end">
+            <div className="col-span-4 justify-self-end">
                 <SourceWalletPicker />
             </div>
         </div>
@@ -49,9 +49,9 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fe
                     <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} depositMethod={depositMethod} />
                 </div>
             }
-            <div className="grid grid-cols-9 sm:grid-cols-8 gap-2">
+            <div className="grid grid-cols-9 gap-2">
                 <AmountField fee={fee} actionValue={actiontempValue} className="col-span-5" />
-                <RoutePicker direction="from" className="col-span-4 sm:col-span-3 flex items-center self-start justify-end" />
+                <RoutePicker direction="from" className="col-span-4 flex items-center self-start justify-end" />
             </div>
         </div>
     </div>

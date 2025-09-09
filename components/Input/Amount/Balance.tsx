@@ -20,18 +20,6 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
 
     const truncatedBalance = tokenBalance?.amount !== undefined ? truncateDecimals(tokenBalance?.amount, token?.precision) : ''
 
-    const previouslySelectedSource = useRef(from);
-
-    useEffect(() => {
-        previouslySelectedSource.current = from
-    }, [from, selectedSourceAccount?.address])
-
-    const previouslySelectedDestination = useRef(to);
-
-    useEffect(() => {
-        previouslySelectedDestination.current = to
-    }, [to, destination_address])
-
     if (!isBalanceLoading && !(network && token && truncatedBalance && tokenBalance))
         return null;
 

@@ -11,6 +11,7 @@ import { Widget } from "@/components/Widget/Index";
 import { ValidationProvider } from "@/context/validationContext";
 import { useQueryState } from "@/context/query";
 import { useSettingsState } from "@/context/settings";
+import ResizablePanel from "@/components/ResizablePanel";
 
 export default function Form() {
     const { from } = useQueryState()
@@ -35,7 +36,7 @@ export default function Form() {
             <TabsContent value="cross-chain">
                 <SwapDataProvider>
                     <FormWrapper type="cross-chain">
-                        <Widget className="sm:min-h-[450px] h-full" >
+                        <Widget className="h-full" >
                             <ValidationProvider>
                                 <NetworkForm />
                             </ValidationProvider>
@@ -47,7 +48,7 @@ export default function Form() {
             <TabsContent value="exchange">
                 <SwapDataProvider>
                     <FormWrapper type="exchange">
-                        <Widget className="sm:min-h-[450px] h-full" >
+                        <Widget className="h-full" >
                             <ValidationProvider>
                                 <ExchangeForm />
                             </ValidationProvider>
