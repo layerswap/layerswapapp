@@ -16,9 +16,10 @@ export function useBalance(
 ) {
     const key = useMemo(() => (address && network) ? getKey(address, network) : 'unknown', [address, network])
     const {
-        refreshInterval = 400000,
+        refreshInterval = 60000,
         refreshWhenHidden = false,
         refreshWhenOffline = false,
+        dedupeInterval = 60000,
     } = opts ?? {}
 
     const entry = useBalanceStore((s) => s.balances[key])
@@ -28,7 +29,7 @@ export function useBalance(
         if (!address || !network) return
         if (refreshWhenHidden && document.hidden) return
         if (refreshWhenOffline && !navigator.onLine) return
-        fetchBalance(address, network)
+        fetchBalance(address, network, { dedupeInterval: dedupeInterval })
     }
 
     useEffect(() => {

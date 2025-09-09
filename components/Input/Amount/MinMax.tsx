@@ -7,6 +7,7 @@ import { useMemo } from "react";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { updateForm } from "@/components/Swap/Form/updateForm";
 import useWallet from "@/hooks/useWallet";
+import { Tooltip, TooltipArrow, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 
 
 type MinMaxProps = {
@@ -71,7 +72,7 @@ const MinMax = (props: MinMaxProps) => {
     }
     const halfOfBalance = (walletBalance?.amount || 0) / 2;
     const showMaxTooltip = depositMethod === 'wallet' && walletBalance && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount)
-    
+
     return (
         <div className="flex gap-1.5 group text-xs leading-4" onMouseLeave={() => onActionHover(undefined)}>
             {
@@ -101,25 +102,26 @@ const MinMax = (props: MinMaxProps) => {
             }
             {
                 Number(maxAllowedAmount) > 0 &&
-                <div className="group/tooltip relative inline-block">
-                    <button
-                        onMouseEnter={() => onActionHover(maxAllowedAmount)}
-                        disabled={!maxAllowedAmount}
-                        onClick={handleSetMaxAmount}
-                        typeof="button"
-                        type="button"
-                        className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer"}
-                    >
-                        Max
-                    </button>
-                    {
-                        showMaxTooltip &&
-                        <div className="opacity-0 hidden w-80 grow group-hover/tooltip:opacity-100 group-hover/tooltip:block -left-3 absolute bottom-full mb-3 p-2 bg-secondary-300 text-xs rounded-xl transition-opacity duration-300">
+                <>
+                    <Tooltip disableHoverableContent={true}>
+                        <TooltipTrigger asChild>
+                            <button
+                                onMouseEnter={() => onActionHover(maxAllowedAmount)}
+                                disabled={!maxAllowedAmount}
+                                onClick={handleSetMaxAmount}
+                                typeof="button"
+                                type="button"
+                                className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer"}
+                            >
+                                Max
+                            </button>
+                        </TooltipTrigger>
+                        {showMaxTooltip && <TooltipContent className="pointer-events-none w-80 grow p-2 !border-none !bg-secondary-300 text-xs rounded-xl" side="top" align="start" alignOffset={-10}>
                             <p>Max is calculated based on your balance minus gas fee for the transaction</p>
-                            <div className="absolute left-6 -bottom-2 w-0 h-0 border-l-[6px] border-r-[6px] border-t-[8px] border-l-transparent border-r-transparent border-t-secondary-300"></div>
-                        </div>
-                    }
-                </div>
+                            <TooltipArrow className="fill-secondary-300" width={12} height={8} />
+                        </TooltipContent>}
+                    </Tooltip>
+                </>
             }
         </div >
     )
