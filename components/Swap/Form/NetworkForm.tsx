@@ -168,7 +168,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 }
                             </div>
                         </ResizablePanel>
-
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
