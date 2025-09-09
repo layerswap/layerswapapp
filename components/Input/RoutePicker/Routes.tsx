@@ -54,29 +54,29 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const usdAmount = (tokenbalance?.amount && item?.price_in_usd) ? item?.price_in_usd * tokenbalance?.amount : undefined;
 
     return <SelectItem.DetailedTitle
-        title={
+        title={item.symbol}
+        secondaryImageAlt={route.display_name}
+        secondary={
             <div className="flex items-center gap-1">
-                <span>{item.symbol}</span>
+                <span>{route.display_name}</span>
                 {
                     item.contract ?
                         <ExtendedAddress network={route} isForCurrency showDetails address={item.contract} logoSrc={item.logo} title={item.symbol} description={item.display_asset}>
-                            <div className="flex items-center gap-1 text-secondary-text cursor-pointer hover:text-primary-text transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-500">
-                                <p className="max-w-[120px] truncate">
+                            <div className="flex items-center gap-1 text-secondary-text text-xs cursor-pointer hover:text-primary-text transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-500">
+                                <p className="max-w-[100px] truncate">
                                     <span>•</span> <span>{item.display_asset}</span>
                                 </p>
-                                <Info className="h-3.5 w-3.5" />
+                                <Info className="h-3 w-3" />
                             </div>
                         </ExtendedAddress>
                         :
-                        <p className="flex items-center gap-1 text-secondary-text transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-500">
+                        <p className="flex items-center gap-1 text-xs text-secondary-text transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-500">
                             <span>•</span>
                             <span className="truncate">{item.display_asset}</span>
                         </p>
                 }
             </div>
         }
-        secondaryImageAlt={route.display_name}
-        secondary={<span>{route.display_name}</span>}
         secondaryLogoSrc={route.logo}
     >
         {(allbalancesLoaded && tokenbalance && Number(tokenbalance?.amount) >= 0) ? (
