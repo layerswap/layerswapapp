@@ -1,4 +1,4 @@
-import { Dispatch, FC, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Dispatch, FC, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import useWallet from "../../hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
 import { InternalConnector, Wallet, WalletProvider } from "../../Models/WalletProvider";
@@ -10,7 +10,6 @@ import clsx from "clsx";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import Connector from "./Connector";
 import { removeDuplicatesWithKey } from "./utils";
-import VaulDrawer from "../modal/vaulModal";
 import { usePersistedState } from "../../hooks/usePersistedState";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
@@ -20,12 +19,10 @@ import { ImageWithFallback } from "../Common/ImageWithFallback";
 
 const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();
-    const { setSelectedConnector, selectedProvider, setSelectedProvider, selectedConnector } = useConnectModal()
+    const { setSelectedConnector, selectedProvider, setSelectedProvider, selectedConnector, selectedMultiChainConnector, setSelectedMultiChainConnector } = useConnectModal()
     let [recentConnectors, setRecentConnectors] = usePersistedState<({ providerName?: string, connectorName?: string }[])>([], 'recentConnectors', 'localStorage');
     const [connectionError, setConnectionError] = useState<string | undefined>(undefined);
     const [searchValue, setSearchValue] = useState<string | undefined>(undefined)
-    const [showEcosystemSeletion, setShowEcosystemSelection] = useState(false)
-    const [selectedMultiChainConnector, setSelectedMultiChainConnector] = useState<InternalConnector | undefined>(undefined)
     const { isMobile: isMobileSize } = useWindowDimensions()
     const [isScrolling, setIsScrolling] = useState(false);
     const scrollTimeout = useRef<any>(null);
@@ -49,7 +46,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             setConnectionError(undefined)
             if (connector?.isMultiChain) {
                 setSelectedMultiChainConnector(connector)
-                return setShowEcosystemSelection(true)
+                return;
             }
             setSelectedConnector(connector)
             if (connector.installUrl) return
@@ -171,6 +168,16 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             connectionError={connectionError}
         />
     }
+
+    if (selectedMultiChainConnector) {
+        return <MultichainConnectorPicker
+            selectedConnector={selectedMultiChainConnector}
+            allConnectors={allFeaturedConnectors as InternalConnector[]}
+            providers={featuredProviders}
+            connect={connect}
+        />
+    }
+
     return (
         <>
             <div className="text-primary-text space-y-3">
@@ -228,17 +235,6 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                     </div>
                 </div>
             </div>
-            {
-                selectedMultiChainConnector &&
-                <MultichainConnectorModal
-                    selectedConnector={selectedMultiChainConnector}
-                    allConnectors={allFeaturedConnectors as InternalConnector[]}
-                    providers={featuredProviders}
-                    showEcosystemSelection={showEcosystemSeletion}
-                    setShowEcosystemSelection={setShowEcosystemSelection}
-                    connect={connect}
-                />
-            }
         </>
     )
 }
@@ -380,65 +376,55 @@ type MultichainConnectorModalProps = {
     selectedConnector: WalletModalConnector,
     allConnectors: InternalConnector[],
     providers: WalletProvider[],
-    showEcosystemSelection: boolean,
-    setShowEcosystemSelection: Dispatch<SetStateAction<boolean>>
     connect: (connector: InternalConnector, provider: WalletProvider) => Promise<void>
 }
 
-const MultichainConnectorModal: FC<MultichainConnectorModalProps> = ({ selectedConnector, allConnectors, providers, setShowEcosystemSelection, showEcosystemSelection, connect }) => {
+const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ selectedConnector, allConnectors, providers, connect }) => {
     const Icon = resolveWalletConnectorIcon({ connector: selectedConnector.name, iconUrl: selectedConnector.icon })
     return (
-        <VaulDrawer
-            show={showEcosystemSelection}
-            setShow={setShowEcosystemSelection}
-            modalId={"selectEcosystem"}
-            header={
-                <div>
-                    <div className="flex items-center gap-1">
-                        <Icon className="w-5 h-auto" />
-                        <p className="text-xl font-semibold"><span>Connect</span> <span>{selectedConnector.name}</span></p>
-                    </div>
+        <div>
+            <div className="flex flex-col gap-4 py-15">
+                <div className="flex justify-center gap-1">
+                    <Icon className="w-14 h-auto" />
                 </div>
-            }
-        >
-            <VaulDrawer.Snap id="item-1" className="flex flex-col items-center gap-4 pb-4">
-                <p className="text-base text-left text-secondary-text">
+                <p className="text-base text-center text-primary-text">
                     <span>{selectedConnector.name}</span> <span>supports multiple network types. Please select the one you&apos;d like to use.</span>
                 </p>
-                <div className="flex flex-col gap-2 w-full">
-                    {
-                        allConnectors.filter(c => c?.name === selectedConnector.name)?.map((connector, index) => {
-                            const provider = providers.find(p => p.name === connector?.providerName)
-                            return (
-                                <button
-                                    type="button"
-                                    key={index}
-                                    onClick={async () => {
-                                        setShowEcosystemSelection(false);
-                                        await connect(connector!, provider!)
-                                    }}
-                                    className="w-full h-fit flex items-center gap-3 bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl p-3"
-                                >
-                                    {
-                                        provider?.providerIcon &&
-                                        <ImageWithFallback
-                                            className="w-8 h-8 rounded-md"
-                                            width={30}
-                                            height={30}
-                                            src={provider.providerIcon}
-                                            alt={provider.name}
-                                        />
-                                    }
-                                    <p>
-                                        {connector?.providerName}
-                                    </p>
-                                </button>
-                            )
-                        })
-                    }
-                </div>
-            </VaulDrawer.Snap>
-        </VaulDrawer>
+
+            </div>
+
+            <div className="flex flex-col gap-2 w-full">
+                {
+                    allConnectors.filter(c => c?.name === selectedConnector.name)?.map((connector, index) => {
+                        const provider = providers.find(p => p.name === connector?.providerName)
+                        return (
+                            <button
+                                type="button"
+                                key={index}
+                                onClick={async () => {
+                                    await connect(connector!, provider!)
+                                }}
+                                className="w-full h-fit flex items-center gap-3 bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl p-3"
+                            >
+                                {
+                                    provider?.providerIcon &&
+                                    <ImageWithFallback
+                                        className="w-8 h-8 rounded-md"
+                                        width={30}
+                                        height={30}
+                                        src={provider.providerIcon}
+                                        alt={provider.name}
+                                    />
+                                }
+                                <p>
+                                    {connector?.providerName}
+                                </p>
+                            </button>
+                        )
+                    })
+                }
+            </div>
+        </div>
     )
 }
 
