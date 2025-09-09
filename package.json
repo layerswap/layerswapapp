@@ -103,7 +103,6 @@
     "@storybook/addon-onboarding": "^9.1.1",
     "@storybook/nextjs": "^9.1.1",
     "@storybook/testing-library": "^0.2.1",
-    "@storybook/addon-docs": "^9.1.1",
     "@tailwindcss/postcss": "^4.0.15",
     "@ton/crypto": "^3.3.0",
     "@types/bn.js": "^5.1.0",

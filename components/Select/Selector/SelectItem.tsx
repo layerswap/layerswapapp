@@ -56,7 +56,7 @@ type SelectItemDetailedTitleProps = {
 
 const DetailedTitle = ({ children, className, title, secondary, secondaryImageAlt, secondaryLogoSrc, logoClassName }: SelectItemDetailedTitleProps) => {
     return <Title className={`w-full grid grid-cols-9 ${className}`}>
-        <div className="col-span-5 sm:col-span-6 truncate flex flex-col gap-0.5 leading-5 align-middle space-y-0.5 font-medium">
+        <div className="col-span-5 sm:col-span-7 truncate flex flex-col gap-0.5 leading-5 align-middle space-y-0.5 font-medium">
             <span className="align-middle leading-5 text-base">{title}</span>
             <div className="flex items-center space-x-1 align-middle">
                 {secondaryLogoSrc && <ImageWithFallback
@@ -72,7 +72,7 @@ const DetailedTitle = ({ children, className, title, secondary, secondaryImageAl
                 </span>
             </div>
         </div>
-        <div className='col-span-4 sm:col-span-3'>
+        <div className='col-span-4 sm:col-span-2 place-self-end'>
             {children}
         </div>
     </Title>
