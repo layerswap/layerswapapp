@@ -94,35 +94,23 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             onAnimationEnd={(e) => { onAnimationEnd && onAnimationEnd(e) }}
             handleOnly={isMobile}
         >
-            <DesktopBackdropPortal
-                isOpen={show}
-                container={container}
-                isMobile={isMobile}
-            >
-                <AnimatePresence mode='wait'>
-                    {
-                        show &&
-                        <motion.div
-                            onClick={() => setShow(false)}
-                            key="backdrop"
-                            className='absolute inset-0 z-40 bg-black/50 block'
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                        />
-                    }
-                </AnimatePresence>
-            </DesktopBackdropPortal>
 
             <Drawer.Portal>
-                {
-                    isMobile &&
-                    <Drawer.Close asChild>
-                        <Drawer.Overlay
-                            className='fixed inset-0 z-50 bg-black/50 block'
-                        />
-                    </Drawer.Close>
-                }
+                <Drawer.Close asChild>
+                    {
+                        isMobile
+                            ? <Drawer.Overlay
+                                className='fixed inset-0 z-50 bg-black/50 block'
+                            />
+                            : <motion.div
+                                key="backdrop"
+                                className='absolute inset-0 z-50 bg-black/50 block'
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                            />
+                    }
+                </Drawer.Close>
 
                 <Drawer.Content
                     data-testid="content"
@@ -274,44 +262,5 @@ export const ModalFooterPortal: FC<Props> = ({ children, isWalletModalOpen }) =>
 
     return ref.current && mounted ? createPortal(children, ref.current) : null;
 };
-
-const DesktopBackdropPortal = ({ isOpen, container, children, isMobile }: { isOpen: boolean, container?: Element | null, children: React.ReactNode, isMobile: boolean }) => {
-    const ref = useRef<Element | null>(null);
-    const [mounted, setMounted] = useState(false)
-
-    useEffect(() => {
-        if (!isMobile && isOpen) {
-            const observer = new MutationObserver(() => {
-                if (window.document.body.style.pointerEvents === 'none') {
-                    window.document.body.style.pointerEvents = 'auto';
-                }
-            });
-
-            observer.observe(window.document.body, {
-                attributes: true,
-                attributeFilter: ['style']
-            });
-
-            // Also set it immediately
-            window.document.body.style.pointerEvents = 'auto';
-
-            return () => {
-                observer.disconnect();
-                window.document.body.style.pointerEvents = '';
-            }
-        }
-    }, [isMobile, isOpen])
-
-    useEffect(() => {
-
-        if (container && isOpen) {
-            ref.current = container
-            setMounted(true)
-        }
-
-    }, [isOpen, container]);
-
-    return ref.current && mounted ? createPortal(children, ref.current) : null;
-}
 
 export default VaulDrawer;

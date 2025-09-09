@@ -54,7 +54,7 @@ const CexPicker: FC = () => {
                 <SelectorTrigger disabled={false} className="bg-secondary-500 !p-3">
                     <SelectedExchangeDisplay exchange={fromExchange} placeholder="Select Exchange" />
                 </SelectorTrigger>
-                <SelectorContent isLoading={isLoading} searchHint="Search" header="">
+                <SelectorContent isLoading={isLoading} searchHint="Search">
                     {({ closeModal, shouldFocus }) => {
                         return (
                             <div className="overflow-y-auto flex flex-col h-full z-40 openpicker" >

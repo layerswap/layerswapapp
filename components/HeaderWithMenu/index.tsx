@@ -1,8 +1,6 @@
-import { useIntercom } from "react-use-intercom"
 import IconButton from "../buttons/iconButton"
 import GoHomeButton from "../utils/GoHome"
 import { ArrowLeft } from 'lucide-react'
-import ChatIcon from "../icons/ChatIcon"
 import dynamic from "next/dynamic"
 import LayerswapMenu from "../LayerswapMenu"
 import { useQueryState } from "../../context/query"
@@ -12,7 +10,6 @@ const WalletsHeader = dynamic(() => import("../Wallet/ConnectedWallets").then((c
 })
 
 function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null }) {
-   const { boot, show, update } = useIntercom()
    const query = useQueryState()
 
    return (
