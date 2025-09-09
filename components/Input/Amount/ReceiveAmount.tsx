@@ -20,13 +20,14 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ source_token, destinatio
             <div className="flex items-center justify-start w-full relative">
                 <div className={clsx(
                     "w-full flex items-center py-[3px] pr-3",
-                    { "animate-pulse-stronger": isFeeLoading }
+                    { "animate-pulse-stronger": isFeeLoading },
+                    { "text-secondary-text": !receive_amount }
                 )}>
                     <NumberFlow value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: fee?.quote.destination_token?.decimals || 2 }} />
                 </div>
             </div>
             <span className="text-base leading-5 font-medium text-secondary-text h-5">
-                <NumberFlow className="p-0"  value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD', maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
+                <NumberFlow className="p-0" value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD', maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
             </span>
         </div>
     </>)

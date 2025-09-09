@@ -4,7 +4,6 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { FC, useEffect, useMemo, useRef } from "react";
 import { Info } from "lucide-react";
 import { isValidAddress } from "../../lib/address/validator";
-import ResizablePanel from "../ResizablePanel";
 import useSWRBalance from "../../lib/balances/useSWRBalance";
 import { useQuoteData } from "@/hooks/useFee";
 

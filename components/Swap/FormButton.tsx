@@ -3,16 +3,26 @@ import { PlusIcon } from "lucide-react";
 import SubmitButton from "../buttons/submitButton";
 import { useQueryState } from "@/context/query";
 import Address from "../Input/Address";
+import { SwapFormValues } from "../DTOs/SwapFormValues";
+import { Partner } from "@/Models/Partner";
 
+type Props = {
+    shouldConnectWallet: boolean,
+    values: SwapFormValues,
+    disabled: boolean,
+    error: string,
+    isSubmitting: boolean,
+    partner: Partner | undefined,
+}
 
 const FormButton = ({
     shouldConnectWallet,
     values,
-    isValid,
+    disabled,
     error,
     isSubmitting,
     partner,
-}) => {
+}: Props) => {
     const query = useQueryState();
     const actionDisplayName = error || query?.actionButtonText || "Next";
 
@@ -36,7 +46,7 @@ const FormButton = ({
         <SubmitButton
             className="plausible-event-name=Swap+initiated"
             type="submit"
-            isDisabled={!isValid}
+            isDisabled={disabled}
             isSubmitting={isSubmitting}
         >
             {actionDisplayName}

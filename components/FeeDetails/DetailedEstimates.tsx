@@ -47,19 +47,19 @@ export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, i
     const displayLsFeeInUsd = lsFeeAmountInUsd ? (lsFeeAmountInUsd < 0.01 ? '<$0.01' : `$${lsFeeAmountInUsd?.toFixed(2)}`) : null
     const displayGasFeeInUsd = gasFeeInUsd ? (gasFeeInUsd < 0.01 ? '<$0.01' : `$${gasFeeInUsd?.toFixed(2)}`) : null
 
-    return <div className="flex flex-col w-full gap-2 divide-y divide-secondary-300 p-3">
+    return <div className="flex flex-col w-full divide-y divide-secondary-400 px-3 pt-1">
         {
             detailsElements.map((item) => {
                 const showElement = item.showCondition ? item.showCondition({ gasFeeInUsd, shouldCheckNFT, isLoading, error, nftBalance, campaign, reward, destinationAddress }) : true
                 if (!showElement) return null
 
                 return (
-                    <div key={item.name} className="flex items-center w-full justify-between gap-1 pb-2 px-1">
+                    <div key={item.name} className="flex items-center w-full justify-between gap-1 py-3 px-2 text-sm">
                         <div className="inline-flex items-center text-left text-secondary-text gap-1 pr-4">
                             <div className="w-5">
                                 <item.icon className="text-secondary-text" />
                             </div>
-                            <label className="text-sm sm:text-base">
+                            <label>
                                 {item.name}
                             </label>
                         </div>
