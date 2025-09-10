@@ -21,7 +21,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const sourceAddress = selectedSourceAccount?.address
 
     const { balance, isBalanceLoading } = useSWRBalance(sourceAddress, from)
-    const { gas, isGasLoading } = useSWRGas(sourceAddress, from, fromCurrency)
+    const { gas, isGasLoading } = useSWRGas(sourceAddress, from, fromCurrency, amount)
     const gasAmount = gas || 0;
     const native_currency = from?.token
 

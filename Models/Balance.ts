@@ -17,7 +17,8 @@ export type GasProps = {
     token: Token,
     address?: `0x${string}`,
     recipientAddress?: string,
-    wallet?: Wallet
+    wallet?: Wallet,
+    amount?: number,
 }
 
 export type Balance = {
