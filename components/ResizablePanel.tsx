@@ -3,11 +3,11 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ReactNode } from "react";
 
 export default function ResizablePanel({ children, className }: { children: ReactNode, className?: string }) {
-    let [ref, { height }] = useMeasure();
+    let [ref] = useMeasure();
 
     return (
         <motion.div
-            animate={{ height: height || "auto", width: "100%" }}
+            animate={{ height: "auto", width: "100%" }}
             className="relative overflow-hidden"
         >
             <AnimatePresence initial={false}>
