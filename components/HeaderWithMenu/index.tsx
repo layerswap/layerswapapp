@@ -13,7 +13,7 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
    const query = useQueryState()
 
    return (
-      <div className="w-full grid grid-cols-5 px-6 mt-2 pb-2 max-sm:pl-0 max-sm:pr-8" >
+      <div className="items-center justify-end sm:flex sm:items-center sm:w-full sm:justify-end grid grid-cols-5 w-full sm:grid-cols-none sm:grid-none px-6 mt-2 pb-2 max-sm:pl-0 max-sm:pr-8">
          {
             goBack &&
             <IconButton onClick={goBack}
