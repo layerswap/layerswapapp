@@ -54,18 +54,24 @@ const MinMax = (props: MinMaxProps) => {
         onActionHover(undefined)
     }
 
-    const handleSetMinAmount = () => {
+    const handleSetMinAmount = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault()
+        e.stopPropagation()
         if (!limitsMinAmount)
             throw new Error("Wallet balance is not available");
         handleSetValue(limitsMinAmount.toString())
     }
-    const handleSetHalfAmount = async () => {
+    const handleSetHalfAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault()
+        e.stopPropagation()
         if (!walletBalance)
             throw new Error("Wallet balance is not available");
         handleSetValue((walletBalance?.amount / 2).toString())
     }
 
-    const handleSetMaxAmount = async () => {
+    const handleSetMaxAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault()
+        e.stopPropagation()
         if (!maxAllowedAmount)
             throw new Error("Max amount is not available");
         handleSetValue(maxAllowedAmount.toString())
