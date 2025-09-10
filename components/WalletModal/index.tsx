@@ -82,7 +82,7 @@ export function WalletModalProvider({ children }) {
     }, [setSelectedConnector, selectedMultiChainConnector, selectedConnector, selectedMultiChainConnector])
 
     useEffect(() => {
-        if (!open && selectedConnector) {
+        if (!open && (selectedConnector || selectedMultiChainConnector)) {
             setSelectedConnector(undefined)
             setSelectedMultiChainConnector(undefined)
             setSelectedProvider(undefined)
