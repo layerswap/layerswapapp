@@ -142,36 +142,34 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                 </Widget.Content>
                 <Widget.Footer>
                     <div className="mb-3">
-                        <ResizablePanel>
-                            <div className="space-y-3">
-                                <>
-                                    {
-                                        showInsufficientBalanceWarning &&
-                                        <InsufficientBalanceWarning />
-                                    }
-                                </>
+                        <div className="space-y-3">
+                            <>
                                 {
-                                    Number(values.amount) > 0 &&
-                                    <ReserveGasNote
-                                        maxAllowedAmount={minAllowedAmount}
-                                        minAllowedAmount={maxAllowedAmount}
-                                        onSubmit={handleReserveGas}
-                                    />
+                                    showInsufficientBalanceWarning &&
+                                    <InsufficientBalanceWarning />
                                 }
-                                {
-                                    quote && values.toAsset?.refuel && !query.hideRefuel &&
-                                    <RefuelToggle
-                                        fee={quote}
-                                        onButtonClick={() => setOpenRefuelModal(true)}
-                                    />
-                                }
-                                {
-                                    routeValidation.message
-                                        ? <ValidationError />
-                                        : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
-                                }
-                            </div>
-                        </ResizablePanel>
+                            </>
+                            {
+                                Number(values.amount) > 0 &&
+                                <ReserveGasNote
+                                    maxAllowedAmount={minAllowedAmount}
+                                    minAllowedAmount={maxAllowedAmount}
+                                    onSubmit={handleReserveGas}
+                                />
+                            }
+                            {
+                                quote && values.toAsset?.refuel && !query.hideRefuel &&
+                                <RefuelToggle
+                                    fee={quote}
+                                    onButtonClick={() => setOpenRefuelModal(true)}
+                                />
+                            }
+                            {
+                                routeValidation.message
+                                    ? <ValidationError />
+                                    : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                            }
+                        </div>
                     </div>
                     <FormButton
                         shouldConnectWallet={shouldConnectWallet}
