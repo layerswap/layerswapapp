@@ -32,7 +32,16 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal, fee }) => 
                 </div>
                 <p className="text-2xl">About Refuel</p>
                 <p className="text-secondary-text max-w-sm">
-                    <span><span>We'll convert</span> <span>${fee?.refuel?.amount_in_usd}</span> <span>of your transfer into</span> <span>{nativeAsset?.symbol}</span> <span>so you can start using your funds on the destination chain immediately.</span></span>
+                    {
+                        fee && refuel ?
+                            <>
+                                <span><span>We&apos;ll convert</span> <span>${fee?.refuel?.amount_in_usd}</span> <span>of your transfer into</span> <span>{nativeAsset?.symbol}</span> <span>so you can start using your funds on the destination chain immediately.</span></span>
+                            </>
+                            :
+                            <>
+                                <span><span>We&apos;ll convert a small portion of your transfer into</span> <span>{nativeAsset?.symbol}</span> <span>so you can start using your funds on the destination chain immediately.</span></span>
+                            </>
+                    }
                 </p>
                 {
                     (refuel || destNativeTokenBalance) &&
