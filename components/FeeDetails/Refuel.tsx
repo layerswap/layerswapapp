@@ -7,13 +7,14 @@ import { isValidAddress } from "../../lib/address/validator";
 import useSWRBalance from "../../lib/balances/useSWRBalance";
 import { useQuoteData } from "@/hooks/useFee";
 import clsx from "clsx";
+import { useValidationContext } from "@/context/validationContext";
 
 type RefuelProps = {
     onButtonClick: () => void
-    fee: ReturnType<typeof useQuoteData>['quote']
+    quote: ReturnType<typeof useQuoteData>['quote']
 }
 
-const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, fee: quote }) => {
+const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote }) => {
 
     const {
         values,
@@ -21,6 +22,7 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, fee: quote }) => {
     } = useFormikContext<SwapFormValues>();
     const { toAsset: toCurrency, to, destination_address, refuel } = values
     const { balances } = useSWRBalance(destination_address, to)
+    const { formValidation } = useValidationContext();
 
     const destinationNativeBalance = destination_address && balances?.find(b => (b.token === to?.token?.symbol) && (b.network === to.name))
     const needRefuel = toCurrency && toCurrency.refuel && to && to.token && isValidAddress(destination_address, to) && destinationNativeBalance && destinationNativeBalance?.amount == 0
@@ -38,8 +40,10 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, fee: quote }) => {
         setFieldValue('refuel', value)
     }
 
+    const showRefuel = needRefuel && (quote || formValidation.message.includes("Min amount is") || refuel)
+
     return (
-        needRefuel &&
+        showRefuel &&
         <div
             className={clsx("gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3 bg-secondary-500 border border-transparent transition-colors duration-200 rounded-2xl", {
                 "!border-primary": needRefuel && !refuel
@@ -62,8 +66,8 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, fee: quote }) => {
                         <p className="text-xs"><span>You&apos;ll get </span>{quote?.refuel ? <span>~${quote.refuel.amount_in_usd}</span> : <span className="w-5 h-3 rounded animate-pulse bg-secondary-200 text-transparent" >token</span>} <span>in</span> <span>{to?.display_name}</span> <span>for gas fees</span></p>
                     }
                     {
-                        refuel && !quote && 
-                        <p>
+                        refuel && !quote &&
+                        <p className="text-xs">
                             <span>You&apos;ll get</span> <span>{toCurrency.refuel?.token.symbol}</span> <span>for gas fees</span>
                         </p>
                     }
