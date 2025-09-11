@@ -15,7 +15,7 @@ import Link from 'next/link';
 import KnownInternalNames from '@/lib/knownIds';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 
-export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel, handleClearAmount }) => {
+export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
     const [syncWallet, setSyncWallet] = useState<zksync.Wallet | null>();
     const [accountIsActivated, setAccountIsActivated] = useState(false);
@@ -107,7 +107,6 @@ export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
 
             if (tf?.txHash) {
                 const txHash = tf?.txHash?.replace('sync-tx:', '0x');
-                handleClearAmount?.()
                 return txHash;
             }
         }

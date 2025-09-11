@@ -12,7 +12,7 @@ import { ConnectWalletButton, SendTransactionButton } from '../../Common/buttons
 import TransactionMessages from '../../../messages/TransactionMessages';
 import WalletMessage from '../../../messages/Message';
 
-export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel, handleClearAmount }) => {
+export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | undefined>()
     const [insufficientTokens, setInsufficientTokens] = useState<string[]>([])
@@ -70,7 +70,6 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
                 signTransaction
             );
 
-            handleClearAmount?.()
             return signature;
 
         }

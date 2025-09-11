@@ -11,7 +11,6 @@ export type WithdrawPageProps = {
     swapBasicData: SwapBasicData
     refuel: boolean
     savedTransactionHash?: string
-    handleClearAmount?: () => void
 }
 
 export type TransferProps = {
@@ -21,5 +20,4 @@ export type TransferProps = {
     swapId?: string
     userDestinationAddress?: string
     sequenceNumber?: number
-    handleClearAmount?: () => void
 }

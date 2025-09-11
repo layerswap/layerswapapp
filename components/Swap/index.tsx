@@ -11,10 +11,10 @@ import ManualWithdraw from './Withdraw/ManualWithdraw';
 
 type Props = {
     type: "widget" | "contained",
-    handleClearAmount?: () => void,
+    onWithdrawalSuccess?: () => void,
 }
 
-const SwapDetails: FC<Props> = ({ type, handleClearAmount }) => {
+const SwapDetails: FC<Props> = ({ type, onWithdrawalSuccess }) => {
     const { swapDetails, swapBasicData, quote, refuel, depositActionsResponse } = useSwapDataState()
 
     const swapStatus = swapDetails?.status || SwapStatus.UserTransferPending;
@@ -47,7 +47,7 @@ const SwapDetails: FC<Props> = ({ type, handleClearAmount }) => {
                     (
                         swapBasicData?.use_deposit_address === true
                             ? <ManualWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} />
-                            : <Withdraw type={type} handleClearAmount={handleClearAmount} />
+                            : <Withdraw type={type} onWithdrawalSuccess={onWithdrawalSuccess} />
                     )
                     :
                     <div className='space-y-3'>

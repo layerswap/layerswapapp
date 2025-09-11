@@ -13,7 +13,7 @@ import { WithdrawPageProps } from '../../Common/sharedTypes';
 import { useConnectModal } from '@/components/WalletModal';
 import { useActiveParadexAccount } from '@/components/WalletProviders/ActiveParadexAccount';
 
-export const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ refuel, swapBasicData, swapId, handleClearAmount }) => {
+export const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ refuel, swapBasicData, swapId }) => {
 
     const { networks } = useSettingsState();
     const l1Network = networks.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
@@ -26,10 +26,10 @@ export const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ refuel, swapBasic
     const starknetWallet = starknetProvider?.activeWallet
 
     if (activeConnection?.providerName === evmProvider?.name && evmWallet) {
-        return <Evm refuel={refuel} swapBasicData={swapBasicData} swapId={swapId} handleClearAmount={handleClearAmount} />
+        return <Evm refuel={refuel} swapBasicData={swapBasicData} swapId={swapId} />
     }
     if (activeConnection?.providerName === starknetProvider?.name && starknetWallet) {
-        return <Starknet refuel={refuel} swapBasicData={swapBasicData} swapId={swapId} handleClearAmount={handleClearAmount} />
+        return <Starknet refuel={refuel} swapBasicData={swapBasicData} swapId={swapId} />
     }
 
     return <ConnectWalletModal />

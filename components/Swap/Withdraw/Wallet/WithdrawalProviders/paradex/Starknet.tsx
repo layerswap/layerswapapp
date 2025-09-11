@@ -8,7 +8,7 @@ import { AuthorizeStarknet } from '@/lib/wallets/paradex/Authorize/Starknet';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import { SendTransactionButton } from '../../Common/buttons';
 
-const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel, handleClearAmount }) => {
+const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
 
     const [loading, setLoading] = useState(false)
     const { source_token } = swapBasicData;
@@ -43,7 +43,6 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel, handl
                 const res = await paradexAccount.execute(parsedCallData, undefined, { maxFee: '1000000000000000' });
 
                 if (res.transaction_hash) {
-                    handleClearAmount?.()
                     return res.transaction_hash
                 }
             }

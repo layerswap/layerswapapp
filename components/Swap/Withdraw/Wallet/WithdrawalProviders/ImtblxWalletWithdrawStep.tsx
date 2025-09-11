@@ -7,7 +7,7 @@ import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import WarningMessage from '@/components/WarningMessage';
 
-export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel, handleClearAmount }) => {
+export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
     const { source_network, source_token } = swapBasicData;
@@ -35,7 +35,6 @@ export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
             }
             else if (transactionRes && swapId) {
                 setTransferDone(true)
-                handleClearAmount?.()
                 return transactionRes.txId.toString()
             }
         }

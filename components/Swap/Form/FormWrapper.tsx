@@ -143,7 +143,7 @@ export default function FormWrapper({ children, type }: { children?: React.React
                     header={`Complete the swap`}
                     modalId="showSwap">
                     <VaulDrawer.Snap id="item-1">
-                        <SwapDetails type="contained" handleClearAmount={handleClearAmount} />
+                        <SwapDetails type="contained" onWithdrawalSuccess={handleClearAmount} />
                     </VaulDrawer.Snap>
                 </VaulDrawer>
                 {children}

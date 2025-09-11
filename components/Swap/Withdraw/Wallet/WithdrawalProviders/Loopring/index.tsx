@@ -1,4 +1,4 @@
-import { ArrowLeftRight, Lock } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useAccount } from 'wagmi';
@@ -14,7 +14,7 @@ import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactio
 import SignatureIcon from '@/components/icons/SignatureIcon';
 import WalletIcon from '@/components/icons/WalletIcon';
 
-export const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel, handleClearAmount }) => {
+export const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
     const [transferDone, setTransferDone] = useState<boolean>();
     const [activationPubKey, setActivationPubKey] = useState<{ x: string; y: string }>()
@@ -90,7 +90,6 @@ export const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, r
             }, config)
             if (transferResult.hash) {
                 setTransferDone(true)
-                handleClearAmount?.()
                 return transferResult.hash
             }
             else {

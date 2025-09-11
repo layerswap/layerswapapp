@@ -9,9 +9,9 @@ type Props = {
     swapId: string | undefined,
     refuel: boolean,
     balanceWarning?: JSX.Element | null,
-    handleClearAmount?: () => void,
+    onWithdrawalSuccess?: () => void,
 }
-const WalletTransferButton: FC<Props> = ({ swapBasicData: swapData, swapId, refuel, balanceWarning, handleClearAmount }) => {
+const WalletTransferButton: FC<Props> = ({ swapBasicData: swapData, swapId, refuel, balanceWarning, onWithdrawalSuccess }) => {
     const [openModal, setOpenModal] = useState(false);
 
     return <>
@@ -31,7 +31,7 @@ const WalletTransferButton: FC<Props> = ({ swapBasicData: swapData, swapId, refu
             <div>
                 <WalletTransferContent openModal={openModal} setOpenModal={setOpenModal} swapData={swapData} />
                 {balanceWarning}
-                <WalletTransferAction swapData={swapData} swapId={swapId} refuel={refuel} handleClearAmount={handleClearAmount} />
+                <WalletTransferAction swapData={swapData} swapId={swapId} refuel={refuel} onWithdrawalSuccess={onWithdrawalSuccess} />
             </div>
         </div>
     </>
