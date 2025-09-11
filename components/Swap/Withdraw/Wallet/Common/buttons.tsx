@@ -16,7 +16,7 @@ import { BackendTransactionStatus, SwapBasicData } from "@/lib/apiClients/layerS
 import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
 import posthog from "posthog-js";
-import { useWithdrawal } from "@/context/withdrawalContext";
+import { useWalletWithdrawalState } from "@/context/withdrawalContext";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
@@ -160,7 +160,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { setSwapTransaction } = useSwapTransactionStore();
     const query = useQueryState()
 
-    const { onWithdrawalSuccess } = useWithdrawal();
+    const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess } = useWalletWithdrawalState();
 
     const handleClick = async () => {
         try {
@@ -209,7 +209,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             }
             const hash = await onClick(transferProps)
             if (hash) {
-                onWithdrawalSuccess?.();
+                onWalletWithdrawalSuccess?.();
                 setSwapTransaction(swapId, BackendTransactionStatus.Pending, hash);
             }
         }

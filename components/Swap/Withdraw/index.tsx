@@ -12,7 +12,7 @@ import useSWRBalance from '@/lib/balances/useSWRBalance';
 import { useSettingsState } from '@/context/settings';
 import { InsufficientBalanceWarning } from '@/components/insufficientBalance';
 
-const Withdraw: FC<{ type: 'widget' | 'contained', onWithdrawalSuccess?: () => void }> = ({ type, onWithdrawalSuccess }) => {
+const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void }> = ({ type, onWalletWithdrawalSuccess }) => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading } = useSwapDataState()
     const { appName, signature } = useQueryState()
     const sourceIsImmutableX = swapBasicData?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
@@ -40,7 +40,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWithdrawalSuccess?: () => v
 
     if (swapBasicData?.use_deposit_address === false) {
         withdraw = {
-            footer: <WalletTransferButton swapBasicData={swapBasicData} swapId={swapDetails?.id} refuel={!!refuel} onWithdrawalSuccess={onWithdrawalSuccess} balanceWarning={showInsufficientBalanceWarning ? <InsufficientBalanceWarning /> : null} />
+            footer: <WalletTransferButton swapBasicData={swapBasicData} swapId={swapDetails?.id} refuel={!!refuel} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} balanceWarning={showInsufficientBalanceWarning ? <InsufficientBalanceWarning /> : null} />
         }
     }
 

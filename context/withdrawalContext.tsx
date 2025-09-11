@@ -1,24 +1,24 @@
 import React, { FC } from 'react'
 
-type WithdrawalContextValue = {
-    onWithdrawalSuccess?: () => void;
+type WalletWithdrawalContextValue = {
+    onWalletWithdrawalSuccess?: () => void;
 }
 
-const WithdrawalContext = React.createContext<WithdrawalContextValue | null>(null);
+const WalletWithdrawalContext = React.createContext<WalletWithdrawalContextValue | null>(null);
 
-export const WithdrawalProvider: FC<{ onWithdrawalSuccess?: () => void, children?: React.ReactNode }> = ({ onWithdrawalSuccess, children }) => {
+export const WithdrawalProvider: FC<{ onWalletWithdrawalSuccess?: () => void, children?: React.ReactNode }> = ({ onWalletWithdrawalSuccess, children }) => {
     return (
-        <WithdrawalContext.Provider value={{ onWithdrawalSuccess }}>
+        <WalletWithdrawalContext.Provider value={{ onWalletWithdrawalSuccess }}>
             {children}
-        </WithdrawalContext.Provider>
+        </WalletWithdrawalContext.Provider>
     );
 }
 
-export function useWithdrawal() {
-    const data = React.useContext(WithdrawalContext);
+export function useWalletWithdrawalState() {
+    const data = React.useContext(WalletWithdrawalContext);
 
     if (data === null) {
-        throw new Error('useWithdrawal must be used within a WithdrawalProvider');
+        throw new Error('useWalletWithdrawalState must be used within a WithdrawalProvider');
     }
 
     return data;
