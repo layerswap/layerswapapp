@@ -7,7 +7,7 @@ import useSWRGas from "../../../lib/gases/useSWRGas";
 import useSWRBalance from "../../../lib/balances/useSWRBalance";
 import { useSwapDataState } from "../../../context/swap";
 import MinMax from "./MinMax";
-import { resolveMacAllowedAmount } from "./helpers";
+import { resolveMaxAllowedAmount } from "./helpers";
 
 
 const AmountField = forwardRef(function AmountField(_, ref: any) {
@@ -22,6 +22,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
 
     const { balance, isBalanceLoading } = useSWRBalance(sourceAddress, from)
     const { gas, isGasLoading } = useSWRGas(sourceAddress, from, fromCurrency, amount)
+
     const gasAmount = gas || 0;
     const native_currency = from?.token
 
@@ -29,7 +30,7 @@ const AmountField = forwardRef(function AmountField(_, ref: any) {
     const walletBalance = balance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
     let maxAllowedAmount: number = useMemo(() => {
         if (!fromCurrency || !minAllowedAmount || !maxAmountFromApi) return 0
-        return resolveMacAllowedAmount({ fromCurrency, limitsMinAmount: minAllowedAmount, limitsMaxAmount: maxAmountFromApi, walletBalance, gasAmount, native_currency })
+        return resolveMaxAllowedAmount({ fromCurrency, limitsMinAmount: minAllowedAmount, limitsMaxAmount: maxAmountFromApi, walletBalance, gasAmount, native_currency })
     }, [fromCurrency, minAllowedAmount, maxAmountFromApi, walletBalance, gasAmount, native_currency])
 
     const placeholder = (fromCurrency && toCurrency && from && to && minAllowedAmount && !isBalanceLoading && !isGasLoading) ? `${minAllowedAmount} - ${maxAmountFromApi}` : '0.0'

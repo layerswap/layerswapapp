@@ -6,7 +6,7 @@ import ecc from '@bitcoinerlab/secp256k1';
 
 initEccLib(ecc);
 
-const MIN_FEE = 1000n // sats, as BigInt
+const MIN_FEE = 0n // sats, as BigInt
 
 async function fetchUtxos(
   address: string,

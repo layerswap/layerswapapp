@@ -6,7 +6,7 @@ import useSWRGas from "../../../lib/gases/useSWRGas";
 import { useSwapDataState } from "../../../context/swap";
 import { RouteNetwork, RouteToken, Token } from "../../../Models/Network";
 import { useMemo } from "react";
-import { resolveMacAllowedAmount } from "./helpers";
+import { resolveMaxAllowedAmount } from "./helpers";
 
 type MinMaxProps = {
     fromCurrency: RouteToken,
@@ -34,13 +34,13 @@ const MinMax = (props: MinMaxProps) => {
     const native_currency = from?.token
 
     let maxAllowedAmount: number = useMemo(() => {
-        return resolveMacAllowedAmount({ fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency })
+        return resolveMaxAllowedAmount({ fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency })
     }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency])
 
     const handleSetMaxAmount = async () => {
         const updatedBalance = await mutate()
         const updatedWalletBalance = updatedBalance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
-        const maxAllowedAmount = resolveMacAllowedAmount({ fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance: updatedWalletBalance, gasAmount, native_currency })
+        const maxAllowedAmount = resolveMaxAllowedAmount({ fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance: updatedWalletBalance, gasAmount, native_currency })
         setFieldValue('amount', maxAllowedAmount);
     }
 
