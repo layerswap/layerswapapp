@@ -1,9 +1,6 @@
-import LayerSwapApiClient, { SwapResponse } from "../../lib/apiClients/layerSwapApiClient"
-import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse"
 import { ChevronUp, Plus, RefreshCw } from 'lucide-react'
-import { FC, useCallback, useMemo, useState } from "react"
+import { FC, useMemo, useState } from "react"
 import HistorySummary from "./HistorySummary";
-import useSWRInfinite from 'swr/infinite'
 import useWallet from "../../hooks/useWallet"
 import Link from "next/link"
 import Snippet, { HistoryItemSceleton } from "./Snippet"
@@ -15,23 +12,15 @@ import SwapDetails from "./SwapDetailsComponent"
 import { addressFormat } from "../../lib/address/formatter";
 import { useSettingsState } from "../../context/settings";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../shadcn/accordion";
+import { useSwapHistoryData } from "../../hooks/useSwapHistoryData";
 
-const PAGE_SIZE = 20
 type ListProps = {
     statuses?: string | number;
     refreshing?: boolean;
     onNewTransferClick?: () => void
 }
 
-type Status = "Completed" | "PendingWithdrawal" | "PendingDeposit" | "PendingRefund" | "Refunded"
-
-const getSwapsKey = () => (index: number, statuses: Status[], addresses?: string[]) => {
-    const addressesParams = addresses?.map(a => `&addresses=${a}`).join('') || ''
-    const statusesParams = statuses.map(s => `&statuses=${s}`).join('') || ''
-    return `/internal/swaps?page=${index + 1}${statusesParams}${addressesParams}`
-}
-
-type Swap = SwapResponse & { type: 'user' | 'explorer' }
+type Swap = any & { type: 'user' | 'explorer' }
 
 const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
     const { networks } = useSettingsState()
@@ -40,81 +29,42 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
 
     const [expanded, setExpanded] = useState<string | undefined>(undefined)
 
-    const addresses = wallets.map(w => {
+    const addresses = useMemo(() => wallets.map(w => {
         const network = networks.find(n => n.chain_id == w.chainId)
         return addressFormat(w.address, network || null)
-    })
+    }), [wallets, networks])
 
-    const getKey = useMemo(() => getSwapsKey(), [])
-    const apiClient = new LayerSwapApiClient()
-
-    const { data: pendingSwapPages, size: pendingSwapsSize, setSize: setPendingSwapsSize, isLoading: pendingSwapsLoading, isValidating: pendingSwapsValidating, mutate: mutatePendingSwaps } =
-        useSWRInfinite<ApiResponse<Swap[]>>(
-            (index) => getKey(index, ["PendingDeposit"], addresses),
-            apiClient.fetcher,
-            {
-                revalidateAll: false,
-                refreshInterval: (data?: ApiResponse<Swap[]>[]) => {
-                    const pendingSwaps =
-                        !!data?.some(p => (p?.data?.length ?? 0) > 0)
-                    return pendingSwaps ? 2000 : 30000
-                },
-            }
-        )
-    const getCompletedSwapsKey = useCallback((index) => getKey(index, ["Completed", "PendingWithdrawal", "Refunded", "PendingRefund"], addresses), [addresses])
-
-    const hasPendingSwaps = !!pendingSwapPages?.some(p => (p?.data?.length ?? 0) > 0)
-
-    const { data: userSwapPages, size, setSize, isLoading: userSwapsLoading, isValidating, mutate } =
-        useSWRInfinite<ApiResponse<Swap[]>>(
-            getCompletedSwapsKey,
-            apiClient.fetcher,
-            {
-                revalidateAll: false,
-                revalidateFirstPage: false,
-                dedupingInterval: 3000,
-                refreshInterval: hasPendingSwaps ? 2000 : 30000,
-            }
-        )
-
-    const userSwaps = (!(userSwapPages?.[0] instanceof EmptyApiResponse) && userSwapPages?.map(p => {
-        p.data?.forEach(s => {
-            s.type = 'user'
-        })
-        return p?.data
-    }).flat(1)) || []
-
-    const userSwapsisEmpty = !userSwapsLoading && userSwaps.length === 0
-
-    const isReachingEnd =
-        userSwapsisEmpty || (userSwapPages && Number(userSwapPages[userSwapPages.length - 1]?.data?.length) < PAGE_SIZE);
+    const { pendingDeposit, completed, isLoadingAny, isValidatingAny } = useSwapHistoryData(addresses)
 
     const handleLoadMore = async () => {
-        await setSize(size + 1)
+        if (completed.hasMore) await completed.loadMore()
     }
     const handleLoadMorePendingSwaps = async () => {
-        await setPendingSwapsSize(pendingSwapsSize + 1)
+        await pendingDeposit.loadMore()
     }
 
     const parentRef = React.useRef(null)
 
-    const grouppedSwaps = Object
+    const grouppedSwaps = useMemo(() => Object
         .entries(
             groupBy(
-                userSwaps as Swap[], ({ swap }) => new Date(swap.created_date).toLocaleDateString()
+                completed.swaps as Swap[], ({ swap }) => new Date(swap.created_date).toLocaleDateString()
             ))
-        .map(([key, values]) => ({ key, values }))
+        .map(([key, values]) => ({ key, values })), [completed])
 
-    const pendingSwaps = pendingSwapPages?.map(p => p?.data).flat(1) || []
+    const pendingSwaps = useMemo(() => pendingDeposit.swaps || [], [pendingDeposit.swaps])
 
-    const pendingHaveMorepages = (pendingSwapPages && Number(pendingSwapPages[pendingSwapPages.length - 1]?.data?.length) == PAGE_SIZE);
-    const hiddenPendingCount = Math.max(0, pendingSwaps.length - 1)
+    const pendingHaveMorepages = pendingDeposit.hasMore;
+    const hiddenPendingCount = useMemo(() => Math.max(0, pendingSwaps.length - 1), [pendingSwaps])
 
-    const flattenedSwaps = grouppedSwaps?.flatMap(g => {
+    const flattenedSwaps = useMemo(() => grouppedSwaps?.flatMap(g => {
         return [g.key, ...g.values]
-    })
+    }), [grouppedSwaps])
 
-    const list = [...(showAll ? pendingSwaps : (pendingSwaps.slice(0, 1))), ...flattenedSwaps]
+    const list = useMemo(() => [
+        ...(showAll ? pendingSwaps : (pendingSwaps.slice(0, 1))),
+        ...flattenedSwaps
+    ], [showAll, pendingSwaps, flattenedSwaps])
 
     const rowVirtualizer = useVirtualizer({
         count: (list?.length || 0),
@@ -123,7 +73,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
     })
 
     const items = rowVirtualizer.getVirtualItems()
-    if ((userSwapsLoading && !(Number(userSwaps?.length) > 0))) return <Snippet />
+    if ((isLoadingAny && !(Number(completed.swaps?.length) > 0))) return <Snippet />
     if (!wallets.length) return <ConnectWalletCard />
     if (!list.length) return <BlankHistory onNewTransferClick={onNewTransferClick} />
 
@@ -167,7 +117,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                             <div className="w-full pb-3 mt-6 last:mb-0">
                                                 {data !== 'Pending' &&
                                                     <p className="text-sm text-secondary-text font-normal pl-2">
-                                                        {resolveDate(data)}
+                                                        <DaysAgo dateInput={data} />
                                                     </p>
                                                 }
                                             </div>
@@ -180,8 +130,6 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                 if (!swap) return <></>
 
                                 const swapId = String(swap?.swap?.id ?? `${swap?.swap?.created_date}-${virtualRow.index}`)
-                                const collapsablePendingSwap = pendingSwaps.length > 1 && virtualRow.index === 0
-                                const collapsedPendingSwap = !showAll && collapsablePendingSwap
 
                                 const pendingSwapsLength = showAll ? pendingSwaps.length : Math.min(1, pendingSwaps.length)
                                 const endOfPendingSwaps = virtualRow.index === (pendingSwapsLength - 1)
@@ -242,23 +190,23 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
 
                                         {pendingHaveMorepages && virtualRow.index === pendingSwaps.length - 1 &&
                                             <button
-                                                disabled={pendingSwapsLoading || pendingSwapsValidating}
+                                                disabled={pendingDeposit.isLoading || pendingDeposit.isValidating}
                                                 type="button"
                                                 onClick={handleLoadMorePendingSwaps}
                                                 className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80 m-auto w-full"
                                             >
-                                                <RefreshCw className={`w-4 h-4 ${(pendingSwapsLoading || pendingSwapsValidating) && 'animate-spin'}`} />
+                                                <RefreshCw className={`w-4 h-4 ${(pendingDeposit.isLoading || pendingDeposit.isValidating) && 'animate-spin'}`} />
                                                 <span>Load more pending swaps</span>
                                             </button>
                                         }
-                                        {virtualRow.index === list.length - 1 && !isReachingEnd &&
+                                        {virtualRow.index === list.length - 1 && completed.hasMore &&
                                             <button
-                                                disabled={isReachingEnd || userSwapsLoading || isValidating}
+                                                disabled={isLoadingAny || isValidatingAny}
                                                 type="button"
                                                 onClick={handleLoadMore}
                                                 className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80 m-auto w-full"
                                             >
-                                                <RefreshCw className={`w-4 h-4 ${(userSwapsLoading || isValidating) && 'animate-spin'}`} />
+                                                <RefreshCw className={`w-4 h-4 ${(isLoadingAny || isValidatingAny) && 'animate-spin'}`} />
                                                 <span>Load more</span>
                                             </button>
                                         }
@@ -327,7 +275,11 @@ const ConnectWalletCard = () => {
     </div>
 }
 
-function resolveDate(dateInput) {
+type DaysAgoProps = {
+    dateInput: string
+}
+
+function DaysAgo({ dateInput }: DaysAgoProps) {
     // Get the current date
     const today = new Date();
 
