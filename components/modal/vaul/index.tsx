@@ -683,7 +683,7 @@ export function Root({
   function onNestedOpenChange(o: boolean) {
     const scale = o ? (window.innerWidth - NESTED_DISPLACEMENT) / window.innerWidth : 1;
 
-    const initialTranslate = o ? -NESTED_DISPLACEMENT : 0;
+    const y = o ? -NESTED_DISPLACEMENT : 0;
 
     if (nestedOpenChangeTimer.current) {
       window.clearTimeout(nestedOpenChangeTimer.current);
@@ -691,9 +691,7 @@ export function Root({
 
     set(drawerRef.current, {
       transition: `transform ${TRANSITIONS.DURATION}s cubic-bezier(${TRANSITIONS.EASE.join(',')})`,
-      transform: isVertical(direction)
-        ? `scale(${scale}) translate3d(0, ${initialTranslate}px, 0)`
-        : `scale(${scale}) translate3d(${initialTranslate}px, 0, 0)`,
+      transform: `scale(${scale}) translate3d(0, ${y}px, 0)`,
     });
 
     if (!o && drawerRef.current) {
@@ -740,13 +738,13 @@ export function Root({
   }
 
   React.useEffect(() => {
-    if (!modal) {
+    if (isOpen) {
       // Need to do this manually unfortunately
       window.requestAnimationFrame(() => {
         document.body.style.pointerEvents = 'auto';
       });
     }
-  }, [modal]);
+  }, [isOpen]);
 
   return (
     <DialogPrimitive.Root
@@ -762,6 +760,7 @@ export function Root({
         setIsOpen(open);
       }}
       open={isOpen}
+      modal={modal}
     >
       <DrawerContext.Provider
         value={{
@@ -804,15 +803,11 @@ export function Root({
 
 export const Overlay = React.forwardRef<HTMLDivElement, React.ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>>(
   function ({ ...rest }, ref) {
-    const { overlayRef, snapPoints, onRelease, shouldFade, isOpen, modal, shouldAnimate } = useDrawerContext();
+    const { overlayRef, snapPoints, onRelease, shouldFade, isOpen, shouldAnimate } = useDrawerContext();
     const composedRef = useComposedRefs(ref, overlayRef);
     const hasSnapPoints = snapPoints && snapPoints.length > 0;
-    const onMouseUp = React.useCallback((event: React.PointerEvent<HTMLDivElement>) => onRelease(event), [onRelease]);
 
-    // // Overlay is the component that is locking scroll, removing it will unlock the scroll without having to dig into Radix's Dialog library
-    // if (!modal) {
-    //   return null;
-    // }
+    const onMouseUp = React.useCallback((event: React.PointerEvent<HTMLDivElement>) => onRelease(event), [onRelease]);
 
     return (
       <DialogPrimitive.Overlay
@@ -1097,7 +1092,7 @@ export const Handle = React.forwardRef<HTMLDivElement, HandleProps>(function (
 
 Handle.displayName = 'Drawer.Handle';
 
-export function NestedRoot({ onDrag, onOpenChange, open: nestedIsOpen, ...rest }: DialogProps) {
+export function NestedRoot({ onDrag, onOpenChange, ...rest }: DialogProps) {
   const { onNestedDrag, onNestedOpenChange, onNestedRelease } = useDrawerContext();
 
   if (!onNestedDrag) {
@@ -1107,7 +1102,6 @@ export function NestedRoot({ onDrag, onOpenChange, open: nestedIsOpen, ...rest }
   return (
     <Root
       nested
-      open={nestedIsOpen}
       onClose={() => {
         onNestedOpenChange(false);
       }}
@@ -1119,7 +1113,6 @@ export function NestedRoot({ onDrag, onOpenChange, open: nestedIsOpen, ...rest }
         if (o) {
           onNestedOpenChange(o);
         }
-        onOpenChange?.(o);
       }}
       onRelease={onNestedRelease}
       {...rest}

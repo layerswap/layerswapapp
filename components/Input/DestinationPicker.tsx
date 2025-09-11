@@ -37,8 +37,8 @@ const DestinationPicker = (props: Props) => {
             </div>
         </div>
         <div className="items-center space-y-2">
-            <div className="grid grid-cols-9 gap-2">
-                <div className="col-span-5">
+            <div className="grid grid-cols-[1fr_auto] gap-2 w-full max-w-full">
+                <div className="min-w-0 overflow-hidden">
                     <ReceiveAmount
                         source_token={fromCurrency}
                         destination_token={toCurrency}
@@ -46,7 +46,7 @@ const DestinationPicker = (props: Props) => {
                         isFeeLoading={isQuoteLoading}
                     />
                 </div>
-                <div className="col-span-4 flex items-center self-start justify-end">
+                <div className="justify-self-end self-start">
                     <RoutePicker direction="to" />
                 </div>
             </div>

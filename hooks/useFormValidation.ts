@@ -17,6 +17,9 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
     if (!values.from && !values.fromExchange) {
         return { message: 'Select source' };
     }
+    if (values.fromExchange && values.toAsset && values.toAsset?.status === 'inactive') {
+        return { message: 'Route unavailable' };
+    }
     if (!values.to) {
         return { message: 'Select destination' };
     }

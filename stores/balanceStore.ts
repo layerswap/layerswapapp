@@ -87,7 +87,7 @@ export const useBalanceStore = create<BalanceStore>()(
               set(state => ({
                 balances: {
                   ...state.balances,
-                  [key]: { error, status: 'error' },
+                  [key]: { ...state.balances[key], error, status: 'error' },
                 },
                 lastFetchMap: {
                   ...state.lastFetchMap,
@@ -109,7 +109,7 @@ export const useBalanceStore = create<BalanceStore>()(
       set(state => ({
         balances: {
           ...state.balances,
-          [key]: { status: 'loading', promise: queuedPromise },
+          [key]: { ...state.balances[key], status: 'loading', promise: queuedPromise },
         }
       }))
 
