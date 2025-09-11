@@ -148,7 +148,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                             {
                                 values.toAsset?.refuel && !query.hideRefuel &&
                                 <RefuelToggle
-                                    fee={quote}
+                                    quote={quote}
                                     onButtonClick={() => setOpenRefuelModal(true)}
                                 />
                             }
