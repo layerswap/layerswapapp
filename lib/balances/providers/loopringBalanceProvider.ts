@@ -13,8 +13,7 @@ export class LoopringBalanceProvider {
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
-
-        const balances: TokenBalance[] = [];
+        let balances: TokenBalance[] = [];
         const errors: BalanceFetchError[] = [];
 
         if (!network?.tokens) return
@@ -27,28 +26,21 @@ export class LoopringBalanceProvider {
             const tokensString = tokens?.map(obj => obj.contract).join(',');
             const result: { data: LpBalance[] } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.GET_USER_EXCHANGE_BALANCES}?accountId=${accInfo.accountId}&tokens=${tokensString}`)
 
-            for (const asset of tokens) {
-                try {
-                    const amount = result.data.find(d => d.tokenId == Number(asset.contract))?.total;
+            const loopringBalances = tokens?.map(asset => {
+                const amount = result.data.find(d => d.tokenId == Number(asset.contract))?.total;
+                return ({
+                    network: network.name,
+                    token: asset?.symbol,
+                    amount: amount ? formatAmount(amount, Number(asset?.decimals)) : 0,
+                    request_time: new Date().toJSON(),
+                    decimals: Number(asset?.decimals),
+                    isNativeCurrency: false
+                })
+            });
 
-                    balances.push({
-                        network: network.name,
-                        token: asset.symbol,
-                        amount: amount ? formatAmount(amount, Number(asset?.decimals)) : 0,
-                        request_time: new Date().toJSON(),
-                        decimals: Number(asset?.decimals ?? 0),
-                        isNativeCurrency: network.token?.symbol === asset.symbol,
-                    });
-                } catch (e: any) {
-                    errors.push({
-                        network: network.name,
-                        token: asset?.symbol ?? null,
-                        message: e?.message ?? "Failed to parse Loopring balance",
-                        code: e?.code ?? e?.response?.status,
-                        cause: e,
-                    });
-                }
-            }
+            balances = [
+                ...loopringBalances,
+            ]
         }
         catch (e) {
             console.log(e)
