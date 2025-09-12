@@ -53,24 +53,14 @@ export class QueryBalanceProvider {
 
         if (!balancesFromQueries || !asset) return undefined;
 
-        try {
-            balances.push({
-                network: network.name,
-                amount: formatAmount(balancesFromQueries[asset.symbol], asset.decimals),
-                decimals: asset.decimals,
-                isNativeCurrency: network.token?.symbol === asset.symbol,
-                token: asset.symbol,
-                request_time: new Date().toJSON(),
-            });
-        } catch (e: any) {
-            errors.push({
-                network: network.name,
-                token: asset.symbol,
-                message: e?.message ?? "Failed to format amount from query",
-                code: e?.code,
-                cause: e,
-            });
-        }
+        balances.push({
+            network: network.name,
+            amount: formatAmount(balancesFromQueries[asset.symbol], asset.decimals),
+            decimals: asset.decimals,
+            isNativeCurrency: network.token?.symbol === asset.symbol,
+            token: asset.symbol,
+            request_time: new Date().toJSON(),
+        });
 
         return { balances, errors };
     };
