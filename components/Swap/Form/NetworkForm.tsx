@@ -7,7 +7,6 @@ import useWallet from "@/hooks/useWallet";
 import SourcePicker from "@/components/Input/SourcePicker";
 import DestinationPicker from "@/components/Input/DestinationPicker";
 import QuoteDetails from "@/components/FeeDetails";
-import dynamic from "next/dynamic";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { useQueryState } from "@/context/query";
 import { Widget } from "@/components/Widget/Index";
@@ -26,7 +25,6 @@ import { useValidationContext } from "@/context/validationContext";
 import { InsufficientBalanceWarning } from "@/components/insufficientBalance";
 import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { useSwapDataState } from "@/context/swap";
-import ResizablePanel from "@/components/ResizablePanel";
 import RefuelToggle from "@/components/FeeDetails/Refuel";
 import ReserveGasNote from "@/components/ReserveGasNote";
 import RefuelModal from "@/components/FeeDetails/RefuelModal";
@@ -77,16 +75,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
             setFieldValue('refuel', false, true);
         }
     }, [toAsset, destination, source, fromAsset]);
-
-    useEffect(() => {
-        if (values.refuel && minAllowedAmount && (Number(values.amount) < minAllowedAmount)) {
-            updateForm({
-                formDataKey: 'amount',
-                formDataValue: minAllowedAmount.toString(),
-                setFieldValue
-            });
-        }
-    }, [values.refuel, destination, minAllowedAmount]);
 
     const handleReserveGas = useCallback((nativeTokenBalance: TokenBalance, networkGas: number) => {
         if (nativeTokenBalance && networkGas)
@@ -158,10 +146,11 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 />
                             }
                             {
-                                quote && values.toAsset?.refuel && !query.hideRefuel &&
+                                values.toAsset?.refuel && !query.hideRefuel &&
                                 <RefuelToggle
-                                    fee={quote}
+                                    quote={quote}
                                     onButtonClick={() => setOpenRefuelModal(true)}
+                                    minAllowedAmount={minAllowedAmount}
                                 />
                             }
                             {
