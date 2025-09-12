@@ -1,4 +1,4 @@
-import { ArrowLeftRight, Lock } from 'lucide-react';
+import { Lock } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useAccount } from 'wagmi';
