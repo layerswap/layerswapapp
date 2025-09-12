@@ -50,6 +50,7 @@ export default function FormWrapper({ children, type }: { children?: React.React
     const { swapBasicData, swapDetails, swapModalOpen } = useSwapDataState()
     const sourceNetworkWithTokens = settings.networks.find(n => n.name === swapBasicData?.source_network.name)
     const { getProvider } = useWallet(sourceNetworkWithTokens, "withdrawal")
+    const [walletWihdrawDone, setWalletWihdrawDone] = useState(false);
 
     const { getConfirmation } = useAsyncModal();
     const query = useQueryState()
@@ -62,6 +63,10 @@ export default function FormWrapper({ children, type }: { children?: React.React
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         const { destination_address, to } = values
+        setWalletWihdrawDone(false)
+        if (!walletWihdrawDone) {
+            setWalletWihdrawDone(false)
+        }
 
         if (
             to &&
@@ -109,12 +114,17 @@ export default function FormWrapper({ children, type }: { children?: React.React
 
     const handleShowSwapModal = useCallback((value: boolean) => {
         setSwapModalOpen(value)
-        if (!value)
+        if (!value) {
             removeSwapPath(router)
-    }, [router, swapDetails])
+            if (walletWihdrawDone) {
+                setWalletWihdrawDone(false)
+                formikRef?.current?.setFieldValue('amount', 0, true);
+            }
+        }
+    }, [router, swapDetails, walletWihdrawDone])
 
     const handleClearAmount = useCallback(() => {
-        formikRef?.current?.setFieldValue('amount', 0, false);
+        setWalletWihdrawDone(true)
     }, []);
 
     return <>
