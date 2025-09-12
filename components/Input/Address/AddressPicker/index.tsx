@@ -96,7 +96,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [address_book, destination, connectedWallets, newAddress, query.destination_address, connectedWalletskey])
 
     const destinationAddressItem = destination && destination_address ?
-        groupedAddresses?.find(a => a.address.toLowerCase() === destination_address.toLowerCase()) || { address: destination_address, group: AddressGroup.ManualAdded }
+        groupedAddresses?.find(a => a.address.toLowerCase() === destination_address.toLowerCase())
         : undefined
 
     const addressBookAddresses = groupedAddresses?.filter(a => a.group !== AddressGroup.ConnectedWallet)
@@ -110,7 +110,13 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         close()
     }, [close, setFieldValue, groupedAddresses])
 
-    const onConnect = () => {
+    const onConnect = (wallet: Wallet) => {
+        setFieldValue('destination_address', wallet.address)
+        selectDestinationAccount({
+            address: wallet.address,
+            id: wallet.id,
+            providerName: wallet.providerName
+        });
         close()
     }
 

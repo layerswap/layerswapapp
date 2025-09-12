@@ -11,6 +11,7 @@ import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../../Common/buttons';
 import TransactionMessages from '../../../messages/TransactionMessages';
 import WalletMessage from '../../../messages/Message';
+import { useSelectedAccount } from '@/context/balanceAccounts';
 
 export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -19,8 +20,9 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
     const { source_network, source_token } = swapBasicData;
 
     const { provider } = useWallet(source_network, 'withdrawal');
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const wallet = selectedSourceAccount?.wallet
 
-    const wallet = provider?.activeWallet
     const { wallet: solanaWallet, signTransaction } = useSolanaWallet();
     const walletPublicKey = solanaWallet?.adapter.publicKey
     const solanaNode = source_network?.node_url
@@ -28,7 +30,7 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
 
     const { networks } = useSettingsState()
     const networkWithTokens = networks.find(n => n.name === networkName)
-    const { balances } = useSWRBalance(wallet?.address, networkWithTokens)
+    const { balances } = useSWRBalance(selectedSourceAccount?.address, networkWithTokens)
 
     const handleTransfer = useCallback(async ({ amount, callData, swapId }: TransferProps) => {
         setLoading(true)

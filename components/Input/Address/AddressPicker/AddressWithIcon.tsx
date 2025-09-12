@@ -9,12 +9,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components//shadcn/po
 import useCopyClipboard from "@/hooks/useCopyClipboard";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components//shadcn/tooltip";
-import { Wallet } from "@/Models/WalletProvider";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
+import { AccountIdentity } from "@/context/balanceAccounts";
 
 type Props = {
     addressItem: AddressItem;
-    connectedWallet?: Wallet | undefined;
+    connectedWallet?: AccountIdentity;
     partner?: Partner;
     network: Network;
     balance?: { amount: number, symbol: string, isLoading: boolean } | undefined;

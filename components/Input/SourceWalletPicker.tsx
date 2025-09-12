@@ -13,7 +13,7 @@ import WalletsList from "../Wallet/WalletsList";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import FilledCheck from "../icons/FilledCheck";
 import clsx from "clsx";
-import { SwitchWalletAccount } from "@/helpers/accountSelectHelper";
+import { useSelectedAccount, useUpdateBalanceAccount } from "@/context/balanceAccounts";
 
 const SourceWalletPicker: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
@@ -24,9 +24,10 @@ const SourceWalletPicker: FC = () => {
     } = useFormikContext<SwapFormValues>();
 
     const source_token = values.fromAsset
+    const selectSourceAccount = useUpdateBalanceAccount("from");
 
     const { provider } = useWallet(values.from, "withdrawal")
-    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
 
     const { selectedConnector } = useConnectModal()
     const availableWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
@@ -38,7 +39,12 @@ const SourceWalletPicker: FC = () => {
 
     const handleSelectWallet = useCallback((props?: SelectAccountProps) => {
         if (props) {
-            SwitchWalletAccount(props, provider)
+            //SwitchWalletAccount(props, provider)
+            selectSourceAccount({
+                id: props.walletId,
+                address: props.address,
+                providerName: props.providerName
+            })
             setFieldValue('depositMethod', 'wallet')
         }
         else {
@@ -165,13 +171,19 @@ export const FormSourceWalletButton: FC = () => {
 
     const { isWalletModalOpen, cancel, selectedConnector, connect } = useConnectModal()
 
+    const selectSourceAccount = useUpdateBalanceAccount("from");
+
     const handleWalletChange = () => {
         setOpenModal(true)
     }
 
     const handleSelectWallet = (props?: SelectAccountProps) => {
         if (props?.address) {
-            SwitchWalletAccount(props, provider)
+            selectSourceAccount({
+                address: props.address,
+                id: props.walletId,
+                providerName: props.providerName
+            });
             setFieldValue('depositMethod', 'wallet')
         }
         else {
@@ -185,11 +197,11 @@ export const FormSourceWalletButton: FC = () => {
         setMounWalletPortal(true)
         const result = await connect(provider)
         if (result) {
-            SwitchWalletAccount({
-                walletId: result.id,
+            selectSourceAccount({
+                id: result.id,
                 address: result.address,
                 providerName: result.providerName
-            }, provider)
+            })
         }
         setMounWalletPortal(false)
     }

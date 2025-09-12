@@ -6,6 +6,7 @@ import useWallet from '@/hooks/useWallet';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import WarningMessage from '@/components/WarningMessage';
+import { useSelectedAccount } from '@/context/balanceAccounts';
 
 export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false)
@@ -13,7 +14,8 @@ export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
     const { source_network, source_token } = swapBasicData;
 
     const { provider } = useWallet(source_network, 'withdrawal')
-    const imxAccount = provider?.activeWallet
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const imxAccount = selectedSourceAccount?.wallet
 
     const handleTransfer = useCallback(async ({ amount, depositAddress, swapId }: TransferProps) => {
         if (!source_network || !depositAddress || !amount)
