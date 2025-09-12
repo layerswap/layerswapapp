@@ -18,7 +18,7 @@ export const WalletsHeader = () => {
 
     return (
         <ConnectButton>
-            <div className="p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-none inline-flex rounded-lg items-center">
+            <div className="p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center">
                 <WalletIcon className="h-6 w-6 mx-0.5" strokeWidth="2" />
             </div>
         </ConnectButton>
@@ -28,7 +28,7 @@ export const WalletsHeader = () => {
 const WalletsHeaderWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
     const [openModal, setOpenModal] = useState<boolean>(false)
     return <>
-        <button type="button" onClick={() => setOpenModal(true)} className="p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-none inline-flex rounded-lg items-center">
+        <button type="button" onClick={() => setOpenModal(true)} className="p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center max-sm:hidden">
             <WalletsIcons wallets={wallets} />
         </button>
         <VaulDrawer
@@ -43,8 +43,14 @@ const WalletsHeaderWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
         </VaulDrawer>
     </>
 }
-
-const WalletsIcons = ({ wallets }: { wallets: Wallet[] }) => {
+type WalletsIconsProps = {
+    wallets: {
+        id: string;
+        displayName?: string;
+        icon: (props: any) => React.JSX.Element;
+    }[]
+}
+export const WalletsIcons = ({ wallets }: WalletsIconsProps) => {
 
     const uniqueWallets = wallets.filter((wallet, index, self) => index === self.findIndex((t) => t.id === wallet.id))
 
@@ -55,15 +61,15 @@ const WalletsIcons = ({ wallets }: { wallets: Wallet[] }) => {
         <div className="-space-x-2 flex">
             {
                 firstWallet?.displayName &&
-                <firstWallet.icon className="rounded-full border-2 border-secondary-600 bg-secondary-700 flex-shrink-0 h-6 w-6" />
+                <firstWallet.icon className="rounded-full border-2 border-secondary-600 bg-secondary-700 shrink-0 h-6 w-6" />
             }
             {
                 secondWallet?.displayName &&
-                <secondWallet.icon className="rounded-full border-2 border-secondary-600 bg-secondary-700 flex-shrink-0 h-6 w-6" />
+                <secondWallet.icon className="rounded-full border-2 border-secondary-600 bg-secondary-700 shrink-0 h-6 w-6" />
             }
             {
                 uniqueWallets.length > 2 &&
-                <div className="h-6 w-6 flex-shrink-0 rounded-full justify-center p-1 bg-secondary-600 text-primary-text overlfow-hidden text-xs">
+                <div className="h-6 w-6 shrink-0 rounded-full justify-center p-1 bg-secondary-600 text-primary-text overlfow-hidden text-xs">
                     <span><span>+</span>{uniqueWallets.length - 2}</span>
                 </div>
             }
@@ -82,7 +88,7 @@ export const WalletsMenu = () => {
 
     return (
         <ConnectButton>
-            <div className=" border border-primary disabled:border-primary-900 items-center space-x-1 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-md transform hover:brightness-125 transition duration-200 ease-in-out bg-primary py-3 md:px-3 bg-primary/20 border-none !text-primary !px-4" >
+            <div className=" border border-primary disabled:border-primary-900 items-center space-x-1 disabled:text-primary/40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-xl transform hover:brightness-125 transition duration-200 ease-in-out py-3 md:px-3 bg-primary/20 border-none text-primary! px-4!" >
                 <span className="order-first absolute left-0 inset-y-0 flex items-center pl-3">
                     <WalletIcon className="h-6 w-6" strokeWidth="2" />
                 </span>
@@ -97,10 +103,10 @@ const WalletsMenuWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
     const [openModal, setOpenModal] = useState<boolean>(false)
 
     return <>
-        <button onClick={() => setOpenModal(true)} type="button" className="py-3 px-4 bg-secondary-700 flex items-center w-full rounded-md space-x-1 disabled:text-opacity-40 disabled:bg-primary-900 disabled:cursor-not-allowed relative font-semibold transform border border-secondary-500 hover:bg-secondary-600 transition duration-200 ease-in-out">
+        <button onClick={() => setOpenModal(true)} type="button" className="py-3 px-4 bg-secondary-500 flex items-center w-full rounded-xl space-x-1 disabled:text-secondary-text/40 disabled:bg-primary-900 disabled:cursor-not-allowed relative font-semibold transform border border-secondary-500 hover:bg-secondary-400 transition duration-200 ease-in-out">
             {
                 wallets.length === 1 ?
-                    <div className="flex gap-4 items-start">
+                    <div className="flex gap-4 items-start text-primary-text">
                         <wallet.icon className='h-5 w-5' />
                         {!wallet.isLoading && wallet.address && <p>{shortenAddress(wallet.address)}</p>}
                     </div>

@@ -2,7 +2,6 @@ import { Form, Formik, FormikErrors } from 'formik';
 import { FC, useCallback } from 'react'
 import toast from 'react-hot-toast';
 import { useIntercom } from 'react-use-intercom';
-import { useAuthState } from '../context/authContext';
 import { SendFeedbackMessage } from '../lib/telegram';
 import SubmitButton from './buttons/submitButton';
 
@@ -15,15 +14,13 @@ type Props = {
 }
 
 const SendFeedback: FC<Props> = ({ onSend }) => {
-    const { email, userId } = useAuthState()
     const initialValues: SendFeedbackFormValues = { Feedback: '' }
     const { boot, show, update } = useIntercom()
-    const updateWithProps = () => update({ userId, customAttributes: { email: email, } })
 
     const handleSendFeedback = useCallback(async (values: SendFeedbackFormValues) => {
         try {
             if (values.Feedback.length !== 0) {
-                const sender = email || userId || "No login"
+                const sender = "No login"
                 const res = await SendFeedbackMessage(sender, values.Feedback)
                 if (!res.ok) {
                     throw new Error(res.description || "Could not send feedback, something went wrong")
@@ -38,7 +35,7 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
         catch (e) {
             toast.error(e.message)
         }
-    }, [email, onSend])
+    }, [onSend])
 
     return (
         <Formik
@@ -74,9 +71,9 @@ const SendFeedback: FC<Props> = ({ onSend }) => {
                             onClick={() => {
                                 boot();
                                 show();
-                                updateWithProps()
+                                update()
                             }}
-                            className="text-center disabled:text-primary-800 text-primary border-0 font-semibold rounded-md focus:outline-none transform hover:-translate-y-0.5 transition duration-200 ease-in-out"
+                            className="text-center disabled:text-primary-800 text-primary border-0 font-semibold rounded-md focus:outline-hidden transform hover:-translate-y-0.5 transition duration-200 ease-in-out"
                         >
                             Need help?
                         </button>

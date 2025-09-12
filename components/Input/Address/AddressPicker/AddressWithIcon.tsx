@@ -1,16 +1,16 @@
 import { FC, useState } from "react"
 import { AddressGroup, AddressItem } from ".";
-import AddressIcon from "../../../AddressIcon";
-import shortenAddress from "../../../utils/ShortenAddress";
+import AddressIcon from "@/components//AddressIcon";
+import shortenAddress from "@/components//utils/ShortenAddress";
 import { History, ExternalLink, Copy, Check, ChevronDown, WalletIcon, Pencil, Link2, Power } from "lucide-react";
-import Image from "next/image";
-import { Partner } from "../../../../Models/Partner";
-import { Network } from "../../../../Models/Network";
-import { Popover, PopoverContent, PopoverTrigger } from "../../../shadcn/popover";
-import useCopyClipboard from "../../../../hooks/useCopyClipboard";
+import { Partner } from "@/Models/Partner";
+import { Network } from "@/Models/Network";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components//shadcn/popover";
+import useCopyClipboard from "@/hooks/useCopyClipboard";
 import Link from "next/link";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../../../shadcn/tooltip";
-import { Wallet } from "../../../../Models/WalletProvider";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components//shadcn/tooltip";
+import { Wallet } from "@/Models/WalletProvider";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 type Props = {
     addressItem: AddressItem;
@@ -18,9 +18,10 @@ type Props = {
     partner?: Partner;
     network: Network;
     balance?: { amount: number, symbol: string, isLoading: boolean } | undefined;
+    onDisconnect?: ExtendedAddressProps['onDisconnect']
 }
 
-const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, network, balance }) => {
+const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, network, balance, onDisconnect }) => {
 
     const difference_in_days = addressItem?.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(addressItem.date).getTime()) / (1000 * 3600 * 24))) : undefined
     const maxWalletNameWidth = calculateMaxWidth(String(balance?.amount));
@@ -44,7 +45,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
         },
         {
             group: AddressGroup.ConnectedWallet,
-            text: <p className={`${maxWalletNameWidth} text-ellipsis sm:max-w-full text-nowrap overflow-hidden`}>{connectedWallet?.displayName || 'Connected wallet'}</p>,
+            text: <p className={`${maxWalletNameWidth} text-ellipsis sm:max-w-full text-nowrap overflow-hidden text-[10px]`}>{connectedWallet?.displayName || 'Connected wallet'}</p>,
             icon: connectedWallet?.icon || WalletIcon
         },
         {
@@ -62,7 +63,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
                 {
                     (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) ? (
                         partner?.logo && (
-                            <Image
+                            <ImageWithFallback
                                 alt="Partner logo"
                                 className="rounded-md object-contain"
                                 src={partner.logo}
@@ -76,14 +77,14 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
                 }
             </div>
 
-            <div className="flex flex-col items-start flex-grow min-w-0 ml-3 text-sm">
+            <div className="flex flex-col items-start grow min-w-0 ml-3 text-sm">
                 <div className="flex w-full min-w-0">
-                    <ExtendedAddress address={addressItem.address} network={network} addressClassNames="font-normal" />
+                    <ExtendedAddress address={addressItem.address} network={network} onDisconnect={onDisconnect} addressClassNames="font-normal" />
                 </div>
                 <div className="text-secondary-text w-full min-w-0">
                     <div className="flex items-center gap-1 text-xs">
                         {itemDescription?.icon && (
-                            <itemDescription.icon className="rounded flex-shrink-0 h-3.5 w-3.5" />
+                            <itemDescription.icon className="rounded-sm shrink-0 h-3.5 w-3.5" />
                         )}
                         {itemDescription?.text}
                     </div>
@@ -91,13 +92,13 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
             </div>
 
             {balance && (
-                <div className="flex-shrink-0 text-sm text-secondary-text text-right ml-3">
+                <div className="shrink-0 text-sm text-secondary-text text-right ml-3">
                     {
                         balance.amount != undefined && !isNaN(balance.amount) ?
                             <div className="text-right text-secondary-text font-normal text-sm">
                                 {
                                     balance.isLoading ?
-                                        <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-sm animate-pulse' />
+                                        <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-xs animate-pulse' />
                                         :
                                         <>
                                             <span>{balance.amount}</span> <span>{balance.symbol}</span>
@@ -116,6 +117,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
 type ExtendedAddressProps = {
     address: string;
     network?: Network;
+    isForCurrency?: boolean;
     addressClassNames?: string;
     onDisconnect?: () => void;
 }
@@ -132,7 +134,7 @@ const calculateMaxWidth = (balance: string | undefined) => {
     }
 };
 
-export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, addressClassNames, onDisconnect }) => {
+export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, isForCurrency, addressClassNames, onDisconnect }) => {
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
 
@@ -144,7 +146,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, ad
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <div className="group-hover/addressItem:underline hover:text-secondary-text transition duration-200 no-underline flex gap-1 items-center cursor-pointer">
-                                    <p className={`block text-sm font-medium ${addressClassNames}`}>
+                                    <p className={`${isForCurrency ? "text-xs self-end" : "text-sm"} block font-medium`}>
                                         {shortenAddress(address)}
                                     </p>
                                     <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4" />
@@ -157,7 +159,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, ad
                     </div>
                 </PopoverTrigger>
                 <PopoverContent className="w-full p-2 flex flex-col gap-1 items-stretch" side="top">
-                    <div onClick={(e) => { e.stopPropagation(), setCopied(address) }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
+                    {!isForCurrency && (<div onClick={(e) => { e.stopPropagation(), setCopied(address) }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-400 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
                         <p>
                             Copy address
                         </p>
@@ -166,10 +168,10 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, ad
                                 <Check className="h-4 w-4" />
                                 : <Copy className="w-4 h-4" />
                         }
-                    </div>
+                    </div>)}
                     {
                         network &&
-                        <Link href={network?.account_explorer_template?.replace('{0}', address)} target="_blank" className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
+                        <Link href={network?.account_explorer_template?.replace('{0}', address)} target="_blank" className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-400 rounded-sm transition-all duartion-200 flex items-center justify-between gap-5 w-full">
                             <p>
                                 Open in explorer
                             </p>
@@ -178,7 +180,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, ad
                     }
                     {
                         onDisconnect &&
-                        <div onClick={(e) => { e.stopPropagation(), onDisconnect() }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-600 rounded transition-all duartion-200 flex items-center justify-between gap-5 w-full">
+                        <div onClick={(e) => { e.stopPropagation(), onDisconnect() }} className="hover:text-primary-text px-2 py-1.5 hover:bg-secondary-400 rounded-sm transition-all duartion-200 flex items-center justify-between gap-5 w-full">
                             <p>
                                 Disconnect
                             </p>

@@ -1,5 +1,5 @@
-import { Balance } from "../../../Models/Balance";
-import { NetworkWithTokens } from "../../../Models/Network";
+import { TokenBalance } from "@/Models/Balance";
+import { NetworkWithTokens } from "@/Models/Network";
 import KnownInternalNames from "../../knownIds";
 import axios from "axios";
 
@@ -16,7 +16,7 @@ export class BitcoinBalanceProvider {
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
-        let balances: Balance[] = []
+        let balances: TokenBalance[] = []
 
         if (!network?.tokens) return
 
@@ -31,7 +31,7 @@ export class BitcoinBalanceProvider {
 
                 if (!token) throw new Error(`Token not found for network ${network.name}`)
 
-                const balanceObj: Balance = {
+                const balanceObj: TokenBalance = {
                     network: network.name,
                     amount: formattedBalance,
                     decimals: token.decimals,

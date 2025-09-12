@@ -11,8 +11,8 @@ import { resolveExchangesURLForSelectedToken, resolveRoutesURLForSelectedToken }
 export default function Home({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerSwapApiClient.apiKey = apiKey
 
-  const sourceRoutesDeafultKey = resolveRoutesURLForSelectedToken({ direction: 'from', network: undefined, token: undefined, includes: { unmatched: true, unavailable: true } })
-  const destinationRoutesDefaultKey = resolveRoutesURLForSelectedToken({ direction: 'to', network: undefined, token: undefined, includes: { unmatched: true, unavailable: true } })
+  const sourceRoutesDeafultKey = resolveRoutesURLForSelectedToken({ direction: 'from', network: undefined, token: undefined, includes: { unmatched: true, unavailable: true, swaps: true } })
+  const destinationRoutesDefaultKey = resolveRoutesURLForSelectedToken({ direction: 'to', network: undefined, token: undefined, includes: { unmatched: true, unavailable: true, swaps: true } })
 
   const sourceExchangesDeafaultkey = resolveExchangesURLForSelectedToken("from", {})
   const destinationExchangesDeafaultkey = resolveExchangesURLForSelectedToken("to", {})

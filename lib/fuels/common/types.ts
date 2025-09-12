@@ -1,5 +1,6 @@
 import type EventEmitter from 'node:events';
 import type {
+  BN,
   BytesLike,
   Predicate as FuelPredicate,
   Provider as FuelProvider,
@@ -42,7 +43,7 @@ export type ProviderDictionary = {
 };
 
 export type PreparedTransaction = {
-  predicate: FuelPredicate<InputValue[]>;
+  predicate: FuelPredicate<InputValue[], { [name: string]: unknown }>;
   request: TransactionRequest;
   transactionId: string;
   account: string;
@@ -53,3 +54,14 @@ export type SignedMessageCustomCurve = {
   curve: string;
   signature: string;
 };
+
+export interface PredicateVersionWithMetadata {
+  id: string;
+  generatedAt: number;
+  isActive: boolean;
+  isSelected: boolean;
+  isNewest: boolean;
+  balance?: string;
+  assetId?: string;
+  accountAddress?: string;
+}

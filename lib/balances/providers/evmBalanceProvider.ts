@@ -1,6 +1,6 @@
 
-import { PublicClient } from "viem"
-import { Balance } from "../../../Models/Balance"
+import { Chain, PublicClient } from "viem"
+import { TokenBalance } from "../../../Models/Balance"
 import { Network, NetworkType, NetworkWithTokens, Token } from "../../../Models/Network"
 import formatAmount from "../../formatAmount"
 import { http, createConfig } from '@wagmi/core'
@@ -8,7 +8,8 @@ import { erc20Abi } from 'viem'
 import { multicall } from '@wagmi/core'
 import { getBalance, GetBalanceReturnType } from '@wagmi/core'
 import resolveChain from "../../resolveChain"
-import { datadogRum } from "@datadog/browser-rum"
+import BalanceGetterAbi from "../../abis/BALANCEGETTERABI.json"
+import KnownInternalNames from "../../knownIds"
 
 export class EVMBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
@@ -18,52 +19,118 @@ export class EVMBalanceProvider {
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
 
         if (!network) return
+        const chain = resolveChain(network)
+        if (!chain) throw new Error("Could not resolve chain")
 
         try {
+            const balances = await this.contractGetBalances(address, chain, network)
+            return balances
+        } catch (e) {
+            console.log(e)
+        }
 
-            const chain = resolveChain(network)
-            if (!chain) return
+        const balances = await this.getBalances(address, chain, network)
 
+        return balances
+    }
+
+    getBalances = async (address: string, chain: Chain, network: NetworkWithTokens): Promise<TokenBalance[] | undefined> => {
+        try {
             const { createPublicClient, http } = await import("viem")
             const publicClient = createPublicClient({
                 chain,
-                transport: http()
+                transport: http(network.node_url, { retryCount: 1, timeout: 5000 })
             })
 
-            let erc20Balances: Balance[] = []
+            let erc20Balances: TokenBalance[] = []
 
-            try {
-                const erc20BalancesContractRes = await getErc20Balances({
-                    address,
-                    assets: network.tokens,
-                    network,
-                    publicClient,
-                    hasMulticall: !!network.metadata?.evm_multicall_contract
-                });
-
-                const balances = (erc20BalancesContractRes && await resolveERC20Balances(
-                    erc20BalancesContractRes,
-                    network
-                )) || [];
-                erc20Balances = balances
-            } catch (e) {
-                console.log(e)
-            }
-
+            const erc20Promise = getErc20Balances({
+                address,
+                assets: network.tokens,
+                network,
+                publicClient,
+                hasMulticall: !!network.metadata?.evm_multicall_contract
+            });
             const nativeToken = network.token
-            const nativeBalanceData = await getTokenBalance(address as `0x${string}`, network)
-            const nativeBalance = (nativeToken && nativeBalanceData) && await resolveBalance(network, nativeToken, nativeBalanceData)
+            const nativePromise = getTokenBalance(address as `0x${string}`, network)
 
-            let res: Balance[] = []
+            const [erc20BalancesContractRes, nativeBalanceData] = await Promise.all([
+                erc20Promise,
+                nativePromise,
+            ]);
+
+            const balances = (erc20BalancesContractRes && resolveERC20Balances(
+                erc20BalancesContractRes,
+                network
+            )) || [];
+            erc20Balances = balances
+
+            const nativeBalance = (nativeToken && nativeBalanceData) && resolveBalance(network, nativeToken, nativeBalanceData)
+            let res: TokenBalance[] = []
             return res.concat(erc20Balances, nativeBalance ? [nativeBalance] : [])
         }
         catch (e) {
             console.log(e)
         }
     }
+
+    contractGetBalances = async (address: string, chain: Chain, network: NetworkWithTokens): Promise<TokenBalance[] | null> => {
+        if (!network) throw new Error("Network is required for contract get balances")
+
+        try {
+
+            const { createPublicClient, http } = await import("viem")
+            const publicClient = createPublicClient({
+                chain,
+                transport: http(network.node_url, { retryCount: 1, timeout: 5000 })
+            })
+
+            const contract = contracts.find(c => c.networks.includes(network.name))
+            if (!contract) throw new Error(`No contract found for network ${network.name}`)
+
+            const tokenContracts = network.tokens?.filter(a => a.contract).map(a => a.contract as `0x${string}`)
+
+            const balances = await publicClient.readContract({
+                address: contract?.address,
+                abi: BalanceGetterAbi,
+                functionName: 'getBalances',
+                args: [address as `0x${string}`, tokenContracts]
+            }) as [string[], number[]]
+
+            const resolvedERC20Balances = network.tokens.filter(t => t.contract)?.map((token, index) => {
+                const amount = balances[1][index]
+                return {
+                    network: network.name,
+                    token: token.symbol,
+                    amount: amount ? formatAmount(amount, token.decimals) : 0,
+                    request_time: new Date().toJSON(),
+                    decimals: token.decimals,
+                    isNativeCurrency: false,
+                } as TokenBalance
+            })
+
+            const nativeTokenBalance = balances?.[1]?.[balances?.[1]?.length - 1]
+
+            const nativeTokenResolvedBalance = network.token ? {
+                network: network.name,
+                token: network.token?.symbol,
+                amount: nativeTokenBalance ? formatAmount(nativeTokenBalance, network.token?.decimals) : 0,
+                request_time: new Date().toJSON(),
+                decimals: network.token?.decimals,
+                isNativeCurrency: true,
+            } : undefined
+
+            const res = [...resolvedERC20Balances, nativeTokenResolvedBalance]
+
+            return res.filter((b): b is TokenBalance => b !== null)
+        }
+        catch (e) {
+            console.log(e)
+            throw new Error(e)
+        }
+    }
+
 }
-
-
 
 export type ERC20ContractRes = ({
     error: Error;
@@ -75,7 +142,7 @@ export type ERC20ContractRes = ({
     status: "success";
 })
 
-export const resolveERC20Balances = async (
+export const resolveERC20Balances = (
     multicallRes: ERC20ContractRes[],
     from: NetworkWithTokens,
 ) => {
@@ -127,7 +194,7 @@ export const getErc20Balances = async ({
             const config = createConfig({
                 chains: [chain],
                 transports: {
-                    [chain.id]: http()
+                    [chain.id]: http(network.node_url, { retryCount: 1, timeout: 5000 })
                 }
             })
 
@@ -166,10 +233,6 @@ export const getErc20Balances = async ({
         }
     }
     catch (e) {
-        const error = new Error(e)
-        error.name = "ERC20BalanceError"
-        error.cause = e
-        datadogRum.addError(error);
         return null;
     }
 
@@ -183,9 +246,10 @@ export const getTokenBalance = async (address: `0x${string}`, network: Network, 
         const config = createConfig({
             chains: [chain],
             transports: {
-                [chain.id]: http()
+                [chain.id]: http(network.node_url, { retryCount: 1, timeout: 5000 })
             }
         })
+
         const res = await getBalance(config, {
             address,
             chainId: chain.id,
@@ -193,22 +257,18 @@ export const getTokenBalance = async (address: `0x${string}`, network: Network, 
         })
         return res
     } catch (e) {
-        const error = new Error(e)
-        error.name = "TokenBalanceError"
-        error.cause = e
-        datadogRum.addError(error);
         return null
     }
 
 }
 
-export const resolveBalance = async (
+export const resolveBalance = (
     network: Network,
     token: Token,
     balanceData: GetBalanceReturnType
 ) => {
 
-    const nativeBalance: Balance = {
+    const nativeBalance: TokenBalance = {
         network: network.name,
         token: token.symbol,
         amount: formatAmount(balanceData?.value, token.decimals),
@@ -220,13 +280,13 @@ export const resolveBalance = async (
     return nativeBalance
 }
 
-export const resolveERC20Balance = async (
+export const resolveERC20Balance = (
     network: Network,
     token: Token,
     balanceData: GetBalanceReturnType
 ) => {
 
-    const nativeBalance: Balance = {
+    const nativeBalance: TokenBalance = {
         network: network.name,
         token: token.symbol,
         amount: formatAmount(balanceData?.value, token.decimals),
@@ -237,3 +297,74 @@ export const resolveERC20Balance = async (
 
     return nativeBalance
 }
+
+
+const contracts = [
+    {
+        address: '0xb65a146b7C2D5BEec6EE8a5F38C467b5A88b26Dc' as `0x${string}`,
+        networks: [
+            KnownInternalNames.Networks.EthereumMainnet,
+            KnownInternalNames.Networks.BaseMainnet,
+            KnownInternalNames.Networks.RariMainnet,
+            KnownInternalNames.Networks.ScrollMainnet,
+            KnownInternalNames.Networks.LineaMainnet,
+            KnownInternalNames.Networks.LightlinkMainnet,
+            KnownInternalNames.Networks.NahmiiMainnet,
+            KnownInternalNames.Networks.ZetachainMainnet,
+            KnownInternalNames.Networks.AvaxMainnet,
+            KnownInternalNames.Networks.ZksyncEraMainnet,
+            KnownInternalNames.Networks.XaiMainnet,
+            KnownInternalNames.Networks.RedStoneMainnet,
+            KnownInternalNames.Networks.UnichainMainnet,
+            KnownInternalNames.Networks.SoneiumMainnet,
+            KnownInternalNames.Networks.ArbitrumNova,
+            KnownInternalNames.Networks.MantleMainnet,
+            KnownInternalNames.Networks.PolygonZkMainnet,
+            KnownInternalNames.Networks.ZoraMainnet,
+            KnownInternalNames.Networks.FraxtalMainnet,
+            KnownInternalNames.Networks.ModMainnet,
+            KnownInternalNames.Networks.WorldchainMainnet,
+            KnownInternalNames.Networks.MantaMainnet,
+            KnownInternalNames.Networks.AbstractMainnet,
+            KnownInternalNames.Networks.BlastMainnet,
+            KnownInternalNames.Networks.CeloMainnet,
+            KnownInternalNames.Networks.KromaMainnet,
+            KnownInternalNames.Networks.ShapeMainnet,
+            KnownInternalNames.Networks.GnosisMainnet,
+            KnownInternalNames.Networks.TaikoMainnet,
+            KnownInternalNames.Networks.OKCMainnet,
+            KnownInternalNames.Networks.BNBChainMainnet,
+            KnownInternalNames.Networks.PolygonMainnet,
+            KnownInternalNames.Networks.RoninMainnet,
+            KnownInternalNames.Networks.InkMainnet,
+            KnownInternalNames.Networks.MintMainnet,
+            KnownInternalNames.Networks.Ancient8Mainnet,
+            KnownInternalNames.Networks.BobMainnet,
+            KnownInternalNames.Networks.FuseMainnet,
+            KnownInternalNames.Networks.SonicMainnet,
+            KnownInternalNames.Networks.ImmutableZkEVM,
+            KnownInternalNames.Networks.OptimismMainnet,
+            KnownInternalNames.Networks.RolluxMainnet,
+            KnownInternalNames.Networks.ZeroMainnet,
+            KnownInternalNames.Networks.ZircuitMainnet,
+            KnownInternalNames.Networks.OpBNBMainnet,
+            KnownInternalNames.Networks.SuperseedMainnet,
+            KnownInternalNames.Networks.LiskMainnet,
+            KnownInternalNames.Networks.MorphMainnet,
+            KnownInternalNames.Networks.SeiMainnet,
+            KnownInternalNames.Networks.GravityMainnet
+        ]
+    },
+    {
+        address: '0xf3C74887D68Cd6d6c64Fb9ab24ca6812182eED44' as `0x${string}`,
+        networks: [
+            KnownInternalNames.Networks.ArbitrumMainnet,
+        ]
+    },
+    {
+        address: '0x1930cC92B9dCBBE2E8FA0E05c858A88EE39C41E6' as `0x${string}`,
+        networks: [
+            KnownInternalNames.Networks.SophonMainnet,
+        ]
+    }
+]

@@ -28,29 +28,25 @@ const Widget = ({ children, className, hideMenu }: Props) => {
 
    const handleBack = router.pathname === "/" ? null : goBack
 
-   return <>
-      <div id="widget" className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative `}>
-         <div className="relative z-20">
-            {
-               AppSettings.ApiVersion === 'sandbox' &&
-               <div>
-                  <div className="h-0.5 bg-[#D95E1B]" />
-                  <div className="absolute -top-0.5 right-[calc(50%-68px)] bg-[#D95E1B] py-0.5 px-10 rounded-b-md text-xs scale-75">
-                     TESTNET
-                  </div>
+   return <div className="relative p-px">
+      <div className="invisible sm:visible absolute inset-0 rounded-[25px] bg-gradient-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
+      <div id="widget" className='md:shadow-lg rounded-3xl w-full sm:overflow-hidden relative bg-gradient-to-b from-secondary-700 to-secondary-700  has-openpicker:min-h-[79svh]'>
+         {
+            AppSettings.ApiVersion === 'sandbox' &&
+            <div className="relative z-20">
+               <div className="absolute sm:-top-1 -top-4 right-[calc(50%-68px)] bg-[#D95E1B] py-0.5 px-10 rounded-b-md text-xs scale-75">
+                  TESTNET
                </div>
-            }
-         </div>
+            </div>
+         }
          {
             !hideMenu &&
             <HeaderWithMenu goBack={handleBack} />
          }
-         <div className='text-center text-xl text-secondary-100'>
-         </div>
-         <div className="relative px-6">
+         <div className="relative px-4">
             <div className="flex items-start" ref={wrapper}>
                <div className={`flex flex-nowrap grow`}>
-                  <div className={`w-full pb-6 flex flex-col justify-between space-y-5 text-secondary-text h-full ${className}`}>
+                  <div className={`w-full pb-4 flex flex-col justify-between text-secondary-text h-full ${className}`}>
                      {children}
                   </div>
                </div>
@@ -58,7 +54,7 @@ const Widget = ({ children, className, hideMenu }: Props) => {
          </div>
          <div id="widget_root" />
       </div>
-   </>
+   </div>
 }
 
 Widget.Content = Content

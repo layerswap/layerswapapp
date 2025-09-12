@@ -8,10 +8,9 @@ import { createPublicClient, http } from "viem"
 import { useSettingsState } from "../context/settings"
 
 export default function useWalletTransferOptions() {
-    const { swapResponse } = useSwapDataState()
+    const { swapBasicData } = useSwapDataState()
     const { networks } = useSettingsState()
-    const { swap } = swapResponse || {}
-    const { source_network } = swap || {}
+    const { source_network } = swapBasicData || {}
     const { addContractWallet, getContractWallet, updateContractWallet } = useContractWalletsStore()
     const { provider } = useWallet(source_network, 'withdrawal')
 
@@ -37,7 +36,7 @@ export default function useWalletTransferOptions() {
     const canDoSweepless = source_network && ((source_network.type == NetworkType.EVM
         && (walletAddressType?.ready && !walletAddressType?.isContract))
         || source_network.type == NetworkType.Starknet || source_network.type == NetworkType.ZkSyncLite)
-        || wallet?.address?.toLowerCase() === swap?.destination_address.toLowerCase()
+        || wallet?.address?.toLowerCase() === swapBasicData?.destination_address.toLowerCase()
     return { canDoSweepless, isContractWallet: walletAddressType }
 }
 

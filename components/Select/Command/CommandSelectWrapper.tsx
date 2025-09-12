@@ -1,9 +1,9 @@
 import { useCallback, useState } from 'react'
-import Image from 'next/image'
 import { ChevronDown } from 'lucide-react'
 import { ISelectMenuItem, SelectMenuItem } from '../Shared/Props/selectMenuItem'
 import CommandSelect, { SelectMenuItemGroup } from './commandSelect'
 import { LeafletHeight } from '../../modal/leaflet'
+import { ImageWithFallback } from '@/components/Common/ImageWithFallback'
 
 type CommandSelectWrapperProps = {
     setValue: (value: ISelectMenuItem) => void;
@@ -13,6 +13,7 @@ type CommandSelectWrapperProps = {
     searchHint: string;
     disabled: boolean;
     valueGrouper: (values: ISelectMenuItem[]) => SelectMenuItemGroup[];
+    groupedCurrencies?: SelectMenuItemGroup[];
     isLoading: boolean;
     modalHeight?: LeafletHeight;
     valueDetails?: React.ReactNode;
@@ -20,6 +21,7 @@ type CommandSelectWrapperProps = {
     modalContent?: React.ReactNode;
     direction?: string;
     header?: string;
+    walletComp?: React.ReactNode;
 }
 
 export default function CommandSelectWrapper<T>({
@@ -33,8 +35,7 @@ export default function CommandSelectWrapper<T>({
     isLoading,
     modalHeight,
     modalContent,
-    header,
-    valueDetails
+    valueDetails,
 }: CommandSelectWrapperProps) {
     const [showModal, setShowModal] = useState(false)
 
@@ -54,13 +55,13 @@ export default function CommandSelectWrapper<T>({
                     type="button"
                     onClick={openModal}
                     disabled={disabled}
-                    className="rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-secondary-600 font-semibold"
+                    className="rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-hidden disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full pl-3 pr-2 py-2 bg-secondary-600 font-semibold"
                 >
                     <span className='flex grow text-left items-center text-xs md:text-base'>
                         {
                             value?.imgSrc && <div className="flex items-center">
-                                <div className="flex-shrink-0 h-6 w-6 relative">
-                                    <Image
+                                <div className="shrink-0 h-6 w-6 relative">
+                                    <ImageWithFallback
                                         src={value.imgSrc}
                                         alt="Project Logo"
                                         height="40"
@@ -98,7 +99,6 @@ export default function CommandSelectWrapper<T>({
                 isLoading={isLoading}
                 modalHeight={modalHeight}
                 modalContent={modalContent}
-                header={header}
             />
         </>
     )

@@ -1,13 +1,11 @@
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, FC, SetStateAction, useCallback, useMemo, useState } from "react";
 import useWallet from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
 import { ChevronDown, CircleHelp, QrCode } from "lucide-react";
-import Balance from "./Amount/Balance";
-import { useSwapDataState, useSwapDataUpdate } from "../../context/swap";
-import VaulDrawer, { WalletFooterPortal } from "../modal/vaulModal";
-import { Wallet } from "../../Models/WalletProvider";
+import VaulDrawer, { ModalFooterPortal } from "../modal/vaulModal";
+import { SelectAccountProps, Wallet } from "../../Models/WalletProvider";
 import WalletIcon from "../icons/WalletIcon";
 import SubmitButton from "../buttons/submitButton";
 import { useConnectModal } from "../WalletModal";
@@ -15,8 +13,9 @@ import WalletsList from "../Wallet/WalletsList";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import FilledCheck from "../icons/FilledCheck";
 import clsx from "clsx";
+import { SwitchWalletAccount } from "@/helpers/accountSelectHelper";
 
-const Component: FC = () => {
+const SourceWalletPicker: FC = () => {
     const [openModal, setOpenModal] = useState<boolean>(false)
 
     const {
@@ -24,56 +23,31 @@ const Component: FC = () => {
         setFieldValue
     } = useFormikContext<SwapFormValues>();
 
-    const { setSelectedSourceAccount } = useSwapDataUpdate()
-    const { selectedSourceAccount } = useSwapDataState()
-    const walletNetwork = values.fromExchange ? undefined : values.from
-    const source_token = values.fromCurrency
-    const destination_address = values.destination_address
-    const { provider } = useWallet(walletNetwork, 'withdrawal')
+    const source_token = values.fromAsset
+
+    const { provider } = useWallet(values.from, "withdrawal")
+    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
+
     const { selectedConnector } = useConnectModal()
     const availableWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
 
-    const selectedWallet = selectedSourceAccount?.wallet
-    //TODO: sort by active wallet
-    const defaultWallet = walletNetwork && availableWallets?.find(w => !w.isNotAvailable)
-
-    const source_addsress = selectedSourceAccount?.address
-
-    useEffect(() => {
-        if (!source_addsress && defaultWallet && values.depositMethod !== 'deposit_address') {
-            setSelectedSourceAccount({
-                wallet: defaultWallet,
-                address: defaultWallet.address
-            })
-        }
-    }, [defaultWallet?.address, source_addsress, values.depositMethod, destination_address])
-
-    useEffect(() => {
-        if (values.depositMethod === 'deposit_address' || !defaultWallet?.address || (selectedSourceAccount && !availableWallets.some(w => w?.addresses?.some(a => a === selectedSourceAccount.address)))) {
-            setSelectedSourceAccount(undefined)
-        }
-    }, [values.depositMethod, defaultWallet?.address, availableWallets.length])
 
     const handleWalletChange = () => {
         setOpenModal(true)
     }
 
-    const handleSelectWallet = (wallet?: Wallet | undefined, address?: string | undefined) => {
-        if (wallet && address) {
-            setSelectedSourceAccount({
-                wallet,
-                address
-            })
+    const handleSelectWallet = useCallback((props?: SelectAccountProps) => {
+        if (props) {
+            SwitchWalletAccount(props, provider)
             setFieldValue('depositMethod', 'wallet')
         }
         else {
-            setSelectedSourceAccount(undefined)
             setFieldValue('depositMethod', 'deposit_address')
         }
         setOpenModal(false)
-    }
+    }, [provider, setFieldValue])
 
-    if (!walletNetwork || !source_token)
+    if (!values.from || !source_token)
         return <></>
 
     return <>
@@ -81,33 +55,32 @@ const Component: FC = () => {
             values.depositMethod === 'deposit_address' ?
                 (
                     provider
-                        ? <div className="flex items-center space-x-2 text-sm leading-4">
-                            <div onClick={handleWalletChange} className="rounded-md bg-secondary-500 flex space-x-1 items-center py-0.5 pl-2 pr-1 cursor-pointer">
+                        ? <div className="flex items-center space-x-2 text-sm  rounded-lg hover:bg-secondary-400 py-1 pl-2 pr-1">
+                            <div onClick={handleWalletChange} className="flex space-x-1 items-center cursor-pointer">
                                 <div className="text-secondary-text">
                                     Manual Transfer
                                 </div>
-                                <div className="w-5 h-5 items-center flex">
+                                <div className="w-5 h-5 items-center flex text-secondary-text">
                                     <ChevronDown className="h-4 w-4" aria-hidden="true" />
                                 </div>
                             </div>
                         </div>
-                        : <div className="text-secondary-text rounded-md bg-secondary-500 flex space-x-1 items-center py-0.5 px-2 text-sm">
+                        : <div className="text-secondary-text text-sm  rounded-lg hover:bg-secondary-400 py-1 pl-2 pr-1">
                             Manual Transfer
                         </div>
                 )
                 :
-                <div className="rounded-lg bg-secondary-800 flex items-center space-x-2 text-sm leading-4">
+                <div className="rounded-lg flex items-center space-x-2 text-sm  hover:bg-secondary-400 py-1 pl-2 pr-2">
                     {
-                        selectedWallet && selectedSourceAccount?.address && <>
-                            <Balance values={values} direction="from" />
-                            <div onClick={handleWalletChange} className="rounded-lg bg-secondary-500 flex space-x-1 items-center py-0.5 pl-2 pr-1 cursor-pointer">
-                                <div className="inline-flex items-center relative p-0.5">
-                                    <selectedWallet.icon className="w-5 h-5" />
+                        selectedSourceAccount && selectedSourceAccount?.address && <>
+                            <div onClick={handleWalletChange} className="rounded-lg flex space-x-1 items-center cursor-pointer">
+                                <div className="inline-flex items-center relative px-0.5">
+                                    <selectedSourceAccount.icon className="w-4 h-4" />
                                 </div>
-                                <div className="text-primary-text">
+                                <div className="text-secondary-text">
                                     {shortenAddress(selectedSourceAccount.address)}
                                 </div>
-                                <div className="w-5 h-5 items-center flex">
+                                <div className="w-4 h-4 items-center flex text-secondary-text">
                                     <ChevronDown className="h-4 w-4" aria-hidden="true" />
                                 </div>
                             </div>
@@ -123,7 +96,7 @@ const Component: FC = () => {
         >
             <VaulDrawer.Snap
                 id="item-1"
-                className="pb-6 flex flex-col gap-3"
+                className="pb-4 flex flex-col gap-3"
             >
                 <div
                     className={clsx('w-full order-1', {
@@ -135,7 +108,8 @@ const Component: FC = () => {
                         wallets={availableWallets}
                         onSelect={handleSelectWallet}
                         token={source_token}
-                        network={walletNetwork}
+                        network={values.from}
+                        selectedDepositMethod={values.depositMethod}
                         selectable
                     />
                 </div>
@@ -150,8 +124,9 @@ const Component: FC = () => {
                             <hr className="border-secondary-400 w-full" />
                         </div>
                         <button
+                            type="button"
                             onClick={() => handleSelectWallet()}
-                            className={clsx('w-full relative flex items-center justify-between gap-2 rounded-lg outline-none bg-secondary-700 p-3 py-4 text-secondary-text hover:bg-secondary-600 cursor-pointer order-1', {
+                            className={clsx('w-full relative flex items-center justify-between gap-2 rounded-lg outline-none bg-secondary-500 p-3 py-4 text-secondary-text hover:bg-secondary-400 cursor-pointer order-1', {
                                 'order-3': values.depositMethod !== 'deposit_address',
                             })}
                         >
@@ -182,29 +157,24 @@ export const FormSourceWalletButton: FC = () => {
         setFieldValue
     } = useFormikContext<SwapFormValues>();
 
-    const { setSelectedSourceAccount } = useSwapDataUpdate()
-
     const [mountWalletPortal, setMounWalletPortal] = useState<boolean>(false)
 
     const walletNetwork = values.fromExchange ? undefined : values.from
 
     const { provider } = useWallet(walletNetwork, 'withdrawal')
+
     const { isWalletModalOpen, cancel, selectedConnector, connect } = useConnectModal()
 
     const handleWalletChange = () => {
         setOpenModal(true)
     }
 
-    const handleSelectWallet = (wallet?: Wallet, address?: string) => {
-        if (wallet && address) {
-            setSelectedSourceAccount({
-                wallet,
-                address
-            })
+    const handleSelectWallet = (props?: SelectAccountProps) => {
+        if (props?.address) {
+            SwitchWalletAccount(props, provider)
             setFieldValue('depositMethod', 'wallet')
         }
         else {
-            setSelectedSourceAccount(undefined)
             setFieldValue('depositMethod', 'deposit_address')
         }
         cancel()
@@ -215,7 +185,11 @@ export const FormSourceWalletButton: FC = () => {
         setMounWalletPortal(true)
         const result = await connect(provider)
         if (result) {
-            handleSelectWallet(result, result.address)
+            SwitchWalletAccount({
+                walletId: result.id,
+                address: result.address,
+                providerName: result.providerName
+            }, provider)
         }
         setMounWalletPortal(false)
     }
@@ -226,14 +200,14 @@ export const FormSourceWalletButton: FC = () => {
             <Connect connectFn={handleConnect} />
             {
                 mountWalletPortal && values.from?.deposit_methods?.includes('deposit_address') && values.depositMethod !== 'deposit_address' && !selectedConnector &&
-                <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
+                <ModalFooterPortal isWalletModalOpen={isWalletModalOpen}>
                     <ContinueWithoutWallet onClick={handleSelectWallet} />
-                </WalletFooterPortal>
+                </ModalFooterPortal>
             }
         </>
 
     }
-    else if (availableWallets.length > 0 && walletNetwork && values.fromCurrency) {
+    else if (availableWallets.length > 0 && walletNetwork && values.fromAsset) {
         return <>
             <div className="w-full" onClick={handleWalletChange}>
                 <Connect />
@@ -249,7 +223,7 @@ export const FormSourceWalletButton: FC = () => {
                         provider={provider}
                         wallets={availableWallets}
                         onSelect={handleSelectWallet}
-                        token={values.fromCurrency}
+                        token={values.fromAsset}
                         network={walletNetwork}
                         selectable
                     />
@@ -257,9 +231,9 @@ export const FormSourceWalletButton: FC = () => {
             </VaulDrawer >
             {
                 mountWalletPortal && values.from?.deposit_methods?.includes('deposit_address') && values.depositMethod !== 'deposit_address' && !selectedConnector &&
-                <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
+                <ModalFooterPortal isWalletModalOpen={isWalletModalOpen}>
                     <ContinueWithoutWallet onClick={handleSelectWallet} />
-                </WalletFooterPortal>
+                </ModalFooterPortal>
             }
         </>
     }
@@ -267,9 +241,9 @@ export const FormSourceWalletButton: FC = () => {
         <Connect setMountWalletPortal={setMounWalletPortal} />
         {
             mountWalletPortal && !selectedConnector &&
-            <WalletFooterPortal isWalletModalOpen={isWalletModalOpen}>
+            <ModalFooterPortal isWalletModalOpen={isWalletModalOpen}>
                 <ContinueWithoutWallet onClick={handleSelectWallet} />
-            </WalletFooterPortal>
+            </ModalFooterPortal>
         }
     </>
 }
@@ -289,10 +263,10 @@ const Connect: FC<{ connectFn?: () => Promise<Wallet | undefined | void>; setMou
 }
 
 const ContinueWithoutWallet: FC<{ onClick: () => void }> = ({ onClick }) => {
-    //TODO: bg-secondary-900 is a hotfix, should refactor and fix sticky footer for VaulDrawer
+    //TODO: bg-secondary-700 is a hotfix, should refactor and fix sticky footer for VaulDrawer
     return (
-        <div className="inline-flex items-center gap-1.5 justify-center w-full pt-2 bg-secondary-900">
-            <button onClick={onClick} className="underline hover:no-underline text-base text-center text-secondary-text cursor-pointer ">
+        <div className="inline-flex items-center gap-1.5 justify-center w-full pt-2 bg-secondary-700">
+            <button type="button" onClick={onClick} className="underline hover:no-underline text-base text-center text-secondary-text cursor-pointer ">
                 Continue without a wallet
             </button>
             <Popover>
@@ -309,4 +283,4 @@ const ContinueWithoutWallet: FC<{ onClick: () => void }> = ({ onClick }) => {
     )
 }
 
-export default Component
+export default SourceWalletPicker

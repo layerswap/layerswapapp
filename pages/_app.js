@@ -5,9 +5,9 @@ import '../styles/vaul.css'
 import { useRouter } from "next/router";
 import { IntercomProvider } from 'react-use-intercom';
 import { SWRConfig } from 'swr'
-import DatadogInit from "../components/datadog-init";
 import ProgressBar from "@badrap/bar-of-progress";
 import Router from "next/router";
+import posthog from "posthog-js";
 
 const progress = new ProgressBar({
   size: 2,
@@ -15,6 +15,15 @@ const progress = new ProgressBar({
   className: "bar-of-progress",
   delay: 100,
 });
+
+if (typeof window !== "undefined" && process.env.NODE_ENV === 'production') {
+  posthog.init('phc_KyI0bPCry0a8vJjQ7rIQESL8u2EVnyjrX19ZR4uqQgq', {
+    capture_pageview: 'history_change',
+    capture_pageleave: true,
+    api_host: 'https://us.i.posthog.com',
+    defaults: '2025-05-24'
+  })
+}
 
 Router.events.on("routeChangeStart", progress.start);
 Router.events.on("routeChangeComplete", progress.finish);
@@ -31,7 +40,6 @@ function App({ Component, pageProps }) {
         dedupingInterval: 5000,
       }}
     >
-      <DatadogInit />
       <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
         <Component key={router.asPath} {...pageProps} />
       </IntercomProvider>

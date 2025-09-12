@@ -1,62 +1,135 @@
-import SecondaryButton from "../../buttons/secondaryButton"
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import useSWRBalance from "../../../lib/balances/useSWRBalance";
-import useSWRGas from "../../../lib/gases/useSWRGas";
-import { useSwapDataState } from "../../../context/swap";
-import { RouteNetwork, RouteToken, Token } from "../../../Models/Network";
+import useSWRBalance from "@/lib/balances/useSWRBalance";
+import useSWRGas from "@/lib/gases/useSWRGas";
+import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { useMemo } from "react";
-import { resolveMacAllowedAmount } from "./helpers";
+import { resolveMaxAllowedAmount } from "./helpers";
+import { updateForm } from "@/components/Swap/Form/updateForm";
+import useWallet from "@/hooks/useWallet";
+import { Tooltip, TooltipArrow, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
+
 
 type MinMaxProps = {
-    fromCurrency: RouteToken,
-    from: RouteNetwork,
-    limitsMaxAmount: number,
-    limitsMinAmount: number
+    fromCurrency: NetworkRouteToken,
+    from: NetworkRoute,
+    limitsMaxAmount: number | undefined,
+    limitsMinAmount: number | undefined,
+    onActionHover: (value: number | undefined) => void,
+    depositMethod: 'wallet' | 'deposit_address' | undefined
 }
 
 const MinMax = (props: MinMaxProps) => {
 
     const { setFieldValue } = useFormikContext<SwapFormValues>();
-    const { fromCurrency, from, limitsMinAmount, limitsMaxAmount } = props;
+    const { fromCurrency, from, limitsMinAmount, limitsMaxAmount, onActionHover, depositMethod } = props;
 
-    const { selectedSourceAccount } = useSwapDataState()
+    const { provider } = useWallet(from, "withdrawal")
+    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
 
-    const { gas } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency)
-    const { balance, mutate } = useSWRBalance(selectedSourceAccount?.address, from)
+    const { gasData } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency)
+    const { balances, mutate: mutateBalances } = useSWRBalance(selectedSourceAccount?.address, from)
 
-    const gasAmount = gas || 0;
+    const walletBalance = useMemo(() => {
+        return selectedSourceAccount?.address ? balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol) : undefined
+    }, [selectedSourceAccount?.address, balances, from?.name, fromCurrency?.symbol])
 
-    const handleSetMinAmount = () => {
-        setFieldValue('amount', limitsMinAmount);
+    const gasAmount = gasData?.gas || 0;
+
+    const native_currency = gasData?.token || from?.token
+
+    const shouldPayGasWithTheToken = (native_currency?.symbol === fromCurrency?.symbol) || !native_currency
+
+    let maxAllowedAmount: number | undefined = useMemo(() => {
+        return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod })
+    }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod])
+
+    const handleSetValue = (value: string) => {
+        mutateBalances()
+        updateForm({
+            formDataKey: 'amount',
+            formDataValue: value,
+            setFieldValue
+        })
+        onActionHover(undefined)
     }
-    const walletBalance = selectedSourceAccount?.address ? balance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol) : undefined
-    const native_currency = from?.token
 
-    let maxAllowedAmount: number = useMemo(() => {
-        return resolveMacAllowedAmount({ fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency })
-    }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency])
-
-    const handleSetMaxAmount = async () => {
-        const updatedBalance = await mutate()
-        const updatedWalletBalance = updatedBalance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
-        const maxAllowedAmount = resolveMacAllowedAmount({ fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance: updatedWalletBalance, gasAmount, native_currency })
-        setFieldValue('amount', maxAllowedAmount);
+    const handleSetMinAmount = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault()
+        e.stopPropagation()
+        if (!limitsMinAmount)
+            throw new Error("Wallet balance is not available");
+        handleSetValue(limitsMinAmount.toString())
     }
+    const handleSetHalfAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault()
+        e.stopPropagation()
+        if (!walletBalance)
+            throw new Error("Wallet balance is not available");
+        handleSetValue((walletBalance?.amount / 2).toString())
+    }
+
+    const handleSetMaxAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault()
+        e.stopPropagation()
+        if (!maxAllowedAmount)
+            throw new Error("Max amount is not available");
+        handleSetValue(maxAllowedAmount.toString())
+    }
+    const halfOfBalance = (walletBalance?.amount || 0) / 2;
+    const showMaxTooltip = depositMethod === 'wallet' && walletBalance && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount)
 
     return (
-        <div className="flex flex-col justify-center">
-            <div className="text-xs flex flex-col items-center space-x-1 md:space-x-2 ml-2 md:ml-5 px-2">
-                <div className="flex">
-                    <SecondaryButton disabled={!limitsMinAmount} onClick={handleSetMinAmount} size="xs">
-                        MIN
-                    </SecondaryButton>
-                    <SecondaryButton disabled={!maxAllowedAmount} onClick={handleSetMaxAmount} size="xs" className="ml-1.5">
-                        MAX
-                    </SecondaryButton>
-                </div>
-            </div>
-        </div>
+        <div className="flex gap-1.5 group text-xs leading-4" onMouseLeave={() => onActionHover(undefined)}>
+            {
+                Number(limitsMinAmount) > 0 &&
+                <button
+                    onMouseEnter={() => onActionHover(limitsMinAmount)}
+                    disabled={!limitsMinAmount}
+                    onClick={handleSetMinAmount}
+                    typeof="button"
+                    type="button"
+                    className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer"}
+                >
+                    Min
+                </button>
+            }
+            {
+                depositMethod === 'wallet' && halfOfBalance > 0 && (halfOfBalance < (maxAllowedAmount || Infinity)) &&
+                <button
+                    onMouseEnter={() => onActionHover(halfOfBalance)}
+                    onClick={handleSetHalfAmount}
+                    typeof="button"
+                    type="button"
+                    className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer"}
+                >
+                    50%
+                </button>
+            }
+            {
+                Number(maxAllowedAmount) > 0 &&
+                <>
+                    <Tooltip disableHoverableContent={true}>
+                        <TooltipTrigger asChild>
+                            <button
+                                onMouseEnter={() => onActionHover(maxAllowedAmount)}
+                                disabled={!maxAllowedAmount}
+                                onClick={handleSetMaxAmount}
+                                typeof="button"
+                                type="button"
+                                className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer"}
+                            >
+                                Max
+                            </button>
+                        </TooltipTrigger>
+                        {showMaxTooltip && <TooltipContent className="pointer-events-none w-80 grow p-2 !border-none !bg-secondary-300 text-xs rounded-xl" side="top" align="start" alignOffset={-10}>
+                            <p>Max is calculated based on your balance minus gas fee for the transaction</p>
+                            <TooltipArrow className="fill-secondary-300" width={12} height={8} />
+                        </TooltipContent>}
+                    </Tooltip>
+                </>
+            }
+        </div >
     )
 }
 

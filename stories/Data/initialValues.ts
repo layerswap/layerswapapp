@@ -3,11 +3,6 @@ import { SwapFormValues } from "../../components/DTOs/SwapFormValues";
 
 export const initialValues: SwapFormValues = {
     "amount": "0.001803",
-    "currencyGroup": {
-        "symbol": "ETH",
-        "status": "active",
-        'logo': "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png"
-    },
     "destination_address": "0xf51c208e2c37a99b13dcf01a3434cc71be8b2bdd",
     "from": {
         "tokens": [
@@ -64,7 +59,7 @@ export const initialValues: SwapFormValues = {
             "wallet"
         ]
     },
-    "fromCurrency": {
+    "fromAsset": {
         "symbol": "ETH",
         "listing_date": "2023-12-27T16:46:50.617075+00:00",
         "logo": "https://devlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/eth.png",
@@ -122,7 +117,7 @@ export const initialValues: SwapFormValues = {
             "wallet"
         ]
     },
-    "toCurrency": {
+    "toAsset": {
         "status": "active",
         "symbol": "ETH",
         "listing_date": "2023-12-27T16:46:50.617075+00:00",
