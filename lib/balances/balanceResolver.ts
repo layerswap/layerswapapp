@@ -53,7 +53,7 @@ export class BalanceResolver {
                 return acc + (formattedBalance * tokenPriceInUsd);
             }, 0)
 
-            if (errors.length > 0) {
+            if (errors && errors?.length > 0) {
                 for (const err of errors) {
                     posthog.capture("balance_fetch_error", {
                         where: "BalanceProvider",

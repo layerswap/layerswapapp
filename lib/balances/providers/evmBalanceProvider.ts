@@ -18,7 +18,7 @@ export class EVMBalanceProvider {
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
 
-        if (!network) return
+        if (!network) return undefined
 
         const errors: BalanceFetchError[] = [];
 
@@ -27,7 +27,7 @@ export class EVMBalanceProvider {
 
         try {
             const balances = await this.contractGetBalances(address, chain, network)
-            return { balances, errors: [] };
+            return { balances, errors };
         } catch (e: any) {
             errors.push({
                 network: network.name,
@@ -51,7 +51,7 @@ export class EVMBalanceProvider {
             });
         }
 
-        return { balances: [], errors };
+        return { balances: [] as TokenBalance[], errors };
     }
 
     getBalances = async (address: string, chain: Chain, network: NetworkWithTokens): Promise<TokenBalance[] | undefined> => {

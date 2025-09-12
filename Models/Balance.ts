@@ -38,8 +38,8 @@ export type BalanceFetchError = {
 }
 
 export type BalanceResult = {
-  balances: TokenBalance[]
-  errors: BalanceFetchError[]
+  balances: TokenBalance[] | null | undefined
+  errors: BalanceFetchError[] | null | undefined
 }
 
 export type NetworkBalance = {
