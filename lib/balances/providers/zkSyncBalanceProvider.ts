@@ -9,7 +9,6 @@ export class ZkSyncBalanceProvider {
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
-        const balances: TokenBalance[] = [];
         const errors: BalanceFetchError[] = [];
 
         const client = new ZkSyncLiteRPCClient();
@@ -19,28 +18,18 @@ export class ZkSyncBalanceProvider {
 
         const result = await client.getAccountInfo(network.node_url, address);
 
-        for (const currency of tokens) {
-            try {
-                const amount = currency && result.committed.balances[currency.symbol]
+        const balances = tokens.map((currency) => {
+            const amount = currency && result.committed.balances[currency.symbol]
 
-                balances.push({
-                    network: network.name,
-                    token: currency.symbol,
-                    amount: formatAmount(amount, Number(currency?.decimals)),
-                    request_time: new Date().toJSON(),
-                    decimals: Number(currency?.decimals),
-                    isNativeCurrency: true
-                });
-            } catch (e: any) {
-                errors.push({
-                    network: network.name,
-                    token: currency?.symbol,
-                    message: e?.message ?? "Failed to parse zkSync balance",
-                    code: e?.code ?? e?.response?.status,
-                    cause: e,
-                });
-            }
-        }
+            return ({
+                network: network.name,
+                token: currency.symbol,
+                amount: formatAmount(amount, Number(currency?.decimals)),
+                request_time: new Date().toJSON(),
+                decimals: Number(currency?.decimals),
+                isNativeCurrency: true
+            })
+        });
 
         return { balances, errors };
     }
