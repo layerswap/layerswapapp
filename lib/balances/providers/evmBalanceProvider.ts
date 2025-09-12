@@ -20,19 +20,14 @@ export class EVMBalanceProvider {
 
         if (!network) return
 
-        const balances: TokenBalance[] = [];
         const errors: BalanceFetchError[] = [];
 
         const chain = resolveChain(network)
         if (!chain) throw new Error("Could not resolve chain")
 
         try {
-            const byContractBalance = await this.contractGetBalances(address, chain, network)
-            if (byContractBalance && byContractBalance.length > 0) {
-                balances.push(...byContractBalance);
-                return { balances, errors };
-            }
-            return { balances, errors };
+            const balances = await this.contractGetBalances(address, chain, network)
+            return { balances, errors: [] };
         } catch (e: any) {
             errors.push({
                 network: network.name,
@@ -44,10 +39,8 @@ export class EVMBalanceProvider {
         }
 
         try {
-            const evmBalances = await this.getBalances(address, chain, network);
-            if (evmBalances && evmBalances.length > 0) {
-                balances.push(...evmBalances);
-            }
+            const balances = await this.getBalances(address, chain, network);
+            return { balances, errors };
         } catch (e: any) {
             errors.push({
                 network: network.name,
@@ -58,8 +51,7 @@ export class EVMBalanceProvider {
             });
         }
 
-        return { balances, errors };
-
+        return { balances: [], errors };
     }
 
     getBalances = async (address: string, chain: Chain, network: NetworkWithTokens): Promise<TokenBalance[] | undefined> => {
