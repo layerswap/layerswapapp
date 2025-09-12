@@ -12,17 +12,17 @@ import { useValidationContext } from "@/context/validationContext";
 type RefuelProps = {
     onButtonClick: () => void
     quote: ReturnType<typeof useQuoteData>['quote']
+    minAllowedAmount: ReturnType<typeof useQuoteData>['minAllowedAmount']
 }
 
-const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote }) => {
+const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote, minAllowedAmount }) => {
 
     const {
         values,
         setFieldValue
     } = useFormikContext<SwapFormValues>();
-    const { toAsset: toCurrency, to, destination_address, refuel } = values
+    const { toAsset: toCurrency, to, destination_address, refuel, amount } = values
     const { balances } = useSWRBalance(destination_address, to)
-    const { formValidation } = useValidationContext();
 
     const destinationNativeBalance = destination_address && balances?.find(b => (b.token === to?.token?.symbol) && (b.network === to.name))
     const needRefuel = toCurrency && toCurrency.refuel && to && to.token && isValidAddress(destination_address, to) && destinationNativeBalance && destinationNativeBalance?.amount == 0
@@ -40,7 +40,7 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote }) => {
         setFieldValue('refuel', value)
     }
 
-    const showRefuel = needRefuel && (quote || formValidation.message.includes("Min amount is") || refuel)
+    const showRefuel = needRefuel && (quote || Number(amount) === Number(minAllowedAmount) || refuel)
 
     return (
         showRefuel &&
