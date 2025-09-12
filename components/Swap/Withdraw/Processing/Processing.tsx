@@ -50,10 +50,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
         updateWithProps();
     }, [boot, show, updateWithProps]);
 
-    const { provider } = useWallet(source_network, 'withdrawal')
-    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider])
-    const sourceNetworkWithTokens = useMemo(() => networks.find(n => n.name == source_network.name), [source_network])
-    const { mutate: mutateBalances } = useSWRBalance(selectedSourceAccount?.address, sourceNetworkWithTokens)
+
 
     const input_tx_explorer = source_network?.transaction_explorer_template
     const output_tx_explorer = destination_network?.transaction_explorer_template
@@ -87,9 +84,6 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     }, [boot, show, update, swapDetails.id, swapInputTransaction, storedWalletTransaction]);
 
     useEffect(() => {
-        if (inputTxStatus) {
-            mutateBalances()
-        }
         if (inputTxStatus === TransactionStatus.Completed || inputTxStatus === TransactionStatus.Pending) {
             if (swapDetails?.transactions?.find(t => t.type === TransactionType.Input) || !swapDetails) {
                 return

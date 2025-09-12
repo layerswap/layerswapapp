@@ -5,14 +5,16 @@ import {
     ImtblxWalletWithdrawStep, BitcoinWalletWithdrawStep, EVMWalletWithdrawal, FuelWalletWithdrawStep, LoopringWalletWithdraw, ParadexWalletWithdraw, SVMWalletWithdrawStep, StarknetWalletWithdrawStep, TonWalletWithdrawStep, TronWalletWithdraw, ZkSyncWalletWithdrawStep
 } from "./WithdrawalProviders";
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
+import { WithdrawalProvider } from "@/context/withdrawalContext";
 
 type Props = {
     swapData: SwapBasicData
     swapId: string | undefined
     refuel: boolean
+    onWalletWithdrawalSuccess?: () => void
 };
 //TODO have separate components for evm and none_evm as others are sweepless anyway
-export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel }) => {
+export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWalletWithdrawalSuccess }) => {
     const { source_network } = swapData
     const source_network_internal_name = source_network?.name;
 
@@ -102,11 +104,13 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel }) =>
     return <>
         {
             swapData && WithdrawalComponent &&
-            <WithdrawalComponent
-                swapId={swapId}
-                swapBasicData={swapData}
-                refuel={refuel}
-            />
+            <WithdrawalProvider onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}>
+                <WithdrawalComponent
+                    swapId={swapId}
+                    swapBasicData={swapData}
+                    refuel={refuel}
+                />
+            </WithdrawalProvider>
         }
     </>;
 };

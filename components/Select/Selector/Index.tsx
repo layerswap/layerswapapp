@@ -27,7 +27,7 @@ type SelectContentProps = {
 
 export const SelectorContent = (props: SelectContentProps) => {
     const { children, header } = props;
-    
+
     return (
         <ModalContent header={header}>
             {children}

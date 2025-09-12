@@ -1,5 +1,5 @@
-import { Formik, FormikProps } from "formik";
-import { useCallback, useRef, useState } from "react";
+import { Formik, FormikProps, useFormikContext } from "formik";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useSettingsState } from "@/context/settings";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { removeSwapPath, UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
@@ -22,6 +22,7 @@ import { QueryParams } from "@/Models/QueryParams";
 import VaulDrawer from "@/components/modal/vaulModal";
 import { addressFormat } from "@/lib/address/formatter";
 import AddressNote from "@/components/Input/Address/AddressNote";
+import useSWRBalance from "@/lib/balances/useSWRBalance";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -50,9 +51,12 @@ export default function FormWrapper({ children, type }: { children?: React.React
     const { swapBasicData, swapDetails, swapModalOpen } = useSwapDataState()
     const sourceNetworkWithTokens = settings.networks.find(n => n.name === swapBasicData?.source_network.name)
     const { getProvider } = useWallet(sourceNetworkWithTokens, "withdrawal")
+    const [walletWihdrawDone, setWalletWihdrawDone] = useState(false);
+    const { provider } = useWallet(swapBasicData?.source_network, 'withdrawal')
+    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider])
+    const { mutate: mutateBalances } = useSWRBalance(selectedSourceAccount?.address, sourceNetworkWithTokens)
 
     const { getConfirmation } = useAsyncModal();
-
     const query = useQueryState()
     const { appName, destination_address: destinationAddressFromQuery } = query
     const { createSwap, setSwapId, setSubmitedFormValues, setSwapModalOpen } = useSwapDataUpdate()
@@ -63,6 +67,10 @@ export default function FormWrapper({ children, type }: { children?: React.React
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
         const { destination_address, to } = values
+        setWalletWihdrawDone(false)
+        if (!walletWihdrawDone) {
+            setWalletWihdrawDone(false)
+        }
 
         if (
             to &&
@@ -110,9 +118,19 @@ export default function FormWrapper({ children, type }: { children?: React.React
 
     const handleShowSwapModal = useCallback((value: boolean) => {
         setSwapModalOpen(value)
-        if (!value)
+        if (!value) {
             removeSwapPath(router)
-    }, [router, swapDetails])
+            if (walletWihdrawDone) {
+                setWalletWihdrawDone(false)
+                formikRef?.current?.setFieldValue('amount', 0, true);
+            }
+        }
+    }, [router, swapDetails, walletWihdrawDone])
+
+    const handleWalletWithdrawalSuccess = useCallback(() => {
+        mutateBalances()
+        setWalletWihdrawDone(true)
+    }, [mutateBalances]);
 
     return <>
         <Formik
@@ -140,7 +158,7 @@ export default function FormWrapper({ children, type }: { children?: React.React
                     header={`Complete the swap`}
                     modalId="showSwap">
                     <VaulDrawer.Snap id="item-1">
-                        <SwapDetails type="contained" />
+                        <SwapDetails type="contained" onWalletWithdrawalSuccess={handleWalletWithdrawalSuccess} />
                     </VaulDrawer.Snap>
                 </VaulDrawer>
                 {children}
