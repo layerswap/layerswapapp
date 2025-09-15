@@ -84,7 +84,7 @@ export const ModalContent = (props: ModalContentProps) => {
                 </div>
             )}
 
-            <div className="flex flex-col w-full h-fit max-h-[90dvh] px-4 styled-scroll overflow-x-hidden overflow-y-auto relative pb-3">
+            <div className="flex flex-col w-full h-full max-h-[90dvh] px-4 styled-scroll overflow-x-hidden overflow-y-auto relative pb-3">
                 {typeof children === 'function' ? children({ closeModal, shouldFocus }) : children}
             </div>
         </div>
