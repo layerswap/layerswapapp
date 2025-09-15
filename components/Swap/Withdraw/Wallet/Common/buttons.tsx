@@ -163,8 +163,17 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess } = useWalletWithdrawalState();
 
+    const { provider } = useWallet(swapData.source_network, "withdrawal")
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+
     const handleClick = async () => {
         try {
+            if (!selectedSourceAccount) {
+                throw new Error('Selected source account is undefined')
+            }
+            if (!selectedSourceAccount?.wallet.isActive) {
+                throw new Error('Wallet is not active')
+            }
             setLoading(true)
             setActionStateText("Preparing")
             setSwapId(undefined)

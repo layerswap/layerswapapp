@@ -125,7 +125,9 @@ export function BalanceAccountsProvider({ children }: PickerAccountsProviderProp
         </BalanceAccountsStateContext.Provider>
     )
 }
-
+export function useBalanceAccounts(direction: "from"): AccountIdentityWithWallet[];
+export function useBalanceAccounts(direction: "to"): AccountIdentity[];
+export function useBalanceAccounts(direction: SwapDirection): AccountIdentity[] | AccountIdentityWithWallet[];
 export function useBalanceAccounts(direction: SwapDirection) {
     const values = useContext<BalanceAccountsContextType>(BalanceAccountsStateContext as Context<BalanceAccountsContextType>);
 
@@ -137,6 +139,7 @@ export function useBalanceAccounts(direction: SwapDirection) {
 
 export function useSelectedAccount(direction: "from", providerName: string | undefined): AccountIdentityWithWallet | undefined;
 export function useSelectedAccount(direction: "to", providerName: string | undefined): AccountIdentity | undefined;
+export function useSelectedAccount(direction: SwapDirection, providerName: string | undefined): AccountIdentity | AccountIdentityWithWallet | undefined;
 export function useSelectedAccount(direction: SwapDirection, providerName: string | undefined) {
     const values = useContext<BalanceAccountsContextType>(BalanceAccountsStateContext as Context<BalanceAccountsContextType>);
     if (!providerName) return undefined;
