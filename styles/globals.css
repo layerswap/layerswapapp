@@ -55,6 +55,8 @@
 
   --color-coinbase-primary: rgb(74, 108, 238);
   --color-coinbase-diabled: rgb(25, 26, 69);
+
+  --color-warning-primary: rgb(var(--ls-colors-warning-primary, 255, 201, 74));
 }
 
 @layer base {

@@ -10,6 +10,7 @@ export type ThemeData = {
     headerLogo?: string,
     footerLogo?: string,
     footerLogoHeight?: string,
+    warningPrimary?: string,
 }
 
 export type ThemeColor = {
@@ -112,6 +113,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         buttonTextColor: '228, 229, 240',
         logo: '255, 0, 147',
         footerLogo: 'none',
+        warningPrimary: '255, 201, 74',
         primary: {
             DEFAULT: '228, 37, 117',
             '50': '248, 200, 220',
