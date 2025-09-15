@@ -127,14 +127,14 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             swapDetails?.status === SwapStatus.Completed ||
             swapDetails?.status === SwapStatus.Failed || 
             swapDetails?.status === SwapStatus.Expired ||
-            inputTxStatus === TransactionStatus.Completed
+            swapInputTransaction?.status === 'completed'
         ) {
             posthog?.capture(`${swapDetails?.status}`, {
                 swap_id: swapDetails?.id,
                 status: swapDetails?.status,
             })
         }
-    }, [swapDetails?.status, swapDetails?.id, inputTxStatus])
+    }, [swapDetails?.status, swapDetails?.id, swapInputTransaction])
 
     useEffect(() => {
         if (swapDetails?.status === SwapStatus.Completed || swapDetails.status === SwapStatus.Failed) {
