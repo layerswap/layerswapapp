@@ -16,7 +16,7 @@ type Props = {
     savedTransactionHash?: string;
     chainId?: number;
     swapData: SwapBasicData,
-    refuel: boolean
+    refuel: boolean,
 }
 const TransferTokenButton: FC<Props> = ({
     savedTransactionHash,
@@ -28,7 +28,6 @@ const TransferTokenButton: FC<Props> = ({
     const config = useConfig()
     const [error, setError] = useState<any | undefined>()
     const [loading, setLoading] = useState(false)
-
 
     const { provider } = useWallet(swapData.source_network, "withdrawal")
     const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);

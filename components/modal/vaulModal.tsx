@@ -128,7 +128,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                             </div>
                         }
 
-                        <div className='flex items-center w-full text-left justify-between px-4 sm:pt-3 pb-2'>
+                        <div className='flex items-center w-full text-left justify-between px-4 sm:pt-2 pb-2'>
                             <Drawer.Title className="text-lg text-secondary-text font-semibold w-full">
                                 {header}
                             </Drawer.Title>

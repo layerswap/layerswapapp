@@ -1,10 +1,7 @@
 import { SwapFormValues } from '../DTOs/SwapFormValues';
-import { Dispatch, FC, SetStateAction, useMemo } from 'react';
+import { Dispatch, FC, SetStateAction } from 'react';
 import Modal from '../modal/modal';
-import { Fuel } from 'lucide-react';
 import { roundDecimals, truncateDecimals } from '../utils/RoundDecimals';
-import SubmitButton from '../buttons/submitButton';
-import SecondaryButton from '../buttons/secondaryButton';
 import { useFormikContext } from 'formik';
 import useSWRBalance from '../../lib/balances/useSWRBalance';
 import { useQuoteData } from '@/hooks/useFee';
@@ -19,17 +16,13 @@ type RefuelModalProps = {
 const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal, fee }) => {
     const {
         values,
-        setFieldValue
     } = useFormikContext<SwapFormValues>();
 
     const { to, toAsset: toCurrency, refuel, destination_address } = values || {};
 
     const nativeAsset = to?.token
-    const token_usd_price = fee?.quote?.destination_network?.token?.price_in_usd || nativeAsset?.price_in_usd
-
     const { balances } = useSWRBalance(destination_address, to)
     const destNativeTokenBalance = balances?.find(b => b.token === nativeAsset?.symbol && b.network === to?.name)
-    const amountInUsd = (destNativeTokenBalance && token_usd_price) ? (destNativeTokenBalance.amount * token_usd_price).toFixed(2) : undefined
 
     return (
         <Modal height="fit" show={openModal} setShow={setOpenModal} modalId={"refuel"}>
@@ -38,11 +31,20 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal, fee }) => 
                     <GasIcon className="h-[52px] w-[52px] text-primary-200" aria-hidden="true" />
                 </div>
                 <p className="text-2xl">About Refuel</p>
-                <p className="text-secondary-text">
-                    <span>You can get a small amount of</span> <span>{nativeAsset?.symbol}</span> <span>that can be used for covering gas fees on</span> <span>{to?.display_name}.</span>
+                <p className="text-secondary-text max-w-sm">
+                    {
+                        fee && refuel ?
+                            <>
+                                <span><span>We&apos;ll convert</span> <span>${fee?.refuel?.amount_in_usd}</span> <span>of your transfer into</span> <span>{nativeAsset?.symbol}</span> <span>so you can start using your funds on the destination chain immediately.</span></span>
+                            </>
+                            :
+                            <>
+                                <span><span>We&apos;ll convert a small portion of your transfer into</span> <span>{nativeAsset?.symbol}</span> <span>so you can start using your funds on the destination chain immediately.</span></span>
+                            </>
+                    }
                 </p>
                 {
-                    (values.refuel || destNativeTokenBalance) &&
+                    (refuel || destNativeTokenBalance) &&
                     <div className="flex flex-col space-y-2 w-full bg-secondary-700 overflow-hidden ">
                         {
                             destNativeTokenBalance &&
@@ -52,7 +54,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal, fee }) => 
                                         <span>Current balance</span>
                                     </div>
                                     <p className='text-end'>
-                                        <span>{truncateDecimals(destNativeTokenBalance.amount, nativeAsset?.precision)} {nativeAsset?.symbol}</span> <span className="text-secondary-text">(${amountInUsd})</span>
+                                        <span>{truncateDecimals(destNativeTokenBalance.amount, nativeAsset?.precision)} {nativeAsset?.symbol}</span>
                                     </p>
                                 </div>
                             </div>
@@ -65,7 +67,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal, fee }) => 
                                         You will receive
                                     </div>
                                     <p>
-                                        <span>{roundDecimals(toCurrency.refuel?.amount, nativeAsset.precision)} {nativeAsset?.symbol}</span> <span className="text-secondary-text">(${toCurrency.refuel?.amount_in_usd})</span>
+                                        <span>{roundDecimals(toCurrency.refuel?.amount, nativeAsset.precision)} {nativeAsset?.symbol}</span>
                                     </p>
                                 </div>
                             </div>

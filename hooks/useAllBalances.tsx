@@ -32,10 +32,14 @@ export default function useAllBalances({ direction }: Props) {
         }).flat().filter(item => item !== null) as Array<{ address: string, network: NetworkWithTokens }>
     }, [activeWallets, direction, networks])
 
+    const walletNetwokrsString = useMemo(() => {
+        return walletNetworks.map(item => `${item.address}-${item.network.name}`).join(',')
+    }, [walletNetworks])
+
     useEffect(() => {
         if (walletNetworks)
             useBalanceStore.getState().initAllBalances(walletNetworks)
-    }, [walletNetworks])
+    }, [walletNetwokrsString])
 
     const lastBalancesRef = useRef<Record<string, NetworkBalance> | null>(null)
     const allBalances = useBalanceStore(s => s.allBalances)

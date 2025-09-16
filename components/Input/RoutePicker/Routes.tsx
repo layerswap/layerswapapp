@@ -219,7 +219,7 @@ export const GroupedTokenHeader = ({
         ).values()
     );
 
-    const totalInUSD = tokens.reduce((sum, { route }) => {
+    const tokenBalances = tokens.reduce((acc, { route }) => {
         const tokenSymbol = route.token.symbol;
         const networkName = route.route.name;
         const price = route.token.price_in_usd;
@@ -229,12 +229,12 @@ export const GroupedTokenHeader = ({
             (b) => b.token === tokenSymbol
         );
 
-        if (!balanceEntry) return sum;
-        return sum + balanceEntry.amount * price;
-    }, 0);
+        if (!balanceEntry) return acc;
+        return { sum: acc.sum + balanceEntry.amount * price, hasVale: true };
+    }, { sum: 0, hasVale: false });
 
     const mainToken = tokens[0]?.route.token;
-    const hasLoadedBalances = allbalancesLoaded && Number(totalInUSD) >= 0;
+    const hasLoadedBalances = allbalancesLoaded && tokenBalances.hasVale && Number(tokenBalances.sum) >= 0;
     const showNetworkIcons = hasLoadedBalances && networksWithBalance.length > 0;
 
     return (
@@ -251,7 +251,7 @@ export const GroupedTokenHeader = ({
                     {hasLoadedBalances ? (
                         <div className={`${showNetworkIcons ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "invisible" : "visible"}`}>
                             <span className="text-secondary-text text-sm leading-4 font-medium">
-                                {formatUsd(totalInUSD)}
+                                {formatUsd(tokenBalances.sum)}
                             </span>
 
                             {showNetworkIcons && (
@@ -346,7 +346,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                         />
                         <ImageWithFallback
                             src={route.logo}
-                            alt="Route Logo"
+                            alt="Network Logo"
                             height="12"
                             width="12"
                             loading="eager"
@@ -354,9 +354,9 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                             className="h-3.5 w-3.5 absolute left-3.5 top-3.5 object-contain rounded border-1 border-secondary-300"
                         />
                     </div>
-                    <span className="ml-3 flex flex-col font-medium text-primary-text overflow-hidden min-w-0 max-w-3/5">
+                    <span className="ml-3 flex flex-col grow font-medium text-primary-text overflow-hidden min-w-0 max-w-3/5">
                         <span className="leading-5">{token.symbol}</span>
-                        <span className="text-secondary-text font-normal text-sm leading-4 truncate whitespace-nowrap max-w-[60px] sm:max-w-[100px]">
+                        <span className="text-secondary-text grow font-normal text-sm leading-4 truncate whitespace-nowrap">
                             {route.display_name}
                         </span>
                     </span>
@@ -364,7 +364,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
             ) : (
                 <SelectedRoutePlaceholder placeholder={placeholder} />
             )}
-            <span className="absolute right-0 px-1 pr-2 pointer-events-none text-primary-text">
+            <span className="px-1 pr-2 pointer-events-none text-primary-text">
                 <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
             </span>
         </span>
@@ -377,7 +377,7 @@ export const SelectedRoutePlaceholder = ({ placeholder }: { placeholder: string 
             <RoutePickerIcon className="w-7 h-7" />
         </div>
         <span className="flex text-secondary-text text-base font-normal leading-5 flex-auto items-center max-w-2/3">
-            <span className="ml-2 text-sm sm:text-base sm:leading-5">{placeholder}</span>
+            <span className="ml-2 text-sm sm:text-base sm:leading-5 whitespace-nowrap">{placeholder}</span>
         </span>
     </>
 )

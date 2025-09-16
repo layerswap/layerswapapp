@@ -7,7 +7,6 @@ import useWallet from "@/hooks/useWallet";
 import SourcePicker from "@/components/Input/SourcePicker";
 import DestinationPicker from "@/components/Input/DestinationPicker";
 import QuoteDetails from "@/components/FeeDetails";
-import dynamic from "next/dynamic";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { useQueryState } from "@/context/query";
 import { Widget } from "@/components/Widget/Index";
@@ -26,7 +25,6 @@ import { useValidationContext } from "@/context/validationContext";
 import { InsufficientBalanceWarning } from "@/components/insufficientBalance";
 import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { useSwapDataState } from "@/context/swap";
-import ResizablePanel from "@/components/ResizablePanel";
 import RefuelToggle from "@/components/FeeDetails/Refuel";
 import ReserveGasNote from "@/components/ReserveGasNote";
 import RefuelModal from "@/components/FeeDetails/RefuelModal";
@@ -78,16 +76,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
         }
     }, [toAsset, destination, source, fromAsset]);
 
-    useEffect(() => {
-        if (values.refuel && minAllowedAmount && (Number(values.amount) < minAllowedAmount)) {
-            updateForm({
-                formDataKey: 'amount',
-                formDataValue: minAllowedAmount.toString(),
-                setFieldValue
-            });
-        }
-    }, [values.refuel, destination, minAllowedAmount]);
-
     const handleReserveGas = useCallback((nativeTokenBalance: TokenBalance, networkGas: number) => {
         if (nativeTokenBalance && networkGas)
             updateForm({
@@ -104,14 +92,14 @@ const NetworkForm: FC<Props> = ({ partner }) => {
         && !swapModalOpen
         && Number(amount) > 0
         && Number(walletBalanceAmount) < Number(amount)
-    
+
     return (
         <>
             <DepositMethodComponent />
             <Form className="h-full grow flex flex-col justify-between">
                 <Widget.Content>
-                    <div className="w-full max-sm:min-h-[79svh] flex flex-col justify-between">
-                        <div className="mb-3">
+                    <div className="w-full flex flex-col justify-between">
+                        <div>
                             <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
                                 {
                                     !(query?.hideFrom && values?.from) && <SourcePicker
@@ -138,40 +126,40 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 }
                             </div>
                         </div>
-                        <ResizablePanel>
-                            <div className="space-y-3">
-                                <>
-                                    {
-                                        showInsufficientBalanceWarning &&
-                                        <InsufficientBalanceWarning />
-                                    }
-                                </>
-                                {
-                                    Number(values.amount) > 0 &&
-                                    <ReserveGasNote
-                                        maxAllowedAmount={minAllowedAmount}
-                                        minAllowedAmount={maxAllowedAmount}
-                                        onSubmit={handleReserveGas}
-                                    />
-                                }
-                                {
-                                    quote && values.toAsset?.refuel && !query.hideRefuel &&
-                                    <RefuelToggle
-                                        fee={quote}
-                                        onButtonClick={() => setOpenRefuelModal(true)}
-                                    />
-                                }
-                                {
-                                    routeValidation.message
-                                        ? <ValidationError />
-                                        : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
-                                }
-                            </div>
-                        </ResizablePanel>
-
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
+                    <div className="mb-3">
+                        <div className="space-y-3">
+                            <>
+                                {
+                                    showInsufficientBalanceWarning &&
+                                    <InsufficientBalanceWarning />
+                                }
+                            </>
+                            {
+                                Number(values.amount) > 0 &&
+                                <ReserveGasNote
+                                    maxAllowedAmount={minAllowedAmount}
+                                    minAllowedAmount={maxAllowedAmount}
+                                    onSubmit={handleReserveGas}
+                                />
+                            }
+                            {
+                                values.toAsset?.refuel && !query.hideRefuel &&
+                                <RefuelToggle
+                                    quote={quote}
+                                    onButtonClick={() => setOpenRefuelModal(true)}
+                                    minAllowedAmount={minAllowedAmount}
+                                />
+                            }
+                            {
+                                routeValidation.message
+                                    ? <ValidationError />
+                                    : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                            }
+                        </div>
+                    </div>
                     <FormButton
                         shouldConnectWallet={shouldConnectWallet}
                         values={values}

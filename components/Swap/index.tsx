@@ -1,4 +1,4 @@
-import { FC, useCallback } from 'react'
+import { FC, useCallback, useEffect } from 'react'
 import { Widget } from '../Widget/Index';
 import { useSwapDataState } from '../../context/swap';
 import Withdraw from './Withdraw';
@@ -11,9 +11,10 @@ import ManualWithdraw from './Withdraw/ManualWithdraw';
 
 type Props = {
     type: "widget" | "contained",
+    onWalletWithdrawalSuccess?: () => void,
 }
 
-const SwapDetails: FC<Props> = ({ type }) => {
+const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess }) => {
     const { swapDetails, swapBasicData, quote, refuel, depositActionsResponse } = useSwapDataState()
 
     const swapStatus = swapDetails?.status || SwapStatus.UserTransferPending;
@@ -46,7 +47,7 @@ const SwapDetails: FC<Props> = ({ type }) => {
                     (
                         swapBasicData?.use_deposit_address === true
                             ? <ManualWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} />
-                            : <Withdraw type={type} />
+                            : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} />
                     )
                     :
                     <div className='space-y-3'>
