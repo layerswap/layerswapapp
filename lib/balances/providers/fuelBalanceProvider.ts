@@ -59,11 +59,12 @@ export class FuelBalanceProvider {
 
                 const balanceObj: TokenBalance = {
                     network: network.name,
-                    amount: formatAmount(Number(balance?.amount || 0), token.decimals),
+                    amount: balance?.amount ? formatAmount(Number(balance?.amount), token.decimals) : undefined,
                     decimals: token.decimals,
                     isNativeCurrency: network.token?.symbol === token.symbol,
                     token: token.symbol,
-                    request_time: new Date().toJSON()
+                    request_time: new Date().toJSON(),
+                    error: balance?.amount === undefined ? `Could not fetch balance for ${token.symbol}` : undefined
                 }
 
                 balances = [
@@ -75,6 +76,7 @@ export class FuelBalanceProvider {
 
         } catch (e) {
             console.log(e)
+            throw new Error(e)
         }
 
         return balances

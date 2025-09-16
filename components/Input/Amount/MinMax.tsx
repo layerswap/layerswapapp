@@ -64,7 +64,7 @@ const MinMax = (props: MinMaxProps) => {
     const handleSetHalfAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
         e.stopPropagation()
-        if (!walletBalance)
+        if (!walletBalance?.amount)
             throw new Error("Wallet balance is not available");
         handleSetValue((walletBalance?.amount / 2).toString())
     }
@@ -77,7 +77,7 @@ const MinMax = (props: MinMaxProps) => {
         handleSetValue(maxAllowedAmount.toString())
     }
     const halfOfBalance = (walletBalance?.amount || 0) / 2;
-    const showMaxTooltip = depositMethod === 'wallet' && walletBalance && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount)
+    const showMaxTooltip = depositMethod === 'wallet' && walletBalance?.amount && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount)
 
     return (
         <div className="flex gap-1.5 group text-xs leading-4" onMouseLeave={() => onActionHover(undefined)}>

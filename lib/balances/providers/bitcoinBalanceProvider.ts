@@ -20,41 +20,34 @@ export class BitcoinBalanceProvider {
 
         if (!network?.tokens) return
 
+        const token = network.tokens.find(t => t.symbol == 'BTC')
         try {
+            const utxos = await fetchUtxos(address, network.name)
+            const balanceSats = sumUtxos(utxos)
+            const formattedBalance = formatBtc(balanceSats)
 
-            const token = network.tokens.find(t => t.symbol == 'BTC')
-            try {
+            if (!token) throw new Error(`Token not found for network ${network.name}`)
 
-                const utxos = await fetchUtxos(address, network.name)
-                const balanceSats = sumUtxos(utxos)
-                const formattedBalance = formatBtc(balanceSats)
-
-                if (!token) throw new Error(`Token not found for network ${network.name}`)
-
-                const balanceObj: TokenBalance = {
-                    network: network.name,
-                    amount: formattedBalance,
-                    decimals: token.decimals,
-                    isNativeCurrency: network.token?.symbol === token.symbol,
-                    token: token.symbol,
-                    request_time: new Date().toJSON()
-                }
-                balances.push(balanceObj)
+            const balanceObj: TokenBalance = {
+                network: network.name,
+                amount: formattedBalance,
+                decimals: token.decimals,
+                isNativeCurrency: network.token?.symbol === token.symbol,
+                token: token.symbol,
+                request_time: new Date().toJSON()
             }
-            catch (e) {
-                balances.push({
-                    network: network.name,
-                    amount: 0,
-                    decimals: token?.decimals || 0,
-                    isNativeCurrency: network.token?.symbol === 'BTC',
-                    token: token?.symbol || 'BTC',
-                    request_time: new Date().toJSON()
-                })
-                console.log(e)
-            }
-
-
-        } catch (e) {
+            balances.push(balanceObj)
+        }
+        catch (e) {
+            balances.push({
+                network: network.name,
+                amount: undefined,
+                decimals: token?.decimals || 0,
+                isNativeCurrency: network.token?.symbol === 'BTC',
+                token: token?.symbol || 'BTC',
+                request_time: new Date().toJSON(),
+                error: e instanceof Error ? e.message : String(e)
+            })
             console.log(e)
         }
 

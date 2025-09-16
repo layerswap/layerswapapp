@@ -1,5 +1,4 @@
-import { TokenBalance } from "../../../Models/Balance";
-import { NetworkWithTokens } from "../../../Models/Network";
+import { NetworkWithTokens } from "@/Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
 
@@ -14,21 +13,48 @@ export class ZkSyncBalanceProvider {
 
         if (!network?.tokens) return
 
-        const result = await client.getAccountInfo(network.node_url, address);
-        const zkSyncBalances = tokens.map((currency) => {
-            const amount = currency && result.committed.balances[currency.symbol]
+        try {
+            const result = await client.getAccountInfo(network.node_url, address);
+            const zkSyncBalances = tokens.map((currency) => {
+                const amount = currency && result.committed.balances[currency.symbol]
+                if (amount) {
+                    return ({
+                        network: network.name,
+                        token: currency.symbol,
+                        amount: formatAmount(amount, Number(currency?.decimals)),
+                        request_time: new Date().toJSON(),
+                        decimals: Number(currency?.decimals),
+                        isNativeCurrency: true
+                    })
+                }
+                else {
+                    return {
+                        network: network.name,
+                        token: currency.symbol,
+                        amount: undefined,
+                        request_time: new Date().toJSON(),
+                        decimals: Number(currency?.decimals),
+                        isNativeCurrency: true,
+                        error: `Could not fetch balance for ${currency.symbol}`
+                    }
+                }
+            });
 
-            return ({
+            return zkSyncBalances
+        }
+        catch (e) {
+            console.log(e)
+            return tokens.map((currency) => ({
                 network: network.name,
                 token: currency.symbol,
-                amount: formatAmount(amount, Number(currency?.decimals)),
+                amount: undefined,
                 request_time: new Date().toJSON(),
                 decimals: Number(currency?.decimals),
-                isNativeCurrency: true
-            })
-        });
+                isNativeCurrency: true,
+                error: `Could not fetch balance for ${currency.symbol}`
+            }))
+        }
 
-        return zkSyncBalances
     }
 }
 

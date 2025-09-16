@@ -77,7 +77,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     }, [toAsset, destination, source, fromAsset]);
 
     const handleReserveGas = useCallback((nativeTokenBalance: TokenBalance, networkGas: number) => {
-        if (nativeTokenBalance && networkGas)
+        if (nativeTokenBalance.amount && networkGas)
             updateForm({
                 formDataKey: 'amount',
                 formDataValue: (nativeTokenBalance?.amount - networkGas).toString(),

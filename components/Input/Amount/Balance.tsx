@@ -1,9 +1,9 @@
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo } from "react";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import useSWRBalance from "@/lib/balances/useSWRBalance";
-import { motion } from "framer-motion";
 import useWallet from "@/hooks/useWallet";
+import InfoIcon from "@/components/icons/InfoIcon";
 
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
@@ -26,7 +26,12 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     return <div className="w-4/5 -top-[1px] relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs text-secondary-text leading-[18px] font-normal">
         {
             isBalanceLoading ?
-                <div className='h-[10px] w-12 inline-flex bg-gray-500 rounded-xs animate-pulse' />
+                <div className='h-[10px] w-fit px-4 inline-flex bg-gray-500 rounded-xs animate-pulse' />
+                : !truncatedBalance ?
+                    <div className="flex items-center justify-center gap-1 text-orange-400">
+                        <InfoIcon className='w-3 h-3' />
+                        <span>Network issue</span>
+                    </div>
                 : (network && token && truncatedBalance) ?
                     <span>{truncatedBalance}</span>
                     : <span></span>

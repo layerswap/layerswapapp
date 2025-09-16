@@ -51,7 +51,7 @@ export class SolanaBalanceProvider {
                     result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
                 } else {
                     const res = await connection.getBalance(walletPublicKey)
-                    result = res ? formatAmount(Number(res), token.decimals) : 0
+                    if (res) result = formatAmount(Number(res), token.decimals)
                 }
 
                 if (result != null && !isNaN(result)) {
@@ -73,6 +73,19 @@ export class SolanaBalanceProvider {
             }
             catch (e) {
                 console.log(e)
+                const balance = {
+                    network: network.name,
+                    token: token.symbol,
+                    amount: undefined,
+                    request_time: new Date().toJSON(),
+                    decimals: Number(token?.decimals),
+                    isNativeCurrency: false,
+                    error: e instanceof Error ? e.message : 'Could not fetch balance'
+                }
+                balances = [
+                    ...balances,
+                    balance
+                ]
             }
         }
 

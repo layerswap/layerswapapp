@@ -22,11 +22,12 @@ export type GasProps = {
 
 export type TokenBalance = {
     network: string,
-    amount: number,
+    amount: number | undefined,
     decimals: number,
     isNativeCurrency: boolean,
     token: string,
     request_time: string,
+    error?: string
 }
 
 export type NetworkBalance = {

@@ -1,8 +1,8 @@
-import { TokenBalance } from "../../../Models/Balance";
-import { NetworkWithTokens } from "../../../Models/Network";
-import formatAmount from "../../formatAmount";
-import Erc20Abi from '../../abis/ERC20.json'
-import KnownInternalNames from "../../knownIds";
+import { TokenBalance } from "@/Models/Balance";
+import { NetworkWithTokens } from "@/Models/Network";
+import formatAmount from "@/lib/formatAmount";
+import Erc20Abi from '@/lib/abis/ERC20.json'
+import KnownInternalNames from "@/lib/knownIds";
 import { insertIfNotExists } from "./helpers";
 
 export class StarknetBalanceProvider {
@@ -47,10 +47,23 @@ export class StarknetBalanceProvider {
                     ...balances,
                     balance
                 ]
-                
+
             }
             catch (e) {
                 console.log(e)
+                const balance = {
+                    network: network.name,
+                    token: token.symbol,
+                    amount: undefined,
+                    request_time: new Date().toJSON(),
+                    decimals: Number(token?.decimals),
+                    isNativeCurrency: false,
+                    error: e instanceof Error ? e.message : 'Could not fetch balance'
+                }
+                balances = [
+                    ...balances,
+                    balance
+                ]
             }
         }
         return balances

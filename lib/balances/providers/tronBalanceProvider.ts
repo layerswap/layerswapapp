@@ -19,8 +19,6 @@ export class TronBalanceProvider {
             try {
                 const balance = await resolveBalance({ network, address, token, provider })
 
-                if (!balance) return
-
                 balances = [
                     ...balances,
                     balance,
@@ -70,7 +68,15 @@ const getNativeAssetBalance = async ({ network, token, address, provider }: GetB
         })
     }
     catch (e) {
-        return null;
+        return {
+            network: network.name,
+            token: token.symbol,
+            amount: undefined,
+            request_time: new Date().toJSON(),
+            decimals: Number(token?.decimals),
+            isNativeCurrency: true,
+            error: e instanceof Error ? e.message : 'Could not fetch balance'
+        }
     }
 }
 
@@ -95,6 +101,14 @@ const getTRC20Balance = async ({ network, token, address, provider }: GetBalance
         return balance
     }
     catch (e) {
-        return null;
+        return {
+            network: network.name,
+            token: token.symbol,
+            amount: undefined,
+            request_time: new Date().toJSON(),
+            decimals: Number(token?.decimals),
+            isNativeCurrency: false,
+            error: e instanceof Error ? e.message : 'Could not fetch balance'
+        }
     }
 }

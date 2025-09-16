@@ -40,13 +40,21 @@ export class ParadexBalanceProvider {
                 }
                 catch (e) {
                     console.log(`Error fetching balance for token ${token.symbol}:`, e)
+                    result.push({
+                        network: network.name,
+                        token: token.symbol,
+                        amount: undefined,
+                        request_time: new Date().toJSON(),
+                        decimals: Number(token?.decimals),
+                        isNativeCurrency: false,
+                        error: e instanceof Error ? e.message : 'Could not fetch balance'
+                    })
                 }
             }
             return result
         }
         catch (e) {
             console.log(e)
-            throw e
         }
     }
 }

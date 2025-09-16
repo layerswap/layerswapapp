@@ -99,7 +99,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
 
     const selectedAccount = balanceAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(item.name));
     const { balances, totalInUSD } = useBalance(selectedAccount?.address, item)
-    const tokensWithBalance = balances?.filter(b => b.amount > 0)
+    const tokensWithBalance = balances?.filter(b => b.amount && b.amount > 0)
         ?.map(b => b.token);
     const filteredNetworkTokens = item?.tokens?.filter(token =>
         tokensWithBalance?.includes(token.symbol)
@@ -189,7 +189,7 @@ export const GroupedTokenHeader = ({
 
                     const networkBalances = allBalances?.[networkRoute.name];
                     const balanceEntry = networkBalances?.balances?.find(
-                        (b) => b.token === tokenSymbol && b.amount >= 0
+                        (b) => b.token === tokenSymbol && b.amount && b.amount >= 0
                     );
 
                     return balanceEntry ? [networkRoute.name, networkRoute] as const : null;
@@ -208,7 +208,7 @@ export const GroupedTokenHeader = ({
             (b) => b.token === tokenSymbol
         );
 
-        if (!balanceEntry) return acc;
+        if (!balanceEntry?.amount) return acc;
         return { sum: acc.sum + balanceEntry.amount * price, hasVale: true };
     }, { sum: 0, hasVale: false });
 

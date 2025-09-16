@@ -12,24 +12,39 @@ export class ImmutableXBalanceProvider {
         const axios = (await import("axios")).default
 
         if (!network?.tokens && !network.token) return
+        try {
+            const res: BalancesResponse = await axios.get(`${network?.node_url}/v2/balances/${address}`).then(r => r.data)
+            const tokens = insertIfNotExists(network.tokens || [], network.token)
 
-        const res: BalancesResponse = await axios.get(`${network?.node_url}/v2/balances/${address}`).then(r => r.data)
-        const tokens = insertIfNotExists(network.tokens || [], network.token)
+            const balances = tokens?.map(asset => {
+                const balance = res.result.find(r => r.symbol === asset.symbol)
+                if (balance?.balance === undefined) {
+                    return {
+                        network: network.name,
+                        amount: undefined,
+                        decimals: asset.decimals,
+                        isNativeCurrency: false,
+                        token: asset.symbol,
+                        request_time: new Date().toJSON(),
+                        error: `Could not fetch balance for ${asset.symbol}`
+                    }
+                }
+                return {
+                    network: network.name,
+                    amount: formatAmount(balance?.balance, asset.decimals),
+                    decimals: asset.decimals,
+                    isNativeCurrency: false,
+                    token: asset.symbol,
+                    request_time: new Date().toJSON(),
+                }
+            })
 
-        const balances = tokens?.map(asset => {
-            const balance = res.result.find(r => r.symbol === asset.symbol)
-
-            return {
-                network: network.name,
-                amount: formatAmount(balance?.balance, asset.decimals),
-                decimals: asset.decimals,
-                isNativeCurrency: false,
-                token: asset.symbol,
-                request_time: new Date().toJSON(),
-            }
-        })
-
-        return balances
+            return balances
+        }
+        catch (e) {
+            console.log(e)
+            throw new Error(e)
+        }
     }
 }
 

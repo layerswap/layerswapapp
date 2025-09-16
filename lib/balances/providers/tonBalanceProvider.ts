@@ -1,10 +1,9 @@
-import { TokenBalance } from "../../../Models/Balance";
-import { Network, NetworkWithTokens, Token } from "../../../Models/Network";
-import formatAmount from "../../formatAmount";
-
-import KnownInternalNames from "../../knownIds";
-import retryWithExponentialBackoff from "../../retry";
-import tonClient from "../../wallets/ton/client";
+import { TokenBalance } from "@/Models/Balance";
+import { Network, NetworkWithTokens, Token } from "@/Models/Network";
+import formatAmount from "@/lib/formatAmount";
+import KnownInternalNames from "@/lib/knownIds";
+import retryWithExponentialBackoff from "@/lib/retry";
+import tonClient from "@/lib/wallets/ton/client";
 import { insertIfNotExists } from "./helpers";
 
 export class TonBalanceProvider {
@@ -20,8 +19,6 @@ export class TonBalanceProvider {
             try {
                 const balance = await resolveBalance({ network, address, token })
 
-                if (!balance) return
-
                 balances = [
                     ...balances,
                     balance,
@@ -30,6 +27,7 @@ export class TonBalanceProvider {
             }
             catch (e) {
                 console.log(e)
+                throw new Error(e)
             }
         }
 
@@ -72,11 +70,19 @@ const getNativeAssetBalance = async ({ network, token, address }: { network: Net
             amount: formatAmount(tonBalance.toString(), Number(token?.decimals)),
             request_time: new Date().toJSON(),
             decimals: Number(token?.decimals),
-            isNativeCurrency: false,
+            isNativeCurrency: true,
         })
     }
     catch (e) {
-        return null;
+        return {
+            network: network.name,
+            token: token.symbol,
+            amount: undefined,
+            request_time: new Date().toJSON(),
+            decimals: Number(token?.decimals),
+            isNativeCurrency: true,
+            error: e instanceof Error ? e.message : 'Could not fetch balance'
+        };
     }
 }
 
@@ -113,6 +119,14 @@ const getJettonBalance = async ({ network, token, address }: { network: Network,
         return balance
     }
     catch (e) {
-        return null;
+        return {
+            network: network.name,
+            token: token.symbol,
+            amount: undefined,
+            request_time: new Date().toJSON(),
+            decimals: Number(token?.decimals),
+            isNativeCurrency: false,
+            error: e instanceof Error ? e.message : 'Could not fetch balance'
+        };
     }
 }

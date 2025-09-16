@@ -1,15 +1,15 @@
 
 import { Chain, PublicClient } from "viem"
-import { TokenBalance } from "../../../Models/Balance"
-import { Network, NetworkType, NetworkWithTokens, Token } from "../../../Models/Network"
-import formatAmount from "../../formatAmount"
+import { TokenBalance } from "@/Models/Balance"
+import { Network, NetworkType, NetworkWithTokens, Token } from "@/Models/Network"
+import formatAmount from "@/lib/formatAmount"
 import { http, createConfig } from '@wagmi/core'
 import { erc20Abi } from 'viem'
 import { multicall } from '@wagmi/core'
 import { getBalance, GetBalanceReturnType } from '@wagmi/core'
-import resolveChain from "../../resolveChain"
-import BalanceGetterAbi from "../../abis/BALANCEGETTERABI.json"
-import KnownInternalNames from "../../knownIds"
+import resolveChain from "@/lib/resolveChain"
+import BalanceGetterAbi from "@/lib/abis/BALANCEGETTERABI.json"
+import KnownInternalNames from "@/lib/knownIds"
 
 export class EVMBalanceProvider {
     supportsNetwork(network: NetworkWithTokens): boolean {
@@ -70,7 +70,7 @@ export class EVMBalanceProvider {
             return res.concat(erc20Balances, nativeBalance ? [nativeBalance] : [])
         }
         catch (e) {
-            console.log(e)
+            throw new Error(e)
         }
     }
 
@@ -99,30 +99,43 @@ export class EVMBalanceProvider {
 
             const resolvedERC20Balances = network.tokens.filter(t => t.contract)?.map((token, index) => {
                 const amount = balances[1][index]
-                return {
+
+                if (amount >= 0) return {
                     network: network.name,
                     token: token.symbol,
-                    amount: amount ? formatAmount(amount, token.decimals) : 0,
+                    amount: formatAmount(amount, token.decimals),
                     request_time: new Date().toJSON(),
                     decimals: token.decimals,
                     isNativeCurrency: false,
-                } as TokenBalance
+                }
+                else {
+                    return {
+                        network: network.name,
+                        token: token.symbol,
+                        amount: undefined,
+                        request_time: new Date().toJSON(),
+                        decimals: token.decimals,
+                        isNativeCurrency: false,
+                        error: `Could not fetch ${token.symbol} balance`
+                    }
+                }
             })
 
             const nativeTokenBalance = balances?.[1]?.[balances?.[1]?.length - 1]
 
-            const nativeTokenResolvedBalance = network.token ? {
+            const nativeTokenResolvedBalance: TokenBalance | undefined = network.token?.decimals ? {
                 network: network.name,
                 token: network.token?.symbol,
-                amount: nativeTokenBalance ? formatAmount(nativeTokenBalance, network.token?.decimals) : 0,
+                amount: nativeTokenBalance ? formatAmount(nativeTokenBalance, network.token?.decimals) : undefined,
                 request_time: new Date().toJSON(),
                 decimals: network.token?.decimals,
                 isNativeCurrency: true,
+                error: nativeTokenBalance === undefined ? "Could not fetch native token balance" : undefined
             } : undefined
 
-            const res = [...resolvedERC20Balances, nativeTokenResolvedBalance]
+            const res = [...resolvedERC20Balances, nativeTokenResolvedBalance].filter((b): b is TokenBalance => b !== undefined)
 
-            return res.filter((b): b is TokenBalance => b !== null)
+            return res
         }
         catch (e) {
             console.log(e)

@@ -3,18 +3,7 @@ import { NetworkBalance } from "../../Models/Balance";
 import { IBalanceProvider } from "../../Models/BalanceProvider";
 import { NetworkWithTokens } from "../../Models/Network";
 import { truncateDecimals } from "../../components/utils/RoundDecimals";
-import { BitcoinBalanceProvider } from "./providers/bitcoinBalanceProvider";
-import { EVMBalanceProvider } from "./providers/evmBalanceProvider";
-import { FuelBalanceProvider } from "./providers/fuelBalanceProvider";
-import { ImmutableXBalanceProvider } from "./providers/immutableXBalanceProvider";
-import { LoopringBalanceProvider } from "./providers/loopringBalanceProvider";
-import { ParadexBalanceProvider } from "./providers/paradexBalanceProvider";
-import { QueryBalanceProvider } from "./providers/queryBalanceProvider";
-import { SolanaBalanceProvider } from "./providers/solanaBalanceProvider";
-import { StarknetBalanceProvider } from "./providers/starknetBalanceProvider";
-import { TonBalanceProvider } from "./providers/tonBalanceProvider";
-import { TronBalanceProvider } from "./providers/tronBalanceProvider";
-import { ZkSyncBalanceProvider } from "./providers/zkSyncBalanceProvider";
+import { BitcoinBalanceProvider, EVMBalanceProvider, FuelBalanceProvider, ImmutableXBalanceProvider, LoopringBalanceProvider, ParadexBalanceProvider, QueryBalanceProvider, SolanaBalanceProvider, StarknetBalanceProvider, TonBalanceProvider, TronBalanceProvider, ZkSyncBalanceProvider } from "./providers";
 
 export class BalanceResolver {
 
@@ -47,7 +36,7 @@ export class BalanceResolver {
                 const token = network.tokens.find(t => t?.symbol === b?.token);
                 const tokenPriceInUsd = token?.price_in_usd || 0;
                 const tokenPrecision = token?.precision || 0;
-                const formattedBalance = Number(truncateDecimals(b?.amount, tokenPrecision));
+                const formattedBalance = b.amount ? Number(truncateDecimals(b?.amount, tokenPrecision)) : 0;
                 return acc + (formattedBalance * tokenPriceInUsd);
             }, 0)
             return { balances, totalInUSD };

@@ -44,10 +44,10 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal, fee }) => 
                     }
                 </p>
                 {
-                    (refuel || destNativeTokenBalance) &&
+                    (refuel || destNativeTokenBalance?.amount) &&
                     <div className="flex flex-col space-y-2 w-full bg-secondary-700 overflow-hidden ">
                         {
-                            destNativeTokenBalance &&
+                            destNativeTokenBalance?.amount &&
                             <div className="gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3 bg-secondary-500 rounded-xl">
                                 <div className="flex items-center justify-between w-full">
                                     <div className="text-secondary-text">
