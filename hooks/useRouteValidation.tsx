@@ -7,7 +7,7 @@ import { useFormikContext } from 'formik';
 import useWallet from './useWallet';
 import { QuoteError } from './useFee';
 
-const ICON_CLASS_YELLOW = 'w-4 h-4 text-warning-primary';
+const ICON_CLASS_YELLOW = 'w-5 h-5 text-warning-primary';
 
 interface ValidationDetails {
     title?: string;
