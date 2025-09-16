@@ -61,8 +61,7 @@ const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal, swapData })
                 source_network &&
                 <div className="group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-xs mt-1.5 text-primary-text bg-secondary-500 disabled:cursor-not-allowed h-12 leading-4 font-medium w-full py-7">
                     <AddressWithIcon
-                        addressItem={{ address: accountAddress, group: AddressGroup.ConnectedWallet }}
-                        connectedWallet={selectedSourceAccount}
+                        addressItem={{ address: accountAddress, group: AddressGroup.ConnectedWallet, wallet: selectedSourceAccount.wallet }}
                         network={source_network}
                         onDisconnect={() => selectedSourceAccount.wallet?.disconnect && selectedSourceAccount.wallet?.disconnect()}
                     />
