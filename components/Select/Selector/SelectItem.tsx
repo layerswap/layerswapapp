@@ -46,26 +46,26 @@ const Title = ({ children, className }: SelectItemTitleProps) => {
 
 type SelectItemDetailedTitleProps = {
     className?: string;
-    children?: JSX.Element | JSX.Element[];
-    title: string | React.ReactNode;
-    secondary: string | JSX.Element | JSX.Element[];
+    children?: ReactNode;
+    title: ReactNode;
+    secondary: ReactNode;
     secondaryImageAlt: string;
     secondaryLogoSrc: string | undefined;
     logoClassName?: string;
 }
 
 const DetailedTitle = ({ children, className, title, secondary, secondaryImageAlt, secondaryLogoSrc, logoClassName }: SelectItemDetailedTitleProps) => {
-    return <Title className={`w-full grid grid-cols-9 ${className}`}>
-        <div className="col-span-5 sm:col-span-7 truncate flex flex-col gap-0.5 leading-5 align-middle space-y-0.5 font-medium">
+    return <Title className={clsx("w-full grid grid-cols-9", className)}>
+        <div className="col-span-5 sm:col-span-7 truncate flex flex-col gap-1 leading-5 align-middle font-medium">
             <span className="align-middle leading-5 text-base">{title}</span>
             <div className="flex items-center space-x-1 align-middle">
                 {secondaryLogoSrc && <ImageWithFallback
                     src={secondaryLogoSrc}
                     alt={secondaryImageAlt}
-                    height="36"
-                    width="36"
+                    height="16"
+                    width="16"
                     loading="eager"
-                    className={`h-4 w-4 object-contain rounded-[4px] ${logoClassName}`}
+                    className={clsx("h-4 w-4 object-contain rounded", logoClassName)}
                 />}
                 <span className="text-secondary-text text-xs whitespace-nowrap">
                     {secondary}
