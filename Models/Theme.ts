@@ -10,12 +10,13 @@ export type ThemeData = {
     headerLogo?: string,
     footerLogo?: string,
     footerLogoHeight?: string,
-    warningPrimary?: string,
+    warning?: StatusColor,
+    error?: StatusColor,
+    success?: StatusColor,
 }
 
 export type ThemeColor = {
     DEFAULT: string;
-    50: string;
     100: string;
     200: string;
     300: string;
@@ -25,9 +26,13 @@ export type ThemeColor = {
     700: string;
     800: string;
     900: string;
-    950?: string;
     text: string,
     textMuted?: string,
+}
+
+export type StatusColor = {
+    Foreground: string;
+    Background: string;
 }
 
 export const THEME_COLORS: { [key: string]: ThemeData } = {
@@ -40,7 +45,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         footerLogo: 'none',
         primary: {
             DEFAULT: '46, 236, 255',
-            '50': '230, 253, 255',
             '100': '209, 251, 255',
             '200': '168, 247, 255',
             '300': '128, 243, 255',
@@ -55,7 +59,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         },
         secondary: {
             DEFAULT: '17, 29, 54',
-            '50': '49, 60, 155',
             '100': '46, 59, 147',
             '200': '35, 42, 112',
             '300': '32, 41, 101',
@@ -65,7 +68,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             '700': '17, 29, 54',
             '800': '15, 25, 47',
             '900': '12, 21, 39',
-            '950': '11, 17, 35',
             'text': '209, 251, 255',
         },
     },
@@ -77,7 +79,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         footerLogo: 'none',
         primary: {
             DEFAULT: '228, 37, 117',
-            '50': '248, 200, 220',
             '100': '246, 182, 209',
             '200': '241, 146, 186',
             '300': '237, 110, 163',
@@ -92,7 +93,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         },
         secondary: {
             DEFAULT: '240, 240, 240',
-            '50': '49, 60, 155',
             '100': '46, 59, 147',
             '200': '134, 134, 134',
             '300': '139, 139, 139',
@@ -102,7 +102,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             '700': '240, 240, 240',
             '800': '243, 244, 246',
             '900': '250, 248, 248',
-            '950': '255, 255, 255',
             'text': '108, 108, 108',
         },
     },
@@ -111,27 +110,36 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         placeholderText: '118, 128, 147',
         actionButtonText: '220, 2, 90',
         buttonTextColor: '228, 229, 240',
-        logo: '255, 0, 147',
+        logo: '255, 50, 114',
         footerLogo: 'none',
-        warningPrimary: '255, 201, 74',
+        warning: {
+            Foreground: '255, 201, 74',
+            Background: '47, 43, 29',
+        },
+        error: {
+            Foreground: '255, 97, 97',
+            Background: '46, 27, 27',
+        },
+        success: {
+            Foreground: '89, 224, 125',
+            Background: '14, 43, 22',
+        },
         primary: {
-            DEFAULT: '228, 37, 117',
-            '50': '248, 200, 220',
-            '100': '255, 158, 187',
-            '200': '245, 108, 149',
-            '300': '224, 85, 127',
-            '400': '224, 63, 111',
-            '500': '188, 42, 88',
-            '600': '173, 28, 71',
-            '700': '140, 22, 58',
-            '800': '88, 14, 37',
+            DEFAULT: '204, 45, 93',
+            '100': '255, 148, 176',
+            '200': '245, 103, 141',
+            '300': '235, 84, 129',
+            '400': '229, 64, 114',
+            '500': '204, 45, 93',
+            '600': '178, 29, 74',
+            '700': ' 143, 23, 59',
+            '800': '89, 14, 37',
             '900': '46, 7, 19',
             'text': '225, 227, 230',
             'textMuted': '86, 97, 123',
         },
         secondary: {
             DEFAULT: '17, 29, 54',
-            '50': '49, 60, 155',
             '100': '60, 72, 97',
             '200': '52, 63, 87',
             '300': '40, 50, 71',
@@ -141,7 +149,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             '700': '14, 21, 36',
             '800': '11, 17, 31',
             '900': '7, 12, 23',
-            '950': '11, 17, 35',
             'text': '163, 173, 194',
         },
     },
@@ -153,7 +160,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         footerLogo: 'none',
         primary: {
             DEFAULT: '51, 144, 236',
-            '50': '248, 200, 220',
             '100': '246, 182, 209',
             '200': '241, 146, 186',
             '300': '237, 110, 163',
@@ -168,7 +174,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         },
         secondary: {
             DEFAULT: '240, 240, 240',
-            '50': '190, 195, 200',
             '100': '199, 201, 206',
             '200': '208, 210, 211',
             '300': '212, 214, 219',
@@ -178,7 +183,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             '700': '241, 243, 245',
             '800': '243, 244, 246',
             '900': '250, 248, 248',
-            '950': '255, 255, 255',
             'text': '106, 119, 133',
         },
     },
@@ -192,7 +196,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         footerLogoHeight: '20px',
         primary: {
             DEFAULT: '243, 243, 243',
-            '50': '255, 255, 255',
             '100': '255, 255, 255',
             '200': '255, 255, 255',
             '300': '255, 255, 255',
@@ -202,13 +205,11 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             '700': '187, 187, 187',
             '800': '159, 159, 159',
             '900': '131, 131, 131',
-            '950': '117, 117, 117',
             'text': '243, 243, 243',
             'textMuted': '215, 215, 215',
         },
         secondary: {
             DEFAULT: '37, 37, 37',
-            '50': '129, 129, 129',
             '100': '119, 119, 119',
             '200': '98, 98, 98',
             '300': '78, 78, 78',
@@ -218,7 +219,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             '700': '13, 13, 13',
             '800': '13, 13, 13',
             '900': '0, 0, 0',
-            '950': '0, 0, 0',
             'text': '182, 182, 182',
         },
     }

@@ -267,7 +267,7 @@ const ConnectWalletCard = () => {
         </div>
         <div className="flex flex-col items-center w-full space-y-3">
             <ConnectButton className="w-full">
-                <div className="w-full py-2.5 px-3 text-xl font-semibold bg-primary-text-placeholder hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-lg text-secondary-950">
+                <div className="w-full py-2.5 px-3 text-xl font-semibold bg-primary-text-placeholder hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-lg text-secondary-900">
                     <div className="text-center text-xl font-semibold">Connect Wallet</div>
                 </div>
             </ConnectButton>
