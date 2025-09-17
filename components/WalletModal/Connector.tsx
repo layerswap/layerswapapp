@@ -23,7 +23,7 @@ const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isR
             <button
                 type="button"
                 disabled={!!connectingConnector}
-                className="w-full h-fit flex items-center justify-between bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl p-3"
+                className="w-full h-fit flex items-center justify-between bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl p-3 active:animate-press-down"
                 onClick={onClick}
                 {...props}
             >

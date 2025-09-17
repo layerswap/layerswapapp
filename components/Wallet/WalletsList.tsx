@@ -49,7 +49,7 @@ const WalletsList: FC<Props> = (props) => {
 
     return (
         <div className="space-y-3">
-            <button type='button' onClick={connectWallet} className="w-full flex justify-center p-2 bg-secondary-500 rounded-md hover:bg-secondary-400">
+            <button type='button' onClick={connectWallet} className="w-full flex justify-center p-2 bg-secondary-500 rounded-md hover:bg-secondary-400 active:animate-press-down">
                 <div className="flex items-center text-secondary-text gap-1 px-3 py-1">
                     <Plus className="h-4 w-4" />
                     <span className="text-sm">
@@ -104,7 +104,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                     walletId: wallet.id,
                     address: wallet.address
                 })}
-                className={clsx('w-full relative items-center justify-between gap-2 flex rounded-lg outline-hidden bg-secondary-500 text-primary-text p-3 group/addressItem', {
+                className={clsx('active:animate-press-down w-full relative items-center justify-between gap-2 flex rounded-lg outline-hidden bg-secondary-500 text-primary-text p-3 group/addressItem', {
                     'hover:bg-secondary-400 cursor-pointer': selectable && wallet.addresses.length == 1,
                     'bg-secondary-600 py-2': wallet.addresses.length > 1
                 })}>

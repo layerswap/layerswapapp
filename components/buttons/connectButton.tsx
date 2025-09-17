@@ -19,7 +19,7 @@ const ConnectButton = ({
             type="button"
             aria-label="Connect wallet"
             disabled={filteredProviders.length == 0}
-            className={`${className} disabled:opacity-50 disabled:cursor-not-allowed `}
+            className={`${className} disabled:opacity-50 disabled:cursor-not-allowed enabled:active:animate-press-down`}
         >
             {children}
         </button>
