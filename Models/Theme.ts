@@ -106,7 +106,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         backdrop: "62, 18, 64",
         placeholderText: '118, 128, 147',
         buttonTextColor: '228, 229, 240',
-        logo: '255, 50, 114',
+        logo: '255, 0, 147',
         footerLogo: 'none',
         warning: {
             Foreground: '255, 201, 74',
