@@ -44,7 +44,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({ fee }) => {
             </TooltipTrigger>
             <TooltipContent side="top" align="center" className="!bg-secondary-300 !border-secondary-300 !text-secondary-text text-xs font-medium">
                 <p>This is the difference between the USD value of</p>
-                <p>what you send and what you'll receive.</p>
+                <p>what you send and what you&#39;ll receive.</p>
             </TooltipContent>
         </Tooltip>
     </>)
