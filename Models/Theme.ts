@@ -1,7 +1,6 @@
 
 export type ThemeData = {
     backdrop?: string,
-    actionButtonText: string,
     buttonTextColor: string,
     logo: string,
     placeholderText: string,
@@ -38,7 +37,6 @@ export type StatusColor = {
 export const THEME_COLORS: { [key: string]: ThemeData } = {
     "imxMarketplace": {
         backdrop: "0, 121, 133",
-        actionButtonText: '0, 0, 0',
         buttonTextColor: '255, 255, 255',
         placeholderText: '140, 152, 192',
         logo: '255, 255, 255',
@@ -73,7 +71,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     },
     "light": {
         placeholderText: '134, 134, 134',
-        actionButtonText: '255, 255, 255',
         buttonTextColor: '17, 17, 17',
         logo: '255, 0, 147',
         footerLogo: 'none',
@@ -108,7 +105,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     "default": {
         backdrop: "62, 18, 64",
         placeholderText: '118, 128, 147',
-        actionButtonText: '220, 2, 90',
         buttonTextColor: '228, 229, 240',
         logo: '255, 50, 114',
         footerLogo: 'none',
@@ -154,7 +150,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     },
     "ton": {
         placeholderText: '134, 134, 134',
-        actionButtonText: '255, 255, 255',
         buttonTextColor: '15, 15, 15',
         logo: '15, 15, 15',
         footerLogo: 'none',
@@ -188,7 +183,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     },
     "immutable": {
         placeholderText: '182, 182, 182',
-        actionButtonText: '19, 19, 19',
         buttonTextColor: '19, 19, 19',
         logo: '187, 187, 187',
         headerLogo: 'none',
