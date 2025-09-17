@@ -39,7 +39,6 @@ const SourceWalletPicker: FC = () => {
 
     const handleSelectWallet = useCallback((props?: SelectAccountProps) => {
         if (props) {
-            //SwitchWalletAccount(props, provider)
             selectSourceAccount({
                 id: props.walletId,
                 address: props.address,
@@ -51,7 +50,7 @@ const SourceWalletPicker: FC = () => {
             setFieldValue('depositMethod', 'deposit_address')
         }
         setOpenModal(false)
-    }, [provider, setFieldValue])
+    }, [provider, setFieldValue, selectSourceAccount])
 
     if (!values.from || !source_token)
         return <></>

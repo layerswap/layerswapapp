@@ -1,5 +1,5 @@
 import { Context, createContext, useCallback, useContext, useMemo, useState } from 'react'
-import { SwapDirection } from '@/components/DTOs/SwapFormValues';
+import { SwapDirection, SwapFormValues } from '@/components/DTOs/SwapFormValues';
 import useWallet from '@/hooks/useWallet';
 import { Wallet, WalletProvider } from '@/Models/WalletProvider';
 import AddressIcon from '@/components/AddressIcon';
@@ -43,7 +43,6 @@ export function BalanceAccountsProvider({ children }: PickerAccountsProviderProp
     const { providers } = useWallet()
 
     const sourceAccounst: AccountIdentityWithWallet[] = useMemo(() => {
-        ///return providers.filter(hasWallet).map(provider => ResolveWalletBalanceAccount(provider, provider.activeWallet, provider.activeWallet.address))
         return providers.map(provider => {
             if (!hasWallet(provider)) return null;
 
@@ -92,8 +91,11 @@ export function BalanceAccountsProvider({ children }: PickerAccountsProviderProp
             return [...prev, account];
         });
     }, [])
-
     const selectSourceAccount = useCallback((account: BaseAccountIdentity) => {
+        const previousSourceAccount = sourceAccounst.find(acc => acc.providerName === account.providerName);
+        if (destinationAccounts.some(acc => acc.address === previousSourceAccount?.address && acc.providerName === previousSourceAccount?.providerName)) {
+            selectDestinationAccount(account);
+        }
         setSelectedSourceAccounts(prev => {
             const existingAccountIndex = prev.findIndex(acc => acc.providerName === account.providerName);
             if (existingAccountIndex !== -1) {
@@ -103,19 +105,17 @@ export function BalanceAccountsProvider({ children }: PickerAccountsProviderProp
             }
             return [...prev, account];
         });
-    }, [providers])
+    }, [destinationAccounts, sourceAccounst])
 
     const stateValues: BalanceAccountsContextType = useMemo(() => ({
         sourceAccounst,
-        destinationAccounts,
-        selectDestinationAccount,
-        selectSourceAccount
+        destinationAccounts
     }), [sourceAccounst, destinationAccounts]);
 
     const update: BalanceAccountsUpdateContextType = useMemo(() => ({
         selectDestinationAccount,
         selectSourceAccount,
-    }), [selectDestinationAccount, selectSourceAccount]);
+    }), [sourceAccounst, destinationAccounts, selectSourceAccount, selectDestinationAccount]);
 
     return (
         <BalanceAccountsStateContext.Provider value={stateValues}>

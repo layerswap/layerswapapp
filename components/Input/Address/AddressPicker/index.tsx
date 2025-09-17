@@ -71,7 +71,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const connectedWalletskey = connectedWallets?.map(w => w.addresses.join('')).join('')
     const defaultAccount = useMemo(() => balanceAccounts.find(w => w.provider?.name === provider?.name), [balanceAccounts, provider?.name])
-
     const [manualAddress, setManualAddress] = useState<string>('')
     const [newAddress, setNewAddress] = useState<{ address: string, networkType: NetworkType | string } | undefined>()
 
@@ -149,7 +148,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                     providerName: provider.name,
                 });
         }
-    }, [destination, connectedWallets, provider]);
+    }, [destination, connectedWallets, provider, selectDestinationAccount]);
 
     useEffect(() => {
         if (canFocus) {
