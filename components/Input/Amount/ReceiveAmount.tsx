@@ -3,6 +3,7 @@ import { Token } from "@/Models/Network";
 import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 import NumberFlow from "@number-flow/react";
 import clsx from "clsx";
+import { PriceImpact } from "./PriceImpact";
 
 type ReceiveAmountProps = {
     destination_token: Token | undefined;
@@ -12,7 +13,6 @@ type ReceiveAmountProps = {
 }
 export const ReceiveAmount: FC<ReceiveAmountProps> = ({ source_token, destination_token, fee, isFeeLoading }) => {
     const receive_amount = fee?.quote.receive_amount
-
     const receiveAmountInUsd = receive_amount && destination_token && fee.quote?.destination_token?.price_in_usd ? (receive_amount * fee.quote.destination_token.price_in_usd).toFixed(2) : undefined
 
     return (<>
@@ -26,9 +26,12 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ source_token, destinatio
                     <NumberFlow value={receive_amount || 0} trend={0} format={{ maximumFractionDigits: fee?.quote.destination_token?.decimals || 2 }} />
                 </div>
             </div>
-            <span className="text-base leading-5 font-medium text-secondary-text h-5">
-                <NumberFlow className="p-0" value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD', maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
-            </span>
+            <div className="flex items-baseline space-x-2">
+                <span className="text-base leading-5 font-medium text-secondary-text h-5">
+                    <NumberFlow className="p-0" value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD', maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
+                </span>
+                <PriceImpact fee={fee} />
+            </div>
         </div>
     </>)
 }
