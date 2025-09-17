@@ -94,7 +94,7 @@ const detailsElements: DetailedElement[] = [
                             </span>
                         )}
                     </TooltipTrigger>
-                    <TooltipContent className="!bg-secondary-300 !border-secondary-300 !text-primart-text">
+                    <TooltipContent className="!bg-secondary-300 !border-secondary-300 !text-primary-text">
                         <span>{gas || '-'} </span>
                         <span>{gas ? nativeCurrencyName : ''}</span>
                     </TooltipContent>

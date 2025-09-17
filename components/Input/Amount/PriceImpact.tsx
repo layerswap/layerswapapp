@@ -1,6 +1,7 @@
 import { FC, useMemo } from "react";
 import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 import { Triangle } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 
 type PriceImpactProps = {
     fee: Quote | undefined;
@@ -24,18 +25,27 @@ export const PriceImpact: FC<PriceImpactProps> = ({ fee }) => {
         return Number((((toAmountUSD - fromAmountUSD) / fromAmountUSD) * 100).toFixed(2));
     }, [fromAmountUSD, toAmountUSD]);
 
+    if (priceImpact === undefined) return null;
+
     return (<>
-        <span className="flex items-center text-sm text-secondary-text">
-            {priceImpact !== undefined && (
-                <span className="flex items-center gap-0.5">
-                    (
-                    <Triangle
-                        className={`w-3 h-3 stroke-1 fill-current transition-transform ${priceImpact < 0 ? "rotate-180" : ""
-                            }`}
-                    />
-                    {priceImpact}%)
+        <Tooltip>
+            <TooltipTrigger asChild>
+                <span className="flex items-center text-sm text-secondary-text cursor-default">
+                    <span className="flex items-center gap-0.5">
+                        <span>(</span>
+                        <Triangle
+                            aria-label={priceImpact < 0 ? "Negative price impact" : "Positive price impact"}
+                            className={`w-3 h-3 stroke-1 fill-current transition-transform ${priceImpact < 0 ? "rotate-180" : ""
+                                }`}
+                        />
+                        {priceImpact}<span>%)</span>
+                    </span>
                 </span>
-            )}
-        </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" align="center" className="!bg-secondary-300 !border-secondary-300 !text-secondary-text text-xs font-medium">
+                <p>This is the difference between the USD value of</p>
+                <p>what you send and what you'll receive.</p>
+            </TooltipContent>
+        </Tooltip>
     </>)
 }
