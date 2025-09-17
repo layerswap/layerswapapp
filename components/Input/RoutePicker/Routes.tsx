@@ -1,10 +1,10 @@
-import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
-import { SwapDirection } from "../../DTOs/SwapFormValues";
-import { truncateDecimals } from "../../utils/RoundDecimals";
-import { SelectItem } from "../../Select/Selector/SelectItem";
+import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { SwapDirection } from "@/components/DTOs/SwapFormValues";
+import { truncateDecimals } from "@/components/utils/RoundDecimals";
+import { SelectItem } from "@/components/Select/Selector/SelectItem";
 import { ChevronDown } from "lucide-react";
-import RoutePickerIcon from "../../icons/RoutePickerPlaceholder";
-import { useBalance } from "../../../lib/balances/providers/useBalance";
+import RoutePickerIcon from "@/components/icons/RoutePickerPlaceholder";
+import { useBalance } from "@/lib/balances/providers/useBalance";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { GroupedTokenElement, RowElement } from "@/Models/Route";
 import { useBalanceStore } from "@/stores/balanceStore";
@@ -333,12 +333,12 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                             className="h-3.5 w-3.5 absolute left-3.5 top-3.5 object-contain rounded border-1 border-secondary-300"
                         />
                     </div>
-                    <span className="ml-3 flex flex-col grow font-medium text-primary-text overflow-hidden min-w-0 max-w-3/5">
-                        <span className="leading-5">{token.symbol}</span>
-                        <span className="text-secondary-text grow font-normal text-sm leading-4 truncate whitespace-nowrap">
+                    <div className={"ml-3 flex flex-col grow font-medium text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full"}>
+                        <p className="leading-5">{token.symbol}</p>
+                        <p className="text-secondary-text grow font-normal text-sm leading-4 truncate whitespace-nowrap">
                             {route.display_name}
-                        </span>
-                    </span>
+                        </p>
+                    </div>
                 </>
             ) : (
                 <SelectedRoutePlaceholder placeholder={placeholder} />
