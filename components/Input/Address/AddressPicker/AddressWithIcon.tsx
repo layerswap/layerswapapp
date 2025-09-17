@@ -1,4 +1,4 @@
-import { FC, ReactNode, useState } from "react"
+import { FC, MouseEventHandler, ReactNode, SVGProps, useState } from "react"
 import { AddressGroup, AddressItem } from ".";
 import AddressIcon from "@/components//AddressIcon";
 import shortenAddress from "@/components//utils/ShortenAddress";
@@ -11,6 +11,7 @@ import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components//shadcn/tooltip";
 import { Wallet } from "@/Models/WalletProvider";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
+import clsx from "clsx";
 
 type Props = {
     addressItem: AddressItem;
@@ -79,7 +80,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
 
             <div className="flex flex-col items-start grow min-w-0 ml-3 text-sm">
                 <div className="flex w-full min-w-0">
-                    <ExtendedAddress address={addressItem.address} network={network} onDisconnect={onDisconnect} addressClassNames="font-normal" showDetails={true} title="USDC" description="Circle USD Coin" logoSrc="https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/arusdc.png" />
+                    <ExtendedAddress address={addressItem.address} network={network} onDisconnect={onDisconnect} addressClassNames="font-normal" showDetails={true} title="USDC" description="Circle USD Coin" logo="https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/arusdc.png" />
                 </div>
                 <div className="text-secondary-text w-full min-w-0">
                     <div className="flex items-center gap-1 text-xs">
@@ -123,7 +124,7 @@ type ExtendedAddressProps = {
     showDetails?: boolean;
     title?: string;
     description?: string;
-    logoSrc?: string;
+    logo?: string | ((e: SVGProps<SVGSVGElement>) => ReactNode);
     children?: ReactNode
 }
 
@@ -139,16 +140,44 @@ const calculateMaxWidth = (balance: string | undefined) => {
     }
 };
 
-export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, isForCurrency, children, onDisconnect, showDetails = false, title, description, logoSrc }) => {
+export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo }) => {
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
+
+    // Resolver for action buttons
+    const getActionButtons = () => {
+        const buttons: ActionButtonProps[] = [
+            {
+                title: 'Copy',
+                Icon: isCopied ? Check : Copy,
+                onClick: (e: React.MouseEvent<HTMLDivElement>) => { e.stopPropagation(); setCopied(address); }
+            },
+            ...(network ? [{
+                title: 'View',
+                Icon: SquareArrowOutUpRight,
+                href: network.account_explorer_template?.replace('{0}', address)
+            }] : []),
+            ...(onDisconnect ? [{
+                title: 'Disconnect',
+                Icon: Unplug,
+                iconClassNames: 'text-red-400',
+                onClick: (e: React.MouseEvent<HTMLDivElement>) => { e.stopPropagation(); onDisconnect(); }
+            }] : [])
+        ];
+
+        const showTitles = buttons.length <= 2;
+
+        return { buttons, showTitles };
+    }
+
+    const { buttons, showTitles } = getActionButtons();
 
     return (
         <div onClick={(e) => e.stopPropagation()}>
             <Popover open={isPopoverOpen} onOpenChange={() => setPopoverOpen(!isPopoverOpen)} modal={true}>
                 <PopoverTrigger asChild>
                     <div>
-                        <Tooltip>
+                        <Tooltip delayDuration={400}>
                             <TooltipTrigger asChild>
                                 {
                                     children ??
@@ -161,91 +190,123 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
                                 }
                             </TooltipTrigger>
                             <TooltipContent side="bottom">
-                                <p>{isForCurrency ? "View token details": "View address details"}</p>
+                                <p>{isForCurrency ? "View token details" : "View address details"}</p>
                             </TooltipContent>
                         </Tooltip>
                     </div>
                 </PopoverTrigger>
                 <PopoverContent
-                    className="w-auto p-2 min-w-48 flex flex-col gap-1 items-stretch"
+                    className="w-auto p-3 min-w-72 flex flex-col gap-3 items-stretch !rounded-2xl !bg-secondary-500"
                     side="top"
                     avoidCollisions={true}
                     collisionPadding={8}
                     sticky="always"
                 >
-                    <>
-                        {showDetails && (title || description) && (
-                            <div className="mb-2 pt-2 flex items-center gap-3">
-                                {logoSrc ? (
-                                    <ImageWithFallback
-                                        src={logoSrc}
-                                        alt={title || "Token logo"}
-                                        height="28"
-                                        width="28"
-                                        loading="eager"
-                                        fetchPriority="high"
-                                        className="rounded-full object-contain flex-shrink-0"
-                                    />
-                                ) : (
-                                    <Info className="w-5 h-5 text-secondary-text flex-shrink-0" />
-                                )}
-                                <div className="flex-1">
-                                    {title && <h3 className="text-sm font-semibold text-primary-text">{title}</h3>}
-                                    {description && <p className="text-xs text-secondary-text font-sans">{description}</p>}
-                                </div>
-                            </div>
-                        )}
-                        <div className="relative px-2 py-6 bg-gradient-to-b from-secondary-500 to-secondary-600 rounded-lg text-sm font-mono break-all leading-relaxed shadow-lg text-left">
-                            <div className="grid grid-cols-1 gap-0 text-secondary-text tracking-wide">
-                                {Array.from({ length: Math.ceil(address.length / 15) }, (_, i) => {
-                                    const start = i * 15;
-                                    const end = Math.min(start + 15, address.length);
-                                    const chunk = address.slice(start, end);
+                    {showDetails && (title || description) && (
+                        <div>
+                            <div className="flex items-center gap-3">
+                                {Logo ?
 
-                                    return (
-                                        <div key={i}>
-                                            {i === 0 && chunk.length >= 4 ? (
-                                                <>
-                                                    <span className="text-primary-text font-medium">{chunk.slice(0, 4)}</span>
-                                                    {chunk.slice(4)}
-                                                </>
-                                            ) : i === Math.ceil(address.length / 15) - 1 && chunk.length >= 4 ? (
-                                                <>
-                                                    {chunk.slice(0, -4)}
-                                                    <span className="text-primary-text font-medium">{chunk.slice(-4)}</span>
-                                                </>
-                                            ) : chunk}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                        <div className="flex gap-1">
-                            <div onClick={(e) => { e.stopPropagation(), setCopied(address) }} className="cursor-pointer text-secondary-text hover:text-primary-text px-2.5 py-2 bg-secondary-500 hover:bg-secondary-400 rounded-md transition-all duartion-200 flex items-center gap-1 flex-1 justify-center">
-                                {
-                                    isCopied ?
-                                        <Check className="h-3 w-3" />
-                                        : <Copy className="w-3 h-3" />
-                                }
-                                <p className="text-xs whitespace-nowrap">Copy</p>
-                            </div>
-                            {network && (
-                                <Link href={network?.account_explorer_template?.replace('{0}', address)} target="_blank" className="cursor-pointer text-secondary-text hover:text-primary-text px-2.5 py-2 bg-secondary-500 hover:bg-secondary-400 rounded-md transition-all duartion-200 flex items-center gap-1 flex-1 justify-center">
-                                    <SquareArrowOutUpRight className="w-3 h-3" />
-                                    <p className="text-xs whitespace-nowrap">View</p>
-                                </Link>
-                            )}
-                            {onDisconnect && (
-                                <div onClick={(e) => { e.stopPropagation(), onDisconnect() }} className="cursor-pointer text-secondary-text hover:text-primary-text px-2.5 py-2 bg-secondary-500 hover:bg-secondary-400 rounded-md transition-all duartion-200 flex items-center gap-1 flex-1 justify-center">
-                                    <Unplug className="w-3 h-3" />
-                                    <p className="text-xs whitespace-nowrap">Disconnect</p>
+                                    typeof Logo == 'string' ? (
+                                        <ImageWithFallback
+                                            src={Logo}
+                                            alt={title || "Token logo"}
+                                            height="40"
+                                            width="40"
+                                            loading="eager"
+                                            fetchPriority="high"
+                                            className="rounded-full object-contain flex-shrink-0 h-10 w-10"
+                                        />
+                                    ) : (
+                                        <Logo className="w-10 h-10 text-secondary-text flex-shrink-0" />
+                                    ) : (
+                                        <Info className="w-10 h-10 text-secondary-text flex-shrink-0" />
+                                    )}
+                                <div className="flex-1 font-medium">
+                                    {title && <h3 className="text-base leading-5 text-primary-text">{title}</h3>}
+                                    {description && <p className="text-sm leading-[18px] text-secondary-text">{description}</p>}
                                 </div>
-                            )}
+                            </div>
+                            <hr className="border rounded-full border-secondary-400 mt-2" />
                         </div>
-                    </>
+
+                    )}
+                    <p className="text-secondary-text text-sm leading-5 font-mono break-all shadow-lg text-left">
+                        <span className="text-primary-text font-medium">{address.slice(0, 4)}</span><span>{address.slice(4, -4)}</span><span className="text-primary-text font-medium">{address.slice(-4)}</span>
+                    </p>
+                    <div className="flex gap-3">
+                        {buttons.map((button) => (
+                            <ActionButton
+                                key={button.title}
+                                showTitle={showTitles}
+                                {...button}
+                            />
+                        ))}
+                    </div>
                 </PopoverContent>
             </Popover>
         </div>
+    )
+}
+
+type ActionButtonProps = {
+    title: string,
+    Icon: (props: SVGProps<SVGSVGElement>) => ReactNode,
+    iconClassNames?: string,
+    onClick?: MouseEventHandler<HTMLDivElement> | undefined,
+    href?: string,
+    showTitle?: boolean
+}
+
+const ActionButton: FC<ActionButtonProps> = ({ title, Icon, onClick, href, iconClassNames, showTitle = true }) => {
+    const [showTooltip, setShowTooltip] = useState(false)
+    const children = (
+        <>
+            <Icon className={clsx("h-3 w-3", iconClassNames)} />
+            {showTitle && <p className="text-xs whitespace-nowrap">{title}</p>}
+        </>
+    )
+
+    const buttonClasses = "cursor-pointer text-secondary-text hover:text-primary-text px-2.5 py-2 bg-secondary-300 hover:bg-secondary-400 rounded-lg transition-all duration-200 flex items-center gap-1 flex-1 justify-center"
+
+    const renderButton = () => {
+        if (href) {
+            return (
+                <Link
+                    href={href}
+                    target="_blank"
+                    className={buttonClasses}
+
+                >
+                    {children}
+                </Link>
+            )
+        }
+
+        return (
+            <div
+                onClick={onClick}
+                className={buttonClasses}
+
+            >
+                {children}
+            </div>
+        )
+    }
+
+    if (showTitle) {
+        return renderButton()
+    }
+
+    return (
+        <Tooltip disableHoverableContent delayDuration={400} key={title} open={showTooltip} onOpenChange={setShowTooltip}>
+            <TooltipTrigger asChild>
+                {renderButton()}
+            </TooltipTrigger>
+            <TooltipContent key={title} side="top">
+                <p>{title}</p>
+            </TooltipContent>
+        </Tooltip>
     )
 }
 

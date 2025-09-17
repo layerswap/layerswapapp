@@ -61,7 +61,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
                 <span>{route.display_name}</span>
                 {
                     item.contract ?
-                        <ExtendedAddress network={route} isForCurrency showDetails address={item.contract} logoSrc={item.logo} title={item.symbol} description={item.display_asset}>
+                        <ExtendedAddress network={route} isForCurrency showDetails address={item.contract} logo={item.logo} title={item.symbol} description={item.display_asset}>
                             <div className="flex items-center gap-1 text-secondary-text text-xs cursor-pointer hover:text-primary-text transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-500">
                                 <p className="max-w-[90px] truncate">
                                     <span>•</span> <span>{item.display_asset}</span>
