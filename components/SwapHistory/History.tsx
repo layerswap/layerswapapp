@@ -236,7 +236,7 @@ const BlankHistory = ({ onNewTransferClick }: BlankHistoryProps) => {
                 <h1 className="text-secondary-text text-[28px] font-bold tracking-wide" >
                     No Transfer History
                 </h1>
-                <p className="max-w-xs text-center text-primary-text-muted text-base font-normal mx-auto">
+                <p className="max-w-xs text-center text-primary-text-tertiary text-base font-normal mx-auto">
                     Transfers you make with this wallet/account will appear here after excution.
                 </p>
             </div>
@@ -260,14 +260,14 @@ const ConnectWalletCard = () => {
                 <h1 className="text-secondary-text text-[28px] font-bold tracking-wide" >
                     Connect wallet
                 </h1>
-                <p className="max-w-xs text-center text-primary-text-muted text-base font-normal mx-auto">
+                <p className="max-w-xs text-center text-primary-text-tertiary text-base font-normal mx-auto">
                     In order to see your transfer history you need to connect your wallet.
                 </p>
             </div>
         </div>
         <div className="flex flex-col items-center w-full space-y-3">
             <ConnectButton className="w-full">
-                <div className="w-full py-2.5 px-3 text-xl font-semibold bg-primary-text-placeholder hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-lg text-secondary-900">
+                <div className="w-full py-2.5 px-3 text-xl font-semibold bg-primary-text-tertiary hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-lg text-secondary-900">
                     <div className="text-center text-xl font-semibold">Connect Wallet</div>
                 </div>
             </ConnectButton>

@@ -23,7 +23,7 @@ export const ActivationTokenPicker = ({ availableBalances, defaultValue, onSelec
             const loopringToken = tokens?.find(t => t.tokenId === b.tokenId)
             const symbol: string = loopringToken?.symbol || "-"
             const decimals = loopringToken?.decimals
-            const details = <p className="text-primary-text-muted">
+            const details = <p className="text-primary-text-tertiary">
                 {decimals ? `${formatAmount(b.total, decimals)}` : ''}
             </p>
             return {

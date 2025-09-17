@@ -124,7 +124,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         {
                             isMobile &&
                             <div className="flex justify-center w-full mt-2 mb-[6px]" >
-                                <Drawer.Handle className='!w-12 !bg-primary-text-placeholder' />
+                                <Drawer.Handle className='!w-12 !bg-primary-text-tertiary' />
                             </div>
                         }
 

@@ -31,8 +31,7 @@
   --color-primary-800: rgb(var(--ls-colors-primary-800, 89, 14, 37));
   --color-primary-900: rgb(var(--ls-colors-primary-900, 46, 7, 19));
   --color-primary-text: rgb(var(--ls-colors-primary-text, 225, 227, 230));
-  --color-primary-text-muted: rgb(var(--ls-colors-primary-text-muted, 86, 97, 123));
-  --color-primary-text-placeholder: rgb(var(--ls-colors-text-placeholder, 118, 128, 147));
+  --color-primary-text-tertiary: rgb(var(--ls-colors-text-tertiary, 118, 128, 147));
   --color-primary-buttonTextColor: rgb(var(--ls-colors-buttonTextColor, 228, 229, 240));
   --color-primary-logoColor: rgb(var(--ls-colors-logo, 255, 0, 147));
 
@@ -365,7 +364,7 @@ input:disabled,
 textarea:disabled,
 input:disabled::placeholder,
 textarea:disabled::placeholder {
-  -webkit-text-fill-color: var(--color-primary-text-placeholder);
+  -webkit-text-fill-color: var(--color-primary-text-tertiary);
   /* 1. sets text fill to 'primary-text': '#a4afc8' */
   opacity: 1;
   /* 2. correct opacity on iOS */

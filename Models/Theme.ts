@@ -3,7 +3,7 @@ export type ThemeData = {
     backdrop?: string,
     buttonTextColor: string,
     logo: string,
-    placeholderText: string,
+    tertiary: string,
     primary: ThemeColor,
     secondary?: ThemeColor,
     headerLogo?: string,
@@ -26,7 +26,6 @@ export type ThemeColor = {
     800: string;
     900: string;
     text: string,
-    textMuted?: string,
 }
 
 export type StatusColor = {
@@ -38,7 +37,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     "imxMarketplace": {
         backdrop: "0, 121, 133",
         buttonTextColor: '255, 255, 255',
-        placeholderText: '140, 152, 192',
+        tertiary: '140, 152, 192',
         logo: '255, 255, 255',
         footerLogo: 'none',
         primary: {
@@ -53,7 +52,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             '800': '0, 121, 133',
             '900': '0, 70, 77',
             'text': '255, 255, 255',
-            'textMuted': '86, 97, 123',
         },
         secondary: {
             DEFAULT: '17, 29, 54',
@@ -70,7 +68,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         },
     },
     "light": {
-        placeholderText: '134, 134, 134',
+        tertiary: '134, 134, 134',
         buttonTextColor: '17, 17, 17',
         logo: '255, 0, 147',
         footerLogo: 'none',
@@ -86,7 +84,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             '800': '147, 8, 99',
             '900': '196, 153, 175',
             'text': '17, 17, 17',
-            'textMuted': '86, 97, 123',
         },
         secondary: {
             DEFAULT: '240, 240, 240',
@@ -104,7 +101,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     },
     "default": {
         backdrop: "62, 18, 64",
-        placeholderText: '118, 128, 147',
+        tertiary: '118, 128, 147',
         buttonTextColor: '228, 229, 240',
         logo: '255, 0, 147',
         footerLogo: 'none',
@@ -132,7 +129,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             '800': '89, 14, 37',
             '900': '46, 7, 19',
             'text': '225, 227, 230',
-            'textMuted': '86, 97, 123',
         },
         secondary: {
             DEFAULT: '17, 29, 54',
@@ -149,7 +145,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         },
     },
     "ton": {
-        placeholderText: '134, 134, 134',
+        tertiary: '134, 134, 134',
         buttonTextColor: '15, 15, 15',
         logo: '15, 15, 15',
         footerLogo: 'none',
@@ -165,7 +161,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             '800': '45, 148, 229',
             '900': '51, 144, 236',
             'text': '15, 15, 15',
-            'textMuted': '86, 97, 123',
         },
         secondary: {
             DEFAULT: '240, 240, 240',
@@ -182,7 +177,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         },
     },
     "immutable": {
-        placeholderText: '182, 182, 182',
+        tertiary: '182, 182, 182',
         buttonTextColor: '19, 19, 19',
         logo: '187, 187, 187',
         headerLogo: 'none',
@@ -200,7 +195,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             '800': '159, 159, 159',
             '900': '131, 131, 131',
             'text': '243, 243, 243',
-            'textMuted': '215, 215, 215',
         },
         secondary: {
             DEFAULT: '37, 37, 37',
