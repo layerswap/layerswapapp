@@ -15,7 +15,7 @@ export type NetworkBalancesProps = {
 export type GasProps = {
     network: Network,
     token: Token,
-    address?: `0x${string}`,
+    address?: string,
     recipientAddress?: string,
     wallet?: Wallet,
     amount?: number,
