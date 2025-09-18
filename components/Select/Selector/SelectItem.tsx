@@ -72,7 +72,7 @@ const DetailedTitle = ({ children, className, title, secondary, secondaryImageAl
                 </span>
             </div>
         </div>
-        <div className='col-span-4 sm:col-span-2 place-self-end'>
+        <div className='col-span-4 sm:col-span-2 place-self-end self-center'>
             {children}
         </div>
     </Title>
