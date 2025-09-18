@@ -9,6 +9,7 @@ import AuhorizeEthereum from '@/lib/wallets/paradex/Authorize/Ethereum';
 import useWallet from '@/hooks/useWallet';
 import WalletIcon from '@/components/icons/WalletIcon';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
+import { useSelectedAccount } from '@/context/balanceAccounts';
 
 const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
 
@@ -21,7 +22,8 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
     const { provider } = useWallet(l1Network, 'withdrawal')
     const { chain } = useAccount();
 
-    const wallet = provider?.activeWallet
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const wallet = selectedSourceAccount?.wallet
 
     const ethersSigner = useEthersSigner()
 

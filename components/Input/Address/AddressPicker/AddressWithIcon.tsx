@@ -9,19 +9,17 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components//shadcn/po
 import useCopyClipboard from "@/hooks/useCopyClipboard";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components//shadcn/tooltip";
-import { Wallet } from "@/Models/WalletProvider";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 type Props = {
     addressItem: AddressItem;
-    connectedWallet?: Wallet | undefined;
     partner?: Partner;
     network: Network;
     balance?: { amount: number, symbol: string, isLoading: boolean } | undefined;
     onDisconnect?: ExtendedAddressProps['onDisconnect']
 }
 
-const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, network, balance, onDisconnect }) => {
+const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, onDisconnect }) => {
 
     const difference_in_days = addressItem?.date ? Math.round(Math.abs(((new Date()).getTime() - new Date(addressItem.date).getTime()) / (1000 * 3600 * 24))) : undefined
     const maxWalletNameWidth = calculateMaxWidth(String(balance?.amount));
@@ -45,8 +43,8 @@ const AddressWithIcon: FC<Props> = ({ addressItem, connectedWallet, partner, net
         },
         {
             group: AddressGroup.ConnectedWallet,
-            text: <p className={`${maxWalletNameWidth} text-ellipsis sm:max-w-full text-nowrap overflow-hidden text-[10px]`}>{connectedWallet?.displayName || 'Connected wallet'}</p>,
-            icon: connectedWallet?.icon || WalletIcon
+            text: <p className={`${maxWalletNameWidth} text-ellipsis sm:max-w-full text-nowrap overflow-hidden text-[10px]`}>{addressItem.wallet?.displayName || 'Connected wallet'}</p>,
+            icon: addressItem.wallet?.icon || WalletIcon
         },
         {
             group: AddressGroup.FromQuery,

@@ -6,6 +6,7 @@ import { useQueryState } from '@/context/query';
 import { useFormikContext } from 'formik';
 import useWallet from './useWallet';
 import { QuoteError } from './useFee';
+import { useSelectedAccount } from '@/context/balanceAccounts';
 
 interface ValidationDetails {
     title?: string;
@@ -18,7 +19,7 @@ export function resolveRouteValidation(quoteError?: QuoteError) {
     const { destinationRoutes: allDestinations, sourceRoutes: allSources } = useSettingsState()
     const { to, from, fromAsset: fromCurrency, toAsset: toCurrency, fromExchange, validatingSource, validatingDestination, destination_address } = values;
     const { provider } = useWallet(from, "withdrawal")
-    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
     const query = useQueryState();
     const fromDisplayName = fromExchange ? fromExchange.display_name : from?.display_name;
     const toDisplayName = to?.display_name;
