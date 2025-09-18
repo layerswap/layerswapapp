@@ -21,7 +21,6 @@ import useWallet from "@/hooks/useWallet";
 import clsx from "clsx";
 import { useSwapDataState } from "@/context/swap";
 import { useClickOutside } from "@/hooks/useClickOutside";
-import ResizablePanel from "@/components/ResizablePanel";
 
 type Props = {
     partner?: Partner;

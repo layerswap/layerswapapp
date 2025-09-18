@@ -6,7 +6,7 @@ import { ApiResponse } from "../Models/ApiResponse";
 import { NetworkRoute, NetworkRouteToken } from "../Models/Network";
 import { useSettingsState } from "../context/settings";
 import { NetworkElement, RowElement, NetworkTokenElement, TitleElement, GroupedTokenElement, TokenSceletonElement } from "../Models/Route";
-import useAllBalances from "./useAllBalances";
+import useAllWithdrawalBalances from "./useAllWithdrawalBalances";
 import { NetworkBalance } from "../Models/Balance";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../helpers/routes";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
@@ -29,7 +29,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         toAsset: values.toAsset?.symbol
     });
     const groupByToken = useRouteTokenSwitchStore((s) => s.showTokens)
-    const { balances, isLoading: balancesLoading } = useAllBalances({ direction });
+    const { balances, isLoading: balancesLoading } = useAllWithdrawalBalances();
     const routesHistory = useRecentNetworksStore(state => state.recentRoutes)
     const routeElements = useMemo(() => groupRoutes(routes, direction, balances, groupByToken ? "token" : "network", routesHistory, balancesLoading, search), [balancesLoading, routes, balances, direction, search, groupByToken, routesHistory]);
 

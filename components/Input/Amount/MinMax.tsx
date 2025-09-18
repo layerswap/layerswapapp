@@ -8,7 +8,7 @@ import { resolveMaxAllowedAmount } from "./helpers";
 import { updateForm } from "@/components/Swap/Form/updateForm";
 import useWallet from "@/hooks/useWallet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
-
+import { useSelectedAccount } from "@/context/balanceAccounts";
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -25,8 +25,8 @@ const MinMax = (props: MinMaxProps) => {
     const { fromCurrency, from, limitsMinAmount, limitsMaxAmount, onActionHover, depositMethod } = props;
 
     const { provider } = useWallet(from, "withdrawal")
-    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
-
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    
     const { gasData } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency)
     const { balances, mutate: mutateBalances } = useSWRBalance(selectedSourceAccount?.address, from)
 
