@@ -1,11 +1,12 @@
+import { BalanceProvider } from "@/Models/BalanceProvider";
 import { TokenBalance } from "../../../Models/Balance";
 import { NetworkWithTokens } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
 import retryWithExponentialBackoff from "../../retry";
 
-export class FuelBalanceProvider {
-    supportsNetwork(network: NetworkWithTokens): boolean {
+export class FuelBalanceProvider extends BalanceProvider {
+    supportsNetwork = (network: NetworkWithTokens): boolean => {
         return KnownInternalNames.Networks.FuelMainnet.includes(network.name) || KnownInternalNames.Networks.FuelTestnet.includes(network.name)
     }
 
@@ -67,16 +68,12 @@ export class FuelBalanceProvider {
                     error: balance?.amount === undefined ? `Could not fetch balance for ${token.symbol}` : undefined
                 }
 
-                balances = [
-                    ...balances,
-                    balanceObj,
-                ]
+                balances.push(balanceObj)
 
             }
 
         } catch (e) {
-            console.log(e)
-            throw new Error(e)
+            return network.tokens.map((currency) => (this.resolveTokenBalanceFetchError(e, currency, network)))
         }
 
         return balances

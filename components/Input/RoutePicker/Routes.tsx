@@ -4,7 +4,7 @@ import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";
 import { ChevronDown } from "lucide-react";
 import RoutePickerIcon from "@/components/icons/RoutePickerPlaceholder";
-import { useBalance } from "@/lib/balances/providers/useBalance";
+import { useBalance } from "@/lib/balances/useBalance";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { GroupedTokenElement, RowElement } from "@/Models/Route";
 import { useBalanceStore } from "@/stores/balanceStore";

@@ -5,10 +5,11 @@ import KnownInternalNames from "@/lib/knownIds";
 import { LOOPRING_URLs } from "@/lib/loopring/defs";
 import { LoopringAPI } from "@/lib/loopring/LoopringAPI";
 import { TokenBalance } from "@/Models/Balance";
-import { insertIfNotExists } from "./helpers";
+import { insertIfNotExists } from "../helpers";
+import { BalanceProvider } from "@/Models/BalanceProvider";
 
-export class LoopringBalanceProvider {
-    supportsNetwork(network: NetworkWithTokens): boolean {
+export class LoopringBalanceProvider extends BalanceProvider {
+    supportsNetwork = (network: NetworkWithTokens): boolean => {
         return (KnownInternalNames.Networks.LoopringMainnet.includes(network.name) || KnownInternalNames.Networks.LoopringGoerli.includes(network.name))
     }
 
@@ -44,8 +45,7 @@ export class LoopringBalanceProvider {
             ]
         }
         catch (e) {
-            console.log(e)
-            throw new Error(e)
+            balances = network.tokens.map((currency) => (this.resolveTokenBalanceFetchError(e, currency, network)))
         }
 
         return balances

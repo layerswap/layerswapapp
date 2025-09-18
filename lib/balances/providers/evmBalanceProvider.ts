@@ -10,9 +10,10 @@ import { getBalance, GetBalanceReturnType } from '@wagmi/core'
 import resolveChain from "@/lib/resolveChain"
 import BalanceGetterAbi from "@/lib/abis/BALANCEGETTERABI.json"
 import KnownInternalNames from "@/lib/knownIds"
+import { BalanceProvider } from "@/Models/BalanceProvider"
 
-export class EVMBalanceProvider {
-    supportsNetwork(network: NetworkWithTokens): boolean {
+export class EVMBalanceProvider extends BalanceProvider {
+    supportsNetwork = (network: NetworkWithTokens): boolean => {
         return network.type === NetworkType.EVM && !!network.token
     }
 
@@ -59,88 +60,128 @@ export class EVMBalanceProvider {
                 nativePromise,
             ]);
 
-            const balances = (erc20BalancesContractRes && resolveERC20Balances(
+            const balances = (erc20BalancesContractRes && this.resolveERC20Balances(
                 erc20BalancesContractRes,
                 network
             )) || [];
             erc20Balances = balances
 
-            const nativeBalance = (nativeToken && nativeBalanceData) && resolveBalance(network, nativeToken, nativeBalanceData)
+            const nativeBalance = (nativeToken && nativeBalanceData) && this.resolveBalance(network, nativeToken, nativeBalanceData)
             let res: TokenBalance[] = []
             return res.concat(erc20Balances, nativeBalance ? [nativeBalance] : [])
         }
         catch (e) {
-            throw new Error(e)
+            return network.tokens.map(t => this.resolveTokenBalanceFetchError(e, t, network))
         }
     }
 
     contractGetBalances = async (address: string, chain: Chain, network: NetworkWithTokens): Promise<TokenBalance[] | null> => {
         if (!network) throw new Error("Network is required for contract get balances")
 
-        try {
 
-            const { createPublicClient, http } = await import("viem")
-            const publicClient = createPublicClient({
-                chain,
-                transport: http(network.node_url, { retryCount: 1, timeout: 5000 })
-            })
+        const { createPublicClient, http } = await import("viem")
+        const publicClient = createPublicClient({
+            chain,
+            transport: http(network.node_url, { retryCount: 1, timeout: 5000 })
+        })
 
-            const contract = contracts.find(c => c.networks.includes(network.name))
-            if (!contract) throw new Error(`No contract found for network ${network.name}`)
+        const contract = contracts.find(c => c.networks.includes(network.name))
+        if (!contract) throw new Error(`No contract found for network ${network.name}`)
 
-            const tokenContracts = network.tokens?.filter(a => a.contract).map(a => a.contract as `0x${string}`)
+        const tokenContracts = network.tokens?.filter(a => a.contract).map(a => a.contract as `0x${string}`)
 
-            const balances = await publicClient.readContract({
-                address: contract?.address,
-                abi: BalanceGetterAbi,
-                functionName: 'getBalances',
-                args: [address as `0x${string}`, tokenContracts]
-            }) as [string[], number[]]
+        const balances = await publicClient.readContract({
+            address: contract?.address,
+            abi: BalanceGetterAbi,
+            functionName: 'getBalances',
+            args: [address as `0x${string}`, tokenContracts]
+        }) as [string[], number[]]
 
-            const resolvedERC20Balances = network.tokens.filter(t => t.contract)?.map((token, index) => {
-                const amount = balances[1][index]
+        const resolvedERC20Balances = network.tokens.filter(t => t.contract)?.map((token, index) => {
+            const amount = balances[1][index]
 
-                if (amount >= 0) return {
+            if (amount >= 0) return {
+                network: network.name,
+                token: token.symbol,
+                amount: formatAmount(amount, token.decimals),
+                request_time: new Date().toJSON(),
+                decimals: token.decimals,
+                isNativeCurrency: false,
+            }
+            else {
+                return {
                     network: network.name,
                     token: token.symbol,
-                    amount: formatAmount(amount, token.decimals),
+                    amount: undefined,
                     request_time: new Date().toJSON(),
                     decimals: token.decimals,
                     isNativeCurrency: false,
+                    error: `Could not fetch ${token.symbol} balance`
                 }
-                else {
-                    return {
-                        network: network.name,
-                        token: token.symbol,
-                        amount: undefined,
-                        request_time: new Date().toJSON(),
-                        decimals: token.decimals,
-                        isNativeCurrency: false,
-                        error: `Could not fetch ${token.symbol} balance`
-                    }
+            }
+        })
+
+        const nativeTokenBalance = balances?.[1]?.[balances?.[1]?.length - 1]
+
+        const nativeTokenResolvedBalance: TokenBalance | undefined = network.token?.decimals ? {
+            network: network.name,
+            token: network.token?.symbol,
+            amount: nativeTokenBalance ? formatAmount(nativeTokenBalance, network.token?.decimals) : undefined,
+            request_time: new Date().toJSON(),
+            decimals: network.token?.decimals,
+            isNativeCurrency: true,
+            error: nativeTokenBalance === undefined ? "Could not fetch native token balance" : undefined
+        } : undefined
+
+        const res = [...resolvedERC20Balances, nativeTokenResolvedBalance].filter((b): b is TokenBalance => b !== undefined)
+
+        return res
+    }
+
+    resolveERC20Balances = (
+        multicallRes: ERC20ContractRes[],
+        network: NetworkWithTokens,
+    ) => {
+        const assets = network?.tokens?.filter(a => a.contract)
+        if (!assets)
+            return null
+        const contractBalances = multicallRes?.map((d, index) => {
+            const currency = assets[index]
+            if (!d.error) {
+                return {
+                    network: network.name,
+                    token: currency.symbol,
+                    amount: formatAmount(d.result, currency.decimals),
+                    request_time: new Date().toJSON(),
+                    decimals: currency.decimals,
+                    isNativeCurrency: false,
                 }
-            })
+            } else {
+                return this.resolveTokenBalanceFetchError(d.error, currency, network)
+            }
 
-            const nativeTokenBalance = balances?.[1]?.[balances?.[1]?.length - 1]
+        })
+        return contractBalances
+    }
 
-            const nativeTokenResolvedBalance: TokenBalance | undefined = network.token?.decimals ? {
-                network: network.name,
-                token: network.token?.symbol,
-                amount: nativeTokenBalance ? formatAmount(nativeTokenBalance, network.token?.decimals) : undefined,
-                request_time: new Date().toJSON(),
-                decimals: network.token?.decimals,
-                isNativeCurrency: true,
-                error: nativeTokenBalance === undefined ? "Could not fetch native token balance" : undefined
-            } : undefined
+    resolveBalance = (
+        network: Network,
+        token: Token,
+        balanceData: NativeBalanceResponse
+    ) => {
 
-            const res = [...resolvedERC20Balances, nativeTokenResolvedBalance].filter((b): b is TokenBalance => b !== undefined)
+        if (balanceData.error !== null) return this.resolveTokenBalanceFetchError({ message: balanceData.error }, token, network)
 
-            return res
+        const nativeBalance: TokenBalance = {
+            network: network.name,
+            token: token.symbol,
+            amount: formatAmount(balanceData?.value, token.decimals),
+            request_time: new Date().toJSON(),
+            decimals: token.decimals,
+            isNativeCurrency: true,
         }
-        catch (e) {
-            console.log(e)
-            throw new Error(e)
-        }
+
+        return nativeBalance
     }
 
 }
@@ -154,27 +195,6 @@ export type ERC20ContractRes = ({
     result: unknown;
     status: "success";
 })
-
-export const resolveERC20Balances = (
-    multicallRes: ERC20ContractRes[],
-    from: NetworkWithTokens,
-) => {
-    const assets = from?.tokens?.filter(a => a.contract)
-    if (!assets)
-        return null
-    const contractBalances = multicallRes?.map((d, index) => {
-        const currency = assets[index]
-        return {
-            network: from.name,
-            token: currency.symbol,
-            amount: formatAmount(d.result, currency.decimals),
-            request_time: new Date().toJSON(),
-            decimals: currency.decimals,
-            isNativeCurrency: false,
-        }
-    })
-    return contractBalances
-}
 
 type GetBalanceArgs = {
     address: string,
@@ -251,7 +271,13 @@ export const getErc20Balances = async ({
 
 }
 
-export const getTokenBalance = async (address: `0x${string}`, network: Network, contract?: `0x${string}` | null): Promise<GetBalanceReturnType | null> => {
+type NativeBalanceResponse = (GetBalanceReturnType & {
+    error: null;
+} | {
+    error: string
+})
+
+export const getTokenBalance = async (address: `0x${string}`, network: Network, contract?: `0x${string}` | null): Promise<NativeBalanceResponse | null> => {
 
     try {
         const chain = resolveChain(network)
@@ -268,47 +294,11 @@ export const getTokenBalance = async (address: `0x${string}`, network: Network, 
             chainId: chain.id,
             ...(contract ? { token: contract } : {})
         })
-        return res
+        return { error: null, ...res }
     } catch (e) {
-        return null
+        return { error: e }
     }
 
-}
-
-export const resolveBalance = (
-    network: Network,
-    token: Token,
-    balanceData: GetBalanceReturnType
-) => {
-
-    const nativeBalance: TokenBalance = {
-        network: network.name,
-        token: token.symbol,
-        amount: formatAmount(balanceData?.value, token.decimals),
-        request_time: new Date().toJSON(),
-        decimals: token.decimals,
-        isNativeCurrency: true,
-    }
-
-    return nativeBalance
-}
-
-export const resolveERC20Balance = (
-    network: Network,
-    token: Token,
-    balanceData: GetBalanceReturnType
-) => {
-
-    const nativeBalance: TokenBalance = {
-        network: network.name,
-        token: token.symbol,
-        amount: formatAmount(balanceData?.value, token.decimals),
-        request_time: new Date().toJSON(),
-        decimals: token.decimals,
-        isNativeCurrency: false,
-    }
-
-    return nativeBalance
 }
 
 

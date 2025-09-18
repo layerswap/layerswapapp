@@ -2,6 +2,7 @@ import { TokenBalance } from "@/Models/Balance";
 import { NetworkWithTokens } from "@/Models/Network";
 import KnownInternalNames from "../../knownIds";
 import axios from "axios";
+import { BalanceProvider } from "@/Models/BalanceProvider";
 
 interface Utxo {
     txid: string
@@ -10,17 +11,17 @@ interface Utxo {
     status: { confirmed: boolean; block_height?: number }
 }
 
-export class BitcoinBalanceProvider {
-    supportsNetwork(network: NetworkWithTokens): boolean {
+export class BitcoinBalanceProvider extends BalanceProvider {
+    supportsNetwork = (network: NetworkWithTokens): boolean => {
         return KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) || KnownInternalNames.Networks.BitcoinTestnet.includes(network.name)
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
         let balances: TokenBalance[] = []
-
-        if (!network?.tokens) return
-
         const token = network.tokens.find(t => t.symbol == 'BTC')
+
+        if (!token) return
+
         try {
             const utxos = await fetchUtxos(address, network.name)
             const balanceSats = sumUtxos(utxos)
@@ -39,16 +40,7 @@ export class BitcoinBalanceProvider {
             balances.push(balanceObj)
         }
         catch (e) {
-            balances.push({
-                network: network.name,
-                amount: undefined,
-                decimals: token?.decimals || 0,
-                isNativeCurrency: network.token?.symbol === 'BTC',
-                token: token?.symbol || 'BTC',
-                request_time: new Date().toJSON(),
-                error: e instanceof Error ? e.message : String(e)
-            })
-            console.log(e)
+            balances.push(this.resolveTokenBalanceFetchError(e, token, network, true))
         }
 
         return balances

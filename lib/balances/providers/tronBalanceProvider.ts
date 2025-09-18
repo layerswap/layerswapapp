@@ -3,10 +3,11 @@ import { Network, NetworkWithTokens, Token } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
 import { TronWeb } from 'tronweb'
-import { insertIfNotExists } from "./helpers";
+import { insertIfNotExists } from "../helpers";
+import { BalanceProvider } from "@/Models/BalanceProvider";
 
-export class TronBalanceProvider {
-    supportsNetwork(network: NetworkWithTokens): boolean {
+export class TronBalanceProvider extends BalanceProvider {
+    supportsNetwork = (network: NetworkWithTokens): boolean => {
         return KnownInternalNames.Networks.TronMainnet.includes(network.name)
     }
 
@@ -19,14 +20,11 @@ export class TronBalanceProvider {
             try {
                 const balance = await resolveBalance({ network, address, token, provider })
 
-                balances = [
-                    ...balances,
-                    balance,
-                ]
+                balances.push(balance)
 
             }
             catch (e) {
-                console.log(e)
+                balances.push(this.resolveTokenBalanceFetchError(e, token, network))
             }
         }
 
@@ -54,61 +52,36 @@ export const resolveBalance = async ({ address, network, token, provider }: GetB
 }
 
 const getNativeAssetBalance = async ({ network, token, address, provider }: GetBalanceProps) => {
-    try {
 
-        const balance = await provider.trx.getBalance(address);
+    const balance = await provider.trx.getBalance(address);
 
-        return ({
-            network: network.name,
-            token: token.symbol,
-            amount: formatAmount(balance.toString(), Number(token?.decimals)),
-            request_time: new Date().toJSON(),
-            decimals: Number(token?.decimals),
-            isNativeCurrency: true,
-        })
-    }
-    catch (e) {
-        return {
-            network: network.name,
-            token: token.symbol,
-            amount: undefined,
-            request_time: new Date().toJSON(),
-            decimals: Number(token?.decimals),
-            isNativeCurrency: true,
-            error: e instanceof Error ? e.message : 'Could not fetch balance'
-        }
-    }
+    return ({
+        network: network.name,
+        token: token.symbol,
+        amount: formatAmount(balance.toString(), Number(token?.decimals)),
+        request_time: new Date().toJSON(),
+        decimals: Number(token?.decimals),
+        isNativeCurrency: true,
+    })
+
 }
 
 const getTRC20Balance = async ({ network, token, address, provider }: GetBalanceProps) => {
-    try {
-        if (!token.contract) throw new Error("Token contract address is missing")
+    if (!token.contract) throw new Error("Token contract address is missing")
 
-        const tokenContractAddress = token.contract;
-        const contract = await provider.contract().at(tokenContractAddress);
+    const tokenContractAddress = token.contract;
+    const contract = await provider.contract().at(tokenContractAddress);
 
-        const balanceResponse = await contract.methods.balanceOf(address).call();
+    const balanceResponse = await contract.methods.balanceOf(address).call();
 
-        const balance = {
-            network: network.name,
-            token: token.symbol,
-            amount: formatAmount(BigInt(balanceResponse as any), token.decimals),
-            request_time: new Date().toJSON(),
-            decimals: token.decimals,
-            isNativeCurrency: false,
-        }
-
-        return balance
+    const balance = {
+        network: network.name,
+        token: token.symbol,
+        amount: formatAmount(BigInt(balanceResponse as any), token.decimals),
+        request_time: new Date().toJSON(),
+        decimals: token.decimals,
+        isNativeCurrency: false,
     }
-    catch (e) {
-        return {
-            network: network.name,
-            token: token.symbol,
-            amount: undefined,
-            request_time: new Date().toJSON(),
-            decimals: Number(token?.decimals),
-            isNativeCurrency: false,
-            error: e instanceof Error ? e.message : 'Could not fetch balance'
-        }
-    }
+
+    return balance
 }

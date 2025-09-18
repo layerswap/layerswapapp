@@ -1,10 +1,11 @@
-import { TokenBalance } from "../../../Models/Balance";
-import { NetworkType, NetworkWithTokens } from "../../../Models/Network";
-import formatAmount from "../../formatAmount";
-import { insertIfNotExists } from "./helpers";
+import { BalanceProvider } from "@/Models/BalanceProvider";
+import { TokenBalance } from "@/Models/Balance";
+import { NetworkType, NetworkWithTokens } from "@/Models/Network";
+import formatAmount from "@/lib/formatAmount";
+import { insertIfNotExists } from "../helpers";
 
-export class SolanaBalanceProvider {
-    supportsNetwork(network: NetworkWithTokens): boolean {
+export class SolanaBalanceProvider extends BalanceProvider {
+    supportsNetwork = (network: NetworkWithTokens): boolean => {
         return network.type === NetworkType.Solana
     }
 
@@ -64,28 +65,12 @@ export class SolanaBalanceProvider {
                         isNativeCurrency: false
                     }
 
-                    balances = [
-                        ...balances,
-                        balance
-                    ]
+                    balances.push(balance)
                 }
 
             }
             catch (e) {
-                console.log(e)
-                const balance = {
-                    network: network.name,
-                    token: token.symbol,
-                    amount: undefined,
-                    request_time: new Date().toJSON(),
-                    decimals: Number(token?.decimals),
-                    isNativeCurrency: false,
-                    error: e instanceof Error ? e.message : 'Could not fetch balance'
-                }
-                balances = [
-                    ...balances,
-                    balance
-                ]
+                balances.push(this.resolveTokenBalanceFetchError(e, token, network))
             }
         }
 

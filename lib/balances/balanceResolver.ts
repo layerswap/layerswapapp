@@ -1,13 +1,26 @@
 import posthog from "posthog-js";
-import { NetworkBalance } from "../../Models/Balance";
-import { IBalanceProvider } from "../../Models/BalanceProvider";
-import { NetworkWithTokens } from "../../Models/Network";
-import { truncateDecimals } from "../../components/utils/RoundDecimals";
-import { BitcoinBalanceProvider, EVMBalanceProvider, FuelBalanceProvider, ImmutableXBalanceProvider, LoopringBalanceProvider, ParadexBalanceProvider, QueryBalanceProvider, SolanaBalanceProvider, StarknetBalanceProvider, TonBalanceProvider, TronBalanceProvider, ZkSyncBalanceProvider } from "./providers";
+import { NetworkBalance } from "@/Models/Balance";
+import { BalanceProvider } from "@/Models/BalanceProvider";
+import { NetworkWithTokens } from "@/Models/Network";
+import { truncateDecimals } from "@/components/utils/RoundDecimals";
+import {
+    BitcoinBalanceProvider,
+    EVMBalanceProvider,
+    FuelBalanceProvider,
+    ImmutableXBalanceProvider,
+    LoopringBalanceProvider,
+    ParadexBalanceProvider,
+    QueryBalanceProvider,
+    SolanaBalanceProvider,
+    StarknetBalanceProvider,
+    TonBalanceProvider,
+    TronBalanceProvider,
+    ZkSyncBalanceProvider
+} from "./providers";
 
 export class BalanceResolver {
 
-    private providers: IBalanceProvider[] = [
+    private providers: BalanceProvider[] = [
         new QueryBalanceProvider(),
         new StarknetBalanceProvider(),
         new EVMBalanceProvider(),

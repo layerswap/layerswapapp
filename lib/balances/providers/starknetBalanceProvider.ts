@@ -3,10 +3,11 @@ import { NetworkWithTokens } from "@/Models/Network";
 import formatAmount from "@/lib/formatAmount";
 import Erc20Abi from '@/lib/abis/ERC20.json'
 import KnownInternalNames from "@/lib/knownIds";
-import { insertIfNotExists } from "./helpers";
+import { insertIfNotExists } from "../helpers";
+import { BalanceProvider } from "@/Models/BalanceProvider";
 
-export class StarknetBalanceProvider {
-    supportsNetwork(network: NetworkWithTokens): boolean {
+export class StarknetBalanceProvider extends BalanceProvider {
+    supportsNetwork = (network: NetworkWithTokens): boolean => {
         return (KnownInternalNames.Networks.StarkNetMainnet.includes(network.name) || KnownInternalNames.Networks.StarkNetGoerli.includes(network.name) || KnownInternalNames.Networks.StarkNetSepolia.includes(network.name))
     }
 
@@ -43,27 +44,11 @@ export class StarknetBalanceProvider {
                     decimals: token.decimals,
                     isNativeCurrency: false,
                 }
-                balances = [
-                    ...balances,
-                    balance
-                ]
+                balances.push(balance)
 
             }
             catch (e) {
-                console.log(e)
-                const balance = {
-                    network: network.name,
-                    token: token.symbol,
-                    amount: undefined,
-                    request_time: new Date().toJSON(),
-                    decimals: Number(token?.decimals),
-                    isNativeCurrency: false,
-                    error: e instanceof Error ? e.message : 'Could not fetch balance'
-                }
-                balances = [
-                    ...balances,
-                    balance
-                ]
+                balances.push(this.resolveTokenBalanceFetchError(e, token, network))
             }
         }
         return balances

@@ -1,10 +1,11 @@
+import { BalanceProvider } from "@/Models/BalanceProvider";
 import { NetworkWithTokens } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
-import { insertIfNotExists } from "./helpers";
+import { insertIfNotExists } from "../helpers";
 
-export class ImmutableXBalanceProvider {
-    supportsNetwork(network: NetworkWithTokens): boolean {
+export class ImmutableXBalanceProvider extends BalanceProvider {
+    supportsNetwork = (network: NetworkWithTokens): boolean => {
         return (KnownInternalNames.Networks.ImmutableXMainnet.includes(network.name) || KnownInternalNames.Networks.ImmutableXGoerli.includes(network.name))
     }
 
@@ -18,20 +19,9 @@ export class ImmutableXBalanceProvider {
 
             const balances = tokens?.map(asset => {
                 const balance = res.result.find(r => r.symbol === asset.symbol)
-                if (balance?.balance === undefined) {
-                    return {
-                        network: network.name,
-                        amount: undefined,
-                        decimals: asset.decimals,
-                        isNativeCurrency: false,
-                        token: asset.symbol,
-                        request_time: new Date().toJSON(),
-                        error: `Could not fetch balance for ${asset.symbol}`
-                    }
-                }
                 return {
                     network: network.name,
-                    amount: formatAmount(balance?.balance, asset.decimals),
+                    amount: balance?.balance ? formatAmount(balance?.balance, asset.decimals) : 0,
                     decimals: asset.decimals,
                     isNativeCurrency: false,
                     token: asset.symbol,
@@ -42,8 +32,7 @@ export class ImmutableXBalanceProvider {
             return balances
         }
         catch (e) {
-            console.log(e)
-            throw new Error(e)
+            return network.tokens.map((currency) => (this.resolveTokenBalanceFetchError(e, currency, network)))
         }
     }
 }
