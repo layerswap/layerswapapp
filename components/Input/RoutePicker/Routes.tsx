@@ -352,10 +352,10 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
 
 export const SelectedRoutePlaceholder = ({ placeholder }: { placeholder: string }) => (
     <>
-        <div className="inline-flex items-center relative">
+        <div className="inline-flex items-center relative py-1">
             <RoutePickerIcon className="w-7 h-7" />
         </div>
-        <span className="flex text-secondary-text text-base font-normal leading-5 flex-auto items-center max-w-2/3">
+        <span className="flex text-secondary-text text-base font-normal leading-5 flex-auto items-center max-w-3/4 group-[.exchange-picker]:max-w-full">
             <span className="ml-2 text-sm sm:text-base sm:leading-5 whitespace-nowrap">{placeholder}</span>
         </span>
     </>
