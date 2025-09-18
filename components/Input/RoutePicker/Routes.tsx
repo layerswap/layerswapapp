@@ -1,10 +1,10 @@
-import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
-import { SwapDirection } from "../../DTOs/SwapFormValues";
-import { truncateDecimals } from "../../utils/RoundDecimals";
-import { SelectItem } from "../../Select/Selector/SelectItem";
+import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { SwapDirection } from "@/components/DTOs/SwapFormValues";
+import { truncateDecimals } from "@/components/utils/RoundDecimals";
+import { SelectItem } from "@/components/Select/Selector/SelectItem";
 import { ChevronDown } from "lucide-react";
-import RoutePickerIcon from "../../icons/RoutePickerPlaceholder";
-import { useBalance } from "../../../lib/balances/providers/useBalance";
+import RoutePickerIcon from "@/components/icons/RoutePickerPlaceholder";
+import { useBalance } from "@/lib/balances/providers/useBalance";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { GroupedTokenElement, RowElement } from "@/Models/Route";
 import { useBalanceStore } from "@/stores/balanceStore";
@@ -333,12 +333,12 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                             className="h-3.5 w-3.5 absolute left-3.5 top-3.5 object-contain rounded border-1 border-secondary-300"
                         />
                     </div>
-                    <span className="ml-3 flex flex-col grow font-medium text-primary-text overflow-hidden min-w-0 max-w-3/5">
-                        <span className="leading-5">{token.symbol}</span>
-                        <span className="text-secondary-text grow font-normal text-sm leading-4 truncate whitespace-nowrap">
+                    <div className={"ml-3 flex flex-col grow font-medium text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full"}>
+                        <p className="leading-5">{token.symbol}</p>
+                        <p className="text-secondary-text grow font-normal text-sm leading-4 truncate whitespace-nowrap">
                             {route.display_name}
-                        </span>
-                    </span>
+                        </p>
+                    </div>
                 </>
             ) : (
                 <SelectedRoutePlaceholder placeholder={placeholder} />
@@ -352,10 +352,10 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
 
 export const SelectedRoutePlaceholder = ({ placeholder }: { placeholder: string }) => (
     <>
-        <div className="inline-flex items-center relative">
+        <div className="inline-flex items-center relative py-1">
             <RoutePickerIcon className="w-7 h-7" />
         </div>
-        <span className="flex text-secondary-text text-base font-normal leading-5 flex-auto items-center max-w-2/3">
+        <span className="flex text-secondary-text text-base font-normal leading-5 flex-auto items-center max-w-3/4 group-[.exchange-picker]:max-w-full">
             <span className="ml-2 text-sm sm:text-base sm:leading-5 whitespace-nowrap">{placeholder}</span>
         </span>
     </>
