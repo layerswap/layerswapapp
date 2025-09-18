@@ -58,7 +58,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
             modalId="connectedWallets"
         >
             <VaulDrawer.Snap id="item-1" className="space-y-1 pb-4">
-                <button type='button' onClick={connectWallet} className="w-full flex justify-center p-2 bg-secondary-500 rounded-md hover:bg-secondary-400 active:animate-press-down">
+                <button type='button' onClick={connectWallet} className="w-full flex justify-center p-2 bg-secondary-500 rounded-md hover:bg-secondary-400">
                     <div className="flex items-center text-secondary-text gap-1 px-3 py-1">
                         <Plus className="h-4 w-4" />
                         <span className="text-sm">

@@ -153,7 +153,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                                 <ConnectorIcon className='h-[50px] w-[50px] absolute top-[calc(50%-25px)] right-[calc(50%-25px)]' />
                             </div>
                     }
-                    <div className='bg-secondary-400 text-secondary-text w-full px-2 py-1.5 rounded-md mt-3 flex justify-center items-center active:animate-press-down'>
+                    <div className='bg-secondary-400 text-secondary-text w-full px-2 py-1.5 rounded-md mt-3 flex justify-center items-center'>
                         <CopyButton toCopy={selectedConnector?.qr.value || ''}>Copy QR URL</CopyButton>
                     </div>
                 </div>
@@ -322,7 +322,7 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
                     </div>
                     <button
                         type="button"
-                        className="flex gap-1.5 items-center justify-center bg-secondary-400 w-full text-primary-text p-4 border-none rounded-lg cursor-pointer text-sm font-medium leading-4 enabled:active:animate-press-down"
+                        className="flex gap-1.5 items-center justify-center bg-secondary-400 w-full text-primary-text p-4 border-none rounded-lg cursor-pointer text-sm font-medium leading-4"
                         onClick={onRetry}
                     >
                         <RotateCw className='h-4 w-4' />

@@ -23,7 +23,7 @@ const WalletTransferButton: FC<Props> = ({ swapBasicData: swapData, swapId, refu
                 <button
                     type='button'
                     onClick={() => setOpenModal(true)}
-                    className='inline-flex items-center gap-1 px-2 bg-secondary-300 hover:bg-secondary-400 rounded-lg text-xs active:animate-press-down'>
+                    className='inline-flex items-center gap-1 px-2 bg-secondary-300 hover:bg-secondary-400 rounded-lg text-xs'>
                     <SwitchIcon />
                     <p>Switch</p>
                 </button>

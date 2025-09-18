@@ -89,7 +89,7 @@ const MinMax = (props: MinMaxProps) => {
                     onClick={handleSetMinAmount}
                     typeof="button"
                     type="button"
-                    className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer enabled:active:animate-press-down"}
+                    className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer"}
                 >
                     Min
                 </button>
@@ -101,7 +101,7 @@ const MinMax = (props: MinMaxProps) => {
                     onClick={handleSetHalfAmount}
                     typeof="button"
                     type="button"
-                    className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer enabled:active:animate-press-down"}
+                    className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer"}
                 >
                     50%
                 </button>
@@ -117,7 +117,7 @@ const MinMax = (props: MinMaxProps) => {
                                 onClick={handleSetMaxAmount}
                                 typeof="button"
                                 type="button"
-                                className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer enabled:active:animate-press-down"}
+                                className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer"}
                             >
                                 Max
                             </button>

@@ -55,7 +55,7 @@ const SourceWalletPicker: FC = () => {
             values.depositMethod === 'deposit_address' ?
                 (
                     provider
-                        ? <div className="flex items-center space-x-2 text-sm  rounded-lg hover:bg-secondary-400 py-1 pl-2 pr-1 active:animate-press-down">
+                        ? <div className="flex items-center space-x-2 text-sm  rounded-lg hover:bg-secondary-400 py-1 pl-2 pr-1">
                             <div onClick={handleWalletChange} className="flex space-x-1 items-center cursor-pointer">
                                 <div className="text-secondary-text">
                                     Manual Transfer
@@ -126,7 +126,7 @@ const SourceWalletPicker: FC = () => {
                         <button
                             type="button"
                             onClick={() => handleSelectWallet()}
-                            className={clsx('active:animate-press-down w-full relative flex items-center justify-between gap-2 rounded-lg outline-none bg-secondary-500 p-3 py-4 text-secondary-text hover:bg-secondary-400 cursor-pointer order-1', {
+                            className={clsx('w-full relative flex items-center justify-between gap-2 rounded-lg outline-none bg-secondary-500 p-3 py-4 text-secondary-text hover:bg-secondary-400 cursor-pointer order-1', {
                                 'order-3': values.depositMethod !== 'deposit_address',
                             })}
                         >
