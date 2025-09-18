@@ -10,7 +10,7 @@ import useSWRBalance from '@/lib/balances/useSWRBalance';
 import { useSettingsState } from '@/context/settings';
 import WalletsList from '@/components/Wallet/WalletsList';
 import { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
-import { SwitchWalletAccount } from '@/helpers/accountSelectHelper';
+import { useSelectedAccount, useUpdateBalanceAccount } from '@/context/balanceAccounts';
 
 type Props = {
     swapData: SwapBasicData
@@ -23,22 +23,27 @@ const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal, swapData })
     const { source_token, source_network: swap_source_network } = swapData
     const source_network = swap_source_network && networks.find(n => n.name === swap_source_network?.name)
     const { provider } = useWallet(source_network, 'withdrawal')
-    const selectedWallet = useMemo(() => provider?.activeWallet, [provider]);
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
     const availableWallets = provider?.connectedWallets?.filter(c => !c.isNotAvailable) || []
+    const selectSourceAccount = useUpdateBalanceAccount("from");
 
     const changeWallet = async (props: SelectAccountProps) => {
-        SwitchWalletAccount(props, provider)
+        selectSourceAccount({
+            id: props.walletId,
+            address: props.address,
+            providerName: props.providerName
+        })
         setOpenModal(false)
     }
 
-    const { balances } = useSWRBalance(selectedWallet?.address, source_network)
+    const { balances } = useSWRBalance(selectedSourceAccount?.address, source_network)
 
     const walletBalance = source_network && balances?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
 
     let accountAddress: string | undefined = ""
-    if (selectedWallet) {
-        accountAddress = selectedWallet.address || "";
+    if (selectedSourceAccount) {
+        accountAddress = selectedSourceAccount.address || "";
     }
 
     if (!accountAddress) {
@@ -52,14 +57,13 @@ const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal, swapData })
     return <>
         <div className="grid content-end">
             {
-                selectedWallet &&
+                selectedSourceAccount &&
                 source_network &&
                 <div className="group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-xs mt-1.5 text-primary-text bg-secondary-500 disabled:cursor-not-allowed h-12 leading-4 font-medium w-full py-7">
                     <AddressWithIcon
-                        addressItem={{ address: accountAddress, group: AddressGroup.ConnectedWallet }}
-                        connectedWallet={selectedWallet}
+                        addressItem={{ address: accountAddress, group: AddressGroup.ConnectedWallet, wallet: selectedSourceAccount.wallet }}
                         network={source_network}
-                        onDisconnect={() => selectedWallet?.disconnect && selectedWallet?.disconnect()}
+                        onDisconnect={() => selectedSourceAccount.wallet?.disconnect && selectedSourceAccount.wallet?.disconnect()}
                     />
                     <div className="flex flex-col col-start-8 col-span-3 items-end font-normal text-secondary-text text-xs">
                         <p>Balance</p>

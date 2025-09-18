@@ -8,6 +8,7 @@ import useSWRGas from "../lib/gases/useSWRGas"
 import { useQuoteData } from "@/hooks/useFee"
 import { useMemo } from "react"
 import useWallet from "@/hooks/useWallet"
+import { useSelectedAccount } from "@/context/balanceAccounts"
 
 type Props = {
     onSubmit: (nativeTokenBalance: TokenBalance, networkGas: number) => void
@@ -20,7 +21,7 @@ const ReserveGasNote = ({ onSubmit, minAllowedAmount, maxAllowedAmount }: Props)
         values,
     } = useFormikContext<SwapFormValues>();
     const { provider } = useWallet(values.from, "withdrawal")
-    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
     const { balances } = useSWRBalance(selectedSourceAccount?.address, values.from)
     const { gasData } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset)
 

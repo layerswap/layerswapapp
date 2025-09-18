@@ -5,32 +5,28 @@ import { SwapDirection } from "../components/DTOs/SwapFormValues"
 import { useEffect, useMemo, useRef } from "react"
 import { NetworkWithTokens } from "../Models/Network"
 import { NetworkBalance } from "@/Models/Balance"
+import { useBalanceAccounts } from "@/context/balanceAccounts"
 
-type Props = {
-    direction: SwapDirection
-}
-export default function useAllBalances({ direction }: Props) {
-    const wallets = useWallet().wallets
+
+export default function useAllWithdrawalBalances() {
+
     const networks = useSettingsState().networks
-    const activeWallets = useMemo(() => wallets.filter(w => w.isActive), [wallets])
-
+    const balanceAccounts = useBalanceAccounts("from")
     const walletNetworks = useMemo(() => {
-        return activeWallets.map(wallet => {
-            const sourceNetworks = wallet.asSourceSupportedNetworks
+        return balanceAccounts.map(account => {
+            const wallet = account.wallet
             const withdrawalNetworks = wallet.withdrawalSupportedNetworks
-            const networkNames = direction === 'from' ? sourceNetworks : withdrawalNetworks
-            if (!networkNames || networkNames.length === 0) return []
-
-            return networkNames.map(networkName => {
+            if (!withdrawalNetworks || withdrawalNetworks.length === 0) return []
+            return withdrawalNetworks.map(networkName => {
                 const network = networks.find(n => n.name === networkName)
                 if (!network) return null
                 return {
-                    address: wallet.address,
+                    address: account.address,
                     network,
                 }
             })
         }).flat().filter(item => item !== null) as Array<{ address: string, network: NetworkWithTokens }>
-    }, [activeWallets, direction, networks])
+    }, [balanceAccounts, networks])
 
     const walletNetwokrsString = useMemo(() => {
         return walletNetworks.map(item => `${item.address}-${item.network.name}`).join(',')
@@ -51,5 +47,5 @@ export default function useAllBalances({ direction }: Props) {
 
     const result = allBalances === null && isLoading ? lastBalancesRef.current : allBalances
 
-    return useMemo(() => ({ isLoading, balances: result }), [result, direction, isLoading])
+    return useMemo(() => ({ isLoading, balances: result }), [result, isLoading])
 }
