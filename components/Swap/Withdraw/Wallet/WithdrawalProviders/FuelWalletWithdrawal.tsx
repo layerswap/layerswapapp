@@ -10,6 +10,7 @@ import {
 import { coinQuantityfy, CoinQuantityLike, Provider, ScriptTransactionRequest } from 'fuels';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import TransactionMessages from '../../messages/TransactionMessages';
+import { useSelectedAccount } from '@/context/balanceAccounts';
 
 export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -17,7 +18,7 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, r
     const [error, setError] = useState<string | undefined>()
     const { source_network, source_token } = swapBasicData;
     const { provider } = useWallet(source_network, 'withdrawal');
-    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
     const { network: fuelNetwork, refetch: refetchNetwork } = useNetwork()
     const networkChainId = Number(source_network?.chain_id)
     const { fuel } = useFuel()
@@ -25,11 +26,11 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, r
     const activeChainId = fuelNetwork?.chainId || (fuelNetwork?.url.includes('testnet') ? 0 : 9889)
 
     useEffect(() => {
-        if (provider?.activeWallet && selectedSourceAccount && selectedSourceAccount?.address) {
-            provider?.switchAccount && provider?.switchAccount(selectedSourceAccount, selectedSourceAccount?.address)
+        if (selectedSourceAccount && selectedSourceAccount?.address) {
+            provider?.switchAccount && provider?.switchAccount(selectedSourceAccount.wallet, selectedSourceAccount?.address)
             refetchNetwork()
         }
-    }, [selectedSourceAccount, provider?.activeWallet])
+    }, [selectedSourceAccount])
 
     const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setButtonClicked(true)
@@ -80,7 +81,7 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, r
         }
     }, [source_network, selectedSourceAccount, source_token, fuel])
 
-    if (!provider?.activeWallet) {
+    if (!selectedSourceAccount) {
         return <ConnectWalletButton />
     }
     else if (source_network && activeChainId !== undefined && networkChainId !== activeChainId) {

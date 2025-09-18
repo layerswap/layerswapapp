@@ -6,6 +6,7 @@ import { useContractWalletsStore } from "../stores/contractWalletsStore"
 import resolveChain from "../lib/resolveChain"
 import { createPublicClient, http } from "viem"
 import { useSettingsState } from "../context/settings"
+import { useSelectedAccount } from "@/context/balanceAccounts"
 
 export default function useWalletTransferOptions() {
     const { swapBasicData } = useSwapDataState()
@@ -14,29 +15,29 @@ export default function useWalletTransferOptions() {
     const { addContractWallet, getContractWallet, updateContractWallet } = useContractWalletsStore()
     const { provider } = useWallet(source_network, 'withdrawal')
 
-    const wallet = provider?.activeWallet
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
     useEffect(() => {
-        if (wallet?.address == undefined || source_network == undefined) return;
-        let contractWallet = getContractWallet(wallet.address, source_network.name);
+        if (selectedSourceAccount?.address == undefined || source_network == undefined) return;
+        let contractWallet = getContractWallet(selectedSourceAccount.address, source_network.name);
         if (!contractWallet) {
             // add before checking to check only once
-            addContractWallet(wallet.address, source_network.name);
+            addContractWallet(selectedSourceAccount.address, source_network.name);
 
             const sourceNetworkFromSettings = networks.find(n => n.name === source_network.name);
-            checkContractWallet(wallet.address, sourceNetworkFromSettings).then(
+            checkContractWallet(selectedSourceAccount.address, sourceNetworkFromSettings).then(
                 result => {
-                    updateContractWallet(wallet.address, sourceNetworkFromSettings?.name, result)
+                    updateContractWallet(selectedSourceAccount.address, sourceNetworkFromSettings?.name, result)
                 }
             )
         }
-    }, [wallet?.address])
+    }, [selectedSourceAccount?.address])
 
-    const walletAddressType = getContractWallet(wallet?.address, source_network?.name)
+    const walletAddressType = getContractWallet(selectedSourceAccount?.address, source_network?.name)
 
     const canDoSweepless = source_network && ((source_network.type == NetworkType.EVM
         && (walletAddressType?.ready && !walletAddressType?.isContract))
         || source_network.type == NetworkType.Starknet || source_network.type == NetworkType.ZkSyncLite)
-        || wallet?.address?.toLowerCase() === swapBasicData?.destination_address.toLowerCase()
+        || selectedSourceAccount?.address?.toLowerCase() === swapBasicData?.destination_address.toLowerCase()
     return { canDoSweepless, isContractWallet: walletAddressType }
 }
 

@@ -6,6 +6,7 @@ import { shortenEmail } from "@/components/utils/ShortenAddress"
 import KnownInternalNames from "@/lib/knownIds"
 import { useQueryState } from "@/context/query"
 import useWallet from "@/hooks/useWallet"
+import { useSelectedAccount } from "@/context/balanceAccounts"
 
 const SwapSummary: FC = () => {
 
@@ -18,7 +19,7 @@ const SwapSummary: FC = () => {
 
     const { source_network, destination_network, source_token, destination_token, source_exchange } = swapBasicData || {}
     const { provider } = useWallet(source_network, "withdrawal")
-    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
 
     if (!swapBasicData || !source_network || !source_token || !destination_token || !destination_network) {
         return <></>

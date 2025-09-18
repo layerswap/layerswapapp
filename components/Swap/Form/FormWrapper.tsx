@@ -23,6 +23,7 @@ import VaulDrawer from "@/components/modal/vaulModal";
 import { addressFormat } from "@/lib/address/formatter";
 import AddressNote from "@/components/Input/Address/AddressNote";
 import useSWRBalance from "@/lib/balances/useSWRBalance";
+import { useSelectedAccount } from "@/context/balanceAccounts";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -53,7 +54,7 @@ export default function FormWrapper({ children, type }: { children?: React.React
     const { getProvider } = useWallet(sourceNetworkWithTokens, "withdrawal")
     const [walletWihdrawDone, setWalletWihdrawDone] = useState(false);
     const { provider } = useWallet(swapBasicData?.source_network, 'withdrawal')
-    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider])
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
     const { mutate: mutateBalances } = useSWRBalance(selectedSourceAccount?.address, sourceNetworkWithTokens)
 
     const { getConfirmation } = useAsyncModal();

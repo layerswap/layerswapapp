@@ -7,6 +7,7 @@ import { resolveFormValidation } from '@/hooks/useFormValidation';
 import { resolveRouteValidation } from '@/hooks/useRouteValidation';
 import useWallet from '@/hooks/useWallet';
 import { useSwapDataState } from './swap';
+import { useSelectedAccount } from './balanceAccounts';
 
 interface ValidationDetails {
     title?: string;
@@ -37,7 +38,7 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     const { sameAccountNetwork } = query
     const { swapId } = useSwapDataState()
     const { provider } = useWallet(values.from, "withdrawal")
-    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
     const { minAllowedAmount, maxAllowedAmount, quoteError } = useQuoteData(quoteArgs, quoteRefreshInterval)
