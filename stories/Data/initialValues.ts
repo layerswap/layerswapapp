@@ -13,7 +13,8 @@ export const initialValues: SwapFormValues = {
                 "contract": "0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8",
                 "decimals": 6,
                 "price_in_usd": 0.999873,
-                "precision": 6
+                "precision": 6,
+                display_asset: ""
             },
             {
                 "symbol": "USDC",
@@ -22,7 +23,8 @@ export const initialValues: SwapFormValues = {
                 "contract": "0xaf88d065e77c8cC2239327C5EDb3A432268e5831",
                 "decimals": 6,
                 "price_in_usd": 0.999873,
-                "precision": 6
+                "precision": 6,
+                display_asset: ""
             },
             {
                 "symbol": "ETH",
@@ -31,7 +33,8 @@ export const initialValues: SwapFormValues = {
                 "contract": null,
                 "decimals": 18,
                 "price_in_usd": 3234.87,
-                "precision": 6
+                "precision": 6,
+                display_asset: ""
             }
         ],
         "name": "ARBITRUM_MAINNET",
@@ -49,7 +52,8 @@ export const initialValues: SwapFormValues = {
             "contract": null,
             "decimals": 18,
             "price_in_usd": 0,
-            "precision": 6
+            "precision": 6,
+            "display_asset": ""
         },
         "metadata": {
             "listing_date": "2023-12-27T16:46:50.617075+00:00"
@@ -66,7 +70,8 @@ export const initialValues: SwapFormValues = {
         "contract": null,
         "decimals": 18,
         "price_in_usd": 3234.87,
-        "precision": 6
+        "precision": 6,
+        "display_asset": ""
     },
     fromExchange: undefined,
     to: {
@@ -79,7 +84,8 @@ export const initialValues: SwapFormValues = {
                 "contract": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
                 "decimals": 6,
                 "price_in_usd": 0.999873,
-                "precision": 6
+                "precision": 6,
+                display_asset: ""
             },
             {
                 "status": "active",
@@ -89,7 +95,8 @@ export const initialValues: SwapFormValues = {
                 "contract": null,
                 "decimals": 18,
                 "price_in_usd": 3234.87,
-                "precision": 6
+                "precision": 6,
+                display_asset: ""
             }
         ],
         "name": "ETHEREUM_MAINNET",
@@ -107,7 +114,9 @@ export const initialValues: SwapFormValues = {
             "contract": null,
             "decimals": 18,
             "price_in_usd": 3234.87,
-            "precision": 6
+            "precision": 6,
+            "display_asset": ""
+
         },
         "metadata": {
             "listing_date": "2023-12-27T16:46:50.617075+00:00"
@@ -125,7 +134,8 @@ export const initialValues: SwapFormValues = {
         "contract": null,
         "decimals": 18,
         "price_in_usd": 3234.87,
-        "precision": 6
+        "precision": 6,
+        "display_asset": ""
     },
     "toExchange": undefined,
 }

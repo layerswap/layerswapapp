@@ -51,6 +51,7 @@ export type WalletProvider = {
     switchChain?: (connector: Wallet, chainId: string | number) => Promise<void>
     isNotAvailableCondition?: (connector: string, network: string) => boolean,
     availableWalletsForConnect?: InternalConnector[],
+    availableHiddenWalletsForConnect?: InternalConnector[],
     connectedWallets: Wallet[] | undefined,
     activeWallet: Wallet | undefined,
     autofillSupportedNetworks?: string[],

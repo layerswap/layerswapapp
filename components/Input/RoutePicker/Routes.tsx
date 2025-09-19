@@ -2,7 +2,7 @@ import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Info } from "lucide-react";
 import RoutePickerIcon from "@/components/icons/RoutePickerPlaceholder";
 import { useBalance } from "@/lib/balances/useBalance";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
@@ -11,6 +11,7 @@ import { useBalanceStore } from "@/stores/balanceStore";
 import { useBalanceAccounts } from "@/context/balanceAccounts";
 import clsx from "clsx";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
+import { ExtendedAddress } from "../Address/AddressPicker/AddressWithIcon";
 
 type TokenItemProps = {
     route: NetworkRoute;
@@ -24,13 +25,13 @@ type TokenItemProps = {
 export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
     const { item, route, direction, allbalancesLoaded, type } = props
 
-    return <SelectItem>
+    return <SelectItem className="group">
         <SelectItem.Logo
             imgSrc={item.logo}
             altText={`${item.symbol} logo`}
             className="rounded-full"
         />
-        <NetworkTokenTitle item={item as NetworkRouteToken} route={route} direction={direction} allbalancesLoaded={allbalancesLoaded} type={type} />
+        <NetworkTokenTitle item={item} route={route} direction={direction} allbalancesLoaded={allbalancesLoaded} type={type} />
     </SelectItem>
 }
 
@@ -55,7 +56,27 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     return <SelectItem.DetailedTitle
         title={item.symbol}
         secondaryImageAlt={route.display_name}
-        secondary={route.display_name}
+        secondary={
+            <div className="flex items-center gap-1">
+                <span>{route.display_name}</span>
+                {
+                    item.contract ?
+                        <ExtendedAddress network={route} isForCurrency showDetails address={item.contract} logo={item.logo} title={item.symbol} description={item.display_asset}>
+                            <div className="flex items-center gap-1 text-secondary-text text-xs cursor-pointer hover:text-primary-text transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-500">
+                                <p className="max-w-[90px] truncate">
+                                    <span>•</span> <span>{item.display_asset}</span>
+                                </p>
+                                <Info className="h-3 w-3" />
+                            </div>
+                        </ExtendedAddress>
+                        :
+                        <p className="flex items-center gap-1 text-xs text-secondary-text transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-500">
+                            <span>•</span>
+                            <p className="truncate max-w-[80px]">{item.display_asset}</p>
+                        </p>
+                }
+            </div>
+        }
         secondaryLogoSrc={route.logo}
     >
         {(allbalancesLoaded && tokenbalance && Number(tokenbalance?.amount) >= 0) ? (

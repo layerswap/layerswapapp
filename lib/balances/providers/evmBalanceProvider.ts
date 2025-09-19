@@ -53,6 +53,7 @@ export class EVMBalanceProvider extends BalanceProvider {
                 hasMulticall: !!network.metadata?.evm_multicall_contract
             });
             const nativeToken = network.token
+
             const nativePromise = getTokenBalance(address as `0x${string}`, network)
 
             const [erc20BalancesContractRes, nativeBalanceData] = await Promise.all([
@@ -121,12 +122,12 @@ export class EVMBalanceProvider extends BalanceProvider {
             }
         })
 
-        const nativeTokenBalance = balances?.[1]?.[balances?.[1]?.length - 1]
+        const nativeTokenBalance = Number(balances?.[1]?.[balances?.[1]?.length - 1])
 
         const nativeTokenResolvedBalance: TokenBalance | undefined = network.token?.decimals ? {
             network: network.name,
             token: network.token?.symbol,
-            amount: nativeTokenBalance ? formatAmount(nativeTokenBalance, network.token?.decimals) : undefined,
+            amount: nativeTokenBalance >= 0 ? formatAmount(nativeTokenBalance, network.token?.decimals) : undefined,
             request_time: new Date().toJSON(),
             decimals: network.token?.decimals,
             isNativeCurrency: true,
@@ -278,7 +279,6 @@ type NativeBalanceResponse = (GetBalanceReturnType & {
 })
 
 export const getTokenBalance = async (address: `0x${string}`, network: Network, contract?: `0x${string}` | null): Promise<NativeBalanceResponse | null> => {
-
     try {
         const chain = resolveChain(network)
         if (!chain) throw new Error("Could not resolve chain")

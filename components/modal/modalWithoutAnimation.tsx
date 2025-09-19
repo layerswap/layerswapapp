@@ -75,7 +75,7 @@ export const ModalContent = (props: ModalContentProps) => {
                             {header}
                         </div>
                         {showCloseButton && (
-                            <IconButton onClick={closeModal} icon={
+                            <IconButton onClick={closeModal} className="active:animate-press-down" icon={
                                 <X strokeWidth={3} />
                             }>
                             </IconButton>

@@ -92,11 +92,10 @@ export default function useTron(): WalletProvider {
         }
     })
 
-    const provider = {
+    const provider: WalletProvider = {
         connectWallet,
         disconnectWallets: disconnectWallet,
         availableWalletsForConnect,
-        activeAccountAddress: wallet?.address,
         connectedWallets: getWallet(),
         activeWallet: wallet,
         autofillSupportedNetworks: commonSupportedNetworks,

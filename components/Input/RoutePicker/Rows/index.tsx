@@ -55,7 +55,7 @@ export default function Row({
             const isSelected = selectedRoute === route.name && selectedToken === token.symbol;
 
             return (
-                <div className={clsx("cursor-pointer hover:bg-secondary-500 outline-none disabled:cursor-not-allowed rounded-lg")} onClick={() => onSelect(route, token)} >
+                <div className={clsx("cursor-pointer hover:bg-secondary-500 outline-none disabled:cursor-not-allowed rounded-xl")} onClick={() => onSelect(route, token)} >
                     <CurrencySelectItemDisplay
                         allbalancesLoaded={allbalancesLoaded}
                         item={token}
@@ -88,7 +88,7 @@ export default function Row({
                         altText={`sceleton logo `}
                         className="rounded-full bg-secondary-500"
                     />
-                    <SelectItem.Title className="py-2">
+                    <SelectItem.Title className="py-0.5">
                         <div className="grid gap-0 leading-5 align-middle space-y-0.5 font-medium">
                             <span className="align-middle h-3.5 my-1 w-12 bg-secondary-500 rounded-sm" />
                             <div className="flex items-center space-x-1 align-middle" >
