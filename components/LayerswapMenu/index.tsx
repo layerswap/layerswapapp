@@ -35,7 +35,7 @@ const Comp = () => {
 
     return <>
         <div className="text-secondary-text cursor-pointer relative">
-            <IconButton className="inline-flex" onClick={() => setOpenTopModal(true)} icon={
+            <IconButton className="inline-flex active:animate-press-down" onClick={() => setOpenTopModal(true)} icon={
                 <MenuIcon strokeWidth="2" />
             }>
             </IconButton>

@@ -3,7 +3,7 @@ import { SwapFormValues } from "../../DTOs/SwapFormValues";
 import useSWRBalance from "@/lib/balances/useSWRBalance";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { updateForm } from "@/components/Swap/Form/updateForm";
 import useWallet from "@/hooks/useWallet";
@@ -26,7 +26,7 @@ const MinMax = (props: MinMaxProps) => {
 
     const { provider } = useWallet(from, "withdrawal")
     const selectedSourceAccount = useSelectedAccount("from", provider?.name);
-    
+
     const { gasData } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency)
     const { balances, mutate: mutateBalances } = useSWRBalance(selectedSourceAccount?.address, from)
 
@@ -83,44 +83,32 @@ const MinMax = (props: MinMaxProps) => {
         <div className="flex gap-1.5 group text-xs leading-4" onMouseLeave={() => onActionHover(undefined)}>
             {
                 Number(limitsMinAmount) > 0 &&
-                <button
+                <ActionButton
+                    label="Min"
                     onMouseEnter={() => onActionHover(limitsMinAmount)}
-                    disabled={!limitsMinAmount}
                     onClick={handleSetMinAmount}
-                    typeof="button"
-                    type="button"
-                    className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer"}
-                >
-                    Min
-                </button>
+                    disabled={!limitsMinAmount}
+                />
             }
             {
                 depositMethod === 'wallet' && halfOfBalance > 0 && (halfOfBalance < (maxAllowedAmount || Infinity)) &&
-                <button
+                <ActionButton
+                    label="50%"
                     onMouseEnter={() => onActionHover(halfOfBalance)}
                     onClick={handleSetHalfAmount}
-                    typeof="button"
-                    type="button"
-                    className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer"}
-                >
-                    50%
-                </button>
+                />
             }
             {
                 Number(maxAllowedAmount) > 0 &&
                 <>
                     <Tooltip disableHoverableContent={true}>
                         <TooltipTrigger asChild>
-                            <button
+                            <ActionButton
+                                label="Max"
                                 onMouseEnter={() => onActionHover(maxAllowedAmount)}
                                 disabled={!maxAllowedAmount}
                                 onClick={handleSetMaxAmount}
-                                typeof="button"
-                                type="button"
-                                className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer"}
-                            >
-                                Max
-                            </button>
+                            />
                         </TooltipTrigger>
                         {showMaxTooltip && <TooltipContent className="pointer-events-none w-80 grow p-2 !border-none !bg-secondary-300 text-xs rounded-xl" side="top" align="start" alignOffset={-10}>
                             <p>Max is calculated based on your balance minus gas fee for the transaction</p>
@@ -133,3 +121,25 @@ const MinMax = (props: MinMaxProps) => {
 }
 
 export default MinMax
+
+type ActionButtonProps = {
+    label: string;
+    onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
+    onMouseEnter: () => void;
+    disabled?: boolean;
+}
+
+const ActionButton = ({ label, onClick, onMouseEnter, disabled }: ActionButtonProps) => {
+    return (
+        <button
+            onMouseEnter={onMouseEnter}
+            onClick={onClick}
+            typeof="button"
+            type="button"
+            disabled={disabled}
+            className={"px-1.5 py-0.5 rounded-md duration-200 break-keep transition bg-secondary-300 hover:bg-secondary-200 text-secondary-text hover:text-primary-buttonTextColor cursor-pointer enabled:active:animate-press-down"}
+        >
+            {label}
+        </button>
+    );
+}
