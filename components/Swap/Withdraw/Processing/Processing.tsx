@@ -127,7 +127,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             swapDetails?.status === SwapStatus.Completed ||
             swapDetails?.status === SwapStatus.Failed || 
             swapDetails?.status === SwapStatus.Expired ||
-            swapInputTransaction?.status === 'completed'
+            swapDetails?.status === SwapStatus.LsTransferPending
         ) {
             posthog?.capture(`${swapDetails?.status}`, {
                 swap_id: swapDetails?.id,
