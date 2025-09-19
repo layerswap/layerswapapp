@@ -1,14 +1,14 @@
-import { TokenBalance } from "../../../Models/Balance";
-import { Network, NetworkWithTokens, Token } from "../../../Models/Network";
-import formatAmount from "../../formatAmount";
+import { TokenBalance } from "@/Models/Balance";
+import { Network, NetworkWithTokens, Token } from "@/Models/Network";
+import formatAmount from "@/lib/formatAmount";
+import KnownInternalNames from "@/lib/knownIds";
+import retryWithExponentialBackoff from "@/lib/retry";
+import tonClient from "@/lib/wallets/ton/client";
+import { insertIfNotExists } from "../helpers";
+import { BalanceProvider } from "@/Models/BalanceProvider";
 
-import KnownInternalNames from "../../knownIds";
-import retryWithExponentialBackoff from "../../retry";
-import tonClient from "../../wallets/ton/client";
-import { insertIfNotExists } from "./helpers";
-
-export class TonBalanceProvider {
-    supportsNetwork(network: NetworkWithTokens): boolean {
+export class TonBalanceProvider extends BalanceProvider {
+    supportsNetwork = (network: NetworkWithTokens): boolean => {
         return KnownInternalNames.Networks.TONMainnet.includes(network.name)
     }
 
@@ -20,16 +20,11 @@ export class TonBalanceProvider {
             try {
                 const balance = await resolveBalance({ network, address, token })
 
-                if (!balance) return
-
-                balances = [
-                    ...balances,
-                    balance,
-                ]
+                balances.push(balance)
 
             }
             catch (e) {
-                console.log(e)
+                balances.push(this.resolveTokenBalanceFetchError(e, token, network))
             }
         }
 
@@ -57,62 +52,53 @@ export const resolveBalance = async ({ address, network, token }: {
 }
 
 const getNativeAssetBalance = async ({ network, token, address }: { network: Network, token: Token, address: string }) => {
-    try {
+    const { Address } = await import("@ton/ton");
 
-        const { Address } = await import("@ton/ton");
-
-        const getBalance = async () => {
-            return await tonClient.getBalance(Address.parse(address))
-        }
-        const tonBalance = await retryWithExponentialBackoff(getBalance)
-
-        return ({
-            network: network.name,
-            token: token.symbol,
-            amount: formatAmount(tonBalance.toString(), Number(token?.decimals)),
-            request_time: new Date().toJSON(),
-            decimals: Number(token?.decimals),
-            isNativeCurrency: false,
-        })
+    const getBalance = async () => {
+        return await tonClient.getBalance(Address.parse(address))
     }
-    catch (e) {
-        return null;
-    }
+    const tonBalance = await retryWithExponentialBackoff(getBalance)
+
+    return ({
+        network: network.name,
+        token: token.symbol,
+        amount: formatAmount(tonBalance.toString(), Number(token?.decimals)),
+        request_time: new Date().toJSON(),
+        decimals: Number(token?.decimals),
+        isNativeCurrency: true,
+    })
+
 }
 
 const getJettonBalance = async ({ network, token, address }: { network: Network, token: Token, address: string }) => {
-    try {
 
-        const { JettonMaster, JettonWallet, Address } = await import("@ton/ton");
+    const { JettonMaster, JettonWallet, Address } = await import("@ton/ton");
 
-        const jettonMasterAddress = Address.parse(token.contract!)
-        const userAddress = Address.parse(address)
-        const jettonMaster = tonClient.open(JettonMaster.create(jettonMasterAddress))
-        const getJettonAddress = async () => {
-            return await jettonMaster.getWalletAddress(userAddress)
-        }
-        const jettonAddress = await retryWithExponentialBackoff(getJettonAddress)
-
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-
-        const jettonWallet = JettonWallet.create(jettonAddress)
-        const getBalance = async () => {
-            return await jettonWallet.getBalance(tonClient.provider(jettonAddress))
-        }
-        const jettonBalance = await retryWithExponentialBackoff(getBalance)
-
-        const balance = {
-            network: network.name,
-            token: token.symbol,
-            amount: formatAmount(Number(BigInt(jettonBalance)), token.decimals),
-            request_time: new Date().toJSON(),
-            decimals: token.decimals,
-            isNativeCurrency: false,
-        }
-
-        return balance
+    const jettonMasterAddress = Address.parse(token.contract!)
+    const userAddress = Address.parse(address)
+    const jettonMaster = tonClient.open(JettonMaster.create(jettonMasterAddress))
+    const getJettonAddress = async () => {
+        return await jettonMaster.getWalletAddress(userAddress)
     }
-    catch (e) {
-        return null;
+    const jettonAddress = await retryWithExponentialBackoff(getJettonAddress)
+
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+
+    const jettonWallet = JettonWallet.create(jettonAddress)
+    const getBalance = async () => {
+        return await jettonWallet.getBalance(tonClient.provider(jettonAddress))
     }
+    const jettonBalance = await retryWithExponentialBackoff(getBalance)
+
+    const balance = {
+        network: network.name,
+        token: token.symbol,
+        amount: formatAmount(Number(BigInt(jettonBalance)), token.decimals),
+        request_time: new Date().toJSON(),
+        decimals: token.decimals,
+        isNativeCurrency: false,
+    }
+
+    return balance
+
 }

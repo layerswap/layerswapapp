@@ -27,7 +27,7 @@ const ReserveGasNote = ({ onSubmit, minAllowedAmount, maxAllowedAmount }: Props)
 
     const nativeTokenBalance = balances?.find(b => b.token == values?.from?.token?.symbol)
 
-    const mightBeOutOfGas = !!(gasData && nativeTokenBalance?.isNativeCurrency && (Number(values.amount)
+    const mightBeOutOfGas = nativeTokenBalance?.amount && !!(gasData && nativeTokenBalance?.isNativeCurrency && (Number(values.amount)
         + gasData.gas) > nativeTokenBalance.amount
         && minAllowedAmount
         && nativeTokenBalance.amount > minAllowedAmount

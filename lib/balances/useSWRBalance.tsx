@@ -1,5 +1,5 @@
 import useSWR from "swr"
-import { NetworkWithTokens } from "../../Models/Network"
+import { NetworkWithTokens } from "@/Models/Network"
 import { BalanceResolver } from "./balanceResolver"
 type Opts = {
     refreshInterval?: number

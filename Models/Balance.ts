@@ -1,17 +1,6 @@
 import { Network, Token } from "./Network"
 import { Wallet } from "./WalletProvider"
 
-export type BalanceProps = {
-    networkName: string,
-    token: Token,
-    address: string
-}
-
-export type NetworkBalancesProps = {
-    networkName: string,
-    address: string
-}
-
 export type GasProps = {
     network: Network,
     token: Token,
@@ -22,11 +11,12 @@ export type GasProps = {
 
 export type TokenBalance = {
     network: string,
-    amount: number,
+    amount: number | undefined,
     decimals: number,
     isNativeCurrency: boolean,
     token: string,
     request_time: string,
+    error?: string
 }
 
 export type NetworkBalance = {
@@ -34,21 +24,8 @@ export type NetworkBalance = {
     totalInUSD?: number,
 }
 
-export type Gas = {
-    token: string,
-    gas: number,
-    gasDetails?: {
-        gasLimit?: number,
-        maxFeePerGas?: number,
-        gasPrice?: number,
-        maxPriorityFeePerGas?: number
-    },
-    request_time: string
-}
-
-export type BalanceProvider = {
-    getBalance: ({ networkName, token, address }: BalanceProps) => Promise<TokenBalance | undefined | null> | TokenBalance | undefined,
-    getNetworkBalances: (props: NetworkBalancesProps) => Promise<TokenBalance[] | undefined> | TokenBalance[] | undefined | void,
-    getGas?: (props: GasProps) => Promise<Gas[] | undefined> | undefined | void,
-    supportedNetworks: string[],
+export type BalanceFetchError = {
+    message: string
+    code?: string | number
+    cause?: unknown
 }
