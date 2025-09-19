@@ -24,8 +24,7 @@ const FormButton = ({
 }: Props) => {
     const query = useQueryState();
     const actionDisplayName = error || query?.actionButtonText || "Next";
-
-    if (shouldConnectWallet) {
+    if (shouldConnectWallet && !error) {
         return <FormSourceWalletButton />;
     }
 

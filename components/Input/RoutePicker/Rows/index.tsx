@@ -69,7 +69,7 @@ export default function Row({
         }
         case "group_title":
             return (
-                <div className="text-primary-text-placeholder text-base font-normal leading-5 pl-1 sticky top-0 z-50 flex items-baseline" style={{ position: "sticky", top: 0, transform: "none" }} >
+                <div className="text-primary-text-tertiary text-base font-normal leading-5 pl-1 sticky top-0 z-50 flex items-baseline" style={{ position: "sticky", top: 0, transform: "none" }} >
                     <p>
                         {item.text}
                     </p>

@@ -24,22 +24,13 @@ import { addressFormat } from "@/lib/address/formatter";
 import AddressNote from "@/components/Input/Address/AddressNote";
 import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { useSelectedAccount } from "@/context/balanceAccounts";
+import SwapDetails from "..";
 
 type NetworkToConnect = {
     DisplayName: string;
     AppURL: string;
 }
-const SwapDetails = dynamicWithRetries(() => import(".."),
-    <div className="w-full h-[400px]">
-        <div className="animate-pulse flex space-x-4">
-            <div className="flex-1 space-y-6 py-1">
-                <div className="h-32 bg-secondary-500 rounded-lg"></div>
-                <div className="h-40 bg-secondary-500 rounded-lg"></div>
-                <div className="h-12 bg-secondary-500 rounded-lg"></div>
-            </div>
-        </div>
-    </div>
-)
+
 
 export default function FormWrapper({ children, type }: { children?: React.ReactNode, type: 'cross-chain' | 'exchange' }) {
 
@@ -157,7 +148,8 @@ export default function FormWrapper({ children, type }: { children?: React.React
                     show={swapModalOpen}
                     setShow={handleShowSwapModal}
                     header={`Complete the swap`}
-                    modalId="showSwap">
+                    modalId="showSwap"
+                    className={!swapBasicData?.use_deposit_address ? "openwithdrawalmodal" : ""}>
                     <VaulDrawer.Snap id="item-1">
                         <SwapDetails type="contained" onWalletWithdrawalSuccess={handleWalletWithdrawalSuccess} />
                     </VaulDrawer.Snap>

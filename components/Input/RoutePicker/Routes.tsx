@@ -293,7 +293,7 @@ export const SelectedCurrencyDisplay = (props: SelectedCurrencyDisplayProps) => 
                 {value.symbol}
             </span>
             :
-            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
+            <span className="block font-medium text-primary-text-tertiary flex-auto items-center">
                 {placeholder}
             </span>
         }

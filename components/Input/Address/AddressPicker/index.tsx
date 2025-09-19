@@ -180,7 +180,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                             !disabled
                             && destination
                             && provider
-                            && !provider?.activeWallet &&
+                            && !connectedWallets.length &&
                             <ConnectWalletButton
                                 provider={provider}
                                 onConnect={onConnect}

@@ -113,7 +113,7 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
                         }
                     </div>
                     <NumberFlow className="text-primary-text text-sm leading-6" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} format={{ style: 'currency', currency: 'USD' }} prefix={gasFeeInUsd < 0.01 ? '<' : undefined} />
-                    <div className="ml-3 w-px h-3 bg-primary-text-placeholder rounded-2xl" />
+                    <div className="ml-3 w-px h-3 bg-primary-text-tertiary rounded-2xl" />
                 </div>
             }
             {
@@ -134,7 +134,7 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
                 reward &&
                 (!shouldCheckNFT || (!isLoading && !error && nftBalance !== undefined && nftBalance > 0)) &&
                 <>
-                    <div className="w-px h-3 bg-primary-text-placeholder rounded-2xl" />
+                    <div className="w-px h-3 bg-primary-text-tertiary rounded-2xl" />
                     <div className='text-right text-primary-text inline-flex items-center gap-1 pr-4'>
                         <Image src={rewardCup} alt="Reward" width={16} height={16} />
                         <NumberFlow value={reward?.amount_in_usd < 0.01 ? '0.01' : reward?.amount_in_usd} format={{ style: 'currency', currency: 'USD' }} prefix={reward?.amount_in_usd < 0.01 ? '<' : undefined} />

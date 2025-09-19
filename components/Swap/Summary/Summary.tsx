@@ -71,7 +71,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                             requestedAmount &&
                             <p className="text-primary-text text-sm">{truncateDecimals(requestedAmount, sourceCurrency.precision)} {sourceCurrency.symbol}</p>
                         }
-                        <p className="text-secondary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
+                        <p className="text-secondary-text text-sm flex justify-end"><NumberFlow value={requestedAmountInUsd || 0} format={{ style: 'currency', currency: 'USD' }} trend={0} /></p>
                     </div>
                 </div>
                 <div className="relative text-secondary-text">

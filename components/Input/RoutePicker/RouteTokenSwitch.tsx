@@ -35,7 +35,7 @@ const RouteTokenSwitch: FC = () => {
                                     />
                                 )}
                                 <item.icon
-                                    className={clsx("text-primary-text-placeholder h-5 w-5", {
+                                    className={clsx("text-primary-text-tertiary h-5 w-5", {
                                         "!text-primary-text": activeTab === item.id,
                                     })}
                                 />
