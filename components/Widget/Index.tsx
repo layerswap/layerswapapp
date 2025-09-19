@@ -34,7 +34,7 @@ const Widget = ({ children, className, hideMenu }: Props) => {
          {
             AppSettings.ApiVersion === 'sandbox' &&
             <div className="relative z-20">
-               <div className="absolute sm:-top-1 -top-4 right-[calc(50%-68px)] bg-[#D95E1B] py-0.5 px-10 rounded-b-md text-xs scale-75">
+               <div className="absolute -top-1 right-[calc(50%-68px)] bg-[#D95E1B] py-0.5 px-10 rounded-b-md text-xs scale-75">
                   TESTNET
                </div>
             </div>
@@ -43,10 +43,8 @@ const Widget = ({ children, className, hideMenu }: Props) => {
             !hideMenu &&
             <HeaderWithMenu goBack={handleBack} />
          }
-         <div className="relative flex-col px-4 h-full min-h-0 flex flex-1">
-            <div className="flex flex-col flex-1 items-start h-full min-h-0 pb-4" ref={wrapper}>
-               {children}
-            </div>
+         <div className="relative flex flex-col px-4 pb-4 h-full w-full min-h-0" ref={wrapper}>
+            {children}
          </div>
          <div id="widget_root" />
       </div>

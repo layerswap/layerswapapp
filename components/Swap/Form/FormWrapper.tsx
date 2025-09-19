@@ -123,7 +123,7 @@ export default function FormWrapper({ children, type }: { children?: React.React
         mutateBalances()
         setWalletWihdrawDone(true)
     }, [mutateBalances]);
-    console.log("swapBasicData?.use_deposit_address", swapBasicData?.use_deposit_address)
+
     return <>
         <Formik
             innerRef={formikRef}
