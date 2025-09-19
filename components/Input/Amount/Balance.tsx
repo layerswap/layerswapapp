@@ -20,7 +20,7 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
 
     const truncatedBalance = tokenBalance?.amount !== undefined ? truncateDecimals(tokenBalance?.amount, token?.precision) : ''
 
-    if (!isBalanceLoading && !(network && token && truncatedBalance && tokenBalance))
+    if (!isBalanceLoading && !(network && token && tokenBalance))
         return null;
 
     return <div className="w-4/5 -top-[1px] relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs text-secondary-text leading-[18px] font-normal">
