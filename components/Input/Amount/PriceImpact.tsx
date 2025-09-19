@@ -1,24 +1,24 @@
 import { FC, useMemo } from "react";
-import { Quote } from "@/lib/apiClients/layerSwapApiClient";
+import { SwapQuote } from "@/lib/apiClients/layerSwapApiClient";
 import { Triangle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 
 type PriceImpactProps = {
-    fee: Quote | undefined;
+    quote: SwapQuote | undefined;
 }
-export const PriceImpact: FC<PriceImpactProps> = ({ fee }) => {
-    const receive_amount = fee?.quote.receive_amount
-    const requested_amount = fee?.quote.requested_amount
+export const PriceImpact: FC<PriceImpactProps> = ({ quote }) => {
+    const receive_amount = quote?.receive_amount
+    const requested_amount = quote?.requested_amount
 
     const toAmountUSD = useMemo(() => {
-        if (!receive_amount || !fee?.quote?.destination_token?.price_in_usd) return undefined;
-        return receive_amount * fee.quote.destination_token.price_in_usd;
-    }, [receive_amount, fee?.quote?.destination_token?.price_in_usd]);
+        if (!receive_amount || !quote?.destination_token?.price_in_usd) return undefined;
+        return receive_amount * quote.destination_token.price_in_usd;
+    }, [receive_amount, quote?.destination_token?.price_in_usd]);
 
     const fromAmountUSD = useMemo(() => {
-        if (!requested_amount || !fee?.quote?.source_token?.price_in_usd) return undefined;
-        return requested_amount * fee.quote.source_token.price_in_usd;
-    }, [requested_amount, fee?.quote?.source_token?.price_in_usd]);
+        if (!requested_amount || !quote?.source_token?.price_in_usd) return undefined;
+        return requested_amount * quote.source_token.price_in_usd;
+    }, [requested_amount, quote?.source_token?.price_in_usd]);
 
     const priceImpact = useMemo(() => {
         if (fromAmountUSD === undefined || fromAmountUSD === 0 || toAmountUSD === undefined) return undefined;

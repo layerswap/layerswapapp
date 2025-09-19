@@ -88,7 +88,6 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData
                 isDisabled={!!loading || dataLoading}
                 isSubmitting={!!loading || dataLoading}
                 onClick={handleTransfer}
-                icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />}
                 swapData={swapBasicData}
                 refuel={refuel}
             />

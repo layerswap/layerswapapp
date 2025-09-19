@@ -105,7 +105,6 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, r
                     isDisabled={!!loading}
                     isSubmitting={!!loading}
                     onClick={handleTransfer}
-                    icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />}
                     swapData={swapBasicData}
                     refuel={refuel}
                 />
@@ -138,7 +137,6 @@ const ChangeNetworkButton: FC<{ chainId: number, network: string, onChange: () =
             !isPending &&
             <ButtonWrapper
                 onClick={clickHandler}
-                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
             >
                 {
                     error ? <span>Try again</span>

@@ -89,7 +89,6 @@ const TransferTokenButton: FC<Props> = ({
             !loading &&
             <SendTransactionButton
                 onClick={clickHandler}
-                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
                 error={!!error && buttonClicked}
                 swapData={swapData}
                 refuel={refuel}

@@ -73,7 +73,6 @@ export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
                     isDisabled={!!loading}
                     isSubmitting={!!loading}
                     onClick={handleTransfer}
-                    icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />}
                     error={!!transactionErrorMessage}
                     swapData={swapBasicData}
                     refuel={refuel}

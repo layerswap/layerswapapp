@@ -15,6 +15,7 @@ import shortenAddress from "@/components/utils/ShortenAddress";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import NumberFlow from "@number-flow/react";
 import clsx from "clsx";
+import { PriceImpact } from "@/components/Input/Amount/PriceImpact";
 
 type SwapInfoProps = Omit<SwapResponse, 'quote' | 'swap'> & {
     swap: SwapBasicData
@@ -96,7 +97,8 @@ const Summary: FC<SwapInfoProps> = (props) => {
                                 )}>
                                     <NumberFlow value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
                                 </p>
-                                <p className="text-secondary-text text-sm">
+                                <p className="text-secondary-text text-sm flex items-center gap-1">
+                                    <PriceImpact quote={quote.quote} />
                                     <NumberFlow value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD' }} trend={0} />
                                 </p>
                             </div>

@@ -3,27 +3,19 @@ import LayerSwapApiClient, { SwapResponse, TransactionType } from '../../lib/api
 import shortenAddress, { shortenEmail } from '../utils/ShortenAddress';
 import CopyButton from '../buttons/copyButton';
 import StatusIcon from './StatusIcons';
-import { ArrowRight, ExternalLink, Fuel, Info, RefreshCw } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import isGuid from '../utils/isGuid';
 import KnownInternalNames from '../../lib/knownIds';
 import { useQueryState } from '../../context/query';
 import { ApiResponse } from '../../Models/ApiResponse';
 import { Partner } from '../../Models/Partner';
 import useSWR from 'swr';
-import { isValidAddress } from '../../lib/address/validator';
-import { ExtendedAddress } from '../Input/Address/AddressPicker/AddressWithIcon';
-import { addressFormat } from '../../lib/address/formatter';
 import { truncateDecimals } from '../utils/RoundDecimals';
 import Link from 'next/link';
-import calculateDatesDifference from '../../lib/calculateDatesDifference';
 import { SwapStatus } from '../../Models/SwapStatus';
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
-import { Popover, PopoverContent, PopoverTrigger } from '../shadcn/popover';
-import { ImageWithFallback } from '../Common/ImageWithFallback';
 import { getDateDifferenceString } from '../utils/dateDifference';
-import QuoteDetails from '../FeeDetails';
 
 type Props = {
     swapResponse: SwapResponse
