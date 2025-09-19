@@ -9,6 +9,7 @@ import { QuoteError } from './useFee';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import useSWRBalance from '@/lib/balances/useSWRBalance';
 import { useSwapDataState } from '@/context/swap';
+import { ValidatorDefaultParams } from '@/components/validationError/errorDisplay';
 
 export const ICON_CLASSES_WARNING = 'w-5 h-5 text-warning-foreground';
 
@@ -40,8 +41,8 @@ export function resolveRouteValidation(quoteError?: QuoteError) {
 
 
     if (Number(amount) > 0 && Number(walletBalanceAmount) < Number(amount) && values.depositMethod === 'wallet' && !swapModalOpen) {
-        validationMessage = "You don't have enough balance to complete this transaction, this might cause the transaction to fail please try to enter a smaller amount.";
-        validationDetails = { title: "Insufficient Balance", type: 'warning', icon: <Info className={ICON_CLASSES_WARNING} /> };
+        validationMessage = ValidatorDefaultParams["insufficientFunds"].message;
+        validationDetails = ValidatorDefaultParams["insufficientFunds"].details;
     }
 
     if (query?.lockToAsset) {

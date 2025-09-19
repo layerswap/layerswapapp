@@ -8,14 +8,14 @@ interface ErrorDisplayProps {
     details: ValidationDetails;
 }
 
-const defaultParams: { [errorName: string]: ErrorDisplayProps } = {
+export const ValidatorDefaultParams: { [errorName: string]: ErrorDisplayProps } = {
     "insufficientFunds": {
         message: "You don't have enough balance to complete this transaction, this might cause the transaction to fail please try to enter a smaller amount.",
         details: { title: "Insufficient Balance", type: 'warning', icon: <Info className={ICON_CLASSES_WARNING} /> }
     }
 }
 export const ErrorDisplay: React.FC<Partial<ErrorDisplayProps & { errorName?: string }>> = (props) => {
-    const { message, details } = { ...defaultParams[props?.errorName || ''], ...props };
+    const { message, details } = { ...ValidatorDefaultParams[props?.errorName || ''], ...props };
     return (
         <div className="px-2 py-3 rounded-2xl bg-secondary-400">
             <div className="flex items-start gap-2">
