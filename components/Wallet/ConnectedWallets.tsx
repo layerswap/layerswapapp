@@ -18,7 +18,7 @@ export const WalletsHeader = () => {
 
     return (
         <ConnectButton>
-            <div className="p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center">
+            <div className="p-1.5 active:animate-press-down justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center">
                 <WalletIcon className="h-6 w-6 mx-0.5" strokeWidth="2" />
             </div>
         </ConnectButton>
@@ -88,7 +88,7 @@ export const WalletsMenu = () => {
 
     return (
         <ConnectButton>
-            <div className=" border border-primary disabled:border-primary-900 items-center space-x-1 disabled:text-primary/40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-xl transform hover:brightness-125 transition duration-200 ease-in-out py-3 md:px-3 bg-primary/20 border-none text-primary! px-4!" >
+            <div className="active:animate-press-down border border-primary disabled:border-primary-900 items-center space-x-1 disabled:text-primary/40 disabled:bg-primary-900 disabled:cursor-not-allowed relative w-full flex justify-center font-semibold rounded-xl transform hover:brightness-125 transition duration-200 ease-in-out py-3 md:px-3 bg-primary/20 border-none text-primary! px-4!" >
                 <span className="order-first absolute left-0 inset-y-0 flex items-center pl-3">
                     <WalletIcon className="h-6 w-6" strokeWidth="2" />
                 </span>
