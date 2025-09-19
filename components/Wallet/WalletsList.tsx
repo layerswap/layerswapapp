@@ -1,4 +1,4 @@
-import { Plus, Power } from "lucide-react";
+import { Plus, Unplug } from "lucide-react";
 import AddressIcon from "../AddressIcon";
 import { SelectAccountProps, Wallet, WalletProvider } from "../../Models/WalletProvider";
 import { FC, HTMLAttributes, useMemo } from "react";
@@ -145,6 +145,10 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                                         <ExtendedAddress
                                             address={wallet.address}
                                             network={network}
+                                            title={wallet.displayName?.split("-")[0]}
+                                            description={wallet.providerName}
+                                            logo={wallet.icon}
+                                            showDetails
                                             addressClassNames="font-normal text-sm"
                                             onDisconnect={() => hasDisconnect(wallet) && wallet.disconnect()}
                                         />
@@ -181,7 +185,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <button type="button" onClick={wallet.disconnect} className="text-xs text-secondary-text hover:text-primary-text rounded-full p-1.5 bg-secondary-700 transition-colors duration-200 ">
-                                <Power className="h-3.5 w-3.5" />
+                                <Unplug className="h-3.5 w-3.5" />
                             </button>
                         </TooltipTrigger>
                         <TooltipContent>

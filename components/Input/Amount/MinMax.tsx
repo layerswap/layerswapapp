@@ -7,9 +7,8 @@ import { useMemo } from "react";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { updateForm } from "@/components/Swap/Form/updateForm";
 import useWallet from "@/hooks/useWallet";
-import { Tooltip, TooltipArrow, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { useSelectedAccount } from "@/context/balanceAccounts";
-
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -125,7 +124,6 @@ const MinMax = (props: MinMaxProps) => {
                         </TooltipTrigger>
                         {showMaxTooltip && <TooltipContent className="pointer-events-none w-80 grow p-2 !border-none !bg-secondary-300 text-xs rounded-xl" side="top" align="start" alignOffset={-10}>
                             <p>Max is calculated based on your balance minus gas fee for the transaction</p>
-                            <TooltipArrow className="fill-secondary-300" width={12} height={8} />
                         </TooltipContent>}
                     </Tooltip>
                 </>

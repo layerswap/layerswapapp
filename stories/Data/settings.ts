@@ -13,7 +13,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 6,
                     "price_in_usd": 0.99977,
                     "precision": 6,
-
+                    display_asset: ""
                 },
                 {
                     "symbol": "ETH",
@@ -23,7 +23,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-
+                    display_asset: ""
                 },
                 {
                     "symbol": "USDC",
@@ -33,7 +33,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 6,
                     "price_in_usd": 0.99977,
                     "precision": 6,
-
+                    display_asset: ""
                 }
             ],
             "name": "ARBITRUM_SEPOLIA",
@@ -43,6 +43,8 @@ export const Settings: LayerSwapSettings = {
             "node_url": "https://arbitrum-sepolia.blastapi.io/84acb0b4-99f6-4a3d-9f63-15d71d9875ef",
             "type": NetworkType.EVM,
             "token": {
+                "display_asset": "",
+
                 "symbol": "SOL",
                 "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
                 "contract": null,
@@ -73,7 +75,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 9071,
                     "precision": 6,
-
+                    display_asset: ""
                 },
                 {
                     "symbol": "WETH",
@@ -83,7 +85,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3452.25,
                     "precision": 6,
-
+                    display_asset: ""
                 },
                 {
                     "symbol": "ETH",
@@ -93,7 +95,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-
+                    display_asset: ""
                 },
                 {
                     "symbol": "USDC",
@@ -103,10 +105,11 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 6,
                     "price_in_usd": 0.99977,
                     "precision": 6,
-
+                    display_asset: ""
                 }
             ],
             "token": {
+                "display_asset": "",
                 "symbol": "SOL",
                 "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
                 "contract": null,
@@ -143,7 +146,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-
+                    display_asset: ""
                 }
             ],
             "name": "IMMUTABLEX_SEPOLIA",
@@ -155,6 +158,8 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://immutascan.io/tx/{0}",
             "account_explorer_template": "https://immutascan.io/address/{0}",
             "token": {
+                "display_asset": "",
+
                 "symbol": "SOL",
                 "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
                 "contract": null,
@@ -183,7 +188,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-
+                    display_asset: ""
                 }
             ],
             "name": "LINEA_GOERLI",
@@ -195,6 +200,8 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://goerli.lineascan.build/tx/{0}",
             "account_explorer_template": "https://goerli.lineascan.build/address/{0}",
             "token": {
+                "display_asset": "",
+
                 "symbol": "SOL",
                 "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
                 "contract": null,
@@ -223,7 +230,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 6,
                     "price_in_usd": 0.99977,
                     "precision": 6,
-
+                    display_asset: ""
                 },
                 {
                     "symbol": "ETH",
@@ -233,7 +240,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-
+                    display_asset: ""
                 }
             ],
             "name": "OPTIMISM_SEPOLIA",
@@ -245,6 +252,8 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://sepolia-optimism.etherscan.io/tx/{0}",
             "account_explorer_template": "https://sepolia-optimism.etherscan.io/address/{0}",
             "token": {
+                "display_asset": "",
+
                 "symbol": "SOL",
                 "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
                 "contract": null,
@@ -273,7 +282,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-
+                    display_asset: ""
                 }
             ],
             "name": "BASE_SEPOLIA",
@@ -285,6 +294,8 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://sepolia.basescan.org/tx/{0}",
             "account_explorer_template": "https://sepolia.basescan.org/address/{0}",
             "token": {
+                "display_asset": "",
+
                 "symbol": "SOL",
                 "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
                 "contract": null,
@@ -313,7 +324,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 0.095483,
                     "precision": 6,
-
+                    display_asset: ""
                 }
             ],
             "name": "EVMOS_TESTNET",
@@ -325,6 +336,8 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://testnet.escan.live/tx/{0}",
             "account_explorer_template": "https://testnet.escan.live/address/{0}",
             "token": {
+                "display_asset": "",
+
                 "symbol": "SOL",
                 "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
                 "contract": null,
@@ -353,7 +366,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 6,
                     "price_in_usd": 0.99977,
                     "precision": 6,
-
+                    display_asset: ""
                 },
                 {
                     "symbol": "SOL",
@@ -363,7 +376,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 9,
                     "price_in_usd": 189.46,
                     "precision": 6,
-
+                    display_asset: ""
                 }
             ],
             "name": "SOLANA_DEVNET",
@@ -375,6 +388,8 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://explorer.solana.com/tx/{0}?cluster=devnet",
             "account_explorer_template": "https://explorer.solana.com/address/{0}?cluster=devnet",
             "token": {
+                "display_asset": "",
+
                 "symbol": "SOL",
                 "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
                 "contract": null,
@@ -403,7 +418,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 6,
                     "price_in_usd": 0.99977,
                     "precision": 6,
-
+                    display_asset: ""
                 }
             ],
             "name": "BRINE_TESTNET",
@@ -415,6 +430,8 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://testnet.brine.finance/",
             "account_explorer_template": "https://testnet.brine.finance/",
             "token": {
+                "display_asset": "",
+
                 "symbol": "SOL",
                 "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
                 "contract": null,
@@ -443,7 +460,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3,
                     "precision": 6,
-
+                    display_asset: ""
                 },
                 {
                     "symbol": "ETH",
@@ -453,7 +470,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-
+                    display_asset: ""
                 }
             ],
             "name": "IMMUTABLEZK_TESTNET",
@@ -465,6 +482,8 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://explorer.testnet.immutable.com/tx/{0}",
             "account_explorer_template": "https://explorer.testnet.immutable.com/address/{0}",
             "token": {
+                "display_asset": "",
+
                 "symbol": "SOL",
                 "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
                 "contract": null,
@@ -493,7 +512,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-
+                    display_asset: ""
                 },
                 {
                     "symbol": "ARUSDC",
@@ -503,7 +522,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 6,
                     "price_in_usd": 0.99977,
                     "precision": 6,
-
+                    display_asset: ""
                 },
                 {
                     "symbol": "DAI1",
@@ -513,7 +532,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 0.999083,
                     "precision": 6,
-
+                    display_asset: ""
                 },
                 {
                     "symbol": "DAI2",
@@ -523,7 +542,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 0.999083,
                     "precision": 6,
-
+                    display_asset: ""
                 }
             ],
             "name": "STARKNET_SEPOLIA",
@@ -535,6 +554,8 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://sepolia.starkscan.co/tx/{0}",
             "account_explorer_template": "https://sepolia.starkscan.co/contract/{0}",
             "token": {
+                "display_asset": "",
+
                 "symbol": "SOL",
                 "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
                 "contract": null,
@@ -562,7 +583,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 100.98,
                     "precision": 6,
-
+                    display_asset: ""
                 }
             ],
             "name": "METIS_SEPOLIA",
@@ -574,6 +595,8 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://sepolia.explorer.metisdevops.link/tx/{0}",
             "account_explorer_template": "https://sepolia.explorer.metisdevops.link/address/{0}\r\n",
             "token": {
+                "display_asset": "",
+
                 "symbol": "SOL",
                 "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
                 "contract": null,
@@ -602,7 +625,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-
+                    display_asset: ""
                 }
             ],
             "name": "NAHMII_TESTNET",
@@ -614,6 +637,8 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://explorer.testnet.nahmii.io/tx/{0}",
             "account_explorer_template": "https://explorer.testnet.nahmii.io/address/{0}",
             "token": {
+                "display_asset": "",
+
                 "symbol": "SOL",
                 "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
                 "contract": null,
@@ -642,7 +667,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-
+                    display_asset: ""
                 }
             ],
             "name": "MODE_TESTNET",
@@ -654,6 +679,8 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://sepolia.explorer.mode.network/tx/{0}",
             "account_explorer_template": "https://sepolia.explorer.mode.network/address/{0}",
             "token": {
+                "display_asset": "",
+
                 "symbol": "SOL",
                 "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
                 "contract": null,
@@ -682,7 +709,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-
+                    display_asset: ""
                 }
             ],
             "name": "BLAST_SEPOLIA",
@@ -694,6 +721,8 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://testnet.blastscan.io/tx/{0}",
             "account_explorer_template": "https://testnet.blastscan.io/address/{0}",
             "token": {
+                "display_asset": "",
+
                 "symbol": "SOL",
                 "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
                 "contract": null,
@@ -722,7 +751,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-
+                    display_asset: ""
                 }
             ],
             "name": "LOOPRING_GOERLI",
@@ -734,6 +763,8 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "",
             "account_explorer_template": "",
             "token": {
+                "display_asset": "",
+
                 "symbol": "SOL",
                 "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
                 "contract": null,
@@ -762,7 +793,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-
+                    display_asset: ""
                 },
                 {
                     "symbol": "USDC",
@@ -772,7 +803,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 6,
                     "price_in_usd": 0.99977,
                     "precision": 6,
-
+                    display_asset: ""
                 }
             ],
             "name": "ZKSYNCERA_SEPOLIA",
@@ -784,6 +815,8 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://sepolia.explorer.zksync.io/tx/{0}",
             "account_explorer_template": "https://sepolia.explorer.zksync.io/address/{0}",
             "token": {
+                "display_asset": "",
+
                 "symbol": "SOL",
                 "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
                 "contract": null,
@@ -812,7 +845,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-
+                    display_asset: ""
                 },
                 {
                     "symbol": "ZETA",
@@ -822,7 +855,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 2,
                     "precision": 6,
-
+                    display_asset: ""
                 }
             ],
             "name": "ZETACHAIN_TESTNET",
@@ -834,6 +867,8 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://athens.explorer.zetachain.com/tx/{0}",
             "account_explorer_template": "https://athens.explorer.zetachain.com/address/{0}",
             "token": {
+                "display_asset": "",
+
                 "symbol": "SOL",
                 "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
                 "contract": null,
@@ -862,7 +897,7 @@ export const Settings: LayerSwapSettings = {
                     "decimals": 18,
                     "price_in_usd": 3453.45,
                     "precision": 6,
-
+                    display_asset: ""
                 }
             ],
             "name": "KROMA_SEPOLIA",
@@ -874,6 +909,8 @@ export const Settings: LayerSwapSettings = {
             "transaction_explorer_template": "https://blockscout.sepolia.kroma.network/tx/{0}",
             "account_explorer_template": "https://blockscout.sepolia.kroma.network/address/{0}",
             "token": {
+                "display_asset": "",
+
                 "symbol": "SOL",
                 "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/sol.png",
                 "contract": null,
