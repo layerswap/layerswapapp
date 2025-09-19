@@ -17,6 +17,7 @@ import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
 import { parse, ParsedUrlQuery } from 'querystring';
 import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
+import { useSelectedAccount } from './balanceAccounts';
 
 export const SwapDataStateContext = createContext<SwapContextData>({
     codeRequested: false,
@@ -80,7 +81,8 @@ export function SwapDataProvider({ children }) {
     const [swapModalOpen, setSwapModalOpen] = useState(false)
     const { providers, provider } = useWallet(swapBasicFormData?.source_network, 'asSource')
 
-    const selectedSourceAccount = useMemo(() =>  provider?.activeWallet, [provider]);
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedWallet = selectedSourceAccount?.wallet
 
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
     const { quote: formDataQuote } = useQuoteData(swapId ? undefined : quoteArgs);
@@ -152,7 +154,7 @@ export function SwapDataProvider({ children }) {
     const sourceIsSupported = swapBasicData && WalletIsSupportedForSource({
         providers: providers,
         sourceNetwork: swapBasicData.source_network,
-        sourceWallet: selectedSourceAccount
+        sourceWallet: selectedWallet
     })
 
     const use_deposit_address = swapBasicData?.use_deposit_address
@@ -190,7 +192,7 @@ export function SwapDataProvider({ children }) {
         const sourceIsSupported = WalletIsSupportedForSource({
             providers: providers,
             sourceNetwork: from,
-            sourceWallet: selectedSourceAccount
+            sourceWallet: selectedWallet
         })
 
         const data: CreateSwapParams = {

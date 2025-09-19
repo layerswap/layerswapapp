@@ -13,7 +13,7 @@ import { useSettingsState } from "../../context/settings";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
 import useWallet from "@/hooks/useWallet";
-import { AccountIdentity } from "@/context/balanceAccounts";
+import { AccountIdentity, useSelectedAccount } from "@/context/balanceAccounts";
 
 type Props = {
     selectable?: boolean;
@@ -45,7 +45,7 @@ const WalletsList: FC<Props> = (props) => {
     }
 
     const { provider: sourceProvider } = useWallet(network, "withdrawal")
-    const selectedSourceAccount = useMemo(() => selectedDepositMethod == 'wallet' ? sourceProvider?.activeWallet : undefined, [provider, selectedDepositMethod]);
+    const selectedSourceAccount = useSelectedAccount("from", selectedDepositMethod == 'wallet' ? sourceProvider?.name : undefined);
 
     return (
         <div className="space-y-3">

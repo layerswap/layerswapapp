@@ -4,12 +4,13 @@ import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { motion } from "framer-motion";
 import useWallet from "@/hooks/useWallet";
+import { useSelectedAccount } from "@/context/balanceAccounts";
 
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
     const { to, fromAsset: fromCurrency, toAsset: toCurrency, from, destination_address } = values
     const { provider } = useWallet(from, "withdrawal")
-    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
     const token = direction === 'from' ? fromCurrency : toCurrency
     const network = direction === 'from' ? from : to
     const address = direction === 'from' ? selectedSourceAccount?.address : destination_address

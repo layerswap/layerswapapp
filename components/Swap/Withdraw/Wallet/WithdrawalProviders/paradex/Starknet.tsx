@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { AuthorizeStarknet } from '@/lib/wallets/paradex/Authorize/Starknet';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import { SendTransactionButton } from '../../Common/buttons';
+import { useSelectedAccount } from '@/context/balanceAccounts';
 
 const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
 
@@ -16,7 +17,7 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
     const starknet = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetGoerli || n.name === KnownInternalNames.Networks.StarkNetSepolia);
 
     const { provider } = useWallet(starknet, 'withdrawal')
-    const wallet = provider?.activeWallet
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
 
     const handleTransfer = useCallback(async ({ amount, callData, swapId }: TransferProps) => {
         if (!swapId || !source_token) {
@@ -24,7 +25,7 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
         }
         setLoading(true)
         try {
-            if (!wallet) {
+            if (!selectedSourceAccount) {
                 throw Error("Starknet wallet not connected")
             }
 
@@ -32,7 +33,7 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
                 throw Error("No amount")
 
             try {
-                const snAccount = wallet?.metadata?.starknetAccount
+                const snAccount = selectedSourceAccount.wallet?.metadata?.starknetAccount
                 if (!snAccount) {
                     throw Error("Starknet account not found")
                 }
@@ -56,13 +57,13 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
                 toast(e.message)
             throw e
         }
-    }, [wallet?.address, starknet, source_token])
+    }, [selectedSourceAccount?.address, starknet, source_token])
 
 
     return (
         <div className="w-full space-y-5 flex flex-col justify-between h-full text-secondary-text">
             {
-                wallet &&
+                selectedSourceAccount &&
                 <div className="flex flex-row
                     text-primary-text text-base space-x-2">
                     <SendTransactionButton
