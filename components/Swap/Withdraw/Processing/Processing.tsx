@@ -1,14 +1,14 @@
 import LinkWithIcon from '../../../Common/LinkWithIcon';
-import React, { FC, useCallback, useEffect, useMemo, useRef } from 'react'
+import React, { FC, useCallback, useEffect, useRef } from 'react'
 import { Widget } from '../../../Widget/Index';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
-import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapResponse, Transaction, SwapBasicData, SwapDetails, SwapQuote, Refuel } from '../../../../lib/apiClients/layerSwapApiClient';
+import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, Transaction, SwapBasicData, SwapDetails, SwapQuote, Refuel } from '../../../../lib/apiClients/layerSwapApiClient';
 import { truncateDecimals } from '../../../utils/RoundDecimals';
 import { SwapStatus } from '../../../../Models/SwapStatus';
 import { SwapFailReasons } from '../../../../Models/RangeError';
 import { Gauge } from '../../../gauge';
-import { Undo2 } from 'lucide-react';
+import { Check, CircleCheck, Undo2 } from 'lucide-react';
 import Failed from '../Failed';
 import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
 import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
@@ -19,9 +19,6 @@ import { useIntercom } from 'react-use-intercom';
 import logError from '../../../../lib/logError';
 import SubmitButton from '../../../buttons/submitButton';
 import { posthog } from 'posthog-js';
-import useSWRBalance from '@/lib/balances/useSWRBalance';
-import useWallet from '@/hooks/useWallet';
-import { useSettingsState } from '@/context/settings';
 
 type Props = {
     swapBasicData: SwapBasicData;
@@ -31,7 +28,6 @@ type Props = {
 }
 
 const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) => {
-    const { networks } = useSettingsState()
     const { boot, show, update, showNewMessages } = useIntercom();
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
     const [showSupportButton, setShowSupportButton] = React.useState(false);
@@ -49,11 +45,6 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
         show();
         updateWithProps();
     }, [boot, show, updateWithProps]);
-
-    const { provider } = useWallet(source_network, 'withdrawal')
-    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider])
-    const sourceNetworkWithTokens = useMemo(() => networks.find(n => n.name == source_network.name), [source_network])
-    const { mutate: mutateBalances } = useSWRBalance(selectedSourceAccount?.address, sourceNetworkWithTokens)
 
     const input_tx_explorer = source_network?.transaction_explorer_template
     const output_tx_explorer = destination_network?.transaction_explorer_template
@@ -88,9 +79,6 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
 
     useEffect(() => {
         if (inputTxStatus === TransactionStatus.Completed || inputTxStatus === TransactionStatus.Pending) {
-            if (inputTxStatus === TransactionStatus.Completed) {
-                mutateBalances()
-            }
             if (swapDetails?.transactions?.find(t => t.type === TransactionType.Input) || !swapDetails) {
                 return
             }
@@ -125,7 +113,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     useEffect(() => {
         if (
             swapDetails?.status === SwapStatus.Completed ||
-            swapDetails?.status === SwapStatus.Failed || 
+            swapDetails?.status === SwapStatus.Failed ||
             swapDetails?.status === SwapStatus.Expired ||
             swapDetails?.status === SwapStatus.LsTransferPending
         ) {
@@ -381,12 +369,24 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                     <div className='pb-4'>
                         <div className='flex flex-col gap-2 items-center'>
                             <div className='flex items-center'>
-                                {(swapStatus === SwapStatus.PendingRefund || swapStatus === SwapStatus.Refunded) ? (
+                                {swapStatus === SwapStatus.PendingRefund && (
                                     <span className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
                                         <Undo2 className="h-7 w-7 text-primary" aria-hidden="true" />
                                     </span>
-                                ) : (
-                                    <Gauge value={stepsProgressPercentage} size="small" showCheckmark={swapStatus === SwapStatus.Completed} />
+                                )}
+
+                                {swapStatus === SwapStatus.Refunded && (
+                                    <span className="relative z-10 flex h-10 w-10 items-center justify-center">
+                                        <CircleCheck className="h-10 w-10 text-primary" strokeWidth={2} aria-hidden="true" />
+                                    </span>
+                                )}
+
+                                {swapStatus !== SwapStatus.PendingRefund && swapStatus !== SwapStatus.Refunded && (
+                                    <Gauge
+                                        value={stepsProgressPercentage}
+                                        size="small"
+                                        showCheckmark={swapStatus === SwapStatus.Completed}
+                                    />
                                 )}
                             </div>
                             <div className="flex-col text-center ">

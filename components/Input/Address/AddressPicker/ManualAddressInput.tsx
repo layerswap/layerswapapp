@@ -78,11 +78,11 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
                                 handleSaveNewAddress()
                             }
                         }}
-                        className='pr-12 disabled:cursor-not-allowed grow h-12 border border-secondary-800 focus:border-primary leading-4 placeholder:text-primary-text-placeholder/80 focus:placeholder:text-left placeholder:font-normal focus:placeholder:pl-0 placeholder:pl-8 block font-semibold w-full !bg-secondary-500 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-hidden'
+                        className='pr-12 disabled:cursor-not-allowed grow h-12 border border-secondary-800 focus:border-primary leading-4 placeholder:text-primary-text-tertiary/80 focus:placeholder:text-left placeholder:font-normal focus:placeholder:pl-0 placeholder:pl-8 block font-semibold w-full !bg-secondary-500 rounded-lg truncate hover:overflow-x-scroll focus:ring-0 focus:outline-hidden'
                     />
                     {
                         !isFocused && !manualAddress &&
-                        <Pencil className="h-5 w-5 text-primary-text-placeholder absolute inset-y-0 top-[calc(50%-10px)] left-4" />
+                        <Pencil className="h-5 w-5 text-primary-text-tertiary absolute inset-y-0 top-[calc(50%-10px)] left-4" />
                     }
                     {
                         manualAddress &&
@@ -107,7 +107,7 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
                 {
                     manualAddress && !errorMessage && destination &&
                     <div onClick={handleSaveNewAddress} className={`group/addressItem text-left min-h-12 cursor-pointer space-x-2 bg-secondary-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-secondary-700 transition duration-200 p-3 hover:shadow-xl mt-3`}>
-                        <AddressWithIcon addressItem={addressFromList || { address: manualAddress, group: AddressGroup.ManualAdded }} connectedWallet={connectedWallet} partner={partner} network={destination} />
+                        <AddressWithIcon addressItem={addressFromList || { address: manualAddress, group: AddressGroup.ManualAdded }} partner={partner} network={destination} />
                     </div>
                 }
             </div>

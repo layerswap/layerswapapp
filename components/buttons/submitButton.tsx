@@ -58,7 +58,7 @@ type DoubleLineTextProps = {
 
 const text_styles = {
     'mltln-text-light': {
-        primary: 'text-primary-actionButtonText',
+        primary: 'text-primary',
         secondary: 'text-primary-100'
     },
     'mltln-text-dark': {

@@ -68,10 +68,10 @@ const PrimaryComponent = ({ text, withBg, short }: IconComponentProps) => {
 
 const SecondaryComponent = ({ text, withBg, short }: IconComponentProps) => {
   return (
-    <IconComponentWrapper withBg={withBg} classNames="text-primary-text-muted bg-secondary-700 text-sm">
+    <IconComponentWrapper withBg={withBg} classNames="text-primary-text-tertiary bg-secondary-700 text-sm">
       {
         short ?
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 60 60" fill="currentColor" className="text-primary-text-muted">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 60 60" fill="currentColor" className="text-primary-text-tertiary">
             <circle cx="30" cy="30" r="30" fill="currentColor" />
           </svg>
           :

@@ -7,12 +7,14 @@ const ValidationError: React.FC = () => {
     if (!routeValidation.message) return null;
 
     return (
-        <div className={`p-2.5 my-2.5 relative rounded-xl bg-secondary-400 border-l-8 ${routeValidation.details.type === "warning" ? "border-orange-400" : "border-red-400"}`}>
-            <div className='flex items-center'>
-                {routeValidation.details.icon}
-                <p className='text-white font-medium ml-1'>{routeValidation.details.title}</p>
+        <div className="px-2 py-3 rounded-2xl bg-secondary-400">
+            <div className="flex items-start gap-2">
+                <span className="shrink-0">{routeValidation.details.icon}</span>
+                <div className="flex flex-col gap-1">
+                    <p className="text-white font-medium leading-3.5 text-base">{routeValidation.details.title}</p>
+                    <p className="text-secondary-text text-sm leading-[18px]">{routeValidation.message}</p>
+                </div>
             </div>
-            <p className="text-secondary-text ml-5 mt-1 text-sm">{routeValidation.message}</p>
         </div>
     );
 };
