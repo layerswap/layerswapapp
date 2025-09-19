@@ -134,7 +134,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 status: swapDetails?.status,
             })
         }
-    }, [swapDetails?.status, swapDetails?.id, swapInputTransaction])
+    }, [swapDetails?.status, swapDetails?.id])
 
     useEffect(() => {
         if (swapDetails?.status === SwapStatus.Completed || swapDetails.status === SwapStatus.Failed) {
