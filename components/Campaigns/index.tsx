@@ -97,7 +97,7 @@ const CampaignItem: FC<CampaignProps> = ({ campaign }) => {
         </span>
         {
             campaignIsActive &&
-            <span className="text-primary-text-muted text-right text-sm">
+            <span className="text-primary-text-tertiary text-right text-sm">
                 {campaignDaysLeft} days left
             </span>
         }
