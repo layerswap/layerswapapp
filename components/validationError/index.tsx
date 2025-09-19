@@ -11,7 +11,7 @@ const ValidationError: React.FC = () => {
             <div className="flex items-start gap-2">
                 <span className="shrink-0">{routeValidation.details.icon}</span>
                 <div className="flex flex-col gap-1">
-                    <p className="text-white font-medium leading-3.5 text-base">{routeValidation.details.title}</p>
+                    <p className="text-white font-medium leading-4 text-base">{routeValidation.details.title}</p>
                     <p className="text-secondary-text text-sm leading-[18px]">{routeValidation.message}</p>
                 </div>
             </div>
