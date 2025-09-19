@@ -188,7 +188,7 @@ export default function useFuel(): WalletProvider {
         }
     })
 
-    const provider = {
+    const provider: WalletProvider = {
         connectWallet,
         disconnectWallets,
         switchAccount,

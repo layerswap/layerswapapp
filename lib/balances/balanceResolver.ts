@@ -15,7 +15,8 @@ import {
     StarknetBalanceProvider,
     TonBalanceProvider,
     TronBalanceProvider,
-    ZkSyncBalanceProvider
+    ZkSyncBalanceProvider,
+    HyperliquidBalanceProvider
 } from "./providers";
 
 export class BalanceResolver {
@@ -32,7 +33,8 @@ export class BalanceResolver {
         new ZkSyncBalanceProvider(),
         new TronBalanceProvider(),
         new ParadexBalanceProvider(),
-        new BitcoinBalanceProvider()
+        new BitcoinBalanceProvider(),
+        new HyperliquidBalanceProvider()
     ];
 
     async getBalance(network: NetworkWithTokens, address?: string,): Promise<NetworkBalance> {

@@ -10,3 +10,4 @@ export { StarknetBalanceProvider } from "./starknetBalanceProvider";
 export { TonBalanceProvider } from "./tonBalanceProvider";
 export { TronBalanceProvider } from "./tronBalanceProvider";
 export { ZkSyncBalanceProvider } from "./zkSyncBalanceProvider";
+export { HyperliquidBalanceProvider } from "./hyperliquidBalanceProvider"

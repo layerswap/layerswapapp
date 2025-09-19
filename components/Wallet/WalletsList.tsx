@@ -41,7 +41,6 @@ const WalletsList: FC<Props> = (props) => {
                 address: result.address
             })
         }
-
     }
 
     const { provider: sourceProvider } = useWallet(network, "withdrawal")

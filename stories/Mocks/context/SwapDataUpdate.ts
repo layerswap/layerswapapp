@@ -1,4 +1,3 @@
-import { NextRouter } from "next/router"
 import { UpdateSwapInterface } from "../../../context/swap"
 
 const MockFunctions: UpdateSwapInterface = {

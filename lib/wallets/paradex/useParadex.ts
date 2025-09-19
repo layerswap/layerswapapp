@@ -194,7 +194,7 @@ export default function useParadex(): WalletProvider {
         })
     }, [evmProvider.activeWallet, starknetProvider.activeWallet, activeConnection])
 
-    const provider = {
+    const provider: WalletProvider = {
         connectWallet,
         switchAccount,
         connectedWallets,
