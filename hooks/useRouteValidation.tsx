@@ -7,6 +7,8 @@ import { useFormikContext } from 'formik';
 import useWallet from './useWallet';
 import { QuoteError } from './useFee';
 import { useSelectedAccount } from '@/context/balanceAccounts';
+import useSWRBalance from '@/lib/balances/useSWRBalance';
+import { useSwapDataState } from '@/context/swap';
 
 const ICON_CLASSES_WARNING = 'w-5 h-5 text-warning-foreground';
 
@@ -19,7 +21,7 @@ interface ValidationDetails {
 export function resolveRouteValidation(quoteError?: QuoteError) {
     const { values } = useFormikContext<SwapFormValues>();
     const { destinationRoutes: allDestinations, sourceRoutes: allSources } = useSettingsState()
-    const { to, from, fromAsset: fromCurrency, toAsset: toCurrency, fromExchange, validatingSource, validatingDestination, destination_address } = values;
+    const { to, from, fromAsset: fromCurrency, toAsset: toCurrency, fromExchange, validatingSource, validatingDestination, destination_address, amount } = values;
     const { provider } = useWallet(from, "withdrawal")
     const selectedSourceAccount = useSelectedAccount("from", provider?.name);
     const query = useQueryState();
@@ -27,8 +29,20 @@ export function resolveRouteValidation(quoteError?: QuoteError) {
     const toDisplayName = to?.display_name;
     const quoteMessage = quoteError?.response?.data?.error?.message || quoteError?.message
 
+    const { balances } = useSWRBalance(selectedSourceAccount?.address, from)
+    const walletBalance = from && balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
+    const walletBalanceAmount = walletBalance?.amount
+
+    const { swapModalOpen } = useSwapDataState()
+
     let validationMessage: string = '';
     let validationDetails: ValidationDetails = {};
+
+
+    if (Number(amount) > 0 && Number(walletBalanceAmount) < Number(amount) && values.depositMethod === 'wallet' && !swapModalOpen) {
+        validationMessage = "You don't have enough balance to complete this transaction, this might cause the transaction to fail please try to enter a smaller amount.";
+        validationDetails = { title: "Insufficient Balance", type: 'warning', icon: <Info className={ICON_CLASSES_WARNING} /> };
+    }
 
     if (query?.lockToAsset) {
         if (fromCurrency?.status === 'not_found') {

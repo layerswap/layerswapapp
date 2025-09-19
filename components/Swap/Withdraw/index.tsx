@@ -1,4 +1,4 @@
-import { FC, useMemo } from 'react'
+import { FC } from 'react'
 import { useSwapDataState } from '../../../context/swap';
 import KnownInternalNames from '../../../lib/knownIds';
 import SwapSummary from '../Summary';
@@ -7,11 +7,6 @@ import { useQueryState } from '../../../context/query';
 import { Widget } from '../../Widget/Index';
 import { SwapQuoteDetails } from './SwapQuoteDetails';
 import WalletTransferButton from './WalletTransferButton';
-import useWallet from '@/hooks/useWallet';
-import useSWRBalance from '@/lib/balances/useSWRBalance';
-import { useSettingsState } from '@/context/settings';
-import { InsufficientBalanceWarning } from '@/components/insufficientBalance';
-import { useSelectedAccount } from '@/context/balanceAccounts';
 
 const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void }> = ({ type, onWalletWithdrawalSuccess }) => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading } = useSwapDataState()
@@ -20,28 +15,16 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
         || swapBasicData?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const isImtblMarketplace = (signature && appName === "imxMarketplace" && sourceIsImmutableX)
 
-    const { networks } = useSettingsState()
-    const source_network = swapBasicData?.source_network && networks.find(n => n.name === swapBasicData?.source_network?.name)
-    const { provider } = useWallet(source_network, 'withdrawal')
-    const selectedAccount= useSelectedAccount("from", provider?.name);
-
-    const { balances } = useSWRBalance(selectedAccount?.address, source_network)
-    const walletBalance = source_network && balances?.find(b => b?.network === source_network?.name && b?.token === swapBasicData?.source_token?.symbol)
-    const walletBalanceAmount = walletBalance?.amount
-
     let withdraw: {
         content?: JSX.Element | JSX.Element[],
         footer?: JSX.Element | JSX.Element[],
     } = {}
 
-    const showInsufficientBalanceWarning = swapBasicData?.use_deposit_address === false
-        && swapBasicData?.requested_amount
-        && Number(swapBasicData?.requested_amount)
-        && Number(walletBalanceAmount) < Number(swapBasicData?.requested_amount)
+
 
     if (swapBasicData?.use_deposit_address === false) {
         withdraw = {
-            footer: <WalletTransferButton swapBasicData={swapBasicData} swapId={swapDetails?.id} refuel={!!refuel} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} balanceWarning={showInsufficientBalanceWarning ? <InsufficientBalanceWarning /> : null} />
+            footer: <WalletTransferButton swapBasicData={swapBasicData} swapId={swapDetails?.id} refuel={!!refuel} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} />
         }
     }
 

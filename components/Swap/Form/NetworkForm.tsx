@@ -22,8 +22,6 @@ import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import { updateForm, updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
-import { InsufficientBalanceWarning } from "@/components/insufficientBalance";
-import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { useSwapDataState } from "@/context/swap";
 import RefuelToggle from "@/components/FeeDetails/Refuel";
 import ReserveGasNote from "@/components/ReserveGasNote";
@@ -44,7 +42,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const {
         to: destination,
         from: source,
-        amount,
         depositMethod
     } = values;
 
@@ -53,7 +50,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const { providers, wallets } = useWallet();
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
-    const { swapId, swapModalOpen } = useSwapDataState()
+    const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
     const { minAllowedAmount, maxAllowedAmount, isQuoteLoading, quote } = useQuoteData(quoteArgs, quoteRefreshInterval);
 
@@ -64,10 +61,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const isValid = !formValidation.message;
     const error = formValidation.message;
-
-    const { balances } = useSWRBalance(selectedSourceAccount?.address, source)
-    const walletBalance = source && balances?.find(b => b?.network === source?.name && b?.token === fromAsset?.symbol)
-    const walletBalanceAmount = walletBalance?.amount
 
     useEffect(() => {
         if (!source || !toAsset || !toAsset.refuel) {
@@ -86,11 +79,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
-    const showInsufficientBalanceWarning = values.depositMethod === 'wallet'
-        && !routeValidation.message
-        && !swapModalOpen
-        && Number(amount) > 0
-        && Number(walletBalanceAmount) < Number(amount)
 
     return (
         <>
@@ -130,12 +118,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                 <Widget.Footer>
                     <div className="mb-3">
                         <div className="space-y-3">
-                            <>
-                                {
-                                    showInsufficientBalanceWarning &&
-                                    <InsufficientBalanceWarning />
-                                }
-                            </>
                             {
                                 Number(values.amount) > 0 &&
                                 <ReserveGasNote
