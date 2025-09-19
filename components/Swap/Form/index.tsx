@@ -11,7 +11,6 @@ import { Widget } from "@/components/Widget/Index";
 import { ValidationProvider } from "@/context/validationContext";
 import { useQueryState } from "@/context/query";
 import { useSettingsState } from "@/context/settings";
-import ResizablePanel from "@/components/ResizablePanel";
 
 export default function Form() {
     const { from } = useQueryState()

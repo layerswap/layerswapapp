@@ -7,8 +7,8 @@ import { useMemo } from "react";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { updateForm } from "@/components/Swap/Form/updateForm";
 import useWallet from "@/hooks/useWallet";
-import { Tooltip, TooltipArrow, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
-
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
+import { useSelectedAccount } from "@/context/balanceAccounts";
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -25,8 +25,8 @@ const MinMax = (props: MinMaxProps) => {
     const { fromCurrency, from, limitsMinAmount, limitsMaxAmount, onActionHover, depositMethod } = props;
 
     const { provider } = useWallet(from, "withdrawal")
-    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
-
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    
     const { gasData } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency)
     const { balances, mutate: mutateBalances } = useSWRBalance(selectedSourceAccount?.address, from)
 
@@ -64,7 +64,7 @@ const MinMax = (props: MinMaxProps) => {
     const handleSetHalfAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
         e.stopPropagation()
-        if (!walletBalance)
+        if (!walletBalance?.amount)
             throw new Error("Wallet balance is not available");
         handleSetValue((walletBalance?.amount / 2).toString())
     }
@@ -77,7 +77,7 @@ const MinMax = (props: MinMaxProps) => {
         handleSetValue(maxAllowedAmount.toString())
     }
     const halfOfBalance = (walletBalance?.amount || 0) / 2;
-    const showMaxTooltip = depositMethod === 'wallet' && walletBalance && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount)
+    const showMaxTooltip = depositMethod === 'wallet' && walletBalance?.amount && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount)
 
     return (
         <div className="flex gap-1.5 group text-xs leading-4" onMouseLeave={() => onActionHover(undefined)}>
@@ -124,7 +124,6 @@ const MinMax = (props: MinMaxProps) => {
                         </TooltipTrigger>
                         {showMaxTooltip && <TooltipContent className="pointer-events-none w-80 grow p-2 !border-none !bg-secondary-300 text-xs rounded-xl" side="top" align="start" alignOffset={-10}>
                             <p>Max is calculated based on your balance minus gas fee for the transaction</p>
-                            <TooltipArrow className="fill-secondary-300" width={12} height={8} />
                         </TooltipContent>}
                     </Tooltip>
                 </>

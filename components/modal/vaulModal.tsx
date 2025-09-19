@@ -18,9 +18,10 @@ export type VaulDrawerProps = {
     modalId: string;
     onClose?: () => void;
     onAnimationEnd?: (open: boolean) => void;
+    className?: string;
 }
 
-const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd }) => {
+const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className }) => {
     const { isMobile } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
@@ -105,7 +106,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                             : <motion.div
                                 key="backdrop"
                                 className='absolute inset-0 z-50 bg-black/50 block'
-                                initial={{ opacity: 0 }}
+                                initial={{ opacity: 0.5 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                             />
@@ -114,7 +115,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
                 <Drawer.Content
                     data-testid="content"
-                    className={clsx('fixed sm:absolute flex flex-col bg-secondary-700 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-4 text-primary-text ring-0! outline-hidden! ', {
+                    className={clsx('fixed sm:absolute flex flex-col bg-secondary-700 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-4 text-primary-text ring-0! outline-hidden! ', className, {
                         'border-none! rounded-none!': snap === 1,
                     })}
                 >
@@ -124,7 +125,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         {
                             isMobile &&
                             <div className="flex justify-center w-full mt-2 mb-[6px]" >
-                                <Drawer.Handle className='!w-12 !bg-primary-text-placeholder' />
+                                <Drawer.Handle className='!w-12 !bg-primary-text-tertiary' />
                             </div>
                         }
 

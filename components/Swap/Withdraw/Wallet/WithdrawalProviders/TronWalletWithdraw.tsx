@@ -10,13 +10,15 @@ import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import TransactionMessages from '../../messages/TransactionMessages';
 import WalletIcon from '@/components/icons/WalletIcon';
+import { useSelectedAccount } from '@/context/balanceAccounts';
 
 export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | undefined>()
     const { source_network, source_token } = swapBasicData;
     const { provider } = useWallet(source_network, 'withdrawal');
-    const wallet = provider?.activeWallet
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const wallet = selectedSourceAccount?.wallet
     const { wallet: tronWallet, signTransaction } = useTronWallet();
     const walletAddress = tronWallet?.adapter.address
     const tronNode = source_network?.node_url

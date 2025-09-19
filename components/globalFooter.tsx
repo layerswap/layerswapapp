@@ -55,14 +55,14 @@ const GLobalFooter = () => {
                 <div className="flex justify-between items-center w-full px-6">
                     <div className="px-6">
                         <div className="flex mt-3 md:mt-0 gap-6">
-                            <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/privacy-policy/" className="text-xs leading-6 text-primary-text-muted underline hover:no-underline hover:text-primary-text-muted/70 duration-200 transition-all">
+                            <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/privacy-policy/" className="text-xs leading-6 text-primary-text-tertiary underline hover:no-underline hover:text-primary-text-tertiary/70 duration-200 transition-all">
                                 Privacy Policy
                             </Link>
-                            <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/terms-of-services/" className="text-xs leading-6 text-primary-text-muted underline hover:no-underline hover:text-primary-text-muted/70 duration-200 transition-all">
+                            <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/terms-of-services/" className="text-xs leading-6 text-primary-text-tertiary underline hover:no-underline hover:text-primary-text-tertiary/70 duration-200 transition-all">
                                 Terms of Services
                             </Link>
                         </div>
-                        <p className="text-center text-xs text-primary-text-muted leading-6">
+                        <p className="text-center text-xs text-primary-text-tertiary leading-6">
                             &copy; {new Date().getFullYear()} Layerswap Labs, Inc. All rights reserved.
                         </p>
                     </div>
@@ -73,7 +73,7 @@ const GLobalFooter = () => {
                                 key={item.name}
                                 href={item.href}
                                 onClick={() => {
-                                    if(item.sendEvent) {
+                                    if (item.sendEvent) {
                                         window.safary?.track({
                                             eventType: 'click',
                                             eventName: 'footer_social_click',

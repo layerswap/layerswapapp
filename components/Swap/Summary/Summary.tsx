@@ -71,7 +71,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                             requestedAmount &&
                             <p className="text-primary-text text-sm">{truncateDecimals(requestedAmount, sourceCurrency.precision)} {sourceCurrency.symbol}</p>
                         }
-                        <p className="text-secondary-text text-sm flex justify-end">${requestedAmountInUsd}</p>
+                        <p className="text-secondary-text text-sm flex justify-end"><NumberFlow value={requestedAmountInUsd || 0} format={{ style: 'currency', currency: 'USD' }} trend={0} /></p>
                     </div>
                 </div>
                 <div className="relative text-secondary-text">
@@ -165,7 +165,7 @@ const RouteTokenPair: FC<{ route: { logo: string, display_name: string }, networ
                                 {
                                     (isValidAddress(address, network) ?
                                         <div className="text-sm group/addressItem text-secondary-text">
-                                            <ExtendedAddress address={addressFormat(address, network)} network={network} />
+                                            <ExtendedAddress address={addressFormat(address, network)} network={network} showDetails={true} title="USDC" description="Circle USD Coin" logo="https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/arusdc.png" />
                                         </div>
                                         :
                                         <p className="text-sm text-secondary-text">{shortenAddress(address)}</p>)

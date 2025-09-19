@@ -84,7 +84,7 @@ export const ModalContent = (props: ModalContentProps) => {
                 </div>
             )}
 
-            <div className="flex flex-col w-full h-fit max-h-[90dvh] px-4 styled-scroll overflow-x-hidden overflow-y-auto relative pb-3">
+            <div className="flex flex-col w-full h-full max-h-[90dvh] px-4 styled-scroll overflow-x-hidden overflow-y-auto relative pb-3">
                 {typeof children === 'function' ? children({ closeModal, shouldFocus }) : children}
             </div>
         </div>
@@ -124,7 +124,7 @@ export const ModalTrigger = (props: ModalTriggerProps) => {
                 type="button"
                 onClick={openModal}
                 disabled={disabled}
-                className={clsx("rounded-2xl focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full px-2 pr-0 bg-secondary-300 hover:bg-secondary-200 font-semibold", className)}
+                className={clsx("rounded-2xl focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow flex items-center text-left justify-bottom w-full px-2 pr-0 bg-secondary-300 hover:bg-secondary-200 font-semibold", className)}
             >
                 {children}
             </button>

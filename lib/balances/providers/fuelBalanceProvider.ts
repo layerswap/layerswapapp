@@ -1,11 +1,12 @@
+import { BalanceProvider } from "@/Models/BalanceProvider";
 import { TokenBalance } from "../../../Models/Balance";
 import { NetworkWithTokens } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
 import retryWithExponentialBackoff from "../../retry";
 
-export class FuelBalanceProvider {
-    supportsNetwork(network: NetworkWithTokens): boolean {
+export class FuelBalanceProvider extends BalanceProvider {
+    supportsNetwork = (network: NetworkWithTokens): boolean => {
         return KnownInternalNames.Networks.FuelMainnet.includes(network.name) || KnownInternalNames.Networks.FuelTestnet.includes(network.name)
     }
 
@@ -59,22 +60,20 @@ export class FuelBalanceProvider {
 
                 const balanceObj: TokenBalance = {
                     network: network.name,
-                    amount: formatAmount(Number(balance?.amount || 0), token.decimals),
+                    amount: balance?.amount ? formatAmount(Number(balance?.amount), token.decimals) : undefined,
                     decimals: token.decimals,
                     isNativeCurrency: network.token?.symbol === token.symbol,
                     token: token.symbol,
-                    request_time: new Date().toJSON()
+                    request_time: new Date().toJSON(),
+                    error: balance?.amount === undefined ? `Could not fetch balance for ${token.symbol}` : undefined
                 }
 
-                balances = [
-                    ...balances,
-                    balanceObj,
-                ]
+                balances.push(balanceObj)
 
             }
 
         } catch (e) {
-            console.log(e)
+            return network.tokens.map((currency) => (this.resolveTokenBalanceFetchError(e, currency, network)))
         }
 
         return balances

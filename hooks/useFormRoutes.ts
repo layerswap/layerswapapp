@@ -6,7 +6,7 @@ import { ApiResponse } from "../Models/ApiResponse";
 import { NetworkRoute, NetworkRouteToken } from "../Models/Network";
 import { useSettingsState } from "../context/settings";
 import { NetworkElement, RowElement, NetworkTokenElement, TitleElement, GroupedTokenElement, TokenSceletonElement } from "../Models/Route";
-import useAllBalances from "./useAllBalances";
+import useAllWithdrawalBalances from "./useAllWithdrawalBalances";
 import { NetworkBalance } from "../Models/Balance";
 import { resolveExchangesURLForSelectedToken, resolveNetworkRoutesURL } from "../helpers/routes";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
@@ -29,7 +29,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         toAsset: values.toAsset?.symbol
     });
     const groupByToken = useRouteTokenSwitchStore((s) => s.showTokens)
-    const { balances, isLoading: balancesLoading } = useAllBalances({ direction });
+    const { balances, isLoading: balancesLoading } = useAllWithdrawalBalances();
     const routesHistory = useRecentNetworksStore(state => state.recentRoutes)
     const routeElements = useMemo(() => groupRoutes(routes, direction, balances, groupByToken ? "token" : "network", routesHistory, balancesLoading, search), [balancesLoading, routes, balances, direction, search, groupByToken, routesHistory]);
 
@@ -94,7 +94,7 @@ function useRoutes({ direction, values }: Props) {
 function resolveTokenUSDBalance(route: NetworkRoute, token: NetworkRouteToken, balances: Record<string, NetworkBalance>): number {
     const networkBalance = balances?.[route.name]?.balances || [];
     const match = networkBalance.find(b => b.token === token.symbol);
-    return match && match.amount > 0 ? match.amount * token.price_in_usd : 0;
+    return match?.amount && match.amount > 0 ? match.amount * token.price_in_usd : 0;
 }
 
 
@@ -153,7 +153,7 @@ const searchInTokens = (routes: NetworkRoute[], search: string): NetworkTokenEle
 
         const symbolMatch = token.symbol.toLowerCase().includes(lower);
         const contractMatch = token.contract?.toLowerCase().includes(lower);
-        const nameMatch = token.symbol?.toLowerCase().includes(lower);
+        const nameMatch = token.display_asset?.toLowerCase().includes(lower);
         const splitted = lower.split(' ')
         const firstpart = splitted?.[0]
         const secondpart = splitted?.[1]

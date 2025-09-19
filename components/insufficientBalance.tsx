@@ -4,7 +4,7 @@ export function InsufficientBalanceWarning() {
     return (
         <div className="p-2 rounded-xl bg-secondary-400 flex flex-row">
             <div className='grow'>
-                <InfoIcon className='w-6 h-6 p-0.5 ' />
+                <InfoIcon className='w-6 h-6 p-0.5 text-warning-foreground' />
             </div>
 
             <div className='px-2'>

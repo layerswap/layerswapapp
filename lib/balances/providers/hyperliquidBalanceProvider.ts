@@ -2,15 +2,17 @@ import { NetworkWithTokens } from "../../../Models/Network";
 import { TokenBalance } from "../../../Models/Balance";
 import KnownInternalNames from "../../knownIds";
 import { HyperliquidClient } from "../../apiClients/hyperliquidClient";
+import { BalanceProvider } from "@/Models/BalanceProvider";
 
-export class HyperliquidBalanceProvider {
+export class HyperliquidBalanceProvider extends BalanceProvider {
     private client: HyperliquidClient;
 
     constructor() {
+        super()
         this.client = new HyperliquidClient();
     }
 
-    supportsNetwork(network: NetworkWithTokens): boolean {
+    supportsNetwork = (network: NetworkWithTokens): boolean => {
         return network.name === KnownInternalNames.Networks.HyperliquidMainnet ||
             network.name === KnownInternalNames.Networks.HyperliquidTestnet;
     }
@@ -31,7 +33,7 @@ export class HyperliquidBalanceProvider {
 
             // Only support USDC balances for now
             const usdcToken = network.tokens.find(token => token.symbol === 'USDC');
-            
+
             if (usdcToken) {
                 const withdrawableAmount = parseFloat(clearinghouseState.withdrawable);
                 if (withdrawableAmount > 0) {
@@ -48,8 +50,7 @@ export class HyperliquidBalanceProvider {
 
             return balances;
         } catch (error) {
-            console.error('Error fetching Hyperliquid balances:', error);
-            return undefined;
+            return network.tokens.map(t => this.resolveTokenBalanceFetchError(error, t, network))
         }
     }
 }

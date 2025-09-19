@@ -32,7 +32,8 @@ const DestinationPicker = (props: Props) => {
             </label>
             <div className="col-span-4">
                 <Address partner={partner}>
-                    {({ destination, disabled, addressItem, connectedWallet, partner }) => <DestinationWalletPicker destination={destination} disabled={disabled} addressItem={addressItem} connectedWallet={connectedWallet} partner={partner} />}
+                    {({ destination, disabled, addressItem, connectedWallet, partner }) =>
+                        <DestinationWalletPicker destination={destination} disabled={disabled} addressItem={addressItem} connectedWallet={connectedWallet} partner={partner} />}
                 </Address>
             </div>
         </div>
