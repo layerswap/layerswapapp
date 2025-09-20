@@ -1,6 +1,6 @@
 import { useValidationContext } from '@/context/validationContext';
 import React from 'react';
-import { ErrorDisplay } from './errorDisplay';
+import { ErrorDisplay } from './DisplayError';
 
 const ValidationError: React.FC = () => {
     const { routeValidation } = useValidationContext();

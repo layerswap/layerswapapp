@@ -9,9 +9,9 @@ import { QuoteError } from './useFee';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import useSWRBalance from '@/lib/balances/useSWRBalance';
 import { useSwapDataState } from '@/context/swap';
-import { defaultErrors } from '@/components/validationError/errorDisplay';
+import { defaultErrors } from '@/components/validationError/DisplayError';
 
-export const ICON_CLASSES_WARNING = 'w-5 h-5 text-warning-foreground';
+const ICON_CLASSES_WARNING = 'w-5 h-5 text-warning-foreground';
 
 interface ValidationDetails {
     title?: string;
