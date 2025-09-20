@@ -11,7 +11,7 @@ import useWallet from '@/hooks/useWallet';
 import useSWRBalance from '@/lib/balances/useSWRBalance';
 import { useSettingsState } from '@/context/settings';
 import { useSelectedAccount } from '@/context/balanceAccounts';
-import { ErrorDisplay } from '@/components/validationError/DisplayError';
+import { ErrorDisplay } from '@/components/validationError/ErrorDisplay';
 
 const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void }> = ({ type, onWalletWithdrawalSuccess }) => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading } = useSwapDataState()

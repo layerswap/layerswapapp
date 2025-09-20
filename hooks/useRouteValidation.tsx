@@ -9,7 +9,7 @@ import { QuoteError } from './useFee';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import useSWRBalance from '@/lib/balances/useSWRBalance';
 import { useSwapDataState } from '@/context/swap';
-import { defaultErrors } from '@/components/validationError/DisplayError';
+import { defaultErrors } from '@/components/validationError/ErrorDisplay';
 
 const ICON_CLASSES_WARNING = 'w-5 h-5 text-warning-foreground';
 
