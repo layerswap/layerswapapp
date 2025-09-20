@@ -1,6 +1,7 @@
 import { ValidationDetails } from '@/context/validationContext';
 import { Info } from 'lucide-react';
 import React from 'react';
+import { ICON_CLASSES_WARNING } from './constants';
 
 interface ErrorDisplayProps {
     message: string;
@@ -10,7 +11,7 @@ interface ErrorDisplayProps {
 export const defaultErrors: { [errorName: string]: ErrorDisplayProps } = {
     "insufficientFunds": {
         message: "You don't have enough balance to complete this transaction, this might cause the transaction to fail please try to enter a smaller amount.",
-        details: { title: "Insufficient Balance", type: 'warning', icon: <Info className='w-5 h-5 text-warning-foreground' /> }
+        details: { title: "Insufficient Balance", type: 'warning', icon: <Info className={ICON_CLASSES_WARNING} /> }
     }
 }
 export const ErrorDisplay: React.FC<Partial<ErrorDisplayProps & { errorName?: string }>> = (props) => {
