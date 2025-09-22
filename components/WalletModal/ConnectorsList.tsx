@@ -53,19 +53,6 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
 
             const result = provider?.connectWallet && await provider.connectWallet({ connector })
 
-            window.safary?.track({
-                eventName: 'connected_wallet',
-                eventType: 'connect',
-                parameters: {
-                    custom_str_1_label: 'wallet_name',
-                    custom_str_1_value: connector.name,
-                    custom_str_2_label: 'network',
-                    custom_str_2_value: provider.id,
-                    custom_str_3_label: 'address',
-                    custom_str_3_value: result?.address || '',
-                }
-            })
-
             if (result && connector && provider) {
                 setRecentConnectors((prev) => {
                     const next = [{ providerName: provider.name, connectorName: connector.name }];

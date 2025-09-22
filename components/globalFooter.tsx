@@ -72,18 +72,6 @@ const GLobalFooter = () => {
                                 target="_blank"
                                 key={item.name}
                                 href={item.href}
-                                onClick={() => {
-                                    if (item.sendEvent) {
-                                        window.safary?.track({
-                                            eventType: 'click',
-                                            eventName: 'footer_social_click',
-                                            parameters: {
-                                                custom_str_1_label: 'social',
-                                                custom_str_1_value: item.name,
-                                            }
-                                        })
-                                    }
-                                }}
                                 className="text-gray-400 hover:text-gray-500"
                             >
                                 <span className="sr-only">{item.name}</span>

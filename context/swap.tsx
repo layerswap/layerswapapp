@@ -224,21 +224,6 @@ export function SwapDataProvider({ children }) {
             to: { network: to.name, token: toCurrency.symbol }
         });
 
-        window.safary?.track({
-            eventType: 'swap',
-            eventName: 'swap_created',
-            parameters: {
-                custom_str_1_label: "from",
-                custom_str_1_value: fromExchange?.display_name || from?.display_name!,
-                custom_str_2_label: "to",
-                walletAddress: (fromExchange || depositMethod !== 'wallet') ? '' : selectedSourceAccount?.address!,
-                custom_str_2_value: to?.display_name!,
-                fromCurrency: fromCurrency?.symbol!,
-                toCurrency: toCurrency?.symbol!,
-                fromAmount: amount!,
-                toAmount: amount!
-            }
-        })
         plausible(TrackEvent.SwapInitiated)
 
         return swap;

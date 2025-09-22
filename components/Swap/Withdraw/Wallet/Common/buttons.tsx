@@ -177,10 +177,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             setLoading(true)
             setActionStateText("Preparing")
             setSwapId(undefined)
-            window.safary?.track({
-                eventName: 'click',
-                eventType: 'send_from_wallet',
-            })
 
             const swapValues: SwapFormValues = {
                 amount: swapData.requested_amount.toString(),
