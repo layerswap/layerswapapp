@@ -117,7 +117,6 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
                     </ResizablePanel>
                 </AccordionContent>
 
-
                 {isOpen && (
                     <div className="px-3.5 pb-3">
                         <button
@@ -125,7 +124,7 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
                             onClick={() => setIsOpen(false)}
                             className="mx-auto flex items-center justify-center gap-1 text-sm text-secondary-text hover:text-primary-text"
                         >
-                            Close details
+                            <span>Close details</span>
                             <ChevronDown className="h-3.5 w-3.5 rotate-180 transition-transform" />
                         </button>
                     </div>
@@ -134,6 +133,5 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
         </Accordion>
     )
 }
-
 
 export default SwapQuoteComp

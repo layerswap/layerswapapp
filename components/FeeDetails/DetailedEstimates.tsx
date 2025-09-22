@@ -136,8 +136,8 @@ const detailsElements: DetailedElement[] = [
 
             return (
                 <RateElement
-                    fromAsset={values?.fromAsset?.symbol}
-                    toAsset={values?.toAsset?.symbol}
+                    fromAsset={values?.fromAsset}
+                    toAsset={values?.toAsset}
                     requestAmount={quote?.requested_amount}
                     receiveAmount={quote?.receive_amount}
                 />

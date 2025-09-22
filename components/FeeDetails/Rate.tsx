@@ -1,6 +1,8 @@
 import { useState } from "react"
 import { ArrowRight } from "lucide-react"
-import { LoadingBar } from "./DetailedEstimates"
+import { truncateDecimals } from "../utils/RoundDecimals"
+import { NetworkRouteToken } from "@/Models/Network"
+import { Tooltip, TooltipTrigger, TooltipContent } from "../shadcn/tooltip"
 
 export const RateElement = ({
     fromAsset,
@@ -8,8 +10,8 @@ export const RateElement = ({
     requestAmount,
     receiveAmount,
 }: {
-    fromAsset:  string | undefined
-    toAsset: string | undefined
+    fromAsset: NetworkRouteToken | undefined
+    toAsset: NetworkRouteToken | undefined
     requestAmount: number | undefined
     receiveAmount: number | undefined
 }) => {
@@ -19,8 +21,11 @@ export const RateElement = ({
         return null
     }
 
-    const fromToRate = (receiveAmount / requestAmount).toFixed(6)
-    const toFromRate = (requestAmount / receiveAmount).toFixed(6)
+    const fromToRate = receiveAmount / requestAmount
+    const toFromRate = requestAmount / receiveAmount
+
+    const displayFromToRate = truncateDecimals(fromToRate, fromAsset?.decimals || 6)
+    const displayToFromRate = truncateDecimals(toFromRate, toAsset?.decimals || 6)
 
     return (
         <div
@@ -29,15 +34,29 @@ export const RateElement = ({
         >
             {!flipped ? (
                 <>
-                    <span>1</span> {fromAsset}
+                    <span>1</span> {fromAsset?.symbol}
                     <ArrowRight className="w-3 h-3 mx-1" />
-                    {fromToRate} {toAsset}
+                    <Tooltip delayDuration={100}>
+                        <TooltipTrigger asChild>
+                            <span>{displayFromToRate} {toAsset?.symbol}</span>
+                        </TooltipTrigger>
+                        <TooltipContent className="!bg-secondary-300 !border-secondary-300 !text-primary-text">
+                            <span>{fromToRate}</span>
+                        </TooltipContent>
+                    </Tooltip>
                 </>
             ) : (
                 <>
-                    <span>1</span> {toAsset}
+                    <span>1</span> {toAsset?.symbol}
                     <ArrowRight className="w-3 h-3 mx-1" />
-                    {toFromRate} {fromAsset}
+                    <Tooltip delayDuration={100}>
+                        <TooltipTrigger asChild>
+                            <span>{displayToFromRate} {fromAsset?.symbol}</span>
+                        </TooltipTrigger>
+                        <TooltipContent className="!bg-secondary-300 !border-secondary-300 !text-primary-text">
+                            <span>{toFromRate}</span>
+                        </TooltipContent>
+                    </Tooltip>
                 </>
             )}
         </div>
