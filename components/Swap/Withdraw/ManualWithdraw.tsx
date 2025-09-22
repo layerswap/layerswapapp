@@ -6,9 +6,8 @@ import shortenAddress from '@/components/utils/ShortenAddress'
 import useCopyClipboard from '@/hooks/useCopyClipboard'
 import useWallet from '@/hooks/useWallet'
 import { DepositAction, Refuel, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient'
-import { motion } from 'framer-motion'
 import { QRCodeSVG } from 'qrcode.react'
-import React, { useMemo } from 'react'
+import React, { forwardRef, useMemo } from 'react'
 import { FC, ReactNode, useState } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
 import useExchangeNetworks from '@/hooks/useExchangeNetworks'
@@ -21,6 +20,7 @@ import { SwapFormValues } from '@/components/DTOs/SwapFormValues'
 import { useAsyncModal } from '@/context/asyncModal'
 import { handleLimitsUpdate } from './QuoteUpdate'
 import SubmitButton from '@/components/buttons/submitButton'
+import { useClickOutside } from '@/hooks/useClickOutside'
 
 interface Props {
     swapBasicData: SwapBasicData;
@@ -32,14 +32,13 @@ interface Props {
 const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refuel }) => {
     const { wallets } = useWallet();
     const { createSwap, setSwapId } = useSwapDataUpdate()
-    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-    const [newNetwork, setNewNetwork] = useState<Network | null>(null);
+    const [newNetwork, setNewNetwork] = useState<Network | undefined>(undefined);
+    const { ref, activate, deactivate, isActive } = useClickOutside()
 
     const [loading, setLoading] = useState(false)
     const { getConfirmation } = useAsyncModal();
 
     const [showQR, setShowQR] = useState(false)
-    const destinationLogo = swapBasicData?.destination_network?.logo
     const [copied, copy] = useCopyClipboard()
     const query = useQueryState()
     const depositAddress = depositActions?.find(da => true)?.to_address;
@@ -81,7 +80,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
             if (!swapId) throw new Error('Swap ID is undefined');
 
             setSwapId(swapId);
-            setIsPopoverOpen(false);
+            deactivate()
         } catch (e) {
             console.error('Swap creation error:', e);
         } finally {
@@ -96,86 +95,6 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
     }), [swapBasicData]);
 
     const { networks: withdrawalNetworks, isLoading: exchangeSourceNetworksLoading } = useExchangeNetworks(exchangeNetworkParams);
-
-    const requestAmount = (
-        <span className='inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg'>
-            <span>{swapBasicData?.requested_amount}</span> <span>{swapBasicData?.source_token?.symbol}</span>
-            <CopyButton toCopy={swapBasicData?.requested_amount} iconClassName='text-secondary-text' />
-        </span>
-    )
-
-    const destinationNetwork = (
-        <span className='flex items-center gap-1'>
-            {destinationLogo && <ImageWithFallback
-                src={destinationLogo!}
-                alt="Project Logo"
-                height="16"
-                width="16"
-                loading="eager"
-                className="rounded-md object-contain"
-            />}
-            {swapBasicData?.destination_network?.display_name}
-        </span>
-    )
-
-    const sourceNetworkPopover = (
-        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-            <PopoverTrigger asChild>
-                <button className="inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg">
-                    <ImageWithFallback
-                        src={newNetwork?.logo || swapBasicData?.source_network?.logo}
-                        alt="Project Logo"
-                        height="16"
-                        width="16"
-                        loading="eager"
-                        className="rounded-sm object-contain"
-                    />
-                    <span>{newNetwork?.display_name || swapBasicData?.source_network?.display_name}</span>
-                    <span className="pointer-events-none text-shadow-primary-text-tertiary">
-                        <ChevronDown className="h-3.5 w-3.5 text-secondary-text" aria-hidden="true" />
-                    </span>
-                </button>
-            </PopoverTrigger>
-            <PopoverContent side='top' className="bg-secondary-300! space-y-1 p-1! rounded-lg!">
-                <CommandWrapper>
-                    <CommandList>
-                        {withdrawalNetworks?.map((item) => {
-                            return (
-                                <CommandItem
-                                    className='hover:bg-secondary-100 rounded-md p-1! cursor-pointer'
-                                    value={item.network.name}
-                                    key={item.network.name}
-                                    onSelect={() => handleClick(item.network, item.token)}
-                                >
-                                    <div className={`flex items-center justify-between w-full overflow-hidden`}>
-                                        <div className={`gap-2 relative flex items-center w-full space-y-1`}>
-                                            <div className={`h-6 w-6 shrink-0 mb-0!`}>
-                                                {item.network.logo && (
-                                                    <ImageWithFallback
-                                                        src={item.network.logo}
-                                                        alt="Project Logo"
-                                                        height="24"
-                                                        width="24"
-                                                        loading="eager"
-                                                        className="rounded-md object-contain"
-                                                    />
-                                                )}
-                                            </div>
-                                            <div className="flex justify-between w-full items-center">
-                                                <span className="flex items-center pb-0.5 text-sm font-medium text-primary-text pr-20">
-                                                    {item.network.display_name}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </CommandItem>
-                            );
-                        })}
-                    </CommandList>
-                </CommandWrapper>
-            </PopoverContent>
-        </Popover>
-    )
 
     return (
         <div className="rounded-lg space-y-3 text-white">
@@ -233,12 +152,20 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                                 <span>
                                     <span className='inline-flex items-center'>
                                         <span>Send</span>
-                                        {requestAmount}
+                                        <RequestAmount swapBasicData={swapBasicData} />
                                     </span>
                                     <span>via</span>
                                     {swapBasicData?.source_exchange ? (
                                         <span className="inline-flex items-center align-bottom">
-                                            {sourceNetworkPopover}
+                                            <SourceNetworkPopover
+                                                ref={ref}
+                                                open={activate}
+                                                handleClick={handleClick}
+                                                isPopoverOpen={isActive}
+                                                newNetwork={newNetwork}
+                                                swapBasicData={swapBasicData}
+                                                withdrawalNetworks={withdrawalNetworks}
+                                            />
                                         </span>
                                     ) : (
                                         <span className="inline-flex items-center gap-1 mx-1 h-6 align-bottom">
@@ -261,7 +188,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                             number={3}
                             label={
                                 <span className='flex items-center gap-1'>
-                                    <span>Receive</span> <span>{quote?.receive_amount}</span> <span>{swapBasicData?.destination_token?.symbol}</span> <span>at</span> <span>{destinationNetwork}</span>
+                                    <span>Receive</span> <span>{quote?.receive_amount}</span> <span>{swapBasicData?.destination_token?.symbol}</span> <span>at</span> <span><DestinationNetwork destinationNetwork={swapBasicData.destination_network} /></span>
                                 </span>
                             }
                             value={
@@ -284,6 +211,98 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
         </div>
     )
 }
+
+const SourceNetworkPopover = forwardRef<
+    HTMLDivElement,
+    {
+        isPopoverOpen: boolean,
+        newNetwork: Network | undefined,
+        swapBasicData: SwapBasicData,
+        withdrawalNetworks: ReturnType<typeof useExchangeNetworks>['networks'],
+        open: () => void;
+        handleClick: (network: Network, token: Token) => void
+    }>(({ isPopoverOpen, newNetwork, swapBasicData, withdrawalNetworks, handleClick, open }, ref) => (
+        <Popover open={isPopoverOpen}>
+            <PopoverTrigger onClick={open} asChild>
+                <button className="inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg">
+                    <ImageWithFallback
+                        src={newNetwork?.logo || swapBasicData?.source_network?.logo}
+                        alt="Project Logo"
+                        height="16"
+                        width="16"
+                        loading="eager"
+                        className="rounded-sm object-contain"
+                    />
+                    <span>{newNetwork?.display_name || swapBasicData?.source_network?.display_name}</span>
+                    <span className="pointer-events-none text-shadow-primary-text-tertiary">
+                        <ChevronDown className="h-3.5 w-3.5 text-secondary-text" aria-hidden="true" />
+                    </span>
+                </button>
+            </PopoverTrigger>
+            <PopoverContent side='top' className="bg-secondary-300! space-y-1 p-1! rounded-lg!">
+                <div ref={ref}>
+                    <CommandWrapper>
+                        <CommandList>
+                            {withdrawalNetworks?.map((item) => {
+                                return (
+                                    <CommandItem
+                                        className='hover:bg-secondary-100 rounded-md p-1! cursor-pointer'
+                                        value={item.network.name}
+                                        key={item.network.name}
+                                        onSelect={() => handleClick(item.network, item.token)}
+                                    >
+                                        <div className={`flex items-center justify-between w-full overflow-hidden`}>
+                                            <div className={`gap-2 relative flex items-center w-full space-y-1`}>
+                                                <div className={`h-6 w-6 shrink-0 mb-0!`}>
+                                                    {item.network.logo && (
+                                                        <ImageWithFallback
+                                                            src={item.network.logo}
+                                                            alt="Project Logo"
+                                                            height="24"
+                                                            width="24"
+                                                            loading="eager"
+                                                            className="rounded-md object-contain"
+                                                        />
+                                                    )}
+                                                </div>
+                                                <div className="flex justify-between w-full items-center">
+                                                    <span className="flex items-center pb-0.5 text-sm font-medium text-primary-text pr-20">
+                                                        {item.network.display_name}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </CommandItem>
+                                );
+                            })}
+                        </CommandList>
+                    </CommandWrapper>
+                </div>
+            </PopoverContent>
+        </Popover>
+    ))
+
+
+const DestinationNetwork = ({ destinationNetwork }: { destinationNetwork: SwapBasicData['destination_network'] }) => (
+    <span className='flex items-center gap-1'>
+        <ImageWithFallback
+            src={destinationNetwork.logo}
+            alt="Project Logo"
+            height="16"
+            width="16"
+            loading="eager"
+            className="rounded-md object-contain"
+        />
+        {destinationNetwork?.display_name}
+    </span>
+)
+
+const RequestAmount = ({ swapBasicData }: { swapBasicData: SwapBasicData }) => (
+    <span className='inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg'>
+        <span>{swapBasicData?.requested_amount}</span> <span>{swapBasicData?.source_token?.symbol}</span>
+        <CopyButton toCopy={swapBasicData?.requested_amount} iconClassName='text-secondary-text' />
+    </span>
+)
 
 const Step = ({ number, label, value }: { number: number, label: ReactNode, value?: ReactNode }) => (
     <div className="flex items-start space-x-3 bg-secondary-500 p-3 rounded-xl">
