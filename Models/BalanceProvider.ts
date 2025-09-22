@@ -11,7 +11,7 @@ export abstract class BalanceProvider {
             severity: "warn",
             network: network.name,
             token: token.symbol ?? undefined,
-            message: err.message,
+            message: err.message || `Could not fetch balance for ${token.symbol} in ${network.name}`,
             code: err.code,
             cause: err.cause,
         });
