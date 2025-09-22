@@ -1,10 +1,8 @@
 import { SwapDataProvider } from "@/context/swap";
 import React, { useMemo } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./NetworkExchangeTabs";
+import { NetworkExchangeTabs, Tabs, TabsContent } from "./NetworkExchangeTabs";
 import NetworkForm from "./NetworkForm";
 import ExchangeForm from "./ExchangeForm";
-import NetworkTabIcon from "@/components/icons/NetworkTabIcon";
-import ExchangeTabIcon from "@/components/icons/ExchangeTabIcon";
 import { BalanceAccountsProvider } from "@/context/balanceAccounts";
 import FormWrapper from "./FormWrapper";
 import { Widget } from "@/components/Widget/Index";
@@ -51,20 +49,6 @@ export default function Form() {
 
         </Tabs>
     </BalanceAccountsProvider>
-}
-
-export const NetworkExchangeTabs = () => {
-    return <TabsList>
-        <TabsTrigger
-            label="Swap"
-            Icon={NetworkTabIcon}
-            value="cross-chain" />
-        <TabsTrigger
-            label="Deposit from CEX"
-            Icon={ExchangeTabIcon}
-            value="exchange" />
-    </TabsList>
-
 }
 
 const defaultTabResolver = ({ from, sourceExchanges }: { from: string | undefined, sourceExchanges: ReturnType<typeof useSettingsState>['sourceExchanges'] }) => {

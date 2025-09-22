@@ -2,6 +2,8 @@ import React, { createContext, useContext, FC, ReactNode, useState, SVGProps } f
 import { motion } from 'framer-motion'
 import clsx from 'clsx'
 import useWindowDimensions from '@/hooks/useWindowDimensions'
+import NetworkTabIcon from '@/components/icons/NetworkTabIcon'
+import ExchangeTabIcon from '@/components/icons/ExchangeTabIcon'
 
 interface TabsContextType {
     activeId: string
@@ -86,4 +88,18 @@ export const TabsContent: FC<TabsContentProps> = ({ value, children }) => {
             </div>
         )}
     </>
+}
+
+export const NetworkExchangeTabs = () => {
+    return <TabsList>
+        <TabsTrigger
+            label="Swap"
+            Icon={NetworkTabIcon}
+            value="cross-chain" />
+        <TabsTrigger
+            label="Deposit from CEX"
+            Icon={ExchangeTabIcon}
+            value="exchange" />
+    </TabsList>
+
 }

@@ -4,7 +4,7 @@ import { ArrowLeft } from 'lucide-react'
 import dynamic from "next/dynamic"
 import LayerswapMenu from "../LayerswapMenu"
 import { useQueryState } from "../../context/query"
-import { NetworkExchangeTabs } from "../Swap/Form"
+import { NetworkExchangeTabs } from "../Swap/Form/NetworkExchangeTabs"
 
 const WalletsHeader = dynamic(() => import("../Wallet/ConnectedWallets").then((comp) => comp.WalletsHeader), {
    loading: () => <></>
