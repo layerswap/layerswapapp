@@ -47,30 +47,34 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal, fee }) => 
                     (refuel || destNativeTokenBalance?.amount) &&
                     <div className="flex flex-col space-y-2 w-full bg-secondary-700 overflow-hidden ">
                         {
-                            destNativeTokenBalance?.amount &&
-                            <div className="gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3 bg-secondary-500 rounded-xl">
-                                <div className="flex items-center justify-between w-full">
-                                    <div className="text-secondary-text">
-                                        <span>Current balance</span>
+                            destNativeTokenBalance?.amount ?
+                                <div className="gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3 bg-secondary-500 rounded-xl">
+                                    <div className="flex items-center justify-between w-full">
+                                        <div className="text-secondary-text">
+                                            <span>Current balance</span>
+                                        </div>
+                                        <p className='text-end'>
+                                            <span>{truncateDecimals(destNativeTokenBalance.amount, nativeAsset?.precision)} {nativeAsset?.symbol}</span>
+                                        </p>
                                     </div>
-                                    <p className='text-end'>
-                                        <span>{truncateDecimals(destNativeTokenBalance.amount, nativeAsset?.precision)} {nativeAsset?.symbol}</span>
-                                    </p>
                                 </div>
-                            </div>
+                                :
+                                null
                         }
                         {
-                            toCurrency?.refuel && nativeAsset &&
-                            <div className="gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3 bg-secondary-500 rounded-xl">
-                                <div className="flex items-center justify-between w-full">
-                                    <div className="text-secondary-text">
-                                        You will receive
+                            (toCurrency?.refuel && nativeAsset) ?
+                                <div className="gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3 bg-secondary-500 rounded-xl">
+                                    <div className="flex items-center justify-between w-full">
+                                        <div className="text-secondary-text">
+                                            You will receive
+                                        </div>
+                                        <p>
+                                            <span>{roundDecimals(toCurrency.refuel?.amount, nativeAsset.precision)} {nativeAsset?.symbol}</span>
+                                        </p>
                                     </div>
-                                    <p>
-                                        <span>{roundDecimals(toCurrency.refuel?.amount, nativeAsset.precision)} {nativeAsset?.symbol}</span>
-                                    </p>
                                 </div>
-                            </div>
+                                :
+                                null
                         }
                     </div>
                 }
