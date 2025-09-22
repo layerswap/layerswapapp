@@ -23,7 +23,7 @@ export const SearchComponent = ({ searchQuery, setSearchQuery, isOpen, className
 
     return <div className={`flex items-center bg-secondary-500 focus-within:bg-secondary-300 rounded-lg px-2 mb-2 h-10 ${className}`}>
         <div className="w-6 h-6 flex items-center justify-center mr-1">
-            <SearchIcon className="text-primary-text-tertiary" /> {/*w-6 h-6 mr-2*/}
+            <SearchIcon className="text-primary-text-tertiary" />
         </div>
         <input
             ref={inputRef}
