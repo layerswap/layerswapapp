@@ -112,7 +112,7 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
                             <GasIcon className='h-4 w-4 text-secondary-text' /> : <ExchangeGasIcon className='h-5 w-5 text-secondary-text' />
                         }
                     </div>
-                    <NumberFlow className="text-primary-text text-sm leading-6" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} format={{ style: 'currency', currency: 'USD' }} prefix={gasFeeInUsd < 0.01 ? '<' : undefined} />
+                    <span><span>{gasFeeInUsd < 0.01 ? null : '$'}</span><NumberFlow className="text-primary-text text-sm leading-6" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} prefix={gasFeeInUsd < 0.01 ? '<$' : undefined} /></span>
                     <div className="ml-3 w-px h-3 bg-primary-text-tertiary rounded-2xl" />
                 </div>
             }
