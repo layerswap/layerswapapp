@@ -1,11 +1,11 @@
 import { FC, useCallback, useEffect } from "react";
-import MessageComponent from "../MessageComponent";
-import SubmitButton, { DoubleLineText } from "../buttons/submitButton";
 import GoHomeButton from "../utils/GoHome";
 import { useIntercom } from "react-use-intercom";
 import { TrackEvent } from '../../pages/_document';
-import { Home, MessageSquare } from "lucide-react";
+import { Home } from "lucide-react";
 import { useRouter } from "next/router";
+import NotFoundIcon from "../icons/NotFoundIcon";
+import MessageComponent from "../MessageComponent";
 
 const NotFound: FC = () => {
 
@@ -24,47 +24,44 @@ const NotFound: FC = () => {
     }, [boot, show, updateWithProps])
 
     return <MessageComponent>
-        <MessageComponent.Content icon='red'>
-            <MessageComponent.Header>
-                Swap not found
+        <MessageComponent.Content center>
+            <MessageComponent.Header className="mb-3">
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-600/20">
+                    <NotFoundIcon />
+                </div>
+                <h1 className="text-center text-2xl font-semibold text-white">
+                    Swap not found
+                </h1>
             </MessageComponent.Header>
             <MessageComponent.Description>
-                <span className="text-sm mt-5">
-                    <p>
-                        Your funds are safe, but there seems to be an issue with the swap.
-                    </p>
-                    <p>
-                        Please contact our support team and we’ll help you fix this.
-                    </p>
-                </span>
+                <p className="mx-auto text-center text-base leading-5 text-secondary-text">
+                    Your funds are safe, but there seems to be an issue with the swap.{" "}
+                    Please
+                    <button
+                        type="button"
+                        onClick={startIntercom}
+                        className="mx-1 underline decoration-gray-400 underline-offset-2 hover:decoration-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0f1420] focus:ring-gray-400 rounded"
+                    >
+                        contact our support
+                    </button>
+                    team and we&#39;ll help you fix this.
+                </p>
             </MessageComponent.Description>
         </MessageComponent.Content>
         <MessageComponent.Buttons>
-            <MessageComponent.Buttons>
-                <div className="flex flex-row text-primary-text text-base space-x-2">
-                    <div className='basis-1/3'>
-                        <SubmitButton text_align='left' onClick={startIntercom} isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<MessageSquare className="h-5 w-5" aria-hidden="true" />}>
-                            <DoubleLineText
-                                colorStyle='mltln-text-dark'
-                                primaryText='Support'
-                                secondarytext='Contact'
-                            />
-                        </SubmitButton>
-                    </div>
-                    <div className='basis-2/3'>
-                        <GoHomeButton>
-                            <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<Home className="h-5 w-5" aria-hidden="true" />}>
-                                <DoubleLineText
-                                    colorStyle='mltln-text-dark'
-                                    primaryText='Swap'
-                                    secondarytext='Do another'
-                                />
-                            </SubmitButton>
-                        </GoHomeButton>
-                    </div>
-                </div>
-            </MessageComponent.Buttons>
+            <div className="flex w-full text-primary-text text-base space-x-2">
+                <GoHomeButton>
+                    <button
+                        type="button"
+                        className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-secondary-300 px-5 py-4 text-base font-semibold leading-6 hover:bg-secondary-400 focus:outline-none transition"
+                    >
+                        <Home className="h-5 w-5" aria-hidden="true" />
+                        Back to app
+                    </button>
+                </GoHomeButton>
+            </div>
         </MessageComponent.Buttons>
     </MessageComponent>
 }
+
 export default NotFound
