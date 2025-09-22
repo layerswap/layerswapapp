@@ -1,8 +1,9 @@
-import { Context, createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { Context, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { SwapDirection, SwapFormValues } from '@/components/DTOs/SwapFormValues';
 import useWallet from '@/hooks/useWallet';
 import { Wallet, WalletProvider } from '@/Models/WalletProvider';
 import AddressIcon from '@/components/AddressIcon';
+import posthog from 'posthog-js';
 
 const BalanceAccountsStateContext = createContext<BalanceAccountsContextType | null>(null);
 const BalanceAccountsUpdateContext = createContext<BalanceAccountsUpdateContextType | null>(null);
@@ -42,6 +43,10 @@ export function BalanceAccountsProvider({ children }: PickerAccountsProviderProp
     const [selectedSourceAccounts, setSelectedSourceAccounts] = useState<BaseAccountIdentity[]>([])
     const { providers } = useWallet()
 
+    const connectedWallets = providers.flatMap(provider =>
+        provider.connectedWallets ?? []
+    );
+
     const sourceAccounts: AccountIdentityWithWallet[] = useMemo(() => {
         return providers.map(provider => {
             if (!hasWallet(provider)) return null;
@@ -79,6 +84,15 @@ export function BalanceAccountsProvider({ children }: PickerAccountsProviderProp
             return ResolveWalletBalanceAccount(provider, wallet, address);
         }).filter(Boolean) as AccountIdentity[];
     }, [providers, selectedDestAccounts]);
+
+    useEffect(() => {
+        if (sourceAccounts.length > 1 || connectedWallets.length > 1) {
+            posthog.capture("$exception", {
+                where: "multiple_accounts_connected",
+                severity: "info",
+            });
+        }
+    }, [sourceAccounts]);
 
     const selectDestinationAccount = useCallback((account: BaseAccountIdentity) => {
         setSelectedDestinationAccounts(prev => {
