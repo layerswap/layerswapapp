@@ -21,8 +21,8 @@ export const PriceImpact: FC<PriceImpactProps> = ({ quote }) => {
     }, [requested_amount, quote?.source_token?.price_in_usd]);
 
     const priceImpact = useMemo(() => {
-        if (fromAmountUSD === undefined || fromAmountUSD === 0 || toAmountUSD === undefined) return undefined;
-        return Number((((toAmountUSD - fromAmountUSD) / fromAmountUSD) * 100).toFixed(2));
+        if (fromAmountUSD === undefined || toAmountUSD === undefined) return undefined;
+        return Number((toAmountUSD - fromAmountUSD).toFixed(2));
     }, [fromAmountUSD, toAmountUSD]);
 
     if (priceImpact === undefined) return null;
@@ -38,13 +38,13 @@ export const PriceImpact: FC<PriceImpactProps> = ({ quote }) => {
                             className={`w-3 h-3 stroke-1 fill-current transition-transform ${priceImpact < 0 ? "rotate-180" : ""
                                 }`}
                         />
-                        {priceImpact}<span>%)</span>
+                        <span>$</span>{priceImpact}<span>)</span>
                     </span>
                 </span>
             </TooltipTrigger>
             <TooltipContent side="top" align="center" className="!bg-secondary-300 !border-secondary-300 !text-secondary-text text-xs font-medium">
                 <p>This is the difference between the USD value of</p>
-                <p>what you send and what you&#39;ll receive.</p>
+                <p>the token you send and the token you receive.</p>
             </TooltipContent>
         </Tooltip>
     </>)

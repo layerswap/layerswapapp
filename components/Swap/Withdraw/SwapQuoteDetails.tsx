@@ -1,7 +1,7 @@
 import { FC } from 'react'
 import { SwapValues } from '@/components/FeeDetails';
 import { Refuel, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
-import SwapQuoteComp from '@/components/FeeDetails/SwapQuote/SwapQuoteDetails';
+import SwapQuoteComp from '@/components/FeeDetails/SwapQuote';
 
 type Props = {
     swapBasicData: SwapBasicData | undefined,

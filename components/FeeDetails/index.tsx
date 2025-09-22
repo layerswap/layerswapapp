@@ -99,7 +99,7 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
     );
 
     return (
-        <div className='flex items-center space-x-4'>
+        <div className='flex items-center'>
             {
                 gasFeeInUsd &&
                 <div className={clsx(
@@ -119,7 +119,7 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
                 averageCompletionTime &&
                 <>
                     <div className={clsx(
-                        "text-right inline-flex items-center gap-1 text-sm",
+                        "text-right inline-flex items-center gap-1 text-sm ml-1",
                         { "animate-pulse-strong": isQuoteLoading }
                     )}>
                         <div className='p-0.5'>

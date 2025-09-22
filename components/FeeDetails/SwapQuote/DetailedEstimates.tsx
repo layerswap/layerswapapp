@@ -7,13 +7,12 @@ import { RateElement } from '../Rate'
 import { LoadingBar } from '../DetailedEstimates'
 import { Campaign, Quote } from '@/lib/apiClients/layerSwapApiClient'
 import { Wallet } from '@/Models/WalletProvider'
-import { QuoteComponentProps, SwapValues } from './SwapQuoteDetails'
+import { SwapValues } from '..'
 
 type DetailedEstimatesProps = {
     quote: Quote | undefined
     shouldCheckNFT?: string | false | undefined
     isQuoteLoading?: boolean
-    destination?: any
     destinationAddress?: string
     sourceAddress?: string
     swapValues: SwapValues
@@ -37,7 +36,6 @@ type DetailedEstimatesProps = {
 export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
     quote: quoteData,
     isQuoteLoading,
-    destination,
     destinationAddress,
     sourceAddress,
     swapValues: values,

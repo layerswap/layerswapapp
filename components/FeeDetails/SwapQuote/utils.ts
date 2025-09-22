@@ -1,15 +1,6 @@
 import { Quote } from '@/lib/apiClients/layerSwapApiClient'
-import { resolveTokenUsdPrice } from '@/helpers/tokenHelper'
 import { truncateDecimals } from '../../utils/RoundDecimals'
-import { SwapValues } from './SwapQuoteDetails'
-
-export function resolveTokenUsdPriceSafe(token: any, q?: Quote['quote']) {
-    try {
-        return resolveTokenUsdPrice(token, q)
-    } catch {
-        return null
-    }
-}
+import { SwapValues } from '..'
 
 export function deriveQuoteComputed({
     values,
@@ -31,7 +22,6 @@ export function deriveQuoteComputed({
     const displayLsFee = quote?.total_fee !== undefined ? truncateDecimals(quote.total_fee, values.fromAsset?.decimals) : undefined
     const currencyName = values.fromAsset?.symbol || ''
     const receiveAtLeast = quote?.min_receive_amount
-
 
     return {
         gasFeeInUsd,

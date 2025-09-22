@@ -86,7 +86,6 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
                     <SummaryRow
                         isQuoteLoading={isQuoteLoading}
                         values={values}
-                        quote={quoteData}
                         activeWallet={activeWallet}
                         computed={computed}
                         shouldCheckNFT={shouldCheckNFT}
@@ -104,7 +103,6 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
                             isQuoteLoading={isQuoteLoading}
                             swapValues={values}
                             quote={quoteData}
-                            destination={values.to}
                             destinationAddress={values.destination_address}
                             sourceAddress={activeWallet?.address}
                             gasData={gasData}

@@ -9,14 +9,13 @@ import AddressIcon from '../../AddressIcon'
 import shortenAddress from '../../utils/ShortenAddress'
 import rewardCup from '@/public/images/rewardCup.png'
 import clsx from 'clsx'
-import { Quote } from '@/lib/apiClients/layerSwapApiClient'
 import { Wallet } from '@/Models/WalletProvider'
-import { SwapValues } from './SwapQuoteDetails'
+import Clock from '@/components/icons/Clock'
+import { SwapValues } from '..'
 
 export const SummaryRow: FC<{
     isQuoteLoading?: boolean
     values: SwapValues
-    quote: Quote
     activeWallet?: Wallet
     computed: ReturnType<typeof import('./utils').deriveQuoteComputed>
     shouldCheckNFT?: string | false | undefined
@@ -25,13 +24,8 @@ export const SummaryRow: FC<{
     error?: any
     onOpen?: () => void
     sourceAddress?: string
-}> = ({ isQuoteLoading, values, quote, activeWallet, computed, shouldCheckNFT, nftBalance, isLoading, error, onOpen, sourceAddress }) => {
-    const isCEX = !!values.fromExchange
+}> = ({ isQuoteLoading, values, activeWallet, computed, shouldCheckNFT, nftBalance, isLoading, error, onOpen, sourceAddress }) => {
     const { gasFeeInUsd, avgCompletionTime, reward, receiveAtLeast } = computed
-
-    const rewardEligible = !!(
-        reward && (!shouldCheckNFT || (!isLoading && !error && (nftBalance ?? 0) > 0))
-    )
 
     return (
         <div className="flex flex-col w-full pt-1">
@@ -64,10 +58,14 @@ export const SummaryRow: FC<{
                 </div>
             </div>
 
-            <div className="flex items-center space-x-4 py-3">
+            <div className="flex items-center py-3">
                 {gasFeeInUsd != null && (
                     <div className={clsx('inline-flex items-center gap-1', { 'animate-pulse-strong': isQuoteLoading })}>
-                        <div className="p-0.5">{!isCEX ? <GasIcon className="h-4 w-4 text-secondary-text" /> : <ExchangeGasIcon className="h-5 w-5 text-secondary-text" />}</div>
+                        <div className='p-0.5'>
+                            {!values.fromExchange ?
+                                <GasIcon className='h-4 w-4 text-secondary-text' /> : <ExchangeGasIcon className='h-5 w-5 text-secondary-text' />
+                            }
+                        </div>
                         <NumberFlow
                             className="text-secondary-text text-sm leading-6"
                             value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd}
@@ -79,24 +77,25 @@ export const SummaryRow: FC<{
                 )}
 
                 {avgCompletionTime && (
-                    <div className={clsx('text-right inline-flex items-center gap-1 text-sm', { 'animate-pulse-strong': isQuoteLoading })}>
+                    <div className={clsx('text-right inline-flex items-center gap-1 text-sm ml-1', { 'animate-pulse-strong': isQuoteLoading })}>
+                        <div className='p-0.5'>
+                            <Clock className='h-4 w-4 text-secondary-text' />
+                        </div>
                         <AverageCompletionTime className="text-secondary-text" avgCompletionTime={avgCompletionTime} />
                     </div>
                 )}
 
-                {rewardEligible && (
+                {
+                    reward &&
+                    (!shouldCheckNFT || (!isLoading && !error && nftBalance !== undefined && nftBalance > 0)) &&
                     <>
                         <div className="w-px h-3 bg-primary-text-placeholder rounded-2xl" />
-                        <div className="text-right text-secondary-text inline-flex items-center gap-1 pr-4">
+                        <div className='text-right text-secondary-text inline-flex items-center gap-1 pr-4'>
                             <Image src={rewardCup} alt="Reward" width={16} height={16} />
-                            <NumberFlow
-                                value={reward!.amount_in_usd < 0.01 ? '0.01' : reward!.amount_in_usd}
-                                format={{ style: 'currency', currency: 'USD' }}
-                                prefix={reward!.amount_in_usd < 0.01 ? '<' : undefined}
-                            />
+                            <NumberFlow value={reward?.amount_in_usd < 0.01 ? '0.01' : reward?.amount_in_usd} format={{ style: 'currency', currency: 'USD' }} prefix={reward?.amount_in_usd < 0.01 ? '<' : undefined} />
                         </div>
                     </>
-                )}
+                }
 
                 <button
                     type="button"
