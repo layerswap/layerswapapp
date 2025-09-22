@@ -21,16 +21,9 @@ export default function Form() {
 
     return <BalanceAccountsProvider>
         <Tabs defaultValue={defaultTab}>
-            <TabsList>
-                <TabsTrigger
-                    label="Swap"
-                    Icon={NetworkTabIcon}
-                    value="cross-chain" />
-                <TabsTrigger
-                    label="Deposit from CEX"
-                    Icon={ExchangeTabIcon}
-                    value="exchange" />
-            </TabsList>
+            <div className="hidden sm:block">
+                <NetworkExchangeTabs />
+            </div>
 
             <TabsContent value="cross-chain">
                 <SwapDataProvider>
@@ -58,6 +51,20 @@ export default function Form() {
 
         </Tabs>
     </BalanceAccountsProvider>
+}
+
+export const NetworkExchangeTabs = () => {
+    return <TabsList>
+        <TabsTrigger
+            label="Swap"
+            Icon={NetworkTabIcon}
+            value="cross-chain" />
+        <TabsTrigger
+            label="Deposit from CEX"
+            Icon={ExchangeTabIcon}
+            value="exchange" />
+    </TabsList>
+
 }
 
 const defaultTabResolver = ({ from, sourceExchanges }: { from: string | undefined, sourceExchanges: ReturnType<typeof useSettingsState>['sourceExchanges'] }) => {

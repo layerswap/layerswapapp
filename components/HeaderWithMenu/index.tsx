@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react'
 import dynamic from "next/dynamic"
 import LayerswapMenu from "../LayerswapMenu"
 import { useQueryState } from "../../context/query"
+import { NetworkExchangeTabs } from "../Swap/Form"
 
 const WalletsHeader = dynamic(() => import("../Wallet/ConnectedWallets").then((comp) => comp.WalletsHeader), {
    loading: () => <></>
@@ -29,8 +30,11 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
                <GoHomeButton className="group hideSymbol" />
             </div>
          }
-         <div className="col-start-5 justify-self-end self-center flex items-center gap-x-1 -mr-2">
+         <div className="col-start-5 justify-self-end self-center flex items-center gap-x-2 sm:gap-x-1 -mr-2">
             <WalletsHeader />
+            <div className="block sm:hidden">
+               <NetworkExchangeTabs />
+            </div>
             <div className="fixed-width-container max-sm:bg-secondary-500 max-sm:rounded-lg max-sm:p-0.5">
                <LayerswapMenu />
             </div>

@@ -18,7 +18,7 @@ export const WalletsHeader = () => {
 
     return (
         <ConnectButton>
-            <div className="p-1.5 active:animate-press-down justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center">
+            <div className="p-1.5 max-sm:p-2 active:animate-press-down justify-self-start text-secondary-text hover:bg-secondary-500 max-sm:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center">
                 <WalletIcon className="h-6 w-6 mx-0.5" strokeWidth="2" />
             </div>
         </ConnectButton>
@@ -28,7 +28,7 @@ export const WalletsHeader = () => {
 const WalletsHeaderWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
     const [openModal, setOpenModal] = useState<boolean>(false)
     return <>
-        <button type="button" onClick={() => setOpenModal(true)} className="p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center max-sm:hidden active:animate-press-down">
+        <button type="button" onClick={() => setOpenModal(true)} className="p-1.5 max-sm:p-2 justify-self-start text-secondary-text hover:bg-secondary-500 max-sm:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center active:animate-press-down">
             <WalletsIcons wallets={wallets} />
         </button>
         <VaulDrawer
