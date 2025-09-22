@@ -35,16 +35,15 @@ const NotFound: FC = () => {
             </MessageComponent.Header>
             <MessageComponent.Description>
                 <p className="mx-auto text-center text-base leading-5 text-secondary-text">
-                    Your funds are safe, but there seems to be an issue with the swap.{" "}
-                    Please
+                    <span>Your funds are safe, but there seems to be an issue with the swap. Please</span>
                     <button
                         type="button"
                         onClick={startIntercom}
                         className="mx-1 underline decoration-gray-400 underline-offset-2 hover:decoration-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0f1420] focus:ring-gray-400 rounded"
                     >
-                        contact our support
+                        <span>contact our support</span>
                     </button>
-                    team and we&#39;ll help you fix this.
+                    <span>team and we&#39;ll help you fix this.</span>
                 </p>
             </MessageComponent.Description>
         </MessageComponent.Content>
@@ -56,7 +55,7 @@ const NotFound: FC = () => {
                         className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-secondary-300 px-5 py-4 text-base font-semibold leading-6 hover:bg-secondary-400 focus:outline-none transition"
                     >
                         <Home className="h-5 w-5" aria-hidden="true" />
-                        Back to app
+                        <span>Back to app</span>
                     </button>
                 </GoHomeButton>
             </div>
