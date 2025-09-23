@@ -61,13 +61,15 @@ export const PriceImpact: FC<PriceImpactProps> = ({ quote }) => {
                 </span>
             </TooltipTrigger>
             <TooltipContent side="top" align="center" className="!bg-secondary-300 !border-secondary-300 !text-secondary-text text-xs font-normal">
-                <p className="text-primary-text font-medium text-sm flex items-baseline space-x-0.5 mb-1">Price impact:
+                <p className="text-primary-text font-medium text-sm flex items-baseline space-x-0.5 mb-1">
+                    <span>Price impact:</span>
                     <Triangle
                         aria-label={priceImpact < 0 ? "Negative price impact" : "Positive price impact"}
                         className={`ml-1 w-3 h-3 stroke-1 fill-current transition-transform ${priceImpact < 0 ? "rotate-180" : ""
                             }`}
                     />
-                    <span>$</span>{priceImpact}
+                    <span>$</span>
+                    <span>{priceImpact}</span>
                 </p>
                 <p>This is the difference between the USD value of</p>
                 <p>the token you send and the token you receive.</p>
@@ -76,21 +78,21 @@ export const PriceImpact: FC<PriceImpactProps> = ({ quote }) => {
                         <span>Market impact</span>
                         <span className="text-primary-text">
                             <span className="mr-0.5">$</span>
-                            {marketImpact}
+                            <span>{marketImpact}</span>
                         </span>
                     </li>
                     <li className="list-none flex justify-between">
                         <span>Bridge expenses</span>
                         <span className="text-primary-text">
                             <span className="mr-0.5">$</span>
-                            {bridgeExpenses}
+                            <span>{bridgeExpenses}</span>
                         </span>
                     </li>
                     <li className="list-none flex justify-between">
                         <span>Layerswap fees</span>
                         <span className="text-primary-text">
                             <span className="mr-0.5">$</span>
-                            {serviceFee}
+                            <span>{serviceFee}</span>
                         </span>
                     </li>
                 </ul>
