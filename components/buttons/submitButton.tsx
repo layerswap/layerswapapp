@@ -29,7 +29,7 @@ const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, icon, c
             type={type}
             onClick={onClick}
 
-            className={clsx('text-primary focus:outline-none focus:ring-0 items-center space-x-1 disabled:bg-secondary-300 disabled:text-secondary-text/50 disabled:cursor-not-allowed relative w-full flex justify-center font-medium rounded-xl transform hover:brightness-125 transition duration-200 ease-in-out', {
+            className={clsx('enabled:active:animate-press-down text-primary focus:outline-none focus:ring-0 items-center space-x-1 disabled:bg-secondary-300 disabled:text-secondary-text/50 disabled:cursor-not-allowed relative w-full flex justify-center font-medium rounded-xl transform hover:brightness-125 transition duration-200 ease-in-out', {
                 className,
                 'text-primary-buttonTextColor bg-primary-500': buttonStyle === 'filled',
                 'py-4 px-4': size === 'large',
@@ -58,7 +58,7 @@ type DoubleLineTextProps = {
 
 const text_styles = {
     'mltln-text-light': {
-        primary: 'text-primary-actionButtonText',
+        primary: 'text-primary',
         secondary: 'text-primary-100'
     },
     'mltln-text-dark': {

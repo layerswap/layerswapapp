@@ -11,6 +11,7 @@ import { isMobile } from "@/lib/openLink";
 import { sendTransaction } from '@wagmi/core'
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import useWallet from "@/hooks/useWallet";
+import { useSelectedAccount } from "@/context/balanceAccounts";
 
 type Props = {
     savedTransactionHash?: string;
@@ -30,7 +31,7 @@ const TransferTokenButton: FC<Props> = ({
     const [loading, setLoading] = useState(false)
 
     const { provider } = useWallet(swapData.source_network, "withdrawal")
-    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
 
     const clickHandler = useCallback(async ({ amount, callData, depositAddress }: TransferProps) => {
         setButtonClicked(true)
@@ -51,8 +52,8 @@ const TransferTokenButton: FC<Props> = ({
                 data: callData as `0x${string}`,
                 account: selectedSourceAccount.address as `0x${string}`
             }
-            if (isMobile() && selectedSourceAccount?.metadata?.deepLink) {
-                window.location.href = selectedSourceAccount.metadata?.deepLink
+            if (isMobile() && selectedSourceAccount.wallet?.metadata?.deepLink) {
+                window.location.href = selectedSourceAccount.wallet.metadata?.deepLink
                 await new Promise(resolve => setTimeout(resolve, 100))
             }
             const hash = await sendTransaction(config, tx)

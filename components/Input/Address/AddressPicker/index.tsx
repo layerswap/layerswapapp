@@ -71,7 +71,6 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const connectedWalletskey = connectedWallets?.map(w => w.addresses.join('')).join('')
     const defaultAccount = useMemo(() => balanceAccounts.find(w => w.provider?.name === provider?.name), [balanceAccounts, provider?.name])
-
     const [manualAddress, setManualAddress] = useState<string>('')
     const [newAddress, setNewAddress] = useState<{ address: string, networkType: NetworkType | string } | undefined>()
 
@@ -96,7 +95,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [address_book, destination, connectedWallets, newAddress, query.destination_address, connectedWalletskey])
 
     const destinationAddressItem = destination && destination_address ?
-        groupedAddresses?.find(a => a.address.toLowerCase() === destination_address.toLowerCase()) || { address: destination_address, group: AddressGroup.ManualAdded }
+        groupedAddresses?.find(a => a.address.toLowerCase() === destination_address.toLowerCase())
         : undefined
 
     const addressBookAddresses = groupedAddresses?.filter(a => a.group !== AddressGroup.ConnectedWallet)
@@ -110,7 +109,13 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         close()
     }, [close, setFieldValue, groupedAddresses])
 
-    const onConnect = () => {
+    const onConnect = (wallet: Wallet) => {
+        setFieldValue('destination_address', wallet.address)
+        selectDestinationAccount({
+            address: wallet.address,
+            id: wallet.id,
+            providerName: wallet.providerName
+        });
         close()
     }
 
@@ -143,7 +148,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                     providerName: provider.name,
                 });
         }
-    }, [destination, connectedWallets, provider]);
+    }, [destination, connectedWallets, provider, selectDestinationAccount]);
 
     useEffect(() => {
         if (canFocus) {
@@ -175,7 +180,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                             !disabled
                             && destination
                             && provider
-                            && !provider?.activeWallet &&
+                            && !connectedWallets.length &&
                             <ConnectWalletButton
                                 provider={provider}
                                 onConnect={onConnect}

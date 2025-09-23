@@ -91,7 +91,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                         </div>
                         <div className="flex justify-between items-baseline">
                             <span className="text-left text-secondary-text">Date & Time</span>
-                            <span className='text-primary-text'>{(new Date(swap.created_date)).toLocaleString()} <span className='text-primary-text-placeholder'>{getDateDifferenceString(new Date(swap.created_date))}</span></span>
+                            <span className='text-primary-text'>{(new Date(swap.created_date)).toLocaleString()} <span className='text-primary-text-tertiary'>{getDateDifferenceString(new Date(swap.created_date))}</span></span>
                         </div>
                         <div className="flex justify-between p items-baseline">
                             <span className="text-left text-secondary-text">Status </span>
@@ -194,7 +194,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                     ...resolvePersistantQueryParams(router.query),
                                 }
                             }, undefined, { shallow: false })}
-                            className='w-full inline-flex items-center gap-2 justify-center py-3 px-6 text-base font-semibold bg-primary-text-placeholder hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-xl text-white'
+                            className='w-full inline-flex items-center gap-2 justify-center py-3 px-6 text-base font-semibold bg-primary-text-tertiary hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-xl text-white'
                         >
                             <p>
                                 Repeat Swap

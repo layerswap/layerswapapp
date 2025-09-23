@@ -89,7 +89,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                onClick={handleCloseModal} 
+                onClick={handleCloseModal}
             />
 
             <motion.div
@@ -111,7 +111,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                         <div className="text-lg text-secondary-text font-semibold w-full">
                             <div>{title}</div>
                         </div>
-                        <div className='flex space-x-1'>
+                        <div className='flex space-x-1 active:animate-press-down'>
                             {walletComp && <div>{walletComp}</div>}
                             <IconButton onClick={handleCloseModal} icon={
                                 <X strokeWidth={3} />

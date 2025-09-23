@@ -18,6 +18,7 @@ import ExchangeGasIcon from '../icons/ExchangeGasIcon';
 import useSWRNftBalance from '@/lib/nft/useSWRNftBalance';
 import NumberFlow from '@number-flow/react';
 import { resolveTokenUsdPrice } from '@/helpers/tokenHelper';
+import { useSelectedAccount } from '@/context/balanceAccounts';
 
 export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
     from?: Network;
@@ -85,8 +86,8 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
     const { quote, reward } = quoteData || {}
     const isCEX = !!values.fromExchange;
     const { provider } = useWallet(!isCEX ? values.from : undefined, 'withdrawal')
-    const wallet = provider?.activeWallet
-    const { gasData: gasData } = useSWRGas(wallet?.address, values.from, values.fromAsset)
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const { gasData: gasData } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset)
     const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quote)
     const gasFeeInUsd = (gasData && gasTokenPriceInUsd) ? gasData.gas * gasTokenPriceInUsd : null;
     const averageCompletionTime = quote?.avg_completion_time;
@@ -112,7 +113,7 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
                         }
                     </div>
                     <NumberFlow className="text-primary-text text-sm leading-6" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} format={{ style: 'currency', currency: 'USD' }} prefix={gasFeeInUsd < 0.01 ? '<' : undefined} />
-                    <div className="ml-3 w-px h-3 bg-primary-text-placeholder rounded-2xl" />
+                    <div className="ml-3 w-px h-3 bg-primary-text-tertiary rounded-2xl" />
                 </div>
             }
             {
@@ -133,7 +134,7 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
                 reward &&
                 (!shouldCheckNFT || (!isLoading && !error && nftBalance !== undefined && nftBalance > 0)) &&
                 <>
-                    <div className="w-px h-3 bg-primary-text-placeholder rounded-2xl" />
+                    <div className="w-px h-3 bg-primary-text-tertiary rounded-2xl" />
                     <div className='text-right text-primary-text inline-flex items-center gap-1 pr-4'>
                         <Image src={rewardCup} alt="Reward" width={16} height={16} />
                         <NumberFlow value={reward?.amount_in_usd < 0.01 ? '0.01' : reward?.amount_in_usd} format={{ style: 'currency', currency: 'USD' }} prefix={reward?.amount_in_usd < 0.01 ? '<' : undefined} />

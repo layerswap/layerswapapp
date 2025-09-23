@@ -253,6 +253,10 @@ export default class KnownInternalNames {
 
         public static readonly BitcoinTestnet: string = "BITCOIN_TESTNET"
 
+        public static readonly HyperliquidMainnet: string = "HYPERLIQUID_MAINNET"
+
+        public static readonly HyperliquidTestnet: string = "HYPERLIQUID_TESTNET"
+
     }
 
     static Currencies = class {

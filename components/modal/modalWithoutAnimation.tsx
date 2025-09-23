@@ -70,12 +70,12 @@ export const ModalContent = (props: ModalContentProps) => {
         <div className={clsx("absolute inset-0 z-50 bg-secondary-700 rounded-t-3xl sm:rounded-3xl flex flex-col", className)}>
             {(header || showCloseButton) && (
                 <div className="w-full relative">
-                    <div className="flex items-center w-full text-left justify-between px-4 sm:pt-2 pb-2 gap-x-1">
+                    <div className="flex items-center w-full text-left justify-between px-4 pt-2 pb-2 gap-x-1">
                         <div className="flex-1 text-lg text-secondary-text font-semibold w-full flex justify-end">
                             {header}
                         </div>
                         {showCloseButton && (
-                            <IconButton onClick={closeModal} icon={
+                            <IconButton onClick={closeModal} className="active:animate-press-down" icon={
                                 <X strokeWidth={3} />
                             }>
                             </IconButton>
@@ -124,7 +124,7 @@ export const ModalTrigger = (props: ModalTriggerProps) => {
                 type="button"
                 onClick={openModal}
                 disabled={disabled}
-                className={clsx("rounded-2xl focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow h-12 flex items-center text-left justify-bottom w-full px-2 pr-0 bg-secondary-300 hover:bg-secondary-200 font-semibold", className)}
+                className={clsx("rounded-2xl focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative grow flex items-center text-left justify-bottom w-full px-2 pr-0 bg-secondary-300 hover:bg-secondary-200 font-semibold", className)}
             >
                 {children}
             </button>

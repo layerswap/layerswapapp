@@ -68,7 +68,6 @@ type IncludeOptions = {
     unmatched: boolean,
     swaps: boolean
 }
-
 type ResolveRoutesURLForSelectedTokenProps = {
     direction: SwapDirection,
     network: string | undefined,
@@ -76,7 +75,6 @@ type ResolveRoutesURLForSelectedTokenProps = {
     includes: IncludeOptions,
     networkTypes?: string[]
 }
-
 export const resolveRoutesURLForSelectedToken = ({ direction, network, token, includes, networkTypes }: ResolveRoutesURLForSelectedTokenProps) => {
 
     const include_unmatched = includes.unmatched ? 'true' : 'false'

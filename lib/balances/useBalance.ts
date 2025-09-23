@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
-import { getKey, useBalanceStore } from '../../../stores/balanceStore'
-import { NetworkWithTokens } from '../../../Models/Network'
+import { getKey, useBalanceStore } from '../../stores/balanceStore'
+import { NetworkWithTokens } from '../../Models/Network'
 
 export interface Opts {
     refreshInterval?: number

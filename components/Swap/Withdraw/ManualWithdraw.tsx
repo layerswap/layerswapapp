@@ -131,7 +131,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                         className="rounded-sm object-contain"
                     />
                     <span>{newNetwork?.display_name || swapBasicData?.source_network?.display_name}</span>
-                    <span className="pointer-events-none text-shadow-primary-text-muted">
+                    <span className="pointer-events-none text-shadow-primary-text-tertiary">
                         <ChevronDown className="h-3.5 w-3.5 text-secondary-text" aria-hidden="true" />
                     </span>
                 </button>

@@ -2,6 +2,7 @@ import { TokenBalance } from "@/Models/Balance";
 import { NetworkWithTokens } from "@/Models/Network";
 import KnownInternalNames from "../../knownIds";
 import axios from "axios";
+import { BalanceProvider } from "@/Models/BalanceProvider";
 
 interface Utxo {
     txid: string
@@ -10,52 +11,36 @@ interface Utxo {
     status: { confirmed: boolean; block_height?: number }
 }
 
-export class BitcoinBalanceProvider {
-    supportsNetwork(network: NetworkWithTokens): boolean {
+export class BitcoinBalanceProvider extends BalanceProvider {
+    supportsNetwork = (network: NetworkWithTokens): boolean => {
         return KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) || KnownInternalNames.Networks.BitcoinTestnet.includes(network.name)
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens) => {
         let balances: TokenBalance[] = []
+        const token = network.tokens.find(t => t.symbol == 'BTC')
 
-        if (!network?.tokens) return
+        if (!token) return
 
         try {
+            const utxos = await fetchUtxos(address, network.name)
+            const balanceSats = sumUtxos(utxos)
+            const formattedBalance = formatBtc(balanceSats)
 
-            const token = network.tokens.find(t => t.symbol == 'BTC')
-            try {
+            if (!token) throw new Error(`Token not found for network ${network.name}`)
 
-                const utxos = await fetchUtxos(address, network.name)
-                const balanceSats = sumUtxos(utxos)
-                const formattedBalance = formatBtc(balanceSats)
-
-                if (!token) throw new Error(`Token not found for network ${network.name}`)
-
-                const balanceObj: TokenBalance = {
-                    network: network.name,
-                    amount: formattedBalance,
-                    decimals: token.decimals,
-                    isNativeCurrency: network.token?.symbol === token.symbol,
-                    token: token.symbol,
-                    request_time: new Date().toJSON()
-                }
-                balances.push(balanceObj)
+            const balanceObj: TokenBalance = {
+                network: network.name,
+                amount: formattedBalance,
+                decimals: token.decimals,
+                isNativeCurrency: network.token?.symbol === token.symbol,
+                token: token.symbol,
+                request_time: new Date().toJSON()
             }
-            catch (e) {
-                balances.push({
-                    network: network.name,
-                    amount: 0,
-                    decimals: token?.decimals || 0,
-                    isNativeCurrency: network.token?.symbol === 'BTC',
-                    token: token?.symbol || 'BTC',
-                    request_time: new Date().toJSON()
-                })
-                console.log(e)
-            }
-
-
-        } catch (e) {
-            console.log(e)
+            balances.push(balanceObj)
+        }
+        catch (e) {
+            balances.push(this.resolveTokenBalanceFetchError(e, token, network, true))
         }
 
         return balances

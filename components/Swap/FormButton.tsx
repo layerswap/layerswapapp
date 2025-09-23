@@ -1,5 +1,4 @@
 import { FormSourceWalletButton } from "../Input/SourceWalletPicker";
-import { PlusIcon } from "lucide-react";
 import SubmitButton from "../buttons/submitButton";
 import { useQueryState } from "@/context/query";
 import Address from "../Input/Address";
@@ -25,8 +24,7 @@ const FormButton = ({
 }: Props) => {
     const query = useQueryState();
     const actionDisplayName = error || query?.actionButtonText || "Next";
-
-    if (shouldConnectWallet) {
+    if (shouldConnectWallet && !error) {
         return <FormSourceWalletButton />;
     }
 

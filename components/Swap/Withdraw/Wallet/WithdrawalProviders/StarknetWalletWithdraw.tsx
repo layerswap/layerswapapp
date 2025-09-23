@@ -4,6 +4,7 @@ import WalletIcon from '@/components/icons/WalletIcon';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import TransactionMessages from '../../messages/TransactionMessages';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
+import { useSelectedAccount } from '@/context/balanceAccounts';
 
 export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [error, setError] = useState<string | undefined>()
@@ -11,8 +12,8 @@ export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicDat
     const [transferDone, setTransferDone] = useState<boolean>()
     const { source_network, source_token } = swapBasicData
     const { provider } = useWallet(source_network, 'withdrawal')
-
-    const wallet = provider?.activeWallet
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const wallet = selectedSourceAccount?.wallet
 
     const handleTransfer = useCallback(async ({ callData, swapId }: TransferProps) => {
         if (!swapId || !source_token) {

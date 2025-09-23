@@ -33,6 +33,9 @@ module.exports = {
         // Gauge
         gauge_fadeIn: "gauge_fadeIn 1s ease forwards",
         gauge_fill: "gauge_fill 1s ease forwards",
+
+        // Button press-down
+        'press-down': 'press-down 150ms ease-in-out',
       },
       keyframes: {
         "accordion-down": {
@@ -108,6 +111,11 @@ module.exports = {
           from: { "stroke-dashoffset": "332", opacity: "0" },
           to: { opacity: "1" },
         },
+        'press-down': {
+          '0%': { transform: 'scale(1)' },
+          '50%': { transform: 'scale(0.97)' },
+          '100%': { transform: 'scale(1)' },
+        },
       },
       letterSpacing: {
         tightest: '-.075em',
@@ -177,6 +185,7 @@ module.exports = {
       addVariant('focus-peer', '.focus-peer &')
       addVariant('wide-page', '.wide-page &')
       addVariant('has-openpicker', '&:has(.openpicker)')
+      addVariant('has-openwithdrawalmodal', '&:has(.openwithdrawalmodal):has([data-state="open"])')
     })
   ],
 };

@@ -10,6 +10,7 @@ import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import TransactionMessages from '../../messages/TransactionMessages';
 import { useConnectModal } from '@/components/WalletModal';
+import { useSelectedAccount } from '@/context/balanceAccounts';
 
 export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -18,7 +19,8 @@ export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
     const { provider } = useWallet(source_network, 'withdrawal');
     const [tonConnectUI] = useTonConnectUI();
     const [transactionErrorMessage, setTransactionErrorMessage] = useState<string | undefined>(undefined)
-    const wallet = provider?.activeWallet
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const wallet = selectedSourceAccount?.wallet
 
     const handleConnect = useCallback(async () => {
         setLoading(true)
@@ -37,13 +39,13 @@ export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
     const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setLoading(true)
         setTransactionErrorMessage(undefined)
-        if (!swapId || !depositAddress || !source_token || !wallet?.address || !callData || amount === undefined) {
+        if (!swapId || !depositAddress || !source_token || !selectedSourceAccount?.address || !callData || amount === undefined) {
             setLoading(false)
             toast('Something went wrong, please try again.')
             return
         }
         try {
-            const transaction = await transactionBuilder(amount, source_token, depositAddress, wallet?.address, callData)
+            const transaction = await transactionBuilder(amount, source_token, depositAddress, selectedSourceAccount?.address, callData)
             const res = await tonConnectUI.sendTransaction(transaction)
 
             if (res) {

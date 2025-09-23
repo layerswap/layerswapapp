@@ -17,6 +17,7 @@ import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
 import posthog from "posthog-js";
 import { useWalletWithdrawalState } from "@/context/withdrawalContext";
+import { useSelectedAccount } from "@/context/balanceAccounts";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
@@ -81,7 +82,7 @@ export const ChangeNetworkButton: FC<ChangeNetworkProps> = (props) => {
     const [isPending, setIsPending] = useState(false)
 
     const { provider } = useWallet(network, "withdrawal")
-    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
 
     const clickHandler = useCallback(async () => {
         try {
@@ -90,7 +91,7 @@ export const ChangeNetworkButton: FC<ChangeNetworkProps> = (props) => {
             if (!provider.switchChain) throw new Error(`No switchChain from ${network?.name}`)
             if (!selectedSourceAccount) throw new Error(`No selectedSourceAccount from ${network?.name}`)
 
-            return await provider.switchChain(selectedSourceAccount, chainId)
+            return await provider.switchChain(selectedSourceAccount.wallet, chainId)
         } catch (e) {
             setError(e)
         } finally {
@@ -162,15 +163,20 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess } = useWalletWithdrawalState();
 
+    const { provider } = useWallet(swapData.source_network, "withdrawal")
+    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+
     const handleClick = async () => {
         try {
+            if (!selectedSourceAccount) {
+                throw new Error('Selected source account is undefined')
+            }
+            if (!selectedSourceAccount?.wallet.isActive) {
+                throw new Error('Wallet is not active')
+            }
             setLoading(true)
             setActionStateText("Preparing")
             setSwapId(undefined)
-            window.safary?.track({
-                eventName: 'click',
-                eventType: 'send_from_wallet',
-            })
 
             const swapValues: SwapFormValues = {
                 amount: swapData.requested_amount.toString(),
