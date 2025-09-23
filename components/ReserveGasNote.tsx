@@ -3,12 +3,11 @@ import { useFormikContext } from "formik"
 import { SwapFormValues } from "./DTOs/SwapFormValues"
 import { truncateDecimals } from "./utils/RoundDecimals"
 import { TokenBalance } from "../Models/Balance"
-import useSWRBalance from "../lib/balances/useSWRBalance"
 import useSWRGas from "../lib/gases/useSWRGas"
 import { useQuoteData } from "@/hooks/useFee"
-import { useMemo } from "react"
 import useWallet from "@/hooks/useWallet"
 import { useSelectedAccount } from "@/context/balanceAccounts"
+import { useBalance } from "@/lib/balances/useBalance";
 
 type Props = {
     onSubmit: (nativeTokenBalance: TokenBalance, networkGas: number) => void
@@ -22,7 +21,7 @@ const ReserveGasNote = ({ onSubmit, minAllowedAmount, maxAllowedAmount }: Props)
     } = useFormikContext<SwapFormValues>();
     const { provider } = useWallet(values.from, "withdrawal")
     const selectedSourceAccount = useSelectedAccount("from", provider?.name);
-    const { balances } = useSWRBalance(selectedSourceAccount?.address, values.from)
+    const { balances } = useBalance(selectedSourceAccount?.address, values.from)
     const { gasData } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset)
 
     const nativeTokenBalance = balances?.find(b => b.token == values?.from?.token?.symbol)

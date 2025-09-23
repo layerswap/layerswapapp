@@ -3,6 +3,7 @@ import { SwapDirection, SwapFormValues } from '@/components/DTOs/SwapFormValues'
 import useWallet from '@/hooks/useWallet';
 import { Wallet, WalletProvider } from '@/Models/WalletProvider';
 import AddressIcon from '@/components/AddressIcon';
+import { getKey, useBalanceStore } from '@/stores/balanceStore';
 
 const BalanceAccountsStateContext = createContext<BalanceAccountsContextType | null>(null);
 const BalanceAccountsUpdateContext = createContext<BalanceAccountsUpdateContextType | null>(null);
@@ -13,7 +14,7 @@ type PickerAccountsProviderProps = {
 
 type BalanceAccountsContextType = {
     sourceAccounts: AccountIdentityWithWallet[];
-    destinationAccounts: AccountIdentity[];
+    destinationAccounts: (AccountIdentity | AccountIdentityWithWallet)[];
 }
 
 type BalanceAccountsUpdateContextType = {
@@ -33,6 +34,8 @@ export type AccountIdentity = BaseAccountIdentity & {
     provider: WalletProvider;
     icon: (props: any) => React.JSX.Element;
 }
+
+
 export type AccountIdentityWithWallet = AccountIdentity & {
     wallet: Wallet;
 }
@@ -127,7 +130,7 @@ export function BalanceAccountsProvider({ children }: PickerAccountsProviderProp
 }
 export function useBalanceAccounts(direction: "from"): AccountIdentityWithWallet[];
 export function useBalanceAccounts(direction: "to"): AccountIdentity[];
-export function useBalanceAccounts(direction: SwapDirection): AccountIdentity[] | AccountIdentityWithWallet[];
+export function useBalanceAccounts(direction: SwapDirection): (AccountIdentity | AccountIdentityWithWallet)[];
 export function useBalanceAccounts(direction: SwapDirection) {
     const values = useContext<BalanceAccountsContextType>(BalanceAccountsStateContext as Context<BalanceAccountsContextType>);
 
@@ -149,6 +152,33 @@ export function useSelectedAccount(direction: SwapDirection, providerName: strin
     return direction === "from" ? values.sourceAccounts.find(acc => acc.providerName === providerName) : values.destinationAccounts.find(acc => acc.providerName === providerName);
 }
 
+export function useNetworkAccount(direction: SwapDirection, networkName: string | undefined) {
+    const values = useContext<BalanceAccountsContextType>(BalanceAccountsStateContext as Context<BalanceAccountsContextType>);
+    if (!networkName) return undefined;
+    if (values === undefined) {
+        throw new Error('useBalanceAccounts must be used within a BalanceAccountsProvider');
+    }
+    return direction === "from" ? values.sourceAccounts.find(acc => acc.wallet.withdrawalSupportedNetworks?.some(n => n === networkName))
+        :
+        values.destinationAccounts.find(acc => {
+            if ('wallet' in acc) {
+                return acc.wallet.autofillSupportedNetworks?.some(n => n === networkName)
+            }
+            return acc.provider?.autofillSupportedNetworks?.some(n => n === networkName)
+        });
+}
+
+export function useNetworkBalanceKey(direction: SwapDirection, networkName: string | undefined) {
+    const account = useNetworkAccount(direction, networkName);
+    if (!account || !networkName) return undefined;
+    return getKey(account.address, networkName);
+}
+
+export function useNetworkBalance(direction: SwapDirection, networkName: string | undefined) {
+    const balanceKey = useNetworkBalanceKey(direction, networkName);
+    const balance = useBalanceStore((s) => (s.isLoading ? undefined : s.balances[balanceKey || "unknown"]));
+    return balance;
+}
 
 export function useUpdateBalanceAccount(direction: SwapDirection) {
     const values = useContext<BalanceAccountsUpdateContextType>(BalanceAccountsUpdateContext as Context<BalanceAccountsUpdateContextType>);

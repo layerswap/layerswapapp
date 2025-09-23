@@ -23,12 +23,12 @@ import { updateForm, updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
 import { InsufficientBalanceWarning } from "@/components/insufficientBalance";
-import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { useSwapDataState } from "@/context/swap";
 import RefuelToggle from "@/components/FeeDetails/Refuel";
 import ReserveGasNote from "@/components/ReserveGasNote";
 import RefuelModal from "@/components/FeeDetails/RefuelModal";
 import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useBalance } from "@/lib/balances/useBalance";
 
 type Props = {
     partner?: Partner;
@@ -65,7 +65,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const isValid = !formValidation.message;
     const error = formValidation.message;
 
-    const { balances } = useSWRBalance(selectedSourceAccount?.address, source)
+    const { balances } = useBalance(selectedSourceAccount?.address, source)
     const walletBalance = source && balances?.find(b => b?.network === source?.name && b?.token === fromAsset?.symbol)
     const walletBalanceAmount = walletBalance?.amount
 
