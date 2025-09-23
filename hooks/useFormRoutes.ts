@@ -293,17 +293,17 @@ function resolveSelectedToken(values: SwapFormValues, direction: SwapDirection) 
 
 // ---------- Exchange ----------
 
-function useExchangeRoutes({ direction, values }: Props) {
-    const { sourceExchanges, destinationExchanges } = useSettingsState();
+function useExchangeRoutes({ values }: Props) {
+    const { sourceExchanges } = useSettingsState();
 
     const apiClient = new LayerSwapApiClient()
-    const exchangeRoutesURL = useMemo(() => resolveExchangesURLForSelectedToken(direction, values), [direction, values])
+    const exchangeRoutesURL = useMemo(() => resolveExchangesURLForSelectedToken(values), [values])
     const {
         data: apiResponse,
         isLoading,
     } = useSWR<ApiResponse<Exchange[]>>(exchangeRoutesURL, apiClient.fetcher, { keepPreviousData: true, dedupingInterval: 10000 })
 
-    const defaultData = (direction === 'from' ? sourceExchanges : destinationExchanges) || []
+    const defaultData = sourceExchanges || []
     const [exchangesRoutes, setExchangesData] = useState<Exchange[]>(defaultData)
 
     useEffect(() => {
