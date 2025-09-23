@@ -30,17 +30,17 @@ export const PriceImpact: FC<PriceImpactProps> = ({ quote }) => {
 
     const serviceFee = useMemo(() => {
         if (quote?.service_fee == null || sourceTokenPriceInUsd == null) return undefined;
-        return truncateDecimals(quote?.service_fee * sourceTokenPriceInUsd, quote?.source_token?.decimals || 6);
+        return truncateDecimals(Math.abs(quote?.service_fee * sourceTokenPriceInUsd), quote?.source_token?.decimals || 6);
     }, [quote?.service_fee, sourceTokenPriceInUsd]);
 
     const bridgeExpenses = useMemo(() => {
         if (quote?.blockchain_fee == null || sourceTokenPriceInUsd == null) return undefined;
-        return truncateDecimals(quote?.blockchain_fee * sourceTokenPriceInUsd, quote?.source_token?.decimals || 6);
+        return truncateDecimals(Math.abs(quote?.blockchain_fee * sourceTokenPriceInUsd), quote?.source_token?.decimals || 6);
     }, [quote?.blockchain_fee, sourceTokenPriceInUsd]);
 
     const marketImpact = useMemo(() => {
         if (priceImpact === undefined || serviceFee === undefined || bridgeExpenses === undefined) return undefined;
-        return truncateDecimals(priceImpact - Number(serviceFee) - Number(bridgeExpenses), quote?.source_token?.decimals || 6);
+        return truncateDecimals(priceImpact + Number(serviceFee) + Number(bridgeExpenses), quote?.source_token?.decimals || 6);
     }, [priceImpact, serviceFee, bridgeExpenses, quote?.source_token?.decimals]);
 
     if (priceImpact === undefined) return null;
@@ -60,7 +60,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({ quote }) => {
                     </span>
                 </span>
             </TooltipTrigger>
-            <TooltipContent side="top" align="center" className="!bg-secondary-300 !border-secondary-300 !text-secondary-text text-xs font-normal">
+            <TooltipContent side="top" align="center" className="!bg-secondary-500 !border-secondary-500 !text-secondary-text text-xs font-normal">
                 <p className="text-primary-text font-medium text-sm flex items-baseline space-x-0.5 mb-1">
                     <span>Price impact:</span>
                     <Triangle
@@ -84,14 +84,14 @@ export const PriceImpact: FC<PriceImpactProps> = ({ quote }) => {
                     <li className="list-none flex justify-between">
                         <span>Bridge expenses</span>
                         <span className="text-primary-text">
-                            <span className="mr-0.5">$</span>
+                            <span className="mr-0.5">-$</span>
                             <span>{bridgeExpenses}</span>
                         </span>
                     </li>
                     <li className="list-none flex justify-between">
                         <span>Layerswap fees</span>
                         <span className="text-primary-text">
-                            <span className="mr-0.5">$</span>
+                            <span className="mr-0.5">-$</span>
                             <span>{serviceFee}</span>
                         </span>
                     </li>
