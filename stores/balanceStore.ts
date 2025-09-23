@@ -74,7 +74,6 @@ export const useBalanceStore = create<BalanceStore>()(
         const job = () => {
           balanceFetcher.getBalance(network, address)
             .then(data => {
-              console.log("data", data)
               set(state => ({
                 balances: {
                   ...state.balances,
