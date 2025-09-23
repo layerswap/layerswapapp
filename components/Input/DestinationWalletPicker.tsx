@@ -35,7 +35,7 @@ const DestinationWalletPicker = (props: AddressTriggerProps) => {
                 !addressItem &&
                 <>
                     <div className="inline-flex items-center relative px-0.5">
-                        <PlusIcon className="w-5 h-5 p-0.5" />
+                        <PlusIcon className="w-5 h-5 p-0.5 text-secondary-text" />
                     </div>
                     <div className="text-secondary-text">
                         Add Address
