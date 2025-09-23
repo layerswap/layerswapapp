@@ -2,7 +2,6 @@ import { FC, useMemo } from "react";
 import { SwapQuote } from "@/lib/apiClients/layerSwapApiClient";
 import { Triangle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
-import { truncateDecimals } from "@/components/utils/RoundDecimals";
 
 type PriceImpactProps = {
     quote: SwapQuote | undefined;
@@ -30,17 +29,17 @@ export const PriceImpact: FC<PriceImpactProps> = ({ quote }) => {
 
     const serviceFee = useMemo(() => {
         if (quote?.service_fee == null || sourceTokenPriceInUsd == null) return undefined;
-        return truncateDecimals(Math.abs(quote?.service_fee * sourceTokenPriceInUsd), quote?.source_token?.decimals || 6);
+        return Math.abs(quote?.service_fee * sourceTokenPriceInUsd).toFixed(2);
     }, [quote?.service_fee, sourceTokenPriceInUsd]);
 
     const bridgeExpenses = useMemo(() => {
         if (quote?.blockchain_fee == null || sourceTokenPriceInUsd == null) return undefined;
-        return truncateDecimals(Math.abs(quote?.blockchain_fee * sourceTokenPriceInUsd), quote?.source_token?.decimals || 6);
+        return Math.abs(quote?.blockchain_fee * sourceTokenPriceInUsd).toFixed(2);
     }, [quote?.blockchain_fee, sourceTokenPriceInUsd]);
 
     const marketImpact = useMemo(() => {
         if (priceImpact === undefined || serviceFee === undefined || bridgeExpenses === undefined) return undefined;
-        return truncateDecimals(priceImpact + Number(serviceFee) + Number(bridgeExpenses), quote?.source_token?.decimals || 6);
+        return (priceImpact + Number(serviceFee) + Number(bridgeExpenses)).toFixed(2);
     }, [priceImpact, serviceFee, bridgeExpenses, quote?.source_token?.decimals]);
 
     if (priceImpact === undefined) return null;
@@ -56,7 +55,10 @@ export const PriceImpact: FC<PriceImpactProps> = ({ quote }) => {
                             className={`w-3 h-3 stroke-1 fill-current transition-transform ${priceImpact < 0 ? "rotate-180" : ""
                                 }`}
                         />
-                        <span>$</span>{priceImpact}<span>)</span>
+                        <span>
+                            {priceImpact < 0 ? `-$${Math.abs(priceImpact)}` : `$${priceImpact}`}
+                        </span>
+                        <span>)</span>
                     </span>
                 </span>
             </TooltipTrigger>
@@ -65,11 +67,9 @@ export const PriceImpact: FC<PriceImpactProps> = ({ quote }) => {
                     <span>Price impact:</span>
                     <Triangle
                         aria-label={priceImpact < 0 ? "Negative price impact" : "Positive price impact"}
-                        className={`ml-1 w-3 h-3 stroke-1 fill-current transition-transform ${priceImpact < 0 ? "rotate-180" : ""
-                            }`}
+                        className={`ml-1 w-3 h-3 stroke-1 fill-current transition-transform ${priceImpact < 0 ? "rotate-180" : ""}`}
                     />
-                    <span>$</span>
-                    <span>{priceImpact}</span>
+                    <span>{priceImpact < 0 ? `-$${Math.abs(priceImpact)}` : `$${priceImpact}`}</span>
                 </p>
                 <p>This is the difference between the USD value of</p>
                 <p>the token you send and the token you receive.</p>
