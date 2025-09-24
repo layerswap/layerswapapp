@@ -1,0 +1,49 @@
+import { useSettingsState } from "@/context/settings"
+import { selectResolvedInitiatedBalances, useBalanceStore } from "@/stores/balanceStore"
+import { useEffect, useMemo, useRef } from "react"
+import { NetworkWithTokens } from "@/Models/Network"
+import { NetworkBalance } from "@/Models/Balance"
+import { useBalanceAccounts } from "@/context/balanceAccounts"
+
+
+export default function useAllWithdrawalBalances() {
+
+    const networks = useSettingsState().networks
+    const balanceAccounts = useBalanceAccounts("from")
+    const walletNetworks = useMemo(() => {
+        return balanceAccounts.map(account => {
+            const wallet = account.wallet
+            const withdrawalNetworks = wallet.withdrawalSupportedNetworks
+            if (!withdrawalNetworks || withdrawalNetworks.length === 0) return []
+            return withdrawalNetworks.map(networkName => {
+                const network = networks.find(n => n.name === networkName)
+                if (!network) return null
+                return {
+                    address: account.address,
+                    network,
+                }
+            })
+        }).flat().filter(item => item !== null) as Array<{ address: string, network: NetworkWithTokens }>
+    }, [balanceAccounts, networks])
+
+    const walletNetwokrsString = useMemo(() => {
+        return walletNetworks.map(item => `${item.address}-${item.network.name}`).join(',')
+    }, [walletNetworks])
+
+    useEffect(() => {
+        if (walletNetworks)
+            useBalanceStore.getState().initAllBalances(walletNetworks)
+    }, [walletNetwokrsString])
+
+    const lastBalancesRef = useRef<Record<string, NetworkBalance> | null>(null)
+    const resolvedBalances = useBalanceStore(selectResolvedInitiatedBalances)
+    const isLoading = useBalanceStore(s => s.isLoading)
+
+    if (resolvedBalances != null && Object.keys(resolvedBalances).length > 0) {
+        lastBalancesRef.current = resolvedBalances
+    }
+
+    const result = resolvedBalances === null && isLoading ? lastBalancesRef.current : resolvedBalances
+
+    return useMemo(() => ({ isLoading, balances: result }), [result, isLoading])
+}

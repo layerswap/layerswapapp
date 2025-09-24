@@ -1,0 +1,1 @@
+Next js Dynamic example app

@@ -1,0 +1,68 @@
+{
+  "name": "@layerswap/bridge",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "debug": "next dev",
+    "dev": "next dev",
+    "build": "next build && cross-env-shell \"[ $NEXT_PUBLIC_VERCEL_ENV = production ] && datadog-ci sourcemaps upload .next/static/chunks/ --service=layerswapuiapp --release-version=$NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA --minified-path-prefix=https://layerswap.io/app/_next/static/chunks/ || exit 0\"",
+    "start": "next start",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build",
+    "analyze": "cross-env ANALYZE=true next build",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@badrap/bar-of-progress": "^0.2.2",
+    "@tanstack/react-query": "^5.59.20",
+    "@uidotdev/usehooks": "^2.4.1",
+    "axios": "^0.21.4",
+    "copy-to-clipboard": "^3.3.3",
+    "framer-motion": "^10.16.15",
+    "lodash": "^4.17.21",
+    "lucide-react": "^0.379.0",
+    "memoizee": "^0.4.17",
+    "next": "^14.0.4",
+    "posthog-js": "^1.261.0",
+    "qrcode.react": "^3.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-error-boundary": "^4.0.11",
+    "react-use-intercom": "^2.0.0",
+    "swr": "^2.2.5",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "@next/bundle-analyzer": "^13.5.4",
+    "@storybook/addon-docs": "^9.1.1",
+    "@storybook/addon-links": "^9.1.1",
+    "@storybook/addon-onboarding": "^9.1.1",
+    "@storybook/nextjs": "^9.1.1",
+    "@storybook/testing-library": "^0.2.1",
+    "@tailwindcss/forms": "^0.5.0",
+    "@tailwindcss/postcss": "^4.0.15",
+    "@tailwindcss/typography": "^0.5.2",
+    "@types/bn.js": "^5.1.0",
+    "@types/crypto-js": "^4.1.1",
+    "@types/node": "^22.13.13",
+    "@types/react": "18.x",
+    "@web3-react/types": "^6.0.7",
+    "chromatic": "^6.24.1",
+    "eslint": "8.49.0",
+    "eslint-config-next": "^14.0.4",
+    "eslint-plugin-no-conditional-literals-in-jsx": "file:eslint-plugins/eslint-plugin-no-conditional-literals-in-jsx",
+    "eslint-plugin-storybook": "^9.1.1",
+    "postcss": "^8.4.13",
+    "storybook": "^9.1.1",
+    "storybook-addon-mock": "^6.0.1",
+    "storybook-react-context": "^0.8.0",
+    "tailwindcss": "^4.0.15",
+    "typescript": "^5.9.2"
+  },
+  "resolutions": {
+    "@radix-ui/react-dismissable-layer": "1.1.1"
+  },
+  "engines": {
+    "node": ">=20.9.0"
+  }
+}
