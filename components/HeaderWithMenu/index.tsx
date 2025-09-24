@@ -27,7 +27,7 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
          }
          {
             !query.hideLogo && <div className="self-center col-start-1 md:col-start-2 md:col-span-3 justify-self-start md:justify-self-center md:hidden">
-               <GoHomeButton className="group hideSymbol" />
+               <GoHomeButton className="group" />
             </div>
          }
          <div className="col-start-5 justify-self-end self-center flex items-center gap-x-2 sm:gap-x-1 -mr-2">
