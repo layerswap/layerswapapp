@@ -45,7 +45,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({ quote }) => {
     if (priceImpact === undefined) return null;
 
     return (<>
-        <Tooltip open={true} >
+        <Tooltip>
             <TooltipTrigger asChild>
                 <span className="flex items-center text-sm text-secondary-text cursor-default">
                     <span className="flex items-center gap-0.5">
