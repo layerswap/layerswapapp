@@ -56,7 +56,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({ quote }) => {
                                 }`}
                         />
                         <span>
-                            {priceImpact < 0 ? `-$${Math.abs(priceImpact)}` : `$${priceImpact}`}
+                            {priceImpact}
                         </span>
                         <span>)</span>
                     </span>
@@ -69,7 +69,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({ quote }) => {
                         aria-label={priceImpact < 0 ? "Negative price impact" : "Positive price impact"}
                         className={`ml-1 w-3 h-3 stroke-1 fill-current transition-transform ${priceImpact < 0 ? "rotate-180" : ""}`}
                     />
-                    <span>{priceImpact < 0 ? `-$${Math.abs(priceImpact)}` : `$${priceImpact}`}</span>
+                    <span>{priceImpact}</span>
                 </p>
                 <p>This is the difference between the USD value of</p>
                 <p>the token you send and the token you receive.</p>
