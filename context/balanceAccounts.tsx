@@ -149,7 +149,7 @@ export function useSelectedAccount(direction: SwapDirection, providerName: strin
     if (values === undefined) {
         throw new Error('useBalanceAccounts must be used within a BalanceAccountsProvider');
     }
-    return direction === "from" ? values.sourceAccounts.find(acc => acc.providerName === providerName) : values.destinationAccounts.find(acc => acc.providerName === providerName);
+    return direction === "from" ? values?.sourceAccounts?.find(acc => acc?.providerName === providerName) : values?.destinationAccounts?.find(acc => acc?.providerName === providerName);
 }
 
 export function useNetworkAccount(direction: SwapDirection, networkName: string | undefined) {
