@@ -4,7 +4,6 @@ import useWallet from '@/hooks/useWallet';
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
 import WalletIcon from '@/components/icons/WalletIcon';
-import useSWRBalance from '@/lib/balances/useSWRBalance';
 import { useSettingsState } from '@/context/settings';
 import { transactionSenderAndConfirmationWaiter } from './transactionSender';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
@@ -12,6 +11,7 @@ import { ConnectWalletButton, SendTransactionButton } from '../../Common/buttons
 import TransactionMessages from '../../../messages/TransactionMessages';
 import WalletMessage from '../../../messages/Message';
 import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useBalance } from '@/lib/balances/useBalance';
 
 export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -30,7 +30,7 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
 
     const { networks } = useSettingsState()
     const networkWithTokens = networks.find(n => n.name === networkName)
-    const { balances } = useSWRBalance(selectedSourceAccount?.address, networkWithTokens)
+    const { balances } = useBalance(selectedSourceAccount?.address, networkWithTokens)
 
     const handleTransfer = useCallback(async ({ amount, callData, swapId }: TransferProps) => {
         setLoading(true)

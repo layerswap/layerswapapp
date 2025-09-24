@@ -6,11 +6,11 @@ import { AddressGroup } from '@/components/Input/Address/AddressPicker';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import VaulDrawer from '@/components/modal/vaulModal';
 import { SelectAccountProps, Wallet } from '@/Models/WalletProvider';
-import useSWRBalance from '@/lib/balances/useSWRBalance';
 import { useSettingsState } from '@/context/settings';
 import WalletsList from '@/components/Wallet/WalletsList';
 import { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
 import { useSelectedAccount, useUpdateBalanceAccount } from '@/context/balanceAccounts';
+import { useBalance } from '@/lib/balances/useBalance';
 
 type Props = {
     swapData: SwapBasicData
@@ -36,7 +36,7 @@ const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal, swapData })
         setOpenModal(false)
     }
 
-    const { balances } = useSWRBalance(selectedSourceAccount?.address, source_network)
+    const { balances } = useBalance(selectedSourceAccount?.address, source_network)
 
     const walletBalance = source_network && balances?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)

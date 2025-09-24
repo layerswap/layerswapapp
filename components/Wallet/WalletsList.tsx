@@ -8,12 +8,12 @@ import { useConnectModal } from "../WalletModal";
 import { Network, Token } from "../../Models/Network";
 import FilledCheck from "../icons/FilledCheck";
 import { truncateDecimals } from "../utils/RoundDecimals";
-import useSWRBalance from "../../lib/balances/useSWRBalance";
 import { useSettingsState } from "../../context/settings";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
 import useWallet from "@/hooks/useWallet";
 import { AccountIdentity, useSelectedAccount } from "@/context/balanceAccounts";
+import { useBalance } from "@/lib/balances/useBalance";
 
 type Props = {
     selectable?: boolean;
@@ -88,7 +88,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
     const { networks } = useSettingsState()
     const balanceNetwork = token ? networks.find(n => n.name === network?.name && n.tokens.some(t => t.symbol === token.symbol)) : undefined
 
-    const { balances, isBalanceLoading } = useSWRBalance(wallet.address, balanceNetwork)
+    const { balances, isLoading: isBalanceLoading } = useBalance(wallet.address, balanceNetwork)
 
     const walletBalance = balances?.find(b => b?.token === token?.symbol)
 
@@ -234,7 +234,7 @@ type NestedWalletAddressProps = {
 const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddressProps> = ({ selectable, address, network, onWalletSelect, token, wallet, selectedAddress, ...props }) => {
     const { networks } = useSettingsState()
     const balanceNetwork = token ? networks.find(n => n.name === network?.name && n.tokens.some(t => t.symbol === token.symbol)) : undefined
-    const { balances, isBalanceLoading } = useSWRBalance(address, balanceNetwork)
+    const { balances, isLoading: isBalanceLoading } = useBalance(address, balanceNetwork)
 
     const isNestedSelected = selectable && address == selectedAddress
     const nestedWalletBalance = balances?.find(b => b?.token === token?.symbol)

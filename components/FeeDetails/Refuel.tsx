@@ -4,10 +4,9 @@ import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { FC, useEffect, useRef } from "react";
 import { Info } from "lucide-react";
 import { isValidAddress } from "../../lib/address/validator";
-import useSWRBalance from "../../lib/balances/useSWRBalance";
 import { useQuoteData } from "@/hooks/useFee";
 import clsx from "clsx";
-import { useValidationContext } from "@/context/validationContext";
+import { useBalance } from "@/lib/balances/useBalance";
 
 type RefuelProps = {
     onButtonClick: () => void
@@ -22,7 +21,7 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote, minAllowedAmount 
         setFieldValue
     } = useFormikContext<SwapFormValues>();
     const { toAsset: toCurrency, to, destination_address, refuel, amount } = values
-    const { balances } = useSWRBalance(destination_address, to)
+    const { balances } = useBalance(destination_address, to)
 
     const destinationNativeBalance = destination_address && balances?.find(b => (b.token === to?.token?.symbol) && (b.network === to.name))
     const needRefuel = toCurrency && toCurrency.refuel && to && to.token && isValidAddress(destination_address, to) && destinationNativeBalance && destinationNativeBalance?.amount == 0

@@ -3,9 +3,9 @@ import { Dispatch, FC, SetStateAction } from 'react';
 import Modal from '../modal/modal';
 import { roundDecimals, truncateDecimals } from '../utils/RoundDecimals';
 import { useFormikContext } from 'formik';
-import useSWRBalance from '../../lib/balances/useSWRBalance';
 import { useQuoteData } from '@/hooks/useFee';
 import GasIcon from '../icons/GasIcon';
+import { useBalance } from '@/lib/balances/useBalance';
 
 type RefuelModalProps = {
     openModal: boolean,
@@ -21,7 +21,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal, fee }) => 
     const { to, toAsset: toCurrency, refuel, destination_address } = values || {};
 
     const nativeAsset = to?.token
-    const { balances } = useSWRBalance(destination_address, to)
+    const { balances } = useBalance(destination_address, to)
     const destNativeTokenBalance = balances?.find(b => b.token === nativeAsset?.symbol && b.network === to?.name)
 
     return (
