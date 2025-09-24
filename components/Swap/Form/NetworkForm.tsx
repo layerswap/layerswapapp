@@ -86,11 +86,11 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
-    const showInsufficientBalanceWarning = values.depositMethod === 'wallet'
+    const showInsufficientBalanceWarning = !!(values.depositMethod === 'wallet'
         && !routeValidation.message
         && !swapModalOpen
         && Number(amount) > 0
-        && Number(walletBalanceAmount) < Number(amount)
+        && Number(walletBalanceAmount) < Number(amount))
 
     return (
         <>

@@ -112,15 +112,15 @@ export const CollapsibleRow = ({
           ref={contentRef}
           itemsCount={childrenList?.length}
         >
-          <div className="has-[.token-item]:mt-1 bg-secondary-400 rounded-xl overflow-hidden">
-            <div className="overflow-y-auto styled-scroll">
+          <div className="has-[.token-item]:mt-1 bg-secondary-500 rounded-xl overflow-hidden">
+            <div className="overflow-y-auto styled-scroll p-2">
               {childrenList?.map(({ token, route }, index) => {
                 const isSelected = selectedRoute === route.name && selectedToken === token.symbol;
 
                 return (
                   <div
                     key={`${groupName}-${index}`}
-                    className={`token-item pl-5 cursor-pointer hover:bg-secondary-300 outline-none disabled:cursor-not-allowed`}
+                    className={`token-item pl-2 pr-3 cursor-pointer hover:bg-secondary-400 rounded-xl outline-none disabled:cursor-not-allowed`}
                     onClick={() => onSelect(route, token)}
                   >
                     <CurrencySelectItemDisplay
