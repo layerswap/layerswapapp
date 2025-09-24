@@ -363,7 +363,8 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                             className="h-3.5 w-3.5 absolute left-3.5 top-3.5 object-contain rounded border-1 border-secondary-300"
                         />
                     </div>
-                    <div className="ml-3 flex flex-col grow font-medium text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full">                        <p className="leading-5">{token.symbol}</p>
+                    <div className="ml-3 flex flex-col grow font-medium text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full">
+                        <p className="leading-5">{token.symbol}</p>
                         <p className="text-secondary-text grow font-normal text-sm leading-4 truncate whitespace-nowrap">
                             {route.display_name}
                         </p>

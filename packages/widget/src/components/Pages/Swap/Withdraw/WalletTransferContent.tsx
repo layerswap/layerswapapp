@@ -6,11 +6,11 @@ import { AddressGroup } from '@/components/Input/Address/AddressPicker';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import VaulDrawer from '@/components/Modal/vaulModal';
 import { SelectAccountProps } from '@/Models/WalletProvider';
-import { useBalance } from '@/lib/balances/useBalance';
 import { useSettingsState } from '@/context/settings';
 import WalletsList from '@/components/Wallet/WalletComponents/WalletsList';
 import { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
 import { useSelectedAccount, useUpdateBalanceAccount } from '@/context/balanceAccounts';
+import { useBalance } from '@/lib/balances/useBalance';
 
 type Props = {
     swapData: SwapBasicData

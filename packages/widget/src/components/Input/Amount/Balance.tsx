@@ -1,9 +1,9 @@
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
-import { useBalance } from "@/lib/balances/useBalance";
 import useWallet from "@/hooks/useWallet";
 import InfoIcon from "@/components/Icons/InfoIcon";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
+import { useBalance } from "@/lib/balances/useBalance";
 
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
@@ -31,9 +31,9 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
                         <InfoIcon className='w-3 h-3' />
                         <span>Network issue</span>
                     </div>
-                : (network && token && truncatedBalance) ?
-                    <span>{truncatedBalance}</span>
-                    : <span></span>
+                    : (network && token && truncatedBalance) ?
+                        <span>{truncatedBalance}</span>
+                        : <span></span>
         }
     </div>
 }

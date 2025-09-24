@@ -4,7 +4,6 @@ import useWallet from '@/hooks/useWallet';
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
 import WalletIcon from '@/components/Icons/WalletIcon';
-import { useBalance } from '@/lib/balances/useBalance';
 import { useSettingsState } from '@/context/settings';
 import { transactionSenderAndConfirmationWaiter } from './transactionSender';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
@@ -12,6 +11,7 @@ import { ConnectWalletButton, SendTransactionButton } from '../../Common/buttons
 import TransactionMessages from '../../../messages/TransactionMessages';
 import WalletMessage from '../../../messages/Message';
 import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useBalance } from '@/lib/balances/useBalance';
 
 export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);

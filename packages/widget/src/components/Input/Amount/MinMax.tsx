@@ -1,5 +1,4 @@
 import { useFormikContext } from "formik";
-import { useBalance } from "@/lib/balances/useBalance";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import React, { useMemo } from "react";
@@ -9,6 +8,7 @@ import useWallet from "@/hooks/useWallet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
+import { useBalance } from "@/lib/balances/useBalance";
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,

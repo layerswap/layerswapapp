@@ -5,7 +5,6 @@ import { NetworkWithTokens } from "@/Models/Network"
 import { NetworkBalance } from "@/Models/Balance"
 import { useBalanceAccounts } from "@/context/balanceAccounts"
 
-
 export default function useAllWithdrawalBalances() {
 
     const networks = useSettingsState().networks

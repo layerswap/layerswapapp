@@ -119,7 +119,6 @@ export default function FormWrapper({ children, type }: { children?: React.React
     }, [router, swapDetails, walletWihdrawDone, mutateBalances])
 
     const handleWalletWithdrawalSuccess = useCallback(() => {
-        mutateBalances()
         setWalletWihdrawDone(true)
     }, []);
 

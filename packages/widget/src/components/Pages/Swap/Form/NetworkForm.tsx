@@ -19,8 +19,6 @@ import { WalletProvider } from "@/Models/WalletProvider";
 import { updateForm, updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
-import { InsufficientBalanceWarning } from "@/components/Pages/Swap/Form/SecondaryComponents/validationError/insufficientBalance";
-import { useBalance } from "@/lib/balances/useBalance";
 import { useSwapDataState } from "@/context/swap";
 import ReserveGasNote from "@/components/Pages/Swap/Form/SecondaryComponents/ReserveGasNote";
 import { useSelectedAccount } from "@/context/balanceAccounts";
@@ -29,6 +27,8 @@ import DepositMethodComponent from "./FeeDetails/DepositMethod";
 import RefuelToggle from "./FeeDetails/Refuel";
 import RefuelModal from "./FeeDetails/RefuelModal";
 import { SwapFormValues } from "./SwapFormValues";
+import { useBalance } from "@/lib/balances/useBalance";
+import { InsufficientBalanceWarning } from "./SecondaryComponents/validationError/insufficientBalance";
 
 type Props = {
     partner?: Partner;
@@ -262,12 +262,14 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
             aria-label="Reverse the source and destination"
             disabled={valuesSwapperDisabled}
             onClick={valuesSwapper}
-            className="hover:text-primary-text text-secondary-text absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none">            <motion.div
+            className="hover:text-primary-text text-secondary-text absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none">
+            <motion.div
                 animate={animate}
                 transition={{ duration: 0.3 }}
                 onTap={() => !valuesSwapperDisabled && cycle()}
             >
-                <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-300 hover:bg-secondary-200 rounded-lg disabled:opacity-30")} />            </motion.div>
+                <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-300 hover:bg-secondary-200 rounded-lg disabled:opacity-30")} />
+            </motion.div>
         </button>
     )
 }
