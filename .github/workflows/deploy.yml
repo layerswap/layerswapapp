@@ -1,33 +1,33 @@
-name: Storybook PR Preview
+name: Deploy Storybook (per-branch)
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, closed]
+  push:
+    branches:
+      - '**'           
+      - '!gh-pages'    
+
+permissions:
+  contents: write
 
 jobs:
-  preview:
-    if: github.event.action != 'closed'
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: |
+
+      - name: Install & Build
+        run: |
           yarn install --frozen-lockfile
           yarn build-storybook -o storybook-static
-      - uses: rossjrw/pr-preview-action@v1
-        with:
-          source-dir: storybook-static
-          preview-branch: gh-pages
-          umbrella-dir: pr-preview
 
-  teardown:
-    if: github.event.action == 'closed'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: rossjrw/pr-preview-action@v1
+      - name: Publish to gh-pages under branches/<branch>
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          preview-branch: gh-pages
-          umbrella-dir: pr-preview
-          action: teardown
+          publish_branch: gh-pages
+          publish_dir: storybook-static
+          destination_dir: branches/${{ github.ref_name }}
+          keep_files: true
