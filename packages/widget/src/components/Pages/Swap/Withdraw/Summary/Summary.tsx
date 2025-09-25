@@ -5,7 +5,7 @@ import LayerSwapApiClient, { Quote, Refuel, SwapBasicData, SwapQuote, SwapRespon
 import { ApiResponse } from "@/Models/ApiResponse";
 import { Partner } from "@/Models/Partner";
 import useSWR from 'swr'
-import { useQueryState } from "@/context/query";
+import { useInitialSettings } from "@/context/settings";
 import { Network, Token } from "@/Models/Network";
 import { Exchange } from "@/Models/Exchange";
 import { addressFormat } from "@/lib/address/formatter";
@@ -34,7 +34,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
         account,
         appName,
         hideAddress
-    } = useQueryState()
+    } = useInitialSettings()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)

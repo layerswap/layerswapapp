@@ -2,12 +2,12 @@ import IconButton from "../Buttons/iconButton"
 import LogoWithDetails from "../Common/LogoWithDetails"
 import { ArrowLeft } from 'lucide-react'
 import LayerswapMenu from "../Menu"
-import { useQueryState } from "../../context/query"
+import { useInitialSettings } from "../../context/settings"
 import { NetworkExchangeTabs } from "../Pages/Swap/Form/NetworkExchangeTabs"
 import { WalletsHeader } from "../Wallet/WalletComponents/ConnectedWallets"
 
-function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null }) {
-   const query = useQueryState()
+function HeaderWithMenu({ goBack }: { goBack?: (() => void) | undefined | null }) {
+   const initialSettings = useInitialSettings()
 
    return (
       <div className="items-center justify-end sm:flex sm:items-center grid grid-cols-5 w-full sm:grid-cols-none sm:grid-none px-6 mt-2 pb-2 max-sm:pl-0 max-sm:pr-8">
@@ -22,7 +22,7 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
             </IconButton>
          }
          {
-            !query.hideLogo && <div className="self-center col-start-1 md:col-start-2 md:col-span-3 justify-self-start md:justify-self-center md:hidden">
+            !initialSettings.hideLogo && <div className="self-center col-start-1 md:col-start-2 md:col-span-3 justify-self-start md:justify-self-center md:hidden">
                <LogoWithDetails className="group hideSymbol" />
             </div>
          }

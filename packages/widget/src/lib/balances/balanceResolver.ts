@@ -10,7 +10,6 @@ import {
     ImmutableXBalanceProvider,
     LoopringBalanceProvider,
     ParadexBalanceProvider,
-    QueryBalanceProvider,
     SolanaBalanceProvider,
     StarknetBalanceProvider,
     TonBalanceProvider,
@@ -22,7 +21,6 @@ import {
 export class BalanceResolver {
 
     private providers: BalanceProvider[] = [
-        new QueryBalanceProvider(),
         new StarknetBalanceProvider(),
         new EVMBalanceProvider(),
         new FuelBalanceProvider(),

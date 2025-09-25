@@ -1,10 +1,10 @@
-import { QueryParams } from "../Models/QueryParams";
+import { InitialSettings } from "../Models/InitialSettings";
 import { isValidAddress } from "./address/validator";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { SwapBasicData } from "./apiClients/layerSwapApiClient";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 
-export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: QueryParams, type: 'cross-chain' | 'exchange'): SwapFormValues {
+export function generateSwapInitialValues(settings: LayerSwapAppSettings, queryParams: InitialSettings, type: 'cross-chain' | 'exchange'): SwapFormValues {
     const { destination_address, amount, fromAsset, toAsset, from, to, lockFromAsset, lockToAsset, depositMethod, fromExchange } = queryParams
     const { sourceExchanges, sourceRoutes, destinationRoutes } = settings || {}
 

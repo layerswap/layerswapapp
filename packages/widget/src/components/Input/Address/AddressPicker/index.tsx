@@ -11,7 +11,7 @@ import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
 import { Network, NetworkType, NetworkRoute } from "@/Models/Network";
 import AddressBook from "./AddressBook";
 import AddressButton from "./AddressButton";
-import { useQueryState } from "@/context/query";
+import { useInitialSettings } from "@/context/settings";
 import ConnectedWallets from "./ConnectedWallets";
 import { Wallet } from "@/Models/WalletProvider";
 import { useBalanceAccounts, useUpdateBalanceAccount } from "@/context/balanceAccounts";
@@ -61,7 +61,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         setFieldValue
     } = useFormikContext<SwapFormValues>();
 
-    const query = useQueryState()
+    const initialSettings = useInitialSettings()
     const { destination_address, to: destination } = values
     const balanceAccounts = useBalanceAccounts("to")
     const selectDestinationAccount = useUpdateBalanceAccount("to");
@@ -90,9 +90,9 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             destination,
             wallets: connectedWallets,
             newAddress,
-            addressFromQuery: query.destination_address
+            addressFromQuery: initialSettings.destination_address
         })
-    }, [address_book, destination, connectedWallets, newAddress, query.destination_address, connectedWalletskey])
+    }, [address_book, destination, connectedWallets, newAddress, initialSettings.destination_address, connectedWalletskey])
 
     const destinationAddressItem = destination && destination_address ?
         groupedAddresses?.find(a => a.address.toLowerCase() === destination_address.toLowerCase())

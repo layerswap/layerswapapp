@@ -14,7 +14,7 @@ import useExchangeNetworks from '@/hooks/useExchangeNetworks'
 import { ChevronDown } from 'lucide-react'
 import { CommandItem, CommandList, CommandWrapper } from '@/components/shadcn/command'
 import { Network, NetworkRoute, Token } from '@/Models/Network'
-import { useQueryState } from '@/context/query'
+import { useInitialSettings } from '@/context/settings'
 import { useSwapDataUpdate } from '@/context/swap'
 import { useAsyncModal } from '@/context/asyncModal'
 import { handleLimitsUpdate } from './QuoteUpdate'
@@ -40,7 +40,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
     const [showQR, setShowQR] = useState(false)
     const destinationLogo = swapBasicData?.destination_network?.logo
     const [copied, copy] = useCopyClipboard()
-    const query = useQueryState()
+    const initialSettings = useInitialSettings()
     const depositAddress = depositActions?.find(da => true)?.to_address;
 
     const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == swapBasicData?.destination_address?.toLowerCase())?.icon;
@@ -74,7 +74,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                 getConfirmation
             })
 
-            const swapData = await createSwap(swapValues, query);
+            const swapData = await createSwap(swapValues, initialSettings);
             setNewNetwork(network);
             const swapId = swapData?.swap?.id;
             if (!swapId) throw new Error('Swap ID is undefined');

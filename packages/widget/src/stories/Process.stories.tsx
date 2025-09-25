@@ -22,7 +22,7 @@ const Comp: FC<{ settings: any, swapData: SwapContextData, failedSwap?: SwapItem
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const appSettings = new LayerSwapAppSettings(Settings)
     const swapContextInitialValues: SwapContextData = {
-        codeRequested: false, swapBasicData: swapData.swapBasicData, quote: swapData.quote, refuel: swapData.refuel, swapDetails: swapData.swapDetails, depositAddressIsFromAccount: false, withdrawType: undefined, swapTransaction: undefined,
+        swapBasicData: swapData.swapBasicData, quote: swapData.quote, refuel: swapData.refuel, swapDetails: swapData.swapDetails, depositAddressIsFromAccount: false, withdrawType: undefined, swapTransaction: undefined,
         quoteIsLoading: false,
         swapId: undefined,
         swapModalOpen: false
@@ -34,7 +34,7 @@ const Comp: FC<{ settings: any, swapData: SwapContextData, failedSwap?: SwapItem
     const themeData = theme ? THEME_COLORS[theme] : THEME_COLORS["default"];
 
     return <IntercomProvider appId='123'>
-        <SettingsStateContext.Provider value={appSettings}>
+        <SettingsStateContext.Provider value={appSettings as any}>
             <SwapDataProvider >
                 <TimerProvider>
                     <WalletsProviders basePath={'/'} themeData={THEME_COLORS['default']} appName={'Layerswap'}>

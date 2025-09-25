@@ -1,5 +1,6 @@
 
 export class PersistantQueryParams {
+    swapId?: string = "";
     from?: string = "";
     to?: string = "";
     fromExchange?: string = "";
@@ -45,6 +46,6 @@ export class PersistantQueryParams {
 }
 
 
-export class QueryParams extends PersistantQueryParams {
+export class InitialSettings extends PersistantQueryParams {
     coinbase_redirect?: string = "";
 }

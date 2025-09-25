@@ -4,7 +4,6 @@ import { BackendTransactionStatus, TransactionType } from "../../lib/apiClients/
 
 export const swap = {
     "addressConfirmed": false,
-    "codeRequested": false,
     "depositAddressIsFromAccount": false,
     "swapTransaction": undefined,
     "withdrawType": undefined,

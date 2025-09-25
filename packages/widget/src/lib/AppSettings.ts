@@ -21,10 +21,17 @@ export default class AppSettings {
             icons: ['https://www.layerswap.io/app/symbol.png'],
         }
     static TonClientConfig: {
-        TonApiKey: string
+        tonApiKey: string
     } = {
-            TonApiKey: 'ac793ea74c19105d617dfbeedb827f1b267b4e91f1b15b2420d003ec49722c82',
+            tonApiKey: 'ac793ea74c19105d617dfbeedb827f1b267b4e91f1b15b2420d003ec49722c82',
         }
+    static ImtblPassportConfig: {
+        publishableKey: string,
+        clientId: string
+    } = {
+        publishableKey: "",
+        clientId: ""
+    }
     static DisableExchanges: boolean = false
     static FeaturedNetwork?: {
         initialDirection: 'from' | 'to',

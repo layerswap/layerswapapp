@@ -3,13 +3,13 @@ import MessageComponent from "@/components/Common/MessageComponent";
 import SubmitButton, { DoubleLineText } from "@/components/Buttons/submitButton";
 import { useIntercom } from "react-use-intercom";
 import { Home, MessageSquare } from "lucide-react";
-import { useRouter } from "@/hooks/useRouter";
+import { useBackClickCallback } from "@/context/callbackProvider";
 
-const NotFound: FC<{ onBackClick: () => void }> = ({ onBackClick }) => {
+const NotFound: FC<{ swapId: string | undefined }> = ({ swapId }) => {
 
     const { boot, show, update } = useIntercom()
-    const { query } = useRouter()
-    const updateWithProps = () => update({ customAttributes: { swapId: query?.swapId } })
+    const updateWithProps = () => update({ customAttributes: { swapId: swapId } })
+    const triggerBackClickCallback = useBackClickCallback()
 
     const startIntercom = useCallback(() => {
         boot();
@@ -46,7 +46,7 @@ const NotFound: FC<{ onBackClick: () => void }> = ({ onBackClick }) => {
                         </SubmitButton>
                     </div>
                     <div className='basis-2/3'>
-                        <SubmitButton onClick={onBackClick} button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<Home className="h-5 w-5" aria-hidden="true" />}>
+                        <SubmitButton onClick={triggerBackClickCallback} button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<Home className="h-5 w-5" aria-hidden="true" />}>
                             <DoubleLineText
                                 colorStyle='mltln-text-dark'
                                 primaryText='Swap'

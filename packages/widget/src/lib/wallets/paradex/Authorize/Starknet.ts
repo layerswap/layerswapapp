@@ -1,8 +1,9 @@
 import { AccountInterface } from 'starknet';
 import * as Paradex from "../lib";
+import AppSettings from '@/lib/AppSettings';
 
 export async function AuthorizeStarknet(starknetAccount: AccountInterface) {
-    const config = await Paradex.Config.fetchConfig(process.env.NEXT_PUBLIC_API_VERSION === "sandbox" ? 'testnet' : 'prod'); ///TODO: check environment may be mainnet
+    const config = await Paradex.Config.fetchConfig(AppSettings.ApiVersion === "sandbox" ? 'testnet' : 'prod'); ///TODO: check environment may be mainnet
 
     const paraclearProvider = new Paradex.ParaclearProvider.DefaultProvider(config);
 

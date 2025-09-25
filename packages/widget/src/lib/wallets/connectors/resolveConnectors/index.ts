@@ -2,8 +2,9 @@ import { walletConnect } from "./walletConnect"
 import walletsData from "@/public/walletsData.json"
 import { InternalConnector } from "@/Models/WalletProvider"
 import { resolveWalletConnectorIndex } from "../../utils/resolveWalletIcon"
+import AppSettings from "@/lib/AppSettings"
 
-const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b'
+const projectId = AppSettings.WalletConnectConfig.projectId
 const wallets = Object.values(walletsData.listings)
 
 export type WalletConnectWallet = {

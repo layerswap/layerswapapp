@@ -1,9 +1,9 @@
 import React, { Context, FC } from 'react'
-import { QueryParams } from '../Models/QueryParams';
+import { InitialSettings } from '../Models/InitialSettings';
 
-export const QueryStateContext = React.createContext<QueryParams | null>(null);
+export const QueryStateContext = React.createContext<InitialSettings | null>(null);
 
-const QueryProvider: FC<{ query: QueryParams, children?: React.ReactNode }> = ({ query, children }) => {
+const QueryProvider: FC<{ query: InitialSettings, children?: React.ReactNode }> = ({ query, children }) => {
   return (
     <QueryStateContext.Provider value={mapLegacyQueryParams(query)}>
       {children}
@@ -11,7 +11,7 @@ const QueryProvider: FC<{ query: QueryParams, children?: React.ReactNode }> = ({
   );
 }
 
-function mapLegacyQueryParams(params: QueryParams): QueryParams {
+function mapLegacyQueryParams(params: InitialSettings): InitialSettings {
   return {
     ...params,
     ...(params.destAddress ? { destination_address: params.destAddress } : {}),
@@ -27,7 +27,7 @@ function mapLegacyQueryParams(params: QueryParams): QueryParams {
 }
 
 export function useQueryState() {
-  const data = React.useContext<QueryParams>(QueryStateContext as Context<QueryParams>);
+  const data = React.useContext<InitialSettings>(QueryStateContext as Context<InitialSettings>);
 
   if (data === undefined) {
     throw new Error('useQueryState must be used within a QueryStateProvider');

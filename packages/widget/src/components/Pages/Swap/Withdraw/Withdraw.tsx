@@ -3,7 +3,7 @@ import { useSwapDataState } from '@/context/swap';
 import KnownInternalNames from '@/lib/knownIds';
 import SwapSummary from './Summary';
 import External from './External';
-import { useQueryState } from '@/context/query';
+import { useInitialSettings } from '@/context/settings';
 import { Widget } from '@/components/Widget/Index';
 import { SwapQuoteDetails } from './SwapQuoteDetails';
 import WalletTransferButton from './WalletTransferButton';
@@ -15,7 +15,7 @@ import { useSelectedAccount } from '@/context/balanceAccounts';
 
 const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void }> = ({ type, onWalletWithdrawalSuccess }) => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading } = useSwapDataState()
-    const { appName, signature } = useQueryState()
+    const { appName, signature } = useInitialSettings()
     const sourceIsImmutableX = swapBasicData?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
         || swapBasicData?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const isImtblMarketplace = (signature && appName === "imxMarketplace" && sourceIsImmutableX)

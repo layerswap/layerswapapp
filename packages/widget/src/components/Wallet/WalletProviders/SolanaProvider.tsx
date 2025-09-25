@@ -10,8 +10,9 @@ import {
 } from "@solana/wallet-adapter-react";
 import { ReactNode, useMemo } from "react";
 import { CoinbaseWalletAdapter } from "@solana/wallet-adapter-coinbase";
+import AppSettings from "@/lib/AppSettings";
 
-const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
+const WALLETCONNECT_PROJECT_ID = AppSettings.WalletConnectConfig.projectId
 
 function SolanaProvider({ children }: { children: ReactNode }) {
     const solNetwork = WalletAdapterNetwork.Mainnet;

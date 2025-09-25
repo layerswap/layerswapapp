@@ -198,7 +198,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                                 fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
                                     "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
                                     :
-                                    <div><span className='text-secondary-text'>Something went wrong while processing the transfer.</span> <a className='underline hover:cursor-pointer text-secondary-text' onClick={() => startIntercom()}> please contact our support.</a></div>
+                                    <div><span className='text-secondary-text'>Something went wrong while processing the transfer.</span> <span className='underline hover:cursor-pointer text-secondary-text' onClick={() => startIntercom()}> please contact our support.</span></div>
                         }
                     </div>
                 </div>
@@ -246,7 +246,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                                     fail_reason == SwapFailReasons.RECEIVED_LESS_THAN_VALID_RANGE ?
                                         "Your deposit is lower than the minimum required amount. Unfortunately, we can't process the transaction. Please contact support to check if you're eligible for a refund."
                                         :
-                                        <div><span className='text-secondary-text'>Something went wrong while processing the transfer.</span> <a className='underline hover:cursor-pointer text-secondary-text' onClick={() => startIntercom()}> please contact our support.</a></div>
+                                        <div><span className='text-secondary-text'>Something went wrong while processing the transfer.</span> <span className='underline hover:cursor-pointer text-secondary-text' onClick={() => startIntercom()}> please contact our support.</span></div>
                         }
                     </div>
                 </div>
@@ -309,7 +309,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             failed: {
                 name: 'Refund Failed',
                 description: <div className='space-x-1 text-secondary-text'>
-                    <span>Something went wrong while processing the refund.</span> <a className='underline hover:cursor-pointer text-secondary-text' onClick={() => startIntercom()}> please contact our support.</a>
+                    <span>Something went wrong while processing the refund.</span> <span className='underline hover:cursor-pointer text-secondary-text' onClick={() => startIntercom()}> please contact our support.</span>
                 </div>
             }
         }

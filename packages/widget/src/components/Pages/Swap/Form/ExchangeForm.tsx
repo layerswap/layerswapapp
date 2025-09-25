@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import ValidationError from "@/components/Pages/Swap/Form/SecondaryComponents/validationError";
 import CexPicker, { SelectedEchangePlaceholder } from "@/components/Input/CexPicker";
 import { Widget } from "@/components/Widget/Index";
@@ -21,6 +21,7 @@ import { useClickOutside } from "@/hooks/useClickOutside";
 import { SwapFormValues } from "./SwapFormValues";
 import DepositMethodComponent from "./FeeDetails/DepositMethod";
 import QuoteDetails from "./FeeDetails";
+import { useFormChangeCallback } from "@/context/callbackProvider";
 
 type Props = {
     partner?: Partner;
@@ -30,6 +31,11 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     const {
         values, isSubmitting
     } = useFormikContext<SwapFormValues>();
+
+    const triggerFormChangeCallback = useFormChangeCallback()
+    useEffect(() => {
+        triggerFormChangeCallback(values);
+    }, [values, triggerFormChangeCallback]);
 
     const { fromAsset: fromCurrency, from, to: destination, destination_address, amount } = values || {};
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);

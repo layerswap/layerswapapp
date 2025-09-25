@@ -1,7 +1,7 @@
 import { useFormikContext } from "formik";
 import React, { FC, useEffect, useRef } from "react";
 import { Network } from "@/Models/Network";
-import { useQueryState } from "@/context/query";
+import { useInitialSettings } from "@/context/settings";
 import useWallet from "@/hooks/useWallet";
 import { WalletProvider } from "@/Models/WalletProvider";
 import { SwapFormValues } from "../../SwapFormValues";
@@ -22,7 +22,7 @@ const DepositMethodComponent: FC = () => {
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
-    const { depositMethod: defaultDepositMethod, hideDepositMethod } = useQueryState()
+    const { depositMethod: defaultDepositMethod, hideDepositMethod } = useInitialSettings()
     const { from, depositMethod, fromExchange, fromAsset } = values
     const { provider } = useWallet(from, 'withdrawal')
     const name = 'depositMethod'

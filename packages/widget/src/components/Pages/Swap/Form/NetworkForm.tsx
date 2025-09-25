@@ -6,7 +6,7 @@ import ValidationError from "@/components/Pages/Swap/Form/SecondaryComponents/va
 import useWallet from "@/hooks/useWallet";
 import SourcePicker from "@/components/Input/SourcePicker";
 import DestinationPicker from "@/components/Input/DestinationPicker";
-import { useQueryState } from "@/context/query";
+import { useInitialSettings } from "@/context/settings";
 import { Widget } from "@/components/Widget/Index";
 import { motion, useCycle } from "framer-motion";
 import { useSettingsState } from "@/context/settings";
@@ -14,7 +14,7 @@ import { swapInProgress } from "@/components/utils/swapUtils";
 import { ArrowUpDown } from "lucide-react";
 import { classNames } from "@/components/utils/classNames";
 import FormButton from "./SecondaryComponents/FormButton";
-import { QueryParams } from "@/Models/QueryParams";
+import { InitialSettings } from "@/Models/InitialSettings";
 import { WalletProvider } from "@/Models/WalletProvider";
 import { updateForm, updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
@@ -29,6 +29,7 @@ import RefuelModal from "./FeeDetails/RefuelModal";
 import { SwapFormValues } from "./SwapFormValues";
 import { useBalance } from "@/lib/balances/useBalance";
 import { InsufficientBalanceWarning } from "./SecondaryComponents/validationError/insufficientBalance";
+import { useFormChangeCallback } from "@/context/callbackProvider";
 
 type Props = {
     partner?: Partner;
@@ -38,7 +39,9 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const [openRefuelModal, setOpenRefuelModal] = useState(false);
     const {
         values,
-        setValues, isSubmitting, setFieldValue
+        setValues,
+        isSubmitting,
+        setFieldValue,
     } = useFormikContext<SwapFormValues>();
 
     const {
@@ -60,7 +63,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const toAsset = values.toAsset;
     const fromAsset = values.fromAsset;
     const { formValidation, routeValidation } = useValidationContext();
-    const query = useQueryState();
+    const initialSettings = useInitialSettings();
 
     const isValid = !formValidation.message;
     const error = formValidation.message;
@@ -68,6 +71,11 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const { balances } = useBalance(selectedSourceAccount?.address, source)
     const walletBalance = source && balances?.find(b => b?.network === source?.name && b?.token === fromAsset?.symbol)
     const walletBalanceAmount = walletBalance?.amount
+
+    const triggerFormChangeCallback = useFormChangeCallback()
+    useEffect(() => {
+        triggerFormChangeCallback(values);
+    }, [values, triggerFormChangeCallback]);
 
     useEffect(() => {
         if (!source || !toAsset || !toAsset.refuel) {
@@ -101,23 +109,23 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                         <div>
                             <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
                                 {
-                                    !(query?.hideFrom && values?.from) && <SourcePicker
+                                    !(initialSettings?.hideFrom && values?.from) && <SourcePicker
                                         minAllowedAmount={minAllowedAmount}
                                         maxAllowedAmount={maxAllowedAmount}
                                         fee={quote}
                                     />
                                 }
                                 {
-                                    !query?.hideFrom && !query?.hideTo &&
+                                    !initialSettings?.hideFrom && !initialSettings?.hideTo &&
                                     <ValueSwapperButton
                                         values={values}
                                         setValues={setValues}
                                         providers={providers}
-                                        query={query}
+                                        query={initialSettings}
                                     />
                                 }
                                 {
-                                    !(query?.hideTo && values?.to) && <DestinationPicker
+                                    !(initialSettings?.hideTo && values?.to) && <DestinationPicker
                                         isFeeLoading={isQuoteLoading}
                                         fee={quote}
                                         partner={partner}
@@ -145,7 +153,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 />
                             }
                             {
-                                values.toAsset?.refuel && !query.hideRefuel &&
+                                values.toAsset?.refuel && !initialSettings.hideRefuel &&
                                 <RefuelToggle
                                     quote={quote}
                                     onButtonClick={() => setOpenRefuelModal(true)}
@@ -178,7 +186,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     );
 };
 
-const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<SwapFormValues>['setValues'], providers: WalletProvider[], query: QueryParams }> = ({ values, setValues, providers, query }) => {
+const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<SwapFormValues>['setValues'], providers: WalletProvider[], query: InitialSettings }> = ({ values, setValues, providers, query }) => {
     const [animate, cycle] = useCycle(
         { rotateX: 0 },
         { rotateX: 180 }

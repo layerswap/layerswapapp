@@ -1,6 +1,6 @@
 import { FormSourceWalletButton } from "../../../../Input/SourceWalletPicker";
 import SubmitButton from "../../../../Buttons/submitButton";
-import { useQueryState } from "@/context/query";
+import { useInitialSettings } from "@/context/settings";
 import Address from "../../../../Input/Address";
 import { SwapFormValues } from "../SwapFormValues";
 import { Partner } from "@/Models/Partner";
@@ -22,8 +22,8 @@ const FormButton = ({
     isSubmitting,
     partner,
 }: Props) => {
-    const query = useQueryState();
-    const actionDisplayName = error || query?.actionButtonText || "Next";
+    const initialSettings = useInitialSettings();
+    const actionDisplayName = error || initialSettings?.actionButtonText || "Next";
     if (shouldConnectWallet && !error) {
         return <FormSourceWalletButton />;
     }

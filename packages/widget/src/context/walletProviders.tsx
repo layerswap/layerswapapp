@@ -60,7 +60,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
                 header={
                     <div className="flex items-center gap-1">
                         {
-                            (selectedConnector || selectedMultiChainConnector) && 
+                            (selectedConnector || selectedMultiChainConnector) &&
                             <div className='-ml-2'>
                                 <IconButton onClick={goBack} icon={
                                     <ChevronLeft className="h-6 w-6" />

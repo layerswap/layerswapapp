@@ -1,7 +1,8 @@
 import posthog from "posthog-js";
+import AppSettings from "./AppSettings";
 
 const logError = (message: string) => {
-    const error = new Error(message + ` env: ${process.env.NEXT_PUBLIC_API_VERSION ?? 'prod'}`)
+    const error = new Error(message + ` env: ${AppSettings.ApiVersion ?? 'prod'}`)
     error.name = 'AlertUI';
     error.cause = error;
     posthog.capture('$exception', {

@@ -2,8 +2,9 @@ import { FC, ReactNode, useEffect, useState } from "react";
 import { mainnet, sepolia } from "@starknet-react/chains"
 import { Connector, ConnectorNotConnectedError, UserNotConnectedError, StarknetConfig, publicProvider } from '@starknet-react/core';
 import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from "starknet-types-07";
+import AppSettings from "@/lib/AppSettings";
 
-const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
+const WALLETCONNECT_PROJECT_ID = AppSettings.WalletConnectConfig.projectId
 
 class DiscoveryConnector extends Connector {
     #wallet;

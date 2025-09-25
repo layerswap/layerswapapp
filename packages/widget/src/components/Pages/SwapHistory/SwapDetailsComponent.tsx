@@ -6,7 +6,7 @@ import StatusIcon from './StatusIcons';
 import { ExternalLink } from 'lucide-react';
 import isGuid from '@/components/utils/isGuid';
 import KnownInternalNames from '@/lib/knownIds';
-import { useQueryState } from '@/context/query';
+import { useInitialSettings } from '@/context/settings';
 import { SwapStatus } from '@/Models/SwapStatus';
 import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
 import { getDateDifferenceString } from '@/components/utils/dateDifference';
@@ -23,7 +23,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     const {
         hideFrom,
         account,
-    } = useQueryState()
+    } = useInitialSettings()
 
     const input_tx_explorer_template = source_network?.transaction_explorer_template
     const output_tx_explorer_template = destination_network?.transaction_explorer_template

@@ -173,10 +173,6 @@ let lastBalances: Record<string, any> = {}
 let memoizedResult: Record<string, NetworkBalance> | null = null
 
 
-
-
-
-
 //Discuss with Babken M.
 export const selectResolvedInitiatedBalances = (state: BalanceStore) => {
   const keys = state.initiatedBalances

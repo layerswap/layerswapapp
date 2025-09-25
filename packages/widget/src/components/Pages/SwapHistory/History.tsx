@@ -239,10 +239,10 @@ const BlankHistory = ({ onNewTransferClick }: BlankHistoryProps) => {
                     Transfers you make with this wallet/account will appear here after excution.
                 </p>
             </div>
-            <a onClick={onNewTransferClick} href={"/"} className="mt-10 flex items-center gap-2 text-base text-secondary-text font-normal bg-secondary-500 hover:bg-secondary-400 py-2 px-3 rounded-lg">
+            <button type='button' onClick={onNewTransferClick} className="mt-10 flex items-center gap-2 text-base text-secondary-text font-normal bg-secondary-500 hover:bg-secondary-400 py-2 px-3 rounded-lg">
                 <Plus className="w-4 h-4" />
                 <p>New Transfer</p>
-            </a>
+            </button>
 
         </div>
     </div>

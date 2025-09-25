@@ -6,7 +6,6 @@ import { SettingsProvider } from "./settings";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import ErrorFallback from "../components/ErrorFallback";
-import QueryProvider from "./query";
 import { THEME_COLORS, ThemeData } from "../Models/Theme";
 import { TooltipProvider } from "../components/shadcn/tooltip";
 import { AsyncModalProvider } from "./asyncModal";
@@ -17,6 +16,8 @@ import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 import ColorSchema from "@/components/ColorSchema";
 import { WidgetLoading } from "@/components/WidgetLoading";
 import WalletsProviders from "@/components/Wallet/WalletProviders";
+import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
+import { InitialSettings } from "../Models/InitialSettings";
 
 export type LayerswapContextProps = {
     children?: ReactNode;
@@ -25,6 +26,8 @@ export type LayerswapContextProps = {
     themeData?: ThemeData | null
     integrator: string
     version?: 'mainnet' | 'testnet'
+    callbacks?: CallbacksContextType
+    initialValues?: InitialSettings
     walletConnect?: {
         projectId?: string
         name?: string
@@ -35,7 +38,7 @@ export type LayerswapContextProps = {
 }
 
 const INTERCOM_APP_ID = 'h5zisg78'
-const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, settings: _settings, themeData, apiKey, integrator, version, walletConnect }) => {
+const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, settings: _settings, themeData, apiKey, integrator, version, callbacks, initialValues, walletConnect }) => {
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
 
     AppSettings.ApiVersion = version
@@ -62,8 +65,8 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
 
     return (
         <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
-            <QueryProvider query={{}}>
-                <SettingsProvider data={appSettings}>
+            <SettingsProvider initialLayerswapData={appSettings} initialSettings={initialValues}>
+                <CallbackProvider callbacks={callbacks}>
                     <TooltipProvider delayDuration={500}>
                         <ErrorBoundary FallbackComponent={ErrorFallback} >
                             <ThemeWrapper>
@@ -75,8 +78,8 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
                             </ThemeWrapper>
                         </ErrorBoundary>
                     </TooltipProvider>
-                </SettingsProvider >
-            </QueryProvider >
+                </CallbackProvider>
+            </SettingsProvider >
         </IntercomProvider>
     )
 }

@@ -7,12 +7,12 @@ import { BalanceAccountsProvider } from "@/context/balanceAccounts";
 import FormWrapper from "./FormWrapper";
 import { Widget } from "@/components/Widget/Index";
 import { ValidationProvider } from "@/context/validationContext";
-import { useQueryState } from "@/context/query";
+import { useInitialSettings } from "@/context/settings";
 import { useSettingsState } from "@/context/settings";
 import { SwapFormValues } from "./SwapFormValues";
 
 export default function Form({ formValues }: { formValues?: SwapFormValues }) {
-    const { from } = useQueryState()
+    const { from } = useInitialSettings()
     const { sourceExchanges } = useSettingsState()
     const defaultTab = useMemo(() => {
         return defaultTabResolver({ from, sourceExchanges })

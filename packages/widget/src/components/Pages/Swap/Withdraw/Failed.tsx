@@ -51,7 +51,7 @@ const Expired = ({ onGetHelp }: Props) => {
     return (
         <div>
             <span className='text-md text-left text-xs md:text-sm text-primary-text'>The transfer wasn&apos;t completed during the allocated timeframe.</span>
-            <span className='text-secondary-text'><span> If you&apos;ve already sent crypto for this swap, your funds are safe, </span><a className='underline hover:cursor-pointer' onClick={() => onGetHelp()}>please contact our support.</a></span>
+            <span className='text-secondary-text'><span> If you&apos;ve already sent crypto for this swap, your funds are safe, </span><span className='underline hover:cursor-pointer' onClick={() => onGetHelp()}>please contact our support.</span></span>
         </div>
     )
 }
@@ -73,7 +73,7 @@ const Canceled = ({ onGetHelp }: Props) => {
     return (
         <div>
             <p className='text-md text-left text-primary-text'><span>The transaction was cancelled by your request.</span>
-                <span className='text-secondary-text'><span> If you&apos;ve already sent crypto for this swap, your funds are safe,</span><a className='underline hover:cursor-pointer' onClick={() => onGetHelp()}> please contact our support.</a></span>
+                <span className='text-secondary-text'><span> If you&apos;ve already sent crypto for this swap, your funds are safe,</span><span className='underline hover:cursor-pointer' onClick={() => onGetHelp()}> please contact our support.</span></span>
             </p>
         </div>
     )

@@ -1,25 +1,23 @@
 import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo } from 'react'
 import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, SwapBasicData, SwapQuote, Refuel, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
-import { QueryParams } from '../Models/QueryParams';
+import { InitialSettings } from '@/Models/InitialSettings';
 import useSWR, { KeyedMutator } from 'swr';
-import { ApiResponse } from '../Models/ApiResponse';
-import { Partner } from '../Models/Partner';
-import { ApiError } from '../Models/ApiError';
-import { ResolvePollingInterval } from '../components/utils/SwapStatus';
-import { Wallet, WalletProvider } from '../Models/WalletProvider';
-import useWallet from '../hooks/useWallet';
-import { Network } from '../Models/Network';
+import { ApiResponse } from '@/Models/ApiResponse';
+import { Partner } from '@/Models/Partner';
+import { ApiError } from '@/Models/ApiError';
+import { ResolvePollingInterval } from '@/components/utils/SwapStatus';
+import { Wallet, WalletProvider } from '@/Models/WalletProvider';
+import useWallet from '@/hooks/useWallet';
+import { Network } from '@/Models/Network';
 import { useSettingsState } from './settings';
 import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
-import { parse, ParsedUrlQuery } from 'querystring';
-import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
 import { useSelectedAccount } from './balanceAccounts';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
-import useRouter, { Router } from '@/hooks/useRouter';
+import { useSwapIdChangeCallback } from './callbackProvider';
+import { useInitialSettings } from './settings';
 
 export const SwapDataStateContext = createContext<SwapContextData>({
-    codeRequested: false,
     depositAddressIsFromAccount: false,
     withdrawType: undefined,
     swapTransaction: undefined,
@@ -37,8 +35,7 @@ export const SwapDataStateContext = createContext<SwapContextData>({
 export const SwapDataUpdateContext = createContext<UpdateSwapInterface | null>(null);
 
 export type UpdateSwapInterface = {
-    createSwap: (values: SwapFormValues, query: QueryParams, partner?: Partner) => Promise<SwapResponse>,
-    setCodeRequested: (codeSubmitted: boolean) => void;
+    createSwap: (values: SwapFormValues, query: InitialSettings, partner?: Partner) => Promise<SwapResponse>,
     setQuoteLoading: (value: boolean) => void;
     setInterval: (value: number) => void,
     mutateSwap: KeyedMutator<ApiResponse<SwapResponse>>
@@ -51,7 +48,6 @@ export type UpdateSwapInterface = {
 }
 
 export type SwapContextData = {
-    codeRequested: boolean,
     swapApiError?: ApiError,
     depositAddressIsFromAccount?: boolean,
     depositActionsResponse?: DepositAction[],
@@ -67,12 +63,11 @@ export type SwapContextData = {
 }
 
 export function SwapDataProvider({ children }) {
-    const [codeRequested, setCodeRequested] = useState<boolean>(false)
     const [quoteIsLoading, setQuoteLoading] = useState<boolean>(false)
     const [withdrawType, setWithdrawType] = useState<WithdrawType>()
     const [depositAddressIsFromAccount, setDepositAddressIsFromAccount] = useState<boolean>()
-    const router = useRouter();
-    const [swapId, setSwapId] = useState<string | undefined>(router.query.swapId?.toString())
+    const initialSettings = useInitialSettings()
+    const [swapId, setSwapId] = useState<string | undefined>(initialSettings.swapId?.toString())
     const [swapTransaction, setSwapTransaction] = useState<SwapTransaction>()
     const { sourceRoutes, destinationRoutes } = useSettingsState()
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
@@ -86,15 +81,11 @@ export function SwapDataProvider({ children }) {
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
     const { quote: formDataQuote } = useQuoteData(swapId ? undefined : quoteArgs);
 
-    const handleUpdateSwapid = useCallback((value: string | undefined) => {
+    const triggerSwapIdChangeCallback = useSwapIdChangeCallback()
+    const handleUpdateSwapid = (value: string | undefined) => {
         setSwapId(value)
-        if (value) {
-            setSwapPath(value, router)
-        }
-        else {
-            removeSwapPath(router)
-        }
-    }, [router])
+        triggerSwapIdChangeCallback(value)
+    }
 
     const setSubmitedFormValues = useCallback((values: NonNullable<SwapFormValues>) => {
         const from = sourceRoutes.find(n => n.name === values.from?.name);
@@ -180,7 +171,7 @@ export function SwapDataProvider({ children }) {
         setSwapTransaction(txForSwap)
     }, [swapId])
 
-    const createSwap = useCallback(async (values: SwapFormValues, query: QueryParams, partner: Partner) => {
+    const createSwap = useCallback(async (values: SwapFormValues, query: InitialSettings, partner: Partner) => {
         if (!values)
             throw new Error("No swap data")
 
@@ -228,7 +219,6 @@ export function SwapDataProvider({ children }) {
 
     const updateFns: UpdateSwapInterface = {
         createSwap,
-        setCodeRequested,
         setInterval,
         mutateSwap: mutate,
         setDepositAddressIsFromAccount,
@@ -241,7 +231,6 @@ export function SwapDataProvider({ children }) {
     return (
         <SwapDataStateContext.Provider value={{
             withdrawType,
-            codeRequested,
             swapTransaction,
             depositAddressIsFromAccount: !!depositAddressIsFromAccount,
             swapApiError: error,
@@ -282,42 +271,4 @@ export function useSwapDataUpdate() {
 const WalletIsSupportedForSource = ({ providers, sourceNetwork, sourceWallet }: { providers: WalletProvider[] | undefined, sourceWallet: Wallet | undefined, sourceNetwork: Network | undefined }) => {
     const isSupported = sourceWallet && providers?.find(p => p.name === sourceWallet.providerName)?.asSourceSupportedNetworks?.some(n => n === sourceNetwork?.name) || false
     return isSupported
-}
-
-
-export const setSwapPath = (swapId: string, router: Router) => {
-    //TODO: as path should be without basepath and host
-    const basePath = router?.basePath || ""
-    var swapURL = window.location.protocol + "//"
-        + window.location.host + `${basePath}/swap/${swapId}`;
-    const raw = window.location.search.startsWith("?")
-        ? window.location.search.slice(1)
-        : window.location.search;
-    const existing: ParsedUrlQuery = parse(raw);
-    const params = resolvePersistantQueryParams(existing)
-    if (params && Object.keys(params).length) {
-        const search = new URLSearchParams(params as any);
-        if (search)
-            swapURL += `?${search}`
-    }
-
-    window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
-}
-
-export const removeSwapPath = (router: Router) => {
-    const basePath = router?.basePath || ""
-    let homeURL = window.location.protocol + "//"
-        + window.location.host + basePath
-
-    const raw = window.location.search.startsWith("?")
-        ? window.location.search.slice(1)
-        : window.location.search;
-    const existing: ParsedUrlQuery = parse(raw);
-    const params = resolvePersistantQueryParams(existing)
-    if (params && Object.keys(params).length) {
-        const search = new URLSearchParams(params as any);
-        if (search)
-            homeURL += `?${search}`
-    }
-    window.history.replaceState({ ...window.history.state, as: router.asPath, url: homeURL }, '', homeURL);
 }

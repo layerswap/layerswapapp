@@ -1,6 +1,6 @@
 import React, { createContext, useMemo, ReactNode } from 'react';
 import { useFormikContext } from 'formik';
-import { useQueryState } from './query';
+import { useInitialSettings } from './settings';
 import { transformFormValuesToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { resolveFormValidation } from '@/hooks/useFormValidation';
 import { resolveRouteValidation } from '@/hooks/useRouteValidation';
@@ -34,8 +34,8 @@ const ValidationContext = createContext<ValidationContextType>(defaultContext);
 
 export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const { values } = useFormikContext<SwapFormValues>();
-    const query = useQueryState();
-    const { sameAccountNetwork } = query
+    const initialSettings = useInitialSettings();
+    const { sameAccountNetwork } = initialSettings
     const { swapId } = useSwapDataState()
     const { provider } = useWallet(values.from, "withdrawal")
     const selectedSourceAccount = useSelectedAccount("from", provider?.name);

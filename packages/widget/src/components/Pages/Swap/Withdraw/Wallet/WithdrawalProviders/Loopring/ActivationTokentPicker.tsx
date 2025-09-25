@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/shadcn/select';
 import { UserBalanceInfo } from '@/lib/loopring/defs';
 import { ImageWithFallback } from '@/components/Common/ImageWithFallback';
+import AppSettings from '@/lib/AppSettings';
 
 type Props = {
     availableBalances: UserBalanceInfo[] | undefined,
@@ -17,7 +18,7 @@ type Props = {
 export const ActivationTokenPicker = ({ availableBalances, defaultValue, onSelect, feeData, selectedValue }: Props) => {
     const { tokens } = useLoopringTokens()
 
-    const resource_storage_url = process.env.NEXT_PUBLIC_RESOURCE_STORAGE_URL;
+    const resource_storage_url = AppSettings.ResourseStorageUrl;
     const activationCurrencyValues: ISelectMenuItem[]
         = tokens && availableBalances?.map(b => {
             const loopringToken = tokens?.find(t => t.tokenId === b.tokenId)

@@ -9,7 +9,7 @@ import { Loader2 } from "lucide-react";
 import WalletMessage from "../../messages/Message";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { Network, NetworkRoute } from "@/Models/Network";
-import { useQueryState } from "@/context/query";
+import { useInitialSettings } from "@/context/settings";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { BackendTransactionStatus, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import sleep from "@/lib/wallets/utils/sleep";
@@ -18,6 +18,7 @@ import posthog from "posthog-js";
 import { useWalletWithdrawalState } from "@/context/withdrawalContext";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import { SwapFormValues } from "../../../Form/SwapFormValues";
+import { useSwapCreateCallback } from "@/context/callbackProvider";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
@@ -159,7 +160,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { quote, quoteIsLoading } = useSwapDataState()
     const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
-    const query = useQueryState()
+    const initialSettings = useInitialSettings()
+    const triggerSwapCreateCallback = useSwapCreateCallback()
 
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess } = useWalletWithdrawalState();
 
@@ -189,7 +191,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 depositMethod: 'wallet',
             }
 
-            const newSwapData = await createSwap(swapValues, query);
+            const newSwapData = await createSwap(swapValues, initialSettings);
             const swapId = newSwapData?.swap?.id;
             if (!swapId) {
                 throw new Error('Swap ID is undefined');
@@ -217,6 +219,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             if (hash) {
                 onWalletWithdrawalSuccess?.();
                 setSwapTransaction(swapId, BackendTransactionStatus.Pending, hash);
+                triggerSwapCreateCallback(newSwapData);
             }
         }
         catch (e) {

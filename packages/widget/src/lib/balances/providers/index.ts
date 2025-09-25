@@ -4,7 +4,6 @@ export { FuelBalanceProvider } from "./fuelBalanceProvider";
 export { ImmutableXBalanceProvider } from "./immutableXBalanceProvider";
 export { LoopringBalanceProvider } from "./loopringBalanceProvider";
 export { ParadexBalanceProvider } from "./paradexBalanceProvider";
-export { QueryBalanceProvider } from "./queryBalanceProvider";
 export { SolanaBalanceProvider } from "./solanaBalanceProvider";
 export { StarknetBalanceProvider } from "./starknetBalanceProvider";
 export { TonBalanceProvider } from "./tonBalanceProvider";

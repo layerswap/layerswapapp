@@ -2,15 +2,15 @@ import HeaderWithMenu from "../HeaderWithMenu"
 import { default as Content } from './Content';
 import { default as Footer } from './Footer';
 import { useRef } from "react";
-import AppSettings from "../../lib/AppSettings";
+import AppSettings from "@/lib/AppSettings";
 
 type Props = {
    children: JSX.Element | JSX.Element[];
    hideMenu?: boolean;
-   onBackClick?: () => void
+   goBack?: () => void
 }
 
-const Widget = ({ children, hideMenu, onBackClick }: Props) => {
+const Widget = ({ children, hideMenu, goBack }: Props) => {
    const wrapper = useRef(null);
 
    return <div className="relative p-px">
@@ -25,8 +25,8 @@ const Widget = ({ children, hideMenu, onBackClick }: Props) => {
             </div>
          }
          {
-            !hideMenu && onBackClick &&
-            <HeaderWithMenu goBack={onBackClick} />
+            !hideMenu &&
+            <HeaderWithMenu goBack={goBack} />
          }
          <div className="relative flex flex-col px-4 pb-4 h-full w-full min-h-0" ref={wrapper}>
             {children}

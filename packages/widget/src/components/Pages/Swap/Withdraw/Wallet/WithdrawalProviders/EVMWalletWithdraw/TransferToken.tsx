@@ -7,11 +7,11 @@ import WalletIcon from "@/components/Icons/WalletIcon";
 import { ActionData, TransferProps } from "../../Common/sharedTypes";
 import TransactionMessage from "./transactionMessage";
 import { SendTransactionButton } from "../../Common/buttons";
-import { isMobile } from "@/lib/openLink";
 import { sendTransaction } from '@wagmi/core'
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import useWallet from "@/hooks/useWallet";
 import { useSelectedAccount } from "@/context/balanceAccounts";
+import { isMobile } from "@/lib/isMobile";
 
 type Props = {
     savedTransactionHash?: string;

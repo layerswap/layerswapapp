@@ -5,7 +5,7 @@ import { ChangeNetworkButton, ConnectWalletButton } from "../../Common/buttons";
 import TransferTokenButton from "./TransferToken";
 import useWallet from "@/hooks/useWallet";
 import TransactionMessages from "../../../messages/TransactionMessages";
-import { useQueryState } from "@/context/query";
+import { useInitialSettings } from "@/context/settings";
 import { WithdrawPageProps } from "../../Common/sharedTypes";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 
@@ -19,7 +19,7 @@ export const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
     const { isConnected, chain: activeChain } = useAccount();
     const { provider } = useWallet(swapBasicData.source_network, "withdrawal")
     const selectedSourceAccount = useSelectedAccount("from", provider?.name);
-    const { sameAccountNetwork } = useQueryState()
+    const { sameAccountNetwork } = useInitialSettings()
     const wallet = selectedSourceAccount?.wallet
     const networkChainId = Number(source_network?.chain_id) ?? undefined
 

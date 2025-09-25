@@ -4,7 +4,7 @@ import Summary from "./Summary"
 import { SwapResponse, TransactionType } from "@/lib/apiClients/layerSwapApiClient"
 import { shortenEmail } from "@/components/utils/ShortenAddress"
 import KnownInternalNames from "@/lib/knownIds"
-import { useQueryState } from "@/context/query"
+import { useInitialSettings } from "@/context/settings"
 import useWallet from "@/hooks/useWallet"
 import { useSelectedAccount } from "@/context/balanceAccounts"
 
@@ -13,7 +13,7 @@ const SwapSummary: FC = () => {
     const {
         hideFrom,
         account,
-    } = useQueryState()
+    } = useInitialSettings()
 
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading } = useSwapDataState()
 
