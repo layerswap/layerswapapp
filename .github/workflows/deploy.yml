@@ -1,39 +1,33 @@
-name: Storybook Previews (foldered)
+name: Storybook PR Preview
 
 on:
-  push:
-    branches: [ dev-second-page-improvements ]
   pull_request:
-    branches: [ dev-second-page-improvements ]
-
-permissions:
-  contents: write
+    types: [opened, synchronize, reopened, closed]
 
 jobs:
-  build-and-deploy:
+  preview:
+    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: yarn install --frozen-lockfile
-      - run: yarn build-storybook -o storybook-static
-
-      # pick a folder name: PR number if PR, else commit sha
-      - name: Set preview dir
-        id: meta
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            echo "dir=previews/pr-${{ github.event.number }}" >> $GITHUB_OUTPUT
-          else
-            echo "dir=previews/sha-${{ github.sha }}" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Deploy to gh-pages subfolder
-        uses: peaceiris/actions-gh-pages@v3
+      - run: |
+          yarn install --frozen-lockfile
+          yarn build-storybook -o storybook-static
+      - uses: rossjrw/pr-preview-action@v1
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: storybook-static
-          destination_dir: ${{ steps.meta.outputs.dir }}
-          keep_files: true
+          source-dir: storybook-static
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+
+  teardown:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: rossjrw/pr-preview-action@v1
+        with:
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: teardown
