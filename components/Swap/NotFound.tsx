@@ -34,8 +34,8 @@ const NotFound: FC = () => {
                 </h1>
             </MessageComponent.Header>
             <MessageComponent.Description>
-                <p className="mx-auto text-center text-base leading-5 text-secondary-text">
-                    <span>Your funds are safe, but there seems to be an issue with the swap. Please</span>
+                <p className="mx-auto text-center text-base font-normal leading-5 text-secondary-text px-9">
+                    <span>We couldn&#39;t find a swap with this link. If you believe there&#39;s an issue, please</span>
                     <button
                         type="button"
                         onClick={startIntercom}
@@ -43,7 +43,7 @@ const NotFound: FC = () => {
                     >
                         <span>contact our support</span>
                     </button>
-                    <span>team and we&#39;ll help you fix this.</span>
+                    <span>and we&#39;ll help you fix it.</span>
                 </p>
             </MessageComponent.Description>
         </MessageComponent.Content>
