@@ -95,7 +95,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     return (
         <>
             <DepositMethodComponent />
-            <Form className="h-full grow flex flex-col flex-1 justify-between">
+            <Form className="h-full grow flex flex-col flex-1 justify-between w-full">
                 <Widget.Content>
                     <div className="w-full flex flex-col justify-between">
                         <div>
