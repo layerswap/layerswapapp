@@ -3,11 +3,18 @@ name: Deploy Storybook (per-branch)
 on:
   push:
     branches:
-      - '**'           
-      - '!gh-pages'    
+      - '**'
+      - '!gh-pages'
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
+
+# run every shell step from the app folder
+defaults:
+  run:
+    working-directory: apps/web
 
 jobs:
   deploy:
@@ -19,16 +26,18 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install & Build
-        run: |
-          yarn install --frozen-lockfile
-          yarn build-storybook -o storybook-static
+      - name: Install deps
+        run: yarn install --frozen-lockfile
 
-      - name: Publish to gh-pages under branches/<branch>
+      - name: Build Storybook
+        run: yarn build-storybook -o storybook-static
+
+      # Option A: publish to per-branch subfolder (so each branch gets a unique URL)
+      - name: Publish (gh-pages)
         uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: storybook-static
+          publish_dir: apps/web/storybook-static
           destination_dir: branches/${{ github.ref_name }}
           keep_files: true
