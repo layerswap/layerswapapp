@@ -1,3 +1,4 @@
+"use client";
 import { FC, useEffect, useMemo } from 'react';
 import { TimerProvider } from '@/context/timerContext';
 import SwapForm from "./Form"

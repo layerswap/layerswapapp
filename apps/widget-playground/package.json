@@ -1,0 +1,51 @@
+{
+  "name": "ls-widget-playground",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@dynamic-labs/ethereum": "^4.19.7",
+    "@dynamic-labs/sdk-react-core": "^4.19.7",
+    "@dynamic-labs/wagmi-connector": "^4.19.7",
+    "@layerswap/widget": "^0.1.16",
+    "@radix-ui/react-accordion": "^1.2.11",
+    "@radix-ui/react-popover": "^1.1.14",
+    "@radix-ui/react-scroll-area": "^1.2.9",
+    "@radix-ui/react-select": "^2.2.5",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-tabs": "^1.1.12",
+    "@radix-ui/react-tooltip": "^1.2.7",
+    "@tanstack/react-query": "^5.77.2",
+    "@uiw/react-color-sketch": "^2.5.5",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "highlight.js": "^11.11.1",
+    "lucide-react": "^0.511.0",
+    "next": "15.3.2",
+    "react": "18",
+    "react-dom": "18",
+    "tailwind-merge": "^3.3.0",
+    "tinycolor2": "^1.6.0",
+    "viem": "^2.30.1",
+    "wagmi": "^2.15.4",
+    "zustand": "^5.0.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.0.15",
+    "@types/node": "^20",
+    "@types/react": "18.x",
+    "@types/react-dom": "^18.x",
+    "@types/tinycolor2": "^1.4.6",
+    "autoprefixer": "^10.4.5",
+    "eslint-config-next": "^15.3.3",
+    "postcss": "^8.4.13",
+    "tailwindcss": "4.0.15",
+    "tailwindcss-animate": "^1.0.5",
+    "typescript": "^5"
+  }
+}

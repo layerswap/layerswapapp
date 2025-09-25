@@ -1,3 +1,4 @@
+"use client";
 import React, { forwardRef, useEffect, useState } from "react";
 
 const fallbackImage = '/images/logo_placeholder.png';
