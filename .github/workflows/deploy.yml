@@ -1,22 +1,16 @@
-name: Storybook to GitHub Pages (with PR previews)
+name: Storybook Previews (foldered)
 
 on:
   push:
-    branches: [ dev-second-page-improvements ]   # normal “live” deploys for this branch
+    branches: [ dev-second-page-improvements ]
   pull_request:
-    branches: [ dev-second-page-improvements ]   # preview deploys for each PR
+    branches: [ dev-second-page-improvements ]
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: pages-${{ github.ref }}
-  cancel-in-progress: true
+  contents: write
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,30 +19,21 @@ jobs:
           node-version: 20
       - run: yarn install --frozen-lockfile
       - run: yarn build-storybook -o storybook-static
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: storybook-static
 
-  deploy-live:
-    if: github.event_name == 'push'
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
-    steps:
-      - id: deploy
-        uses: actions/deploy-pages@v4
+      # pick a folder name: PR number if PR, else commit sha
+      - name: Set preview dir
+        id: meta
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "dir=previews/pr-${{ github.event.number }}" >> $GITHUB_OUTPUT
+          else
+            echo "dir=previews/sha-${{ github.sha }}" >> $GITHUB_OUTPUT
+          fi
 
-  deploy-preview:
-    if: github.event_name == 'pull_request'
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
-    steps:
-      - id: deploy
-        uses: actions/deploy-pages@v4
+      - name: Deploy to gh-pages subfolder
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          preview: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: storybook-static
+          destination_dir: ${{ steps.meta.outputs.dir }}
+          keep_files: true
