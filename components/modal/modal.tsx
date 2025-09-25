@@ -27,6 +27,20 @@ const Modal: FC<ModalProps> = (({ header, height, className, children, subHeader
         setDelayedShow(show)
     }, [show])
 
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === "Escape" && delayedShow) {
+                setShow(false);
+                onClose && onClose();
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [delayedShow, onClose]);
+
     return (
         <>
             {isDesktop && (
