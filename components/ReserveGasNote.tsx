@@ -37,8 +37,7 @@ const ReserveGasNote = ({ onSubmit, minAllowedAmount, maxAllowedAmount }: Props)
     return (
         <>
             {
-                mightBeOutOfGas && gasToReserveFormatted &&
-                (
+                (mightBeOutOfGas && gasToReserveFormatted) ? (
                     (Number(nativeTokenBalance.amount) < Number(gasData)) ?
                         <WarningMessage messageType="warning">
                             <div className="font-normal text-primary-text">
@@ -56,7 +55,7 @@ const ReserveGasNote = ({ onSubmit, minAllowedAmount, maxAllowedAmount }: Props)
                                 </div>
                             </div>
                         </WarningMessage>
-                )
+                ) : null
             }
         </>
 
