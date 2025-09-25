@@ -1,25 +1,54 @@
-name: Deploy branch/commit previews
+name: Storybook to GitHub Pages (with PR previews)
 
 on:
   push:
-    branches: ['*']  
+    branches: [ dev-second-page-improvements ]   # normal “live” deploys for this branch
+  pull_request:
+    branches: [ dev-second-page-improvements ]   # preview deploys for each PR
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 concurrency:
-  group: preview-pages-${{ github.ref }}
+  group: pages-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  preview:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: |
-          yarn
-          yarn build-storybook
-      - name: Preview Pages
-        uses: rajyan/preview-pages@v1
+      - uses: actions/setup-node@v4
         with:
-          source-dir: storybook-static
+          node-version: 20
+      - run: yarn install --frozen-lockfile
+      - run: yarn build-storybook -o storybook-static
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: storybook-static
+
+  deploy-live:
+    if: github.event_name == 'push'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
+
+  deploy-preview:
+    if: github.event_name == 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
+        with:
+          preview: true
