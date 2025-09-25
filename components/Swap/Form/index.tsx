@@ -26,7 +26,9 @@ export default function Form() {
             <TabsContent value="cross-chain">
                 <SwapDataProvider>
                     <FormWrapper type="cross-chain">
-                        <Widget className="h-full" >
+                        <Widget contextualMenu={<div className="block sm:hidden">
+                            <NetworkExchangeTabs />
+                        </div>}>
                             <ValidationProvider>
                                 <NetworkForm />
                             </ValidationProvider>
@@ -38,7 +40,9 @@ export default function Form() {
             <TabsContent value="exchange">
                 <SwapDataProvider>
                     <FormWrapper type="exchange">
-                        <Widget className="h-full" >
+                        <Widget contextualMenu={<div className="block sm:hidden">
+                            <NetworkExchangeTabs />
+                        </div>}>
                             <ValidationProvider>
                                 <ExchangeForm />
                             </ValidationProvider>

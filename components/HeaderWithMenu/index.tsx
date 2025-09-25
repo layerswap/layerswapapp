@@ -5,14 +5,15 @@ import dynamic from "next/dynamic"
 import LayerswapMenu from "../LayerswapMenu"
 import { useQueryState } from "../../context/query"
 import { NetworkExchangeTabs } from "../Swap/Form/NetworkExchangeTabs"
+import { WalletsHeader } from "../Wallet/ConnectedWallets"
 
-const WalletsHeader = dynamic(() => import("../Wallet/ConnectedWallets").then((comp) => comp.WalletsHeader), {
-   loading: () => <></>
-})
+type Props = {
+   goBack: (() => void) | undefined | null
+   contextualMenu?: React.ReactNode
+}
 
-function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null }) {
+function HeaderWithMenu({ goBack, contextualMenu }: Props) {
    const query = useQueryState()
-
    return (
       <div className="items-center justify-end sm:flex sm:items-center grid grid-cols-5 w-full sm:grid-cols-none sm:grid-none px-6 mt-2 pb-2 max-sm:pl-0 max-sm:pr-8">
          {
@@ -32,9 +33,7 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
          }
          <div className="col-start-5 justify-self-end self-center flex items-center gap-x-2 sm:gap-x-1 -mr-2">
             <WalletsHeader />
-            <div className="block sm:hidden">
-               <NetworkExchangeTabs />
-            </div>
+            {contextualMenu}
             <div className="fixed-width-container max-sm:bg-secondary-500 max-sm:rounded-lg max-sm:p-0.5">
                <LayerswapMenu />
             </div>
