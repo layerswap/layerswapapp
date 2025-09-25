@@ -46,7 +46,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({ quote }) => {
         if (fromAmountUSD === undefined || toAmountUSD === undefined) return undefined;
         return Number((((toAmountUSD - fromAmountUSD) / fromAmountUSD) * 100).toFixed(2));
     }, [fromAmountUSD, toAmountUSD]);
-console.log('priceImpact', priceImpact, priceImpactPercentage, marketImpact, bridgeExpenses, serviceFee)
+
     if (priceImpact === undefined) return null;
 
     return (<>
