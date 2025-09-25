@@ -4,7 +4,6 @@ import { Widget } from '../../../Widget/Index';
 
 const External: FC = () => {
 
-
     return (
         <Widget.Content>
             <div className="w-full py-12 grid grid-flow-row">

@@ -8,7 +8,6 @@ import isGuid from '@/components/utils/isGuid';
 import KnownInternalNames from '@/lib/knownIds';
 import { useQueryState } from '@/context/query';
 import { SwapStatus } from '@/Models/SwapStatus';
-import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
 import { getDateDifferenceString } from '@/components/utils/dateDifference';
 
@@ -21,7 +20,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     const { swap } = swapResponse
     const { source_token, destination_token, destination_address, source_network, destination_network, source_exchange, requested_amount } = swap
 
-    const router = useRouter()
     const {
         hideFrom,
         account,
@@ -151,7 +149,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             </div>
                         </div>
                     </div>
-
+{/* 
                     {
                         swap.status === SwapStatus.Completed &&
                         <button
@@ -188,7 +186,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                 {swap.status == SwapStatus.LsTransferPending ? "View Swap" : "Complete Swap"}
                             </p>
                         </button>
-                    }
+                    } */}
 
                 </div>
             </section>

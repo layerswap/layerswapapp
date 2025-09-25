@@ -1,5 +1,5 @@
+import useRouter from "@/hooks/useRouter";
 import { useEffect } from "react"
-import { useRouter } from "next/router";
 
 const PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY;
 const CLIENT_ID = process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID;

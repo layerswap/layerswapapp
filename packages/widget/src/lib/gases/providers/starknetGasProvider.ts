@@ -5,8 +5,8 @@ import KnownInternalNames from "../../knownIds";
 import InternalApiClient from "../../apiClients/internalApiClient";
 import { ApiResponse } from "../../../Models/ApiResponse";
 import { EstimateFee } from "starknet";
-import { useRouter } from "next/router";
 import { GasProvider } from "./types";
+import useRouter from "@/hooks/useRouter";
 
 export class StarknetGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {

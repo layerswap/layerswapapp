@@ -1,12 +1,11 @@
 import { FC, useCallback } from "react";
 import MessageComponent from "@/components/Common/MessageComponent";
 import SubmitButton, { DoubleLineText } from "@/components/Buttons/submitButton";
-import GoHomeButton from "@/components/utils/GoHome";
 import { useIntercom } from "react-use-intercom";
 import { Home, MessageSquare } from "lucide-react";
-import { useRouter } from "next/router";
+import { useRouter } from "@/hooks/useRouter";
 
-const NotFound: FC = () => {
+const NotFound: FC<{ onBackClick: () => void }> = ({ onBackClick }) => {
 
     const { boot, show, update } = useIntercom()
     const { query } = useRouter()
@@ -47,15 +46,13 @@ const NotFound: FC = () => {
                         </SubmitButton>
                     </div>
                     <div className='basis-2/3'>
-                        <GoHomeButton>
-                            <SubmitButton button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<Home className="h-5 w-5" aria-hidden="true" />}>
-                                <DoubleLineText
-                                    colorStyle='mltln-text-dark'
-                                    primaryText='Swap'
-                                    secondarytext='Do another'
-                                />
-                            </SubmitButton>
-                        </GoHomeButton>
+                        <SubmitButton onClick={onBackClick} button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' icon={<Home className="h-5 w-5" aria-hidden="true" />}>
+                            <DoubleLineText
+                                colorStyle='mltln-text-dark'
+                                primaryText='Swap'
+                                secondarytext='Do another'
+                            />
+                        </SubmitButton>
                     </div>
                 </div>
             </MessageComponent.Buttons>

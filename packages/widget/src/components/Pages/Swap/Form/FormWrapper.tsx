@@ -9,7 +9,6 @@ import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 import Modal from "@/components/Modal/modal";
 import useSWR from "swr";
-import { useRouter } from "next/router";
 import { ApiResponse } from "@/Models/ApiResponse";
 import { Partner } from "@/Models/Partner";
 import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
@@ -24,6 +23,7 @@ import { useBalance } from "@/lib/balances/useBalance";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import SwapDetails from "../Withdraw/SwapDetails";
 import { SwapFormValues } from "./SwapFormValues";
+import useRouter from "@/hooks/useRouter";
 
 type NetworkToConnect = {
     DisplayName: string;

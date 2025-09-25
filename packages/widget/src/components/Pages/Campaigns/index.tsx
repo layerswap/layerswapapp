@@ -25,7 +25,7 @@ export const CampaignsComponent = () => {
     const inactiveCampaigns = sortedCampaigns?.filter(c => !IsCampaignActive(c)) || []
 
     return (
-        <Widget className="min-h-[520px]">
+        <Widget>
             <Widget.Content>
                 {!isLoading ?
                     <div className="space-y-5 h-full text-primary-text">
@@ -113,7 +113,7 @@ function IsCampaignActive(campaign: Campaign) {
 export const Campaigns: FC<LayerswapContextProps & { hideMenu?: boolean }> = (props) => {
     return (
         <LayerswapProvider {...props}>
-            <Widget hideMenu={props.hideMenu} className="min-h-[520px]">
+            <Widget hideMenu={props.hideMenu}>
                 <Widget.Content>
                     <CampaignsComponent />
                 </Widget.Content>

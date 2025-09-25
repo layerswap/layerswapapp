@@ -1,32 +1,17 @@
 import HeaderWithMenu from "../HeaderWithMenu"
-import { useRouter } from "next/router"
 import { default as Content } from './Content';
 import { default as Footer } from './Footer';
-import { useCallback, useRef } from "react";
-import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
+import { useRef } from "react";
 import AppSettings from "../../lib/AppSettings";
 
 type Props = {
    children: JSX.Element | JSX.Element[];
-   className?: string;
    hideMenu?: boolean;
+   onBackClick?: () => void
 }
 
-const Widget = ({ children, className, hideMenu }: Props) => {
-   const router = useRouter()
+const Widget = ({ children, hideMenu, onBackClick }: Props) => {
    const wrapper = useRef(null);
-
-   const goBack = useCallback(() => {
-      window?.['navigation']?.['canGoBack'] ?
-         router.back()
-         : router.push({
-            pathname: "/",
-            query: resolvePersistantQueryParams(router.query)
-         })
-   }, [])
-
-
-   const handleBack = router.pathname === "/" ? null : goBack
 
    return <div className="relative p-px">
       <div className="invisible sm:visible absolute inset-0 rounded-[25px] bg-gradient-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
@@ -40,8 +25,8 @@ const Widget = ({ children, className, hideMenu }: Props) => {
             </div>
          }
          {
-            !hideMenu &&
-            <HeaderWithMenu goBack={handleBack} />
+            !hideMenu && onBackClick &&
+            <HeaderWithMenu goBack={onBackClick} />
          }
          <div className="relative flex flex-col px-4 pb-4 h-full w-full min-h-0" ref={wrapper}>
             {children}

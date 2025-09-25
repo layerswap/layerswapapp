@@ -1,4 +1,3 @@
-import { useRouter } from "next/router"
 import { FC, useCallback } from "react"
 import { Gift } from "lucide-react"
 import LayerSwapApiClient, { Campaign } from "@/lib/apiClients/layerSwapApiClient"
@@ -102,7 +101,7 @@ const BriefInformation: FC<BriefInformationProps> = ({ campaign }) =>
         }
     </p>
 
-const Loading = () => <Widget className="min-h-[500px]">
+const Loading = () => <Widget>
     <Widget.Content>
         <div className="absolute top-[calc(50%-5px)] left-[calc(50%-5px)]">
             <SpinIcon className="animate-spin h-5 w-5" />
@@ -110,7 +109,7 @@ const Loading = () => <Widget className="min-h-[500px]">
     </Widget.Content>
 </Widget>
 
-const NotFound = () => <Widget className="min-h-[500px]">
+const NotFound = () => <Widget>
     <Widget.Content>
         <div className="h-[364px] flex flex-col items-center justify-center space-y-4">
             <Gift className="h-20 w-20 text-primary" />

@@ -6,13 +6,11 @@ import { MenuStep } from "../../Models/Wizard";
 import MenuList from "./MenuList";
 import Wizard from "../Wizard/Wizard";
 import WizardItem from "../Wizard/WizardItem";
-import { NextRouter, useRouter } from "next/router";
-import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import HistoryList from "../Pages/SwapHistory/History";
 import Modal from "../Modal/modal";
+import { CampaignsComponent } from "../Pages/Campaigns";
 
 const Comp = () => {
-    const router = useRouter();
 
     const { goBack, currentStepName } = useFormWizardState()
     const { goToStep } = useFormWizardaUpdate()
@@ -23,14 +21,12 @@ const Comp = () => {
         setOpenTopModal(value)
         if (value === false) {
             goToStep(MenuStep.Menu)
-            clearMenuPath(router)
         }
     }
-    const goBackToMenuStep = () => { goToStep(MenuStep.Menu, "back"); clearMenuPath(router) }
+    const goBackToMenuStep = () => { goToStep(MenuStep.Menu, "back") }
 
-    const handleGoToStep = (step: MenuStep, path: string) => {
+    const handleGoToStep = (step: MenuStep) => {
         goToStep(step)
-        setMenuPath(path, router)
     }
 
     return <>
@@ -65,6 +61,9 @@ const Comp = () => {
                     <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full" inModal>
                         <HistoryList onNewTransferClick={() => handleModalOpenStateChange(false)} />
                     </WizardItem>
+                    <WizardItem StepName={MenuStep.Campaigns} GoBack={goBackToMenuStep} className="h-full" inModal>
+                        <CampaignsComponent />
+                    </WizardItem>
                 </Wizard>
             </Modal>
         </div >
@@ -77,28 +76,6 @@ const LayerswapMenu: FC = () => {
             <Comp />
         </FormWizardProvider>
     )
-}
-
-//TODO: move URI handling to wizard provider
-export const setMenuPath = (path: string, router: NextRouter) => {
-    const basePath = router?.basePath || ""
-    var finalURI = window.location.protocol + "//"
-        + window.location.host + `${basePath}${path}`;
-    const params = resolvePersistantQueryParams(router.query)
-    if (params && Object.keys(params).length) {
-        const search = new URLSearchParams(params as any);
-        if (search)
-            finalURI += `?${search}`
-    }
-    window.history.pushState({ ...window.history.state, as: router.asPath, url: finalURI }, '', finalURI);
-}
-
-export const clearMenuPath = (router: NextRouter) => {
-    const basePath = router?.basePath || ""
-    let finalURI = window.location.protocol + "//"
-        + window.location.host + basePath + router.asPath;
-
-    window.history.replaceState({ ...window.history.state, as: router.asPath, url: finalURI }, '', finalURI);
 }
 
 export default LayerswapMenu

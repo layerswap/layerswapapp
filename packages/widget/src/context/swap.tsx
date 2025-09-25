@@ -1,6 +1,5 @@
 import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo } from 'react'
 import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, SwapBasicData, SwapQuote, Refuel, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
-import { NextRouter, useRouter } from 'next/router';
 import { QueryParams } from '../Models/QueryParams';
 import useSWR, { KeyedMutator } from 'swr';
 import { ApiResponse } from '../Models/ApiResponse';
@@ -17,6 +16,7 @@ import { parse, ParsedUrlQuery } from 'querystring';
 import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
 import { useSelectedAccount } from './balanceAccounts';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
+import useRouter, { Router } from '@/hooks/useRouter';
 
 export const SwapDataStateContext = createContext<SwapContextData>({
     codeRequested: false,
@@ -285,7 +285,7 @@ const WalletIsSupportedForSource = ({ providers, sourceNetwork, sourceWallet }: 
 }
 
 
-export const setSwapPath = (swapId: string, router: NextRouter) => {
+export const setSwapPath = (swapId: string, router: Router) => {
     //TODO: as path should be without basepath and host
     const basePath = router?.basePath || ""
     var swapURL = window.location.protocol + "//"
@@ -304,7 +304,7 @@ export const setSwapPath = (swapId: string, router: NextRouter) => {
     window.history.pushState({ ...window.history.state, as: swapURL, url: swapURL }, '', swapURL);
 }
 
-export const removeSwapPath = (router: NextRouter) => {
+export const removeSwapPath = (router: Router) => {
     const basePath = router?.basePath || ""
     let homeURL = window.location.protocol + "//"
         + window.location.host + basePath

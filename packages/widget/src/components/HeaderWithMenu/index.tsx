@@ -1,5 +1,5 @@
 import IconButton from "../Buttons/iconButton"
-import GoHomeButton from "../utils/GoHome"
+import LogoWithDetails from "../Common/LogoWithDetails"
 import { ArrowLeft } from 'lucide-react'
 import LayerswapMenu from "../Menu"
 import { useQueryState } from "../../context/query"
@@ -23,7 +23,7 @@ function HeaderWithMenu({ goBack }: { goBack: (() => void) | undefined | null })
          }
          {
             !query.hideLogo && <div className="self-center col-start-1 md:col-start-2 md:col-span-3 justify-self-start md:justify-self-center md:hidden">
-               <GoHomeButton className="group hideSymbol" />
+               <LogoWithDetails className="group hideSymbol" />
             </div>
          }
          <div className="col-start-5 justify-self-end self-center flex items-center gap-x-2 sm:gap-x-1 -mr-2">

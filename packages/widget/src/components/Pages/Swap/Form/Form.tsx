@@ -27,7 +27,7 @@ export default function Form({ formValues }: { formValues?: SwapFormValues }) {
             <TabsContent value="cross-chain">
                 <SwapDataProvider>
                     <FormWrapper type="cross-chain">
-                        <Widget className="h-full" >
+                        <Widget>
                             <ValidationProvider>
                                 <NetworkForm />
                             </ValidationProvider>
@@ -39,7 +39,7 @@ export default function Form({ formValues }: { formValues?: SwapFormValues }) {
             <TabsContent value="exchange">
                 <SwapDataProvider>
                     <FormWrapper type="exchange">
-                        <Widget className="h-full" >
+                        <Widget>
                             <ValidationProvider>
                                 <ExchangeForm />
                             </ValidationProvider>

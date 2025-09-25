@@ -1,6 +1,6 @@
-import { useRouter } from "next/router";
 import { FC } from "react";
 import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
+import useRouter from "@/hooks/useRouter";
 
 interface LinkWrapperProps extends Omit<React.AnchorHTMLAttributes<HTMLAnchorElement>, 'href'> {
     href: string | { pathname?: string; query?: Record<string, any> };

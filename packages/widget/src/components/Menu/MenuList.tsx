@@ -1,9 +1,7 @@
 import { BookOpen, Gift, Map, Home, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus } from "lucide-react";
-import { useRouter } from "next/router";
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../Icons/ChatIcon";
-import inIframe from "../utils/inIframe";
 import DiscordLogo from "../Icons/DiscordLogo";
 import GitHubLogo from "../Icons/GitHubLogo";
 import SubstackLogo from "../Icons/SubstackLogo";
@@ -12,22 +10,12 @@ import Popover from "../Modal/popover";
 import SendFeedback from "./Feedback";
 import YoutubeLogo from "../Icons/YoutubeLogo";
 import Menu from "./Menu";
-import dynamic from "next/dynamic";
 import { MenuStep } from "../../Models/Wizard";
-
-const WalletsMenu = dynamic(() => import("../Wallet/WalletComponents/ConnectedWallets").then((comp) => comp.WalletsMenu), {
-    loading: () => <></>
-})
+import { WalletsMenu } from "../Wallet/WalletComponents/ConnectedWallets";
 
 const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ goToStep }) => {
-    const router = useRouter();
     const { boot, show, update } = useIntercom()
-    const [embedded, setEmbedded] = useState<boolean>()
     const [openFeedbackModal, setOpenFeedbackModal] = useState(false);
-
-    useEffect(() => {
-        setEmbedded(inIframe())
-    }, [])
 
     const handleCloseFeedback = () => {
         setOpenFeedbackModal(false)
@@ -41,22 +29,20 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
             <Menu.Group>
                 <>
                     {
-                        router.pathname != '/' &&
+                        window.location.pathname != '/' &&
                         <Menu.Item pathname='/' icon={<Home className="h-5 w-5" />} >
                             Home
                         </Menu.Item>
                     }
-                </>
-                <>
-                    {router.pathname != '/transactions' &&
+                    {
+                        window.location.pathname != '/transactions' &&
                         <Menu.Item onClick={() => goToStep(MenuStep.Transactions, "/transactions")} icon={<ScrollText className="h-5 w-5" />} >
                             Transactions
                         </Menu.Item>
                     }
-                </>
-                <>
-                    {!embedded && router.pathname != '/campaigns' &&
-                        <Menu.Item pathname='/campaigns' icon={<Gift className="h-5 w-5" />} >
+                    {
+                        window.location.pathname != '/campaigns' &&
+                        <Menu.Item onClick={() => goToStep(MenuStep.Campaigns, '/campaigns')} icon={<Gift className="h-5 w-5" />} >
                             Campaigns
                         </Menu.Item>
                     }

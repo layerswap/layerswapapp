@@ -1,21 +1,9 @@
-import { useRouter } from "next/router"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import HeaderWithMenu from "@/components/HeaderWithMenu";
-import { resolvePersistantQueryParams } from "@/helpers/querryHelper";
 import { motion } from "framer-motion";
 
-const Header = () => {
+const Header = ({ onBackClick }: { onBackClick: () => void }) => {
 
-    const router = useRouter();
-
-    const goBack = useCallback(() => {
-        window?.['navigation']?.['canGoBack'] ?
-            router.back()
-            : router.push({
-                pathname: "/",
-                query: resolvePersistantQueryParams(router.query)
-            })
-    }, [router])
     const [height, setHeight] = useState(0)
     const ref = useRef<HTMLDivElement>(null)
 
@@ -45,7 +33,7 @@ const Header = () => {
         max-sm:bg-secondary-700 
         max-sm:shadow-widget-footer 
         max-sm:w-full`}>
-            <HeaderWithMenu goBack={goBack} />
+            <HeaderWithMenu goBack={onBackClick} />
         </motion.div>
         <div style={{ height: `${height}px` }}
             className={`text-primary-text text-base        

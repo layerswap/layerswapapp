@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import GoHomeButton from "../utils/GoHome";
+import LogoWithDetails from "../Common/LogoWithDetails";
 import { useMeasure } from "@uidotdev/usehooks";
 
 const variants = {
@@ -55,7 +55,7 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                         max-sm:w-full ${hidden ? 'animation-slide-out' : ''}`}>
                     {children}
                     <div className="flex justify-center  text-primary-text-tertiary">
-                        <span className="text-xs content-center footerLogo mt-2.5">Powered by</span> <GoHomeButton className='footerLogo ml-1 mt-2.5 fill-primary-text-tertiary h-5 w-auto cursor-pointer' />
+                        <span className="text-xs content-center footerLogo mt-2.5">Powered by</span> <LogoWithDetails className='footerLogo ml-1 mt-2.5 fill-primary-text-tertiary h-5 w-auto cursor-pointer' />
                     </div>
                 </motion.div>
 

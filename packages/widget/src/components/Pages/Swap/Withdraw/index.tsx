@@ -6,7 +6,7 @@ import SwapDetails from "./SwapDetails";
 import { LayerswapContextProps, LayerswapProvider } from "@/context/LayerswapProvider";
 import { TimerProvider } from "@/context/timerContext";
 
-const Comp: FC = () => {
+const Comp: FC<{ onBackClick: () => void }> = ({ onBackClick }) => {
     const { swapBasicData, swapApiError } = useSwapDataState()
     const { mutateSwap } = useSwapDataUpdate()
 
@@ -19,7 +19,7 @@ const Comp: FC = () => {
             <div className={`pb-6 rounded-lg w-full overflow-hidden relative h-[548px]`}>
                 {
                     swapApiError &&
-                    <NotFound />
+                    <NotFound onBackClick={onBackClick} />
                 }
             </div>
         </Widget>
@@ -30,12 +30,12 @@ const Comp: FC = () => {
     )
 };
 
-export const SwapWithdrawal: FC<LayerswapContextProps> = (props) => {
+export const SwapWithdrawal: FC<LayerswapContextProps & { onBackClick: () => void }> = (props) => {
     return (
         <LayerswapProvider {...props}>
             <SwapDataProvider>
                 <TimerProvider>
-                    <Comp />
+                    <Comp onBackClick={props.onBackClick} />
                 </TimerProvider>
             </SwapDataProvider >
         </LayerswapProvider>
