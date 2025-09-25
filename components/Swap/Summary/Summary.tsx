@@ -27,7 +27,7 @@ type SwapInfoProps = Omit<SwapResponse, 'quote' | 'swap'> & {
 
 const Summary: FC<SwapInfoProps> = (props) => {
     const { swap, quote, sourceAccountAddress, receiveAmount, quoteIsLoading } = props
-    const { refuel } = quote
+    const { refuel, quote: swapQuote } = quote
     const { source_token: sourceCurrency, destination_token: destinationCurrency, source_network: from, destination_network: to, requested_amount: requestedAmount, destination_address: destinationAddress, source_exchange: sourceExchange } = swap
     const {
         hideFrom,
@@ -98,7 +98,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                                     <NumberFlow value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
                                 </p>
                                 <p className="text-secondary-text text-sm flex items-center gap-1">
-                                    <PriceImpact quote={quote.quote} />
+                                    <PriceImpact bridgeFee={swapQuote?.blockchain_fee} destinationTokenPriceUsd={swapQuote?.destination_token?.price_in_usd} receiveAmount={swapQuote?.receive_amount} requestedAmount={swapQuote?.requested_amount} serviceFee={swapQuote?.service_fee} sourceTokenPriceUsd={swapQuote?.source_token?.price_in_usd} />
                                     <NumberFlow value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD' }} trend={0} />
                                 </p>
                             </div>

@@ -38,7 +38,7 @@ const Comp: FC<{ quote: SwapQuote, theme?: "default" | "light" }> = ({ quote, th
 
 const Component = ({ quote }: { quote: SwapQuote }) => {
     return (
-        <PriceImpact quote={quote} />
+        <PriceImpact bridgeFee={quote?.blockchain_fee} destinationTokenPriceUsd={quote?.destination_token?.price_in_usd} receiveAmount={quote?.receive_amount} requestedAmount={quote?.requested_amount} serviceFee={quote?.service_fee} sourceTokenPriceUsd={quote?.source_token?.price_in_usd} />
     )
 }
 

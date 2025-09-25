@@ -1,7 +1,7 @@
 on:
   push:
     branches:
-      - "dev-second-page-improvements"
+      - '**'
 
 permissions:
   contents: read
