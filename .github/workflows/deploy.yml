@@ -19,18 +19,20 @@ defaults:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/web
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-      - run: yarn install --frozen-lockfile
-      - run: yarn build-storybook -o storybook-static
-      - uses: peaceiris/actions-gh-pages@v4
+
+      - name: Install deps
+        run: yarn install --frozen-lockfile
+
+      - name: Build Storybook
+        run: yarn build-storybook -o storybook-static
+
+      - name: Publish to gh-pages/branches/<branch>
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
