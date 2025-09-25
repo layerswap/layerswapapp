@@ -91,10 +91,8 @@ export const TabsContent: FC<TabsContentProps> = ({ value, children }) => {
 }
 
 export const NetworkExchangeTabs = () => {
-    return <Tabs defaultValue="cross-chain">
-        <TabsList>
-            <TabsTrigger label="Swap" Icon={NetworkTabIcon} value="cross-chain" />
-            <TabsTrigger label="Deposit from CEX" Icon={ExchangeTabIcon} value="exchange" />
-        </TabsList>
-    </Tabs>
+    return <TabsList>
+        <TabsTrigger label="Swap" Icon={NetworkTabIcon} value="cross-chain" />
+        <TabsTrigger label="Deposit from CEX" Icon={ExchangeTabIcon} value="exchange" />
+    </TabsList>
 }

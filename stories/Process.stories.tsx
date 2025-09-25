@@ -18,6 +18,7 @@ import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { useArgs } from 'storybook/preview-api';
 import WalletsProviders from '../components/WalletProviders';
 import { TimerProvider } from '@/context/timerContext';
+import { Tabs } from '@/components/Swap/Form/NetworkExchangeTabs';
 
 window.plausible = () => { }
 const Comp: FC<{ settings: any, swapData: SwapContextData, failedSwap?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues, timestamp?: string }> = ({ swapData, theme, initialValues }) => {
@@ -49,7 +50,9 @@ const Comp: FC<{ settings: any, swapData: SwapContextData, failedSwap?: SwapItem
                                         validateOnMount={true}
                                         onSubmit={() => { }}
                                     >
-                                        <Component initialValues={initialValues} />
+                                        <Tabs defaultValue="cross-chain">
+                                            <Component initialValues={initialValues} />
+                                        </Tabs>
                                     </Formik>
                                 </SwapDataUpdateContext.Provider>
                             </SwapDataStateContext.Provider >
