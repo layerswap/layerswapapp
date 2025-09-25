@@ -42,12 +42,17 @@ export const PriceImpact: FC<PriceImpactProps> = ({ quote }) => {
         return (priceImpact + Number(serviceFee) + Number(bridgeExpenses)).toFixed(2);
     }, [priceImpact, serviceFee, bridgeExpenses, quote?.source_token?.decimals]);
 
+    const priceImpactPercentage = useMemo(() => {
+        if (fromAmountUSD === undefined || toAmountUSD === undefined) return undefined;
+        return Number((((toAmountUSD - fromAmountUSD) / fromAmountUSD) * 100).toFixed(2));
+    }, [fromAmountUSD, toAmountUSD]);
+console.log('priceImpact', priceImpact, priceImpactPercentage, marketImpact, bridgeExpenses, serviceFee)
     if (priceImpact === undefined) return null;
 
     return (<>
         <Tooltip>
             <TooltipTrigger asChild>
-                <span className="flex items-center text-sm text-secondary-text cursor-default">
+                <span className="flex items-center text-sm text-secondary-text cursor-default hover:text-primary-text">
                     <span className="flex items-center gap-0.5">
                         <span>(</span>
                         <Triangle
@@ -56,7 +61,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({ quote }) => {
                                 }`}
                         />
                         <span>
-                            {priceImpact}
+                            ${Math.abs(priceImpact)}
                         </span>
                         <span>)</span>
                     </span>
@@ -65,11 +70,9 @@ export const PriceImpact: FC<PriceImpactProps> = ({ quote }) => {
             <TooltipContent side="top" align="center" className="!bg-secondary-500 !border-secondary-500 !text-secondary-text text-xs font-normal">
                 <p className="text-primary-text font-medium text-sm flex items-baseline space-x-0.5 mb-1">
                     <span>Price impact:</span>
-                    <Triangle
-                        aria-label={priceImpact < 0 ? "Negative price impact" : "Positive price impact"}
-                        className={`ml-1 w-3 h-3 stroke-1 fill-current transition-transform ${priceImpact < 0 ? "rotate-180" : ""}`}
-                    />
-                    <span>{priceImpact}</span>
+                    <span>{priceImpact < 0 ? "-$" : "$"}</span>
+                    <span>{Math.abs(priceImpact)}</span>
+                    <span className="text-secondary-text text-xs font-normal">{priceImpactPercentage ? `(${priceImpactPercentage}%)` : ""}</span>
                 </p>
                 <p>This is the difference between the USD value of</p>
                 <p>the token you send and the token you receive.</p>
@@ -77,8 +80,10 @@ export const PriceImpact: FC<PriceImpactProps> = ({ quote }) => {
                     <li className="list-none flex justify-between">
                         <span>Market impact</span>
                         <span className="text-primary-text">
-                            <span className="mr-0.5">$</span>
-                            <span>{marketImpact}</span>
+                            <span className="mr-0.5">
+                                {Number(marketImpact) < 0 ? "-$" : "$"}
+                            </span>
+                            <span>{Math.abs(Number(marketImpact))}</span>
                         </span>
                     </li>
                     <li className="list-none flex justify-between">
