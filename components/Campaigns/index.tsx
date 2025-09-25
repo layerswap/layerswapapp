@@ -24,7 +24,7 @@ const Rewards = () => {
     const inactiveCampaigns = sortedCampaigns?.filter(c => !IsCampaignActive(c)) || []
 
     return (
-        <Widget className="min-h-[520px]">
+        <Widget>
             <Widget.Content>
                 {!isLoading ?
                     <div className="space-y-5 h-full text-primary-text">

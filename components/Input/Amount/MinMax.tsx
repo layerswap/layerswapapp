@@ -1,6 +1,5 @@
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import useSWRBalance from "@/lib/balances/useSWRBalance";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import React, { useMemo } from "react";
@@ -9,6 +8,7 @@ import { updateForm } from "@/components/Swap/Form/updateForm";
 import useWallet from "@/hooks/useWallet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useBalance } from "@/lib/balances/useBalance";
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -28,7 +28,7 @@ const MinMax = (props: MinMaxProps) => {
     const selectedSourceAccount = useSelectedAccount("from", provider?.name);
 
     const { gasData } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency)
-    const { balances, mutate: mutateBalances } = useSWRBalance(selectedSourceAccount?.address, from)
+    const { balances, mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, from)
 
     const walletBalance = useMemo(() => {
         return selectedSourceAccount?.address ? balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol) : undefined
@@ -77,7 +77,7 @@ const MinMax = (props: MinMaxProps) => {
         handleSetValue(maxAllowedAmount.toString())
     }
     const halfOfBalance = (walletBalance?.amount || 0) / 2;
-    const showMaxTooltip = depositMethod === 'wallet' && walletBalance?.amount && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount)
+    const showMaxTooltip = !!(depositMethod === 'wallet' && walletBalance?.amount && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount))
 
     return (
         <div className="flex gap-1.5 group text-xs leading-4" onMouseLeave={() => onActionHover(undefined)}>
@@ -120,7 +120,7 @@ const MinMax = (props: MinMaxProps) => {
                     :
                     null
             }
-        </div >
+        </div>
     )
 }
 

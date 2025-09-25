@@ -4,11 +4,14 @@ import { NetworkBalance } from '../Models/Balance'
 import { NetworkWithTokens } from '../Models/Network'
 import { BalanceResolver } from '../lib/balances/balanceResolver'
 
-// Reuse your existing key helper or define it here
-export const getKey = (address: string, network: NetworkWithTokens) =>
-  `${address}:${network.name}`
+export function getKey(address: string, network: NetworkWithTokens): string
+export function getKey(address: string, networkName: string): string
+export function getKey(address: string, networkOrName: NetworkWithTokens | string): string {
+  const name = typeof networkOrName === 'string' ? networkOrName : networkOrName.name
+  return `${address}:${name}`
+}
 
-type Status = 'idle' | 'loading' | 'success' | 'error'
+type Status = 'loading' | 'success' | 'error'
 interface BalanceEntry {
   data?: NetworkBalance
   error?: unknown
@@ -22,7 +25,6 @@ type Options = {
 }
 
 interface BalanceStore {
-  // existing state/actions
   balances: Record<string, BalanceEntry>
   lastFetchMap: Record<string, number>
   fetchBalance: (
@@ -31,12 +33,13 @@ interface BalanceStore {
     options?: Options,
   ) => Promise<NetworkBalance>
 
-  // new derived state + initializer
-  allBalances: Record<string, NetworkBalance> | null
+  initiatedBalances: Record<string, string> | null
   isLoading: boolean
   initAllBalances: (
     pairs: Array<{ address: string; network: NetworkWithTokens }>
   ) => void
+
+  getResolvedInitiatedBalances: () => Record<string, NetworkBalance> | null
 }
 
 const balanceFetcher = new BalanceResolver()
@@ -55,7 +58,7 @@ export const useBalanceStore = create<BalanceStore>()(
   subscribeWithSelector((set, get, api) => ({
     balances: {},
     lastFetchMap: {},
-    allBalances: null,
+    initiatedBalances: null,
     isLoading: false,
     fetchBalance: (address, network, options) => {
       const key = getKey(address, network)
@@ -117,10 +120,9 @@ export const useBalanceStore = create<BalanceStore>()(
     },
 
     initAllBalances: pairs => {
-      // reset the derived result
       if (pairs.length > 0)
         set({ isLoading: true })
-      set({ allBalances: null })
+      set({ initiatedBalances: null })
       // kick off every fetch
       pairs.forEach(({ address, network }) => {
         get().fetchBalance(address, network, { dedupeInterval: 120_000, ignoreCache: true })
@@ -132,23 +134,45 @@ export const useBalanceStore = create<BalanceStore>()(
         balances => {
           const done = pairs.every(
             ({ address, network }) =>
-              balances[getKey(address, network)]?.status === 'success'
+              balances[getKey(address, network)]?.status !== 'loading'
           )
           if (done) {
-            const finalMap = pairs.reduce<Record<string, NetworkBalance>>(
+            const finalMap = pairs.reduce<Record<string, string>>(
               (acc, { address, network }) => {
-                const entry = balances[getKey(address, network)]
-                if (entry?.data) acc[network.name] = entry.data
+                const key = getKey(address, network)
+                const entry = balances[key]
+                if (entry) acc[network.name] = key
                 return acc
               },
               {}
             )
-            set({ allBalances: finalMap })
+            set({ initiatedBalances: finalMap })
             set({ isLoading: false })
             unsub()  // cleanup subscription
           }
         }
       )
+    },
+
+    getResolvedInitiatedBalances: () => {
+      const keys = get().initiatedBalances
+      if (!keys) return null
+      const balances = get().balances
+      return Object.entries(keys).reduce<Record<string, NetworkBalance>>((acc, [networkName, key]) => {
+        const entry = balances[key]
+        if (entry?.data) acc[networkName] = entry.data
+        return acc
+      }, {})
     }
   }))
 )
+
+export const selectResolvedInitiatedBalances = (state: BalanceStore) => {
+  const keys = state.initiatedBalances
+  if (!keys) return null
+  return Object.entries(keys).reduce<Record<string, NetworkBalance>>((acc, [networkName, key]) => {
+    const entry = state.balances[key]
+    if (entry?.data) acc[networkName] = entry.data
+    return acc
+  }, {})
+}

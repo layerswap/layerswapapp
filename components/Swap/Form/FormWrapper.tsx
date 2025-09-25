@@ -16,15 +16,14 @@ import { Partner } from "@/Models/Partner";
 import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
 import { useQueryState } from "@/context/query";
 import useWallet from "@/hooks/useWallet";
-import { dynamicWithRetries } from "@/lib/dynamicWithRetries";
 import { useAsyncModal } from "@/context/asyncModal";
 import { QueryParams } from "@/Models/QueryParams";
 import VaulDrawer from "@/components/modal/vaulModal";
 import { addressFormat } from "@/lib/address/formatter";
 import AddressNote from "@/components/Input/Address/AddressNote";
-import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import SwapDetails from "..";
+import { useBalance } from "@/lib/balances/useBalance";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -46,7 +45,7 @@ export default function FormWrapper({ children, type }: { children?: React.React
     const [walletWihdrawDone, setWalletWihdrawDone] = useState(false);
     const { provider } = useWallet(swapBasicData?.source_network, 'withdrawal')
     const selectedSourceAccount = useSelectedAccount("from", provider?.name);
-    const { mutate: mutateBalances } = useSWRBalance(selectedSourceAccount?.address, sourceNetworkWithTokens)
+    const { mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, sourceNetworkWithTokens)
 
     const { getConfirmation } = useAsyncModal();
     const query = useQueryState()
@@ -113,16 +112,16 @@ export default function FormWrapper({ children, type }: { children?: React.React
         if (!value) {
             removeSwapPath(router)
             if (walletWihdrawDone) {
+                mutateBalances()
                 setWalletWihdrawDone(false)
                 formikRef?.current?.setFieldValue('amount', 0, true);
             }
         }
-    }, [router, swapDetails, walletWihdrawDone])
+    }, [router, swapDetails, walletWihdrawDone, mutateBalances])
 
     const handleWalletWithdrawalSuccess = useCallback(() => {
-        mutateBalances()
         setWalletWihdrawDone(true)
-    }, [mutateBalances]);
+    }, []);
 
     return <>
         <Formik

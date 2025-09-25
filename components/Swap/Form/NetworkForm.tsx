@@ -23,12 +23,12 @@ import { updateForm, updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
 import { InsufficientBalanceWarning } from "@/components/insufficientBalance";
-import useSWRBalance from "@/lib/balances/useSWRBalance";
 import { useSwapDataState } from "@/context/swap";
 import RefuelToggle from "@/components/FeeDetails/Refuel";
 import ReserveGasNote from "@/components/ReserveGasNote";
 import RefuelModal from "@/components/FeeDetails/RefuelModal";
 import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useBalance } from "@/lib/balances/useBalance";
 
 type Props = {
     partner?: Partner;
@@ -65,7 +65,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const isValid = !formValidation.message;
     const error = formValidation.message;
 
-    const { balances } = useSWRBalance(selectedSourceAccount?.address, source)
+    const { balances } = useBalance(selectedSourceAccount?.address, source)
     const walletBalance = source && balances?.find(b => b?.network === source?.name && b?.token === fromAsset?.symbol)
     const walletBalanceAmount = walletBalance?.amount
 
@@ -86,16 +86,16 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
-    const showInsufficientBalanceWarning = values.depositMethod === 'wallet'
+    const showInsufficientBalanceWarning = !!(values.depositMethod === 'wallet'
         && !routeValidation.message
         && !swapModalOpen
         && Number(amount) > 0
-        && Number(walletBalanceAmount) < Number(amount)
+        && Number(walletBalanceAmount) < Number(amount))
 
     return (
         <>
             <DepositMethodComponent />
-            <Form className="h-full grow flex flex-col flex-1 justify-between">
+            <Form className="h-full grow flex flex-col flex-1 justify-between w-full">
                 <Widget.Content>
                     <div className="w-full flex flex-col justify-between">
                         <div>
@@ -262,13 +262,13 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
             aria-label="Reverse the source and destination"
             disabled={valuesSwapperDisabled}
             onClick={valuesSwapper}
-            className="hover:text-primary absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none">
+            className="hover:text-primary-text text-secondary-text absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 rounded-lg disabled:cursor-not-allowed disabled:text-secondary-text duration-200 transition disabled:pointer-events-none">
             <motion.div
                 animate={animate}
                 transition={{ duration: 0.3 }}
                 onTap={() => !valuesSwapperDisabled && cycle()}
             >
-                <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-300 rounded-lg disabled:opacity-30")} />
+                <ArrowUpDown className={classNames(valuesSwapperDisabled && 'opacity-50', "w-7 h-auto p-1 bg-secondary-300 hover:bg-secondary-200 rounded-lg disabled:opacity-30")} />
             </motion.div>
         </button>
     )

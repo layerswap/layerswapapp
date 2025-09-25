@@ -7,6 +7,7 @@ import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
 import * as ContextMenuPrimitive from '@radix-ui/react-context-menu';
 import { useGoHome } from "../../hooks/useGoHome";
 import clsx from "clsx";
+import LayerswapMobileLogo from "../icons/layerSwapMobileLogo";
 interface Props {
     className?: string;
     children?: JSX.Element | JSX.Element[] | string;
@@ -16,13 +17,28 @@ const GoHomeButton: FC<Props> = (({ className, children }) => {
     const goHome = useGoHome()
 
     return (
-        <div>
+        <div className="w-full">
             {
                 children ??
                 <>
                     <ContextMenuPrimitive.Root>
                         <ContextMenuPrimitive.Trigger asChild>
-                            <LayerSwapLogo className={clsx("h-8 w-auto text-logo fill-primary-text", className)} onClick={goHome} />
+                            <div>
+                                <LayerswapMobileLogo
+                                    className={clsx(
+                                        "block md:hidden px-4 h-4 w-auto text-logo fill-primary-text",
+                                        className
+                                    )}
+                                    onClick={goHome}
+                                />
+                                <LayerSwapLogo
+                                    className={clsx(
+                                        "hidden md:block h-8 w-auto text-logo fill-primary-text",
+                                        className
+                                    )}
+                                    onClick={goHome}
+                                />
+                            </div>
                         </ContextMenuPrimitive.Trigger>
                         <ContextMenuPrimitive.Content className="dialog-overlay absolute z-40 border h-fit text-secondary-text border-secondary-100 mt-2 w-fit rounded-md shadow-lg bg-secondary-700 ring-1 ring-black/5 focus:outline-hidden">
                             <ContextMenuPrimitive.ContextMenuItem className="dialog-content px-4 py-2 text-sm text-left w-full rounded-t hover:bg-secondary-400 whitespace-nowrap">
