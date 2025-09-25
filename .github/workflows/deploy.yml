@@ -27,6 +27,7 @@ jobs:
       - name: Publish to gh-pages under branches/<branch>
         uses: peaceiris/actions-gh-pages@v4
         with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: storybook-static
           destination_dir: branches/${{ github.ref_name }}
