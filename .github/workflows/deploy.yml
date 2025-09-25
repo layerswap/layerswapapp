@@ -1,41 +1,25 @@
-name: Deploy Storybook (per-branch)
+name: Deploy branch/commit previews
 
 on:
   push:
-    branches:
-      - '**'
-      - '!gh-pages'
+    branches: ['*']  
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
-# run every shell step from the app folder
-defaults:
-  run:
-    working-directory: apps/web
+concurrency:
+  group: preview-pages-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  deploy:
+  preview:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - run: |
+          yarn
+          yarn build-storybook
+      - name: Preview Pages
+        uses: rajyan/preview-pages@v1
         with:
-          node-version: 20
-
-      - name: Install deps
-        run: yarn install --frozen-lockfile
-
-      - name: Build Storybook
-        run: yarn build-storybook -o storybook-static
-
-      - name: Publish to gh-pages/branches/<branch>
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: apps/web/storybook-static
-          destination_dir: branches/${{ github.ref_name }}
-          keep_files: true
+          source-dir: storybook-static
