@@ -1,20 +1,33 @@
-on:
-  push:
-    branches:
-      - '**'
+name: Storybook PR Preview
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
 
 jobs:
-  deploy:
+  preview:
+    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
     steps:
-    - id: build-publish
-      uses: bitovi/github-actions-storybook-to-github-pages@v1.0.3
-      with:
-        path: storybook-static
-        install_command: yarn
-        build_command: yarn build-storybook
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: |
+          yarn install --frozen-lockfile
+          yarn build-storybook -o storybook-static
+      - uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: storybook-static
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+
+  teardown:
+    if: github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: rossjrw/pr-preview-action@v1
+        with:
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          action: teardown

@@ -80,9 +80,9 @@ export const PriceImpact: FC<PriceImpactProps> = ({
                     <span>{priceImpact < 0 ? "-$" : "+$"}</span>
                     <span>{Math.abs(priceImpact)}</span>
                     <span className="text-secondary-text text-xs font-normal">{priceImpactPercentage ? `(${priceImpact < 0 ? "-" : "+"}${Math.abs(priceImpactPercentage)}%)` : ""}</span>
-                </p>
-                <p>This is the difference between the USD value of</p>
-                <p>the token you send and the token you receive.</p>
+                </p> 
+                <p>This is the difference in total USD value</p>
+                <p>between the assets you send and the assets you receive.</p>
                 <ul className="mt-3 space-y-2 ">
                     <li className="list-none flex justify-between">
                         <span>Market impact</span>
