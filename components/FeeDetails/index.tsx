@@ -89,7 +89,7 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
     const selectedSourceAccount = useSelectedAccount("from", provider?.name);
     const { gasData: gasData } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset)
     const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quote)
-    const gasFeeInUsd = 0.008
+    const gasFeeInUsd = (gasData && gasTokenPriceInUsd) ? gasData.gas * gasTokenPriceInUsd : null;
     const averageCompletionTime = quote?.avg_completion_time;
 
     const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && reward?.nft_contract_address;
