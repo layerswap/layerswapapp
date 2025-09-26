@@ -3,6 +3,13 @@ import { mainnet, sepolia } from "@starknet-react/chains"
 import { Connector, ConnectorNotConnectedError, UserNotConnectedError, StarknetConfig, publicProvider } from '@starknet-react/core';
 import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from "starknet-types-07";
 import AppSettings from "@/lib/AppSettings";
+//@ts-ignore
+import { ArgentMobileConnector } from "starknetkit/argentMobile";
+// @ts-ignore
+import { InjectedConnector } from "starknetkit/injected"
+// @ts-ignore
+import { WebWalletConnector } from "starknetkit/webwallet"
+
 
 const WALLETCONNECT_PROJECT_ID = AppSettings.WalletConnectConfig.projectId
 
@@ -68,9 +75,6 @@ const StarknetProvider: FC<{ children: ReactNode }> = ({ children }) => {
     const [connectors, setConnectors] = useState<any[]>([])
 
     const resolveConnectors = async () => {
-        // const InjectedConnector = (await import('../../node_modules/starknetkit/dist/injectedConnector')).InjectedConnector
-        // const ArgentMobileConnector = (await import('../../node_modules/starknetkit/dist/argentMobile')).ArgentMobileConnector
-        // const WebWalletConnector = (await import('../../node_modules/starknetkit/dist/webwalletConnector')).WebWalletConnector
 
         const isSafari =
             typeof window !== "undefined"
@@ -81,39 +85,39 @@ const StarknetProvider: FC<{ children: ReactNode }> = ({ children }) => {
 
         const defaultConnectors: any[] = []
 
-        // if (!isSafari) {
-        //     if (!(isAndroid || isIOS)) {
-        //         defaultConnectors.push(
-        //             new InjectedConnector({ options: { id: "argentX" } }),
-        //         )
-        //         defaultConnectors.push(
-        //             new InjectedConnector({ options: { id: "keplr" } }),
-        //         )
-        //     }
-        //     defaultConnectors.push(
-        //         new InjectedConnector({ options: { id: "braavos" } }),
-        //     )
-        // }
+        if (!isSafari) {
+            if (!(isAndroid || isIOS)) {
+                defaultConnectors.push(
+                    new InjectedConnector({ options: { id: "argentX" } }),
+                )
+                defaultConnectors.push(
+                    new InjectedConnector({ options: { id: "keplr" } }),
+                )
+            }
+            defaultConnectors.push(
+                new InjectedConnector({ options: { id: "braavos" } }),
+            )
+        }
 
-        // if ((isAndroid || isIOS) && !defaultConnectors.some(c => c.id === "braavos")) {
-        //     const starknet = (await import('get-starknet-core')).default
+        if ((isAndroid || isIOS) && !defaultConnectors.some(c => c.id === "braavos")) {
+            const starknet = (await import('get-starknet-core')).default
 
-        //     const discoverWallets = (await starknet.getDiscoveryWallets()).filter(w => {
-        //         return (isAndroid && w.downloads["android"]) || (isIOS && w.downloads["ios"]);
-        //     })
+            const discoverWallets = (await starknet.getDiscoveryWallets()).filter(w => {
+                return (isAndroid && w.downloads["android"]) || (isIOS && w.downloads["ios"]);
+            })
 
-        //     if (discoverWallets.length) defaultConnectors.push(...discoverWallets.map(w => new DiscoveryConnector(w, isAndroid ? "android" : "ios")))
-        // }
+            if (discoverWallets.length) defaultConnectors.push(...discoverWallets.map(w => new DiscoveryConnector(w, isAndroid ? "android" : "ios")))
+        }
 
-        // defaultConnectors.push(ArgentMobileConnector.init({
-        //     options: {
-        //         dappName: 'Layerswap',
-        //         projectId: WALLETCONNECT_PROJECT_ID,
-        //         url: 'https://www.layerswap.io/app/',
-        //         description: 'Move crypto across exchanges, blockchains, and wallets.',
-        //     }
-        // }))
-        // defaultConnectors.push(new WebWalletConnector())
+        defaultConnectors.push(ArgentMobileConnector.init({
+            options: {
+                dappName: 'Layerswap',
+                projectId: WALLETCONNECT_PROJECT_ID,
+                url: 'https://www.layerswap.io/app/',
+                description: 'Move crypto across exchanges, blockchains, and wallets.',
+            }
+        }))
+        defaultConnectors.push(new WebWalletConnector())
 
         return defaultConnectors
     }
