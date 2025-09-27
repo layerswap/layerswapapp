@@ -8,7 +8,6 @@ import isGuid from '@/components/utils/isGuid';
 import KnownInternalNames from '@/lib/knownIds';
 import { useInitialSettings } from '@/context/settings';
 import { SwapStatus } from '@/Models/SwapStatus';
-import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
 import { getDateDifferenceString } from '@/components/utils/dateDifference';
 
 type Props = {

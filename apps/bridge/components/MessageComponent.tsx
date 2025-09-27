@@ -8,7 +8,7 @@ type iconStyle = 'red' | 'green' | 'yellow' | 'gray'
 class MessageComponentProps {
     children: JSX.Element | JSX.Element[];
     center?: boolean
-    icon: iconStyle
+    icon?: iconStyle
 }
 
 function constructIcons(icon: iconStyle) {
@@ -44,21 +44,29 @@ const Content = ({ children, icon, center }: MessageComponentProps) => {
             <div className='flex flex-col self-center grow w-full'>
                 <div className='flex self-center grow w-full'>
                     <div className='flex flex-col space-y-8 self-center w-full'>
-                        <div className='flex place-content-center'>{constructIcons(icon)}</div>
+                        {
+                            icon ?
+                                <div className='flex place-content-center'>{constructIcons(icon)}</div>
+                                : null
+                        }
                         {children}
                     </div>
                 </div>
             </div>
             :
             <div className='space-y-3'>
-                <div className='flex place-content-center'>{constructIcons(icon)}</div>
+                {
+                    icon ?
+                        <div className='flex place-content-center'>{constructIcons(icon)}</div>
+                        : null
+                }
                 {children}
             </div>
     )
 }
 
-const Header = ({ children }) => {
-    return <div className='md:text-3xl text-lg font-bold text-primary-text leading-6 text-center'>
+const Header = ({ children, className }: { children: React.ReactNode; className?: string }) => {
+    return <div className={`md:text-3xl text-lg font-bold text-primary-text leading-6 text-center ${className}`}>
         {children}
     </div>
 }

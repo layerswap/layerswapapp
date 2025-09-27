@@ -7,10 +7,12 @@ import AppSettings from "@/lib/AppSettings";
 type Props = {
    children: JSX.Element | JSX.Element[];
    hideMenu?: boolean;
-   goBack?: () => void
+   goBack?: () => void;
+   contextualMenu?: React.ReactNode;
+
 }
 
-const Widget = ({ children, hideMenu, goBack }: Props) => {
+const Widget = ({ children, hideMenu, goBack, contextualMenu }: Props) => {
    const wrapper = useRef(null);
 
    return <div className="relative p-px">
@@ -26,10 +28,13 @@ const Widget = ({ children, hideMenu, goBack }: Props) => {
          }
          {
             !hideMenu &&
-            <HeaderWithMenu goBack={goBack} />
+            <HeaderWithMenu goBack={goBack} contextualMenu={contextualMenu} />
          }
-         <div className="relative flex flex-col px-4 pb-4 h-full w-full min-h-0" ref={wrapper}>
-            {children}
+
+         <div className="relative flex-col px-4 h-full min-h-0 flex flex-1">
+            <div className="flex flex-col flex-1 items-start h-full min-h-0 pb-4 w-full" ref={wrapper}>
+               {children}
+            </div>
          </div>
          <div id="widget_root" />
       </div>

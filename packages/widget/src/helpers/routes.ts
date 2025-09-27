@@ -1,34 +1,30 @@
 import { SwapDirection, SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues"
 
-export const resolveExchangesURLForSelectedToken = (direction: SwapDirection, values: SwapFormValues) => {
+export const resolveExchangesURLForSelectedToken = (values: SwapFormValues) => {
 
     const include_unmatched = 'true'
     const include_swaps = 'false'
     const include_unavailable = 'true'
 
-    const { from, to, fromAsset: fromCurrency, toAsset: toCurrency } = values
+    const { from, fromAsset: fromCurrency } = values
 
-    const network = direction === "from" ? to?.name : from?.name
-    const token = direction === "from" ? toCurrency?.symbol : fromCurrency?.symbol
 
     const params = new URLSearchParams({
         include_unmatched,
         include_swaps,
         include_unavailable,
-        ...(network && token ?
+        ...(from?.name && fromCurrency?.symbol ?
             {
-                [direction === 'to' ? 'source_network' : 'destination_network']: network,
-                [direction === 'to' ? 'source_token' : 'destination_token']: token,
+                ['source_network']: from?.name,
+                ['source_token']: fromCurrency?.symbol,
             }
             : {}
         )
     });
 
     const sourcesURL = `/source_exchanges?${params.toString()}`
-    const destinationsURL = `/destination_exchanges?${params.toString()}`
-    const result = direction === "from" ? sourcesURL : destinationsURL
 
-    return result
+    return sourcesURL
 
 }
 

@@ -1,6 +1,9 @@
 import { motion } from "framer-motion";
-import LogoWithDetails from "../Common/LogoWithDetails";
 import { useMeasure } from "@uidotdev/usehooks";
+import AppSettings from "../../lib/AppSettings";
+import { ReactNode } from "react";
+import LogoWithDetails from "../Common/LogoWithDetails";
+import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 
 const variants = {
     enter: () => {
@@ -26,16 +29,16 @@ const variants = {
 
 type FooterProps = {
     hidden?: boolean,
-    children?: JSX.Element | JSX.Element[];
+    children?: ReactNode;
     sticky?: boolean
 }
 
-const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
+const Comp = ({ children, hidden, sticky = true }: FooterProps) => {
     let [footerRef, { height }] = useMeasure();
 
     return (
         sticky ?
-            <div>
+            <>
                 <motion.div
                     ref={footerRef}
                     transition={{
@@ -54,9 +57,6 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                         max-sm:px-4 
                         max-sm:w-full ${hidden ? 'animation-slide-out' : ''}`}>
                     {children}
-                    <div className="flex justify-center  text-primary-text-tertiary">
-                        <span className="text-xs content-center footerLogo mt-2.5">Powered by</span> <LogoWithDetails className='footerLogo ml-1 mt-2.5 fill-primary-text-tertiary h-5 w-auto cursor-pointer' />
-                    </div>
                 </motion.div>
 
                 <div style={{ height: `${height}px` }}
@@ -65,11 +65,31 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                              max-sm:bottom-0 
                              max-sm:p-4 max-sm:w-full invisible sm:hidden`}>
                 </div>
-            </div>
+            </ >
             :
             <>
                 {children}
             </>
     )
 }
+
+const Footer = ({ children, hidden, sticky }: FooterProps) => {
+    const isFooterVisible = LayerSwapApiClient.apiKey !== AppSettings.LayerswapApiKeys['mainnet'] &&
+        LayerSwapApiClient.apiKey !== AppSettings.LayerswapApiKeys['testnet']
+
+    const isFooterSticky = (AppSettings.ThemeData?.enablePortal && AppSettings.ThemeData?.enablePortal == true) ?? false
+
+    return (
+        <Comp hidden={hidden} sticky={isFooterSticky ? sticky : false}>
+            {children}
+            {
+                isFooterVisible &&
+                <a target="_blank" href='https://layerswap.io/' className="flex justify-center text-primary-text-placeholder mt-3 -mb-1.5 sm:-mb-3">
+                    <span className="text-xs content-center">Powered by</span> <LogoWithDetails className='ml-1 fill-primary-text-placeholder h-5 w-auto cursor-pointer' />
+                </a>
+            }
+        </Comp>
+    )
+}
+
 export default Footer;

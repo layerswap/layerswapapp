@@ -29,9 +29,6 @@ export default class LayerSwapApiClient {
     async GetSourceExchangesAsync(): Promise<ApiResponse<Exchange[]>> {
         return await this.UnauthenticatedRequest<ApiResponse<Exchange[]>>("GET", `/source_exchanges`);
     }
-    async GetDestinationExchangesAsync(): Promise<ApiResponse<Exchange[]>> {
-        return await this.UnauthenticatedRequest<ApiResponse<Exchange[]>>("GET", `/destination_exchanges`);
-    }
 
     async GetLSNetworksAsync(): Promise<ApiResponse<NetworkWithTokens[]>> {
         return await this.UnauthenticatedRequest<ApiResponse<NetworkWithTokens[]>>("GET", `/networks`);
