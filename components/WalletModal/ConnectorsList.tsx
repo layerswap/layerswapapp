@@ -2,7 +2,7 @@ import { Dispatch, FC, SetStateAction, useEffect, useMemo, useRef, useState } fr
 import useWallet from "../../hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
 import { InternalConnector, Wallet, WalletProvider } from "../../Models/WalletProvider";
-import { CircleX, Link2Off, RotateCw, Search, SlidersHorizontal, XCircle } from "lucide-react";
+import { CircleX, Link2Off, RotateCw, SlidersHorizontal } from "lucide-react";
 import { resolveWalletConnectorIcon } from "../../lib/wallets/utils/resolveWalletIcon";
 import { QRCodeSVG } from "qrcode.react";
 import CopyButton from "../buttons/copyButton";
@@ -16,6 +16,7 @@ import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
 import { Checkbox } from "../shadcn/checkbox";
 import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
+import { SearchComponent } from "../Input/Search";
 
 const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();
@@ -169,22 +170,12 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         <>
             <div className="text-primary-text space-y-3">
                 <div className="flex items-center gap-3">
-                    <div className="relative z-0 flex items-center px-3 rounded-lg bg-secondary-600 border border-secondary-500 w-full">
-                        <Search className="w-6 h-6 mr-2 text-primary-text-tertiary" />
-                        <input
-                            value={searchValue}
-                            onChange={(e) => setSearchValue(e.target.value)}
-                            placeholder={allHiddenConnectors.length > 300 ? "Search through 400+ wallets..." : "Search wallet"}
-                            autoComplete="off"
-                            className="placeholder:text-primary-text-tertiary focus:placeholder:invisible border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-10 bg-transparent text-base outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
-                        />
-                        {
-                            searchValue &&
-                            <button type="button" onClick={() => setSearchValue('')} className="absolute right-3">
-                                <XCircle className="w-4 h-4 text-primary-text-tertiary" />
-                            </button>
-                        }
-                    </div>
+                    <SearchComponent
+                        searchQuery={searchValue || ""}
+                        setSearchQuery={setSearchValue}
+                        placeholder={allHiddenConnectors.length > 300 ? "Search through 400+ wallets..." : "Search wallet"}
+                        className="w-full !mb-0"
+                    />
                     {
                         (!selectedProvider || selectedProvider?.isSelectedFromFilter) &&
                         <ProviderPicker
