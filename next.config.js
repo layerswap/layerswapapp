@@ -1,4 +1,5 @@
 const { PHASE_PRODUCTION_SERVER } = require('next/constants');
+const { withPostHogConfig } = require('@posthog/nextjs-config');
 
 const securityHeaders = [
   {
@@ -66,5 +67,14 @@ module.exports = (phase, { defaultConfig }) => {
     }
   }
 
-  return nextConfig;
+  return withPostHogConfig(nextConfig, {
+    personalApiKey: process.env.NEXT_PUBLIC_POSTHOG_API_KEY,
+    envId: process.env.NEXT_PUBLIC_POSTHOG_ID,
+    host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+    sourcemaps: {
+      enabled: true,
+      version: process.env.VERCEL_GIT_COMMIT_SHA,
+      deleteAfterUpload: true,
+    },
+  });
 }
