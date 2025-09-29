@@ -1,5 +1,5 @@
-import { FC, useState } from 'react'
-import LayerSwapApiClient, { SwapResponse, TransactionType } from '../../lib/apiClients/layerSwapApiClient';
+import { FC } from 'react'
+import { SwapResponse, TransactionType } from '../../lib/apiClients/layerSwapApiClient';
 import shortenAddress, { shortenEmail } from '../utils/ShortenAddress';
 import CopyButton from '../buttons/copyButton';
 import StatusIcon from './StatusIcons';
@@ -7,10 +7,6 @@ import { ExternalLink } from 'lucide-react';
 import isGuid from '../utils/isGuid';
 import KnownInternalNames from '../../lib/knownIds';
 import { useQueryState } from '../../context/query';
-import { ApiResponse } from '../../Models/ApiResponse';
-import { Partner } from '../../Models/Partner';
-import useSWR from 'swr';
-import { truncateDecimals } from '../utils/RoundDecimals';
 import Link from 'next/link';
 import { SwapStatus } from '../../Models/SwapStatus';
 import { useRouter } from 'next/router';
@@ -22,22 +18,12 @@ type Props = {
 }
 
 const SwapDetails: FC<Props> = ({ swapResponse }) => {
-    const [open, setOpen] = useState(false)
 
-    const { swap, refuel, quote } = swapResponse
-    const { source_token, destination_token, destination_address, source_network, destination_network, source_exchange, destination_exchange, requested_amount } = swap
+    const { swap } = swapResponse
+    const { source_token, destination_token, destination_address, source_network, destination_network, source_exchange, requested_amount } = swap
 
     const router = useRouter()
-    const {
-        hideFrom,
-        hideTo,
-        account,
-        appName
-    } = useQueryState()
-
-    const layerswapApiClient = new LayerSwapApiClient()
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
-    const partner = partnerData?.data
+    const { hideFrom, account } = useQueryState()
 
     const input_tx_explorer_template = source_network?.transaction_explorer_template
     const output_tx_explorer_template = destination_network?.transaction_explorer_template
@@ -45,23 +31,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
     const swapInputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Input)
     const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
     const refundTransaction = swap?.transactions?.find(t => t.type === TransactionType.Refund)
-
-    const source = (hideFrom && partner && account) ? partner : source_network
-    const destination = (hideTo && partner && account) ? partner : destination_network
-
-    const receive_amount = swapOutputTransaction?.amount ?? quote?.receive_amount
-    const receiveAmountInUsd = receive_amount ? (destination_token?.price_in_usd * receive_amount).toFixed(2) : undefined
-    const requestedAmountInUsd = requested_amount && (source_token?.price_in_usd * requested_amount).toFixed(2)
-
-    const inputTransactionFee = swapInputTransaction?.fee_amount
-    const inputTransactionFeeInUsd = inputTransactionFee && swapInputTransaction?.fee_token && (swapInputTransaction?.fee_token?.price_in_usd * inputTransactionFee)
-    const displayInputFeeInUsd = inputTransactionFeeInUsd ? (inputTransactionFeeInUsd < 0.01 ? '<$0.01' : `$${inputTransactionFeeInUsd?.toFixed(2)}`) : null
-    const calculatedFeeAmountInUsd = inputTransactionFeeInUsd ? inputTransactionFeeInUsd + quote?.total_fee_in_usd : quote?.total_fee_in_usd
-    const displayCalculatedFeeAmountInUsd = calculatedFeeAmountInUsd ? (calculatedFeeAmountInUsd < 0.01 ? '<$0.01' : `$${calculatedFeeAmountInUsd?.toFixed(2)}`) : null
-    const displayLayerswapFeeInUsd = quote?.total_fee_in_usd ? (quote?.total_fee_in_usd < 0.01 ? '<$0.01' : `$${quote?.total_fee_in_usd?.toFixed(2)}`) : null
-    const nativeCurrency = refuel?.token
-    const truncatedRefuelAmount = nativeCurrency && !!refuel ?
-        truncateDecimals(refuel.amount, nativeCurrency?.precision) : null
 
     let sourceAccountAddress: string | undefined = undefined
     if (hideFrom && account) {
@@ -186,7 +155,6 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                                 pathname: `/`,
                                 query: {
                                     amount: requested_amount,
-                                    destination_address: destination_address,
                                     from: source_network?.name,
                                     to: destination_network?.name,
                                     fromAsset: source_token.symbol,

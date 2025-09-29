@@ -14,7 +14,7 @@ const SwapWithdrawal: FC = () => {
 
     if (!swapBasicData)
         return <Widget>
-            <div className={`pb-6 rounded-lg w-full overflow-hidden relative h-[548px]`}>
+            <div className={`rounded-lg w-full overflow-hidden relative h-[548px]`}>
                 {
                     swapApiError &&
                     <NotFound />
