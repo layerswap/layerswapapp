@@ -56,8 +56,6 @@ export function ColorsContent() {
     ))
 }
 
-
-
 export const ColorsTrigger = () => {
     const { themeData } = useWidgetContext();
     const editColors = useMemo(() => getColors(themeData), [themeData]);
@@ -78,4 +76,3 @@ export const ColorsTrigger = () => {
         </div>
     )
 }
-

@@ -15,7 +15,6 @@ const tabValues = [
     { value: 'code', component: <><Code /> <span>Code</span></> },
 ]
 
-
 const accordionElements = {
     "Theme": [
         {
@@ -48,7 +47,6 @@ const accordionElements = {
         },
     ],
     "Other": [
-
         {
             trigger: <LoadingButtonTrigger />,
             content: <LoadingButton />

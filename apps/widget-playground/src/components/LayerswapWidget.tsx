@@ -1,6 +1,5 @@
 "use client";
 import { FC } from 'react';
-import dynamic from 'next/dynamic';
 import { LayerswapProvider, Swap, WidgetLoading } from '@layerswap/widget';
 import { useWidgetContext } from '@/context/ConfigContext';
 import { useSettingsState } from '@/context/settings';
