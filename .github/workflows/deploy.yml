@@ -33,9 +33,8 @@ jobs:
         uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: storybook-static
-          preview-branch: gh-pages
           umbrella-dir: pr-preview
-          comment: false  # we'll post our own comment below
+          comment: false  
 
       - name: Comment preview link on PR (sticky)
         if: steps.preview.outputs.deployment-action == 'deploy'
