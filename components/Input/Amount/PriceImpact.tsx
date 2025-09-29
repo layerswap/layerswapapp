@@ -74,7 +74,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({
                     </span>
                 </span>
             </TooltipTrigger>
-            <TooltipContent side="top" align="center" className="!bg-secondary-500 !border-secondary-500 !text-secondary-text text-xs font-normal">
+            <TooltipContent arrowClasses="!bg-secondary-500 !fill-secondary-500" side="top" align="center" className="!bg-secondary-500 !border-secondary-500 !text-secondary-text text-xs font-normal rounded-xl !p-4 shadow-2xl">
                 <p className="text-primary-text font-medium text-sm flex items-baseline space-x-0.5 mb-1">
                     <span>Price impact:</span>
                     <span>{priceImpact < 0 ? "-$" : "+$"}</span>
