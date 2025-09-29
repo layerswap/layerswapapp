@@ -1,17 +1,12 @@
-name: Storybook – PR Preview
+name: Storybook – PR Preview (Pages subpath)
 
 on:
   pull_request:
-    branches: ["**"]  # or limit as you wish
+    branches: ["**"]
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages-pr-${{ github.ref }}"
-  cancel-in-progress: true
+  contents: write        # <-- must be write so it can push to gh-pages
+  pull-requests: write   # <-- so it can comment the preview link
 
 jobs:
   build:
@@ -19,22 +14,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20 }
+        with:
+          node-version: 20
       - run: yarn install --frozen-lockfile
-      - run: yarn build-storybook  # outputs to storybook-static by default
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: storybook-static
+      - run: yarn build-storybook
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-    steps:
-      - name: Deploy to Pages (preview)
-        id: deploy
-        uses: actions/deploy-pages@v4
+      # Publishes to: https://<user>.github.io/<repo>/pr-preview/pr-<number>/
+      - name: Deploy PR Preview to GitHub Pages
+        uses: rossjrw/pr-preview-action@v1
         with:
-          preview: true
+          source-dir: storybook-static
+          preview-branch: gh-pages
+          umbrella-dir: pr-preview
+          comment: true         
