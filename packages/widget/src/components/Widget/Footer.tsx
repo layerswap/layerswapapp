@@ -46,7 +46,7 @@ const Comp = ({ children, hidden, sticky = true }: FooterProps) => {
                     }}
                     custom={{ direction: -1, width: 100 }}
                     variants={variants}
-                    className={`text-primary-text text-base mt-3        
+                    className={`text-primary-text text-base mt-3
                         max-sm:fixed
                         max-sm:inset-x-0
                         max-sm:bottom-0 
