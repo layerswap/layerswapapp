@@ -22,7 +22,7 @@ import { InitialSettings } from "../Models/InitialSettings";
 export type LayerswapContextProps = {
     children?: ReactNode;
     settings?: LayerSwapSettings;
-    apiKey: string;
+    apiKey?: string;
     themeData?: ThemeData | null
     integrator: string
     version?: 'mainnet' | 'testnet'
@@ -40,7 +40,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
     AppSettings.Integrator = integrator
     AppSettings.ThemeData = { ...THEME_COLORS['default'], ...themeData }
     AppSettings.ImtblPassportConfig = imtblPassport
-    LayerSwapApiClient.apiKey = apiKey
+    if (apiKey) LayerSwapApiClient.apiKey = apiKey
 
     useEffect(() => {
         if (!_settings) {
