@@ -1,8 +1,8 @@
-import { Network } from "../../../Models/Network";
-import KnownInternalNames from "../../knownIds";
-import { GasProps } from "../../../Models/Balance";
-import WatchdogAbi from '../../abis/FUELWATCHDOG.json'
-import formatAmount from "../../formatAmount";
+import { Network } from "@/Models/Network";
+import KnownInternalNames from "@/lib/knownIds";
+import { GasProps } from "@/Models/Balance";
+import WatchdogAbi from '@/lib/jsons/abis/FUELWATCHDOG.json'
+import formatAmount from "@/lib/formatAmount";
 
 export class FuelGasProvider {
     supportsNetwork(network: Network): boolean {

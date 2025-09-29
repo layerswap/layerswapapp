@@ -1,7 +1,7 @@
 import { TokenBalance } from "@/Models/Balance";
 import { NetworkWithTokens } from "@/Models/Network";
 import formatAmount from "@/lib/formatAmount";
-import Erc20Abi from '@/lib/abis/ERC20.json'
+import Erc20Abi from '@/lib/jsons/abis/ERC20.json'
 import KnownInternalNames from "@/lib/knownIds";
 import { insertIfNotExists } from "../helpers";
 import { BalanceProvider } from "@/Models/BalanceProvider";

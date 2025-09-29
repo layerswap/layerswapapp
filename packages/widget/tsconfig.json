@@ -18,7 +18,8 @@
     }
   },
   "include": [
-    "src"
+    "src",
+    "src/lib/jsons/*/*.json"
   ],
   "exclude": [
     "node_modules"
