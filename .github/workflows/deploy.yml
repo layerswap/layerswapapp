@@ -34,7 +34,7 @@ jobs:
         with:
           source-dir: storybook-static
           umbrella-dir: pr-preview
-          comment: false  
+          comment: false   
 
       - name: Comment preview link on PR (sticky)
         if: steps.preview.outputs.deployment-action == 'deploy'
