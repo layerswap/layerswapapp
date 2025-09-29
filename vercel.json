@@ -1,3 +1,8 @@
 {
-    "buildCommand": "yarn build"
+  "buildCommand": "yarn build",
+  "git": {
+    "deploymentEnabled": {
+      "gh-pages": false
+    }
+  }
 }
