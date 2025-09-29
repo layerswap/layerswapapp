@@ -28,22 +28,18 @@ export type LayerswapContextProps = {
     version?: 'mainnet' | 'testnet'
     callbacks?: CallbacksContextType
     initialValues?: InitialSettings
-    walletConnect?: {
-        projectId?: string
-        name?: string
-        description?: string
-        url?: string
-        icons?: string[]
-    }
+    walletConnect?: typeof AppSettings.WalletConnectConfig
+    imtblPassport?: typeof AppSettings.ImtblPassportConfig
 }
 
 const INTERCOM_APP_ID = 'h5zisg78'
-const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, settings: _settings, themeData, apiKey, integrator, version, callbacks, initialValues, walletConnect }) => {
+const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, settings: _settings, themeData, apiKey, integrator, version, callbacks, initialValues, walletConnect, imtblPassport }) => {
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
 
     AppSettings.ApiVersion = version
     AppSettings.Integrator = integrator
     AppSettings.ThemeData = { ...THEME_COLORS['default'], ...themeData }
+    AppSettings.ImtblPassportConfig = imtblPassport
     LayerSwapApiClient.apiKey = apiKey
 
     useEffect(() => {

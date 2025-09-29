@@ -1,11 +1,12 @@
 import { LayerswapProvider, LayerSwapSettings, Swap, ThemeData } from "@layerswap/widget"
-import { Router } from "next/router"
+import { Router, useRouter } from "next/router"
 import { parse, ParsedUrlQuery } from "querystring"
 import { FC } from "react"
 import { resolvePersistantQueryParams } from "../../../helpers/querryHelper"
 import { updateFormBulk } from "../../utils/updateForm"
 
 const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string }> = ({ settings, themeData, apiKey }) => {
+    const router = useRouter()
     return <LayerswapProvider
         integrator='layerswap'
         apiKey={apiKey}
@@ -15,6 +16,11 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
             onFormChange(formData) {
                 updateFormBulk(formData);
             }
+        }}
+        imtblPassport={{
+            appBasePath: router.basePath,
+            clientId: process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID || '',
+            publishableKey: process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY || ''
         }}
     >
         <Swap />
