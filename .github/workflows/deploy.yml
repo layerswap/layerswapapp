@@ -33,7 +33,6 @@ jobs:
         uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: storybook-static
-          preview-branch: gh-pages
           umbrella-dir: pr-preview
           comment: false  
 
