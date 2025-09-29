@@ -28,13 +28,23 @@ jobs:
       - run: yarn build-storybook
 
       # Publishes to: https://<owner>.github.io/<repo>/pr-preview/pr-<PR_NUMBER>/
-      - name: Deploy PR Preview to GitHub Pages
+      - name: Deploy PR Preview to Pages
+        id: preview
         uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: storybook-static
           preview-branch: gh-pages
           umbrella-dir: pr-preview
-          comment: true
+          comment: false  # we'll post our own comment below
+
+      - name: Comment preview link on PR (sticky)
+        if: steps.preview.outputs.deployment-action == 'deploy'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: storybook-preview
+          message: |
+            🚀 **Storybook preview:** ${{ steps.preview.outputs.preview-url }}
+            _(updates on each commit)_
 
       # Make the link visible in the job summary
       - name: Show Preview URL
