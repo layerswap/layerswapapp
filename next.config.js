@@ -12,6 +12,25 @@ const securityHeaders = [
   },
 ]
 
+const REMOTE_PATTERNS = [
+  {
+    protocol: 'https',
+    hostname: 'stagelslayerswapbridgesa.blob.core.windows.net',
+  },
+  {
+    protocol: 'https',
+    hostname: 'bransferstorage.blob.core.windows.net',
+  },
+  {
+    protocol: 'https',
+    hostname: 'devlslayerswapbridgesa.blob.core.windows.net',
+  },
+  {
+    protocol: 'https',
+    hostname: 'prodlslayerswapbridgesa.blob.core.windows.net',
+  },
+];
+
 module.exports = (phase, { defaultConfig }) => {
   /**
    * @type {import('next').NextConfig}
@@ -22,24 +41,7 @@ module.exports = (phase, { defaultConfig }) => {
       defaultLocale: "en",
     },
     images: {
-      remotePatterns: [
-        {
-          protocol: 'https',
-          hostname: 'stagelslayerswapbridgesa.blob.core.windows.net',
-        },
-        {
-          protocol: 'https',
-          hostname: 'bransferstorage.blob.core.windows.net',
-        },
-        {
-          protocol: 'https',
-          hostname: 'devlslayerswapbridgesa.blob.core.windows.net',
-        },
-        {
-          protocol: 'https',
-          hostname: 'prodlslayerswapbridgesa.blob.core.windows.net',
-        },
-      ]
+      remotePatterns: REMOTE_PATTERNS
     },
     compiler: {
       removeConsole: false,
@@ -67,7 +69,7 @@ module.exports = (phase, { defaultConfig }) => {
     }
   }
 
-  return withPostHogConfig(nextConfig, {
+  const wrapped = withPostHogConfig(nextConfig, {
     personalApiKey: process.env.NEXT_PUBLIC_POSTHOG_API_KEY,
     envId: process.env.NEXT_PUBLIC_POSTHOG_ID,
     host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
@@ -77,4 +79,13 @@ module.exports = (phase, { defaultConfig }) => {
       deleteAfterUpload: true,
     },
   });
+
+  wrapped.images = {
+    ...(wrapped.images || {}),
+    remotePatterns: [
+      ...REMOTE_PATTERNS,
+    ],
+  };
+
+  return wrapped;
 }
