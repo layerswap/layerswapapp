@@ -33,7 +33,7 @@ jobs:
           path: storybook-static
 
   deploy:
-    needs: build
+    needs: build 
     runs-on: ubuntu-latest
     environment:
       name: github-pages
