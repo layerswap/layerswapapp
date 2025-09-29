@@ -2,6 +2,5 @@
   "buildCommand": "yarn build",
   "outputDirectory": "dist",
   "installCommand": "yarn",
-  "framework": null,
-  "rootDirectory": "apps/bridge"
+  "framework": null
 }
