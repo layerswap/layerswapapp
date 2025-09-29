@@ -131,7 +131,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
-                    <div className="space-y-3 mb-3">
+                    <div className="space-y-3">
                         {
                             routeValidation.message
                                 ? <ValidationError />

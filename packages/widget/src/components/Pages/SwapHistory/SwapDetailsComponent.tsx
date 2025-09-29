@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import { FC, useState } from 'react'
 import { SwapResponse, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
 import shortenAddress, { shortenEmail } from '@/components/utils/ShortenAddress';
 import CopyButton from '@/components/Buttons/copyButton';
@@ -9,6 +9,11 @@ import KnownInternalNames from '@/lib/knownIds';
 import { useInitialSettings } from '@/context/settings';
 import { SwapStatus } from '@/Models/SwapStatus';
 import { getDateDifferenceString } from '@/components/utils/dateDifference';
+import { useSwapDataUpdate } from '@/context/swap';
+import { useSettingsState } from '@/context/settings';
+import { generateSwapInitialValuesFromSwap } from '@/lib/generateSwapInitialValues';
+import SubmitButton from '@/components/Buttons/submitButton';
+import SecondaryButton from '@/components/Buttons/secondaryButton';
 
 type Props = {
     swapResponse: SwapResponse
@@ -17,12 +22,52 @@ type Props = {
 const SwapDetails: FC<Props> = ({ swapResponse }) => {
 
     const { swap } = swapResponse
-    const { source_token, destination_token, destination_address, source_network, destination_network, source_exchange, requested_amount } = swap
+    const { source_network, destination_network, source_exchange } = swap
 
+    const initialSettings = useInitialSettings()
     const {
         hideFrom,
         account,
-    } = useInitialSettings()
+    } = initialSettings
+
+    const { setSubmitedFormValues, setSwapModalOpen, setSwapId, createSwap } = useSwapDataUpdate()
+    const settings = useSettingsState()
+    const [isRepeatLoading, setIsRepeatLoading] = useState(false)
+
+    const handleRepeatSwap = async () => {
+        if (isRepeatLoading) return
+
+        setIsRepeatLoading(true)
+        try {
+            // Create a new swap based on the current swap data
+            // Determine if this is a cross-chain or exchange swap
+            const swapType = (swap.source_exchange || swap.destination_exchange) ? 'exchange' : 'cross-chain'
+            const newSwapData = generateSwapInitialValuesFromSwap(swap, false, settings, swapType)
+            setSubmitedFormValues(newSwapData)
+
+            // For wallet deposits, follow the same flow as FormWrapper's handleCreateSwap
+            if (newSwapData.depositMethod === 'wallet') {
+                setSwapId(undefined)
+                setSwapModalOpen(true)
+            } else {
+                // For deposit address method, create the swap first then open modal
+                setSwapId(undefined)
+                const swapResponse = await createSwap(newSwapData, initialSettings, undefined)
+                setSwapId(swapResponse.swap.id)
+                setSwapModalOpen(true)
+            }
+        } catch (error) {
+            // Handle error appropriately
+            console.log('Failed to create swap:', error)
+        } finally {
+            setIsRepeatLoading(false)
+        }
+    }
+
+    const handleViewCompleteSwap = () => {
+        setSwapId(swap.id)
+        setSwapModalOpen(true)
+    }
 
     const input_tx_explorer_template = source_network?.transaction_explorer_template
     const output_tx_explorer_template = destination_network?.transaction_explorer_template
@@ -71,7 +116,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                 </div>
             </section>
 
-            <section className='pb-3'>
+            <section className='pb-2'>
                 <div className='flex flex-col justify-between w-full h-full gap-3'>
                     <div className='space-y-3'>
 
@@ -148,44 +193,30 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             </div>
                         </div>
                     </div>
-{/* 
                     {
                         swap.status === SwapStatus.Completed &&
-                        <button
+                        <SecondaryButton
                             type='button'
-                            onClick={() => router.push({
-                                pathname: `/`,
-                                query: {
-                                    amount: requested_amount,
-                                    from: source_network?.name,
-                                    to: destination_network?.name,
-                                    fromAsset: source_token.symbol,
-                                    toAsset: destination_token.symbol,
-                                    ...resolvePersistantQueryParams(router.query),
-                                }
-                            }, undefined, { shallow: false })}
-                            className='w-full inline-flex items-center gap-2 justify-center py-3 px-6 text-base font-semibold bg-primary-text-tertiary hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-xl text-white'
+                            size='xl'
+                            onClick={handleRepeatSwap}
+                            isLoading={isRepeatLoading}
                         >
                             <p>
-                                Repeat Swap
+                                {isRepeatLoading ? 'Creating Swap...' : 'Repeat Swap'}
                             </p>
-                        </button>
+                        </SecondaryButton>
                     }
                     {
                         (swap.status !== SwapStatus.Completed && swap.status !== SwapStatus.Expired && swap.status !== SwapStatus.Failed) &&
-                        <button
+                        <SubmitButton
                             type='button'
-                            onClick={() => router.push({
-                                pathname: `/swap/${swap.id}`,
-                                query: resolvePersistantQueryParams(router.query),
-                            }, undefined, { shallow: false })}
-                            className='w-full inline-flex items-center gap-2 justify-center py-2.5 px-3 text-xl font-semibold bg-primary hover:opacity-90 duration-200 active:opacity-80 transition-opacity rounded-lg text-primary-text'
+                            onClick={handleViewCompleteSwap}
                         >
                             <p>
                                 {swap.status == SwapStatus.LsTransferPending ? "View Swap" : "Complete Swap"}
                             </p>
-                        </button>
-                    } */}
+                        </SubmitButton>
+                    }
 
                 </div>
             </section>

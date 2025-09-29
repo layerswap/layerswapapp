@@ -23,7 +23,6 @@ export default function useStarknet(): WalletProvider {
 
     const { connectors } = useConnect();
     const { disconnectAsync } = useDisconnect()
-
     const wallets = useWalletStore((state) => state.connectedWallets)
     const addWallet = useWalletStore((state) => state.connectWallet)
     const removeWallet = useWalletStore((state) => state.disconnectWallet)
