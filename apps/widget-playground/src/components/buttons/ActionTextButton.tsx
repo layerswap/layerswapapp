@@ -8,7 +8,7 @@ export function ActionTextButton() {
     const [value, setValue] = useState(actionText);
 
     useEffect(() => {
-        if (actionText === "Swap now") {
+        if (actionText === "Next") {
             setValue("");
         }
     }, [actionText]);
@@ -26,7 +26,7 @@ export function ActionTextButton() {
             <Input
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
-                placeholder="e. g. Swap now"
+                placeholder="e. g. Next"
             />
         </div>
     );
@@ -41,7 +41,7 @@ export const ActionTextButtonTrigger = () => {
                 Action button text
             </label>
             <div className="flex items-center space-x-1.5 text-secondary-text">
-                <p>{actionText || 'Swap now'}</p>
+                <p>{actionText || 'Next'}</p>
             </div>
         </div>
     );

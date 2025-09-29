@@ -1,5 +1,4 @@
 "use client";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, } from "@/components/ui/accordion"
 import { useWidgetContext } from "@/context/ConfigContext";
 import { THEME_COLORS } from "@layerswap/widget";
 import { useMemo } from "react";
@@ -11,14 +10,12 @@ const getColors = (theme?: typeof THEME_COLORS['default']) => {
 
     const additionalColors = [
         { displayName: 'Backdrop', value: theme.backdrop, id: 'backdrop' },
-        { displayName: 'Placeholder text', value: theme.placeholderText, id: 'placeholderText' },
-        { displayName: 'Action button text', value: theme.actionButtonText, id: 'actionButtonText' },
+        { displayName: 'Tertiary', value: theme.tertiary, id: 'tertiary' },
         { displayName: 'Button text color', value: theme.buttonTextColor, id: 'buttonTextColor' },
     ];
 
     const primaryColors = [
         { displayName: 'Primary default', value: theme.primary.DEFAULT, id: 'primary' },
-        { displayName: 'Primary 50', value: theme.primary[50], id: 'primary50' },
         { displayName: 'Primary 100', value: theme.primary[100], id: 'primary100' },
         { displayName: 'Primary 200', value: theme.primary[200], id: 'primary200' },
         { displayName: 'Primary 300', value: theme.primary[300], id: 'primary300' },
@@ -29,12 +26,10 @@ const getColors = (theme?: typeof THEME_COLORS['default']) => {
         { displayName: 'Primary 800', value: theme.primary[800], id: 'primary800' },
         { displayName: 'Primary 900', value: theme.primary[900], id: 'primary900' },
         { displayName: 'Primary text', value: theme.primary.text, id: 'primarytext' },
-        { displayName: 'Primary text muted', value: theme.primary.textMuted, id: 'primarytextMuted' },
     ];
 
     const secondaryColors = [
         { displayName: 'Secondary default', value: theme.secondary.DEFAULT, id: 'secondary' },
-        { displayName: 'Secondary 50', value: theme.secondary[50], id: 'secondary50' },
         { displayName: 'Secondary 100', value: theme.secondary[100], id: 'secondary100' },
         { displayName: 'Secondary 200', value: theme.secondary[200], id: 'secondary200' },
         { displayName: 'Secondary 300', value: theme.secondary[300], id: 'secondary300' },
@@ -44,7 +39,6 @@ const getColors = (theme?: typeof THEME_COLORS['default']) => {
         { displayName: 'Secondary 700', value: theme.secondary[700], id: 'secondary700' },
         { displayName: 'Secondary 800', value: theme.secondary[800], id: 'secondary800' },
         { displayName: 'Secondary 900', value: theme.secondary[900], id: 'secondary900' },
-        { displayName: 'Secondary 950', value: theme.secondary[950], id: 'secondary950' },
         { displayName: 'Secondary text', value: theme.secondary.text, id: 'secondarytext' },
     ];
 

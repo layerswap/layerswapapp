@@ -59,22 +59,20 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
         }
         setCustomEvmSwitch(false);
         setShowLoading(false);
-        setActionText('Swap now');
+        setActionText('Next');
     };
 
-    function updateTheme<K extends keyof ThemeData>(
-        prop: K,
-        value: ThemeData[K]
-    ): void {
-        {
-            setThemeData((prevTheme) => ({
-                ...prevTheme,
+    function updateTheme<K extends keyof ThemeData>(prop: K, value: ThemeData[K]) {
+        setThemeData((prev) => {
+            const base: ThemeData = prev?.theme ?? THEME_COLORS['default'];
+            return {
+                ...prev,
                 theme: {
-                    ...prevTheme?.theme,
-                    [prop]: value!,
-                }
-            }));
-        }
+                    ...base,
+                    [prop]: value,
+                },
+            };
+        });
     }
 
     const updateFeaturedNetwork = <K extends keyof featuredNetworkType>(
@@ -100,8 +98,6 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
             actionText
         }
     }, [themeData, featuredNetwork, actionText])
-
-    console.log("config", config)
 
     return (
         <WidgetContext.Provider value={{

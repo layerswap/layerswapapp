@@ -103,7 +103,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     return (
         <>
             <DepositMethodComponent />
-            <Form className="h-full grow flex flex-col flex-1 justify-between">
+            <Form className="h-full grow flex flex-col flex-1 justify-between w-full">
                 <Widget.Content>
                     <div className="w-full flex flex-col justify-between">
                         <div>
@@ -136,36 +136,34 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
-                    <div className="mb-3">
-                        <div className="space-y-3">
-                            <>
-                                {
-                                    showInsufficientBalanceWarning &&
-                                    <InsufficientBalanceWarning />
-                                }
-                            </>
+                    <div className="space-y-3">
+                        <>
                             {
-                                Number(values.amount) > 0 &&
-                                <ReserveGasNote
-                                    maxAllowedAmount={minAllowedAmount}
-                                    minAllowedAmount={maxAllowedAmount}
-                                    onSubmit={handleReserveGas}
-                                />
+                                showInsufficientBalanceWarning &&
+                                <InsufficientBalanceWarning />
                             }
-                            {
-                                values.toAsset?.refuel && !initialSettings.hideRefuel &&
-                                <RefuelToggle
-                                    quote={quote}
-                                    onButtonClick={() => setOpenRefuelModal(true)}
-                                    minAllowedAmount={minAllowedAmount}
-                                />
-                            }
-                            {
-                                routeValidation.message
-                                    ? <ValidationError />
-                                    : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
-                            }
-                        </div>
+                        </>
+                        {
+                            Number(values.amount) > 0 &&
+                            <ReserveGasNote
+                                maxAllowedAmount={minAllowedAmount}
+                                minAllowedAmount={maxAllowedAmount}
+                                onSubmit={handleReserveGas}
+                            />
+                        }
+                        {
+                            values.toAsset?.refuel && !initialSettings.hideRefuel &&
+                            <RefuelToggle
+                                quote={quote}
+                                onButtonClick={() => setOpenRefuelModal(true)}
+                                minAllowedAmount={minAllowedAmount}
+                            />
+                        }
+                        {
+                            routeValidation.message
+                                ? <ValidationError />
+                                : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                        }
                     </div>
                     <FormButton
                         shouldConnectWallet={shouldConnectWallet}

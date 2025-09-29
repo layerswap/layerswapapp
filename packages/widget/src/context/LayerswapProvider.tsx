@@ -19,32 +19,42 @@ import WalletsProviders from "@/components/Wallet/WalletProviders";
 import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
 import { InitialSettings } from "../Models/InitialSettings";
 
+export type LayerswapWidgetConfig = {
+    theme?: ThemeData | null
+    featuredNetwork?: {
+        initialDirection: 'from' | 'to',
+        network: string,
+        oppositeDirectionOverrides?: 'onlyNetworks' | 'onlyExchanges' | string[]
+    }
+    actionText?: string
+}
+
 export type LayerswapContextProps = {
     children?: ReactNode;
     settings?: LayerSwapSettings;
-    apiKey: string;
+    apiKey?: string;
     themeData?: ThemeData | null
     integrator: string
     version?: 'mainnet' | 'testnet'
     callbacks?: CallbacksContextType
     initialValues?: InitialSettings
-    walletConnect?: {
-        projectId?: string
-        name?: string
-        description?: string
-        url?: string
-        icons?: string[]
-    }
+    walletConnect?: typeof AppSettings.WalletConnectConfig
+    imtblPassport?: typeof AppSettings.ImtblPassportConfig
+    config?: LayerswapWidgetConfig
 }
 
 const INTERCOM_APP_ID = 'h5zisg78'
-const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, settings: _settings, themeData, apiKey, integrator, version, callbacks, initialValues, walletConnect }) => {
+const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, settings: _settings, themeData, apiKey, integrator, version, callbacks, initialValues, walletConnect, imtblPassport, config }) => {
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
 
     AppSettings.ApiVersion = version
     AppSettings.Integrator = integrator
     AppSettings.ThemeData = { ...THEME_COLORS['default'], ...themeData }
-    LayerSwapApiClient.apiKey = apiKey
+    AppSettings.ImtblPassportConfig = imtblPassport
+    AppSettings.ThemeData = { ...THEME_COLORS['default'], ...config?.theme }
+    AppSettings.ActionButtonDisplayText = config?.actionText
+    AppSettings.FeaturedNetwork = config?.featuredNetwork
+    if (apiKey) LayerSwapApiClient.apiKey = apiKey
 
     useEffect(() => {
         if (!_settings) {

@@ -4,6 +4,7 @@ import { useInitialSettings } from "@/context/settings";
 import Address from "../../../../Input/Address";
 import { SwapFormValues } from "../SwapFormValues";
 import { Partner } from "@/Models/Partner";
+import AppSettings from "@/lib/AppSettings";
 
 type Props = {
     shouldConnectWallet: boolean,
@@ -23,7 +24,7 @@ const FormButton = ({
     partner,
 }: Props) => {
     const initialSettings = useInitialSettings();
-    const actionDisplayName = error || initialSettings?.actionButtonText || "Next";
+    const actionDisplayName = error || AppSettings.ActionButtonDisplayText || initialSettings?.actionButtonText || "Next";
     if (shouldConnectWallet && !error) {
         return <FormSourceWalletButton />;
     }

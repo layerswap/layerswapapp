@@ -28,7 +28,7 @@ export function CodeSegment() {
     };
 
     return (
-        <div className="relative w-full overflow-hidden rounded-tl-xl rounded-md border bg-transparent bg-secondary-700  border-secondary-500 ">
+        <div className="relative w-full overflow-hidden rounded-tl-xl rounded-md border bg-secondary-700  border-secondary-500 ">
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Files className="absolute right-4 top-4 z-10 rounded-full bg-secondary-500  text-base text-white transition hover:bg-primary-500 p-1.5 h-8 w-auto hover:cursor-pointer" onClick={handleCopy} />
@@ -85,7 +85,7 @@ function formatObjectLiteral(
 
     let result = `const config = {\n${space}theme: {\n${indentedEntries}\n${space}},`;
 
-    if (actionText && actionText !== "Swap now") {
+    if (actionText && actionText !== "Next") {
         result += `\n\n${space}actionText: "${actionText}",`;
     }
 

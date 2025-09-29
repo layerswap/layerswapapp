@@ -14,9 +14,9 @@ const DirectionValues = [
 ]
 
 export function NetworksButton() {
-    const { sourceExchanges, sourceRoutes, destinationRoutes, destinationExchanges } = useSettingsState();
+    const { sourceExchanges, sourceRoutes, destinationRoutes } = useSettingsState();
     const mergedSource = [...sourceRoutes, ...sourceExchanges];
-    const mergedDestination = [...destinationRoutes, ...destinationExchanges];
+    const mergedDestination = [...destinationRoutes];
     const { featuredNetwork, updateFeaturedNetwork } = useWidgetContext();
     const { initialDirection, network, oppositeDirectionOverrides } = featuredNetwork || {};
     const [localState, setLocalState] = useState<string[]>(

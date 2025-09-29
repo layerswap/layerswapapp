@@ -60,7 +60,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     return (
         <>
             <DepositMethodComponent />
-            <Form className="h-full grow flex flex-col justify-between">
+            <Form className="h-full grow flex flex-col flex-1 justify-between w-full">
                 <Widget.Content>
                     <div className="w-full max-sm:min-h-[79svh] flex flex-col justify-between mt-2 sm:mt-0">
                         <div className='flex-col relative flex justify-between gap-1.5 w-full leading-4'>
@@ -131,7 +131,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
-                    <div className="space-y-3 mb-3">
+                    <div className="space-y-3">
                         {
                             routeValidation.message
                                 ? <ValidationError />

@@ -126,7 +126,11 @@ export default function useEVM(): WalletProvider {
 
     return {
         connectWallet,
-        connectConnector: connectWallet,
+        switchAccount: async () => {
+            // Implement switchAccount logic or leave as a no-op if not supported
+            // For now, just return undefined to satisfy the interface
+            return undefined;
+        },
         activeWallet: connectedWallets.find((w) => w.isActive),
         connectedWallets,
         availableWalletsForConnect,

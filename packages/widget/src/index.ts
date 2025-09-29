@@ -4,10 +4,11 @@ export { TransactionsHistory } from './components/Pages/SwapHistory';
 export { Campaigns } from './components/Pages/Campaigns';
 export { CampaignDetails } from './components/Pages/Campaigns/Details';
 export { WidgetLoading } from './components/WidgetLoading'
+export { ImtblPassportRedirect } from './components/Wallet/WalletProviders/ImtblPassportProvider'
 export { LayerSwapSettings } from './Models/LayerSwapSettings'
 export { type ThemeData, THEME_COLORS, type ThemeColor } from './Models/Theme'
 export { getSettings } from './helpers/getSettings'
-export { LayerswapProvider } from './context/LayerswapProvider';
+export { LayerswapProvider, type LayerswapWidgetConfig } from './context/LayerswapProvider';
 export { WalletHooksProvider } from './context/walletHooksProvider'
 export type { WalletProvider, Wallet, InternalConnector } from './Models/WalletProvider'
 export { useSettingsState } from './context/settings'

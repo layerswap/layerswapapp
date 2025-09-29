@@ -8,6 +8,7 @@ import { useMeasure } from '@uidotdev/usehooks';
 import { SnapElement, SnapPointsProvider, useSnapPoints } from '@/context/snapPointsContext';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Drawer } from './vaul';
+import AppSettings from '@/lib/AppSettings';
 
 export type VaulDrawerProps = {
     children: ReactNode;
@@ -22,7 +23,7 @@ export type VaulDrawerProps = {
 }
 
 const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className }) => {
-    const { isMobile } = useWindowDimensions();
+    const { isMobileWithPortal: isMobile } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
     const expandRef = useRef<HTMLDivElement>(null);
@@ -117,6 +118,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                     data-testid="content"
                     className={clsx('fixed sm:absolute flex flex-col bg-secondary-700 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-4 text-primary-text ring-0! outline-hidden! ', className, {
                         'border-none! rounded-none!': snap === 1,
+                        '!fixed sm:!absolute': AppSettings.ThemeData?.enablePortal == true,
                     })}
                 >
                     <div
