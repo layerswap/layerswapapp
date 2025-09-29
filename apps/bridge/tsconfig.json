@@ -1,13 +1,21 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    // "paths": {
-    //   "@layerswap/widget": [
-    //     "../../packages/widget/src"
-    //   ],
-    // },
+    "paths": {
+      "@layerswap/widget": [
+        "../../packages/widget/src"
+      ],
+      "@/*": [
+        "../../packages/widget/src/*"
+      ]
+    },
     "incremental": true
   },
+  "references": [
+    {
+      "path": "../../packages/widget"
+    }
+  ],
   "include": [
     "next-env.d.ts",
     "**/*.ts",
