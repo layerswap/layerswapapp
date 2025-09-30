@@ -4,7 +4,6 @@ import { useInitialSettings } from './settings';
 import { transformFormValuesToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { resolveFormValidation } from '@/hooks/useFormValidation';
 import { resolveRouteValidation } from '@/hooks/useRouteValidation';
-import useWallet from '@/hooks/useWallet';
 import { useSwapDataState } from './swap';
 import { useSelectedAccount } from './balanceAccounts';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
@@ -37,8 +36,7 @@ export const ValidationProvider: React.FC<{ children: ReactNode }> = ({ children
     const initialSettings = useInitialSettings();
     const { sameAccountNetwork } = initialSettings
     const { swapId } = useSwapDataState()
-    const { provider } = useWallet(values.from, "withdrawal")
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values), [values]);
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
     const { minAllowedAmount, maxAllowedAmount, quoteError } = useQuoteData(quoteArgs, quoteRefreshInterval)

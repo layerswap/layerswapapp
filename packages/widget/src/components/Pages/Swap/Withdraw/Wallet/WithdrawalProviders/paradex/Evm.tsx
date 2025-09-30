@@ -6,7 +6,6 @@ import KnownInternalNames from '@/lib/knownIds';
 import { useEthersSigner } from '@/lib/ethersToViem/ethers';
 import toast from 'react-hot-toast';
 import AuhorizeEthereum from '@/lib/wallets/paradex/Authorize/Ethereum';
-import useWallet from '@/hooks/useWallet';
 import WalletIcon from '@/components/Icons/WalletIcon';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import { useSelectedAccount } from '@/context/balanceAccounts';
@@ -19,10 +18,9 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
     const l1Network = networks.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
     const { source_token } = swapBasicData;
 
-    const { provider } = useWallet(l1Network, 'withdrawal')
     const { chain } = useAccount();
 
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", l1Network?.name);
     const wallet = selectedSourceAccount?.wallet
 
     const ethersSigner = useEthersSigner()

@@ -82,24 +82,23 @@ export const ChangeNetworkButton: FC<ChangeNetworkProps> = (props) => {
     const [error, setError] = useState<Error | null>(null)
     const [isPending, setIsPending] = useState(false)
 
-    const { provider } = useWallet(network, "withdrawal")
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", network?.name);
 
     const clickHandler = useCallback(async () => {
         try {
             setIsPending(true)
-            if (!provider) throw new Error(`No provider from ${network?.name}`)
-            if (!provider.switchChain) throw new Error(`No switchChain from ${network?.name}`)
+            if (!selectedSourceAccount) throw new Error(`No provider from ${network?.name}`)
+            if (!selectedSourceAccount.provider.switchChain) throw new Error(`No switchChain from ${network?.name}`)
             if (!selectedSourceAccount) throw new Error(`No selectedSourceAccount from ${network?.name}`)
 
-            return await provider.switchChain(selectedSourceAccount.wallet, chainId)
+            return await selectedSourceAccount.provider.switchChain(selectedSourceAccount.wallet, chainId)
         } catch (e) {
             setError(e)
         } finally {
             setIsPending(false)
         }
 
-    }, [provider, chainId])
+    }, [selectedSourceAccount, chainId])
 
     return <>
         <ChangeNetworkMessage
@@ -165,8 +164,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess } = useWalletWithdrawalState();
 
-    const { provider } = useWallet(swapData.source_network, "withdrawal")
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", swapData.source_network?.name);
 
     const handleClick = async () => {
         try {

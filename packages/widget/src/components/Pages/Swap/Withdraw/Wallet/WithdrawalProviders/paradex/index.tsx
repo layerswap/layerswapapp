@@ -18,19 +18,17 @@ export const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ refuel, swapBasic
     const l1Network = networks.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
     const starknet = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetGoerli || n.name === KnownInternalNames.Networks.StarkNetSepolia);
     const { activeConnection } = useActiveParadexAccount()
-    const { provider: evmProvider } = useWallet(l1Network, 'withdrawal')
-    const { provider: starknetProvider } = useWallet(starknet, 'withdrawal')
 
-    const selectedEvmAccount = useSelectedAccount("from", evmProvider?.name);
-    const selectedStarknetAccount = useSelectedAccount("from", starknetProvider?.name);
+    const selectedEvmAccount = useSelectedAccount("from", l1Network?.name);
+    const selectedStarknetAccount = useSelectedAccount("from", starknet?.name);
 
     const evmWallet = selectedEvmAccount?.wallet
     const starknetWallet = selectedStarknetAccount?.wallet
 
-    if (activeConnection?.providerName === evmProvider?.name && evmWallet) {
+    if (activeConnection?.providerName === selectedEvmAccount?.providerName && evmWallet) {
         return <Evm refuel={refuel} swapBasicData={swapBasicData} swapId={swapId} />
     }
-    if (activeConnection?.providerName === starknetProvider?.name && starknetWallet) {
+    if (activeConnection?.providerName === selectedStarknetAccount?.providerName && starknetWallet) {
         return <Starknet refuel={refuel} swapBasicData={swapBasicData} swapId={swapId} />
     }
 
