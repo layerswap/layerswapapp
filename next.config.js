@@ -70,7 +70,7 @@ module.exports = (phase, { defaultConfig }) => {
   }
 
   const wrapped = withPostHogConfig(nextConfig, {
-    personalApiKey: process.env.NEXT_PUBLIC_POSTHOG_API_KEY,
+    personalApiKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
     envId: process.env.NEXT_PUBLIC_POSTHOG_ID,
     host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     sourcemaps: {
