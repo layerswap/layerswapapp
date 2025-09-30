@@ -17,7 +17,7 @@ const progress = new ProgressBar({
 });
 
 if (typeof window !== "undefined") {
-  posthog.init('phc_KyI0bPCry0a8vJjQ7rIQESL8u2EVnyjrX19ZR4uqQgq', {
+  posthog.init(process.env.POSTHOG_TOKEN, {
     capture_pageview: 'history_change',
     capture_pageleave: true,
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,

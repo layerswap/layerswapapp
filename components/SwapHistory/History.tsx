@@ -23,10 +23,6 @@ type ListProps = {
 type Swap = any & { type: 'user' | 'explorer' }
 
 const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
-    if (typeof window !== "undefined") {
-        throw new Error("Test crash from HistoryList: this is intentional.");
-    }
-
     const { networks } = useSettingsState()
     const [showAll, setShowAll] = useState(false)
     const { wallets } = useWallet()

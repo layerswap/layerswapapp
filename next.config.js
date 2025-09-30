@@ -69,23 +69,15 @@ module.exports = (phase, { defaultConfig }) => {
     }
   }
 
-  const wrapped = withPostHogConfig(nextConfig, {
+  return withPostHogConfig(nextConfig, {
     personalApiKey: process.env.POSTHOG_API_KEY,
     envId: process.env.POSTHOG_ENV_ID,
     host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     sourcemaps: {
       enabled: true,
+      project: 'Layerswap',
       version: process.env.VERCEL_GIT_COMMIT_SHA,
       deleteAfterUpload: true,
     },
-  }); 
-
-  wrapped.images = {
-    ...(wrapped.images || {}),
-    remotePatterns: [
-      ...REMOTE_PATTERNS,
-    ],
-  };
-
-  return wrapped;
+  })
 }
