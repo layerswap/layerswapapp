@@ -17,42 +17,40 @@ export default function Form() {
         return defaultTabResolver({ from, sourceExchanges })
     }, [from, sourceExchanges])
 
-    return <BalanceAccountsProvider>
-        <Tabs defaultValue={defaultTab}>
-            <div className="hidden sm:block">
-                <NetworkExchangeTabs />
-            </div>
+    return <Tabs defaultValue={defaultTab}>
+        <div className="hidden sm:block">
+            <NetworkExchangeTabs />
+        </div>
 
-            <TabsContent value="cross-chain">
-                <SwapDataProvider>
-                    <FormWrapper type="cross-chain">
-                        <Widget contextualMenu={<div className="block sm:hidden">
-                            <NetworkExchangeTabs />
-                        </div>}>
-                            <ValidationProvider>
-                                <NetworkForm />
-                            </ValidationProvider>
-                        </Widget>
-                    </FormWrapper>
-                </SwapDataProvider>
-            </TabsContent>
+        <TabsContent value="cross-chain">
+            <SwapDataProvider>
+                <FormWrapper type="cross-chain">
+                    <Widget contextualMenu={<div className="block sm:hidden">
+                        <NetworkExchangeTabs />
+                    </div>}>
+                        <ValidationProvider>
+                            <NetworkForm />
+                        </ValidationProvider>
+                    </Widget>
+                </FormWrapper>
+            </SwapDataProvider>
+        </TabsContent>
 
-            <TabsContent value="exchange">
-                <SwapDataProvider>
-                    <FormWrapper type="exchange">
-                        <Widget contextualMenu={<div className="block sm:hidden">
-                            <NetworkExchangeTabs />
-                        </div>}>
-                            <ValidationProvider>
-                                <ExchangeForm />
-                            </ValidationProvider>
-                        </Widget>
-                    </FormWrapper>
-                </SwapDataProvider>
-            </TabsContent>
+        <TabsContent value="exchange">
+            <SwapDataProvider>
+                <FormWrapper type="exchange">
+                    <Widget contextualMenu={<div className="block sm:hidden">
+                        <NetworkExchangeTabs />
+                    </div>}>
+                        <ValidationProvider>
+                            <ExchangeForm />
+                        </ValidationProvider>
+                    </Widget>
+                </FormWrapper>
+            </SwapDataProvider>
+        </TabsContent>
 
-        </Tabs>
-    </BalanceAccountsProvider>
+    </Tabs>
 }
 
 const defaultTabResolver = ({ from, sourceExchanges }: { from: string | undefined, sourceExchanges: ReturnType<typeof useSettingsState>['sourceExchanges'] }) => {

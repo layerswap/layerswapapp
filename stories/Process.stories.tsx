@@ -18,6 +18,7 @@ import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { useArgs } from 'storybook/preview-api';
 import WalletsProviders from '../components/WalletProviders';
 import { TimerProvider } from '@/context/timerContext';
+import { BalanceAccountsProvider } from '@/context/balanceAccounts';
 
 window.plausible = () => { }
 const Comp: FC<{ settings: any, swapData: SwapContextData, failedSwap?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues, timestamp?: string }> = ({ swapData, theme, initialValues }) => {
@@ -41,18 +42,20 @@ const Comp: FC<{ settings: any, swapData: SwapContextData, failedSwap?: SwapItem
                 <SwapDataProvider >
                     <TimerProvider>
                         <WalletsProviders basePath={'/'} themeData={THEME_COLORS['default']} appName={'Layerswap'}>
-                            <SwapDataStateContext.Provider value={swapContextInitialValues}>
-                                <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
-                                    <Formik
-                                        innerRef={formikRef}
-                                        initialValues={initialValues!}
-                                        validateOnMount={true}
-                                        onSubmit={() => { }}
-                                    >
-                                        <Component initialValues={initialValues} />
-                                    </Formik>
-                                </SwapDataUpdateContext.Provider>
-                            </SwapDataStateContext.Provider >
+                            <BalanceAccountsProvider>
+                                <SwapDataStateContext.Provider value={swapContextInitialValues}>
+                                    <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
+                                        <Formik
+                                            innerRef={formikRef}
+                                            initialValues={initialValues!}
+                                            validateOnMount={true}
+                                            onSubmit={() => { }}
+                                        >
+                                            <Component initialValues={initialValues} />
+                                        </Formik>
+                                    </SwapDataUpdateContext.Provider>
+                                </SwapDataStateContext.Provider >
+                            </BalanceAccountsProvider>
                         </WalletsProviders>
                     </TimerProvider>
                 </SwapDataProvider>
