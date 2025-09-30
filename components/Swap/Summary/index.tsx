@@ -5,7 +5,7 @@ import { SwapResponse, TransactionType } from "@/lib/apiClients/layerSwapApiClie
 import { shortenEmail } from "@/components/utils/ShortenAddress"
 import KnownInternalNames from "@/lib/knownIds"
 import { useQueryState } from "@/context/query"
-import { useNetworkAccount } from "@/context/balanceAccounts"
+import { useSelectedAccount } from "@/context/balanceAccounts"
 
 const SwapSummary: FC = () => {
 
@@ -17,7 +17,7 @@ const SwapSummary: FC = () => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading } = useSwapDataState()
 
     const { source_network, destination_network, source_token, destination_token, source_exchange } = swapBasicData || {}
-    const selectedSourceAccount = useNetworkAccount("from", source_network?.name);
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
 
     if (!swapBasicData || !source_network || !source_token || !destination_token || !destination_network) {
         return <></>

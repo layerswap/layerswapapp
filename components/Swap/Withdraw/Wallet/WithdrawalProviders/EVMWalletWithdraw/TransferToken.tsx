@@ -10,7 +10,7 @@ import { SendTransactionButton } from "../../Common/buttons";
 import { isMobile } from "@/lib/openLink";
 import { sendTransaction } from '@wagmi/core'
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
-import { useNetworkAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/balanceAccounts";
 
 type Props = {
     savedTransactionHash?: string;
@@ -29,7 +29,7 @@ const TransferTokenButton: FC<Props> = ({
     const [error, setError] = useState<any | undefined>()
     const [loading, setLoading] = useState(false)
 
-    const selectedSourceAccount = useNetworkAccount("from", swapData.source_network.name);
+    const selectedSourceAccount = useSelectedAccount("from", swapData.source_network.name);
 
     const clickHandler = useCallback(async ({ amount, callData, depositAddress }: TransferProps) => {
         setButtonClicked(true)

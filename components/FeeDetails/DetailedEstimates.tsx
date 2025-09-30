@@ -15,14 +15,14 @@ import { QuoteComponentProps } from ".";
 import useSWR from "swr";
 import { ApiResponse } from "@/Models/ApiResponse";
 import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
-import { useNetworkAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/balanceAccounts";
 
 export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoading, destination, destinationAddress, swapValues: values }) => {
     const { quote, reward } = quoteData || {}
     const { from, fromAsset, fromExchange } = values;
     const isCEX = !!fromExchange;
     const sourceAccountNetwork = !isCEX ? values.from : undefined
-    const selectedSourceAccount = useNetworkAccount("from", sourceAccountNetwork?.name);
+    const selectedSourceAccount = useSelectedAccount("from", sourceAccountNetwork?.name);
     const { gasData, isGasLoading } = useSWRGas(selectedSourceAccount?.address, from, fromAsset)
 
     const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && reward?.nft_contract_address;

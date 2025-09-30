@@ -27,7 +27,7 @@ import { useSwapDataState } from "@/context/swap";
 import RefuelToggle from "@/components/FeeDetails/Refuel";
 import ReserveGasNote from "@/components/ReserveGasNote";
 import RefuelModal from "@/components/FeeDetails/RefuelModal";
-import { useNetworkAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/balanceAccounts";
 import { useBalance } from "@/lib/balances/useBalance";
 
 type Props = {
@@ -48,7 +48,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
         depositMethod
     } = values;
 
-    const selectedSourceAccount = useNetworkAccount("from", source?.name);
+    const selectedSourceAccount = useSelectedAccount("from", source?.name);
 
     const { providers, wallets } = useWallet();
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
@@ -197,7 +197,7 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
         from: source,
     } = values
 
-    const selectedSourceAccount = useNetworkAccount("from", source?.name);
+    const selectedSourceAccount = useSelectedAccount("from", source?.name);
 
     const sourceCanBeSwapped = !source ? true : (destinationRoutes?.some(l => l.name === source?.name && l.tokens.some(t => t.symbol === fromCurrency?.symbol && t.status === 'active')) ?? false)
     const destinationCanBeSwapped = !destination ? true : (sourceRoutes?.some(l => l.name === destination?.name && l.tokens.some(t => t.symbol === toCurrency?.symbol && t.status === 'active')) ?? false)

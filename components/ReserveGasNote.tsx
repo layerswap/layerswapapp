@@ -5,7 +5,7 @@ import { truncateDecimals } from "./utils/RoundDecimals"
 import { TokenBalance } from "../Models/Balance"
 import useSWRGas from "../lib/gases/useSWRGas"
 import { useQuoteData } from "@/hooks/useFee"
-import { useNetworkAccount } from "@/context/balanceAccounts"
+import { useSelectedAccount } from "@/context/balanceAccounts"
 import { useBalance } from "@/lib/balances/useBalance";
 
 type Props = {
@@ -18,7 +18,7 @@ const ReserveGasNote = ({ onSubmit, minAllowedAmount, maxAllowedAmount }: Props)
     const {
         values,
     } = useFormikContext<SwapFormValues>();
-    const selectedSourceAccount = useNetworkAccount("from", values.from?.name);
+    const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
     const { balances } = useBalance(selectedSourceAccount?.address, values.from)
     const { gasData } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset)
 

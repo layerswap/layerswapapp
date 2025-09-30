@@ -17,7 +17,7 @@ import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
 import posthog from "posthog-js";
 import { useWalletWithdrawalState } from "@/context/withdrawalContext";
-import { useNetworkAccount, useSelectedAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/balanceAccounts";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
@@ -81,7 +81,7 @@ export const ChangeNetworkButton: FC<ChangeNetworkProps> = (props) => {
     const [error, setError] = useState<Error | null>(null)
     const [isPending, setIsPending] = useState(false)
 
-    const selectedSourceAccount = useNetworkAccount("from", network?.name);
+    const selectedSourceAccount = useSelectedAccount("from", network?.name);
 
     const clickHandler = useCallback(async () => {
         try {
@@ -162,8 +162,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess } = useWalletWithdrawalState();
 
-    const { provider } = useWallet(swapData.source_network, "withdrawal")
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", swapData.source_network?.name);
 
     const handleClick = async () => {
         try {

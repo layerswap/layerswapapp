@@ -79,9 +79,9 @@ export function SwapDataProvider({ children }) {
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
     const [swapModalOpen, setSwapModalOpen] = useState(false)
-    const { providers, provider } = useWallet(swapBasicFormData?.source_network, 'asSource')
+    const { providers } = useWallet(swapBasicFormData?.source_network, 'asSource')
 
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", swapBasicFormData?.source_network?.name);
     const selectedWallet = selectedSourceAccount?.wallet
 
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);

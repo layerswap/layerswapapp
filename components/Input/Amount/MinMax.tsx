@@ -6,7 +6,7 @@ import React, { useMemo } from "react";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { updateForm } from "@/components/Swap/Form/updateForm";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
-import { useNetworkAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/balanceAccounts";
 import { useBalance } from "@/lib/balances/useBalance";
 
 type MinMaxProps = {
@@ -23,7 +23,7 @@ const MinMax = (props: MinMaxProps) => {
     const { setFieldValue } = useFormikContext<SwapFormValues>();
     const { fromCurrency, from, limitsMinAmount, limitsMaxAmount, onActionHover, depositMethod } = props;
 
-    const selectedSourceAccount = useNetworkAccount("from", from?.name);
+    const selectedSourceAccount = useSelectedAccount("from", from?.name);
 
     const { gasData } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency)
     const { balances, mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, from)
