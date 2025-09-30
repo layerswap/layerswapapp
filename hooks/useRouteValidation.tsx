@@ -7,10 +7,10 @@ import { useFormikContext } from 'formik';
 import useWallet from './useWallet';
 import { QuoteError } from './useFee';
 import { useSelectedAccount } from '@/context/balanceAccounts';
-import useSWRBalance from '@/lib/balances/useSWRBalance';
 import { useSwapDataState } from '@/context/swap';
 import { defaultErrors } from '@/components/validationError/ErrorDisplay';
 import { ICON_CLASSES_WARNING } from '@/components/validationError/constants';
+import { useBalance } from '@/lib/balances/useBalance';
 
 interface ValidationDetails {
     title?: string;
@@ -29,7 +29,7 @@ export function resolveRouteValidation(quoteError?: QuoteError) {
     const toDisplayName = to?.display_name;
     const quoteMessage = quoteError?.response?.data?.error?.message || quoteError?.message
 
-    const { balances } = useSWRBalance(selectedSourceAccount?.address, from)
+    const { balances } = useBalance(selectedSourceAccount?.address, from)
     const walletBalance = from && balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
     const walletBalanceAmount = walletBalance?.amount
 

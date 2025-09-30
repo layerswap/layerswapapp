@@ -7,7 +7,7 @@ import RoutePickerIcon from "@/components/icons/RoutePickerPlaceholder";
 import { useBalance } from "@/lib/balances/useBalance";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { GroupedTokenElement, RowElement } from "@/Models/Route";
-import { useBalanceStore } from "@/stores/balanceStore";
+import { getKey, useBalanceStore } from "@/stores/balanceStore";
 import { useBalanceAccounts } from "@/context/balanceAccounts";
 import clsx from "clsx";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
@@ -50,6 +50,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const { balances } = useBalance(selectedAccount?.address, route)
 
     const tokenbalance = balances?.find(b => b.token === item.symbol)
+
     const formatted_balance_amount = (tokenbalance?.amount || tokenbalance?.amount === 0) ? truncateDecimals(tokenbalance?.amount, item.precision) : ''
     const usdAmount = (tokenbalance?.amount && item?.price_in_usd) ? item?.price_in_usd * tokenbalance?.amount : undefined;
 
@@ -59,22 +60,24 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
         secondary={
             <div className="flex items-center gap-1">
                 <span>{route.display_name}</span>
-                {
-                    item.contract ?
-                        <ExtendedAddress network={route} isForCurrency showDetails address={item.contract} logo={item.logo} title={item.symbol} description={item.display_asset}>
-                            <div className="flex items-center gap-1 text-secondary-text text-xs cursor-pointer hover:text-primary-text transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-500">
-                                <p className="max-w-[90px] truncate">
-                                    <span>•</span> <span>{item.display_asset}</span>
-                                </p>
-                                <Info className="h-3 w-3" />
-                            </div>
-                        </ExtendedAddress>
-                        :
-                        <p className="flex items-center gap-1 text-xs text-secondary-text transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-500">
-                            <span>•</span>
-                            <p className="truncate max-w-[80px]">{item.display_asset}</p>
-                        </p>
-                }
+                <div className="transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-400 click-delay-on-hover">
+                    {
+                        item.contract ?
+                            <ExtendedAddress network={route} isForCurrency showDetails address={item.contract} logo={item.logo} title={item.symbol} description={item.display_asset}>
+                                <div className="flex items-center gap-1 text-secondary-text text-xs cursor-pointer hover:text-primary-text">
+                                    <p className="max-w-[90px] truncate">
+                                        <span>•</span> <span>{item.display_asset || item.symbol}</span>
+                                    </p>
+                                    <Info className="h-3 w-3" />
+                                </div>
+                            </ExtendedAddress>
+                            :
+                            <p className="flex items-center gap-1 text-xs text-secondary-text">
+                                <span>•</span>
+                                <p className="truncate max-w-[80px]">{item.display_asset || item.symbol}</p>
+                            </p>
+                    }
+                </div>
             </div>
         }
         secondaryLogoSrc={route.logo}
@@ -197,19 +200,24 @@ export const GroupedTokenHeader = ({
     allbalancesLoaded?: boolean;
     hideTokenImages?: boolean;
 }) => {
+    const balanceAccounts = useBalanceAccounts(direction)
+
     const tokens = item.items;
 
-    const allBalances = useBalanceStore(s => s.allBalances)
+    const balances = useBalanceStore(s => s.balances)
 
     const networksWithBalance: NetworkRoute[] = Array.from(
         new Map(
             tokens
                 .map(({ route }) => {
+                    const address = balanceAccounts.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.route.name))?.address
+                    const key = address && route.route ? getKey(address, route.route) : 'unknown'
+
                     const tokenSymbol = route.token.symbol;
                     const networkRoute = route.route;
 
-                    const networkBalances = allBalances?.[networkRoute.name];
-                    const balanceEntry = networkBalances?.balances?.find(
+                    const networkBalances = balances?.[key];
+                    const balanceEntry = networkBalances?.data?.balances?.find(
                         (b) => b.token === tokenSymbol && b.amount && b.amount >= 0
                     );
 
@@ -220,12 +228,15 @@ export const GroupedTokenHeader = ({
     );
 
     const tokenBalances = tokens.reduce((acc, { route }) => {
+        const address = balanceAccounts.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.route.name))?.address
+        const key = address && route.route ? getKey(address, route.route) : 'unknown'
+
         const tokenSymbol = route.token.symbol;
         const networkName = route.route.name;
         const price = route.token.price_in_usd;
 
-        const networkBalances = allBalances?.[networkName];
-        const balanceEntry = networkBalances?.balances?.find(
+        const networkBalances = balances?.[key];
+        const balanceEntry = networkBalances?.data?.balances?.find(
             (b) => b.token === tokenSymbol
         );
 
@@ -276,7 +287,7 @@ export const GroupedTokenHeader = ({
                                 </div>
                             )}
                         </div>
-                    ) : allBalances ? (
+                    ) : balances ? (
                         <div className="px-0.5">-</div>
                     ) : <></>}
 
@@ -354,7 +365,7 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                             className="h-3.5 w-3.5 absolute left-3.5 top-3.5 object-contain rounded border-1 border-secondary-300"
                         />
                     </div>
-                    <div className={"ml-3 flex flex-col grow font-medium text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full"}>
+                    <div className="ml-3 flex flex-col grow font-medium text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full">
                         <p className="leading-5">{token.symbol}</p>
                         <p className="text-secondary-text grow font-normal text-sm leading-4 truncate whitespace-nowrap">
                             {route.display_name}

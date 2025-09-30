@@ -93,7 +93,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
 const AccountsPickerButton: FC<{ accounts: AccountIdentity[], onOpenModalClick: () => void }> = ({ accounts, onOpenModalClick }) => {
     const firstWallet = useMemo(() => accounts[0], [accounts])
     if (accounts.length > 0) {
-        return <button onClick={onOpenModalClick} type="button" className="p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center max-sm:hidden">
+        return <button onClick={onOpenModalClick} type="button" className="p-1.5 justify-self-start text-secondary-text hover:bg-secondary-500 hover:text-primary-text focus:outline-hidden inline-flex rounded-lg items-center">
             {
                 accounts.length === 1 ?
                     <div className="flex gap-2 items-center text-sm text-secondary-text">

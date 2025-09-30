@@ -1,6 +1,5 @@
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import useSWRBalance from "@/lib/balances/useSWRBalance";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import React, { useMemo } from "react";
@@ -9,6 +8,7 @@ import { updateForm } from "@/components/Swap/Form/updateForm";
 import useWallet from "@/hooks/useWallet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useBalance } from "@/lib/balances/useBalance";
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -28,7 +28,7 @@ const MinMax = (props: MinMaxProps) => {
     const selectedSourceAccount = useSelectedAccount("from", provider?.name);
 
     const { gasData } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency)
-    const { balances, mutate: mutateBalances } = useSWRBalance(selectedSourceAccount?.address, from)
+    const { balances, mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, from)
 
     const walletBalance = useMemo(() => {
         return selectedSourceAccount?.address ? balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol) : undefined
@@ -77,30 +77,33 @@ const MinMax = (props: MinMaxProps) => {
         handleSetValue(maxAllowedAmount.toString())
     }
     const halfOfBalance = (walletBalance?.amount || 0) / 2;
-    const showMaxTooltip = depositMethod === 'wallet' && walletBalance?.amount && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount)
+    const showMaxTooltip = !!(depositMethod === 'wallet' && walletBalance?.amount && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount))
 
     return (
         <div className="flex gap-1.5 group text-xs leading-4" onMouseLeave={() => onActionHover(undefined)}>
             {
-                Number(limitsMinAmount) > 0 &&
-                <ActionButton
-                    label="Min"
-                    onMouseEnter={() => onActionHover(limitsMinAmount)}
-                    onClick={handleSetMinAmount}
-                    disabled={!limitsMinAmount}
-                />
+                Number(limitsMinAmount) > 0 ?
+                    <ActionButton
+                        label="Min"
+                        onMouseEnter={() => onActionHover(limitsMinAmount)}
+                        onClick={handleSetMinAmount}
+                        disabled={!limitsMinAmount}
+                    />
+                    :
+                    null
             }
             {
-                depositMethod === 'wallet' && halfOfBalance > 0 && (halfOfBalance < (maxAllowedAmount || Infinity)) &&
-                <ActionButton
-                    label="50%"
-                    onMouseEnter={() => onActionHover(halfOfBalance)}
-                    onClick={handleSetHalfAmount}
-                />
+                (depositMethod === 'wallet' && halfOfBalance > 0 && (halfOfBalance < (maxAllowedAmount || Infinity))) ?
+                    <ActionButton
+                        label="50%"
+                        onMouseEnter={() => onActionHover(halfOfBalance)}
+                        onClick={handleSetHalfAmount}
+                    />
+                    :
+                    null
             }
             {
-                Number(maxAllowedAmount) > 0 &&
-                <>
+                Number(maxAllowedAmount) > 0 ?
                     <Tooltip disableHoverableContent={true}>
                         <TooltipTrigger asChild>
                             <ActionButton
@@ -110,13 +113,14 @@ const MinMax = (props: MinMaxProps) => {
                                 onClick={handleSetMaxAmount}
                             />
                         </TooltipTrigger>
-                        {showMaxTooltip && <TooltipContent className="pointer-events-none w-80 grow p-2 !border-none !bg-secondary-300 text-xs rounded-xl" side="top" align="start" alignOffset={-10}>
+                        {showMaxTooltip ? <TooltipContent className="pointer-events-none w-80 grow p-2 !border-none !bg-secondary-300 text-xs rounded-xl" side="top" align="start" alignOffset={-10}>
                             <p>Max is calculated based on your balance minus gas fee for the transaction</p>
-                        </TooltipContent>}
+                        </TooltipContent> : null}
                     </Tooltip>
-                </>
+                    :
+                    null
             }
-        </div >
+        </div>
     )
 }
 

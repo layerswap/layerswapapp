@@ -10,9 +10,10 @@ type Props = {
    children: JSX.Element | JSX.Element[];
    className?: string;
    hideMenu?: boolean;
+   contextualMenu?: React.ReactNode;
 }
 
-const Widget = ({ children, className, hideMenu }: Props) => {
+const Widget = ({ children, hideMenu, contextualMenu }: Props) => {
    const router = useRouter()
    const wrapper = useRef(null);
 
@@ -41,10 +42,13 @@ const Widget = ({ children, className, hideMenu }: Props) => {
          }
          {
             !hideMenu &&
-            <HeaderWithMenu goBack={handleBack} />
+            <HeaderWithMenu goBack={handleBack} contextualMenu={contextualMenu} />
          }
-         <div className="relative flex flex-col px-4 pb-4 h-full w-full min-h-0" ref={wrapper}>
-            {children}
+
+         <div className="relative flex-col px-4 h-full min-h-0 flex flex-1">
+            <div className="flex flex-col flex-1 items-start h-full min-h-0 pb-4 w-full" ref={wrapper}>
+               {children}
+            </div>
          </div>
          <div id="widget_root" />
       </div>

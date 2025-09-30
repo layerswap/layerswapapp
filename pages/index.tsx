@@ -14,8 +14,7 @@ export default function Home({ settings, themeData, apiKey }: InferGetServerSide
   const sourceRoutesDeafultKey = resolveRoutesURLForSelectedToken({ direction: 'from', network: undefined, token: undefined, includes: { unmatched: true, unavailable: true, swaps: true } })
   const destinationRoutesDefaultKey = resolveRoutesURLForSelectedToken({ direction: 'to', network: undefined, token: undefined, includes: { unmatched: true, unavailable: true, swaps: true } })
 
-  const sourceExchangesDeafaultkey = resolveExchangesURLForSelectedToken("from", {})
-  const destinationExchangesDeafaultkey = resolveExchangesURLForSelectedToken("to", {})
+  const sourceExchangesDeafaultkey = resolveExchangesURLForSelectedToken({})
 
   return (
     <SWRConfig value={{
@@ -24,7 +23,6 @@ export default function Home({ settings, themeData, apiKey }: InferGetServerSide
         [sourceRoutesDeafultKey]: { data: settings.sourceRoutes, error: null },
         [destinationRoutesDefaultKey]: { data: settings.destinationRoutes, error: null },
         [sourceExchangesDeafaultkey]: { data: settings.sourceExchanges, error: null },
-        [destinationExchangesDeafaultkey]: { data: settings.destinationExchanges, error: null },
       }
     }}>
       <Layout settings={settings} themeData={themeData}>

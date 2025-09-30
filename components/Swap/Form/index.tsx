@@ -1,10 +1,8 @@
 import { SwapDataProvider } from "@/context/swap";
 import React, { useMemo } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "./NetworkExchangeTabs";
+import { NetworkExchangeTabs, Tabs, TabsContent } from "./NetworkExchangeTabs";
 import NetworkForm from "./NetworkForm";
 import ExchangeForm from "./ExchangeForm";
-import NetworkTabIcon from "@/components/icons/NetworkTabIcon";
-import ExchangeTabIcon from "@/components/icons/ExchangeTabIcon";
 import { BalanceAccountsProvider } from "@/context/balanceAccounts";
 import FormWrapper from "./FormWrapper";
 import { Widget } from "@/components/Widget/Index";
@@ -21,21 +19,16 @@ export default function Form() {
 
     return <BalanceAccountsProvider>
         <Tabs defaultValue={defaultTab}>
-            <TabsList>
-                <TabsTrigger
-                    label="Swap"
-                    Icon={NetworkTabIcon}
-                    value="cross-chain" />
-                <TabsTrigger
-                    label="Deposit from CEX"
-                    Icon={ExchangeTabIcon}
-                    value="exchange" />
-            </TabsList>
+            <div className="hidden sm:block">
+                <NetworkExchangeTabs />
+            </div>
 
             <TabsContent value="cross-chain">
                 <SwapDataProvider>
                     <FormWrapper type="cross-chain">
-                        <Widget className="h-full" >
+                        <Widget contextualMenu={<div className="block sm:hidden">
+                            <NetworkExchangeTabs />
+                        </div>}>
                             <ValidationProvider>
                                 <NetworkForm />
                             </ValidationProvider>
@@ -47,7 +40,9 @@ export default function Form() {
             <TabsContent value="exchange">
                 <SwapDataProvider>
                     <FormWrapper type="exchange">
-                        <Widget className="h-full" >
+                        <Widget contextualMenu={<div className="block sm:hidden">
+                            <NetworkExchangeTabs />
+                        </div>}>
                             <ValidationProvider>
                                 <ExchangeForm />
                             </ValidationProvider>

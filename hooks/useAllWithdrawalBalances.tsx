@@ -1,7 +1,5 @@
-import useWallet from "./useWallet"
 import { useSettingsState } from "../context/settings"
-import { useBalanceStore } from "../stores/balanceStore"
-import { SwapDirection } from "../components/DTOs/SwapFormValues"
+import { selectResolvedInitiatedBalances, useBalanceStore } from "../stores/balanceStore"
 import { useEffect, useMemo, useRef } from "react"
 import { NetworkWithTokens } from "../Models/Network"
 import { NetworkBalance } from "@/Models/Balance"
@@ -38,14 +36,14 @@ export default function useAllWithdrawalBalances() {
     }, [walletNetwokrsString])
 
     const lastBalancesRef = useRef<Record<string, NetworkBalance> | null>(null)
-    const allBalances = useBalanceStore(s => s.allBalances)
+    const resolvedBalances = useBalanceStore(selectResolvedInitiatedBalances)
     const isLoading = useBalanceStore(s => s.isLoading)
 
-    if (allBalances != null) {
-        lastBalancesRef.current = allBalances
+    if (resolvedBalances != null && Object.keys(resolvedBalances).length > 0) {
+        lastBalancesRef.current = resolvedBalances
     }
 
-    const result = allBalances === null && isLoading ? lastBalancesRef.current : allBalances
+    const result = resolvedBalances === null && isLoading ? lastBalancesRef.current : resolvedBalances
 
     return useMemo(() => ({ isLoading, balances: result }), [result, isLoading])
 }

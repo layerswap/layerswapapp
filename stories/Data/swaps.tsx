@@ -135,7 +135,6 @@ export const swap = {
                 "price_in_usd": 3043.77,
                 "precision": 6
             },
-            "destination_exchange": undefined,
             "requested_amount": 0.000373,
             "destination_address": "0x5f4025cb72997d971e101a8fef19422e696b4162",
             "status": SwapStatus.UserTransferPending,
@@ -291,7 +290,6 @@ export const failedSwap: any = {
             "price_in_usd": 3043.77,
             "precision": 6
         },
-        "destination_exchange": undefined,
         "requested_amount": 0.000373,
         "destination_address": "0x5f4025cb72997d971e101a8fef19422e696b4162",
         "status": SwapStatus.Failed,
@@ -446,7 +444,6 @@ export const failedInputSwap: any = {
             "price_in_usd": 3043.77,
             "precision": 6
         },
-        "destination_exchange": undefined,
         "requested_amount": 0.000373,
         "destination_address": "0x5f4025cb72997d971e101a8fef19422e696b4162",
         "status": SwapStatus.Failed,
@@ -601,7 +598,6 @@ export const failedSwapOutOfRange: any = {
             "price_in_usd": 3043.77,
             "precision": 6
         },
-        "destination_exchange": undefined,
         "requested_amount": 0.000373,
         "destination_address": "0x5f4025cb72997d971e101a8fef19422e696b4162",
         "status": SwapStatus.Failed,
@@ -769,7 +765,6 @@ export const cancelled: any = {
             "price_in_usd": 3043.77,
             "precision": 6
         },
-        "destination_exchange": undefined,
         "requested_amount": 0.000373,
         "destination_address": "0x5f4025cb72997d971e101a8fef19422e696b4162",
         "status": SwapStatus.Failed,
@@ -911,7 +906,6 @@ export const expired: any = {
             "price_in_usd": 3043.77,
             "precision": 6
         },
-        "destination_exchange": undefined,
         "requested_amount": 0.000373,
         "destination_address": "0x5f4025cb72997d971e101a8fef19422e696b4162",
         "status": SwapStatus.Failed,

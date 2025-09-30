@@ -25,11 +25,11 @@ export function useBalance(
     const entry = useBalanceStore((s) => s.balances[key])
     const fetchBalance = useBalanceStore((s) => s.fetchBalance)
 
-    const tick = () => {
+    const tick = (interval: number = refreshInterval) => {
         if (!address || !network) return
         if (refreshWhenHidden && document.hidden) return
         if (refreshWhenOffline && !navigator.onLine) return
-        fetchBalance(address, network, { dedupeInterval: dedupeInterval })
+        fetchBalance(address, network, { dedupeInterval: interval })
     }
 
     useEffect(() => {
@@ -39,7 +39,7 @@ export function useBalance(
     useEffect(() => {
         if (refreshInterval <= 0) return
         if (!address || !network) return
-        tick()
+        tick(refreshInterval)
         const id = window.setInterval(tick, refreshInterval)
         return () => window.clearInterval(id)
     }, [
@@ -51,10 +51,16 @@ export function useBalance(
         refreshWhenOffline,
     ])
 
+    const mutate = () => {
+        if (!address || !network) return
+        fetchBalance(address, network, { ignoreCache: true })
+    }
+
     return {
         balances: entry?.data?.balances,
         totalInUSD: entry?.data?.totalInUSD,
         error: entry?.error,
         isLoading: entry?.status === 'loading',
+        mutate,
     }
 }
