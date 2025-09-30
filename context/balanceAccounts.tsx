@@ -151,7 +151,9 @@ export function useSelectedAccount(direction: SwapDirection, providerName: strin
     }
     return direction === "from" ? values.sourceAccounts.find(acc => acc.providerName === providerName) : values.destinationAccounts.find(acc => acc.providerName === providerName);
 }
-
+export function useNetworkAccount(direction: "from", networkName: string | undefined): AccountIdentityWithWallet | undefined;
+export function useNetworkAccount(direction: "to", networkName: string | undefined): AccountIdentity | undefined;
+export function useNetworkAccount(direction: SwapDirection, networkName: string | undefined): AccountIdentity | AccountIdentityWithWallet | undefined;
 export function useNetworkAccount(direction: SwapDirection, networkName: string | undefined) {
     const values = useContext<BalanceAccountsContextType>(BalanceAccountsStateContext as Context<BalanceAccountsContextType>);
     if (!networkName) return undefined;

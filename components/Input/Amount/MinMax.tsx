@@ -5,9 +5,8 @@ import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import React, { useMemo } from "react";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { updateForm } from "@/components/Swap/Form/updateForm";
-import useWallet from "@/hooks/useWallet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
-import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useNetworkAccount } from "@/context/balanceAccounts";
 import { useBalance } from "@/lib/balances/useBalance";
 
 type MinMaxProps = {
@@ -24,8 +23,7 @@ const MinMax = (props: MinMaxProps) => {
     const { setFieldValue } = useFormikContext<SwapFormValues>();
     const { fromCurrency, from, limitsMinAmount, limitsMaxAmount, onActionHover, depositMethod } = props;
 
-    const { provider } = useWallet(from, "withdrawal")
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useNetworkAccount("from", from?.name);
 
     const { gasData } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency)
     const { balances, mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, from)

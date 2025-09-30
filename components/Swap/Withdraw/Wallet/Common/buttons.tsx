@@ -17,7 +17,7 @@ import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
 import posthog from "posthog-js";
 import { useWalletWithdrawalState } from "@/context/withdrawalContext";
-import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useNetworkAccount, useSelectedAccount } from "@/context/balanceAccounts";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
@@ -81,24 +81,23 @@ export const ChangeNetworkButton: FC<ChangeNetworkProps> = (props) => {
     const [error, setError] = useState<Error | null>(null)
     const [isPending, setIsPending] = useState(false)
 
-    const { provider } = useWallet(network, "withdrawal")
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useNetworkAccount("from", network?.name);
 
     const clickHandler = useCallback(async () => {
         try {
             setIsPending(true)
-            if (!provider) throw new Error(`No provider from ${network?.name}`)
-            if (!provider.switchChain) throw new Error(`No switchChain from ${network?.name}`)
+            if (!selectedSourceAccount) throw new Error(`No provider from ${network?.name}`)
+            if (!selectedSourceAccount.provider.switchChain) throw new Error(`No switchChain from ${network?.name}`)
             if (!selectedSourceAccount) throw new Error(`No selectedSourceAccount from ${network?.name}`)
 
-            return await provider.switchChain(selectedSourceAccount.wallet, chainId)
+            return await selectedSourceAccount.provider.switchChain(selectedSourceAccount.wallet, chainId)
         } catch (e) {
             setError(e)
         } finally {
             setIsPending(false)
         }
 
-    }, [provider, chainId])
+    }, [selectedSourceAccount, chainId])
 
     return <>
         <ChangeNetworkMessage

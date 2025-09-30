@@ -11,7 +11,7 @@ import { useConnectModal } from '@/components/WalletModal';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import TransactionMessages from '../../../messages/TransactionMessages';
 import { posthog } from 'posthog-js';
-import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useNetworkAccount } from '@/context/balanceAccounts';
 
 export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -20,7 +20,7 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData
     const { provider } = useWallet(source_network, 'withdrawal');
     const [transactionErrorMessage, setTransactionErrorMessage] = useState<string | undefined>(undefined)
     const { connector } = useAccount()
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useNetworkAccount("from", source_network?.name);
     const dataLoading = !source_network || !source_token
     const isTestnet = source_network?.name === KnownInternalNames.Networks.BitcoinTestnet;
 
