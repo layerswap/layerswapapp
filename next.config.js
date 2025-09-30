@@ -78,7 +78,7 @@ module.exports = (phase, { defaultConfig }) => {
       version: process.env.VERCEL_GIT_COMMIT_SHA,
       deleteAfterUpload: true,
     },
-  });
+  }); 
 
   wrapped.images = {
     ...(wrapped.images || {}),
