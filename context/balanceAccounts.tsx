@@ -140,19 +140,10 @@ export function useBalanceAccounts(direction: SwapDirection) {
     return direction === "from" ? values.sourceAccounts : values.destinationAccounts;
 }
 
-export function useSelectedAccount(direction: "from", providerName: string | undefined): AccountIdentityWithWallet | undefined;
-export function useSelectedAccount(direction: "to", providerName: string | undefined): AccountIdentity | undefined;
-export function useSelectedAccount(direction: SwapDirection, providerName: string | undefined): AccountIdentity | AccountIdentityWithWallet | undefined;
-export function useSelectedAccount(direction: SwapDirection, providerName: string | undefined) {
-    const values = useContext<BalanceAccountsContextType>(BalanceAccountsStateContext as Context<BalanceAccountsContextType>);
-    if (!providerName) return undefined;
-    if (values === undefined) {
-        throw new Error('useBalanceAccounts must be used within a BalanceAccountsProvider');
-    }
-    return direction === "from" ? values.sourceAccounts.find(acc => acc.providerName === providerName) : values.destinationAccounts.find(acc => acc.providerName === providerName);
-}
-
-export function useNetworkAccount(direction: SwapDirection, networkName: string | undefined) {
+export function useSelectedAccount(direction: "from", networkName: string | undefined): AccountIdentityWithWallet | undefined;
+export function useSelectedAccount(direction: "to", networkName: string | undefined): AccountIdentity | undefined;
+export function useSelectedAccount(direction: SwapDirection, networkName: string | undefined): AccountIdentity | AccountIdentityWithWallet | undefined;
+export function useSelectedAccount(direction: SwapDirection, networkName: string | undefined) {
     const values = useContext<BalanceAccountsContextType>(BalanceAccountsStateContext as Context<BalanceAccountsContextType>);
     if (!networkName) return undefined;
     if (values === undefined) {
@@ -169,7 +160,7 @@ export function useNetworkAccount(direction: SwapDirection, networkName: string 
 }
 
 export function useNetworkBalanceKey(direction: SwapDirection, networkName: string | undefined) {
-    const account = useNetworkAccount(direction, networkName);
+    const account = useSelectedAccount(direction, networkName);
     if (!account || !networkName) return undefined;
     return getKey(account.address, networkName);
 }

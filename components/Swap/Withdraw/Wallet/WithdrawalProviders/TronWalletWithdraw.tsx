@@ -1,5 +1,4 @@
 import { FC, useCallback, useState } from 'react'
-import useWallet from '@/hooks/useWallet';
 import { useWallet as useTronWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
 import { useSettingsState } from '@/context/settings';
 import { TronWeb } from 'tronweb'
@@ -16,8 +15,7 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refue
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | undefined>()
     const { source_network, source_token } = swapBasicData;
-    const { provider } = useWallet(source_network, 'withdrawal');
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
     const wallet = selectedSourceAccount?.wallet
     const { wallet: tronWallet, signTransaction } = useTronWallet();
     const walletAddress = tronWallet?.adapter.address

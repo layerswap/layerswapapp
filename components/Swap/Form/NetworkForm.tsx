@@ -48,8 +48,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
         depositMethod
     } = values;
 
-    const { provider } = useWallet(source, 'withdrawal');
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", source?.name);
 
     const { providers, wallets } = useWallet();
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
@@ -198,8 +197,7 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
         from: source,
     } = values
 
-    const { provider } = useWallet(source, "withdrawal")
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", source?.name);
 
     const sourceCanBeSwapped = !source ? true : (destinationRoutes?.some(l => l.name === source?.name && l.tokens.some(t => t.symbol === fromCurrency?.symbol && t.status === 'active')) ?? false)
     const destinationCanBeSwapped = !destination ? true : (sourceRoutes?.some(l => l.name === destination?.name && l.tokens.some(t => t.symbol === toCurrency?.symbol && t.status === 'active')) ?? false)

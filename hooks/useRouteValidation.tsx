@@ -4,7 +4,6 @@ import { useMemo } from 'react';
 import { useSettingsState } from '@/context/settings';
 import { useQueryState } from '@/context/query';
 import { useFormikContext } from 'formik';
-import useWallet from './useWallet';
 import { QuoteError } from './useFee';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 
@@ -20,8 +19,7 @@ export function resolveRouteValidation(quoteError?: QuoteError) {
     const { values } = useFormikContext<SwapFormValues>();
     const { destinationRoutes: allDestinations, sourceRoutes: allSources } = useSettingsState()
     const { to, from, fromAsset: fromCurrency, toAsset: toCurrency, fromExchange, validatingSource, validatingDestination, destination_address } = values;
-    const { provider } = useWallet(from, "withdrawal")
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", from?.name);
     const query = useQueryState();
     const fromDisplayName = fromExchange ? fromExchange.display_name : from?.display_name;
     const toDisplayName = to?.display_name;

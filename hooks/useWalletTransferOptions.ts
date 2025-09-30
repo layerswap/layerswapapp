@@ -1,6 +1,5 @@
 import { useSwapDataState } from "../context/swap"
 import { NetworkType } from "../Models/Network"
-import useWallet from "./useWallet"
 import { useEffect } from "react"
 import { useContractWalletsStore } from "../stores/contractWalletsStore"
 import resolveChain from "../lib/resolveChain"
@@ -13,9 +12,8 @@ export default function useWalletTransferOptions() {
     const { networks } = useSettingsState()
     const { source_network } = swapBasicData || {}
     const { addContractWallet, getContractWallet, updateContractWallet } = useContractWalletsStore()
-    const { provider } = useWallet(source_network, 'withdrawal')
 
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
     useEffect(() => {
         if (selectedSourceAccount?.address == undefined || source_network == undefined) return;
         let contractWallet = getContractWallet(selectedSourceAccount.address, source_network.name);
