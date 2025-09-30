@@ -8,7 +8,6 @@ import { SWRConfig } from 'swr'
 import ProgressBar from "@badrap/bar-of-progress";
 import Router from "next/router";
 import posthog from "posthog-js";
-import { useEffect } from 'react';
 
 const progress = new ProgressBar({
   size: 2,
@@ -34,19 +33,7 @@ const INTERCOM_APP_ID = 'h5zisg78'
 
 function App({ Component, pageProps }) {
   const router = useRouter()
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    if (!params.has('ph_error')) return;
-    const a = () => b();
-    const b = () => c();
-    const c = () => {
-      throw new Error(`Sourcemap test – ${new Date().toISOString()}`);
-    };
-    setTimeout(a, 0);
-  }, [router.asPath]);
-
+  
   return (
     <SWRConfig
       value={{
