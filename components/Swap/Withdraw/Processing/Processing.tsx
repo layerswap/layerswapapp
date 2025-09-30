@@ -369,17 +369,9 @@ const getProgressStatuses = (swapResponse: SwapResponse, inputTxStatusFromApi: T
 
     let input_transfer = transactionStatusToProgressStatus(swapInputTxStatus) || ''
 
-    let output_transfer =
-        (!swapOutputTransaction && inputIsCompleted) || swapOutputTransaction?.status == BackendTransactionStatus.Pending ? ProgressStatus.Current
-            : swapOutputTransaction?.status == BackendTransactionStatus.Initiated || swapOutputTransaction?.status == BackendTransactionStatus.Completed ? ProgressStatus.Complete
-                : ProgressStatus.Upcoming;
+    let output_transfer = swapOutputTransaction?.transaction_hash ? ProgressStatus.Complete : inputIsCompleted ? ProgressStatus.Current : ProgressStatus.Upcoming;
 
-    let refuel_transfer =
-        (!!swapRefuel && !swapRefuelTransaction) ? ProgressStatus.Upcoming
-            : swapRefuelTransaction?.status == BackendTransactionStatus.Pending ? ProgressStatus.Current
-                : swapRefuelTransaction?.status == BackendTransactionStatus.Initiated || swapRefuelTransaction?.status == BackendTransactionStatus.Completed ? ProgressStatus.Complete
-                    : ProgressStatus.Removed;
-
+    let refuel_transfer = swapRefuelTransaction?.transaction_hash ? ProgressStatus.Complete : !!swapRefuel ? ProgressStatus.Upcoming : ProgressStatus.Removed;
 
     if (swapStatus === SwapStatus.Failed) {
         output_transfer = output_transfer == ProgressStatus.Complete ? ProgressStatus.Complete : ProgressStatus.Failed;
