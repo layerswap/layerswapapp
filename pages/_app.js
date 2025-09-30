@@ -8,6 +8,7 @@ import { SWRConfig } from 'swr'
 import ProgressBar from "@badrap/bar-of-progress";
 import Router from "next/router";
 import posthog from "posthog-js";
+import { useEffect } from 'react';
 
 const progress = new ProgressBar({
   size: 2,
