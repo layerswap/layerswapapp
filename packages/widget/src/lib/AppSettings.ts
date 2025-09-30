@@ -28,11 +28,13 @@ export default class AppSettings {
     static ImtblPassportConfig: {
         appBasePath: string,
         publishableKey: string,
-        clientId: string
+        clientId: string,
+        redirectUri: string
     } | undefined = {
             appBasePath: "",
             publishableKey: "",
-            clientId: ""
+            clientId: "",
+            redirectUri: ""
         }
     static DisableExchanges: boolean = false
     static FeaturedNetwork?: {

@@ -6,6 +6,14 @@ import { removeSwapPath, setSwapPath } from "../../utils/updateSwapPath"
 
 const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string }> = ({ settings, themeData, apiKey }) => {
     const router = useRouter()
+
+    const imtblPassportConfigs = typeof window !== 'undefined' ? {
+        appBasePath: router.basePath,
+        clientId: process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID || '',
+        publishableKey: process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY || '',
+        redirectUri: router.basePath ? `${window.location.origin}${router.basePath}/imtblRedirect` : `${window.location.origin}/imtblRedirect`
+    } : undefined
+
     return <LayerswapProvider
         integrator='layerswap'
         apiKey={apiKey}
@@ -24,11 +32,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
                 }
             }
         }}
-        imtblPassport={{
-            appBasePath: router.basePath,
-            clientId: process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID || '',
-            publishableKey: process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY || ''
-        }}
+        imtblPassport={imtblPassportConfigs}
     >
         <Swap />
     </LayerswapProvider>

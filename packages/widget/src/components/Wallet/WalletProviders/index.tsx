@@ -12,6 +12,7 @@ import FuelProviderWrapper from "./FuelProvider";
 import { EvmConnectorsProvider } from "@/context/evmConnectorsContext";
 import { BitcoinProvider } from "./BitcoinProvider";
 import { ActiveParadexAccountProvider } from "./ActiveParadexAccount";
+import AppSettings from "@/lib/AppSettings";
 
 const WalletsProviders: FC<{ children: ReactNode, basePath: string, themeData: ThemeData, appName: string | undefined }> = ({ children, basePath, themeData, appName }) => {
     return (
@@ -23,7 +24,7 @@ const WalletsProviders: FC<{ children: ReactNode, basePath: string, themeData: T
                             <Wagmi>
                                 <ActiveParadexAccountProvider>
                                     <FuelProviderWrapper>
-                                        <ImtblPassportProvider>
+                                        <ImtblPassportProvider client_id={AppSettings.ImtblPassportConfig?.clientId} publishable_key={AppSettings.ImtblPassportConfig?.publishableKey} redirect_uri={AppSettings.ImtblPassportConfig?.redirectUri} base_path={AppSettings.ImtblPassportConfig?.appBasePath}>
                                             <BitcoinProvider>
                                                 <WalletModalProvider>
                                                     <WalletProvidersProvider>
