@@ -46,7 +46,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         tertiary: '86, 97, 123',
         buttonTextColor: '17, 17, 17',
         logo: '255, 0, 147',
-        borderRadius: 'small',
         primary: {
             DEFAULT: '228, 37, 117',
             '100': '246, 182, 209',
@@ -80,7 +79,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         buttonTextColor: "60, 50, 40",
         logo: "230, 200, 170",
         tertiary: "120, 100, 80",
-        borderRadius: "small",
         primary: {
             DEFAULT: "230, 200, 170",
             '100': "250, 235, 210",
@@ -149,7 +147,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         tertiary: '255, 180, 255',
         buttonTextColor: '255, 255, 255',
         logo: '0, 255, 0',
-        borderRadius: 'small',
         primary: {
             DEFAULT: '0, 255, 0',
             '100': '153, 255, 153',
@@ -183,7 +180,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         tertiary: "180, 120, 180",
         buttonTextColor: "0, 255, 180",
         logo: "255, 45, 200",
-        borderRadius: "small",
         primary: {
             DEFAULT: "255, 45, 200",
             '100': "255, 210, 240",
@@ -217,7 +213,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         backdrop: "5, 5, 10",
         buttonTextColor: "0, 255, 255",
         logo: "80, 0, 255",
-        borderRadius: "small",
         primary: {
             DEFAULT: "80, 0, 255",
             '100': "180, 160, 255",
