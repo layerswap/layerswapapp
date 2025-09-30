@@ -37,7 +37,7 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "flex w-full items-center justify-between rounded-md border bg-transparent p-3  text-base bg-secondary-700 placeholder:text-secondary-text focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50 border-secondary-500 dark:text-primary-text",
+        "flex w-full items-center justify-between rounded-md border p-3  text-base bg-secondary-700 placeholder:text-secondary-text focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50 border-secondary-500 dark:text-primary-text",
         className
       )}
       {...props}
@@ -55,7 +55,9 @@ function SelectContent({
   children,
   position = "popper",
   ...props
-}: React.ComponentProps<typeof SelectPrimitive.Content>) {
+}: React.ComponentProps<typeof SelectPrimitive.Content> & {
+  position?: "popper" | "item-aligned"
+}) {
   return (
     <SelectPrimitive.Portal>
       <SelectPrimitive.Content

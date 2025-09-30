@@ -40,7 +40,7 @@ function RadioGroupItem({ value, children, className, ...props }: RadioGroupItem
             type="button"
             onClick={() => context.onChange(value)}
             className={cn(
-                "relative flex w-full cursor-pointer justify-start items-center rounded-md border py-3 px-2 text-base bg-transparent bg-secondary-700 hover:border-primary transition-colors duration-200",
+                "relative flex w-full cursor-pointer justify-start items-center rounded-md border py-3 px-2 text-base bg-secondary-700 hover:border-primary transition-colors duration-200",
                 "text-secondary-text border-secondary-500",
                 isChecked && "bg-secondary-700 text-primary-text justify-between",
                 className
