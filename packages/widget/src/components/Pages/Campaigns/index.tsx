@@ -4,12 +4,11 @@ import { ApiResponse } from "@/Models/ApiResponse";
 import LayerSwapApiClient, { Campaign } from "@/lib/apiClients/layerSwapApiClient";
 import SpinIcon from "@/components/Icons/spinIcon";
 import useSWR from 'swr'
-import LinkWrapper from "@/components/Common/LinkWrapper";
 import { Widget } from "@/components/Widget/Index";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { LayerswapContextProps, LayerswapProvider } from "@/context/LayerswapProvider";
 
-export const CampaignsComponent = () => {
+export const CampaignsComponent = ({ onCampaignSelect }: { onCampaignSelect: (campaign: Campaign) => void }) => {
 
     const apiClient = new LayerSwapApiClient()
     const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
@@ -25,7 +24,7 @@ export const CampaignsComponent = () => {
     const inactiveCampaigns = sortedCampaigns?.filter(c => !IsCampaignActive(c)) || []
 
     return (
-        <Widget>
+        <>
             <Widget.Content>
                 {!isLoading ?
                     <div className="space-y-5 h-full text-primary-text">
@@ -37,6 +36,7 @@ export const CampaignsComponent = () => {
                                         activeCampaigns.length > 0 ?
                                             activeCampaigns.map(c =>
                                                 <CampaignItem
+                                                    onCampaignSelect={onCampaignSelect}
                                                     campaign={c}
                                                     key={c.id}
                                                 />)
@@ -57,6 +57,7 @@ export const CampaignsComponent = () => {
                                     <div className="p-3 dpsv flex flex-col space-y-4">
                                         {inactiveCampaigns?.map(c =>
                                             <CampaignItem
+                                                onCampaignSelect={onCampaignSelect}
                                                 campaign={c}
                                                 key={c.id}
                                             />)}
@@ -71,18 +72,20 @@ export const CampaignsComponent = () => {
                     </div>
                 }
             </Widget.Content>
-        </Widget>
+        </>
     )
 }
 type CampaignProps = {
     campaign: Campaign,
+    onCampaignSelect: (campaign: Campaign) => void
 }
-const CampaignItem: FC<CampaignProps> = ({ campaign }) => {
+const CampaignItem: FC<CampaignProps> = ({ campaign, onCampaignSelect }) => {
 
     const campaignDaysLeft = ((new Date(campaign.end_date).getTime() - new Date().getTime()) / 86400000).toFixed()
     const campaignIsActive = IsCampaignActive(campaign)
 
-    return <LinkWrapper href={`/campaigns/${campaign.name}`}
+    return <div
+        onClick={() => onCampaignSelect(campaign)}
         className="flex justify-between items-center">
         <span className="flex items-center gap-1 hover:opacity-70 active:scale-90 duration-200 transition-all">
             <span className="h-5 w-5 relative">
@@ -102,7 +105,7 @@ const CampaignItem: FC<CampaignProps> = ({ campaign }) => {
                 {campaignDaysLeft} days left
             </span>
         }
-    </LinkWrapper>
+    </div>
 }
 
 function IsCampaignActive(campaign: Campaign) {
@@ -110,13 +113,11 @@ function IsCampaignActive(campaign: Campaign) {
     return (new Date(campaign?.end_date).getTime() > now.getTime())
 }
 
-export const Campaigns: FC<LayerswapContextProps & { hideMenu?: boolean }> = (props) => {
+export const Campaigns: FC<LayerswapContextProps & { hideMenu?: boolean; goBack: () => void, onCampaignSelect: (campaign: Campaign) => void }> = (props) => {
     return (
         <LayerswapProvider {...props}>
-            <Widget hideMenu={props.hideMenu}>
-                <Widget.Content>
-                    <CampaignsComponent />
-                </Widget.Content>
+            <Widget goBack={props.goBack} hideMenu={props.hideMenu}>
+                <CampaignsComponent onCampaignSelect={props.onCampaignSelect} />
             </Widget>
         </LayerswapProvider>
     )

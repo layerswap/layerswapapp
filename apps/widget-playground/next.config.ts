@@ -7,7 +7,7 @@ const nextConfig: NextConfig = {
     return config
   },
   reactStrictMode: true,
-  transpilePackages: []
+  transpilePackages: ['@layerswap/widget']
 };
 
 export default nextConfig;

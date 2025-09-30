@@ -1,3 +1,13 @@
 {
-    "buildCommand": "yarn build"
+    "projects": [
+        {
+            "name": "bridge-app",
+            "root": "apps/bridge",
+            "installCommand": "yarn",
+            "buildCommand": "yarn build",
+            "outputDirectory": "dist",
+            "framework": null
+        }
+    ],
+    "ignoreCommand": "git diff HEAD^ HEAD --quiet -- apps/bridge packages/widget"
 }

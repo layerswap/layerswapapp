@@ -106,73 +106,72 @@ const NetworkForm: FC<Props> = ({ partner }) => {
             <Form className="h-full grow flex flex-col flex-1 justify-between w-full">
                 <Widget.Content>
                     <div className="w-full flex flex-col justify-between">
-                        <div>
-                            <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
-                                {
-                                    !(initialSettings?.hideFrom && values?.from) && <SourcePicker
-                                        minAllowedAmount={minAllowedAmount}
-                                        maxAllowedAmount={maxAllowedAmount}
-                                        fee={quote}
-                                    />
-                                }
-                                {
-                                    !initialSettings?.hideFrom && !initialSettings?.hideTo &&
-                                    <ValueSwapperButton
-                                        values={values}
-                                        setValues={setValues}
-                                        providers={providers}
-                                        query={initialSettings}
-                                    />
-                                }
-                                {
-                                    !(initialSettings?.hideTo && values?.to) && <DestinationPicker
-                                        isFeeLoading={isQuoteLoading}
-                                        fee={quote}
-                                        partner={partner}
-                                    />
-                                }
-                            </div>
+                        <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
+                            {
+                                !(initialSettings?.hideFrom && values?.from) && <SourcePicker
+                                    minAllowedAmount={minAllowedAmount}
+                                    maxAllowedAmount={maxAllowedAmount}
+                                    fee={quote}
+                                />
+                            }
+                            {
+                                !initialSettings?.hideFrom && !initialSettings?.hideTo &&
+                                <ValueSwapperButton
+                                    values={values}
+                                    setValues={setValues}
+                                    providers={providers}
+                                    query={initialSettings}
+                                />
+                            }
+                            {
+                                !(initialSettings?.hideTo && values?.to) && <DestinationPicker
+                                    isFeeLoading={isQuoteLoading}
+                                    fee={quote}
+                                    partner={partner}
+                                />
+                            }
                         </div>
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
                     <div className="space-y-3">
-                        <>
-                            {
-                                showInsufficientBalanceWarning &&
-                                <InsufficientBalanceWarning />
-                            }
-                        </>
                         {
-                            Number(values.amount) > 0 &&
-                            <ReserveGasNote
-                                maxAllowedAmount={minAllowedAmount}
-                                minAllowedAmount={maxAllowedAmount}
-                                onSubmit={handleReserveGas}
-                            />
+                            showInsufficientBalanceWarning ?
+                                <InsufficientBalanceWarning />
+                                : null
                         }
                         {
-                            values.toAsset?.refuel && !initialSettings.hideRefuel &&
-                            <RefuelToggle
-                                quote={quote}
-                                onButtonClick={() => setOpenRefuelModal(true)}
-                                minAllowedAmount={minAllowedAmount}
-                            />
+                            Number(values.amount) > 0 ?
+                                <ReserveGasNote
+                                    maxAllowedAmount={minAllowedAmount}
+                                    minAllowedAmount={maxAllowedAmount}
+                                    onSubmit={handleReserveGas}
+                                />
+                                : null
+                        }
+                        {
+                            (values.toAsset?.refuel && !initialSettings.hideRefuel) ?
+                                <RefuelToggle
+                                    quote={quote}
+                                    onButtonClick={() => setOpenRefuelModal(true)}
+                                    minAllowedAmount={minAllowedAmount}
+                                />
+                                : null
                         }
                         {
                             routeValidation.message
                                 ? <ValidationError />
                                 : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                         }
+                        <FormButton
+                            shouldConnectWallet={shouldConnectWallet}
+                            values={values}
+                            disabled={!isValid || isSubmitting || !quote || isQuoteLoading}
+                            error={error}
+                            isSubmitting={isSubmitting}
+                            partner={partner}
+                        />
                     </div>
-                    <FormButton
-                        shouldConnectWallet={shouldConnectWallet}
-                        values={values}
-                        disabled={!isValid || isSubmitting || !quote || isQuoteLoading}
-                        error={error}
-                        isSubmitting={isSubmitting}
-                        partner={partner}
-                    />
                 </Widget.Footer>
                 <RefuelModal
                     openModal={openRefuelModal}

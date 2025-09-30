@@ -6,6 +6,7 @@ import { renderToString } from 'react-dom/server'
 import LayerSwapLogoSmall from "../Icons/layerSwapLogoSmall";
 import * as ContextMenuPrimitive from '@radix-ui/react-context-menu';
 import clsx from "clsx";
+import LayerswapMobileLogo from "../Icons/layerSwapMobileLogo";
 interface Props {
     className?: string;
 }
@@ -15,7 +16,20 @@ const LogoWithDetails: FC<Props> = (({ className }) => {
     return (
         <ContextMenuPrimitive.Root>
             <ContextMenuPrimitive.Trigger asChild>
-                <LayerSwapLogo className={clsx("h-8 w-auto text-logo fill-primary-text", className)} />
+                <div>
+                    <LayerswapMobileLogo
+                        className={clsx(
+                            "block md:hidden h-4 w-auto text-logo fill-primary-text",
+                            className
+                        )}
+                    />
+                    <LayerSwapLogo
+                        className={clsx(
+                            "hidden md:block h-8 w-auto text-logo fill-primary-text",
+                            className
+                        )}
+                    />
+                </div>
             </ContextMenuPrimitive.Trigger>
             <ContextMenuPrimitive.Content className="dialog-overlay absolute z-40 border h-fit text-secondary-text border-secondary-100 mt-2 w-fit rounded-md shadow-lg bg-secondary-700 ring-1 ring-black/5 focus:outline-hidden">
                 <ContextMenuPrimitive.ContextMenuItem className="dialog-content px-4 py-2 text-sm text-left w-full rounded-t hover:bg-secondary-400 whitespace-nowrap">

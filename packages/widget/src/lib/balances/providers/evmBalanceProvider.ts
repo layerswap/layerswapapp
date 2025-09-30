@@ -8,7 +8,7 @@ import { erc20Abi } from 'viem'
 import { multicall } from '@wagmi/core'
 import { getBalance, GetBalanceReturnType } from '@wagmi/core'
 import resolveChain from "@/lib/resolveChain"
-import BalanceGetterAbi from "@/lib/abis/BALANCEGETTERABI.json"
+import BalanceGetterAbi from "@/lib/jsons/abis/BALANCEGETTERABI.json"
 import KnownInternalNames from "@/lib/knownIds"
 import { BalanceProvider } from "@/Models/BalanceProvider"
 

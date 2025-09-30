@@ -6,10 +6,6 @@
     "packages": [
       "packages/*",
       "apps/*"
-    ],
-    "nohoist": [
-      "packages/*",
-      "apps/*"
     ]
   },
   "devDependencies": {

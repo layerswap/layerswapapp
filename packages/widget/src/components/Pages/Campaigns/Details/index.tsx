@@ -15,7 +15,7 @@ import { useConnectModal } from "@/components/Wallet/WalletModal"
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback"
 import { LayerswapContextProps, LayerswapProvider } from "@/context/LayerswapProvider"
 
-export const CampaignDetailsComponent: FC<{ campaignName: string }> = ({ campaignName }) => {
+export const CampaignDetailsComponent: FC<{ campaignName: string | undefined }> = ({ campaignName }) => {
 
     const apiClient = new LayerSwapApiClient()
     const { data: campaignsData, isLoading } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
@@ -41,7 +41,7 @@ export const CampaignDetailsComponent: FC<{ campaignName: string }> = ({ campaig
     }
 
     return (
-        <Widget>
+        <>
             <Widget.Content>
                 <div className="space-y-5">
                     <div className="flex items-center gap-1">
@@ -77,7 +77,7 @@ export const CampaignDetailsComponent: FC<{ campaignName: string }> = ({ campaig
                     </Widget.Footer>
                 }
             </>
-        </Widget >
+        </ >
     )
 }
 
@@ -119,10 +119,10 @@ const NotFound = () => <Widget>
     </Widget.Content>
 </Widget>
 
-export const CampaignDetails: FC<LayerswapContextProps & { campaignName: string }> = (props) => {
+export const CampaignDetails: FC<LayerswapContextProps & { campaignName: string; goBack: () => void }> = (props) => {
     return (
         <LayerswapProvider {...props}>
-            <Widget>
+            <Widget goBack={props.goBack}>
                 <CampaignDetailsComponent campaignName={props.campaignName} />
             </Widget>
         </LayerswapProvider>

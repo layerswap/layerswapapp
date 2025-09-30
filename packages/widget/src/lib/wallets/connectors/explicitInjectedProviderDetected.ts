@@ -82,3 +82,14 @@ export type WalletProviderFlags =
     | 'isSafeheron'
     | 'isSafePal'
     | '__seif';
+
+
+// Interface for Ethereum providers based on the EIP-1193 standard.
+interface EIP1193Provider {
+    isStatus?: boolean; // Optional: Indicates the status of the provider
+    host?: string; // Optional: Host URL of the Ethereum node
+    path?: string; // Optional: Path to a specific endpoint or service on the host
+    sendAsync?: (request: { method: string, params?: Array<unknown> }, callback: (error: Error | null, response: unknown) => void) => void; // For sending asynchronous requests
+    send?: (request: { method: string, params?: Array<unknown> }, callback: (error: Error | null, response: unknown) => void) => void; // For sending synchronous requests
+    request: (request: { method: string, params?: Array<unknown> }) => Promise<unknown>; // Standard method for sending requests per EIP-1193
+}
