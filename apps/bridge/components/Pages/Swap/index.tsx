@@ -17,6 +17,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
     return <LayerswapProvider
         integrator='layerswap'
         apiKey={apiKey}
+        version={process.env.NEXT_PUBLIC_API_VERSION as 'mainnet' | 'testnet'}
         settings={settings}
         themeData={{ ...themeData as any, borderRadius: 'default', enablePortal: true }}
         callbacks={{
