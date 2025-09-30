@@ -67,9 +67,9 @@ const Comp = ({ children, hidden, sticky = true }: FooterProps) => {
                 </div>
             </ >
             :
-            <>
+            <div className="mt-3 w-full h-full">
                 {children}
-            </>
+            </div>
     )
 }
 

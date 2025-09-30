@@ -9,6 +9,7 @@ import WizardItem from "../Wizard/WizardItem";
 import HistoryList from "../Pages/SwapHistory/History";
 import Modal from "../Modal/modal";
 import { CampaignsComponent } from "../Pages/Campaigns";
+import { CampaignDetailsComponent } from "../Pages/Campaigns/Details";
 
 const Comp = () => {
 
@@ -16,6 +17,7 @@ const Comp = () => {
     const { goToStep } = useFormWizardaUpdate()
 
     const [openTopModal, setOpenTopModal] = useState(false);
+    const [selectedCampaign, setSelectedCampaign] = useState<undefined | string>(undefined)
 
     const handleModalOpenStateChange = (value: boolean) => {
         setOpenTopModal(value)
@@ -43,12 +45,10 @@ const Comp = () => {
                     <div className="inline-flex items-center">
                         {
                             goBack &&
-                            <div className="-ml-2">
-                                <IconButton className="inline-flex" onClick={goBack} icon={
-                                    <ChevronLeft strokeWidth="2" />
-                                }>
-                                </IconButton>
-                            </div>
+                            <IconButton className="inline-flex" onClick={goBack} icon={
+                                <ChevronLeft strokeWidth="2" />
+                            }>
+                            </IconButton>
                         }
                         <h2>{currentStepName as string}</h2>
                     </div>
@@ -62,7 +62,10 @@ const Comp = () => {
                         <HistoryList onNewTransferClick={() => handleModalOpenStateChange(false)} />
                     </WizardItem>
                     <WizardItem StepName={MenuStep.Campaigns} GoBack={goBackToMenuStep} className="h-full" inModal>
-                        <CampaignsComponent />
+                        <CampaignsComponent onCampaignSelect={(campaign) => {handleGoToStep(MenuStep.CampaignDetails); setSelectedCampaign(campaign.name)}} />
+                    </WizardItem>
+                    <WizardItem StepName={MenuStep.CampaignDetails} GoBack={() => goToStep(MenuStep.Campaigns, "back")} className="h-full" inModal>
+                        <CampaignDetailsComponent campaignName={selectedCampaign} />
                     </WizardItem>
                 </Wizard>
             </Modal>
