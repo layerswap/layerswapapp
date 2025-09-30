@@ -9,7 +9,6 @@
     "noEmit": false,
     "declarationDir": "dist",
     "outDir": "dist",
-    "composite": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "paths": {

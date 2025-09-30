@@ -1,4 +1,3 @@
-import AppSettings from "@/lib/AppSettings";
 import { ReactNode, useEffect } from "react"
 
 export type InitImtblPassport = { client_id: string | undefined, publishable_key: string | undefined, redirect_uri: string | undefined, base_path?: string | undefined }
