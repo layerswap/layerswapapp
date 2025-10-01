@@ -44,7 +44,7 @@ const KnownEVMConnectors = [
         icon: BitGetIcon
     },
     {
-        id: 'coinbasewalletsdk',
+        id: 'coinbaseWalletSDK',
         icon: CoinbaseIcon
     },
     {
@@ -71,8 +71,8 @@ const KnownEVMConnectors = [
 
 export const evmConnectorNameResolver = (connector: Connector) => {
 
-    const connectorById = KnownEVMConnectors.find(c => c.id === connector.id.toLowerCase())
-    const connectorByName = KnownEVMConnectors.find(c => c.id === connector.name.toLowerCase())
+    const connectorById = KnownEVMConnectors.find(c => c.id.toLowerCase() === connector.id.toLowerCase())
+    const connectorByName = KnownEVMConnectors.find(c => c.id.toLowerCase() === connector.name.toLowerCase())
 
     if (connectorById) return connectorById.id
     else if (connectorByName) return connectorByName.id
