@@ -13,7 +13,6 @@ import { addressFormat } from "../../lib/address/formatter";
 import { useSettingsState } from "../../context/settings";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../shadcn/accordion";
 import { useSwapHistoryData } from "../../hooks/useSwapHistoryData";
-import posthog from 'posthog-js';
 
 type ListProps = {
     statuses?: string | number;
@@ -24,25 +23,6 @@ type ListProps = {
 type Swap = any & { type: 'user' | 'explorer' }
 
 const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
-    if (typeof window !== 'undefined') {
-  const err = new Error('HistoryList test error (intentional)')
-
-  try {
-    posthog?.capture?.('historylist_error', {
-      message: err.message,
-      name: err.name,
-      stack: err.stack,
-      component: 'HistoryList',
-      path: window.location?.pathname,
-      env: process.env.NODE_ENV,
-    })
-  } catch {
-    // no-op: capturing should never block throwing
-  }
-
-  throw err
-}
-
     const { networks } = useSettingsState()
     const [showAll, setShowAll] = useState(false)
     const { wallets } = useWallet()
