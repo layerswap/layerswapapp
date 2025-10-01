@@ -16,8 +16,9 @@ const progress = new ProgressBar({
   delay: 100,
 });
 
-if (typeof window !== "undefined" && process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_API_VERSION === 'mainnet') {
+if (typeof window !== "undefined") {
   posthog.init(process.env.POSTHOG_TOKEN, {
+    debug: true,
     capture_pageview: 'history_change',
     capture_pageleave: true,
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
