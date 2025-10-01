@@ -20,8 +20,8 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
     const { source_network } = swapData
     const source_network_internal_name = source_network?.name;
 
-    const { provider } = useWallet(swapData.source_network, "withdrawal")
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const { provider } = useWallet(source_network, "withdrawal")
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
 
     const WithdrawalPages = useMemo(() => [
         {

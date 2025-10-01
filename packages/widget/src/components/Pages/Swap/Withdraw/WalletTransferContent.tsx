@@ -23,7 +23,7 @@ const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal, swapData })
     const { source_token, source_network: swap_source_network } = swapData
     const source_network = swap_source_network && networks.find(n => n.name === swap_source_network?.name)
     const { provider } = useWallet(source_network, 'withdrawal')
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
     const availableWallets = provider?.connectedWallets?.filter(c => !c.isNotAvailable) || []
     const selectSourceAccount = useUpdateBalanceAccount("from");
 

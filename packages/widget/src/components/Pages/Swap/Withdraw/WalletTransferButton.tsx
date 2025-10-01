@@ -30,7 +30,9 @@ const WalletTransferButton: FC<Props> = ({ swapBasicData: swapData, swapId, refu
             </div>
             <div>
                 <WalletTransferContent openModal={openModal} setOpenModal={setOpenModal} swapData={swapData} />
-                {balanceWarning}
+                <div className='mb-3'>
+                    {balanceWarning}
+                </div>
                 <WalletTransferAction swapData={swapData} swapId={swapId} refuel={refuel} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} />
             </div>
         </div>

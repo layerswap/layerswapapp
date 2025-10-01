@@ -18,6 +18,7 @@ import { WidgetLoading } from "@/components/WidgetLoading";
 import WalletsProviders from "@/components/Wallet/WalletProviders";
 import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
 import { InitialSettings } from "../Models/InitialSettings";
+import { BalanceAccountsProvider } from "./balanceAccounts";
 
 export type LayerswapWidgetConfig = {
     theme?: ThemeData | null
@@ -81,9 +82,11 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
                         <ErrorBoundary FallbackComponent={ErrorFallback} >
                             <ThemeWrapper>
                                 <WalletsProviders appName={integrator} basePath="/" themeData={themeData}>
-                                    <AsyncModalProvider>
-                                        {children}
-                                    </AsyncModalProvider>
+                                    <BalanceAccountsProvider>
+                                        <AsyncModalProvider>
+                                            {children}
+                                        </AsyncModalProvider>
+                                    </BalanceAccountsProvider>
                                 </WalletsProviders>
                             </ThemeWrapper>
                         </ErrorBoundary>

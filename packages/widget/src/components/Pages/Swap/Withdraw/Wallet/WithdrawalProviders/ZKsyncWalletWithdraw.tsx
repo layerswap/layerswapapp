@@ -10,7 +10,6 @@ import { useAccount } from 'wagmi';
 import ClickTooltip from '@/components/Common/ClickTooltip';
 import SignatureIcon from '@/components/Icons/SignatureIcon';
 import formatAmount from '@/lib/formatAmount';
-import useWallet from '@/hooks/useWallet';
 import KnownInternalNames from '@/lib/knownIds';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import { useSelectedAccount } from '@/context/balanceAccounts';
@@ -28,9 +27,8 @@ export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
     const defaultProvider = source_network?.name?.split('_')?.[1]?.toLowerCase() == "mainnet" ? "mainnet" : "goerli";
     const l1Network = layers.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
 
-    const { provider } = useWallet(source_network, 'withdrawal')
 
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
     const wallet = selectedSourceAccount?.wallet
 
     useEffect(() => {

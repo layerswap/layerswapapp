@@ -46,7 +46,7 @@ const Comp = ({ children, hidden, sticky = true }: FooterProps) => {
                     }}
                     custom={{ direction: -1, width: 100 }}
                     variants={variants}
-                    className={`text-primary-text text-base mt-3
+                    className={`text-primary-text text-base
                         max-sm:fixed
                         max-sm:inset-x-0
                         max-sm:bottom-0 
@@ -60,16 +60,14 @@ const Comp = ({ children, hidden, sticky = true }: FooterProps) => {
                 </motion.div>
 
                 <div style={{ height: `${height}px` }}
-                    className={`text-primary-text text-base mt-3        
+                    className={`text-primary-text text-base      
                              max-sm:inset-x-0
                              max-sm:bottom-0 
                              max-sm:p-4 max-sm:w-full invisible sm:hidden`}>
                 </div>
             </ >
             :
-            <div className="mt-3 w-full h-full">
-                {children}
-            </div>
+            children
     )
 }
 

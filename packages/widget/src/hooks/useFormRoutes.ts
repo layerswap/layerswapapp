@@ -349,7 +349,7 @@ const sortSuggestedTokenElements = (direction: SwapDirection, balances: Record<s
 
     const a_rank = getRank(a, direction)
     const b_rank = getRank(b, direction)
-    return b_rank - a_rank
+    return a_rank - b_rank
 }
 
 const getNetworkTokenElementBalance = (item: NetworkTokenElement, balances: Record<string, NetworkBalance>) => {

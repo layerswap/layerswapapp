@@ -11,7 +11,6 @@ import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import { useSettingsState } from "@/context/settings";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
-import useWallet from "@/hooks/useWallet";
 import { AccountIdentity, useSelectedAccount } from "@/context/balanceAccounts";
 import { useBalance } from "@/lib/balances/useBalance";
 
@@ -43,8 +42,7 @@ const WalletsList: FC<Props> = (props) => {
         }
     }
 
-    const { provider: sourceProvider } = useWallet(network, "withdrawal")
-    const selectedSourceAccount = useSelectedAccount("from", selectedDepositMethod == 'wallet' ? sourceProvider?.name : undefined);
+    const selectedSourceAccount = useSelectedAccount("from", selectedDepositMethod == 'wallet' ? network?.name : undefined);
 
     return (
         <div className="space-y-3">

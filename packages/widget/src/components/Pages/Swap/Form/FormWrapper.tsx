@@ -41,8 +41,7 @@ export default function FormWrapper({ children, type }: { children?: React.React
     const sourceNetworkWithTokens = settings.networks.find(n => n.name === swapBasicData?.source_network.name)
     const { getProvider } = useWallet(sourceNetworkWithTokens, "withdrawal")
     const [walletWihdrawDone, setWalletWihdrawDone] = useState(false);
-    const { provider } = useWallet(swapBasicData?.source_network, 'withdrawal')
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", swapBasicData?.source_network?.name);
     const { mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, sourceNetworkWithTokens)
     const triggerSwapModalStateChangeCallback = useSwapModalStateChangeCallback()
     const triggerSwapCreateCallback = useSwapCreateCallback()

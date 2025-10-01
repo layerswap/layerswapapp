@@ -1,6 +1,5 @@
 import { WalletIcon } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
-import useWallet from '@/hooks/useWallet';
 import { useSettingsState } from '@/context/settings';
 import KnownInternalNames from '@/lib/knownIds';
 import toast from 'react-hot-toast';
@@ -16,8 +15,7 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
     const { networks } = useSettingsState();
     const starknet = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetGoerli || n.name === KnownInternalNames.Networks.StarkNetSepolia);
 
-    const { provider } = useWallet(starknet, 'withdrawal')
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", starknet?.name);
 
     const handleTransfer = useCallback(async ({ amount, callData, swapId }: TransferProps) => {
         if (!swapId || !source_token) {
