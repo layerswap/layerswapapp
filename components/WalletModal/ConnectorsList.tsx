@@ -357,12 +357,12 @@ type MultichainConnectorModalProps = {
 }
 
 const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ selectedConnector, allConnectors, providers, connect }) => {
-    const Icon = resolveWalletConnectorIcon({ connector: selectedConnector.name, iconUrl: selectedConnector.icon })
+    const Icon = resolveWalletConnectorIcon({ connector: selectedConnector.id, iconUrl: selectedConnector.icon })
     return (
         <div>
             <div className="flex flex-col gap-4 py-15">
                 <div className="flex justify-center gap-1">
-                    <Icon className="w-14 h-auto" />
+                    <Icon className="w-14 h-auto rounded-lg" />
                 </div>
                 <p className="text-base text-center text-primary-text">
                     <span>{selectedConnector.name}</span> <span>supports multiple network types. Please select the one you&apos;d like to use.</span>
