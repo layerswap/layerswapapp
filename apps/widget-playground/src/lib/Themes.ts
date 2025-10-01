@@ -15,6 +15,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         tertiary: '118, 128, 147',
         buttonTextColor: '228, 229, 240',
         logo: '255, 0, 147',
+        borderRadius: 'medium',
         primary: {
             DEFAULT: '204, 45, 93',
             '100': '255, 148, 176',
@@ -46,6 +47,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         tertiary: '86, 97, 123',
         buttonTextColor: '17, 17, 17',
         logo: '255, 0, 147',
+        borderRadius: 'medium',
         primary: {
             DEFAULT: '228, 37, 117',
             '100': '246, 182, 209',
@@ -79,6 +81,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         buttonTextColor: "60, 50, 40",
         logo: "230, 200, 170",
         tertiary: "120, 100, 80",
+        borderRadius: 'medium',
         primary: {
             DEFAULT: "230, 200, 170",
             '100': "250, 235, 210",
@@ -112,7 +115,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         backdrop: "0, 0, 0",
         buttonTextColor: '255, 255, 255',
         logo: '255, 255, 255',
-        borderRadius: 'small',
+        borderRadius: 'medium',
         tertiary: '160, 160, 160',
         primary: {
             DEFAULT: '255, 255, 255',
@@ -147,6 +150,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         tertiary: '255, 180, 255',
         buttonTextColor: '255, 255, 255',
         logo: '0, 255, 0',
+        borderRadius: 'medium',
         primary: {
             DEFAULT: '0, 255, 0',
             '100': '153, 255, 153',
@@ -179,6 +183,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         backdrop: "10, 0, 20",
         tertiary: "180, 120, 180",
         buttonTextColor: "0, 255, 180",
+        borderRadius: 'medium',
         logo: "255, 45, 200",
         primary: {
             DEFAULT: "255, 45, 200",
@@ -212,6 +217,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         tertiary: "130, 130, 200",
         backdrop: "5, 5, 10",
         buttonTextColor: "0, 255, 255",
+        borderRadius: 'medium',
         logo: "80, 0, 255",
         primary: {
             DEFAULT: "80, 0, 255",

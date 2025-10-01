@@ -6,11 +6,11 @@ type Props = {
 }
 
 const BORDER_RADIUS_VALUES = {
-    small: 6,
-    medium: 8,
-    large: 12,
-    extraLarge: 16,
-    extraLarge2: 20,
+    small: 4,
+    medium: 6,
+    large: 8,
+    extraLarge: 12,
+    extraLarge2: 16,
     extraLarge3: 24
 };
 
@@ -39,10 +39,10 @@ export const adjustBorderRadius = (key: string, borderRadiusType: string | undef
     if (borderRadiusType === 'none') return '0';
 
     const values = {
-        small: { small: 4, medium: 6, large: 8, extraLarge: 10, extraLarge2: 14, extraLarge3: 18 },
-        medium: { small: 6, medium: 8, large: 10, extraLarge: 12, extraLarge2: 16, extraLarge3: 20 },
-        large: { small: 8, medium: 10, large: 12, extraLarge: 14, extraLarge2: 18, extraLarge3: 22 },
-        extraLarge: { small: 10, medium: 12, large: 14, extraLarge: 16, extraLarge2: 20, extraLarge3: 24 },
+        small: { small: 2, medium: 4, large: 6, extraLarge: 8, extraLarge2: 12, extraLarge3: 16 },
+        medium: { small: 4, medium: 6, large: 8, extraLarge: 12, extraLarge2: 16, extraLarge3: 24 },
+        large: { small: 6, medium: 8, large: 12, extraLarge: 16, extraLarge2: 24, extraLarge3: 24 },
+        extraLarge: { small: 8, medium: 12, large: 16, extraLarge: 24, extraLarge2: 24, extraLarge3: 24 },
     };
 
     const selected = values[borderRadiusType as keyof typeof values];
