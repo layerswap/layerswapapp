@@ -3,7 +3,6 @@ import AverageCompletionTime from "../Common/AverageCompletionTime";
 import { Tooltip, TooltipContent, TooltipTrigger, } from "../../components/shadcn/tooltip"
 import { truncateDecimals } from "../utils/RoundDecimals";
 import useSWRGas from "@/lib/gases/useSWRGas";
-import useWallet from "@/hooks/useWallet";
 import GasIcon from '../icons/GasIcon';
 import Clock from '../icons/Clock';
 import FeeIcon from "../icons/FeeIcon";
@@ -16,6 +15,7 @@ import useSWR from "swr";
 import { ApiResponse } from "@/Models/ApiResponse";
 import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 import { useSelectedAccount } from "@/context/balanceAccounts";
+import NumberFlow from "@number-flow/react";
 
 export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoading, destination, destinationAddress, swapValues: values }) => {
     const { quote, reward } = quoteData || {}
@@ -45,7 +45,6 @@ export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, i
     const lsFeeAmountInUsd = quote?.total_fee_in_usd
     const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quote)
     const gasFeeInUsd = (gasData && gasTokenPriceInUsd) ? gasData.gas * gasTokenPriceInUsd : null;
-    const displayLsFeeInUsd = lsFeeAmountInUsd ? (lsFeeAmountInUsd < 0.01 ? '<$0.01' : `$${lsFeeAmountInUsd?.toFixed(2)}`) : null
     const displayGasFeeInUsd = gasFeeInUsd ? (gasFeeInUsd < 0.01 ? '<$0.01' : `$${gasFeeInUsd?.toFixed(2)}`) : null
 
     return <div className="flex flex-col w-full divide-y divide-secondary-400 px-3 pt-1">
@@ -65,7 +64,7 @@ export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, i
                             </label>
                         </div>
                         <div className="text-right text-primary-text">
-                            {item.content({ gas: gasData?.gas, currencyName, nativeCurrencyName: gasData?.token?.symbol, displayGasFeeInUsd, quote, displayLsFee, displayLsFeeInUsd, isGasLoading, isQuoteLoading, reward })}
+                            {item.content({ gas: gasData?.gas, currencyName, nativeCurrencyName: gasData?.token?.symbol, displayGasFeeInUsd, quote, displayLsFee, lsFeeAmountInUsd, isGasLoading, isQuoteLoading, reward })}
                         </div>
                     </div>
                 )
@@ -106,17 +105,21 @@ const detailsElements: DetailedElement[] = [
     {
         name: 'Layerswap Fee',
         icon: FeeIcon,
-        content: ({ displayLsFeeInUsd, displayLsFee, currencyName, isQuoteLoading }) => {
-            return isQuoteLoading ? (
-                <LoadingBar />
-            ) : <div>
+        content: ({ lsFeeAmountInUsd, displayLsFee, currencyName }) => {
+            return <div>
                 <Tooltip delayDuration={100}>
                     <TooltipTrigger asChild>
-                        {displayLsFeeInUsd !== undefined && (
-                            <span className="text-sm ml-1 font-small">
-                                {displayLsFeeInUsd}
-                            </span>
-                        )}
+                        {lsFeeAmountInUsd !== undefined ? (
+                            lsFeeAmountInUsd < 0.01 ? (
+                                <span className="text-sm ml-1 font-small">
+                                    {'<$0.01'}
+                                </span>
+                            ) : (
+                                <span className="text-sm ml-1 font-small">
+                                    <NumberFlow className="p-0" value={lsFeeAmountInUsd || 0} format={{ style: 'currency', currency: 'USD', maximumFractionDigits: lsFeeAmountInUsd ? 2 : 0 }} trend={0} />
+                                </span>
+                            )
+                        ) : null}
                     </TooltipTrigger>
                     <TooltipContent className="!bg-secondary-300 !border-secondary-300 !text-primart-text">
                         <span>{displayLsFee || '-'} </span>
@@ -182,7 +185,7 @@ type DetailsContentProps = {
     nativeCurrencyName?: string
     displayGasFeeInUsd: string | null
     displayLsFee: string | undefined
-    displayLsFeeInUsd: string | null
+    lsFeeAmountInUsd: number | undefined
     quote: Quote["quote"] | undefined
     isQuoteLoading?: boolean
     isGasLoading?: boolean

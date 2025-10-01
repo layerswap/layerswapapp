@@ -8,7 +8,6 @@ import { ChevronDown } from 'lucide-react';
 import { Quote } from '@/lib/apiClients/layerSwapApiClient';
 import AverageCompletionTime from '../Common/AverageCompletionTime';
 import useSWRGas from "@/lib/gases/useSWRGas";
-import useWallet from "@/hooks/useWallet";
 import GasIcon from '../icons/GasIcon';
 import Clock from '../icons/Clock';
 import rewardCup from '@/public/images/rewardCup.png'
