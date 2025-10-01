@@ -1,4 +1,5 @@
 const { PHASE_PRODUCTION_SERVER } = require('next/constants');
+const { withPostHogConfig } = require('@posthog/nextjs-config');
 
 const securityHeaders = [
   {
@@ -11,6 +12,25 @@ const securityHeaders = [
   },
 ]
 
+const REMOTE_PATTERNS = [
+  {
+    protocol: 'https',
+    hostname: 'stagelslayerswapbridgesa.blob.core.windows.net',
+  },
+  {
+    protocol: 'https',
+    hostname: 'bransferstorage.blob.core.windows.net',
+  },
+  {
+    protocol: 'https',
+    hostname: 'devlslayerswapbridgesa.blob.core.windows.net',
+  },
+  {
+    protocol: 'https',
+    hostname: 'prodlslayerswapbridgesa.blob.core.windows.net',
+  },
+];
+
 module.exports = (phase, { defaultConfig }) => {
   /**
    * @type {import('next').NextConfig}
@@ -21,24 +41,7 @@ module.exports = (phase, { defaultConfig }) => {
       defaultLocale: "en",
     },
     images: {
-      remotePatterns: [
-        {
-          protocol: 'https',
-          hostname: 'stagelslayerswapbridgesa.blob.core.windows.net',
-        },
-        {
-          protocol: 'https',
-          hostname: 'bransferstorage.blob.core.windows.net',
-        },
-        {
-          protocol: 'https',
-          hostname: 'devlslayerswapbridgesa.blob.core.windows.net',
-        },
-        {
-          protocol: 'https',
-          hostname: 'prodlslayerswapbridgesa.blob.core.windows.net',
-        },
-      ]
+      remotePatterns: REMOTE_PATTERNS
     },
     compiler: {
       removeConsole: false,
@@ -66,5 +69,15 @@ module.exports = (phase, { defaultConfig }) => {
     }
   }
 
-  return nextConfig;
+  return withPostHogConfig(nextConfig, {
+    personalApiKey: process.env.POSTHOG_API_KEY,
+    envId: process.env.POSTHOG_ENV_ID,
+    host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+    sourcemaps: {
+      enabled: true,
+      project: 'Layerswap',
+      version: process.env.VERCEL_GIT_COMMIT_SHA,
+      deleteAfterUpload: true,
+    },
+  })
 }
