@@ -17,13 +17,10 @@ const progress = new ProgressBar({
 });
 
 if (typeof window !== "undefined") {
-  posthog.init(process.env.POSTHOG_TOKEN, {
-    debug: true,
-    capture_pageview: 'history_change',
-    capture_pageleave: true,
+  posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     defaults: '2025-05-24'
-  })
+  });
 }
 
 Router.events.on("routeChangeStart", progress.start);
@@ -34,7 +31,7 @@ const INTERCOM_APP_ID = 'h5zisg78'
 
 function App({ Component, pageProps }) {
   const router = useRouter()
-  
+
   return (
     <SWRConfig
       value={{

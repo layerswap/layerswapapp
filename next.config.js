@@ -35,19 +35,7 @@ module.exports = (phase, { defaultConfig }) => {
   /**
    * @type {import('next').NextConfig}
    */
-
-  const posthogWrapped = withPostHogConfig({}, {
-    personalApiKey: process.env.POSTHOG_API_KEY,
-    envId: process.env.POSTHOG_ENV_ID,
-    host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-    sourcemaps: {
-      enabled: true,
-      project: 'Layerswap',
-      version: process.env.VERCEL_GIT_COMMIT_SHA,
-      deleteAfterUpload: true,
-    },
-  });
-
+  
   const nextConfig = {
     i18n: {
       locales: ["en"],
@@ -81,7 +69,16 @@ module.exports = (phase, { defaultConfig }) => {
       ]
     }
   }
-  let merged = {...posthogWrapped, ...nextConfig};
 
-  return merged
+  return withPostHogConfig(nextConfig, {
+    personalApiKey: process.env.POSTHOG_API_KEY,
+    envId: process.env.POSTHOG_ENV_ID,
+    host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+    sourcemaps: {
+      enabled: true,
+      project: 'Layerswap',
+      version: process.env.VERCEL_GIT_COMMIT_SHA,
+      deleteAfterUpload: true,
+    },
+  })
 }
