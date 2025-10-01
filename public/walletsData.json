@@ -30149,22 +30149,23 @@
         "eip155:42161",
         "eip155:43114",
         "eip155:56",
-        "eip155:80084",
-        "eip155:80085",
-        "eip155:8217"
+        "eip155:59144",
+        "eip155:8217",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
-      "description": "The 1inch Wallet is a multichain non-custodial DeFi crypto wallet with an easy interface for secure storage and transactions.",
+      "description": "1inch Wallet - the DeFi wallet app that puts you in control. With 1inch Swap built-in, scam protection and pro-level efficiency features, 1inch Wallet brings you everything you need to run crypto from your pocket.",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
       "homepage": "http://wallet.1inch.io",
       "id": "c286eebc742a537cd1d6818363e9dc53b21759a1e8e5d9b263d0c03ec7703576",
-      "image_id": "52b1da3c-9e72-40ae-5dac-6142addd9c00",
+      "image_id": "3e60118c-b9a9-43df-7975-33ebc8014400",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/52b1da3c-9e72-40ae-5dac-6142addd9c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/52b1da3c-9e72-40ae-5dac-6142addd9c00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/52b1da3c-9e72-40ae-5dac-6142addd9c00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/3e60118c-b9a9-43df-7975-33ebc8014400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/3e60118c-b9a9-43df-7975-33ebc8014400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/3e60118c-b9a9-43df-7975-33ebc8014400?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
