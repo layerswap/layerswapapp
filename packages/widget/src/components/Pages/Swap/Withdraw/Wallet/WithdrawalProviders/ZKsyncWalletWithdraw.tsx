@@ -1,7 +1,7 @@
+"use client";
 import { ArrowLeftRight, Info } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
-import * as zksync from 'zksync';
 import { utils } from 'ethers';
 import { useEthersSigner } from '@/lib/ethersToViem/ethers';
 import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
@@ -17,7 +17,7 @@ import { useSelectedAccount } from '@/context/balanceAccounts';
 
 export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
-    const [syncWallet, setSyncWallet] = useState<zksync.Wallet | null>();
+    const [syncWallet, setSyncWallet] = useState<any | null>(null);
     const [accountIsActivated, setAccountIsActivated] = useState(false);
     const [activationFee, setActivationFee] = useState<({ feeInAsset: number, feeInUsd: number } | undefined)>(undefined);
     const { source_network, source_token } = swapBasicData;
@@ -44,6 +44,7 @@ export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
             return
         setLoading(true)
         try {
+            const zksync = await import('zksync');
             const syncProvider = await zksync.getDefaultProvider(defaultProvider);
             const wallet = await zksync.Wallet.fromEthSigner(signer, syncProvider);
             setAccountIsActivated(await wallet.isSigningKeySet())
@@ -99,6 +100,7 @@ export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
 
         setLoading(true)
         try {
+            const zksync = await import('zksync');
             const tf = await syncWallet?.syncTransfer({
                 to: depositAddress,
                 token: source_token.symbol,
