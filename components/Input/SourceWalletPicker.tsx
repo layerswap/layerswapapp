@@ -27,7 +27,7 @@ const SourceWalletPicker: FC = () => {
     const selectSourceAccount = useUpdateBalanceAccount("from");
 
     const { provider } = useWallet(values.from, "withdrawal")
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
 
     const { selectedConnector } = useConnectModal()
     const availableWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []

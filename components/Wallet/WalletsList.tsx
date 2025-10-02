@@ -1,7 +1,7 @@
 import { Plus, Unplug } from "lucide-react";
 import AddressIcon from "../AddressIcon";
 import { SelectAccountProps, Wallet, WalletProvider } from "../../Models/WalletProvider";
-import { FC, HTMLAttributes, useMemo } from "react";
+import { FC, HTMLAttributes } from "react";
 import { ExtendedAddress } from "../Input/Address/AddressPicker/AddressWithIcon";
 import { clsx } from 'clsx';
 import { useConnectModal } from "../WalletModal";
@@ -11,7 +11,6 @@ import { truncateDecimals } from "../utils/RoundDecimals";
 import { useSettingsState } from "../../context/settings";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
-import useWallet from "@/hooks/useWallet";
 import { AccountIdentity, useSelectedAccount } from "@/context/balanceAccounts";
 import { useBalance } from "@/lib/balances/useBalance";
 
@@ -43,8 +42,7 @@ const WalletsList: FC<Props> = (props) => {
         }
     }
 
-    const { provider: sourceProvider } = useWallet(network, "withdrawal")
-    const selectedSourceAccount = useSelectedAccount("from", selectedDepositMethod == 'wallet' ? sourceProvider?.name : undefined);
+    const selectedSourceAccount = useSelectedAccount("from", selectedDepositMethod == 'wallet' ? network?.name : undefined);
 
     return (
         <div className="space-y-3">

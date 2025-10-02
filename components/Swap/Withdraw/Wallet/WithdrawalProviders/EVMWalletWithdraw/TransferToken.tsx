@@ -10,7 +10,6 @@ import { SendTransactionButton } from "../../Common/buttons";
 import { isMobile } from "@/lib/openLink";
 import { sendTransaction } from '@wagmi/core'
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
-import useWallet from "@/hooks/useWallet";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 
 type Props = {
@@ -30,8 +29,7 @@ const TransferTokenButton: FC<Props> = ({
     const [error, setError] = useState<any | undefined>()
     const [loading, setLoading] = useState(false)
 
-    const { provider } = useWallet(swapData.source_network, "withdrawal")
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", swapData.source_network.name);
 
     const clickHandler = useCallback(async ({ amount, callData, depositAddress }: TransferProps) => {
         setButtonClicked(true)

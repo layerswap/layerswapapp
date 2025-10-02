@@ -17,8 +17,8 @@ export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, i
     const { quote, reward } = quoteData || {}
     const { from, fromAsset, fromExchange } = values;
     const isCEX = !!fromExchange;
-    const { provider } = useWallet(!isCEX ? values.from : undefined, 'withdrawal')
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const sourceAccountNetwork = !isCEX ? values.from : undefined
+    const selectedSourceAccount = useSelectedAccount("from", sourceAccountNetwork?.name);
     const { gasData, isGasLoading } = useSWRGas(selectedSourceAccount?.address, from, fromAsset)
 
     const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && reward?.nft_contract_address;

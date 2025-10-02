@@ -2,7 +2,6 @@ import { Link, ArrowLeftRight } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
 import GuideLink from '@/components/guideLink';
-import useWallet from '@/hooks/useWallet';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import WarningMessage from '@/components/WarningMessage';
@@ -13,8 +12,8 @@ export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
     const [transferDone, setTransferDone] = useState<boolean>()
     const { source_network, source_token } = swapBasicData;
 
-    const { provider } = useWallet(source_network, 'withdrawal')
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
+
     const imxAccount = selectedSourceAccount?.wallet
 
     const handleTransfer = useCallback(async ({ amount, depositAddress, swapId }: TransferProps) => {

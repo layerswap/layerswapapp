@@ -22,7 +22,7 @@ if (typeof window !== "undefined" && process.env.NODE_ENV === 'production' && pr
     capture_pageleave: true,
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
     defaults: '2025-05-24'
-  })
+  });
 }
 
 Router.events.on("routeChangeStart", progress.start);
@@ -33,6 +33,7 @@ const INTERCOM_APP_ID = 'h5zisg78'
 
 function App({ Component, pageProps }) {
   const router = useRouter()
+
   return (
     <SWRConfig
       value={{
