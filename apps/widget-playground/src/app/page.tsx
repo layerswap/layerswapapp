@@ -17,7 +17,7 @@ export default async function Home() {
     );
 }
 
-export async function getSettings() {
+async function getSettings() {
     const apiClient = new LayerSwapApiClient();
     const { data: networkData } = await apiClient.GetLSNetworksAsync();
     const { data: sourceExchangesData } = await apiClient.GetSourceExchangesAsync();

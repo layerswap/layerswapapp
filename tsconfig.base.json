@@ -18,10 +18,11 @@
         "resolveJsonModule": true,
         "isolatedModules": true,
         "jsx": "preserve",
-        "paths": {
-            "@layerswap/widget": ["./packages/widget/src"],
-            "@layerswap/widget/*": ["./packages/widget/src/*"]
-        }
     },
-    "exclude": ["**/.*/", "**/build", "**/dist", "node_modules"]
+    "exclude": [
+        "**/.*/",
+        "**/build",
+        "**/dist",
+        "node_modules"
+    ]
 }
