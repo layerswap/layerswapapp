@@ -6,8 +6,10 @@ import { useRouter } from "next/router";
 import { IntercomProvider } from 'react-use-intercom';
 import { SWRConfig } from 'swr'
 import DatadogInit from "../components/datadog-init";
+import PartnerLogger from "../components/PartnerLogger";
 import ProgressBar from "@badrap/bar-of-progress";
 import Router from "next/router";
+import { Analytics } from '@vercel/analytics/react'
 
 const progress = new ProgressBar({
   size: 2,
@@ -32,9 +34,11 @@ function App({ Component, pageProps }) {
       }}
     >
       <DatadogInit />
+      <PartnerLogger />
       <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
         <Component key={router.asPath} {...pageProps} />
       </IntercomProvider>
+      <Analytics />
     </SWRConfig>)
 }
 
