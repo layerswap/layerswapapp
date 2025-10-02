@@ -122,7 +122,7 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
         {
             swapData && WithdrawalComponent &&
             <WithdrawalProvider onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}>
-                <WithdrawalComponent
+                <WalletWithdrawal
                     swapId={swapId}
                     swapBasicData={swapData}
                     refuel={refuel}
@@ -140,11 +140,21 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
 
     const { source_network, destination_network, destination_address } = swapBasicData
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network.name);
+    const { provider, wallets } = useWallet(source_network, "withdrawal")
     const { sameAccountNetwork } = useInitialSettings()
     const wallet = selectedSourceAccount?.wallet
     const networkChainId = Number(source_network?.chain_id) ?? undefined
-
+    const [walletChainId, setWalletChainId] = useState<number | undefined>()
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
+
+    useEffect(() => {
+        (async () => {
+            if (wallet) {
+                const chainId = provider?.getChainId && await provider?.getChainId(wallet, selectedSourceAccount?.address)
+                setWalletChainId(Number(chainId))
+            }
+        })()
+    }, [provider, wallet])
 
     useEffect(() => {
         if (!swapId) return;
@@ -169,7 +179,7 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
     if (!wallet) {
         return <ConnectWalletButton />
     }
-    else if (wallet.chainId !== networkChainId && source_network) {
+    else if (walletChainId !== networkChainId && source_network) {
         return <ChangeNetworkButton
             chainId={networkChainId}
             network={source_network}

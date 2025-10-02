@@ -28,7 +28,7 @@ export const SettingsProvider: FC<{
 
 export function useSettingsState() {
   const data = React.useContext<SettingsContextValue>(SettingsStateContext as Context<SettingsContextValue>);
-debugger
+
   if (data === undefined) {
     throw new Error('useSettingsState must be used within a SettingsProvider');
   }

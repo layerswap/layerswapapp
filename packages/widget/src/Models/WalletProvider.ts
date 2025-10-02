@@ -51,6 +51,7 @@ export type WalletProvider = {
     switchAccount: (connector: Wallet, address: string) => Promise<void>,
     switchChain?: (connector: Wallet, chainId: string | number) => Promise<void>
     isNotAvailableCondition?: (connector: string, network: string) => boolean,
+    getChainId?: (connector: Wallet, address: string) => Promise<string | number>
 
     transfer?: (params: TransferProps, wallet?: Wallet) => Promise<string | undefined>,
 

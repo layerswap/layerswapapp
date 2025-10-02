@@ -254,6 +254,15 @@ export default function useEVM(): WalletProvider {
         }
     }
 
+    const getChainId: WalletProvider['getChainId'] = async (wallet, address) => {
+
+        const connector = getConnections(config).find(c => c.connector.name === wallet.id)?.connector
+        if (!connector)
+            throw new Error("Connector not found")
+
+        return await connector.getChainId()
+    }
+
     const activeWallet = useMemo(() => resolvedConnectors.find(w => w.isActive), [resolvedConnectors])
     const providerIcon = useMemo(() => networks.find(n => ethereumNames.some(name => name === n.name))?.logo, [networks])
 
@@ -266,13 +275,14 @@ export default function useEVM(): WalletProvider {
         }
     }, [availableFeaturedWalletsForConnect, pendingId.current, pendingResolve.current])
 
-    const provider = useMemo(() => {
+    const provider: WalletProvider = useMemo(() => {
         return {
             connectWallet,
             disconnectWallets,
             switchAccount,
             switchChain,
             isNotAvailableCondition: isNotAvailable,
+            getChainId,
 
             transfer,
 
@@ -352,6 +362,7 @@ const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
     const walletname = `${connector?.name} ${connector.id === "com.immutable.passport" ? "" : " - EVM"}`
 
     const wallet: Wallet = {
+        chainId: connection.chainId,
         id: connector.name,
         internalId: connector.id,
         isActive: walletIsActive,
