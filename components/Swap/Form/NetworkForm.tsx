@@ -96,7 +96,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
             <DepositMethodComponent />
             <Form className="h-full grow flex flex-col flex-1 justify-between w-full">
                 <Widget.Content>
-                    <div className="w-full flex flex-col justify-between">
+                    <div className="w-full flex flex-col justify-between flex-1">
                         <div>
                             <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
                                 {
@@ -124,11 +124,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 }
                             </div>
                         </div>
-                    </div>
-                </Widget.Content>
-                <Widget.Footer>
-                    <div className="mb-3">
-                        <div className="space-y-3">
+                        <div className="space-y-3 mt-3">
                             <>
                                 {
                                     showInsufficientBalanceWarning &&
@@ -158,6 +154,8 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                             }
                         </div>
                     </div>
+                </Widget.Content>
+                <Widget.Footer>
                     <FormButton
                         shouldConnectWallet={shouldConnectWallet}
                         values={values}

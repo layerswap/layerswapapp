@@ -31,7 +31,7 @@ const Widget = ({ children, hideMenu, contextualMenu }: Props) => {
 
    return <div className="relative p-px">
       <div className="invisible sm:visible absolute inset-0 rounded-[25px] bg-gradient-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
-      <div id="widget" className='md:shadow-lg rounded-3xl w-full sm:overflow-hidden relative bg-gradient-to-b from-secondary-700 to-secondary-700 max-sm:has-openpicker:min-h-svh sm:has-openpicker:min-h-[79svh] has-openwithdrawalmodal:min-h-[650px] h-full flex flex-col'>
+      <div id="widget" className='md:shadow-lg rounded-3xl w-full sm:overflow-hidden relative bg-gradient-to-b from-secondary-700 to-secondary-700 max-sm:has-openpicker:min-h-svh max-sm:min-h-[99.8svh] sm:has-openpicker:min-h-[79svh] has-openwithdrawalmodal:min-h-[650px] h-full flex flex-col'>
          {
             AppSettings.ApiVersion === 'sandbox' &&
             <div className="relative z-20">
@@ -46,7 +46,7 @@ const Widget = ({ children, hideMenu, contextualMenu }: Props) => {
          }
 
          <div className="relative flex-col px-4 h-full min-h-0 flex flex-1">
-            <div className="flex flex-col flex-1 items-start h-full min-h-0 pb-4 w-full" ref={wrapper}>
+            <div className="flex flex-col flex-1 items-start h-full min-h-0 w-full" ref={wrapper}>
                {children}
             </div>
          </div>
