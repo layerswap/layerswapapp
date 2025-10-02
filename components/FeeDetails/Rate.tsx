@@ -36,7 +36,7 @@ export const RateElement = ({
                 <>
                     <span>1</span> {fromAsset?.symbol}
                     <ArrowRight className="w-3 h-3 mx-1" />
-                    <Tooltip delayDuration={100}>
+                    <Tooltip>
                         <TooltipTrigger asChild>
                             <span>{displayFromToRate} {toAsset?.symbol}</span>
                         </TooltipTrigger>

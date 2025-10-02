@@ -122,7 +122,7 @@ export default function Layout({ children, settings, themeData }: Props) {
       <ColorSchema themeData={themeData} />
     }
     <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
-      <TooltipProvider delayDuration={500}>
+      <TooltipProvider delayDuration={400}>
         <QueryProvider query={query}>
           <SettingsProvider data={appSettings}>
             <WalletsProviders basePath={basePath} themeData={themeData} appName={router.query.appName?.toString()}>

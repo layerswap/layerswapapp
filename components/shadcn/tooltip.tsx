@@ -18,19 +18,25 @@ function TooltipProvider({
 }
 
 function Tooltip({
+  delayDuration = 400,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Root>) {
   return (
     <TooltipProvider>
-      <TooltipPrimitive.Root data-slot="tooltip" {...props} />
+      <TooltipPrimitive.Root data-slot="tooltip" delayDuration={delayDuration} {...props} />
     </TooltipProvider>
   )
 }
 
 function TooltipTrigger({
+  className,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Trigger>) {
-  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />
+  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" className={clsx(
+    "cursor-pointer",
+    className
+  )}
+    {...props} />
 }
 
 type TooltipContentProps = React.ComponentProps<typeof TooltipPrimitive.Content> & {

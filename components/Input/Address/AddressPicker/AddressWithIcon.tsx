@@ -175,7 +175,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
             <Popover open={isPopoverOpen} onOpenChange={() => setPopoverOpen(!isPopoverOpen)} modal={true}>
                 <PopoverTrigger asChild>
                     <div>
-                        <Tooltip delayDuration={400}>
+                        <Tooltip>
                             <TooltipTrigger asChild>
                                 {
                                     children ??
@@ -297,7 +297,7 @@ const ActionButton: FC<ActionButtonProps> = ({ title, Icon, onClick, href, iconC
     }
 
     return (
-        <Tooltip disableHoverableContent delayDuration={400} key={title} open={showTooltip} onOpenChange={setShowTooltip}>
+        <Tooltip disableHoverableContent key={title} open={showTooltip} onOpenChange={setShowTooltip}>
             <TooltipTrigger asChild>
                 {renderButton()}
             </TooltipTrigger>

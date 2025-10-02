@@ -78,7 +78,7 @@ const detailsElements: DetailedElement[] = [
             return isGasLoading ? (
                 <LoadingBar />
             ) : <div>
-                <Tooltip delayDuration={100}>
+                <Tooltip>
                     <TooltipTrigger asChild>
                         {gas !== undefined && (
                             <span className="text-sm ml-1 font-small">
@@ -100,7 +100,7 @@ const detailsElements: DetailedElement[] = [
             return isQuoteLoading ? (
                 <LoadingBar />
             ) : <div>
-                <Tooltip delayDuration={100}>
+                <Tooltip>
                     <TooltipTrigger asChild>
                         {displayLsFeeInUsd !== undefined && (
                             <span className="text-sm ml-1 font-small">
@@ -173,7 +173,7 @@ const detailsElements: DetailedElement[] = [
             return !reward ? (
                 <LoadingBar />
             ) : <div>
-                <Tooltip delayDuration={100}>
+                <Tooltip>
                     <TooltipTrigger asChild>
                         {reward?.amount_in_usd !== undefined && (
                             <span className="text-sm ml-1 font-small">

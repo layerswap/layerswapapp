@@ -87,7 +87,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({
                     <li className="list-none flex justify-between">
                         <span>Market impact</span>
                         <span className="text-primary-text">
-                            <span className="mr-0.5">
+                            <span>
                                 {Number(marketImpact) < 0 ? "-$" : "$"}
                             </span>
                             <span>{Math.abs(Number(marketImpact))}</span>
@@ -96,14 +96,14 @@ export const PriceImpact: FC<PriceImpactProps> = ({
                     <li className="list-none flex justify-between">
                         <span>Bridge expenses</span>
                         <span className="text-primary-text">
-                            <span className="mr-0.5">-$</span>
+                            <span>-$</span>
                             <span>{bridgeExpenses}</span>
                         </span>
                     </li>
                     <li className="list-none flex justify-between">
                         <span>Layerswap fees</span>
                         <span className="text-primary-text">
-                            <span className="mr-0.5">-$</span>
+                            <span>-$</span>
                             <span>{layerswapFees}</span>
                         </span>
                     </li>

@@ -236,4 +236,3 @@ export const initialQuote: SwapQuote = {
     "total_fee": 0.815419,
     "total_fee_in_usd": 0.81505
 }
-
