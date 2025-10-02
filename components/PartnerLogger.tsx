@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
 import { track } from '@vercel/analytics/react'
 
-const OMIT_KEYS = [] 
+const OMIT_KEYS = []
 
 function collectParams(url: string) {
     const u = new URL(url, location.origin)
@@ -24,13 +24,7 @@ function sendPartnerEvent(sourceUrl?: string) {
     const href = sourceUrl ?? location.href
     const { all, pathWithQuery } = collectParams(href)
 
-    track('partner_load', {
-        ...all,                          // your PersistantQueryParams fields if present
-        embedded: isEmbeddedSafely(),    // iframe vs direct
-        fullUrl: href,
-        referrer: document.referrer || '',
-        path: pathWithQuery,
-    })
+    track('partner_load_test')
 }
 
 export default function PartnerLogger() {
@@ -53,5 +47,5 @@ export default function PartnerLogger() {
         return () => router.events.off('routeChangeComplete', onRoute)
     }, [router.events])
 
-    return <></>
+    return null
 }
