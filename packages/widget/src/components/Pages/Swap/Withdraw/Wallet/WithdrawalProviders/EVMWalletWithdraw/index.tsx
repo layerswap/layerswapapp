@@ -7,6 +7,7 @@ import TransactionMessages from "../../../messages/TransactionMessages";
 import { useInitialSettings } from "@/context/settings";
 import { WithdrawPageProps } from "../../Common/sharedTypes";
 import { useSelectedAccount } from "@/context/balanceAccounts";
+import useWallet from "@/hooks/useWallet";
 
 export const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
     swapBasicData,
@@ -18,7 +19,8 @@ export const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
     const { isConnected, chain: activeChain } = useAccount();
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network.name);
     const { sameAccountNetwork } = useInitialSettings()
-    const wallet = selectedSourceAccount?.wallet
+    const { wallets } = useWallet(source_network, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const networkChainId = Number(source_network?.chain_id) ?? undefined
 
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()

@@ -22,8 +22,10 @@ export const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ refuel, swapBasic
     const selectedEvmAccount = useSelectedAccount("from", l1Network?.name);
     const selectedStarknetAccount = useSelectedAccount("from", starknet?.name);
 
-    const evmWallet = selectedEvmAccount?.wallet
-    const starknetWallet = selectedStarknetAccount?.wallet
+    const { wallets: evmWallets } = useWallet(l1Network, 'withdrawal')
+    const evmWallet = evmWallets.find(w => w.id === selectedEvmAccount?.id)
+    const { wallets: starknetWallets } = useWallet(starknet, 'withdrawal')
+    const starknetWallet = starknetWallets.find(w => w.id === selectedStarknetAccount?.id)
 
     if (activeConnection?.providerName === selectedEvmAccount?.providerName && evmWallet) {
         return <Evm refuel={refuel} swapBasicData={swapBasicData} swapId={swapId} />
