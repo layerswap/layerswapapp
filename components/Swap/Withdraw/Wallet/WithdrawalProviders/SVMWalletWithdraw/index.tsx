@@ -20,7 +20,8 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
     const { source_network, source_token } = swapBasicData;
 
     const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
-    const wallet = selectedSourceAccount?.wallet
+    const { wallets } = useWallet(source_network, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
 
     const { wallet: solanaWallet, signTransaction } = useSolanaWallet();
     const walletPublicKey = solanaWallet?.adapter.publicKey

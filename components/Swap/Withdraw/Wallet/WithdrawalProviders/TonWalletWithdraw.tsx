@@ -20,7 +20,8 @@ export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
     const [tonConnectUI] = useTonConnectUI();
     const [transactionErrorMessage, setTransactionErrorMessage] = useState<string | undefined>(undefined)
     const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
-    const wallet = selectedSourceAccount?.wallet
+    const { wallets } = useWallet(source_network, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
 
     const handleConnect = useCallback(async () => {
         setLoading(true)
