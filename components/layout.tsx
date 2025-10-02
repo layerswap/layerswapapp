@@ -18,7 +18,6 @@ import ColorSchema from "./ColorSchema";
 import { IsExtensionError } from "../helpers/errorHelper";
 import { AsyncModalProvider } from "../context/asyncModal";
 import WalletsProviders from "./WalletProviders";
-import PartnerLogger from "./PartnerLogger";
 // import { datadogRum } from '@datadog/browser-rum';
 
 type Props = {
@@ -137,7 +136,6 @@ export default function Layout({ children, settings, themeData }: Props) {
               <AuthProvider>
                 <ThemeWrapper>
                   <AsyncModalProvider>
-                    <PartnerLogger />
                     {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
                       <MaintananceContent />
                       : children}

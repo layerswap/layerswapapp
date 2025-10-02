@@ -24,7 +24,13 @@ function sendPartnerEvent(sourceUrl?: string) {
     const href = sourceUrl ?? location.href
     const { all, pathWithQuery } = collectParams(href)
 
-    track('partner_load_test')
+    track('partner_load', {
+        ...all,                          // your PersistantQueryParams fields if present
+        embedded: isEmbeddedSafely(),    // iframe vs direct
+        fullUrl: href,
+        referrer: document.referrer || '',
+        path: pathWithQuery,
+    })
 }
 
 export default function PartnerLogger() {
@@ -33,12 +39,11 @@ export default function PartnerLogger() {
 
     // Initial load
     useEffect(() => {
-        if (!sentInitial.current) {
-            debugger
+        if (!sentInitial.current && router.isReady) {
             sendPartnerEvent()
             sentInitial.current = true
         }
-    }, [])
+    }, [router])
 
     // SPA navigations (pages router)
     useEffect(() => {
