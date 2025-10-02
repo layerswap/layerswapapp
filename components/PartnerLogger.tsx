@@ -53,5 +53,5 @@ export default function PartnerLogger() {
         return () => router.events.off('routeChangeComplete', onRoute)
     }, [router.events])
 
-    return null
+    return <></>
 }

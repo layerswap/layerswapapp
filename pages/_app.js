@@ -34,7 +34,6 @@ function App({ Component, pageProps }) {
       }}
     >
       <DatadogInit />
-      <PartnerLogger />
       <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
         <Component key={router.asPath} {...pageProps} />
       </IntercomProvider>
