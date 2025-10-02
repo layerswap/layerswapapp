@@ -31,23 +31,23 @@ export const PriceImpact: FC<PriceImpactProps> = ({
 
     const priceImpact = useMemo(() => {
         if (fromAmountUSD === undefined || toAmountUSD === undefined) return undefined;
-        return Number((toAmountUSD - fromAmountUSD).toFixed(2));
+        return (toAmountUSD - fromAmountUSD);
     }, [fromAmountUSD, toAmountUSD]);
 
     const layerswapFees = useMemo(() => {
         if (serviceFee == null || sourceTokenPriceUsd == null) return undefined;
-        return Math.abs(serviceFee * sourceTokenPriceUsd).toFixed(2);
+        return (serviceFee * sourceTokenPriceUsd);
     }, [serviceFee, sourceTokenPriceUsd]);
 
     const bridgeExpenses = useMemo(() => {
         if (bridgeFee == null || sourceTokenPriceUsd == null) return undefined;
-        return Math.abs(bridgeFee * sourceTokenPriceUsd).toFixed(2);
+        return (bridgeFee * sourceTokenPriceUsd);
     }, [bridgeFee, sourceTokenPriceUsd]);
 
     const marketImpact = useMemo(() => {
-        if (priceImpact === undefined || serviceFee === undefined || bridgeExpenses === undefined) return undefined;
-        return (priceImpact + Number(serviceFee) + Number(bridgeExpenses)).toFixed(2);
-    }, [priceImpact, serviceFee, bridgeExpenses]);
+        if (priceImpact === undefined || layerswapFees === undefined || bridgeExpenses === undefined) return undefined;
+        return (priceImpact + Number(layerswapFees) + Number(bridgeExpenses)).toFixed(2);
+    }, [priceImpact, layerswapFees, bridgeExpenses]);
 
     const priceImpactPercentage = useMemo(() => {
         if (fromAmountUSD === undefined || toAmountUSD === undefined) return undefined;
@@ -68,7 +68,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({
                                 }`}
                         />
                         <span>
-                            ${Math.abs(priceImpact)}
+                            ${Math.abs(priceImpact).toFixed(2)}
                         </span>
                         <span>)</span>
                     </span>
@@ -77,10 +77,10 @@ export const PriceImpact: FC<PriceImpactProps> = ({
             <TooltipContent arrowClasses="!bg-secondary-500 !fill-secondary-500" side="top" align="center" className="!bg-secondary-500 !border-secondary-500 !text-secondary-text text-xs font-normal rounded-xl !p-4 shadow-2xl">
                 <p className="text-primary-text font-medium text-sm flex items-baseline space-x-0.5 mb-1">
                     <span>Price impact:</span>
-                    <span>{priceImpact < 0 ? "-$" : "+$"}</span>
-                    <span>{Math.abs(priceImpact)}</span>
+                    <span className="mr-0">{priceImpact < 0 ? "-$" : "+$"}</span>
+                    <span>{Math.abs(priceImpact).toFixed(2)}</span>
                     <span className="text-secondary-text text-xs font-normal">{priceImpactPercentage ? `(${priceImpact < 0 ? "-" : "+"}${Math.abs(priceImpactPercentage)}%)` : ""}</span>
-                </p> 
+                </p>
                 <p>This is the difference in total USD value</p>
                 <p>between the assets you send and the assets you receive.</p>
                 <ul className="mt-3 space-y-2 ">
@@ -90,21 +90,25 @@ export const PriceImpact: FC<PriceImpactProps> = ({
                             <span>
                                 {Number(marketImpact) < 0 ? "-$" : "$"}
                             </span>
-                            <span>{Math.abs(Number(marketImpact))}</span>
+                            <span>{Math.abs(Number(marketImpact)).toFixed(2)}</span>
                         </span>
                     </li>
                     <li className="list-none flex justify-between">
                         <span>Bridge expenses</span>
                         <span className="text-primary-text">
-                            <span>-$</span>
-                            <span>{bridgeExpenses}</span>
+                            <span>
+                                {bridgeExpenses?.toFixed(2) !== (0).toFixed(2) ? "-$" : "$"}
+                            </span>
+                            <span>{Math.abs(Number(bridgeExpenses)).toFixed(2)}</span>
                         </span>
                     </li>
                     <li className="list-none flex justify-between">
                         <span>Layerswap fees</span>
                         <span className="text-primary-text">
-                            <span>-$</span>
-                            <span>{layerswapFees}</span>
+                            <span>
+                                {layerswapFees?.toFixed(2) !== (0).toFixed(2) ? "-$" : "$"}
+                            </span>
+                            <span>{Math.abs(Number(layerswapFees)).toFixed(2)}</span>
                         </span>
                     </li>
                 </ul>
