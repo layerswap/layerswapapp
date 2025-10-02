@@ -40,6 +40,7 @@ export default function PartnerLogger() {
     // Initial load
     useEffect(() => {
         if (!sentInitial.current) {
+            debugger
             sendPartnerEvent()
             sentInitial.current = true
         }

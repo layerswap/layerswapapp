@@ -23,6 +23,7 @@ import { useSwapDataState, useSwapDataUpdate } from "../../../context/swap";
 import useWallet from "../../../hooks/useWallet";
 import { useSettingsState } from "../../../context/settings";
 import FormButton from "../FormButton";
+import { track } from "@vercel/analytics/react";
 
 type Props = {
     partner?: Partner,
@@ -186,6 +187,9 @@ const SwapForm: FC<Props> = ({ partner }) => {
         <Form className={`h-full grow flex flex-col justify-between ${(isSubmitting) ? 'pointer-events-none' : 'pointer-events-auto'}`} >
             <Widget.Content>
                 <div className='flex-col relative flex justify-between gap-1.5 w-full mb-3.5 leading-4 bg-secondary-700 rounded-xl'>
+                    <button type="button" onClick={() => track('swap_form_trecking_test')} className="absolute right-0 top-0">
+                        track
+                    </button>
                     {!(query?.hideFrom && values?.from) && <div className="flex flex-col w-full">
                         <NetworkFormField direction="from" label="From" className="rounded-t-lg pt-2.5" partner={partner} />
                     </div>}
