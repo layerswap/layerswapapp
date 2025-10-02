@@ -113,7 +113,7 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
                         }
                     </div>
                     <NumberFlow className="text-primary-text text-sm leading-6" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} format={{ style: 'currency', currency: 'USD' }} prefix={gasFeeInUsd < 0.01 ? '<' : undefined} />
-                    <div className="ml-3 w-px h-3 bg-primary-text-tertiary rounded-2xl" />
+                    <div className="mx-1 w-px h-3 bg-primary-text-tertiary rounded-2xl" />
                 </div>
             }
             {

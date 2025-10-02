@@ -67,12 +67,12 @@ export const SummaryRow: FC<{
                             }
                         </div>
                         <NumberFlow
-                            className="text-secondary-text text-sm leading-6"
+                            className="text-primary-text text-sm leading-6"
                             value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd}
                             format={{ style: 'currency', currency: 'USD' }}
                             prefix={gasFeeInUsd < 0.01 ? '<' : undefined}
                         />
-                        <div className="ml-3 w-px h-3 bg-primary-text-placeholder rounded-2xl" />
+                        <div className="mx-1 w-px h-3 bg-primary-text-tertiary rounded-2xl" />
                     </div>
                 )}
 
@@ -81,7 +81,7 @@ export const SummaryRow: FC<{
                         <div className='p-0.5'>
                             <Clock className='h-4 w-4 text-secondary-text' />
                         </div>
-                        <AverageCompletionTime className="text-secondary-text" avgCompletionTime={avgCompletionTime} />
+                        <AverageCompletionTime className="text-primary-text" avgCompletionTime={avgCompletionTime} />
                     </div>
                 )}
 
@@ -90,7 +90,7 @@ export const SummaryRow: FC<{
                     (!shouldCheckNFT || (!isLoading && !error && nftBalance !== undefined && nftBalance > 0)) &&
                     <>
                         <div className="w-px h-3 bg-primary-text-placeholder rounded-2xl" />
-                        <div className='text-right text-secondary-text inline-flex items-center gap-1 pr-4'>
+                        <div className='text-right text-primary-text inline-flex items-center gap-1 pr-4'>
                             <Image src={rewardCup} alt="Reward" width={16} height={16} />
                             <NumberFlow value={reward?.amount_in_usd < 0.01 ? '0.01' : reward?.amount_in_usd} format={{ style: 'currency', currency: 'USD' }} prefix={reward?.amount_in_usd < 0.01 ? '<' : undefined} />
                         </div>
