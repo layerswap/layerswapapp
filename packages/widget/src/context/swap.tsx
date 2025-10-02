@@ -76,7 +76,8 @@ export function SwapDataProvider({ children }) {
     const { providers } = useWallet(swapBasicFormData?.source_network, 'asSource')
 
     const selectedSourceAccount = useSelectedAccount("from", swapBasicFormData?.source_network?.name);
-    const selectedWallet = selectedSourceAccount?.wallet
+    const { wallets } = useWallet(swapBasicFormData?.source_network, 'asSource')
+    const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
 
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
     const { quote: formDataQuote } = useQuoteData(swapId ? undefined : quoteArgs);
@@ -110,7 +111,7 @@ export function SwapDataProvider({ children }) {
     const layerswapApiClient = new LayerSwapApiClient()
     const swap_details_endpoint = `/swaps/${swapId}?exclude_deposit_actions=true`
     const [interval, setInterval] = useState(0)
-    const { data, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval })
+    const { data, mutate, error } = useSWR<ApiResponse<SwapResponse>>(swapId ? swap_details_endpoint : null, layerswapApiClient.fetcher, { refreshInterval: interval, dedupingInterval: interval || 1000 })
 
     const swapBasicData = useMemo(() => {
         if (swapId && data?.data) {

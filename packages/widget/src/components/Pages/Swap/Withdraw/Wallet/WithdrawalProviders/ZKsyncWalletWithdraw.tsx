@@ -13,6 +13,7 @@ import formatAmount from '@/lib/formatAmount';
 import KnownInternalNames from '@/lib/knownIds';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import { useSelectedAccount } from '@/context/balanceAccounts';
+import useWallet from '@/hooks/useWallet';
 
 export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -29,7 +30,8 @@ export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
 
 
     const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
-    const wallet = selectedSourceAccount?.wallet
+    const { wallets } = useWallet(source_network, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
 
     useEffect(() => {
         if (signer?._address !== syncWallet?.cachedAddress && source_network) {

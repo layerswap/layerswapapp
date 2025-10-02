@@ -11,7 +11,8 @@ export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicDat
     const [transferDone, setTransferDone] = useState<boolean>()
     const { source_network, source_token } = swapBasicData
     const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
-    const wallet = selectedSourceAccount?.wallet
+    const { wallets } = useWallet(source_network, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
 
     const handleTransfer = useCallback(async ({ callData, swapId }: TransferProps) => {
         if (!swapId || !source_token) {
