@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
-import { track } from '@vercel/analytics'
+import { track } from '@vercel/analytics/react'
 
 const OMIT_KEYS = [] 
 
