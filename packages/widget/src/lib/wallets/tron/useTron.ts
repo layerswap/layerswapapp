@@ -3,6 +3,9 @@ import { useWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
 import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { useSettingsState } from "../../../context/settings";
+import { GasResolver } from "@/lib/gases/gasResolver";
+import { buildInitialTransaction } from "./services/transferService/transactionBuilder";
+import { GasWithToken } from "@/lib/gases/providers/types";
 
 export default function useTron(): WalletProvider {
     const commonSupportedNetworks = [
@@ -14,7 +17,7 @@ export default function useTron(): WalletProvider {
     const network = networks.find(n => n.name === KnownInternalNames.Networks.TronMainnet || n.name === KnownInternalNames.Networks.TronTestnet)
     const name = 'Tron'
     const id = 'tron'
-    const { wallets, wallet: tronWallet, disconnect, select } = useWallet();
+    const { wallets, wallet: tronWallet, disconnect, select, signTransaction } = useWallet();
 
     const address = tronWallet?.adapter.address
     const switchAccount = async (wallet: Wallet, address: string) => {
@@ -82,6 +85,40 @@ export default function useTron(): WalletProvider {
         }
     }
 
+    const transfer: WalletProvider['transfer'] = async (params, wallet) => {
+
+        const { callData, amount, depositAddress, token, network } = params
+
+        if (!wallet?.address) {
+            throw new Error('Wallet address not found')
+        }
+        if (!depositAddress) {
+            throw new Error('Deposit address not found')
+        }
+
+        const tronNode = network?.node_url
+        const TronWeb = (await import('tronweb')).TronWeb
+
+        const tronWeb = new TronWeb({ fullNode: tronNode, solidityNode: tronNode });
+
+        const gasData: GasWithToken = await new GasResolver().getGas({ address: wallet?.address, network, token })
+
+        const amountInWei = Math.pow(10, token?.decimals) * amount
+
+        const initialTransaction = await buildInitialTransaction({ tronWeb, token: token, depositAddress, amountInWei, gas: gasData.gas, issuerAddress: wallet?.address })
+        const data = Buffer.from(callData).toString('hex')
+        const transaction = await tronWeb.transactionBuilder.addUpdateData(initialTransaction, data, "hex")
+        const signature = await signTransaction(transaction)
+        const res = await tronWeb.trx.sendRawTransaction(signature)
+
+        if (signature && res.result) {
+            return signature.txID
+        } else {
+            throw new Error(res.code.toString())
+        }
+
+    }
+
     const availableWalletsForConnect: InternalConnector[] = wallets.map(wallet => {
         return {
             id: wallet.adapter.name,
@@ -95,6 +132,9 @@ export default function useTron(): WalletProvider {
     const provider: WalletProvider = {
         connectWallet,
         disconnectWallets: disconnectWallet,
+
+        transfer,
+
         availableWalletsForConnect,
         connectedWallets: getWallet(),
         activeWallet: wallet,

@@ -205,7 +205,20 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             setSwapId(swapId)
             const depositAction = newSwapData?.deposit_actions && newSwapData?.deposit_actions[0];
 
+            if (!depositAction) {
+                throw new Error('No deposit action')
+            }
+            if (!depositAction.amount) {
+                throw new Error('No deposit action amount')
+            }
+            if (!depositAction.call_data) {
+                throw new Error('No deposit action call data')
+            }
+           
             const transferProps: TransferProps = {
+                network: swapData.source_network,
+                token: swapData.source_token,
+                selectedSourceAccount: selectedSourceAccount,
                 amount: depositAction?.amount,
                 callData: depositAction?.call_data,
                 depositAddress: depositAction?.to_address,

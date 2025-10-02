@@ -1,3 +1,4 @@
+import { TransferProps } from '@/components/Pages/Swap/Withdraw/Wallet/Common/sharedTypes';
 import { AccountInterface } from 'starknet';
 import { StarknetWindowObject } from 'starknetkit';
 
@@ -50,6 +51,9 @@ export type WalletProvider = {
     switchAccount: (connector: Wallet, address: string) => Promise<void>,
     switchChain?: (connector: Wallet, chainId: string | number) => Promise<void>
     isNotAvailableCondition?: (connector: string, network: string) => boolean,
+
+    transfer?: (params: TransferProps, wallet?: Wallet) => Promise<string | undefined>,
+
     availableWalletsForConnect?: InternalConnector[],
     availableHiddenWalletsForConnect?: InternalConnector[],
     connectedWallets: Wallet[] | undefined,

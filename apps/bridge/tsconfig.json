@@ -5,15 +5,17 @@
       "@layerswap/widget": [
         "../../packages/widget/src"
       ],
-      "@layerswap/widget/*": [
-        "../../packages/widget/src/*"
-      ],
       "@/*": [
-        "./*"
+        "../../packages/widget/src/*"
       ]
     },
     "incremental": true
   },
+  "references": [
+    {
+      "path": "../../packages/widget"
+    }
+  ],
   "include": [
     "next-env.d.ts",
     "**/*.ts",
@@ -22,7 +24,6 @@
     "pages/_app.js"
   ],
   "exclude": [
-    "node_modules",
-    "../../packages/widget/src/**/*"
-  ]
+    "node_modules"
+  ],
 }

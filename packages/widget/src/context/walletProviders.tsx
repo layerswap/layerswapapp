@@ -1,21 +1,13 @@
 import React, { createContext, useContext, useMemo } from "react";
-import { WalletProvider } from "../Models/WalletProvider";
+import { WalletProvider } from "@/Models/WalletProvider";
 import { useSettingsState } from "./settings";
-import VaulDrawer from "../components/Modal/vaulModal";
-import IconButton from "../components/Buttons/iconButton";
+import VaulDrawer from "@/components/Modal/vaulModal";
+import IconButton from "@/components/Buttons/iconButton";
 import { ChevronLeft } from "lucide-react";
-import ConnectorsList from "../components/Wallet/WalletModal/ConnectorsList";
-import { useConnectModal } from "../components/Wallet/WalletModal";
-import useEVM from "../lib/wallets/evm/useEVM";
-import useStarknet from "../lib/wallets/starknet/useStarknet";
-import useImtblX from "../lib/wallets/imtblX/useImtblX";
-import useTON from "../lib/wallets/ton/useTON";
-import useFuel from "../lib/wallets/fuel/useFuel";
-import useTron from "../lib/wallets/tron/useTron";
-import useParadex from "../lib/wallets/paradex/useParadex";
-import useSVM from "../lib/wallets/solana/useSVM";
-import useBitcoin from "../lib/wallets/bitcoin/useBitcoin";
-import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
+import ConnectorsList from "@/components/Wallet/WalletModal/ConnectorsList";
+import { useConnectModal } from "@/components/Wallet/WalletModal";
+import { isMobile } from "@/lib/wallets/utils/isMobile";
+import { useBitcoin, useEVM, useStarknet, useImtblX, useSVM, useTON, useFuel, useTron, useParadex } from "@/lib/wallets";
 
 const WalletProvidersContext = createContext<WalletProvider[]>([]);
 
@@ -38,15 +30,15 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
         const allProviders: WalletProvider[] = [
             bitcoin, evm, starknet, svm, ton, fuel, tron, paradex, imtblX
         ];
-        const filteredProviders = allProviders.filter(provider => isMobilePlatform ? !provider.unsupportedPlatforms?.includes('mobile') : !provider.unsupportedPlatforms?.includes('desktop'));
-
-        return filteredProviders.filter(provider =>
+        const filteredProviders = allProviders.filter(provider => (isMobilePlatform ? !provider.unsupportedPlatforms?.includes('mobile') : !provider.unsupportedPlatforms?.includes('desktop')) &&
             networks.some(net =>
                 provider.autofillSupportedNetworks?.includes(net.name) ||
                 provider.withdrawalSupportedNetworks?.includes(net.name) ||
                 provider.asSourceSupportedNetworks?.includes(net.name)
             )
         );
+
+        return filteredProviders
     }, [networks, bitcoin, evm, starknet, svm, ton, fuel, tron, paradex, imtblX, isMobilePlatform]);
 
     return (

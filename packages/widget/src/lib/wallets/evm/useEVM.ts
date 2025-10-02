@@ -5,16 +5,17 @@ import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
 import { evmConnectorNameResolver } from "./KnownEVMConnectors"
 import { useCallback, useEffect, useMemo, useRef } from "react"
-import { CreateConnectorFn, getAccount, getConnections } from '@wagmi/core'
+import { CreateConnectorFn, getAccount, getConnections, sendTransaction } from '@wagmi/core'
 import { isMobile } from "../../isMobile"
 import convertSvgComponentToBase64 from "@/components/utils/convertSvgComponentToBase64"
-import { LSConnector } from "../connectors/types"
+import { LSConnector } from "./connectors/types"
+import { explicitInjectedProviderDetected } from "./connectors/explicitInjectedProviderDetected"
 import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider"
 import { useConnectModal } from "@/components/Wallet/WalletModal"
-import { explicitInjectedProviderDetected } from "../connectors/explicitInjectedProviderDetected"
 import sleep from "../utils/sleep"
 import { useEvmConnectors } from "@/context/evmConnectorsContext"
 import { useActiveEvmAccount } from "@/components/Wallet/WalletProviders/ActiveEvmAccount"
+import { transactionBuilder } from "./services/transferService/transactionBuilder"
 
 const ethereumNames = [KnownInternalNames.Networks.EthereumMainnet, KnownInternalNames.Networks.EthereumSepolia]
 const immutableZKEvm = [KnownInternalNames.Networks.ImmutableZkEVM]
@@ -237,6 +238,22 @@ export default function useEVM(): WalletProvider {
         }
     }
 
+    const transfer: WalletProvider['transfer'] = async (params) => {
+        const { selectedSourceAccount } = params
+
+        const tx = await transactionBuilder(params)
+
+        if (isMobile() && selectedSourceAccount.wallet?.metadata?.deepLink) {
+            window.location.href = selectedSourceAccount.wallet.metadata?.deepLink
+            await new Promise(resolve => setTimeout(resolve, 100))
+        }
+        const hash = await sendTransaction(config, tx)
+
+        if (hash) {
+            return hash
+        }
+    }
+
     const activeWallet = useMemo(() => resolvedConnectors.find(w => w.isActive), [resolvedConnectors])
     const providerIcon = useMemo(() => networks.find(n => ethereumNames.some(name => name === n.name))?.logo, [networks])
 
@@ -256,6 +273,9 @@ export default function useEVM(): WalletProvider {
             switchAccount,
             switchChain,
             isNotAvailableCondition: isNotAvailable,
+
+            transfer,
+
             connectedWallets: resolvedConnectors,
             activeWallet,
             autofillSupportedNetworks,

@@ -1,19 +1,19 @@
 import KnownInternalNames from "../../knownIds"
 import { useMemo } from "react"
-import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
-import { useConnectModal } from "../../../components/Wallet/WalletModal"
+import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider"
+import { useConnectModal } from "@/components/Wallet/WalletModal"
 import { type ConnectorAlreadyConnectedError } from '@wagmi/core'
 import useEVM from "../evm/useEVM"
 import useStarknet from "../starknet/useStarknet"
-import { useWalletStore } from "../../../stores/walletStore"
+import { useWalletStore } from "@/stores/walletStore"
 import { AuthorizeStarknet } from "./Authorize/Starknet"
 import { walletClientToSigner } from "../../ethersToViem/ethers"
 import AuhorizeEthereum from "./Authorize/Ethereum"
 import { getWalletClient } from '@wagmi/core'
 import { useConfig } from "wagmi"
 import { switchChain, getChainId } from '@wagmi/core'
-import { useSettingsState } from "../../../context/settings"
-import shortenAddress from "../../../components/utils/ShortenAddress"
+import { useSettingsState } from "@/context/settings"
+import shortenAddress from "@/components/utils/ShortenAddress"
 import sleep from "../utils/sleep"
 import { useActiveParadexAccount } from "@/components/Wallet/WalletProviders/ActiveParadexAccount"
 

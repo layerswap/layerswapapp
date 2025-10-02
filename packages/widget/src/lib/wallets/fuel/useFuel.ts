@@ -8,16 +8,18 @@ import {
     FuelConnector,
     FuelConnectorEventTypes,
     Predicate,
+    Provider,
     getPredicateRoot,
 } from '@fuel-ts/account';
 import { Address } from '@fuel-ts/address';
-import shortenAddress from "../../../components/utils/ShortenAddress";
+import shortenAddress from "@/components/utils/ShortenAddress";
 import { BAKO_STATE } from "./Basko";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
-import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
+import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider";
 import { useEffect, useMemo } from "react";
-import { useWalletStore } from "../../../stores/walletStore";
-import { useSettingsState } from "../../../context/settings";
+import { useWalletStore } from "@/stores/walletStore";
+import { useSettingsState } from "@/context/settings";
+import { transactionBuilder } from "./services/transferService/transactionBuilder";
 
 export default function useFuel(): WalletProvider {
     const commonSupportedNetworks = [
@@ -128,6 +130,24 @@ export default function useFuel(): WalletProvider {
         }
     }
 
+    const transfer: WalletProvider['transfer'] = async (params) => {
+        const { callData, network, selectedSourceAccount, swapId } = params
+
+        const fuelProvider = new Provider(network.node_url);
+        const fuelWallet = await fuel.getWallet(selectedSourceAccount.address, fuelProvider);
+
+        if (!fuelWallet) throw Error("Fuel wallet not found")
+
+        const scriptTransaction = await transactionBuilder({ fuelWallet, callData })
+        await fuelProvider.simulate(scriptTransaction);
+
+        const transactionResponse = await fuelWallet.sendTransaction(scriptTransaction);
+
+        if (swapId && transactionResponse) {
+            return transactionResponse.id;
+        }
+    }
+
     const connectedConnectors = useMemo(() => connectors.filter(w => w.connected), [connectors])
 
     useEffect(() => {
@@ -193,6 +213,9 @@ export default function useFuel(): WalletProvider {
         disconnectWallets,
         switchAccount,
         switchChain,
+
+        transfer,
+
         availableWalletsForConnect,
         autofillSupportedNetworks: commonSupportedNetworks,
         withdrawalSupportedNetworks: commonSupportedNetworks,

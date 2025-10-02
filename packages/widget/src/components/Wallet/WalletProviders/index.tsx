@@ -1,3 +1,4 @@
+'use client'
 import { FC, ReactNode } from "react"
 import TonConnectProvider from "./TonConnectProvider"
 import SolanaProvider from "./SolanaProvider"

@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import { resolveConnector, walletConnectWallets as _walletConnectWallets, WalletConnectWallet } from '../lib/wallets/connectors/resolveConnectors';
+import { resolveConnector, walletConnectWallets as _walletConnectWallets, WalletConnectWallet } from '../lib/wallets/evm/connectors/resolveConnectors';
 import { CreateConnectorFn } from 'wagmi';
 import { coinbaseWallet, walletConnect } from '@wagmi/connectors'
-import { browserInjected } from '../lib/wallets/connectors/browserInjected';
+import { browserInjected } from '../lib/wallets/evm/connectors/browserInjected';
 import { isMobile } from '../lib/isMobile';
 import { usePersistedState } from '@/hooks/usePersistedState';
 import AppSettings from '@/lib/AppSettings';

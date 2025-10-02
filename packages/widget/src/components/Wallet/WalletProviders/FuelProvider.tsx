@@ -1,9 +1,9 @@
 
-import { BaskoRequestAPI } from '../../../lib/wallets/fuel/Bako';
-import { BakoSafeConnector } from '../../../lib/fuels/connectors/bako-safe';
+import { BaskoRequestAPI } from '@/lib/wallets/fuel/Bako';
+import { BakoSafeConnector } from '@/lib/fuels/connectors/bako-safe';
 import { FuelProvider, NetworkConfig } from '@fuels/react';
-import { FueletWalletConnector } from '../../../lib/fuels/connectors/fuelet-wallet';
-import { FuelWalletConnector } from '../../../lib/fuels/connectors/fuel-wallet';
+import { FueletWalletConnector } from '@/lib/fuels/connectors/fuelet-wallet';
+import { FuelWalletConnector } from '@/lib/fuels/connectors/fuel-wallet';
 import { useSettingsState } from '@/context/settings';
 import { NetworkType } from '@/Models/Network';
 import { useMemo } from 'react';

@@ -1,4 +1,7 @@
+import { AccountIdentityWithWallet } from "@/context/balanceAccounts";
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
+import { TokenBalance } from "@/Models/Balance";
+import { Network, Token } from "@/Models/Network";
 
 export type ActionData = {
     error: Error | null;
@@ -14,10 +17,14 @@ export type WithdrawPageProps = {
 }
 
 export type TransferProps = {
-    callData?: string
+    network: Network,
+    token: Token,
+    callData: string
     depositAddress?: string
-    amount?: number
+    amount: number
     swapId?: string
     userDestinationAddress?: string
-    sequenceNumber?: number
+    sequenceNumber?: number;
+    selectedSourceAccount: AccountIdentityWithWallet
+    balances?: TokenBalance[] | undefined | null
 }

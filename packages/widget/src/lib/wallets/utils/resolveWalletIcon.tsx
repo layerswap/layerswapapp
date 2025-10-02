@@ -3,7 +3,7 @@ import SVGWithImg from "@/components/Icons/SvgWithImg";
 import WalletIcon from "@/components/Icons/WalletIcon";
 import KnownEVMConnectors from "../evm/KnownEVMConnectors";
 import KnownFuelConnectors from "../fuel/KnownFuelConnectors";
-import KnownSolanaConnectors from "../solana/KnownSolanaConnectors";
+import KnownSolanaConnectors from "../svm/KnownSolanaConnectors";
 import KnownStarknetConnectors from "../starknet/KnownStarknetConnectors";
 
 const connectors = [

@@ -1,15 +1,16 @@
 import KnownInternalNames from "../../knownIds"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon"
-import { NetworkType } from "../../../Models/Network"
-import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
+import { NetworkType } from "@/Models/Network"
+import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider"
 import { useMemo } from "react"
-import { useSettingsState } from "../../../context/settings"
+import { useSettingsState } from "@/context/settings"
+import { configureAndSendCurrentTransaction } from "./services/transferService/transactionSender"
 
 const solanaNames = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet, KnownInternalNames.Networks.SolanaTestnet]
 
 export default function useSVM(): WalletProvider {
-    const { networks } = useSettingsState()
+    const { networks } = useSettingsState() 
 
     const commonSupportedNetworks = [
         ...networks.filter(network => network.type === NetworkType.Solana).map(l => l.name)
@@ -17,7 +18,7 @@ export default function useSVM(): WalletProvider {
 
     const name = 'Solana'
     const id = 'solana'
-    const { disconnect, select, wallets } = useWallet();
+    const { disconnect, select, wallets, signTransaction } = useWallet();
 
     const connectedWallet = wallets.find(w => w.adapter.connected === true)
     const connectedAddress = connectedWallet?.adapter.publicKey?.toBase58()
@@ -87,6 +88,49 @@ export default function useSVM(): WalletProvider {
         }
     }
 
+    const transfer: WalletProvider['transfer'] = async (params) => {
+        const { callData, network, token, amount, balances } = params
+
+        const { Connection, Transaction, LAMPORTS_PER_SOL } = await import("@solana/web3.js")
+        
+        if (!signTransaction) throw new Error('Missing signTransaction')
+
+        const connection = new Connection(
+            `${network.node_url}`,
+            "confirmed"
+        );
+
+        const arrayBufferCallData = Uint8Array.from(atob(callData), c => c.charCodeAt(0))
+        const transaction = Transaction.from(arrayBufferCallData)
+
+        const feeInLamports = await transaction.getEstimatedFee(connection)
+        const feeInSol = feeInLamports / LAMPORTS_PER_SOL
+
+        const nativeTokenBalance = balances?.find(b => b.token == network?.token?.symbol)
+        const tokenbalanceData = balances?.find(b => b.token == token?.symbol)
+        const tokenBalanceAmount = tokenbalanceData?.amount
+        const nativeTokenBalanceAmount = nativeTokenBalance?.amount
+
+        const insufficientTokensArr: string[] = []
+
+        if (network?.token && (Number(nativeTokenBalanceAmount) < feeInSol || isNaN(Number(nativeTokenBalanceAmount)))) {
+            insufficientTokensArr.push(network.token?.symbol);
+        }
+        if (network?.token?.symbol !== token?.symbol && amount && token?.symbol && Number(tokenBalanceAmount) < amount) {
+            insufficientTokensArr.push(token?.symbol);
+        }
+
+        if (insufficientTokensArr.length > 0) throw new Error('Insufficient tokens')
+
+        const signature = await configureAndSendCurrentTransaction(
+            transaction,
+            connection,
+            signTransaction
+        );
+
+        return signature;
+    }
+
     const availableWalletsForConnect = useMemo(() => {
         const connectors: InternalConnector[] = [];
 
@@ -107,19 +151,22 @@ export default function useSVM(): WalletProvider {
     }, [wallets]);
 
     const provider: WalletProvider = {
-        connectedWallets: connectedWallets,
-        activeWallet: connectedWallets?.[0],
         connectWallet,
         disconnectWallets: disconnectWallet,
         isNotAvailableCondition: isNotAvailable,
+        switchAccount,
+
+        transfer,
+
         availableWalletsForConnect,
         withdrawalSupportedNetworks: commonSupportedNetworks,
         autofillSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,
+        connectedWallets: connectedWallets,
+        activeWallet: connectedWallets?.[0],
         name,
         id,
-        providerIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo,
-        switchAccount
+        providerIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo
     }
 
     return provider

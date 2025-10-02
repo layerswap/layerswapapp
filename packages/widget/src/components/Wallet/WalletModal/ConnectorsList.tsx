@@ -14,9 +14,9 @@ import { usePersistedState } from "@/hooks/usePersistedState";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
 import LayerSwapLogoSmall from "@/components/Icons/layerSwapLogoSmall";
 import { Checkbox } from "@/components/shadcn/checkbox";
-import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { SearchComponent } from "@/components/Input/Search";
+import { isMobile } from "@/lib/wallets/utils/isMobile";
 
 const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();

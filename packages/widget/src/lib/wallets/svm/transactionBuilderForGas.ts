@@ -2,7 +2,7 @@ import { Connection, PublicKey, SystemProgram, Transaction, TransactionInstructi
 import { createAssociatedTokenAccountInstruction, createTransferInstruction, getAccount, getAssociatedTokenAddress } from '@solana/spl-token';
 import { Network, Token } from "../../../Models/Network";
 
-const transactionBuilder = async (network: Network, token: Token, walletPublicKey: PublicKey, recipientAddress?: string | undefined) => {
+const transactionBuilderForGas = async (network: Network, token: Token, walletPublicKey: PublicKey, recipientAddress?: string | undefined) => {
 
     const connection = new Connection(
         `${network.node_url}`,
@@ -71,4 +71,4 @@ const transactionBuilder = async (network: Network, token: Token, walletPublicKe
     }
 }
 
-export default transactionBuilder
+export default transactionBuilderForGas

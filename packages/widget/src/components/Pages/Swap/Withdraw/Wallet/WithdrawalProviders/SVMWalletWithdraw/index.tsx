@@ -1,6 +1,5 @@
 import { FC, useCallback, useState } from 'react'
 import { Transaction, Connection, LAMPORTS_PER_SOL } from '@solana/web3.js';
-import useWallet from '@/hooks/useWallet';
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
 import WalletIcon from '@/components/Icons/WalletIcon';

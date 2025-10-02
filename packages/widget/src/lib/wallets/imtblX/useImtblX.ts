@@ -1,9 +1,9 @@
-import { useWalletStore } from "../../../stores/walletStore"
+import { useWalletStore } from "@/stores/walletStore"
 import ImtblClient from "../../imtbl"
 import KnownInternalNames from "../../knownIds"
-import IMX from "../../../components/Icons/Wallets/IMX"
-import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
-import { useSettingsState } from "../../../context/settings"
+import IMX from "@/components/Icons/Wallets/IMX"
+import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider"
+import { useSettingsState } from "@/context/settings"
 
 const supportedNetworks = [
     KnownInternalNames.Networks.ImmutableXMainnet,
@@ -12,8 +12,6 @@ const supportedNetworks = [
 ]
 
 export default function useImtblX(): WalletProvider {
-
-
     const { networks } = useSettingsState()
 
     const name = 'ImmutableX'
@@ -66,6 +64,29 @@ export default function useImtblX(): WalletProvider {
         }
     }
 
+    const transfer: WalletProvider['transfer'] = async (params) => {
+        const { network, token, amount, depositAddress, swapId } = params
+        const ImtblClient = (await import('@/lib/imtbl')).default;
+        const imtblClient = new ImtblClient(network?.name)
+
+        if (!token) {
+            throw new Error("No source currency could be found");
+        }
+        if (!depositAddress) {
+            throw new Error("Deposit address not found");
+        }
+        const res = await imtblClient.Transfer(amount.toString(), token, depositAddress)
+        const transactionRes = res?.result?.[0]
+        if (!transactionRes)
+            throw new Error('Transfer failed or terminated')
+        else if (transactionRes.status == "error") {
+            throw new Error(transactionRes.message)
+        }
+        else if (transactionRes && swapId) {
+            return transactionRes.txId.toString()
+        }
+    }
+
     const disconnectWallet = () => {
         return removeWallet(id)
     }
@@ -82,6 +103,7 @@ export default function useImtblX(): WalletProvider {
         activeWallet: wallet,
         connectWallet,
         disconnectWallets: disconnectWallet,
+        transfer,
         withdrawalSupportedNetworks: supportedNetworks,
         asSourceSupportedNetworks: supportedNetworks,
         autofillSupportedNetworks: supportedNetworks,

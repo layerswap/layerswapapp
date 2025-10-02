@@ -1,9 +1,9 @@
-import { useWalletStore } from "../../../stores/walletStore"
+import { useWalletStore } from "@//stores/walletStore"
 import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
-import { useSettingsState } from "../../../context/settings";
+import { useSettingsState } from "@//context/settings";
 import { useConnect, useDisconnect } from "@starknet-react/core";
-import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
+import { InternalConnector, Wallet, WalletProvider } from "@//Models/WalletProvider";
 
 const starknetNames = [KnownInternalNames.Networks.StarkNetGoerli, KnownInternalNames.Networks.StarkNetMainnet, KnownInternalNames.Networks.StarkNetSepolia]
 export default function useStarknet(): WalletProvider {
@@ -122,10 +122,26 @@ export default function useStarknet(): WalletProvider {
         // as we do not have multiple accounts management we will leave the method empty
     }
 
+    const transfer: WalletProvider['transfer'] = async (params, wallet) => {
+        const { callData } = params
+
+        const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.execute(JSON.parse(callData || "")) || {});
+
+        if (transferTxHash) {
+            return transferTxHash
+        }
+        else {
+            throw new Error('failedTransfer')
+        }
+    }
+
     const provider: WalletProvider = {
         connectWallet,
         disconnectWallets,
         switchAccount,
+
+        transfer,
+
         connectedWallets: getWallet(),
         activeWallet: getWallet()?.[0],
         withdrawalSupportedNetworks,

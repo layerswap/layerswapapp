@@ -18,7 +18,7 @@ import {
     getAddress,
     numberToHex,
 } from 'viem'
-import { isAndroid, isMobile, isIOS } from '../utils/isMobile'
+import { isAndroid, isMobile, isIOS } from '../../../utils/isMobile'
 
 type WalletConnectConnector = Connector & {
     onDisplayUri(uri: string): void

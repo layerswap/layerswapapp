@@ -1,5 +1,4 @@
 import { FC, useCallback, useState } from 'react'
-import useWallet from '@/hooks/useWallet';
 import WalletIcon from '@/components/Icons/WalletIcon';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import TransactionMessages from '../../messages/TransactionMessages';

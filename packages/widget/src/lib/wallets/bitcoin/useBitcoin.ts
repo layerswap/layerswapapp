@@ -1,16 +1,18 @@
-import { NetworkType, NetworkWithTokens } from "../../../Models/Network"
-import { useSettingsState } from "../../../context/settings"
-import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
-import { useConnectModal } from "../../../components/Wallet/WalletModal"
+import { NetworkType, NetworkWithTokens } from "@/Models/Network"
+import { useSettingsState } from "@/context/settings"
+import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider"
+import { useConnectModal } from "@/components/Wallet/WalletModal"
 import { useConnect, useAccount, useConfig } from '@bigmi/react'
 import { disconnect } from "@bigmi/client"
 import { useMemo } from "react"
-import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
+import convertSvgComponentToBase64 from "@/components/utils/convertSvgComponentToBase64"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon"
 import KnownInternalNames from "../../knownIds"
 import { Connector, CreateConnectorFn } from "@bigmi/client"
 import { isValidAddress } from "@/lib/address/validator"
 import { useBitcoinConnectors } from "@/components/Wallet/WalletProviders/BitcoinProvider"
+import { sendTransaction } from "./services/transferService/sendTransaction"
+import { JsonRpcClient } from "@/lib/apiClients/jsonRpcClient"
 
 const bitcoinNames = [KnownInternalNames.Networks.BitcoinMainnet, KnownInternalNames.Networks.BitcoinTestnet]
 
@@ -107,6 +109,34 @@ export default function useBitcoin(): WalletProvider {
         }
     }
 
+    const transfer: WalletProvider['transfer'] = async (params) => {
+        const { amount, callData, depositAddress, selectedSourceAccount, network } = params
+
+        if(!account.connector) {
+            throw new Error("Connector not found");
+        }
+        if(!depositAddress) {
+            throw new Error("Deposit address not provided");
+        }
+
+        const rpcClient = new JsonRpcClient(network.node_url);
+        const isTestnet = network?.name === KnownInternalNames.Networks.BitcoinTestnet;
+        const publicClient = config.getClient()
+
+        const txHash = await sendTransaction({
+            amount,
+            depositAddress,
+            userAddress: selectedSourceAccount.address,
+            isTestnet,
+            rpcClient,
+            callData,
+            connector: account.connector,
+            publicClient
+        });
+
+        return txHash;
+    }
+
     const resolvedWallet = useMemo(() => {
         const connector = account.connector
 
@@ -136,6 +166,10 @@ export default function useBitcoin(): WalletProvider {
     const provider: WalletProvider = {
         connectWallet,
         disconnectWallets,
+        switchAccount,
+        
+        transfer,
+
         connectedWallets: resolvedWallet ? [resolvedWallet] : [],
         activeWallet: resolvedWallet,
         availableWalletsForConnect: resolvedConnectors,
@@ -146,7 +180,6 @@ export default function useBitcoin(): WalletProvider {
         id,
         providerIcon,
         unsupportedPlatforms: ["mobile"],
-        switchAccount
     }
 
     return provider
