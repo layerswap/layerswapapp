@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import GoHomeButton from "../utils/GoHome";
 import { useMeasure } from "@uidotdev/usehooks";
+import LayerSwapLogo from "../icons/layerSwapLogo";
 
 const variants = {
     enter: () => {
@@ -54,8 +55,11 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                         max-sm:px-4 
                         max-sm:w-full ${hidden ? 'animation-slide-out' : ''}`}>
                     {children}
-                    <div className="flex justify-center  text-primary-text-tertiary">
-                        <span className="text-xs content-center footerLogo mt-2.5">Powered by</span> <GoHomeButton className='footerLogo ml-1 mt-2.5 fill-primary-text-tertiary h-5 w-auto cursor-pointer' />
+                    <div className="flex justify-center items-center text-primary-text-tertiary">
+                        <span className="text-xs content-center footerLogo mt-2.5">Powered by</span>
+                        <div>
+                            <LayerSwapLogo className="footerLogo text-logo fill-secondary-text text-logo footerLogo ml-1 mt-2.5  h-5 w-auto cursor-pointer" />
+                        </div>
                     </div>
                 </motion.div>
 
