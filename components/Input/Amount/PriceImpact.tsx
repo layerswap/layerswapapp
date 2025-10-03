@@ -46,7 +46,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({
 
     const marketImpact = useMemo(() => {
         if (priceImpact === undefined || layerswapFees === undefined || bridgeExpenses === undefined) return undefined;
-        return (priceImpact + Number(layerswapFees) + Number(bridgeExpenses)).toFixed(2);
+        return (priceImpact + Number(layerswapFees) + Number(bridgeExpenses));
     }, [priceImpact, layerswapFees, bridgeExpenses]);
 
     const priceImpactPercentage = useMemo(() => {
@@ -77,8 +77,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({
             <TooltipContent arrowClasses="!bg-secondary-500 !fill-secondary-500" side="top" align="center" className="!bg-secondary-500 !border-secondary-500 !text-secondary-text text-xs font-normal rounded-xl !p-4 shadow-2xl">
                 <p className="text-primary-text font-medium text-sm flex items-baseline space-x-0.5 mb-1">
                     <span>Price impact:</span>
-                    <span className="mr-0">{priceImpact < 0 ? "-$" : "+$"}</span>
-                    <span>{Math.abs(priceImpact).toFixed(2)}</span>
+                    <span>{formatCurrency(priceImpact)}</span>
                     <span className="text-secondary-text text-xs font-normal">{priceImpactPercentage ? `(${priceImpact < 0 ? "-" : "+"}${Math.abs(priceImpactPercentage)}%)` : ""}</span>
                 </p>
                 <p>This is the difference in total USD value</p>
@@ -87,10 +86,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({
                     <li className="list-none flex justify-between">
                         <span>Market impact</span>
                         <span className="text-primary-text">
-                            <span>
-                                {Number(marketImpact) < 0 ? "-$" : "$"}
-                            </span>
-                            <span>{Math.abs(Number(marketImpact)).toFixed(2)}</span>
+                            <span>{formatCurrency(marketImpact)}</span>
                         </span>
                     </li>
                     <li className="list-none flex justify-between">
@@ -116,3 +112,16 @@ export const PriceImpact: FC<PriceImpactProps> = ({
         </Tooltip>
     </>)
 }
+
+const formatCurrency = (value?: number, decimals: number = 2) => {
+  if (value === undefined || isNaN(value)) return "";
+
+  const rounded = Number(value.toFixed(decimals));
+
+  // If rounded value is effectively zero, show "$0.00" (no minus sign)
+  if (Object.is(rounded, 0)) {
+    return `$${(0).toFixed(decimals)}`;
+  }
+
+  return `${rounded < 0 ? "-$" : "$"}${Math.abs(rounded).toFixed(decimals)}`;
+};

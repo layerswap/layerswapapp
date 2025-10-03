@@ -12,6 +12,9 @@ import clsx from 'clsx'
 import { Wallet } from '@/Models/WalletProvider'
 import Clock from '@/components/icons/Clock'
 import { SwapValues } from '..'
+import { isValidAddress } from '@/lib/address/validator'
+import { addressFormat } from '@/lib/address/formatter'
+import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
 
 export const SummaryRow: FC<{
     isQuoteLoading?: boolean
@@ -41,7 +44,14 @@ export const SummaryRow: FC<{
                             ) : (
                                 <AddressIcon className="h-4 w-4" address={values.destination_address} size={36} rounded="4px" />
                             )}
-                            {shortenAddress(values.destination_address)}
+                            {
+                                ((isValidAddress(values?.destination_address, values?.to) && values?.to) ?
+                                    <div className="text-sm group/addressItem text-secondary-text">
+                                        <ExtendedAddress address={addressFormat(values?.destination_address, values?.to)} network={values?.to} showDetails={true} title="USDC" description="Circle USD Coin" logo="https://prodlsayerswapbridgesa.blob.core.windows.net/layerswap/currencies/arusdc.png" />
+                                    </div>
+                                    :
+                                    <p className="text-sm text-secondary-text">{shortenAddress(values?.destination_address)}</p>)
+                            }
                         </span>
                     </div>
                 </div>

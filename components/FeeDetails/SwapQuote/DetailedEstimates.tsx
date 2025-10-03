@@ -8,6 +8,9 @@ import { LoadingBar } from '../DetailedEstimates'
 import { Campaign, Quote } from '@/lib/apiClients/layerSwapApiClient'
 import { Wallet } from '@/Models/WalletProvider'
 import { SwapValues } from '..'
+import { isValidAddress } from '@/lib/address/validator'
+import { addressFormat } from '@/lib/address/formatter'
+import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
 
 type DetailedEstimatesProps = {
     quote: Quote | undefined
@@ -22,7 +25,7 @@ type DetailedEstimatesProps = {
     isLoading?: boolean
     error?: any
     campaign?: Campaign
-
+    wallet?: Wallet
     computed: {
         currencyName: string
         displayGasFeeInUsd: string | null
@@ -46,6 +49,7 @@ export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
     isLoading,
     error,
     campaign,
+    wallet,
     computed,
 }) => {
 
@@ -75,7 +79,7 @@ export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
                             </label>
                         </div>
                         <div className="text-right text-primary-text">
-                            {item.content({ gas: gasData?.gas, values, currencyName, nativeCurrencyName: gasData?.token?.symbol, displayGasFeeInUsd, quote, displayLsFee, displayLsFeeInUsd, isGasLoading, isQuoteLoading, reward, receiveAtLeast, destinationAddress, sourceAddress })}
+                            {item.content({ gas: gasData?.gas, values, currencyName, nativeCurrencyName: gasData?.token?.symbol, displayGasFeeInUsd, quote, displayLsFee, displayLsFeeInUsd, wallet, isGasLoading, isQuoteLoading, reward, receiveAtLeast, destinationAddress, sourceAddress })}
                         </div>
                     </div>
                 )
@@ -84,30 +88,31 @@ export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
     </div>
 }
 
-
 const detailsElements: DetailedElement[] = [
     {
         name: 'Send to',
         showCondition: (props) => { return props.destinationAddress?.toLowerCase() !== props?.sourceAddress?.toLowerCase() },
-        content: ({ isQuoteLoading, destinationAddress, sourceAddress, selectedWallet }) => {
+        content: ({ isQuoteLoading, destinationAddress, sourceAddress, wallet, quote }) => {
             return isQuoteLoading ? (
                 <LoadingBar />
             ) : <div>
                 {(destinationAddress && sourceAddress?.toLowerCase() !== destinationAddress?.toLowerCase()) &&
                     <div className="flex items-center w-full justify-between gap-1 py-3 text-sm">
-                        <div className="inline-flex items-center text-left text-secondary-text gap-1 pr-4">
-                            <label>
-                                Send to
-                            </label>
-                        </div>
                         <div className="text-right text-primary-text">
                             <span className="cursor-pointer hover:underline flex items-center gap-2">
-                                {selectedWallet?.icon ?
-                                    <selectedWallet.icon className="w-4 h-4 p-0.5 bg-white rounded-sm" />
+                                {wallet?.icon ?
+                                    <wallet.icon className="w-4 h-4 p-0.5 bg-white rounded-sm" />
                                     :
                                     <AddressIcon className="h-4 w-4" address={destinationAddress} size={36} rounded='4px' />
                                 }
-                                {shortenAddress(destinationAddress || '')}
+                                {
+                                    ((isValidAddress(destinationAddress, quote?.destination_network) && quote?.destination_network) ?
+                                        <div className="text-sm group/addressItem text-secondary-text">
+                                            <ExtendedAddress address={addressFormat(destinationAddress, quote?.destination_network)} network={quote?.destination_network} showDetails={true} title="USDC" description="Circle USD Coin" logo="https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/arusdc.png" />
+                                        </div>
+                                        :
+                                        <p className="text-sm text-secondary-text">{shortenAddress(destinationAddress)}</p>)
+                                }
                             </span>
                         </div>
                     </div>
@@ -251,7 +256,7 @@ type DetailsContentProps = {
     values?: SwapValues
     destinationAddress?: string | undefined
     sourceAddress?: string | undefined
-    selectedWallet?: Wallet | undefined
+    wallet?: Wallet | undefined
 }
 
 type ShowConditionProps = {

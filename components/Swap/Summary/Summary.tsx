@@ -53,6 +53,8 @@ const Summary: FC<SwapInfoProps> = (props) => {
     const refuelAmountInUsd = nativeCurrency && ((nativeCurrency?.price_in_usd || 1) * (Number(truncatedRefuelAmount) || 0)).toFixed(2)
 
     const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
+    const shouldShowAddress = destAddress === sourceAccountAddress
+
     return (
         <div className="bg-secondary-500 rounded-2xl px-3 py-4 w-full relative z-10 space-y-4">
 
@@ -65,6 +67,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                             network={from}
                             token={sourceCurrency}
                             address={sourceAccountAddress}
+                            shouldShowAddress={shouldShowAddress}
                         />
                     </div>
                     <div className="flex flex-col col-start-7 col-span-4 items-end">
@@ -86,6 +89,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                             network={to}
                             token={destinationCurrency}
                             address={destAddress}
+                            shouldShowAddress={shouldShowAddress}
                         />
                     </div>
                     {
@@ -131,7 +135,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
     )
 }
 
-const RouteTokenPair: FC<{ route: { logo: string, display_name: string }, network?: Network, exchange?: Exchange, token: Token, address?: string }> = ({ route, token, exchange, network, address }) => {
+const RouteTokenPair: FC<{ route: { logo: string, display_name: string }, network?: Network, exchange?: Exchange, token: Token, address?: string, shouldShowAddress?: boolean }> = ({ route, token, exchange, network, address, shouldShowAddress }) => {
     return (
         <div className="flex grow gap-4 text-left items-center md:text-base relative">
             <div className="inline-flex items-center relative shrink-0 mb-1.5">
@@ -161,7 +165,7 @@ const RouteTokenPair: FC<{ route: { logo: string, display_name: string }, networ
                         {route.display_name}
                     </p>
                     {
-                        (address && network && !exchange) ?
+                        (address && network && !exchange && shouldShowAddress) ?
                             <div className="flex items-center gap-1 text-secondary-text">
                                 <p>-</p>
                                 {

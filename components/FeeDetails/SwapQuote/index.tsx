@@ -112,6 +112,7 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
                             isLoading={isLoading}
                             error={error}
                             campaign={campaign}
+                            wallet={activeWallet}
                             computed={computed}
                         />
                     </ResizablePanel>
