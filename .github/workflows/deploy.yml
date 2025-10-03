@@ -13,7 +13,7 @@ concurrency:
   group: "pr-preview-${{ github.ref }}"
   cancel-in-progress: true
 
-jobs:
+jobs: 
   preview:
     runs-on: ubuntu-latest
     steps:
