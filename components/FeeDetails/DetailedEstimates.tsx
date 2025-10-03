@@ -3,7 +3,6 @@ import AverageCompletionTime from "../Common/AverageCompletionTime";
 import { Tooltip, TooltipContent, TooltipTrigger, } from "../../components/shadcn/tooltip"
 import { truncateDecimals } from "../utils/RoundDecimals";
 import useSWRGas from "@/lib/gases/useSWRGas";
-import useWallet from "@/hooks/useWallet";
 import GasIcon from '../icons/GasIcon';
 import Clock from '../icons/Clock';
 import FeeIcon from "../icons/FeeIcon";
