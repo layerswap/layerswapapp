@@ -275,7 +275,6 @@ export async function withdraw(
         ? params.bridgeCall
         : [params.bridgeCall]),
     ],
-    undefined,
     { maxFee: maxFee.toString() },
   );
 

@@ -39,7 +39,7 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
 
                 const parsedCallData = JSON.parse(callData || "")
 
-                const res = await paradexAccount.execute(parsedCallData, undefined, { maxFee: '1000000000000000' });
+                const res = await paradexAccount.execute(parsedCallData, { maxFee: '1000000000000000' });
 
                 if (res.transaction_hash) {
                     return res.transaction_hash
