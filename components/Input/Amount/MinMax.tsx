@@ -20,12 +20,12 @@ type MinMaxProps = {
 
 const MinMax = (props: MinMaxProps) => {
 
-    const { setFieldValue } = useFormikContext<SwapFormValues>();
+    const { setFieldValue, values } = useFormikContext<SwapFormValues>();
     const { fromCurrency, from, limitsMinAmount, limitsMaxAmount, onActionHover, depositMethod } = props;
 
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
 
-    const { gasData } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency)
+    const { gasData } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency, selectedSourceAccount?.wallet, values.amount)
     const { balances, mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, from)
 
     const walletBalance = useMemo(() => {

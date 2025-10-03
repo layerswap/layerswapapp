@@ -23,7 +23,7 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refue
     const networkName = source_network?.name
     const { networks } = useSettingsState()
     const networkWithTokens = networks.find(n => n.name === networkName)
-    const { gasData, isGasLoading } = useSWRGas(walletAddress, networkWithTokens, source_token)
+    const { gasData, isGasLoading } = useSWRGas(walletAddress, networkWithTokens, source_token, wallet)
 
     const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setError(undefined)
