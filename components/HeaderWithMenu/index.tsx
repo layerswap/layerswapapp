@@ -2,7 +2,7 @@ import IconButton from "../buttons/iconButton"
 import GoHomeButton from "../utils/GoHome"
 import { ArrowLeft } from 'lucide-react'
 import LayerswapMenu from "../LayerswapMenu"
-import { useQueryState } from "../../context/query"
+import { useQueryState } from "@/context/query"
 import { WalletsHeader } from "../Wallet/ConnectedWallets"
 
 type Props = {

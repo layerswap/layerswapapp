@@ -15,6 +15,7 @@ import useSWR from "swr";
 import { ApiResponse } from "@/Models/ApiResponse";
 import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 import { useSelectedAccount } from "@/context/balanceAccounts";
+import useWallet from "@/hooks/useWallet";
 
 export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoading, destination, destinationAddress, swapValues: values }) => {
     const { quote, reward } = quoteData || {}
@@ -22,7 +23,9 @@ export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, i
     const isCEX = !!fromExchange;
     const sourceAccountNetwork = !isCEX ? values.from : undefined
     const selectedSourceAccount = useSelectedAccount("from", sourceAccountNetwork?.name);
-    const { gasData, isGasLoading } = useSWRGas(selectedSourceAccount?.address, from, fromAsset, selectedSourceAccount?.wallet, values.amount)
+    const { wallets } = useWallet(from, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
+    const { gasData, isGasLoading } = useSWRGas(selectedSourceAccount?.address, from, fromAsset, wallet, values.amount)
 
     const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && reward?.nft_contract_address;
     const { balance: nftBalance, isLoading, error } = useSWRNftBalance(

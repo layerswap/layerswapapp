@@ -10,6 +10,7 @@ import AverageCompletionTime from '../Common/AverageCompletionTime';
 import useSWRGas from "@/lib/gases/useSWRGas";
 import GasIcon from '../icons/GasIcon';
 import Clock from '../icons/Clock';
+import useWallet from '@/hooks/useWallet';
 import rewardCup from '@/public/images/rewardCup.png'
 import Image from 'next/image'
 import { Network } from '@/Models/Network';
@@ -86,7 +87,9 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
     const isCEX = !!values.fromExchange;
     const sourceAccountNetwork = !isCEX ? values.from : undefined
     const selectedSourceAccount = useSelectedAccount("from", sourceAccountNetwork?.name);
-    const { gasData: gasData } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset, selectedSourceAccount?.wallet, values.amount)
+    const { wallets } = useWallet(quoteData?.quote.source_network, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
+    const { gasData: gasData } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset, wallet, values.amount)
     const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quote)
     const gasFeeInUsd = (gasData && gasTokenPriceInUsd) ? gasData.gas * gasTokenPriceInUsd : null;
     const averageCompletionTime = quote?.avg_completion_time;
