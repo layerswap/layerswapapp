@@ -11,6 +11,6 @@ const Content = ({ children, center }: ContetProps) => {
                 </div>
             </div>
         </div>
-        : <div className='h-full min-h-0 grow'>{children}</div>
+        : <div className='h-full min-h-0 grow flex flex-1'>{children}</div>
 }
 export default Content
