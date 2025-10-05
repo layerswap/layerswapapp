@@ -3,7 +3,6 @@ import AverageCompletionTime from "../Common/AverageCompletionTime";
 import { Tooltip, TooltipContent, TooltipTrigger, } from "../../components/shadcn/tooltip"
 import { truncateDecimals } from "../utils/RoundDecimals";
 import useSWRGas from "@/lib/gases/useSWRGas";
-import useWallet from "@/hooks/useWallet";
 import GasIcon from '../icons/GasIcon';
 import Clock from '../icons/Clock';
 import FeeIcon from "../icons/FeeIcon";
@@ -16,6 +15,7 @@ import useSWR from "swr";
 import { ApiResponse } from "@/Models/ApiResponse";
 import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 import { useSelectedAccount } from "@/context/balanceAccounts";
+import useWallet from "@/hooks/useWallet";
 
 export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoading, destination, destinationAddress, swapValues: values }) => {
     const { quote, reward } = quoteData || {}
@@ -23,7 +23,9 @@ export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, i
     const isCEX = !!fromExchange;
     const sourceAccountNetwork = !isCEX ? values.from : undefined
     const selectedSourceAccount = useSelectedAccount("from", sourceAccountNetwork?.name);
-    const { gasData, isGasLoading } = useSWRGas(selectedSourceAccount?.address, from, fromAsset)
+    const { wallets } = useWallet(from, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
+    const { gasData, isGasLoading } = useSWRGas(selectedSourceAccount?.address, from, fromAsset, wallet, values.amount)
 
     const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && reward?.nft_contract_address;
     const { balance: nftBalance, isLoading, error } = useSWRNftBalance(

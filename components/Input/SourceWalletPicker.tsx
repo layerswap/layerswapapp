@@ -1,6 +1,6 @@
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { Dispatch, FC, SetStateAction, useCallback, useMemo, useState } from "react";
+import { Dispatch, FC, SetStateAction, useCallback, useState } from "react";
 import useWallet from "../../hooks/useWallet";
 import shortenAddress from "../utils/ShortenAddress";
 import { ChevronDown, CircleHelp, QrCode } from "lucide-react";

@@ -1,7 +1,6 @@
 import { FC } from "react";
 import { Token } from "../../Models/Network";
-import { ArrowRight, Fuel } from "lucide-react";
-import { roundDecimals, truncateDecimals } from "../utils/RoundDecimals";
+import { truncateDecimals } from "../utils/RoundDecimals";
 import { Quote } from "@/lib/apiClients/layerSwapApiClient";
 import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 
