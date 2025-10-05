@@ -7,7 +7,7 @@ export class ZkSyncBalanceProvider extends BalanceProvider {
         return KnownInternalNames.Networks.ZksyncMainnet.includes(network.name)
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens) => {
+    fetchBalance = async (address: string, network: NetworkWithTokens, _options?: { timeoutMs?: number }) => {
         const client = new ZkSyncLiteRPCClient();
         const tokens = insertIfNotExists(network.tokens || [], network.token)
 

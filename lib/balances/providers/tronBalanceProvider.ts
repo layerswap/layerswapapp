@@ -11,9 +11,9 @@ export class TronBalanceProvider extends BalanceProvider {
         return KnownInternalNames.Networks.TronMainnet.includes(network.name)
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens) => {
+    fetchBalance = async (address: string, network: NetworkWithTokens, _options?: { timeoutMs?: number }) => {
         let balances: TokenBalance[] = []
-        const provider = new TronWeb({ fullNode: network.node_url, solidityNode: network.node_url, privateKey: '01' });
+        const provider = new TronWeb({ fullNode: network.node_url, solidityNode: network.node_url, privateKey: '01', });
         const tokens = insertIfNotExists(network.tokens, network.token)
 
         for (const token of tokens) {

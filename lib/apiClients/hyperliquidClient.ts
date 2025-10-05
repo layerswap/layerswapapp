@@ -41,8 +41,9 @@ interface ClearinghouseState {
 }
 
 export class HyperliquidClient {
-    async getClearinghouseState(user: string, nodeUrl: string): Promise<ClearinghouseState> {
-        const response = await fetch(`${nodeUrl}/info`, {
+    async getClearinghouseState(user: string, nodeUrl: string, timeoutMs?: number): Promise<ClearinghouseState> {
+        const { fetchWithTimeout } = await import("@/lib/fetchWithTimeout");
+        const response = await fetchWithTimeout(`${nodeUrl}/info`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -51,6 +52,7 @@ export class HyperliquidClient {
                 type: 'clearinghouseState',
                 user: user,
             }),
+            timeoutMs: timeoutMs ?? 60000,
         });
 
         if (!response.ok) {

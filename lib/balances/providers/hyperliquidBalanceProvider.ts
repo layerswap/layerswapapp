@@ -17,7 +17,7 @@ export class HyperliquidBalanceProvider extends BalanceProvider {
             network.name === KnownInternalNames.Networks.HyperliquidTestnet;
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens): Promise<TokenBalance[] | undefined> => {
+    fetchBalance = async (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number }): Promise<TokenBalance[] | undefined> => {
         if (!network?.tokens && !network.token) return;
 
         try {
@@ -27,7 +27,7 @@ export class HyperliquidBalanceProvider extends BalanceProvider {
                     ? "https://api.hyperliquid.xyz" : "https://api.hyperliquid-testnet.xyz";
             }
 
-            const clearinghouseState = await this.client.getClearinghouseState(address, nodeUrl);
+            const clearinghouseState = await this.client.getClearinghouseState(address, nodeUrl, options?.timeoutMs);
 
             const balances: TokenBalance[] = [];
 

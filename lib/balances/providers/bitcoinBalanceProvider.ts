@@ -16,14 +16,14 @@ export class BitcoinBalanceProvider extends BalanceProvider {
         return KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) || KnownInternalNames.Networks.BitcoinTestnet.includes(network.name)
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens) => {
+    fetchBalance = async (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number }) => {
         let balances: TokenBalance[] = []
         const token = network.tokens.find(t => t.symbol == 'BTC')
 
         if (!token) return
 
         try {
-            const utxos = await fetchUtxos(address, network.name)
+            const utxos = await fetchUtxos(address, network.name, options?.timeoutMs)
             const balanceSats = sumUtxos(utxos)
             const formattedBalance = formatBtc(balanceSats)
 
@@ -47,9 +47,9 @@ export class BitcoinBalanceProvider extends BalanceProvider {
     }
 }
 
-async function fetchUtxos(address: string, networkName: string): Promise<Utxo[]> {
+async function fetchUtxos(address: string, networkName: string, timeoutMs?: number): Promise<Utxo[]> {
     const url = `https://mempool.space${networkName.toLowerCase().includes('testnet') ? '/testnet' : ''}/api/address/${address}/utxo`;
-    const utxosData = await axios.get<Utxo[]>(url)
+    const utxosData = await axios.get<Utxo[]>(url, { timeout: timeoutMs ?? 60000 })
     const utxos = utxosData.data;
     return utxos
 

@@ -10,7 +10,7 @@ export class ParadexBalanceProvider extends BalanceProvider {
         return KnownInternalNames.Networks.ParadexMainnet.includes(network.name) || KnownInternalNames.Networks.ParadexTestnet.includes(network.name)
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens) => {
+    fetchBalance = async (address: string, network: NetworkWithTokens, _options?: { timeoutMs?: number }) => {
         const environment = process.env.NEXT_PUBLIC_API_VERSION === 'sandbox' ? 'testnet' : 'prod'
         const config = await Paradex.Config.fetchConfig(environment);
         const tokens = insertIfNotExists(network.tokens || [], network.token)

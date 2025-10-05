@@ -41,7 +41,7 @@ export class QueryBalanceProvider extends BalanceProvider {
         return network?.name?.toLocaleLowerCase() === this.query.from?.toLowerCase() || network?.name?.toLocaleLowerCase() === this.query.to?.toLowerCase()
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens) => {
+    fetchBalance = async (address: string, network: NetworkWithTokens, _options?: { timeoutMs?: number }) => {
         if (!network) return null;
         const tokens = insertIfNotExists(network.tokens || [], network.token)
 

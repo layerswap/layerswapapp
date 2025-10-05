@@ -12,7 +12,7 @@ export class TonBalanceProvider extends BalanceProvider {
         return KnownInternalNames.Networks.TONMainnet.includes(network.name)
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens) => {
+    fetchBalance = async (address: string, network: NetworkWithTokens, _options?: { timeoutMs?: number }) => {
         let balances: TokenBalance[] = []
         const tokens = insertIfNotExists(network.tokens || [], network.token)
 
