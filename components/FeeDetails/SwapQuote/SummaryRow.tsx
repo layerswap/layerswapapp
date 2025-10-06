@@ -47,7 +47,7 @@ export const SummaryRow: FC<{
                             {
                                 ((isValidAddress(values?.destination_address, values?.to) && values?.to) ?
                                     <div className="text-sm group/addressItem text-secondary-text">
-                                        <ExtendedAddress address={addressFormat(values?.destination_address, values?.to)} network={values?.to} showDetails={true} title="USDC" description="Circle USD Coin" logo="https://prodlsayerswapbridgesa.blob.core.windows.net/layerswap/currencies/arusdc.png" />
+                                        <ExtendedAddress address={addressFormat(values?.destination_address, values?.to)} network={values?.to} showDetails={activeWallet ? true : false} title={activeWallet?.displayName?.split("-")[0]} description={activeWallet?.providerName} logo={activeWallet?.icon} />
                                     </div>
                                     :
                                     <p className="text-sm text-secondary-text">{shortenAddress(values?.destination_address)}</p>)

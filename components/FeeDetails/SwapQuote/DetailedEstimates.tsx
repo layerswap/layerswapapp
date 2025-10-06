@@ -108,7 +108,7 @@ const detailsElements: DetailedElement[] = [
                                 {
                                     ((isValidAddress(destinationAddress, quote?.destination_network) && quote?.destination_network) ?
                                         <div className="text-sm group/addressItem text-secondary-text">
-                                            <ExtendedAddress address={addressFormat(destinationAddress, quote?.destination_network)} network={quote?.destination_network} showDetails={true} title="USDC" description="Circle USD Coin" logo="https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/arusdc.png" />
+                                            <ExtendedAddress address={addressFormat(destinationAddress, quote?.destination_network)} network={quote?.destination_network} showDetails={wallet ? true : false} title={wallet?.displayName?.split("-")[0]} description={wallet?.providerName} logo={wallet?.icon} />
                                         </div>
                                         :
                                         <p className="text-sm text-secondary-text">{shortenAddress(destinationAddress)}</p>)
