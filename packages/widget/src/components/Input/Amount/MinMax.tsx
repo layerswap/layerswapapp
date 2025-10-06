@@ -133,9 +133,10 @@ type ActionButtonProps = {
     disabled?: boolean;
 }
 
-const ActionButton = ({ label, onClick, onMouseEnter, disabled }: ActionButtonProps) => {
+const ActionButton = React.forwardRef<HTMLButtonElement, ActionButtonProps>(({ label, onClick, onMouseEnter, disabled }, ref) => {
     return (
         <button
+            ref={ref}
             onMouseEnter={onMouseEnter}
             onClick={onClick}
             typeof="button"
@@ -147,3 +148,4 @@ const ActionButton = ({ label, onClick, onMouseEnter, disabled }: ActionButtonPr
         </button>
     );
 }
+);
