@@ -14,6 +14,7 @@ import { Exchange } from "@/Models/Exchange";
 import useExchangeNetworks from "./useExchangeNetworks";
 import { RoutesHistory, useRecentNetworksStore } from "@/stores/recentRoutesStore";
 import { useRouteTokenSwitchStore } from "@/stores/routeTokenSwitchStore";
+import { useQueryState } from "@/context/query";
 
 type Props = {
     direction: SwapDirection;
@@ -28,10 +29,18 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         to: values.to?.name,
         toAsset: values.toAsset?.symbol
     });
+    const { lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset } = useQueryState()
     const groupByToken = useRouteTokenSwitchStore((s) => s.showTokens)
     const { balances, isLoading: balancesLoading } = useAllWithdrawalBalances();
     const routesHistory = useRecentNetworksStore(state => state.recentRoutes)
-    const routeElements = useMemo(() => groupRoutes(routes, direction, balances, groupByToken ? "token" : "network", routesHistory, balancesLoading, search), [balancesLoading, routes, balances, direction, search, groupByToken, routesHistory]);
+    
+    // Apply query-based filtering
+    const filteredRoutes = useMemo(() => {
+        const filtered = filterRoutesByQuery(routes, direction, { lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset });
+        return filtered;
+    }, [routes, direction, lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset]);
+    
+    const routeElements = useMemo(() => groupRoutes(filteredRoutes, direction, balances, groupByToken ? "token" : "network", routesHistory, balancesLoading, search), [balancesLoading, filteredRoutes, balances, direction, search, groupByToken, routesHistory]);
 
     const exchanges = useMemo(() => {
         return groupExchanges(exchangesRoutes, search);
@@ -42,7 +51,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const selectedToken = useMemo(() => resolveSelectedToken(values, direction), [values, direction]);
 
     return useMemo(() => ({
-        allRoutes: routes,
+        allRoutes: filteredRoutes,
         isLoading: routesLoading,
         routeElements,
         exchanges,
@@ -53,7 +62,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         selectedToken,
         allbalancesLoaded: !balancesLoading,
     }), [
-        routes,
+        filteredRoutes,
         routesLoading,
         routeElements,
         exchanges,
@@ -79,6 +88,61 @@ function useRoutesData<T extends object>(url: string, defaultData: T[], fetcher:
     }, [isLoading, data]);
 
     return { routes, isLoading };
+}
+
+// ---------- Query-based Filtering ----------
+
+type QueryFilterParams = {
+    lockFrom?: boolean;
+    from?: string;
+    lockTo?: boolean;
+    to?: string;
+    lockFromAsset?: boolean;
+    fromAsset?: string;
+    lockToAsset?: boolean;
+    toAsset?: string;
+};
+
+function filterRoutesByQuery(
+    routes: NetworkRoute[],
+    direction: SwapDirection,
+    queryParams: QueryFilterParams
+): NetworkRoute[] {
+    const { lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset } = queryParams;
+
+    // If no locks are set, return all routes
+    const hasNetworkLock = (direction === 'from' && lockFrom) || (direction === 'to' && lockTo);
+    const hasAssetLock = (direction === 'from' && lockFromAsset) || (direction === 'to' && lockToAsset);
+    
+    if (!hasNetworkLock && !hasAssetLock) {
+        return routes;
+    }
+
+    let filteredRoutes = [...routes];
+
+    // Filter by network based on direction (case-insensitive)
+    if (direction === 'from' && lockFrom && from) {
+        const networkName = from.toLowerCase();
+        filteredRoutes = filteredRoutes.filter(route => route.name.toLowerCase() === networkName);
+    } else if (direction === 'to' && lockTo && to) {
+        const networkName = to.toLowerCase();
+        filteredRoutes = filteredRoutes.filter(route => route.name.toLowerCase() === networkName);
+    }
+
+    // Filter by asset based on direction - only if lock is explicitly true
+    if (direction === 'from' && lockFromAsset && fromAsset) {
+        filteredRoutes = filteredRoutes.map(route => {
+            const filteredTokens = route.tokens?.filter(token => token.symbol === fromAsset) || [];
+            return filteredTokens.length > 0 ? { ...route, tokens: filteredTokens } : null;
+        }).filter((route): route is NetworkRoute => route !== null);
+    } else if (direction === 'to' && lockToAsset && toAsset) {
+        filteredRoutes = filteredRoutes.map(route => {
+            const filteredTokens = route.tokens?.filter(token => token.symbol === toAsset) || [];
+            return filteredTokens.length > 0 ? { ...route, tokens: filteredTokens } : null;
+        }).filter((route): route is NetworkRoute => route !== null);
+    }
+
+    return filteredRoutes;
 }
 
 function useRoutes({ direction, values }: Props) {
