@@ -136,6 +136,7 @@ export type CreateSwapParams = {
     slippage?: number,
     destination_address: string,
     source_address?: string
+    refund_address?: string
     amount: string,
     reference_id?: string,
     source_exchange?: string
