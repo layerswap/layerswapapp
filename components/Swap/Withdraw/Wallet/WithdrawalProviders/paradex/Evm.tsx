@@ -9,6 +9,7 @@ import AuhorizeEthereum from '@/lib/wallets/paradex/Authorize/Ethereum';
 import WalletIcon from '@/components/icons/WalletIcon';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import { useSelectedAccount } from '@/context/balanceAccounts';
+import useWallet from '@/hooks/useWallet';
 
 const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
 
@@ -21,7 +22,8 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
     const { chain } = useAccount();
 
     const selectedSourceAccount = useSelectedAccount("from", l1Network?.name);
-    const wallet = selectedSourceAccount?.wallet
+    const { wallets } = useWallet(l1Network, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
 
     const ethersSigner = useEthersSigner()
 
@@ -34,7 +36,7 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
 
             if (!account) throw new Error('Account not found')
 
-            const res = await account.execute(JSON.parse(callData || ""), undefined, { maxFee: '1000000000000000' });
+            const res = await account.execute(JSON.parse(callData || ""), { maxFee: '1000000000000000' });
 
             if (res.transaction_hash) {
                 return res.transaction_hash

@@ -16,6 +16,8 @@ import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import NumberFlow from "@number-flow/react";
 import clsx from "clsx";
 import { PriceImpact } from "@/components/Input/Amount/PriceImpact";
+import { Wallet } from "@/Models/WalletProvider";
+import useWallet from "@/hooks/useWallet";
 
 type SwapInfoProps = Omit<SwapResponse, 'quote' | 'swap'> & {
     swap: SwapBasicData
@@ -36,6 +38,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
         appName,
         hideAddress
     } = useQueryState()
+    const { wallets } = useWallet()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
@@ -68,6 +71,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                             token={sourceCurrency}
                             address={sourceAccountAddress}
                             shouldShowAddress={shouldShowAddress}
+                            wallets={wallets}
                         />
                     </div>
                     <div className="flex flex-col col-start-7 col-span-4 items-end">
@@ -90,6 +94,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                             token={destinationCurrency}
                             address={destAddress}
                             shouldShowAddress={shouldShowAddress}
+                            wallets={wallets}
                         />
                     </div>
                     {
@@ -135,7 +140,18 @@ const Summary: FC<SwapInfoProps> = (props) => {
     )
 }
 
-const RouteTokenPair: FC<{ route: { logo: string, display_name: string }, network?: Network, exchange?: Exchange, token: Token, address?: string, shouldShowAddress?: boolean }> = ({ route, token, exchange, network, address, shouldShowAddress }) => {
+type RouteTokenPairProps = {
+    route: { logo: string, display_name: string },
+    network?: Network,
+    exchange?: Exchange,
+    token: Token,
+    address?: string,
+    wallets?: Wallet[],
+    shouldShowAddress?: boolean
+}
+
+const RouteTokenPair: FC<RouteTokenPairProps> = ({ route, token, exchange, network, address, wallets,shouldShowAddress }) => {
+    const wallet = (network && address) ? wallets?.find(w => addressFormat(w.address, network) === addressFormat(address, network)) : undefined
     return (
         <div className="flex grow gap-4 text-left items-center md:text-base relative">
             <div className="inline-flex items-center relative shrink-0 mb-1.5">
@@ -171,7 +187,7 @@ const RouteTokenPair: FC<{ route: { logo: string, display_name: string }, networ
                                 {
                                     (isValidAddress(address, network) ?
                                         <div className="text-sm group/addressItem text-secondary-text">
-                                            <ExtendedAddress address={addressFormat(address, network)} network={network} showDetails={true} title="USDC" description="Circle USD Coin" logo="https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/arusdc.png" />
+                                            <ExtendedAddress address={addressFormat(address, network)} network={network} showDetails={wallet ? true : false} title={wallet?.displayName?.split("-")[0]} description={wallet?.providerName} logo={wallet?.icon} />
                                         </div>
                                         :
                                         <p className="text-sm text-secondary-text">{shortenAddress(address)}</p>)

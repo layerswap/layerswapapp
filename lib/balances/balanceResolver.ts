@@ -50,9 +50,8 @@ export class BalanceResolver {
             const totalInUSD = balances?.reduce((acc, b) => {
                 const token = network.tokens.find(t => t?.symbol === b?.token);
                 const tokenPriceInUsd = token?.price_in_usd || 0;
-                const tokenPrecision = token?.precision || 0;
-                const formattedBalance = b.amount ? Number(truncateDecimals(b?.amount, tokenPrecision)) : 0;
-                return acc + (formattedBalance * tokenPriceInUsd);
+                const amount = b?.amount || 0;
+                return acc + (amount * tokenPriceInUsd);
             }, 0)
             return { balances, totalInUSD };
         }
