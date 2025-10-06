@@ -54,7 +54,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({
         return Number((((toAmountUSD - fromAmountUSD) / fromAmountUSD) * 100).toFixed(2));
     }, [fromAmountUSD, toAmountUSD]);
 
-    if (priceImpact === undefined) return null;
+    if (priceImpact === undefined || Number(priceImpact).toFixed(2) === (0).toFixed(2)) return null;
 
     return (<>
         <Tooltip>
@@ -62,11 +62,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({
                 <span className="flex items-center text-sm text-secondary-text cursor-default hover:text-primary-text">
                     <span className="flex items-center gap-0.5">
                         <span>(</span>
-                        <Triangle
-                            aria-label={priceImpact < 0 ? "Negative price impact" : "Positive price impact"}
-                            className={`w-3 h-3 stroke-1 fill-current transition-transform ${priceImpact < 0 ? "rotate-180" : ""
-                                }`}
-                        />
+                        <Triangle className={`w-3 h-3 stroke-1 fill-current transition-transform ${priceImpact < 0 ? "rotate-180" : ""}`} />
                         <span>
                             ${Math.abs(priceImpact).toFixed(2)}
                         </span>
@@ -114,14 +110,14 @@ export const PriceImpact: FC<PriceImpactProps> = ({
 }
 
 const formatCurrency = (value?: number, decimals: number = 2) => {
-  if (value === undefined || isNaN(value)) return "";
+    if (value === undefined || isNaN(value)) return "";
 
-  const rounded = Number(value.toFixed(decimals));
+    const rounded = Number(value.toFixed(decimals));
 
-  // If rounded value is effectively zero, show "$0.00" (no minus sign)
-  if (Object.is(rounded, 0)) {
-    return `$${(0).toFixed(decimals)}`;
-  }
+    // If rounded value is effectively zero, show "$0.00" (no minus sign)
+    if (Object.is(rounded, 0)) {
+        return `$${(0).toFixed(decimals)}`;
+    }
 
-  return `${rounded < 0 ? "-$" : "$"}${Math.abs(rounded).toFixed(decimals)}`;
+    return `${rounded < 0 ? "-$" : "$"}${Math.abs(rounded).toFixed(decimals)}`;
 };
