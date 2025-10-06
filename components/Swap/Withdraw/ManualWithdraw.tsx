@@ -178,9 +178,9 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
     )
 
     return (
-        <div className="rounded-lg space-y-3 text-white">
+        <div className="rounded-lg space-y-3 text-white w-full">
             <>
-                {(loading || exchangeSourceNetworksLoading) ? (
+                {(!loading || exchangeSourceNetworksLoading) ? (
                     <>
                         <SkeletonStep number={1} />
                         <SkeletonStep number={2} />
