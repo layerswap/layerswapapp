@@ -24,7 +24,7 @@ const FormButton = ({
 }: Props) => {
     const initialSettings = useInitialSettings();
     const actionDisplayName = error || initialSettings?.actionButtonText || "Next";
-    if (shouldConnectWallet && !error) {
+    if (shouldConnectWallet && (!error || !values.to || !values.amount)) {
         return <FormSourceWalletButton />;
     }
 

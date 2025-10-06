@@ -58,7 +58,22 @@ export function BalanceAccountsProvider({ children }: PickerAccountsProviderProp
             const selectedAccountAddress = selectedWallet ? selectedSourceAccounts.find(acc => acc.providerName === provider.name && acc.id === selectedWallet.id)?.address : undefined
             const address = selectedAccountAddress ? selectedAccountAddress : wallet.address;
 
-            return ResolveWalletBalanceAccount(provider, wallet, address);
+
+            const res = ResolveWalletBalanceAccount(provider, wallet, address);
+
+            if (!selectedAccountAddress) {
+                setSelectedSourceAccounts(prev => {
+                    const existingAccountIndex = prev.findIndex(acc => acc.providerName === res.providerName);
+                    if (existingAccountIndex !== -1) {
+                        const updatedAccounts = [...prev];
+                        updatedAccounts[existingAccountIndex] = res;
+                        return updatedAccounts;
+                    }
+                    return [...prev, res];
+                });
+            }
+            
+            return res
         }).filter(Boolean) as AccountIdentityWithSupportedNetworks[];
     }, [providers, selectedSourceAccounts])
 

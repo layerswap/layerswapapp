@@ -16,7 +16,7 @@ import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import NumberFlow from "@number-flow/react";
 import clsx from "clsx";
 import { Wallet } from "@/Models/WalletProvider";
-import { useWallet } from "@/index";
+import useWallet from "@/hooks/useWallet";
 
 type SwapInfoProps = Omit<SwapResponse, 'quote' | 'swap'> & {
     swap: SwapBasicData
@@ -67,6 +67,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                             network={from}
                             token={sourceCurrency}
                             address={sourceAccountAddress}
+                            wallets={wallets}
                         />
                     </div>
                     <div className="flex flex-col col-start-7 col-span-4 items-end">

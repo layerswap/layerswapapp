@@ -1,5 +1,5 @@
 import { TransferProps } from '@/components/Pages/Swap/Withdraw/Wallet/Common/sharedTypes';
-import { AccountInterface } from 'starknet';
+import { WalletAccount } from 'starknet';
 import { StarknetWindowObject } from 'starknetkit';
 
 export type InternalConnector = {
@@ -26,7 +26,7 @@ export type Wallet = {
     icon: (props: any) => React.JSX.Element;
     //TODO: this is name of the connector, should be changed to connectorId
     metadata?: {
-        starknetAccount?: AccountInterface,
+        starknetAccount?: WalletAccount,
         wallet?: StarknetWindowObject,
         l1Address?: string,
         deepLink?: string

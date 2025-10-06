@@ -130,15 +130,13 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 />
                             }
                         </div>
-                    </div>
-                </Widget.Content>
-                <Widget.Footer>
-                    <div className="space-y-3">
-                        {
-                            showInsufficientBalanceWarning ?
-                                <InsufficientBalanceWarning />
-                                : null
-                        }
+                        <>
+                            {
+                                showInsufficientBalanceWarning ?
+                                    <InsufficientBalanceWarning />
+                                    : null
+                            }
+                        </>
                         {
                             Number(values.amount) > 0 ?
                                 <ReserveGasNote
@@ -162,22 +160,24 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 ? <ValidationError />
                                 : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                         }
-                        <FormButton
-                            shouldConnectWallet={shouldConnectWallet}
-                            values={values}
-                            disabled={!isValid || isSubmitting || !quote || isQuoteLoading}
-                            error={error}
-                            isSubmitting={isSubmitting}
-                            partner={partner}
-                        />
                     </div>
-                </Widget.Footer>
+                </Widget.Content>
+                <Widget.Footer>
+                    <FormButton
+                        shouldConnectWallet={shouldConnectWallet}
+                        values={values}
+                        disabled={!isValid || isSubmitting || !quote || isQuoteLoading}
+                        error={error}
+                        isSubmitting={isSubmitting}
+                        partner={partner}
+                    />
+                </Widget.Footer >
                 <RefuelModal
                     openModal={openRefuelModal}
                     setOpenModal={setOpenRefuelModal}
                     fee={quote}
                 />
-            </Form>
+            </Form >
         </>
     );
 };
