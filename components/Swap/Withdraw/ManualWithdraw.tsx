@@ -178,8 +178,8 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
     )
 
     return (
-        <div className="rounded-lg space-y-3 text-white w-full">
-            <>
+        <div className="flex flex-col flex-1 h-full min-h-0 w-full mb-3">
+            <div className='flex flex-col flex-1 h-full min-h-0 w-full space-y-3 mb-3'>
                 {(loading || exchangeSourceNetworksLoading) ? (
                     <>
                         <SkeletonStep number={1} />
@@ -277,7 +277,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                         />
                     </>
                 )}
-            </>
+            </div>
             <SubmitButton onClick={handleCopy}>
                 {copied ? 'Copied!' : 'Copy deposit address'}
             </SubmitButton>
