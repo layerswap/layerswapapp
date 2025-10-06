@@ -1,6 +1,6 @@
 import { Context, createContext, useCallback, useContext, useMemo, useState } from 'react'
 import useWallet from '@/hooks/useWallet';
-import { Wallet, WalletProvider } from '@/Models/WalletProvider';
+import { Wallet, WalletConnectionProvider } from '@/Models/WalletProvider';
 import AddressIcon from '@/components/Common/AddressIcon';
 import { SwapDirection } from '@/components/Pages/Swap/Form/SwapFormValues';
 import { getKey, useBalanceStore, BalanceEntry } from '@/stores/balanceStore';
@@ -31,7 +31,7 @@ type BaseAccountIdentity = {
 export type AccountIdentity = BaseAccountIdentity & {
     displayName: string,
     addresses: string[],
-    provider: WalletProvider;
+    provider: WalletConnectionProvider;
     icon: (props: any) => React.JSX.Element;
 }
 
@@ -183,12 +183,12 @@ export function useUpdateBalanceAccount(direction: SwapDirection) {
 }
 
 function hasWallet(
-    p: WalletProvider
-): p is WalletProvider & { activeWallet: { address: string; id: string } } {
+    p: WalletConnectionProvider
+): p is WalletConnectionProvider & { activeWallet: { address: string; id: string } } {
     return Boolean(p.activeWallet);
 }
 
-function ResolveWalletBalanceAccount(provider: WalletProvider, wallet: Wallet, address: string): AccountIdentityWithSupportedNetworks {
+function ResolveWalletBalanceAccount(provider: WalletConnectionProvider, wallet: Wallet, address: string): AccountIdentityWithSupportedNetworks {
     return {
         address,
         provider,
@@ -203,7 +203,7 @@ function ResolveWalletBalanceAccount(provider: WalletProvider, wallet: Wallet, a
     }
 }
 
-function ResolveManualBalanceAccount(provider: WalletProvider, address: string): AccountIdentity {
+function ResolveManualBalanceAccount(provider: WalletConnectionProvider, address: string): AccountIdentity {
     return {
         address,
         provider,

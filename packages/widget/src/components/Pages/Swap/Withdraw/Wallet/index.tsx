@@ -1,16 +1,15 @@
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import KnownInternalNames from "@/lib/knownIds";
-import { NetworkType } from "@/Models/Network";
 import {
-    ImtblxWalletWithdrawStep, BitcoinWalletWithdrawStep, EVMWalletWithdrawal, FuelWalletWithdrawStep, LoopringWalletWithdraw, ParadexWalletWithdraw, SVMWalletWithdrawStep, StarknetWalletWithdrawStep, TonWalletWithdrawStep, TronWalletWithdraw, ZkSyncWalletWithdrawStep
+    LoopringWalletWithdraw, ParadexWalletWithdraw, ZkSyncWalletWithdrawStep
 } from "./WithdrawalProviders";
 import { PublishedSwapTransactions, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
 import useWallet from "@/hooks/useWallet";
-import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/balanceAccounts"; 
 import { TransferProps, WithdrawPageProps } from "./Common/sharedTypes";
 import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from "./Common/buttons";
-import TransactionMessages from "../messages/TransactionMessages";
+import TransactionMessages, { TransactionMessageType } from "../messages/TransactionMessages";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
 import WalletIcon from "@/components/Icons/WalletIcon";
 import { useBalance } from "@/lib/balances/useBalance";
@@ -32,22 +31,6 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
     const WithdrawalPages = useMemo(() => [
         {
             supportedNetworks: [
-                KnownInternalNames.Networks.ImmutableXMainnet,
-                KnownInternalNames.Networks.ImmutableXGoerli,
-                KnownInternalNames.Networks.ImmutableXSepolia
-            ],
-            component: ImtblxWalletWithdrawStep
-        },
-        {
-            supportedNetworks: [
-                KnownInternalNames.Networks.StarkNetMainnet,
-                KnownInternalNames.Networks.StarkNetGoerli,
-                KnownInternalNames.Networks.StarkNetSepolia
-            ],
-            component: StarknetWalletWithdrawStep
-        },
-        {
-            supportedNetworks: [
                 KnownInternalNames.Networks.ZksyncMainnet,
             ],
             component: ZkSyncWalletWithdrawStep
@@ -62,50 +45,11 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
         },
         {
             supportedNetworks: [
-                KnownInternalNames.Networks.TONMainnet,
-                KnownInternalNames.Networks.TONTestnet
-            ],
-            component: TonWalletWithdrawStep
-        },
-        {
-            supportedNetworks: [
                 KnownInternalNames.Networks.ParadexMainnet,
                 KnownInternalNames.Networks.ParadexTestnet
             ],
             component: ParadexWalletWithdraw
         },
-        {
-            supportedNetworks: [
-                KnownInternalNames.Networks.FuelMainnet,
-                KnownInternalNames.Networks.FuelTestnet
-            ],
-            component: FuelWalletWithdrawStep
-        },
-        {
-            supportedNetworks: [
-                KnownInternalNames.Networks.TronMainnet
-            ],
-            component: TronWalletWithdraw
-        },
-        {
-            supportedNetworks: [
-                KnownInternalNames.Networks.BitcoinMainnet,
-                KnownInternalNames.Networks.BitcoinTestnet
-            ],
-            component: BitcoinWalletWithdrawStep
-        },
-        {
-            supportedNetworks: [
-                source_network?.type == NetworkType.Solana ? source_network.name : undefined
-            ],
-            component: SVMWalletWithdrawStep
-        },
-        {
-            supportedNetworks: [
-                source_network?.type == NetworkType.EVM ? source_network.name : undefined
-            ],
-            component: EVMWalletWithdrawal
-        }
     ], [source_network])
 
     const WithdrawalComponent = WithdrawalPages.find(page =>
@@ -121,7 +65,7 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
 
     return <>
         {
-            swapData && WithdrawalComponent &&
+            swapData &&
             <WithdrawalProvider onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}>
                 <WalletWithdrawal
                     swapId={swapId}
@@ -141,21 +85,11 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
 
     const { source_network, destination_network, destination_address } = swapBasicData
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network.name);
-    const { provider, wallets } = useWallet(source_network, "withdrawal")
+    const { wallets } = useWallet(source_network, "withdrawal")
     const { sameAccountNetwork } = useInitialSettings()
-    const wallet = selectedSourceAccount?.wallet
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const networkChainId = Number(source_network?.chain_id) ?? undefined
-    const [walletChainId, setWalletChainId] = useState<number | undefined>()
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
-
-    useEffect(() => {
-        (async () => {
-            if (wallet) {
-                const chainId = provider?.getChainId && await provider?.getChainId(wallet, selectedSourceAccount?.address)
-                setWalletChainId(Number(chainId))
-            }
-        })()
-    }, [provider, wallet])
 
     useEffect(() => {
         if (!swapId) return;
@@ -180,7 +114,7 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
     if (!wallet) {
         return <ConnectWalletButton />
     }
-    else if (walletChainId !== networkChainId && source_network) {
+    else if (wallet.chainId !== networkChainId && source_network) {
         return <ChangeNetworkButton
             chainId={networkChainId}
             network={source_network}
@@ -261,15 +195,13 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
 
 
     return <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
-        {/* {
+        {
             buttonClicked &&
             <TransactionMessage
-                transaction={transaction}
-                applyingTransaction={!!savedTransactionHash}
-                activeAddress={selectedSourceAccount?.address}
-                selectedSourceAddress={selectedSourceAccount?.address}
+                error={error}
+                isLoading={loading}
             />
-        } */}
+        }
         {
             !loading &&
             <SendTransactionButton
@@ -281,6 +213,31 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
             />
         }
     </div>
+}
+
+const TransactionMessage: FC<{ error: Error, isLoading: boolean }> = ({ error, isLoading }) => {
+    if(isLoading) {
+        return <TransactionMessages.ConfirmTransactionMessage />
+    }
+    else if(error.message === TransactionMessageType.TransactionRejected) {
+        return <TransactionMessages.TransactionRejectedMessage />
+    }
+    else if(error.message === TransactionMessageType.TransactionFailed) {
+        return <TransactionMessages.TransactionFailedMessage />
+    }
+    else if(error.message === TransactionMessageType.InsufficientFunds) {
+        return <TransactionMessages.InsufficientFundsMessage />
+    }
+    else if(error.message === TransactionMessageType.WaletMismatch) {
+        return <TransactionMessages.WaletMismatchMessage address={error.message} />
+    }
+    else if(error.message === TransactionMessageType.DifferentAccountsNotAllowedError) {
+        return <TransactionMessages.DifferentAccountsNotAllowedError network={error.message} />
+    }
+    else if(error) {
+        return <TransactionMessages.UexpectedErrorMessage message={error.message} />
+    }
+    else return <></>
 }
 
 export default TransferTokenButton

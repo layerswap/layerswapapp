@@ -1,7 +1,7 @@
 import { Dispatch, FC, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import useWallet from "@/hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
-import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider";
+import { InternalConnector, Wallet, WalletConnectionProvider } from "@/Models/WalletProvider";
 import { CircleX, Link2Off, RotateCw, SlidersHorizontal } from "lucide-react";
 import { resolveWalletConnectorIcon } from "@/lib/wallets/utils/resolveWalletIcon";
 import { QRCodeSVG } from "qrcode.react";
@@ -42,7 +42,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         return () => clearTimeout(scrollTimeout.current as any);
     }, []);
 
-    const connect = async (connector: InternalConnector, provider: WalletProvider) => {
+    const connect = async (connector: InternalConnector, provider: WalletConnectionProvider) => {
         try {
             setConnectionError(undefined)
             if (connector?.isMultiChain) {
@@ -308,7 +308,7 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
     )
 }
 
-const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: string | undefined, setSelectedProviderName: Dispatch<SetStateAction<string | undefined>> }> = ({ providers, selectedProviderName, setSelectedProviderName }) => {
+const ProviderPicker: FC<{ providers: WalletConnectionProvider[], selectedProviderName: string | undefined, setSelectedProviderName: Dispatch<SetStateAction<string | undefined>> }> = ({ providers, selectedProviderName, setSelectedProviderName }) => {
     const values = providers.map(p => p.name)
 
     const onSelect = (item: string) => {
@@ -352,8 +352,8 @@ const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: st
 type MultichainConnectorModalProps = {
     selectedConnector: WalletModalConnector,
     allConnectors: InternalConnector[],
-    providers: WalletProvider[],
-    connect: (connector: InternalConnector, provider: WalletProvider) => Promise<void>
+    providers: WalletConnectionProvider[],
+    connect: (connector: InternalConnector, provider: WalletConnectionProvider) => Promise<void>
 }
 
 const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ selectedConnector, allConnectors, providers, connect }) => {

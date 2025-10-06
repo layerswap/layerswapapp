@@ -1,4 +1,4 @@
-import { Context, FC, createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { Context, FC, act, createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { useAccount } from 'wagmi';
 
 type ActiveAccountState = {
@@ -23,9 +23,10 @@ export const ActiveEvmAccountProvider: FC<Props> = ({ children }) => {
         const isSelectedAddressActive = activeAccount.addresses && activeAccount.addresses.some(addr => addr === selectedAddress);
         return {
             id: activeAccount.connector?.id,
-            address: isSelectedAddressActive ? selectedAddress : activeAccount.address
+            address: isSelectedAddressActive ? selectedAddress : activeAccount.address,
+            chainId: activeAccount.chainId
         }
-    }, [activeAccount, selectedAddress])
+    }, [activeAccount, selectedAddress, activeAccount.chainId])
 
     const setActiveAddress = useCallback((address: string) => {
         setSelectedAddress(address)

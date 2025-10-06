@@ -3,13 +3,13 @@ import { ChevronDown, Plus, RefreshCw } from "lucide-react";
 import { Network } from "@/Models/Network";
 import { FC, useState } from "react";
 import ResizablePanel from "@/components/Common/ResizablePanel";
-import { SelectAccountProps, Wallet, WalletProvider } from "@/Models/WalletProvider";
+import { SelectAccountProps, Wallet, WalletConnectionProvider } from "@/Models/WalletProvider";
 import WalletIcon from "@/components/Icons/WalletIcon";
 import { WalletItem } from "@/components/Wallet/WalletComponents/WalletsList";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 
 type Props = {
-    provider: WalletProvider,
+    provider: WalletConnectionProvider,
     wallets: Wallet[],
     onClick: (props: SelectAccountProps) => void,
     onConnect?: (wallet: Wallet) => void,

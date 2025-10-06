@@ -15,7 +15,7 @@ import { ArrowUpDown } from "lucide-react";
 import { classNames } from "@/components/utils/classNames";
 import FormButton from "./SecondaryComponents/FormButton";
 import { InitialSettings } from "@/Models/InitialSettings";
-import { WalletProvider } from "@/Models/WalletProvider";
+import { WalletConnectionProvider } from "@/Models/WalletProvider";
 import { updateForm, updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
@@ -182,7 +182,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     );
 };
 
-const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<SwapFormValues>['setValues'], providers: WalletProvider[], query: InitialSettings }> = ({ values, setValues, providers, query }) => {
+const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<SwapFormValues>['setValues'], providers: WalletConnectionProvider[], query: InitialSettings }> = ({ values, setValues, providers, query }) => {
     const [animate, cycle] = useCycle(
         { rotateX: 0 },
         { rotateX: 180 }

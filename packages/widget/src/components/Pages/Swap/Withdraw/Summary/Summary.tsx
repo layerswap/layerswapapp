@@ -1,7 +1,7 @@
 import { ArrowDown, Fuel } from "lucide-react";
-import { FC, useMemo } from "react";
+import { FC } from "react";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
-import LayerSwapApiClient, { Quote, Refuel, SwapBasicData, SwapQuote, SwapResponse } from "@/lib/apiClients/layerSwapApiClient";
+import LayerSwapApiClient, { Quote, SwapBasicData, SwapResponse } from "@/lib/apiClients/layerSwapApiClient";
 import { ApiResponse } from "@/Models/ApiResponse";
 import { Partner } from "@/Models/Partner";
 import useSWR from 'swr'

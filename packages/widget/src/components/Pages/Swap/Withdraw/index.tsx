@@ -4,7 +4,6 @@ import { SwapDataProvider, useSwapDataState, useSwapDataUpdate } from "@/context
 import NotFound from "./NotFound";
 import SwapDetails from "./SwapDetails";
 import { LayerswapContextProps, LayerswapProvider } from "@/context/LayerswapProvider";
-import { TimerProvider } from "@/context/timerContext";
 
 const Comp: FC = () => {
     const { swapBasicData, swapApiError, swapId } = useSwapDataState()
@@ -34,9 +33,7 @@ export const SwapWithdrawal: FC<LayerswapContextProps> = (props) => {
     return (
         <LayerswapProvider {...props}>
             <SwapDataProvider>
-                <TimerProvider>
-                    <Comp />
-                </TimerProvider>
+                <Comp />
             </SwapDataProvider >
         </LayerswapProvider>
     )

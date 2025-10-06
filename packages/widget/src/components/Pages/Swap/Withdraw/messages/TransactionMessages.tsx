@@ -1,6 +1,6 @@
 import { FC } from "react"
 import WalletMessage from "./Message"
-import shortenAddress from "../../../../utils/ShortenAddress"
+import shortenAddress from "@/components/utils/ShortenAddress"
 
 const ConfirmTransactionMessage: FC = () => {
     return <WalletMessage
@@ -68,6 +68,17 @@ const TransactionMessages = {
     TransactionFailedMessage,
     UexpectedErrorMessage,
     DifferentAccountsNotAllowedError
+}
+
+export enum TransactionMessageType {
+    ConfirmTransaction = 'ConfirmTransaction',
+    TransactionInProgress = 'TransactionInProgress',
+    InsufficientFunds = 'InsufficientFunds',
+    TransactionRejected = 'TransactionRejected',
+    WaletMismatch = 'WaletMismatch',
+    TransactionFailed = 'TransactionFailed',
+    UexpectedErrorMessage = 'UexpectedErrorMessage',
+    DifferentAccountsNotAllowedError = 'DifferentAccountsNotAllowedError',
 }
 
 export default TransactionMessages

@@ -1,8 +1,8 @@
 import { useWalletStore } from "@/stores/walletStore"
-import ImtblClient from "../../imtbl"
+import ImtblClient from "./client"
 import KnownInternalNames from "../../knownIds"
 import IMX from "@/components/Icons/Wallets/IMX"
-import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider"
+import { InternalConnector, Wallet, WalletConnectionProvider } from "@/Models/WalletProvider"
 import { useSettingsState } from "@/context/settings"
 
 const supportedNetworks = [
@@ -11,7 +11,7 @@ const supportedNetworks = [
     KnownInternalNames.Networks.ImmutableXSepolia,
 ]
 
-export default function useImtblX(): WalletProvider {
+export default function useImtblXConnection(): WalletConnectionProvider {
     const { networks } = useSettingsState()
 
     const name = 'ImmutableX'
@@ -64,9 +64,9 @@ export default function useImtblX(): WalletProvider {
         }
     }
 
-    const transfer: WalletProvider['transfer'] = async (params) => {
+    const transfer: WalletConnectionProvider['transfer'] = async (params) => {
         const { network, token, amount, depositAddress, swapId } = params
-        const ImtblClient = (await import('@/lib/imtbl')).default;
+        const ImtblClient = (await import('@/lib/wallets/imtblX/client')).default;
         const imtblClient = new ImtblClient(network?.name)
 
         if (!token) {
@@ -98,7 +98,7 @@ export default function useImtblX(): WalletProvider {
         icon: logo,
     }]
 
-    const provider: WalletProvider = {
+    const provider: WalletConnectionProvider = {
         connectedWallets: getWallet(),
         activeWallet: wallet,
         connectWallet,

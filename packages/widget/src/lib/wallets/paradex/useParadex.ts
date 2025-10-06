@@ -1,10 +1,10 @@
 import KnownInternalNames from "../../knownIds"
 import { useMemo } from "react"
-import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider"
+import { InternalConnector, Wallet, WalletConnectionProvider } from "@/Models/WalletProvider"
 import { useConnectModal } from "@/components/Wallet/WalletModal"
 import { type ConnectorAlreadyConnectedError } from '@wagmi/core'
-import useEVM from "../evm/useEVM"
-import useStarknet from "../starknet/useStarknet"
+import useEVMConnection from "../evm/useEVMConnection"
+import useStarknetConnection from "../starknet/useStarknetConnection"
 import { useWalletStore } from "@/stores/walletStore"
 import { AuthorizeStarknet } from "./Authorize/Starknet"
 import { walletClientToSigner } from "../../ethersToViem/ethers"
@@ -17,7 +17,7 @@ import shortenAddress from "@/components/utils/ShortenAddress"
 import sleep from "../utils/sleep"
 import { useActiveParadexAccount } from "@/components/Wallet/WalletProviders/ActiveParadexAccount"
 
-export default function useParadex(): WalletProvider {
+export default function useParadex(): WalletConnectionProvider {
     const name = 'Paradex'
     const id = 'prdx'
     const { networks } = useSettingsState()
@@ -38,8 +38,8 @@ export default function useParadex(): WalletProvider {
     ]
 
     const { setSelectedConnector } = useConnectModal()
-    const evmProvider = useEVM()
-    const starknetProvider = useStarknet()
+    const evmProvider = useEVMConnection()
+    const starknetProvider = useStarknetConnection()
 
     const config = useConfig()
 
@@ -194,7 +194,7 @@ export default function useParadex(): WalletProvider {
         })
     }, [evmProvider.activeWallet, starknetProvider.activeWallet, activeConnection])
 
-    const provider: WalletProvider = {
+    const provider: WalletConnectionProvider = {
         connectWallet,
         switchAccount,
         connectedWallets,
@@ -210,7 +210,7 @@ export default function useParadex(): WalletProvider {
     return provider
 }
 type ResolveWalletsListProps = {
-    provider: WalletProvider
+    provider: WalletConnectionProvider
     paradexAccounts: { [key: string]: string }
     name: string
     disconnect: (address: string) => void
@@ -231,7 +231,7 @@ const resolveWalletsList = ({ provider, paradexAccounts, name, disconnect, netwo
 }
 
 type ResolveWalletProps = {
-    provider: WalletProvider
+    provider: WalletConnectionProvider
     walletId: string
     l1Account: string
     name: string

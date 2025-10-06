@@ -1,6 +1,6 @@
-import { SelectAccountProps, WalletProvider } from "@/Models/WalletProvider";
+import { SelectAccountProps, WalletConnectionProvider } from "@/Models/WalletProvider";
 
-export function SwitchWalletAccount(props: SelectAccountProps, provider: WalletProvider | undefined) {
+export function SwitchWalletAccount(props: SelectAccountProps, provider: WalletConnectionProvider | undefined) {
     const { walletId, address, providerName } = props;
 
     if (!provider || !provider.connectedWallets) {

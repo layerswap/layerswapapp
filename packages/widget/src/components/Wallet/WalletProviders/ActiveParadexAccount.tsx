@@ -1,6 +1,6 @@
 'use client'
-import useEVM from '@/lib/wallets/evm/useEVM';
-import useStarknet from '@/lib/wallets/starknet/useStarknet';
+import useEVMConnection from '@/lib/wallets/evm/useEVMConnection';
+import useStarknetConnection from '@/lib/wallets/starknet/useStarknetConnection';
 import { useWalletStore } from '@/stores/walletStore';
 import { Context, FC, createContext, useCallback, useContext, useMemo, useState } from 'react';
 
@@ -23,8 +23,8 @@ type Props = {
 
 export const ActiveParadexAccountProvider: FC<Props> = ({ children }) => {
     const [selectedAccount, setSelectedAccount] = useState<Account>()
-    const evmProvider = useEVM()
-    const starknetProvider = useStarknet()
+    const evmProvider = useEVMConnection()
+    const starknetProvider = useStarknetConnection()
     const paradexAccounts = useWalletStore((state) => state.paradexAccounts)
 
     const activeConnection: Account | undefined = useMemo(() => {

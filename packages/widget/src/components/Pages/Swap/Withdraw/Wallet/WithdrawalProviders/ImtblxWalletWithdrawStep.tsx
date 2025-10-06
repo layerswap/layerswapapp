@@ -22,7 +22,7 @@ export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
             return
         setLoading(true)
         try {
-            const ImtblClient = (await import('@/lib/imtbl')).default;
+            const ImtblClient = (await import('@/lib/wallets/imtblX/client')).default;
             const imtblClient = new ImtblClient(source_network?.name)
 
             if (!source_token) {

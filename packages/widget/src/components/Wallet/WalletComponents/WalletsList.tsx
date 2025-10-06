@@ -1,6 +1,6 @@
 import { Plus, Unplug } from "lucide-react";
 import AddressIcon from "@/components/Common/AddressIcon";
-import { SelectAccountProps, Wallet, WalletProvider } from "@/Models/WalletProvider";
+import { SelectAccountProps, Wallet, WalletConnectionProvider } from "@/Models/WalletProvider";
 import { FC, HTMLAttributes } from "react";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import { clsx } from 'clsx';
@@ -19,7 +19,7 @@ type Props = {
     wallets: (Wallet | AccountIdentity)[];
     token?: Token;
     network?: Network;
-    provider?: WalletProvider | undefined;
+    provider?: WalletConnectionProvider | undefined;
     onSelect?: (props: SelectAccountProps) => void;
     selectedDepositMethod?: "wallet" | "deposit_address";
 }

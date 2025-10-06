@@ -1,5 +1,5 @@
-import { NetworkWithTokens } from "../../../Models/Network";
-import { TokenBalance } from "../../../Models/Balance";
+import { NetworkWithTokens } from "@/Models/Network";
+import { TokenBalance } from "@/Models/Balance";
 import KnownInternalNames from "../../knownIds";
 import { HyperliquidClient } from "../../apiClients/hyperliquidClient";
 import { BalanceProvider } from "@/Models/BalanceProvider";

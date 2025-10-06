@@ -7,7 +7,6 @@ import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
 import ErrorFallback from "../components/ErrorFallback";
 import { THEME_COLORS, ThemeData } from "../Models/Theme";
-import { TooltipProvider } from "../components/shadcn/tooltip";
 import { AsyncModalProvider } from "./asyncModal";
 import { IntercomProvider } from 'react-use-intercom';
 import AppSettings from "../lib/AppSettings";
@@ -19,7 +18,19 @@ import WalletsProviders from "@/components/Wallet/WalletProviders";
 import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
 import { InitialSettings } from "../Models/InitialSettings";
 import { BalanceAccountsProvider } from "./balanceAccounts";
+import { WalletConnectionProvider } from "@/Models/WalletProvider";
+import { GasProvider } from "@/lib/gases/providers/types";
+import { BalanceProvider } from "@/Models/BalanceProvider";
+import { useEVM, useStarknet, useTON, useTron, useFuel, useImtblX, useBitcoin, useSVM } from "@/lib/wallets";
+import { BalanceAndGasResolverProvider } from "./resolverContext";
 
+export type WalletProvider = {
+    id: string,
+    wrapper?: React.ComponentType<any>,
+    walletConnectionProvider: () => WalletConnectionProvider,
+    gasProvider?: GasProvider,
+    balanceProvider?: BalanceProvider,
+}
 export type LayerswapContextProps = {
     children?: ReactNode;
     settings?: LayerSwapSettings;
@@ -31,10 +42,11 @@ export type LayerswapContextProps = {
     initialValues?: InitialSettings
     walletConnect?: typeof AppSettings.WalletConnectConfig
     imtblPassport?: typeof AppSettings.ImtblPassportConfig
+    walletProviders?: WalletProvider[]
 }
 
 const INTERCOM_APP_ID = 'h5zisg78'
-const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, settings: _settings, themeData, apiKey, integrator, version, callbacks, initialValues, walletConnect, imtblPassport }) => {
+const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, settings: _settings, themeData, apiKey, integrator, version, callbacks, initialValues, walletConnect, imtblPassport, walletProviders }) => {
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
 
     AppSettings.ApiVersion = version
@@ -60,23 +72,30 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
 
     themeData = { ...THEME_COLORS['default'], ...themeData }
 
+    walletProviders = [useEVM, useSVM, useStarknet, useTON, useTron, useFuel, useImtblX, useBitcoin]
+
     return (
         <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
             <SettingsProvider initialLayerswapData={appSettings} initialSettings={initialValues}>
                 <CallbackProvider callbacks={callbacks}>
-                    <TooltipProvider delayDuration={500}>
-                        <ErrorBoundary FallbackComponent={ErrorFallback} >
-                            <ThemeWrapper>
-                                <WalletsProviders appName={integrator} basePath="/" themeData={themeData}>
+                    <ErrorBoundary FallbackComponent={ErrorFallback} >
+                        <ThemeWrapper>
+                            <WalletsProviders
+                                appName={integrator}
+                                basePath="/"
+                                themeData={themeData}
+                                walletProviders={walletProviders}
+                            >
+                                <BalanceAndGasResolverProvider walletProviders={walletProviders}>
                                     <BalanceAccountsProvider>
                                         <AsyncModalProvider>
                                             {children}
                                         </AsyncModalProvider>
                                     </BalanceAccountsProvider>
-                                </WalletsProviders>
-                            </ThemeWrapper>
-                        </ErrorBoundary>
-                    </TooltipProvider>
+                                </BalanceAndGasResolverProvider>
+                            </WalletsProviders>
+                        </ThemeWrapper>
+                    </ErrorBoundary>
                 </CallbackProvider>
             </SettingsProvider >
         </IntercomProvider>

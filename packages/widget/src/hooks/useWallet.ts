@@ -1,5 +1,5 @@
 import { Network } from "../Models/Network"
-import { Wallet, WalletProvider } from "../Models/WalletProvider";
+import { Wallet, WalletConnectionProvider } from "../Models/WalletProvider";
 import { useCallback, useMemo } from "react";
 import { useWalletProviders } from "../context/walletProviders";
 
@@ -38,10 +38,10 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
     return res
 }
 
-const resolveProvider = (network: Network | undefined, walletProviders: WalletProvider[], purpose?: WalletPurpose) => {
+const resolveProvider = (network: Network | undefined, walletProviders: WalletConnectionProvider[], purpose?: WalletPurpose) => {
     if (!purpose || !network) return
 
-    let provider: WalletProvider | undefined = undefined
+    let provider: WalletConnectionProvider | undefined = undefined
     switch (purpose) {
         case "withdrawal":
             provider = walletProviders.find(provider => provider.withdrawalSupportedNetworks?.includes(network.name))

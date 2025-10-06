@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo } from "react";
-import { WalletProvider } from "@/Models/WalletProvider";
+import { WalletConnectionProvider } from "@/Models/WalletProvider";
 import { useSettingsState } from "./settings";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import IconButton from "@/components/Buttons/iconButton";
@@ -7,29 +7,18 @@ import { ChevronLeft } from "lucide-react";
 import ConnectorsList from "@/components/Wallet/WalletModal/ConnectorsList";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { isMobile } from "@/lib/wallets/utils/isMobile";
-import { useBitcoin, useEVM, useStarknet, useImtblX, useSVM, useTON, useFuel, useTron, useParadex } from "@/lib/wallets";
+import { WalletProvider } from "./LayerswapProvider";
 
-const WalletProvidersContext = createContext<WalletProvider[]>([]);
+const WalletProvidersContext = createContext<WalletConnectionProvider[]>([]);
 
-export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
+export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walletProviders: WalletProvider[] }> = ({ children, walletProviders }) => {
     const { networks } = useSettingsState();
     const isMobilePlatform = isMobile();
     const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector } = useConnectModal()
 
-    const bitcoin = useBitcoin()
-    const evm = useEVM();
-    const starknet = useStarknet();
-    const imtblX = useImtblX();
-    const svm = useSVM();
-    const ton = useTON();
-    const fuel = useFuel();
-    const tron = useTron();
-    const paradex = useParadex();
+    const allProviders = walletProviders.map(provider => provider.walletConnectionProvider())
 
     const providers = useMemo(() => {
-        const allProviders: WalletProvider[] = [
-            bitcoin, evm, starknet, svm, ton, fuel, tron, paradex, imtblX
-        ];
         const filteredProviders = allProviders.filter(provider => (isMobilePlatform ? !provider.unsupportedPlatforms?.includes('mobile') : !provider.unsupportedPlatforms?.includes('desktop')) &&
             networks.some(net =>
                 provider.autofillSupportedNetworks?.includes(net.name) ||
@@ -39,7 +28,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
         );
 
         return filteredProviders
-    }, [networks, bitcoin, evm, starknet, svm, ton, fuel, tron, paradex, imtblX, isMobilePlatform]);
+    }, [networks, isMobilePlatform, allProviders]);
 
     return (
         <WalletProvidersContext.Provider value={providers}>
