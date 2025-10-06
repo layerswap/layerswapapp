@@ -81,7 +81,7 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
             <AccordionItem value="quote" className="bg-secondary-500 rounded-2xl">
                 <AccordionTrigger
                     onClick={(e) => e.preventDefault()}
-                    className={clsx(`${isOpen ? 'hidden' : ''} px-3.5 pb-3.5 pr-5 w-full rounded-2xl flex items-center justify-between cursor-auto`)}
+                    className={clsx(`${isOpen ? 'px-5 pb-2' : 'px-3.5 pb-3.5'}  pr-5 w-full rounded-2xl flex items-center justify-between cursor-auto`)}
                 >
                     <SummaryRow
                         isQuoteLoading={isQuoteLoading}
@@ -93,6 +93,7 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
                         isLoading={isLoading}
                         error={error}
                         onOpen={() => setIsOpen(true)}
+                        isOpen={isOpen}
                         sourceAddress={activeWallet?.address}
                     />
                 </AccordionTrigger>
@@ -114,6 +115,7 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
                             campaign={campaign}
                             wallet={activeWallet}
                             computed={computed}
+                            variant='extended'
                         />
                     </ResizablePanel>
                 </AccordionContent>

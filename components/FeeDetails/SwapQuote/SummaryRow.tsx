@@ -26,14 +26,15 @@ export const SummaryRow: FC<{
     isLoading?: boolean
     error?: any
     onOpen?: () => void
+    isOpen?: boolean
     sourceAddress?: string
-}> = ({ isQuoteLoading, values, activeWallet, computed, shouldCheckNFT, nftBalance, isLoading, error, onOpen, sourceAddress }) => {
+}> = ({ isQuoteLoading, values, activeWallet, computed, shouldCheckNFT, nftBalance, isLoading, error, onOpen, sourceAddress, isOpen }) => {
     const { gasFeeInUsd, avgCompletionTime, reward, receiveAtLeast } = computed
 
     return (
         <div className="flex flex-col w-full pt-1">
             {values.destination_address && sourceAddress?.toLowerCase() !== values.destination_address?.toLowerCase() && (
-                <div className="flex items-center w-full justify-between gap-1 py-3 text-sm">
+                <div className={`${isOpen ? "pt-3" : "py-3"} flex items-center w-full justify-between gap-1 text-sm`}>
                     <div className="inline-flex items-center text-left text-secondary-text gap-1 pr-4">
                         <label>Send to</label>
                     </div>
@@ -57,7 +58,7 @@ export const SummaryRow: FC<{
                 </div>
             )}
 
-            <div className="flex items-center w-full justify-between gap-1 py-3 text-sm">
+            <div className={`${isOpen ? "pt-3" : "py-3"} flex items-center w-full justify-between gap-1 text-sm`}>
                 <div className="inline-flex items-center text-left text-secondary-text gap-1 pr-4">
                     <label>Receive at least</label>
                 </div>
@@ -68,7 +69,7 @@ export const SummaryRow: FC<{
                 </div>
             </div>
 
-            <div className="flex items-center py-3">
+            <div className={`${isOpen ? "hidden" : ""} flex items-center py-3`}>
                 {gasFeeInUsd != null && (
                     <div className={clsx('inline-flex items-center gap-1', { 'animate-pulse-strong': isQuoteLoading })}>
                         <div className='p-0.5'>
