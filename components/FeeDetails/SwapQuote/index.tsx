@@ -15,6 +15,8 @@ import { resolveTokenUsdPrice } from '@/helpers/tokenHelper'
 import { deriveQuoteComputed } from './utils'
 import { SummaryRow } from './SummaryRow'
 import { DetailedEstimates } from './DetailedEstimates'
+import { addressFormat } from '@/lib/address/formatter'
+import { useSelectedAccount } from '@/context/balanceAccounts'
 
 interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
     from?: Network;
@@ -35,10 +37,11 @@ interface QuoteComponentProps {
 const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quoteData, isQuoteLoading }) => {
     const [isOpen, setIsOpen] = useState(false)
     const isCEX = !!values.fromExchange
-    const { provider } = useWallet(!isCEX ? values.from : undefined, 'withdrawal')
-    const activeWallet = useMemo(() => provider?.activeWallet, [provider])
+    const { wallets } = useWallet(!isCEX ? values.from : undefined, 'withdrawal')
 
-    const { gasData, isGasLoading } = useSWRGas(activeWallet?.address, values.from, values.fromAsset)
+    const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
+    const { gasData, isGasLoading } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset)
+
     const shouldCheckNFT = quoteData?.reward?.campaign_type === "for_nft_holders" && quoteData?.reward?.nft_contract_address;
 
     const { balance: nftBalance, isLoading, error } = useSWRNftBalance(
@@ -68,6 +71,8 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
         [values, quoteData?.quote, quoteData?.reward, gasData, gasTokenPriceInUsd]
     )
 
+    const wallet = (values?.to && values?.destination_address) ? wallets?.find(w => addressFormat(w.address, values?.to!) === addressFormat(values?.destination_address!, values?.to!)) : undefined
+
     if (!quoteData) return null
 
     return (
@@ -86,7 +91,7 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
                     <SummaryRow
                         isQuoteLoading={isQuoteLoading}
                         values={values}
-                        activeWallet={activeWallet}
+                        wallet={wallet}
                         computed={computed}
                         shouldCheckNFT={shouldCheckNFT}
                         nftBalance={nftBalance}
@@ -94,7 +99,7 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
                         error={error}
                         onOpen={() => setIsOpen(true)}
                         isOpen={isOpen}
-                        sourceAddress={activeWallet?.address}
+                        sourceAddress={wallet?.address}
                     />
                 </AccordionTrigger>
 
@@ -105,7 +110,7 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
                             swapValues={values}
                             quote={quoteData}
                             destinationAddress={values.destination_address}
-                            sourceAddress={activeWallet?.address}
+                            sourceAddress={wallet?.address}
                             gasData={gasData}
                             isGasLoading={isGasLoading}
                             shouldCheckNFT={shouldCheckNFT}
@@ -113,7 +118,7 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
                             isLoading={isLoading}
                             error={error}
                             campaign={campaign}
-                            wallet={activeWallet}
+                            wallet={wallet}
                             computed={computed}
                             variant='extended'
                         />
