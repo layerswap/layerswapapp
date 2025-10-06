@@ -18,7 +18,7 @@ function HeaderWithMenu({ goBack, contextualMenu }: Props) {
             goBack &&
             <IconButton onClick={goBack}
                aria-label="Go back"
-               className="-ml-2 inline-flex"
+               className="sm:-ml-2 inline-flex mr-auto"
                icon={
                   <ArrowLeft strokeWidth="2" />
                }>
