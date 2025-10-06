@@ -54,7 +54,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({
         return Number((((toAmountUSD - fromAmountUSD) / fromAmountUSD) * 100).toFixed(2));
     }, [fromAmountUSD, toAmountUSD]);
 
-    if (priceImpact === undefined || Number(priceImpact).toFixed(2) === (0).toFixed(2)) return null;
+    if (priceImpact === undefined) return null;
 
     return (<>
         <Tooltip>
