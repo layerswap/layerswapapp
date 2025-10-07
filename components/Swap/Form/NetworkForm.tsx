@@ -27,7 +27,6 @@ import RefuelToggle from "@/components/FeeDetails/Refuel";
 import ReserveGasNote from "@/components/ReserveGasNote";
 import RefuelModal from "@/components/FeeDetails/RefuelModal";
 import { useSelectedAccount } from "@/context/balanceAccounts";
-import { useBalance } from "@/lib/balances/useBalance";
 
 type Props = {
     partner?: Partner;

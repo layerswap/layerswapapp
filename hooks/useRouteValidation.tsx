@@ -1,4 +1,4 @@
-import { Info, RouteOff } from 'lucide-react';
+import { RouteOff } from 'lucide-react';
 import { SwapFormValues } from '@/components/DTOs/SwapFormValues';
 import { useMemo } from 'react';
 import { useSettingsState } from '@/context/settings';
@@ -7,7 +7,6 @@ import { useFormikContext } from 'formik';
 import { QuoteError } from './useFee';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import { useSwapDataState } from '@/context/swap';
-import { defaultErrors } from '@/components/validationError/ErrorDisplay';
 import { ICON_CLASSES_WARNING } from '@/components/validationError/constants';
 import { useBalance } from '@/lib/balances/useBalance';
 
