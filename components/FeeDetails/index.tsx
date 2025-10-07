@@ -1,7 +1,6 @@
 import { SwapFormValues } from '../DTOs/SwapFormValues';
-import { DetailedEstimates } from './DetailedEstimates';
 import ResizablePanel from '../ResizablePanel';
-import { FC, useState } from 'react';
+import { FC, useMemo, useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
 import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
@@ -19,6 +18,8 @@ import useSWRNftBalance from '@/lib/nft/useSWRNftBalance';
 import NumberFlow from '@number-flow/react';
 import { resolveTokenUsdPrice } from '@/helpers/tokenHelper';
 import { useSelectedAccount } from '@/context/balanceAccounts';
+import { DetailedEstimates } from './SwapQuote/DetailedEstimates';
+import { deriveQuoteComputed } from './SwapQuote/utils';
 
 export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
     from?: Network;
@@ -36,6 +37,24 @@ export interface QuoteComponentProps {
 export default function QuoteDetails({ swapValues: values, quote: quoteData, isQuoteLoading }: QuoteComponentProps) {
     const { toAsset, fromAsset: fromCurrency, destination_address } = values || {};
     const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(false);
+
+    const isCEX = !!values.fromExchange
+    const { provider } = useWallet(!isCEX ? values.from : undefined, 'withdrawal')
+    const activeWallet = useMemo(() => provider?.activeWallet, [provider])
+
+    const { gasData } = useSWRGas(activeWallet?.address, values.from, values.fromAsset)
+    const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quoteData?.quote)
+
+    const computed = useMemo(
+        () => deriveQuoteComputed({
+            values,
+            quote: quoteData?.quote,
+            reward: quoteData?.reward,
+            gasData,
+            gasTokenPriceInUsd,
+        }),
+        [values, quoteData?.quote, quoteData?.reward, gasData, gasTokenPriceInUsd]
+    )
 
     return (
         <>
@@ -66,11 +85,14 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
                                 {
                                     (quoteData || isQuoteLoading) && fromCurrency && toAsset &&
                                     <DetailedEstimates
-                                        quote={quoteData}
                                         isQuoteLoading={isQuoteLoading}
-                                        destination={values.to}
                                         swapValues={values}
-                                        destinationAddress={destination_address} />
+                                        quote={quoteData}
+                                        destinationAddress={destination_address}
+                                        computed={computed}
+                                        gasData={gasData}
+                                        variant='base'
+                                    />
                                 }
                             </ResizablePanel>
                         </AccordionContent>

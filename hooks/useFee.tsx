@@ -108,6 +108,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
             }
             const previousData = cache.get(url)?.data as ApiResponse<Quote>
             const newData = await apiClient.fetcher(url) as ApiResponse<Quote>
+            console.log("newData", newData)
             if (previousData?.data?.quote && isDiffByPercent(previousData?.data?.quote.receive_amount, newData.data?.quote.receive_amount, 2)) {
                 const { setLoading } = useLoadingStore.getState()
                 setLoading(true)
@@ -118,13 +119,10 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
             return newData
         }
         catch (error) {
+            setLoading(false)
             setKey(null)
             throw error
         }
-        finally {
-            setLoading(false)
-        }
-
     }, [cache])
 
     const { data: quote, mutate: mutateFee, error: quoteError } = useSWR<ApiResponse<Quote>>(quoteURL, quoteFetchWrapper, {
@@ -132,7 +130,6 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         dedupingInterval: 42000,
         keepPreviousData: true
     })
-
 
     return {
         minAllowedAmount: amountRange?.data?.min_amount,
@@ -147,7 +144,6 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
 }
 
 export function transformFormValuesToQuoteArgs(values: SwapFormValues, withDelay?: boolean): Props | undefined {
-    if (values.fromAsset?.status !== 'active' || values.toAsset?.status !== 'active') return undefined
     return {
         amount: values.amount,
         from: values.from?.name,

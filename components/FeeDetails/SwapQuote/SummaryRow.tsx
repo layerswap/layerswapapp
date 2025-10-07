@@ -19,35 +19,36 @@ import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/Addres
 export const SummaryRow: FC<{
     isQuoteLoading?: boolean
     values: SwapValues
-    activeWallet?: Wallet
+    wallet?: Wallet
     computed: ReturnType<typeof import('./utils').deriveQuoteComputed>
     shouldCheckNFT?: string | false | undefined
     nftBalance?: number
     isLoading?: boolean
     error?: any
     onOpen?: () => void
+    isOpen?: boolean
     sourceAddress?: string
-}> = ({ isQuoteLoading, values, activeWallet, computed, shouldCheckNFT, nftBalance, isLoading, error, onOpen, sourceAddress }) => {
+}> = ({ isQuoteLoading, values, wallet, computed, shouldCheckNFT, nftBalance, isLoading, error, onOpen, sourceAddress, isOpen }) => {
     const { gasFeeInUsd, avgCompletionTime, reward, receiveAtLeast } = computed
 
     return (
         <div className="flex flex-col w-full pt-1">
             {values.destination_address && sourceAddress?.toLowerCase() !== values.destination_address?.toLowerCase() && (
-                <div className="flex items-center w-full justify-between gap-1 py-3 text-sm">
+                <div className={`${isOpen ? "py-3" : "py-3"} flex items-center w-full justify-between gap-1 text-sm`}>
                     <div className="inline-flex items-center text-left text-secondary-text gap-1 pr-4">
                         <label>Send to</label>
                     </div>
                     <div className="text-right text-primary-text">
                         <span className="cursor-pointer hover:underline flex items-center gap-2">
-                            {activeWallet?.icon ? (
-                                <activeWallet.icon className="w-4 h-4 p-0.5 bg-white rounded-sm" />
+                            {wallet?.icon ? (
+                                <wallet.icon className="w-4 h-4 p-0.5 bg-white rounded-sm" />
                             ) : (
                                 <AddressIcon className="h-4 w-4" address={values.destination_address} size={36} rounded="4px" />
                             )}
                             {
                                 ((isValidAddress(values?.destination_address, values?.to) && values?.to) ?
                                     <div className="text-sm group/addressItem text-secondary-text">
-                                        <ExtendedAddress address={addressFormat(values?.destination_address, values?.to)} network={values?.to} showDetails={activeWallet ? true : false} title={activeWallet?.displayName?.split("-")[0]} description={activeWallet?.providerName} logo={activeWallet?.icon} />
+                                        <ExtendedAddress address={addressFormat(values?.destination_address, values?.to)} network={values?.to} showDetails={wallet ? true : false} title={wallet?.displayName?.split("-")[0]} description={wallet?.providerName} logo={wallet?.icon} shouldShowChevron={false} />
                                     </div>
                                     :
                                     <p className="text-sm text-secondary-text">{shortenAddress(values?.destination_address)}</p>)
@@ -57,7 +58,7 @@ export const SummaryRow: FC<{
                 </div>
             )}
 
-            <div className="flex items-center w-full justify-between gap-1 py-3 text-sm">
+            <div className={`${isOpen ? "pt-3" : "py-3"} flex items-center w-full justify-between gap-1 text-sm`}>
                 <div className="inline-flex items-center text-left text-secondary-text gap-1 pr-4">
                     <label>Receive at least</label>
                 </div>
@@ -68,7 +69,7 @@ export const SummaryRow: FC<{
                 </div>
             </div>
 
-            <div className="flex items-center py-3">
+            <div className={`${isOpen ? "hidden" : ""} flex items-center py-3`}>
                 {gasFeeInUsd != null && (
                     <div className={clsx('inline-flex items-center gap-1', { 'animate-pulse-strong': isQuoteLoading })}>
                         <div className='p-0.5'>

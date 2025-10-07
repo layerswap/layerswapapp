@@ -90,7 +90,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <span className="truncate overflow-hidden whitespace-nowrap max-w-[100px]">
-                                            {requested_amount}
+                                            {requested_amount.toLocaleString('en-US', { maximumFractionDigits: 20 })}
                                         </span>
                                     </TooltipTrigger>
                                     <TooltipContent>
@@ -119,7 +119,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <span className="truncate overflow-hidden whitespace-nowrap max-w-[100px]">
-                                            {calculatedReceiveAmount}
+                                            {calculatedReceiveAmount.toLocaleString('en-US', { maximumFractionDigits: 20 })}
                                         </span>
                                     </TooltipTrigger>
                                     <TooltipContent>

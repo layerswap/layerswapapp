@@ -1,11 +1,8 @@
 import { useState } from "react"
 import { SwapFormValues } from "../../DTOs/SwapFormValues"
 import { useFormikContext } from "formik"
-import { Partner } from "../../../Models/Partner"
+import { Partner } from "@/Models/Partner"
 import AddressPicker, { AddressTriggerProps } from "./AddressPicker"
-import useSWR from "swr"
-import { ApiResponse } from "../../../Models/ApiResponse"
-import LayerSwapApiClient, { AddressBookItem } from "../../../lib/apiClients/layerSwapApiClient"
 
 type AddressProps = {
     children: (props: AddressTriggerProps) => JSX.Element;
