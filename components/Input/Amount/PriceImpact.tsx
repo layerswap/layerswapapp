@@ -1,6 +1,7 @@
 import { FC, useMemo } from "react";
 import { Triangle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
+import clsx from 'clsx';
 
 type PriceImpactProps = {
     receiveAmount?: number;
@@ -9,6 +10,7 @@ type PriceImpactProps = {
     destinationTokenPriceUsd?: number;
     serviceFee?: number;
     bridgeFee?: number;
+    className?: string;
 };
 
 export const PriceImpact: FC<PriceImpactProps> = ({
@@ -18,6 +20,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({
     destinationTokenPriceUsd,
     serviceFee,
     bridgeFee,
+    className,
 }) => {
     const toAmountUSD = useMemo(() => {
         if (!receiveAmount || !destinationTokenPriceUsd) return undefined;
@@ -59,7 +62,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({
     return (<>
         <Tooltip openOnClick>
             <TooltipTrigger asChild>
-                <span className="flex text-base leading-5 font-medium text-secondary-text h-5 items-center cursor-default hover:text-primary-text">
+                <span className={clsx("flex text-secondary-text items-center cursor-default hover:text-primary-text", className)}>
                     <span className="flex items-center gap-0.5">
                         <span>(</span>
                         <Triangle className={`w-3 h-3 stroke-1 fill-current transition-transform ${priceImpact < 0 ? "rotate-180" : ""}`} />

@@ -64,7 +64,7 @@ export const SummaryRow: FC<{
                 </div>
                 <div className="text-right text-primary-text">
                     {receiveAtLeast !== undefined && (
-                        <span className="text-sm ml-1 font-small">{receiveAtLeast} {values?.fromAsset?.symbol}</span>
+                        <span className="text-sm ml-1 font-small">{receiveAtLeast} {values?.toAsset?.symbol}</span>
                     )}
                 </div>
             </div>

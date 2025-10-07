@@ -248,13 +248,13 @@ const baseDetailsElements: DetailedElement[] = [
     },
     {
         name: 'Receive at least',
-        content: ({ currencyName, isQuoteLoading, receiveAtLeast }) => {
+        content: ({ isQuoteLoading, receiveAtLeast, values }) => {
             return isQuoteLoading ? (
                 <LoadingBar />
             ) : <div>
                 {receiveAtLeast !== undefined && (
                     <span className="text-sm ml-1 font-small">
-                        {receiveAtLeast} {currencyName}
+                        {receiveAtLeast} {values?.toAsset?.symbol}
                     </span>
                 )}
             </div >
