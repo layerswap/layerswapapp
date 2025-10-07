@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { ArrowUpRight, X } from "lucide-react";
 import toast, { ToastBar, Toaster } from "react-hot-toast"
 import Navbar from "./navbar"
 import GlobalFooter from "./globalFooter";
@@ -30,14 +30,18 @@ export default function ThemeWrapper({ children }: Props) {
         <div className="invisible light"></div>
         {
             !embedded ? (
-                <div className="bg-[#3C4861] text-white p-2 text-center text-base font-medium">
+                <div className="bg-[linear-gradient(90deg,#0C1527_1.9%,#251434_10.48%,#3E1240_51.44%,#201431_90.7%,#0C1527_100%)] text-white p-2 text-center text-base font-medium">
                     <span>New Design & Token Swaps in Beta</span>
                     <button
-                        className="bg-[#E1E3E6] text-black px-3 py-1 font-bold rounded-[40px] ml-3"
+                        className="group bg-[#E1E3E6] hover:bg-[#C9BCCC] text-black px-3 py-1 font-bold rounded-[40px] ml-3"
                         onClick={handleBetaClick}
                     >
-                        <Link target="_blank" href="https://layerswap.io/beta?utm_campaign=beta-launch" className="font-semibold">
-                            Try now
+                        <Link target="_blank" href="https://layerswap.io/beta?utm_campaign=beta-launch" className="font-semibold flex items-center">
+                            <span>Try now</span>
+                            <ArrowUpRight
+                                className="max-sm:hidden ml-0 w-0 opacity-0 overflow-hidden transition-all duration-300 group-hover:ml-2 group-hover:w-4 group-hover:opacity-100"
+                                size={18}
+                            />
                         </Link>
                     </button>
                 </div>
