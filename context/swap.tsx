@@ -137,7 +137,8 @@ export function SwapDataProvider({ children }) {
             reference_id: query.externalId,
             refuel: !!refuel,
             use_deposit_address: depositMethod === 'wallet' ? false : true,
-            source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined
+            source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
+            refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined
         }
 
         const swapResponse = await layerswapApiClient.CreateSwapAsync(data)
