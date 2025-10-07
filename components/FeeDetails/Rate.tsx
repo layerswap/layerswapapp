@@ -34,7 +34,7 @@ export const RateElement = ({
         >
             {!flipped ? (
                 <>
-                    <span>1</span> {fromAsset?.symbol}
+                    <p><span>1</span> <span>{fromAsset?.symbol}</span></p>
                     <ArrowRight className="w-3 h-3 mx-1" />
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -47,7 +47,7 @@ export const RateElement = ({
                 </>
             ) : (
                 <>
-                    <span>1</span> {toAsset?.symbol}
+                    <p><span>1</span> <span>{toAsset?.symbol}</span></p>
                     <ArrowRight className="w-3 h-3 mx-1" />
                     <Tooltip delayDuration={100}>
                         <TooltipTrigger asChild>

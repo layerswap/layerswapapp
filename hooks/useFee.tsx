@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues'
 import LayerSwapApiClient, { Quote, SwapBasicData } from '../lib/apiClients/layerSwapApiClient'
@@ -108,7 +108,6 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
             }
             const previousData = cache.get(url)?.data as ApiResponse<Quote>
             const newData = await apiClient.fetcher(url) as ApiResponse<Quote>
-            console.log("newData", newData)
             if (previousData?.data?.quote && isDiffByPercent(previousData?.data?.quote.receive_amount, newData.data?.quote.receive_amount, 2)) {
                 const { setLoading } = useLoadingStore.getState()
                 setLoading(true)
