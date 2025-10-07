@@ -204,7 +204,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                                 disabled={isLoadingAny || isValidatingAny}
                                                 type="button"
                                                 onClick={handleLoadMore}
-                                                className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80 m-auto w-full"
+                                                className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80 m-auto w-full py-4"
                                             >
                                                 <RefreshCw className={`w-4 h-4 ${(isLoadingAny || isValidatingAny) && 'animate-spin'}`} />
                                                 <span>Load more</span>
