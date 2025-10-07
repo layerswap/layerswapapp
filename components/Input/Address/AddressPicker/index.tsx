@@ -67,7 +67,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const { provider, wallets } = useWallet(destination, 'autofil')
     const connectedWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
-    const defaultAccount = useSelectedAccount("from", values.to?.name);
+    const defaultAccount = useSelectedAccount("to", values.to?.name);
     const connectedWalletskey = connectedWallets?.map(w => w.addresses.join('')).join('')
     const [manualAddress, setManualAddress] = useState<string>('')
     const [newAddress, setNewAddress] = useState<{ address: string, networkType: NetworkType | string } | undefined>()
