@@ -13,7 +13,7 @@ const RouteIcon: FC<Props> = (props) => {
     const { isAvailable, routeNotFound, direction, type } = props
 
     if (!isAvailable)
-        return <Tooltip delayDuration={200}>
+        return <Tooltip>
             <TooltipTrigger asChild >
                 <div className="absolute -left-1 top-0.5 z-50">
                     <Info className="w-4! text-primary-text-tertiary hover:text-primary-text" />
@@ -27,7 +27,7 @@ const RouteIcon: FC<Props> = (props) => {
         </Tooltip>
 
     if (routeNotFound)
-        return <Tooltip delayDuration={200}>
+        return <Tooltip>
             <TooltipTrigger asChild >
                 <div className="absolute -left-0.5 top-0.5 z-50">
                     <RouteOff className="w-3! text-primary-text-tertiary hover:text-primary-text" />

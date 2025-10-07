@@ -22,12 +22,14 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, r
     const { network: fuelNetwork, refetch: refetchNetwork } = useNetwork()
     const networkChainId = Number(source_network?.chain_id)
     const { fuel } = useFuel()
+    const { wallets } = useWallet(source_network, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
 
     const activeChainId = fuelNetwork?.chainId || (fuelNetwork?.url.includes('testnet') ? 0 : 9889)
 
     useEffect(() => {
-        if (selectedSourceAccount && selectedSourceAccount?.address) {
-            provider?.switchAccount && provider?.switchAccount(selectedSourceAccount.wallet, selectedSourceAccount?.address)
+        if (selectedSourceAccount && selectedSourceAccount?.address && wallet) {
+            provider?.switchAccount && provider?.switchAccount(wallet, selectedSourceAccount?.address)
             refetchNetwork()
         }
     }, [selectedSourceAccount])
@@ -106,7 +108,6 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, r
                     isDisabled={!!loading}
                     isSubmitting={!!loading}
                     onClick={handleTransfer}
-                    icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />}
                     swapData={swapBasicData}
                     refuel={refuel}
                 />
@@ -139,7 +140,6 @@ const ChangeNetworkButton: FC<{ chainId: number, network: string, onChange: () =
             !isPending &&
             <ButtonWrapper
                 onClick={clickHandler}
-                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
             >
                 {
                     error ? <span>Try again</span>

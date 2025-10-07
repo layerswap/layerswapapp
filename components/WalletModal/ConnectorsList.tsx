@@ -18,7 +18,7 @@ import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
 import { SearchComponent } from "../Input/Search";
 
-const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
+const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();
     const { setSelectedConnector, selectedProvider, setSelectedProvider, selectedConnector, selectedMultiChainConnector, setSelectedMultiChainConnector } = useConnectModal()
     let [recentConnectors, setRecentConnectors] = usePersistedState<({ providerName?: string, connectorName?: string }[])>([], 'recentConnectors', 'localStorage');
@@ -357,12 +357,12 @@ type MultichainConnectorModalProps = {
 }
 
 const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ selectedConnector, allConnectors, providers, connect }) => {
-    const Icon = resolveWalletConnectorIcon({ connector: selectedConnector.name, iconUrl: selectedConnector.icon })
+    const Icon = resolveWalletConnectorIcon({ connector: selectedConnector.id, iconUrl: selectedConnector.icon })
     return (
         <div>
             <div className="flex flex-col gap-4 py-15">
                 <div className="flex justify-center gap-1">
-                    <Icon className="w-14 h-auto" />
+                    <Icon className="w-14 h-auto rounded-lg" />
                 </div>
                 <p className="text-base text-center text-primary-text">
                     <span>{selectedConnector.name}</span> <span>supports multiple network types. Please select the one you&apos;d like to use.</span>
@@ -421,4 +421,4 @@ function sortRecentConnectors(a: { name: string, type?: string }, b: { name: str
     return 0;
 }
 
-export default ConnectorsLsit
+export default ConnectorsList

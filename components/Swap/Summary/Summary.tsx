@@ -1,20 +1,17 @@
 import { ArrowDown, Fuel } from "lucide-react";
-import { FC, useMemo } from "react";
+import { FC } from "react";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
-import LayerSwapApiClient, { Quote, Refuel, SwapBasicData, SwapQuote, SwapResponse } from "@/lib/apiClients/layerSwapApiClient";
+import LayerSwapApiClient, { Quote, SwapBasicData, SwapResponse } from "@/lib/apiClients/layerSwapApiClient";
 import { ApiResponse } from "@/Models/ApiResponse";
 import { Partner } from "@/Models/Partner";
 import useSWR from 'swr'
 import { useQueryState } from "@/context/query";
-import { Network, Token } from "@/Models/Network";
-import { Exchange } from "@/Models/Exchange";
-import { addressFormat } from "@/lib/address/formatter";
-import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
-import { isValidAddress } from "@/lib/address/validator";
-import shortenAddress from "@/components/utils/ShortenAddress";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import NumberFlow from "@number-flow/react";
 import clsx from "clsx";
+import { PriceImpact } from "@/components/Input/Amount/PriceImpact";
+import useWallet from "@/hooks/useWallet";
+import { Token } from "@/Models/Network";
 
 type SwapInfoProps = Omit<SwapResponse, 'quote' | 'swap'> & {
     swap: SwapBasicData
@@ -25,15 +22,14 @@ type SwapInfoProps = Omit<SwapResponse, 'quote' | 'swap'> & {
 }
 
 const Summary: FC<SwapInfoProps> = (props) => {
-    const { swap, quote, sourceAccountAddress, receiveAmount, quoteIsLoading } = props
-    const { refuel } = quote
+    const { swap, quote, receiveAmount, quoteIsLoading } = props
+    const { refuel, quote: swapQuote } = quote
     const { source_token: sourceCurrency, destination_token: destinationCurrency, source_network: from, destination_network: to, requested_amount: requestedAmount, destination_address: destinationAddress, source_exchange: sourceExchange } = swap
     const {
         hideFrom,
         hideTo,
         account,
-        appName,
-        hideAddress
+        appName
     } = useQueryState()
 
     const layerswapApiClient = new LayerSwapApiClient()
@@ -51,7 +47,6 @@ const Summary: FC<SwapInfoProps> = (props) => {
         truncateDecimals(refuel.amount, nativeCurrency?.precision) : null
     const refuelAmountInUsd = nativeCurrency && ((nativeCurrency?.price_in_usd || 1) * (Number(truncatedRefuelAmount) || 0)).toFixed(2)
 
-    const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
     return (
         <div className="bg-secondary-500 rounded-2xl px-3 py-4 w-full relative z-10 space-y-4">
 
@@ -60,10 +55,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                     <div className="col-span-6">
                         <RouteTokenPair
                             route={sourceExchange || source}
-                            exchange={sourceExchange}
-                            network={from}
                             token={sourceCurrency}
-                            address={sourceAccountAddress}
                         />
                     </div>
                     <div className="flex flex-col col-start-7 col-span-4 items-end">
@@ -82,9 +74,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                     <div className="col-span-6">
                         <RouteTokenPair
                             route={destination}
-                            network={to}
                             token={destinationCurrency}
-                            address={destAddress}
                         />
                     </div>
                     {
@@ -96,7 +86,8 @@ const Summary: FC<SwapInfoProps> = (props) => {
                                 )}>
                                     <NumberFlow value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
                                 </p>
-                                <p className="text-secondary-text text-sm">
+                                <p className="text-secondary-text text-sm flex items-center gap-1">
+                                    <PriceImpact bridgeFee={swapQuote?.blockchain_fee} destinationTokenPriceUsd={swapQuote?.destination_token?.price_in_usd} receiveAmount={swapQuote?.receive_amount} requestedAmount={swapQuote?.requested_amount} serviceFee={swapQuote?.service_fee} sourceTokenPriceUsd={swapQuote?.source_token?.price_in_usd} />
                                     <NumberFlow value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD' }} trend={0} />
                                 </p>
                             </div>
@@ -129,7 +120,13 @@ const Summary: FC<SwapInfoProps> = (props) => {
     )
 }
 
-const RouteTokenPair: FC<{ route: { logo: string, display_name: string }, network?: Network, exchange?: Exchange, token: Token, address?: string }> = ({ route, token, exchange, network, address }) => {
+type RouteTokenPairProps = {
+    route: { logo: string, display_name: string },
+    token: Token,
+}
+
+const RouteTokenPair: FC<RouteTokenPairProps> = ({ route, token }) => {
+    
     return (
         <div className="flex grow gap-4 text-left items-center md:text-base relative">
             <div className="inline-flex items-center relative shrink-0 mb-1.5">
@@ -158,21 +155,6 @@ const RouteTokenPair: FC<{ route: { logo: string, display_name: string }, networ
                     <p className="text-secondary-text text-sm truncate whitespace-nowrap">
                         {route.display_name}
                     </p>
-                    {
-                        (address && network && !exchange) ?
-                            <div className="flex items-center gap-1 text-secondary-text">
-                                <p>-</p>
-                                {
-                                    (isValidAddress(address, network) ?
-                                        <div className="text-sm group/addressItem text-secondary-text">
-                                            <ExtendedAddress address={addressFormat(address, network)} network={network} showDetails={true} title="USDC" description="Circle USD Coin" logo="https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/arusdc.png" />
-                                        </div>
-                                        :
-                                        <p className="text-sm text-secondary-text">{shortenAddress(address)}</p>)
-                                }
-                            </div>
-                            : null
-                    }
                 </div>
             </div>
         </div>

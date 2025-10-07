@@ -2,7 +2,7 @@ import { useField, useFormikContext } from "formik";
 import { ChangeEvent, FC, forwardRef } from "react";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { classNames } from '../utils/classNames'
-import { isScientific, truncateDecimals } from "../utils/RoundDecimals";
+import { isScientific } from "../utils/RoundDecimals";
 
 type Input = {
     tempValue?: number;
@@ -29,7 +29,7 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
         const { handleChange } = useFormikContext<SwapFormValues>();
         const [field] = useField(name)
 
-        const formattedTempValue = isScientific(tempValue) 
+        const formattedTempValue = isScientific(tempValue)
             ? tempValue?.toFixed(precision ?? 0).replace(/\.?0+$/, '')
             : tempValue?.toString();
 
