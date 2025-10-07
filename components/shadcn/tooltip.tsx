@@ -17,25 +17,75 @@ function TooltipProvider({
   )
 }
 
+type TooltipProps = React.ComponentProps<typeof TooltipPrimitive.Root> & {
+  openOnClick?: boolean
+}
+
+const TooltipClickContext = React.createContext<{
+  openOnClick: boolean
+  toggle?: () => void
+}>({ openOnClick: false })
+
 function Tooltip({
   delayDuration = 400,
+  openOnClick,
+  open: controlledOpen,
+  onOpenChange,
   ...props
-}: React.ComponentProps<typeof TooltipPrimitive.Root>) {
+}: TooltipProps) {
+  const isClickable = Boolean(openOnClick)
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(false)
+  const isControlled = controlledOpen !== undefined
+  const open = isControlled ? controlledOpen : uncontrolledOpen
+
+  const handleOpenChange = (next: boolean) => {
+    if (isClickable) {
+      if (!isControlled) setUncontrolledOpen(next)
+      onOpenChange?.(next)
+      return
+    }
+    onOpenChange?.(next)
+  }
+
+  const toggle = React.useCallback(() => {
+    const next = !open
+    if (!isControlled) setUncontrolledOpen(next)
+    onOpenChange?.(next)
+  }, [open, isControlled, onOpenChange])
+
   return (
     <TooltipProvider>
-      <TooltipPrimitive.Root data-slot="tooltip" delayDuration={delayDuration} {...props} />
+      <TooltipClickContext.Provider value={{ openOnClick: isClickable, toggle }}>
+        <TooltipPrimitive.Root
+          data-slot="tooltip"
+          delayDuration={delayDuration}
+          {...(isClickable ? { open, onOpenChange: handleOpenChange } : { onOpenChange })}
+          {...props}
+        />
+      </TooltipClickContext.Provider>
     </TooltipProvider>
   )
 }
 
 function TooltipTrigger({
   className,
+  onClick,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Trigger>) {
+  const { openOnClick, toggle } = React.useContext(TooltipClickContext)
+  const handleClick = (e: any) => {
+    onClick?.(e)
+    if (openOnClick) {
+      e.preventDefault()
+      e.stopPropagation()
+      toggle?.()
+    }
+  }
   return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" className={clsx(
     "cursor-pointer",
     className
   )}
+    onClick={handleClick}
     {...props} />
 }
 

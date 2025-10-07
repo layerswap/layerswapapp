@@ -57,9 +57,9 @@ export const PriceImpact: FC<PriceImpactProps> = ({
     if (priceImpact === undefined) return null;
 
     return (<>
-        <Tooltip>
+        <Tooltip openOnClick>
             <TooltipTrigger asChild>
-                <span className="flex items-center text-sm text-secondary-text cursor-default hover:text-primary-text">
+                <span className="flex text-base leading-5 font-medium text-secondary-text h-5 items-center cursor-default hover:text-primary-text">
                     <span className="flex items-center gap-0.5">
                         <span>(</span>
                         <Triangle className={`w-3 h-3 stroke-1 fill-current transition-transform ${priceImpact < 0 ? "rotate-180" : ""}`} />
