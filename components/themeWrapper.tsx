@@ -36,7 +36,7 @@ export default function ThemeWrapper({ children }: Props) {
                         className="bg-[#E1E3E6] text-black px-3 py-1 font-bold rounded-[40px] ml-3"
                         onClick={handleBetaClick}
                     >
-                        <Link target="_blank" href="https://layerswap.io/beta" className="font-semibold">
+                        <Link target="_blank" href="https://layerswap.io/beta?utm_campaign=beta-launch" className="font-semibold">
                             Try now
                         </Link>
                     </button>
