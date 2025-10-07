@@ -41,9 +41,10 @@ interface ClearinghouseState {
 }
 
 export class HyperliquidClient {
-    async getClearinghouseState(user: string, nodeUrl: string, timeoutMs?: number): Promise<ClearinghouseState> {
+    async getClearinghouseState(user: string, nodeUrl: string, timeoutMs?: number, retryCount?: number): Promise<ClearinghouseState> {
         const { fetchWithTimeout } = await import("@/lib/fetchWithTimeout");
-        const response = await fetchWithTimeout(`${nodeUrl}/info`, {
+        const { retry } = await import("@/lib/retry")
+        const response = await retry(async () => await fetchWithTimeout(`${nodeUrl}/info`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -53,7 +54,7 @@ export class HyperliquidClient {
                 user: user,
             }),
             timeoutMs: timeoutMs ?? 60000,
-        });
+        }), retryCount ?? 3, 500);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);

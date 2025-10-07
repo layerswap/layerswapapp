@@ -16,14 +16,19 @@ export class BitcoinBalanceProvider extends BalanceProvider {
         return KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) || KnownInternalNames.Networks.BitcoinTestnet.includes(network.name)
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number }) => {
+    fetchBalance = async (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number, retryCount?: number }) => {
         let balances: TokenBalance[] = []
         const token = network.tokens.find(t => t.symbol == 'BTC')
 
         if (!token) return
 
         try {
-            const utxos = await fetchUtxos(address, network.name, options?.timeoutMs)
+            const { retry } = await import("@/lib/retry")
+            const utxos = await retry(
+                async () => await fetchUtxos(address, network.name, options?.timeoutMs),
+                options?.retryCount ?? 3,
+                500
+            )
             const balanceSats = sumUtxos(utxos)
             const formattedBalance = formatBtc(balanceSats)
 

@@ -9,12 +9,16 @@ export class ImmutableXBalanceProvider extends BalanceProvider {
         return (KnownInternalNames.Networks.ImmutableXMainnet.includes(network.name) || KnownInternalNames.Networks.ImmutableXGoerli.includes(network.name))
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number }) => {
+    fetchBalance = async (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number, retryCount?: number }) => {
         const axios = (await import("axios")).default
 
         if (!network?.tokens && !network.token) return
         try {
-            const res: BalancesResponse = await axios.get(`${network?.node_url}/v2/balances/${address}`, { timeout: options?.timeoutMs ?? 60000 }).then(r => r.data)
+            const res: BalancesResponse = await (await import("@/lib/retry")).retry(async () =>
+                (await axios.get(`${network?.node_url}/v2/balances/${address}`, { timeout: options?.timeoutMs ?? 60000 })).data,
+                options?.retryCount ?? 3,
+                500
+            )
             const tokens = insertIfNotExists(network.tokens || [], network.token)
 
             const balances = tokens?.map(asset => {

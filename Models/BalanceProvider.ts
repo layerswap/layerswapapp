@@ -4,7 +4,7 @@ import { Network, NetworkWithTokens, Token } from "./Network";
 
 export abstract class BalanceProvider {
     abstract supportsNetwork: (network: NetworkWithTokens) => boolean
-    abstract fetchBalance: (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number }) => Promise<TokenBalance[] | null | undefined>
+    abstract fetchBalance: (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number, retryCount?: number }) => Promise<TokenBalance[] | null | undefined>
     protected resolveTokenBalanceFetchError = (err: BalanceFetchError, token: Token, network: Network, isNativeCurrency?: boolean) => {
         posthog.capture("balance_fetch_error", {
             where: "BalanceProvider",

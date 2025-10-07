@@ -18,7 +18,6 @@ export class EVMBalanceProvider extends BalanceProvider {
     }
 
     fetchBalance = async (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number }) => {
-
         if (!network) return
         const chain = resolveChain(network)
         if (!chain) throw new Error("Could not resolve chain")
@@ -35,12 +34,12 @@ export class EVMBalanceProvider extends BalanceProvider {
         return balances
     }
 
-    getBalances = async (address: string, chain: Chain, network: NetworkWithTokens, options?: { timeoutMs?: number }): Promise<TokenBalance[] | undefined> => {
+    getBalances = async (address: string, chain: Chain, network: NetworkWithTokens, options?: { timeoutMs?: number, retryCount?: number }): Promise<TokenBalance[] | undefined> => {
         try {
             const { createPublicClient, http } = await import("viem")
             const publicClient = createPublicClient({
                 chain,
-                transport: http(network.node_url, { retryCount: 1, timeout: options?.timeoutMs ?? 60000 })
+                transport: http(network.node_url, { retryCount: options?.retryCount ?? 3, timeout: options?.timeoutMs ?? 60000 })
             })
 
             let erc20Balances: TokenBalance[] = []
@@ -51,11 +50,12 @@ export class EVMBalanceProvider extends BalanceProvider {
                 network,
                 publicClient,
                 hasMulticall: !!network.metadata?.evm_multicall_contract,
-                timeoutMs: options?.timeoutMs
+                timeoutMs: options?.timeoutMs,
+                retryCount: options?.retryCount
             });
             const nativeToken = network.token
 
-            const nativePromise = getTokenBalance(address as `0x${string}`, network, undefined, options?.timeoutMs)
+            const nativePromise = getTokenBalance(address as `0x${string}`, network, undefined, options?.timeoutMs, options?.retryCount)
 
             const [erc20BalancesContractRes, nativeBalanceData] = await Promise.all([
                 erc20Promise,
@@ -78,14 +78,14 @@ export class EVMBalanceProvider extends BalanceProvider {
         }
     }
 
-    contractGetBalances = async (address: string, chain: Chain, network: NetworkWithTokens, options?: { timeoutMs?: number }): Promise<TokenBalance[] | null> => {
+    contractGetBalances = async (address: string, chain: Chain, network: NetworkWithTokens, options?: { timeoutMs?: number, retryCount?: number }): Promise<TokenBalance[] | null> => {
         if (!network) throw new Error("Network is required for contract get balances")
 
 
         const { createPublicClient, http } = await import("viem")
         const publicClient = createPublicClient({
             chain,
-            transport: http(network.node_url, { retryCount: 1, timeout: options?.timeoutMs ?? 60000 })
+            transport: http(network.node_url, { retryCount: options?.retryCount ?? 3, timeout: options?.timeoutMs ?? 60000 })
         })
 
         const contract = contracts.find(c => c.networks.includes(network.name))
@@ -205,7 +205,8 @@ type GetBalanceArgs = {
     assets: Token[],
     publicClient: PublicClient,
     hasMulticall: boolean,
-    timeoutMs?: number
+    timeoutMs?: number,
+    retryCount?: number
 }
 
 export const getErc20Balances = async ({
@@ -214,11 +215,10 @@ export const getErc20Balances = async ({
     assets,
     publicClient,
     hasMulticall = false,
-    timeoutMs
+    timeoutMs,
+    retryCount
 }: GetBalanceArgs): Promise<ERC20ContractRes[] | null> => {
-    if (network.name === "ARBITRUM_MAINNET") {
-        debugger
-    }
+
     const contracts = assets?.filter(a => a.contract).map(a => ({
         address: a?.contract as `0x${string}`,
         abi: erc20Abi,
@@ -234,7 +234,7 @@ export const getErc20Balances = async ({
             const config = createConfig({
                 chains: [chain],
                 transports: {
-                    [chain.id]: http(network.node_url, { retryCount: 1, timeout: timeoutMs ?? 60000 })
+                    [chain.id]: http(network.node_url, { retryCount: retryCount ?? 3, timeout: timeoutMs ?? 60000 })
                 }
             })
 
@@ -284,17 +284,15 @@ type NativeBalanceResponse = (GetBalanceReturnType & {
     error: string
 })
 
-export const getTokenBalance = async (address: `0x${string}`, network: Network, contract?: `0x${string}` | null, timeoutMs?: number): Promise<NativeBalanceResponse | null> => {
-    if (network.name === "ARBITRUM_MAINNET") {
-        debugger
-    }
+export const getTokenBalance = async (address: `0x${string}`, network: Network, contract?: `0x${string}` | null, timeoutMs?: number, retryCount?: number): Promise<NativeBalanceResponse | null> => {
+
     try {
         const chain = resolveChain(network)
         if (!chain) throw new Error("Could not resolve chain")
         const config = createConfig({
             chains: [chain],
             transports: {
-                [chain.id]: http(network.node_url, { retryCount: 1, timeout: timeoutMs ?? 5000 })
+                [chain.id]: http(network.node_url, { retryCount: retryCount ?? 3, timeout: timeoutMs ?? 60000 })
             }
         })
 

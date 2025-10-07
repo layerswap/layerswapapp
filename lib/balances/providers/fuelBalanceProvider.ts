@@ -11,7 +11,7 @@ export class FuelBalanceProvider extends BalanceProvider {
         return KnownInternalNames.Networks.FuelMainnet.includes(network.name) || KnownInternalNames.Networks.FuelTestnet.includes(network.name)
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number }) => {
+    fetchBalance = async (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number, retryCount?: number }) => {
         let balances: TokenBalance[] = []
 
         if (!network?.tokens) return
@@ -43,7 +43,7 @@ export class FuelBalanceProvider extends BalanceProvider {
                     variables: BALANCES_ARGS,
                 }),
                 timeoutMs: options?.timeoutMs ?? 60000,
-            }));
+            }), options?.retryCount ?? 3);
             const json: {
                 data: {
                     balances: {

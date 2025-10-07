@@ -13,7 +13,7 @@ export class LoopringBalanceProvider extends BalanceProvider {
         return (KnownInternalNames.Networks.LoopringMainnet.includes(network.name) || KnownInternalNames.Networks.LoopringGoerli.includes(network.name))
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number }) => {
+    fetchBalance = async (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number, retryCount?: number }) => {
 
         let balances: TokenBalance[] = [];
 
@@ -21,11 +21,20 @@ export class LoopringBalanceProvider extends BalanceProvider {
 
         try {
 
-            const account: { data: AccountInfo } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.ACCOUNT_ACTION}?owner=${address}`, { timeout: options?.timeoutMs ?? 60000 })
+            const { retry } = await import("@/lib/retry")
+            const account: { data: AccountInfo } = await retry(
+                async () => (await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.ACCOUNT_ACTION}?owner=${address}`, { timeout: options?.timeoutMs ?? 60000 })),
+                options?.retryCount ?? 3,
+                500
+            )
             const accInfo = account.data
             const tokens = insertIfNotExists(network.tokens || [], network.token)
             const tokensString = tokens?.map(obj => obj.contract).join(',');
-            const result: { data: LpBalance[] } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.GET_USER_EXCHANGE_BALANCES}?accountId=${accInfo.accountId}&tokens=${tokensString}`, { timeout: options?.timeoutMs ?? 60000 })
+            const result: { data: LpBalance[] } = await retry(
+                async () => (await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.GET_USER_EXCHANGE_BALANCES}?accountId=${accInfo.accountId}&tokens=${tokensString}`, { timeout: options?.timeoutMs ?? 60000 })),
+                options?.retryCount ?? 3,
+                500
+            )
 
             const loopringBalances = tokens?.map(asset => {
                 const amount = result.data.find(d => d.tokenId == Number(asset.contract))?.total;
