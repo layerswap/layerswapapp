@@ -41,7 +41,7 @@ export const CampaignsComponent = ({ onCampaignSelect }: { onCampaignSelect: (ca
                                                     key={c.id}
                                                 />)
                                             :
-                                            <div className="flex flex-col items-center justify-center space-y-2">
+                                            <div className="flex flex-col items-center justify-center space-y-2 w-full">
                                                 <Gift className="h-10 w-10 text-primary" />
                                                 <p className="font-bold text-center">There are no active campaigns right now</p>
                                             </div>
