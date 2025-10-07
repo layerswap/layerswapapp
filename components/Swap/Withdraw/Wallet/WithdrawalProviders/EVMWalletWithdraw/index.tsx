@@ -1,13 +1,13 @@
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { PublishedSwapTransactions } from "@/lib/apiClients/layerSwapApiClient";
 import { ChangeNetworkButton, ConnectWalletButton } from "../../Common/buttons";
 import TransferTokenButton from "./TransferToken";
-import useWallet from "@/hooks/useWallet";
 import TransactionMessages from "../../../messages/TransactionMessages";
 import { useQueryState } from "@/context/query";
 import { WithdrawPageProps } from "../../Common/sharedTypes";
 import { useSelectedAccount } from "@/context/balanceAccounts";
+import useWallet from "@/hooks/useWallet";
 
 export const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
     swapBasicData,
@@ -17,10 +17,10 @@ export const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
 
     const { source_network, destination_network, destination_address } = swapBasicData
     const { isConnected, chain: activeChain } = useAccount();
-    const { provider } = useWallet(swapBasicData.source_network, "withdrawal")
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network.name);
     const { sameAccountNetwork } = useQueryState()
-    const wallet = selectedSourceAccount?.wallet
+    const { wallets } = useWallet(source_network, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const networkChainId = Number(source_network?.chain_id) ?? undefined
 
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()

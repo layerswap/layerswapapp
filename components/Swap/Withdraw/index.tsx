@@ -7,7 +7,6 @@ import { useQueryState } from '../../../context/query';
 import { Widget } from '../../Widget/Index';
 import { SwapQuoteDetails } from './SwapQuoteDetails';
 import WalletTransferButton from './WalletTransferButton';
-import useWallet from '@/hooks/useWallet';
 import { useBalance } from '@/lib/balances/useBalance';
 import { useSettingsState } from '@/context/settings';
 import { useSelectedAccount } from '@/context/balanceAccounts';
@@ -22,10 +21,9 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
 
     const { networks } = useSettingsState()
     const source_network = swapBasicData?.source_network && networks.find(n => n.name === swapBasicData?.source_network?.name)
-    const { provider } = useWallet(source_network, 'withdrawal')
-    const selectedAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
 
-    const { balances } = useBalance(selectedAccount?.address, source_network)
+    const { balances } = useBalance(selectedSourceAccount?.address, source_network)
     const walletBalance = source_network && balances?.find(b => b?.network === source_network?.name && b?.token === swapBasicData?.source_token?.symbol)
     const walletBalanceAmount = walletBalance?.amount
 

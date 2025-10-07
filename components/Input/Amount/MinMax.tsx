@@ -5,10 +5,10 @@ import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import React, { useMemo } from "react";
 import { resolveMaxAllowedAmount } from "./helpers";
 import { updateForm } from "@/components/Swap/Form/updateForm";
-import useWallet from "@/hooks/useWallet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import { useBalance } from "@/lib/balances/useBalance";
+import useWallet from "@/hooks/useWallet";
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -21,13 +21,13 @@ type MinMaxProps = {
 
 const MinMax = (props: MinMaxProps) => {
 
-    const { setFieldValue } = useFormikContext<SwapFormValues>();
+    const { setFieldValue, values } = useFormikContext<SwapFormValues>();
     const { fromCurrency, from, limitsMinAmount, limitsMaxAmount, onActionHover, depositMethod } = props;
 
-    const { provider } = useWallet(from, "withdrawal")
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
-
-    const { gasData } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency)
+    const selectedSourceAccount = useSelectedAccount("from", from?.name);
+    const { wallets } = useWallet(from, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
+    const { gasData } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency, wallet, values.amount)
     const { balances, mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, from)
 
     const walletBalance = useMemo(() => {

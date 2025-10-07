@@ -3,56 +3,61 @@ import React, { useMemo } from "react";
 import { NetworkExchangeTabs, Tabs, TabsContent } from "./NetworkExchangeTabs";
 import NetworkForm from "./NetworkForm";
 import ExchangeForm from "./ExchangeForm";
-import { BalanceAccountsProvider } from "@/context/balanceAccounts";
 import FormWrapper from "./FormWrapper";
 import { Widget } from "@/components/Widget/Index";
 import { ValidationProvider } from "@/context/validationContext";
 import { useQueryState } from "@/context/query";
 import { useSettingsState } from "@/context/settings";
+import useSWR from "swr";
+import { ApiResponse } from "@/Models/ApiResponse";
+import { Partner } from "@/Models/Partner";
+import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 
 export default function Form() {
-    const { from } = useQueryState()
+    const { from, appName } = useQueryState()
     const { sourceExchanges } = useSettingsState()
     const defaultTab = useMemo(() => {
         return defaultTabResolver({ from, sourceExchanges })
     }, [from, sourceExchanges])
 
-    return <BalanceAccountsProvider>
-        <Tabs defaultValue={defaultTab}>
-            <div className="hidden sm:block">
-                <NetworkExchangeTabs />
-            </div>
+    const layerswapApiClient = new LayerSwapApiClient()
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
+    const partner = appName && partnerData?.data?.client_id?.toLowerCase() === (appName as string)?.toLowerCase() ? partnerData?.data : undefined
 
-            <TabsContent value="cross-chain">
-                <SwapDataProvider>
-                    <FormWrapper type="cross-chain">
-                        <Widget contextualMenu={<div className="block sm:hidden">
-                            <NetworkExchangeTabs />
-                        </div>}>
-                            <ValidationProvider>
-                                <NetworkForm />
-                            </ValidationProvider>
-                        </Widget>
-                    </FormWrapper>
-                </SwapDataProvider>
-            </TabsContent>
+    return <Tabs defaultValue={defaultTab}>
+        <div className="hidden sm:block">
+            <NetworkExchangeTabs />
+        </div>
 
-            <TabsContent value="exchange">
-                <SwapDataProvider>
-                    <FormWrapper type="exchange">
-                        <Widget contextualMenu={<div className="block sm:hidden">
-                            <NetworkExchangeTabs />
-                        </div>}>
-                            <ValidationProvider>
-                                <ExchangeForm />
-                            </ValidationProvider>
-                        </Widget>
-                    </FormWrapper>
-                </SwapDataProvider>
-            </TabsContent>
+        <TabsContent value="cross-chain">
+            <SwapDataProvider>
+                <FormWrapper type="cross-chain" partner={partner}>
+                    <Widget contextualMenu={<div className="block sm:hidden">
+                        <NetworkExchangeTabs />
+                    </div>}>
+                        <ValidationProvider>
+                            <NetworkForm partner={partner} />
+                        </ValidationProvider>
+                    </Widget>
+                </FormWrapper>
+            </SwapDataProvider>
+        </TabsContent>
 
-        </Tabs>
-    </BalanceAccountsProvider>
+        <TabsContent value="exchange">
+            <SwapDataProvider>
+                <FormWrapper type="exchange" partner={partner}>
+                    <Widget contextualMenu={<div className="block sm:hidden">
+                        <NetworkExchangeTabs />
+                    </div>}>
+                        <ValidationProvider>
+                            <ExchangeForm partner={partner} />
+                        </ValidationProvider>
+                    </Widget>
+                </FormWrapper>
+            </SwapDataProvider>
+        </TabsContent>
+
+    </Tabs>
 }
 
 const defaultTabResolver = ({ from, sourceExchanges }: { from: string | undefined, sourceExchanges: ReturnType<typeof useSettingsState>['sourceExchanges'] }) => {

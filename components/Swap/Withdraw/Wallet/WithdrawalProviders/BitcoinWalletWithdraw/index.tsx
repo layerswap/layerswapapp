@@ -20,7 +20,7 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData
     const { provider } = useWallet(source_network, 'withdrawal');
     const [transactionErrorMessage, setTransactionErrorMessage] = useState<string | undefined>(undefined)
     const { connector } = useAccount()
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
     const dataLoading = !source_network || !source_token
     const isTestnet = source_network?.name === KnownInternalNames.Networks.BitcoinTestnet;
 
@@ -89,7 +89,6 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData
                 isDisabled={!!loading || dataLoading}
                 isSubmitting={!!loading || dataLoading}
                 onClick={handleTransfer}
-                icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />}
                 swapData={swapBasicData}
                 refuel={refuel}
             />

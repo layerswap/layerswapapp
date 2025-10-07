@@ -19,8 +19,9 @@ export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
     const { provider } = useWallet(source_network, 'withdrawal');
     const [tonConnectUI] = useTonConnectUI();
     const [transactionErrorMessage, setTransactionErrorMessage] = useState<string | undefined>(undefined)
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
-    const wallet = selectedSourceAccount?.wallet
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
+    const { wallets } = useWallet(source_network, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
 
     const handleConnect = useCallback(async () => {
         setLoading(true)
@@ -75,7 +76,6 @@ export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
                     isDisabled={!!loading}
                     isSubmitting={!!loading}
                     onClick={handleTransfer}
-                    icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />}
                     error={!!transactionErrorMessage}
                     swapData={swapBasicData}
                     refuel={refuel}

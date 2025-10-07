@@ -1,6 +1,7 @@
 import { FC } from 'react'
-import QuoteDetails, { SwapValues } from '@/components/FeeDetails';
+import { SwapValues } from '@/components/FeeDetails';
 import { Refuel, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
+import SwapQuoteComp from '@/components/FeeDetails/SwapQuote';
 
 type Props = {
     swapBasicData: SwapBasicData | undefined,
@@ -12,10 +13,10 @@ type Props = {
 export const SwapQuoteDetails: FC<Props> = ({ swapBasicData: swapData, quote, refuel, quoteIsLoading }) => {
     const { source_network, destination_network, use_deposit_address, destination_token, requested_amount, source_token, destination_address } = swapData || {}
 
-    if (!requested_amount || !source_network || !destination_network || !quote) return <div className='h-[56px] w-full rounded-xl bg-secondary-500 animate-pulse'/>
+    if (!quote) return <div className='h-[56px] w-full rounded-xl bg-secondary-500 animate-pulse'/>
 
     const values: SwapValues = {
-        amount: requested_amount.toString(),
+        amount: requested_amount?.toString(),
         from: source_network,
         to: destination_network,
         fromAsset: source_token,
@@ -24,6 +25,6 @@ export const SwapQuoteDetails: FC<Props> = ({ swapBasicData: swapData, quote, re
         destination_address,
     }
 
-    return <QuoteDetails quote={{ quote, refuel }} swapValues={values} isQuoteLoading={quoteIsLoading} />
+    return <SwapQuoteComp quote={{ quote, refuel }} swapValues={values} isQuoteLoading={quoteIsLoading} />
 
 }

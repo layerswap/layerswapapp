@@ -23,10 +23,10 @@ export class GasResolver {
         new TronGasProvider()
     ];
 
-    getGas({ address, network, token, recipientAddress }: GasProps) {
+    getGas({ address, network, token, recipientAddress, wallet, amount }: GasProps) {
         const provider = this.providers.find(p => p.supportsNetwork(network));
         if (!provider) return;
 
-        return provider.getGas({ address, network, token, recipientAddress });
+        return provider.getGas({ address, network, token, recipientAddress, wallet, amount });
     }
 }

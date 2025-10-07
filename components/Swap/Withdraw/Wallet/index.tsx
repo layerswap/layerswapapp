@@ -20,8 +20,8 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
     const { source_network } = swapData
     const source_network_internal_name = source_network?.name;
 
-    const { provider } = useWallet(swapData.source_network, "withdrawal")
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
+    const { provider, wallets } = useWallet(source_network, "withdrawal")
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
 
     const WithdrawalPages = useMemo(() => [
         {
@@ -107,8 +107,9 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
     )?.component;
 
     useEffect(() => {
-        if (selectedSourceAccount) {
-            provider?.switchAccount(selectedSourceAccount.wallet, selectedSourceAccount.address)
+        const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
+        if (selectedSourceAccount && selectedWallet) {
+            provider?.switchAccount(selectedWallet, selectedSourceAccount.address)
         }
     }, [selectedSourceAccount?.address])
 

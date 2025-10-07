@@ -1,10 +1,8 @@
 import IconButton from "../buttons/iconButton"
 import GoHomeButton from "../utils/GoHome"
 import { ArrowLeft } from 'lucide-react'
-import dynamic from "next/dynamic"
 import LayerswapMenu from "../LayerswapMenu"
-import { useQueryState } from "../../context/query"
-import { NetworkExchangeTabs } from "../Swap/Form/NetworkExchangeTabs"
+import { useQueryState } from "@/context/query"
 import { WalletsHeader } from "../Wallet/ConnectedWallets"
 
 type Props = {
@@ -20,7 +18,7 @@ function HeaderWithMenu({ goBack, contextualMenu }: Props) {
             goBack &&
             <IconButton onClick={goBack}
                aria-label="Go back"
-               className="-ml-2 inline-flex"
+               className="sm:-ml-2 inline-flex mr-auto"
                icon={
                   <ArrowLeft strokeWidth="2" />
                }>

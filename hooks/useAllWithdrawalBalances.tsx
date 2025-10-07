@@ -12,8 +12,7 @@ export default function useAllWithdrawalBalances() {
     const balanceAccounts = useBalanceAccounts("from")
     const walletNetworks = useMemo(() => {
         return balanceAccounts.map(account => {
-            const wallet = account.wallet
-            const withdrawalNetworks = wallet.withdrawalSupportedNetworks
+            const withdrawalNetworks = account.walletWithdrawalSupportedNetworks
             if (!withdrawalNetworks || withdrawalNetworks.length === 0) return []
             return withdrawalNetworks.map(networkName => {
                 const network = networks.find(n => n.name === networkName)

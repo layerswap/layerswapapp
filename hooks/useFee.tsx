@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues'
 import LayerSwapApiClient, { Quote, SwapBasicData } from '../lib/apiClients/layerSwapApiClient'
@@ -118,13 +118,10 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
             return newData
         }
         catch (error) {
+            setLoading(false)
             setKey(null)
             throw error
         }
-        finally {
-            setLoading(false)
-        }
-
     }, [cache])
 
     const { data: quote, mutate: mutateFee, error: quoteError } = useSWR<ApiResponse<Quote>>(quoteURL, quoteFetchWrapper, {
@@ -132,7 +129,6 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         dedupingInterval: 42000,
         keepPreviousData: true
     })
-
 
     return {
         minAllowedAmount: amountRange?.data?.min_amount,
@@ -147,7 +143,6 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
 }
 
 export function transformFormValuesToQuoteArgs(values: SwapFormValues, withDelay?: boolean): Props | undefined {
-    if (values.fromAsset?.status !== 'active' || values.toAsset?.status !== 'active') return undefined
     return {
         amount: values.amount,
         from: values.from?.name,

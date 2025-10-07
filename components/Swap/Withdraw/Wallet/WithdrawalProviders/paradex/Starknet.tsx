@@ -1,6 +1,5 @@
 import { WalletIcon } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
-import useWallet from '@/hooks/useWallet';
 import { useSettingsState } from '@/context/settings';
 import KnownInternalNames from '@/lib/knownIds';
 import toast from 'react-hot-toast';
@@ -8,6 +7,7 @@ import { AuthorizeStarknet } from '@/lib/wallets/paradex/Authorize/Starknet';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import { SendTransactionButton } from '../../Common/buttons';
 import { useSelectedAccount } from '@/context/balanceAccounts';
+import useWallet from '@/hooks/useWallet';
 
 const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
 
@@ -16,9 +16,9 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
     const { networks } = useSettingsState();
     const starknet = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetGoerli || n.name === KnownInternalNames.Networks.StarkNetSepolia);
 
-    const { provider } = useWallet(starknet, 'withdrawal')
-    const selectedSourceAccount = useSelectedAccount("from", provider?.name);
-
+    const selectedSourceAccount = useSelectedAccount("from", starknet?.name);
+    const { wallets } = useWallet(starknet, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const handleTransfer = useCallback(async ({ amount, callData, swapId }: TransferProps) => {
         if (!swapId || !source_token) {
             return
@@ -33,7 +33,7 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
                 throw Error("No amount")
 
             try {
-                const snAccount = selectedSourceAccount.wallet?.metadata?.starknetAccount
+                const snAccount = wallet?.metadata?.starknetAccount
                 if (!snAccount) {
                     throw Error("Starknet account not found")
                 }
@@ -41,7 +41,7 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
 
                 const parsedCallData = JSON.parse(callData || "")
 
-                const res = await paradexAccount.execute(parsedCallData, undefined, { maxFee: '1000000000000000' });
+                const res = await paradexAccount.execute(parsedCallData, { maxFee: '1000000000000000' });
 
                 if (res.transaction_hash) {
                     return res.transaction_hash
