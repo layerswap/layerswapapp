@@ -173,7 +173,7 @@ export class EVMBalanceProvider extends BalanceProvider {
         balanceData: NativeBalanceResponse
     ) => {
 
-        if (balanceData.error !== null) return this.resolveTokenBalanceFetchError({ message: balanceData.error }, token, network)
+        if (balanceData.error !== null) return this.resolveTokenBalanceFetchError(new Error(balanceData.error), token, network)
 
         const nativeBalance: TokenBalance = {
             network: network.name,

@@ -30,12 +30,7 @@ export class ZkSyncBalanceProvider extends BalanceProvider {
             return zkSyncBalances
         }
         catch (e) {
-            const error = {
-                message: e?.message ?? "Failed get token balance",
-                code: e?.code,
-                cause: e,
-            }
-            return tokens.map((currency) => (this.resolveTokenBalanceFetchError(error, currency, network)))
+            return tokens.map((currency) => (this.resolveTokenBalanceFetchError(e, currency, network)))
         }
     }
 
