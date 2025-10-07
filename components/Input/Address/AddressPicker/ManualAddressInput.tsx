@@ -1,15 +1,14 @@
 import { ChangeEvent, FC, useCallback, useState } from "react";
-import { SwapFormValues } from "../../../DTOs/SwapFormValues";
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { Pencil } from "lucide-react";
-import { isValidAddress } from "../../../../lib/address/validator";
-import { Partner } from "../../../../Models/Partner";
-import { NetworkType } from "../../../../Models/Network";
-import FilledX from "../../../icons/FilledX";
+import { isValidAddress } from "@/lib/address/validator";
+import { Partner } from "@/Models/Partner";
+import { NetworkType } from "@/Models/Network";
+import FilledX from "@/components/icons/FilledX";
 import { AddressGroup, AddressItem } from ".";
-import { addressFormat } from "../../../../lib/address/formatter";
+import { addressFormat } from "@/lib/address/formatter";
 import AddressWithIcon from "./AddressWithIcon";
-import { Wallet } from "../../../../Models/WalletProvider";
-import { updateForm } from "@/components/Swap/Form/updateForm";
+import { Wallet } from "@/Models/WalletProvider";
 import { FormikHelpers } from "formik";
 
 type AddressInput = {
@@ -41,17 +40,20 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
     }, [])
 
     const handleSaveNewAddress = () => {
-        if (isValidAddress(manualAddress, destination)) {
+        if (isValidAddress(manualAddress, destination) && destination) {
             if (destination) {
                 setNewAddress({ address: manualAddress, networkType: destination.type })
             }
             setManualAddress("")
         }
+        else if (!destination) {
+            setFieldValue('destination_address', manualAddress)
+        }
         close()
     }
 
     let errorMessage = '';
-    if (manualAddress && !isValidAddress(manualAddress, destination)) {
+    if (manualAddress && !isValidAddress(manualAddress, destination) && values.to?.display_name) {
         errorMessage = `Enter a valid ${values.to?.display_name} address`
     }
 
