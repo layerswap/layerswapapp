@@ -1,13 +1,11 @@
 import { FC, useCallback, useEffect, useState } from "react";
 import { SwapStatus } from "../../Models/SwapStatus";
 import { useIntercom } from "react-use-intercom";
-import { useAuthState } from "../../context/authContext";
 import { SwapItem, TransactionType } from "../../lib/apiClients/layerSwapApiClient";
 import { datadogRum } from "@datadog/browser-rum";
 
 const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTime, swap }) => {
 
-    const { email, userId } = useAuthState();
     const { boot, show, update } = useIntercom();
     const [countdown, setCountdown] = useState<number>();
     const [thresholdElapsed, setThresholdElapsed] = useState<boolean>(false);
@@ -30,7 +28,7 @@ const CountdownTimer: FC<{ initialTime: string, swap: SwapItem }> = ({ initialTi
         return () => clearInterval(timer);
     }, [initialTime, swap.status, swapInputTransaction, thresholdElapsed]);
 
-    const updateWithProps = () => update({ userId, customAttributes: { email: email, swapId: swap.id } })
+    const updateWithProps = () => update({ customAttributes: { swapId: swap.id } })
     const startIntercom = useCallback(() => {
         boot();
         show();
