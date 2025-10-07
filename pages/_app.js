@@ -17,12 +17,10 @@ const progress = new ProgressBar({
 });
 
 if (typeof window !== "undefined" && process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_API_VERSION === 'mainnet') {
-  posthog.init('phc_KyI0bPCry0a8vJjQ7rIQESL8u2EVnyjrX19ZR4uqQgq', {
+  posthog.init(process.env.POSTHOG_TOKEN, {
     capture_pageview: 'history_change',
     capture_pageleave: true,
-    api_host: 'https://us.i.posthog.com',
-    defaults: '2025-05-24'
-  })
+  });
 }
 
 Router.events.on("routeChangeStart", progress.start);
