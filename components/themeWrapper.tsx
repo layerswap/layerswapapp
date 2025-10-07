@@ -4,6 +4,7 @@ import Navbar from "./navbar"
 import GlobalFooter from "./globalFooter";
 import { useEffect, useState } from "react";
 import inIframe from "./utils/inIframe";
+import { usePostHog } from "posthog-js/react";
 
 type Props = {
     children: JSX.Element | JSX.Element[]
@@ -15,13 +16,25 @@ export default function ThemeWrapper({ children }: Props) {
         setEmbedded(inIframe())
     }, [])
 
+    const posthog = usePostHog();
+    const handleBetaClick = () => {
+        posthog?.capture("beta_try_now_clicked", {
+            banner: "top-beta",
+            embedded: Boolean(embedded),
+            path: typeof window !== "undefined" ? window.location.pathname : undefined,
+        });
+    };
+
     return <div className='styled-scroll'>
         <div className="invisible light"></div>
         {
             !embedded ? (
                 <div className="bg-[#3C4861] text-white p-2 text-center text-base font-medium">
                     <span>New Design & Token Swaps in Beta</span>
-                    <button className="bg-[#E1E3E6] text-black px-3 py-1 font-bold rounded-[40px] ml-3">
+                    <button
+                        className="bg-[#E1E3E6] text-black px-3 py-1 font-bold rounded-[40px] ml-3"
+                        onClick={handleBetaClick} 
+                    >
                         <a href="https://layerswap.io/beta" target="_blank" rel="noreferrer" className="font-semibold">Try now</a>
                     </button>
                 </div>
