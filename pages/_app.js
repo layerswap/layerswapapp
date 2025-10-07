@@ -16,6 +16,13 @@ const progress = new ProgressBar({
   delay: 100,
 });
 
+if (typeof window !== "undefined" && process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_API_VERSION === 'mainnet') {
+  posthog.init(process.env.POSTHOG_TOKEN, {
+    capture_pageview: 'history_change',
+    capture_pageleave: true,
+  });
+}
+
 Router.events.on("routeChangeStart", progress.start);
 Router.events.on("routeChangeComplete", progress.finish);
 Router.events.on("routeChangeError", progress.finish);
