@@ -9,9 +9,6 @@ import KnownInternalNames from "../../lib/knownIds"
 import { ChevronRightIcon } from 'lucide-react'
 import StatusIcon from "./StatusIcons"
 import { FC } from "react"
-import { findIndexOfFirstNonZeroAfterComma, truncateDecimals } from "../utils/RoundDecimals";
-import AddressIcon from "../AddressIcon";
-import { addressFormat } from "../../lib/address/formatter";
 import { SwapStatus } from "../../Models/SwapStatus";
 import { Wallet } from "../../Models/WalletProvider";
 import { ImageWithFallback } from "../Common/ImageWithFallback";

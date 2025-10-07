@@ -1,6 +1,7 @@
 import { FC } from 'react'
-import QuoteDetails, { SwapValues } from '@/components/FeeDetails';
+import { SwapValues } from '@/components/FeeDetails';
 import { Refuel, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
+import SwapQuoteComp from '@/components/FeeDetails/SwapQuote';
 
 type Props = {
     swapBasicData: SwapBasicData | undefined,
@@ -24,6 +25,6 @@ export const SwapQuoteDetails: FC<Props> = ({ swapBasicData: swapData, quote, re
         destination_address,
     }
 
-    return <QuoteDetails quote={{ quote, refuel }} swapValues={values} isQuoteLoading={quoteIsLoading} />
+    return <SwapQuoteComp quote={{ quote, refuel }} swapValues={values} isQuoteLoading={quoteIsLoading} />
 
 }

@@ -18,7 +18,7 @@ import { SwapFormValues } from '../components/DTOs/SwapFormValues';
 import { useArgs } from 'storybook/preview-api';
 import WalletsProviders from '../components/WalletProviders';
 import { TimerProvider } from '@/context/timerContext';
-import { BalanceAccountsProvider } from '@/context/balanceAccounts';
+import { Tabs } from '@/components/Swap/Form/NetworkExchangeTabs';
 
 window.plausible = () => { }
 const Comp: FC<{ settings: any, swapData: SwapContextData, failedSwap?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues, timestamp?: string }> = ({ swapData, theme, initialValues }) => {
@@ -42,20 +42,20 @@ const Comp: FC<{ settings: any, swapData: SwapContextData, failedSwap?: SwapItem
                 <SwapDataProvider >
                     <TimerProvider>
                         <WalletsProviders basePath={'/'} themeData={THEME_COLORS['default']} appName={'Layerswap'}>
-                            <BalanceAccountsProvider>
-                                <SwapDataStateContext.Provider value={swapContextInitialValues}>
-                                    <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
-                                        <Formik
-                                            innerRef={formikRef}
-                                            initialValues={initialValues!}
-                                            validateOnMount={true}
-                                            onSubmit={() => { }}
-                                        >
+                            <SwapDataStateContext.Provider value={swapContextInitialValues}>
+                                <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
+                                    <Formik
+                                        innerRef={formikRef}
+                                        initialValues={initialValues!}
+                                        validateOnMount={true}
+                                        onSubmit={() => { }}
+                                    >
+                                        <Tabs defaultValue="cross-chain">
                                             <Component initialValues={initialValues} />
-                                        </Formik>
-                                    </SwapDataUpdateContext.Provider>
-                                </SwapDataStateContext.Provider >
-                            </BalanceAccountsProvider>
+                                        </Tabs>
+                                    </Formik>
+                                </SwapDataUpdateContext.Provider>
+                            </SwapDataStateContext.Provider >
                         </WalletsProviders>
                     </TimerProvider>
                 </SwapDataProvider>

@@ -124,6 +124,7 @@ type ExtendedAddressProps = {
     description?: string;
     logo?: string | ((e: SVGProps<SVGSVGElement>) => ReactNode);
     children?: ReactNode
+    shouldShowChevron?: boolean
 }
 
 const calculateMaxWidth = (balance: string | undefined) => {
@@ -138,7 +139,7 @@ const calculateMaxWidth = (balance: string | undefined) => {
     }
 };
 
-export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo }) => {
+export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo, shouldShowChevron = true }) => {
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
 
@@ -175,7 +176,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
             <Popover open={isPopoverOpen} onOpenChange={() => setPopoverOpen(!isPopoverOpen)} modal={true}>
                 <PopoverTrigger asChild>
                     <div>
-                        <Tooltip delayDuration={400}>
+                        <Tooltip>
                             <TooltipTrigger asChild>
                                 {
                                     children ??
@@ -183,7 +184,10 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
                                         <p className={`${isForCurrency ? "text-xs self-end" : "text-sm"} block font-medium`}>
                                             {shortenAddress(address)}
                                         </p>
-                                        <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4" />
+                                        {shouldShowChevron ?
+                                            <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4" />
+                                            : null
+                                        }
                                     </div>
                                 }
                             </TooltipTrigger>
@@ -297,7 +301,7 @@ const ActionButton: FC<ActionButtonProps> = ({ title, Icon, onClick, href, iconC
     }
 
     return (
-        <Tooltip disableHoverableContent delayDuration={400} key={title} open={showTooltip} onOpenChange={setShowTooltip}>
+        <Tooltip disableHoverableContent key={title} open={showTooltip} onOpenChange={setShowTooltip}>
             <TooltipTrigger asChild>
                 {renderButton()}
             </TooltipTrigger>
