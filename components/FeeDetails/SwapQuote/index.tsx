@@ -8,6 +8,7 @@ import { Network } from '@/Models/Network'
 import { SummaryRow } from './SummaryRow'
 import { DetailedEstimates } from './DetailedEstimates'
 import { addressFormat } from '@/lib/address/formatter'
+import { useSelectedAccount } from '@/context/balanceAccounts'
 
 interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
     from?: Network;
@@ -31,7 +32,8 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
     const { wallets } = useWallet(!isCEX ? values.from : undefined, 'withdrawal')
 
     const wallet = (values?.to && values?.destination_address) ? wallets?.find(w => addressFormat(w.address, values?.to!) === addressFormat(values?.destination_address!, values?.to!)) : undefined
-
+    const selectedSourceAccount = useSelectedAccount("from", values?.from?.name);
+    
     if (!quoteData) return null
 
     return (
@@ -56,7 +58,7 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
                         destinationAddress={values.destination_address}
                         onOpen={() => setIsOpen(true)}
                         isOpen={isOpen}
-                        sourceAddress={wallet?.address}
+                        sourceAddress={selectedSourceAccount?.address}
                     />
                 </AccordionTrigger>
 
