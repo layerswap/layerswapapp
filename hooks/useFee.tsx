@@ -55,8 +55,9 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     const [isDebouncing, setIsDebouncing] = useState(false)
 
     useEffect(() => {
-        setIsDebouncing(true)
+        if (amount === debouncedAmount) return;
 
+        setIsDebouncing(true)
         const handler = setTimeout(() => {
             setDebouncedAmount(amount)
             setIsDebouncing(false)

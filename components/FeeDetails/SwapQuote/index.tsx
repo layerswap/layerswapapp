@@ -32,7 +32,7 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
 
     const wallet = (values?.to && values?.destination_address) ? wallets?.find(w => addressFormat(w.address, values?.to!) === addressFormat(values?.destination_address!, values?.to!)) : undefined
 
-    if (!quoteData) return null
+    if (!quoteData?.quote) return <div className='h-[105px] w-full rounded-xl bg-secondary-500 animate-pulse'/>
 
     return (
         <Accordion

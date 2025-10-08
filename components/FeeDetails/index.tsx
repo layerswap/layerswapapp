@@ -87,7 +87,7 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuo
     const isCEX = !!values.fromExchange;
     const sourceAccountNetwork = !isCEX ? values.from : undefined
     const selectedSourceAccount = useSelectedAccount("from", sourceAccountNetwork?.name);
-    const { wallets } = useWallet(quoteData?.quote.source_network, 'withdrawal')
+    const { wallets } = useWallet(quoteData?.quote?.source_network, 'withdrawal')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const { gasData: gasData } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset, wallet, values.amount)
     const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quote)
