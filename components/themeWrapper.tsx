@@ -21,7 +21,6 @@ export default function ThemeWrapper({ children }: Props) {
     const handleBetaClick = () => {
         posthog?.capture("beta_try_now_clicked", {
             banner: "top-beta",
-            embedded: Boolean(embedded),
             path: typeof window !== "undefined" ? window.location.pathname : undefined,
         });
     };
