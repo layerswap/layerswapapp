@@ -67,7 +67,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({
                         <span>(</span>
                         <Triangle className={`w-3 h-3 stroke-1 fill-current transition-transform ${priceImpact < 0 ? "rotate-180" : ""}`} />
                         <span>
-                            ${Math.abs(priceImpact).toFixed(2)}
+                            {formatCurrency(Math.abs(priceImpact))}
                         </span>
                         <span>)</span>
                     </span>
@@ -91,19 +91,14 @@ export const PriceImpact: FC<PriceImpactProps> = ({
                     <li className="list-none flex justify-between">
                         <span>Bridge expenses</span>
                         <span className="text-primary-text">
-                            <span>
-                                {bridgeExpenses?.toFixed(2) !== (0).toFixed(2) ? "-$" : "$"}
-                            </span>
-                            <span>{Math.abs(Number(bridgeExpenses)).toFixed(2)}</span>
+                            {formatCurrency(bridgeExpenses, 2, true)}
                         </span>
                     </li>
+
                     <li className="list-none flex justify-between">
                         <span>Layerswap fees</span>
                         <span className="text-primary-text">
-                            <span>
-                                {layerswapFees?.toFixed(2) !== (0).toFixed(2) ? "-$" : "$"}
-                            </span>
-                            <span>{Math.abs(Number(layerswapFees)).toFixed(2)}</span>
+                            {formatCurrency(layerswapFees, 2, true)}
                         </span>
                     </li>
                 </ul>
@@ -112,15 +107,25 @@ export const PriceImpact: FC<PriceImpactProps> = ({
     </>)
 }
 
-const formatCurrency = (value?: number, decimals: number = 2) => {
+const formatCurrency = (
+    value?: number,
+    decimals: number = 2,
+    alwaysNegative: boolean = false
+) => {
     if (value === undefined || isNaN(value)) return "";
 
-    const rounded = Number(value.toFixed(decimals));
+    const absValue = Math.abs(value);
+    const sign = alwaysNegative ? "-" : value < 0 ? "-" : "";
 
-    // If rounded value is effectively zero, show "$0.00" (no minus sign)
-    if (Object.is(rounded, 0)) {
+    // Handle small nonzero values
+    if (absValue > 0 && absValue < 0.01) {
+        return `${sign}<$0.01`;
+    }
+
+    // Handle true zero
+    if (Object.is(Number(value.toFixed(decimals)), 0)) {
         return `$${(0).toFixed(decimals)}`;
     }
 
-    return `${rounded < 0 ? "-$" : "$"}${Math.abs(rounded).toFixed(decimals)}`;
+    return `${sign}$${absValue.toFixed(decimals)}`;
 };
