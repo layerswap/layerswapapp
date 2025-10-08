@@ -252,7 +252,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                                             <span>{swapBasicData?.source_network?.display_name}</span>
                                         </span>
                                     )}
-                                    <span>using the deposit address</span>
+                                    <span>to the deposit address</span>
                                 </span>
                             }
                         />

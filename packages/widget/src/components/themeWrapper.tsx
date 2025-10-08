@@ -6,7 +6,7 @@ type Props = {
     children: JSX.Element | JSX.Element[]
 }
 export default function ThemeWrapper({ children }: Props) {
-    return <TooltipProvider delayDuration={500}>
+    return <TooltipProvider delayDuration={400}>
         <main className="styled-scroll">
             <div className={`flex flex-col items-center overflow-hidden relative font-robo`}>
                 <Toaster position="top-center" toastOptions={{

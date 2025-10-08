@@ -135,6 +135,7 @@ export type CreateSwapParams = {
     slippage?: number,
     destination_address: string,
     source_address?: string
+    refund_address?: string
     amount: string,
     reference_id?: string,
     source_exchange?: string
@@ -270,6 +271,7 @@ export type SwapQuote = {
     service_fee: number,
     avg_completion_time: string,
     refuel_in_source?: number,
+    slippage?: number,
 }
 
 export type AddressBookItem = {

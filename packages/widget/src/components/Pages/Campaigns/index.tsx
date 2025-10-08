@@ -27,7 +27,7 @@ export const CampaignsComponent = ({ onCampaignSelect }: { onCampaignSelect: (ca
         <>
             <Widget.Content>
                 {!isLoading ?
-                    <div className="space-y-5 h-full text-primary-text">
+                    <div className="space-y-5 h-full text-primary-text sm:min-h-[350px]">
                         <div className="space-y-2">
                             <p className="font-bold text-left leading-5">Campaigns</p>
                             <div className="bg-secondary-500 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-500 hover:border-secondary-400 transition duration-200">
@@ -41,7 +41,7 @@ export const CampaignsComponent = ({ onCampaignSelect }: { onCampaignSelect: (ca
                                                     key={c.id}
                                                 />)
                                             :
-                                            <div className="flex flex-col items-center justify-center space-y-2">
+                                            <div className="flex flex-col items-center justify-center space-y-2 w-full">
                                                 <Gift className="h-10 w-10 text-primary" />
                                                 <p className="font-bold text-center">There are no active campaigns right now</p>
                                             </div>

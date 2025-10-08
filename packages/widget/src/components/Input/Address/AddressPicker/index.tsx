@@ -14,7 +14,7 @@ import AddressButton from "./AddressButton";
 import { useInitialSettings } from "@/context/settings";
 import ConnectedWallets from "./ConnectedWallets";
 import { Wallet } from "@/Models/WalletProvider";
-import { useBalanceAccounts, useUpdateBalanceAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount, useUpdateBalanceAccount } from "@/context/balanceAccounts";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 
 export enum AddressGroup {
@@ -63,14 +63,12 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const initialSettings = useInitialSettings()
     const { destination_address, to: destination } = values
-    const balanceAccounts = useBalanceAccounts("to")
     const selectDestinationAccount = useUpdateBalanceAccount("to");
 
     const { provider, wallets } = useWallet(destination, 'autofil')
     const connectedWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
-
+    const defaultAccount = useSelectedAccount("to", values.to?.name);
     const connectedWalletskey = connectedWallets?.map(w => w.addresses.join('')).join('')
-    const defaultAccount = useMemo(() => balanceAccounts.find(w => w.provider?.name === provider?.name), [balanceAccounts, provider?.name])
     const [manualAddress, setManualAddress] = useState<string>('')
     const [newAddress, setNewAddress] = useState<{ address: string, networkType: NetworkType | string } | undefined>()
 

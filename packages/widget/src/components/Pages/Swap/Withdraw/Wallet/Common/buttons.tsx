@@ -277,7 +277,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             onClick={handleClick}
             isDisabled={quoteIsLoading}
         >
-            {error ? 'Try again' : 'Send from wallet'}
+            {error ? 'Try again' : 'Swap now'}
         </ButtonWrapper>
     )
 }

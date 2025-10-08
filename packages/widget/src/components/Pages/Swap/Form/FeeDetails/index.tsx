@@ -1,4 +1,3 @@
-import { DetailedEstimates } from './DetailedEstimates';
 import ResizablePanel from '@/components/Common/ResizablePanel';
 import { FC, useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/shadcn/accordion';
@@ -18,6 +17,7 @@ import { resolveTokenUsdPrice } from '@/helpers/tokenHelper';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import { SwapFormValues } from '../SwapFormValues';
 import { CupIcon } from '@/components/Icons/CupIcon';
+import { DetailedEstimates } from './SwapQuote/DetailedEstimates';
 
 export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
     from?: Network;
@@ -42,14 +42,15 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
                 quoteData ?
                     <Accordion type='single' collapsible className='w-full' value={isAccordionOpen ? 'quote' : ''} onValueChange={(value) => { setIsAccordionOpen(value === 'quote') }}>
                         <AccordionItem value='quote' className='bg-secondary-500 rounded-2xl'>
-                            <AccordionTrigger className={clsx(
-                                'p-3.5 pr-5 w-full rounded-2xl flex items-center justify-between transition-colors duration-200 hover:bg-secondary-400',
-                                {
-                                    'bg-secondary-500': !isAccordionOpen,
-                                    'bg-secondary-400': isAccordionOpen,
-                                    'animate-pulse-strong': isQuoteLoading && !isAccordionOpen
+                            <AccordionTrigger className='p-3.5 pr-5 w-full rounded-2xl flex items-center justify-between transition-colors duration-200 hover:bg-secondary-400'>
+                                {(quoteData || isQuoteLoading) && fromCurrency && toAsset &&
+                                    <DetailedEstimates
+                                        isQuoteLoading={isQuoteLoading}
+                                        swapValues={values}
+                                        quote={quoteData}
+                                        variant='base'
+                                    />
                                 }
-                            )}>
                                 {
                                     (isAccordionOpen) ?
                                         <p className='text-sm'>
@@ -67,9 +68,8 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
                                         <DetailedEstimates
                                             quote={quoteData}
                                             isQuoteLoading={isQuoteLoading}
-                                            destination={values.to}
                                             swapValues={values}
-                                            destinationAddress={destination_address} />
+                                        />
                                     }
                                 </ResizablePanel>
                             </AccordionContent>
@@ -82,7 +82,7 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
 }
 
 
-const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoading, swapValues: values, destination, destinationAddress }) => {
+export const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoading, swapValues: values, destination, destinationAddress }) => {
     const { quote, reward } = quoteData || {}
     const isCEX = !!values.fromExchange;
     const sourceAccountNetwork = !isCEX ? values.from : undefined
@@ -102,7 +102,7 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
     );
 
     return (
-        <div className='flex items-center space-x-4'>
+        <div className='flex items-center'>
             {
                 gasFeeInUsd &&
                 <div className={clsx(
@@ -115,14 +115,14 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
                         }
                     </div>
                     <NumberFlow className="text-primary-text text-sm leading-6" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} format={{ style: 'currency', currency: 'USD' }} prefix={gasFeeInUsd < 0.01 ? '<' : undefined} />
-                    <div className="ml-3 w-px h-3 bg-primary-text-tertiary rounded-2xl" />
+                    <div className="mx-1 w-px h-3 bg-primary-text-tertiary rounded-2xl" />
                 </div>
             }
             {
                 averageCompletionTime &&
                 <>
                     <div className={clsx(
-                        "text-right inline-flex items-center gap-1 text-sm",
+                        "text-right inline-flex items-center gap-1 text-sm ml-1",
                         { "animate-pulse-strong": isQuoteLoading }
                     )}>
                         <div className='p-0.5'>

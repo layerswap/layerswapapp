@@ -17,9 +17,6 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
     if (!values.from && !values.fromExchange) {
         return { message: 'Select source' };
     }
-    if (values.fromExchange && values.toAsset && values.toAsset?.status === 'inactive') {
-        return { message: 'Route unavailable' };
-    }
     if (!values.to) {
         return { message: 'Select destination' };
     }
@@ -49,20 +46,6 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
         if (values.destination_address && !isValidAddress(values.destination_address, values.to)) {
             return { message: `Enter a valid ${values.to?.display_name} address` };
         }
-    }
-
-    if (
-        values.fromAsset?.status === 'not_found' ||
-        values.toAsset?.status === 'not_found'
-    ) {
-        return { message: `Route unavailable` };
-    }
-
-    if (
-        values.fromAsset?.status === 'inactive' ||
-        values.toAsset?.status === 'inactive'
-    ) {
-        return { message: `Route unavailable` };
     }
 
     if (

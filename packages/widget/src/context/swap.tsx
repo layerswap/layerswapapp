@@ -16,6 +16,7 @@ import { useSelectedAccount } from './balanceAccounts';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
 import { useSwapIdChangeCallback } from './callbackProvider';
 import { useInitialSettings } from './settings';
+import { addressFormat } from '@/lib/address/formatter';
 
 export const SwapDataStateContext = createContext<SwapContextData>({
     depositAddressIsFromAccount: false,
@@ -74,10 +75,6 @@ export function SwapDataProvider({ children }) {
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
     const [swapModalOpen, setSwapModalOpen] = useState(false)
     const { providers } = useWallet(swapBasicFormData?.source_network, 'asSource')
-
-    const selectedSourceAccount = useSelectedAccount("from", swapBasicFormData?.source_network?.name);
-    const { wallets } = useWallet(swapBasicFormData?.source_network, 'asSource')
-    const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
 
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
     const { quote: formDataQuote } = useQuoteData(swapId ? undefined : quoteArgs);
@@ -142,7 +139,11 @@ export function SwapDataProvider({ children }) {
         return formDataQuote?.refuel
     }, [formDataQuote, data, swapId]);
 
-    const sourceIsSupported = swapBasicData && WalletIsSupportedForSource({
+    const selectedSourceAccount = useSelectedAccount("from", swapBasicFormData?.source_network?.name);
+    const { wallets } = useWallet(swapBasicFormData?.source_network, 'asSource')
+    const selectedWallet = (selectedSourceAccount?.address && swapBasicFormData) && wallets.find(w => addressFormat(w.address, swapBasicFormData?.source_network) === addressFormat(selectedSourceAccount?.address, swapBasicFormData?.source_network))
+
+    const sourceIsSupported = (swapBasicData && selectedWallet) && WalletIsSupportedForSource({
         providers: providers,
         sourceNetwork: swapBasicData.source_network,
         sourceWallet: selectedWallet
@@ -180,7 +181,7 @@ export function SwapDataProvider({ children }) {
         if (!to || !fromCurrency || !toCurrency || !from || !amount || !destination_address || !depositMethod)
             throw new Error("Form data is missing")
 
-        const sourceIsSupported = WalletIsSupportedForSource({
+        const sourceIsSupported = selectedWallet && WalletIsSupportedForSource({
             providers: providers,
             sourceNetwork: from,
             sourceWallet: selectedWallet
@@ -197,7 +198,8 @@ export function SwapDataProvider({ children }) {
             reference_id: query.externalId,
             refuel: !!refuel,
             use_deposit_address: depositMethod === 'wallet' ? false : true,
-            source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined
+            source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
+            refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined
         }
 
         const swapResponse = await layerswapApiClient.CreateSwapAsync(data)

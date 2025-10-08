@@ -166,7 +166,7 @@ export function useSelectedAccount(direction: SwapDirection, networkName: string
     if (values === undefined) {
         throw new Error('useBalanceAccounts must be used within a BalanceAccountsProvider');
     }
-    return direction === "from" ? values.sourceAccounts.find(acc => acc.walletWithdrawalSupportedNetworks?.some(n => n === networkName))
+    return direction === "from" ? values.sourceAccounts.find(acc => acc.provider.withdrawalSupportedNetworks?.some(n => n === networkName))
         :
         values.destinationAccounts.find(acc => {
             if ('walletAutofillSupportedNetworks' in acc) {
