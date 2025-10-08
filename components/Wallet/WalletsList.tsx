@@ -77,12 +77,16 @@ type WalletItemProps = {
     network?: Network;
     selectedAddress: string | undefined;
     onWalletSelect?: (wallet: Wallet, address: string) => void;
+    isCompatible?: boolean;
 }
-export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = ({ selectable, wallet, network, onWalletSelect, token, selectedAddress, ...props }) => {
+export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = ({ selectable, wallet, network, onWalletSelect, token, selectedAddress, isCompatible = true, ...props }) => {
     const { networks } = useSettingsState()
     const networkWithTokens = networks.find(n => n.name === network?.name)
 
-    const { balance, isBalanceLoading } = useSWRBalance(wallet.address, networkWithTokens)
+    const { balance, isBalanceLoading } = useSWRBalance(
+        isCompatible ? wallet.address : undefined,
+        isCompatible ? networkWithTokens : undefined
+    );
 
     const walletBalance = balance?.find(b => b?.token === token?.symbol)
 
@@ -199,6 +203,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                             onWalletSelect={onWalletSelect}
                             selectedAddress={selectedAddress}
                             token={token}
+                            isCompatible={isCompatible}
                         />)
                     }
                 </div>
@@ -215,12 +220,16 @@ type NestedWalletAddressProps = {
     wallet: Wallet,
     onWalletSelect?: (wallet: Wallet, address: string) => void;
     selectedAddress: string | undefined;
+    isCompatible?: boolean;
 }
 
-const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddressProps> = ({ selectable, address, network, onWalletSelect, token, wallet, selectedAddress, ...props }) => {
+const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddressProps> = ({ selectable, address, network, onWalletSelect, token, wallet, selectedAddress, isCompatible, ...props }) => {
     const { networks } = useSettingsState()
     const networkWithTokens = networks.find(n => n.name === network?.name)
-    const { balance, isBalanceLoading } = useSWRBalance(address, networkWithTokens)
+    const { balance, isBalanceLoading } = useSWRBalance(
+        isCompatible ? wallet.address : undefined,
+        isCompatible ? networkWithTokens : undefined
+    );
 
     const isNestedSelected = selectable && address == selectedAddress
     const nestedWalletBalance = balance?.find(b => b?.token === token?.symbol)
