@@ -19,7 +19,7 @@ export default function ThemeWrapper({ children }: Props) {
 
     const posthog = usePostHog();
     const handleBetaClick = () => {
-        posthog?.capture("beta_try_now_clicked", {
+        posthog.capture("beta_try_now_clicked", {
             banner: "top-beta",
             path: typeof window !== "undefined" ? window.location.pathname : undefined,
         });
@@ -66,7 +66,7 @@ export default function ThemeWrapper({ children }: Props) {
                                 className="group bg-[#E1E3E6] hover:bg-[#C9BCCC] text-black px-3 py-1 font-bold rounded-[40px] ml-3"
                                 onClick={handleBetaClick}
                             >
-                                <Link target="_blank" href="https://layerswap.io/beta?utm_campaign=beta-launch" className="font-semibold flex items-center">
+                                <Link target="_blank" href="https://layerswap.io/beta?utm_source=twitter&utm_medium=social&utm_campaign=beta-launch" className="font-semibold flex items-center">
                                     <span>Try now</span>
                                     <ArrowUpRight
                                         className="max-sm:hidden ml-0 w-0 opacity-0 overflow-hidden transition-all duration-300 group-hover:ml-2 group-hover:w-4 group-hover:opacity-100"
