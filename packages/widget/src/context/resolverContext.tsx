@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { WalletProvider } from "./LayerswapProvider";
-import { BalanceProvider } from "@/Models/BalanceProvider";
-import { GasProvider } from "@/lib/gases/providers/types";
+import { BalanceProvider } from "@/lib/wallets/types/balance";
+import { GasProvider } from "@/lib/wallets/types/gas";
 import { resolverService } from "@/lib/resolvers/resolverService";
 
 type ResolverContextType = {

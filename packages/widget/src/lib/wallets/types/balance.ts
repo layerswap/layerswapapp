@@ -1,6 +1,6 @@
 import posthog from "posthog-js";
-import { BalanceFetchError, TokenBalance } from "./Balance";
-import { Network, NetworkWithTokens, Token } from "./Network";
+import { BalanceFetchError, TokenBalance } from "@/Models/Balance";
+import { Network, NetworkWithTokens, Token } from "@/Models/Network";
 
 export abstract class BalanceProvider {
     abstract supportsNetwork: (network: NetworkWithTokens) => boolean

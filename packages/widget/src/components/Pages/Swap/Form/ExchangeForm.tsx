@@ -20,7 +20,7 @@ import { useSwapDataState } from "@/context/swap";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { AddressItem } from "@/components/Input/Address/AddressPicker";
 import { Network } from "@/Models/Network";
-import { Wallet } from "@/Models/WalletProvider";
+import { Wallet } from "@/lib/wallets/types/wallet";
 import { SwapFormValues } from "./SwapFormValues";
 import { useFormChangeCallback } from "@/context/callbackProvider";
 import QuoteDetails from "./FeeDetails";

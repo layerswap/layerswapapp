@@ -5,7 +5,7 @@ import KnownInternalNames from "@/lib/knownIds";
 import retryWithExponentialBackoff from "@/lib/retry";
 import tonClient from "@/lib/wallets/ton/client";
 import { insertIfNotExists } from "@/lib/balances/helpers";
-import { BalanceProvider } from "@/Models/BalanceProvider";
+import { BalanceProvider } from "@/lib/wallets/types/balance";
 
 export class TonBalanceProvider extends BalanceProvider {
     supportsNetwork = (network: NetworkWithTokens): boolean => {

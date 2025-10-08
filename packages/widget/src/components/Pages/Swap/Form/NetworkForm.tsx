@@ -15,7 +15,7 @@ import { ArrowUpDown } from "lucide-react";
 import { classNames } from "@/components/utils/classNames";
 import FormButton from "./SecondaryComponents/FormButton";
 import { InitialSettings } from "@/Models/InitialSettings";
-import { WalletConnectionProvider } from "@/Models/WalletProvider";
+import { WalletConnectionProvider } from "@/lib/wallets/types/wallet";
 import { updateForm, updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";

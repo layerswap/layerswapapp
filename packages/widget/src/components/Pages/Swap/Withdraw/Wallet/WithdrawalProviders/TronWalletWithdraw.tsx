@@ -8,7 +8,6 @@ import { Token } from '@/Models/Network';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import TransactionMessages from '../../messages/TransactionMessages';
-import WalletIcon from '@/components/Icons/WalletIcon';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import useWallet from '@/hooks/useWallet';
 

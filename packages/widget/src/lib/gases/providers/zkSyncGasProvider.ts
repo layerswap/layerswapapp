@@ -3,7 +3,7 @@ import { Network } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
 import ZkSyncLiteRPCClient from "../../balances/providers/zkSyncBalanceProvider";
-import { GasProvider } from "./types";
+import { GasProvider } from "../../wallets/types/gas";
 
 export class ZkSyncGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {

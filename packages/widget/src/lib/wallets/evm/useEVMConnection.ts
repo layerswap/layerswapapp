@@ -10,11 +10,11 @@ import { isMobile } from "../../isMobile"
 import convertSvgComponentToBase64 from "@/components/utils/convertSvgComponentToBase64"
 import { LSConnector } from "./connectors/types"
 import { explicitInjectedProviderDetected } from "./connectors/explicitInjectedProviderDetected"
-import { InternalConnector, Wallet, WalletConnectionProvider } from "@/Models/WalletProvider"
+import { InternalConnector, Wallet, WalletConnectionProvider } from "@/lib/wallets/types/wallet"
 import { useConnectModal } from "@/components/Wallet/WalletModal"
 import sleep from "../utils/sleep"
-import { useEvmConnectors } from "@/context/evmConnectorsContext"
-import { useActiveEvmAccount } from "@/components/Wallet/WalletProviders/ActiveEvmAccount"
+import { useEvmConnectors } from "@/lib/wallets/evm/EVMProvider/evmConnectorsContext"
+import { useActiveEvmAccount } from "@/lib/wallets/evm/EVMProvider/ActiveEvmAccount"
 import { transactionBuilder } from "./services/transferService/transactionBuilder"
 
 const ethereumNames = [KnownInternalNames.Networks.EthereumMainnet, KnownInternalNames.Networks.EthereumSepolia]
@@ -239,12 +239,12 @@ export default function useEVMConnection(): WalletConnectionProvider {
     }
 
     const transfer: WalletConnectionProvider['transfer'] = async (params) => {
-        const { selectedSourceAccount } = params
+        const { selectedWallet } = params
 
         const tx = await transactionBuilder(params)
 
-        if (isMobile() && selectedSourceAccount.wallet?.metadata?.deepLink) {
-            window.location.href = selectedSourceAccount.wallet.metadata?.deepLink
+        if (isMobile() && selectedWallet?.metadata?.deepLink) {
+            window.location.href = selectedWallet.metadata?.deepLink
             await new Promise(resolve => setTimeout(resolve, 100))
         }
         const hash = await sendTransaction(config, tx)

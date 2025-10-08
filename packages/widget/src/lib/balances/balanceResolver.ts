@@ -1,6 +1,6 @@
 import posthog from "posthog-js";
 import { NetworkBalance } from "@/Models/Balance";
-import { BalanceProvider } from "@/Models/BalanceProvider";
+import { BalanceProvider } from "@/lib/wallets/types/balance";
 import { NetworkWithTokens } from "@/Models/Network";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 

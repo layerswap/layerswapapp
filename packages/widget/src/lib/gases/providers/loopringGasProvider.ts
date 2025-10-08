@@ -5,7 +5,7 @@ import KnownInternalNames from "../../knownIds";
 import { LOOPRING_URLs, LpFee } from "../../loopring/defs";
 import { LoopringAPI } from "../../loopring/LoopringAPI";
 import { GasProps } from "../../../Models/Balance";
-import { GasProvider } from "./types";
+import { GasProvider } from "../../wallets/types/gas";
 
 export class LoopringGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {

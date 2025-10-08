@@ -1,6 +1,6 @@
 import { Context, createContext, useCallback, useContext, useMemo, useState } from 'react'
 import useWallet from '@/hooks/useWallet';
-import { Wallet, WalletConnectionProvider } from '@/Models/WalletProvider';
+import { Wallet, WalletConnectionProvider } from '@/lib/wallets/types/wallet';
 import AddressIcon from '@/components/Common/AddressIcon';
 import { SwapDirection } from '@/components/Pages/Swap/Form/SwapFormValues';
 import { getKey, useBalanceStore, BalanceEntry } from '@/stores/balanceStore';

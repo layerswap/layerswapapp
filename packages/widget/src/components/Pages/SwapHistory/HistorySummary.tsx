@@ -10,7 +10,7 @@ import { ChevronRightIcon } from 'lucide-react'
 import StatusIcon from "./StatusIcons"
 import { FC } from "react"
 import { SwapStatus } from "@/Models/SwapStatus";
-import { Wallet } from "@/Models/WalletProvider";
+import { Wallet } from "@/lib/wallets/types/wallet";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip"
 

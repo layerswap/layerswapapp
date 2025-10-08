@@ -1,6 +1,6 @@
 import { ButtonHTMLAttributes, DetailedHTMLProps, FC, useState } from "react";
 import { WalletModalConnector } from ".";
-import { InternalConnector } from "../../../Models/WalletProvider";
+import { InternalConnector } from "../../../lib/wallets/types/wallet";
 import { Loader } from "lucide-react";
 import { resolveWalletConnectorIcon } from "../../../lib/wallets/utils/resolveWalletIcon";
 

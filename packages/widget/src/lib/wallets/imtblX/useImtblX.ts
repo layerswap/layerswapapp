@@ -2,7 +2,7 @@ import { useWalletStore } from "@/stores/walletStore"
 import ImtblClient from "./client"
 import KnownInternalNames from "../../knownIds"
 import IMX from "@/components/Icons/Wallets/IMX"
-import { InternalConnector, Wallet, WalletConnectionProvider } from "@/Models/WalletProvider"
+import { InternalConnector, Wallet, WalletConnectionProvider } from "@/lib/wallets/types/wallet"
 import { useSettingsState } from "@/context/settings"
 
 const supportedNetworks = [

@@ -1,6 +1,6 @@
 import { NetworkType, NetworkWithTokens } from "@/Models/Network"
 import { useSettingsState } from "@/context/settings"
-import { InternalConnector, Wallet, WalletConnectionProvider } from "@/Models/WalletProvider"
+import { InternalConnector, Wallet, WalletConnectionProvider } from "@/lib/wallets/types/wallet"
 import { useConnectModal } from "@/components/Wallet/WalletModal"
 import { useConnect, useAccount, useConfig } from '@bigmi/react'
 import { disconnect } from "@bigmi/client"

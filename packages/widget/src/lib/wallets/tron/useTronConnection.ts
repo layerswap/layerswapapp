@@ -1,11 +1,11 @@
 import KnownInternalNames from "../../knownIds";
 import { useWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
-import { InternalConnector, Wallet, WalletConnectionProvider } from "../../../Models/WalletProvider";
+import { InternalConnector, Wallet, WalletConnectionProvider } from "../types/wallet";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { useSettingsState } from "../../../context/settings";
 import { GasResolver } from "@/lib/gases/gasResolver";
 import { buildInitialTransaction } from "./services/transferService/transactionBuilder";
-import { GasWithToken } from "@/lib/gases/providers/types";
+import { GasWithToken } from "@/lib/wallets/types/gas";
 
 export default function useTronConnection(): WalletConnectionProvider {
     const commonSupportedNetworks = [

@@ -1,6 +1,6 @@
 import { walletConnect } from "./walletConnect"
 import walletsData from "@/lib/jsons/walletsData/walletsData.json"
-import { InternalConnector } from "@/Models/WalletProvider"
+import { InternalConnector } from "@/lib/wallets/types/wallet"
 import { resolveWalletConnectorIndex } from "../../../utils/resolveWalletIcon"
 import AppSettings from "@/lib/AppSettings"
 

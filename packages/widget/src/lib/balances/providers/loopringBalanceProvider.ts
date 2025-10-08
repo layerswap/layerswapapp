@@ -6,7 +6,7 @@ import { LOOPRING_URLs } from "@/lib/loopring/defs";
 import { LoopringAPI } from "@/lib/loopring/LoopringAPI";
 import { TokenBalance } from "@/Models/Balance";
 import { insertIfNotExists } from "../helpers";
-import { BalanceProvider } from "@/Models/BalanceProvider";
+import { BalanceProvider } from "@/lib/wallets/types/balance";
 
 export class LoopringBalanceProvider extends BalanceProvider {
     supportsNetwork = (network: NetworkWithTokens): boolean => {

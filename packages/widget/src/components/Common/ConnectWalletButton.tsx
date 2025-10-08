@@ -1,7 +1,7 @@
 import { RefreshCw } from "lucide-react";
 import { ResolveConnectorIcon } from "../Icons/ConnectorIcons";
 import { FC, useState } from "react";
-import { Wallet, WalletConnectionProvider } from "../../Models/WalletProvider";
+import { Wallet, WalletConnectionProvider } from "../../lib/wallets/types/wallet";
 import { useConnectModal } from "../Wallet/WalletModal";
 import { classNames } from "@/components/utils/classNames";
 

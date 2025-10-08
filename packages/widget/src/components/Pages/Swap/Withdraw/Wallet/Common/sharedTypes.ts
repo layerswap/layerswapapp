@@ -1,5 +1,5 @@
-import { AccountIdentityWithWallet } from "@/context/balanceAccounts";
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
+import { Wallet } from "@/lib/wallets/types/wallet";
 import { TokenBalance } from "@/Models/Balance";
 import { Network, Token } from "@/Models/Network";
 
@@ -25,6 +25,6 @@ export type TransferProps = {
     swapId?: string
     userDestinationAddress?: string
     sequenceNumber?: number;
-    selectedSourceAccount: AccountIdentityWithWallet
+    selectedWallet: Wallet
     balances?: TokenBalance[] | undefined | null
 }

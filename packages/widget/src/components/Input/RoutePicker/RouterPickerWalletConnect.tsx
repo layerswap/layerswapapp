@@ -1,6 +1,6 @@
 import { FC, useMemo, useState } from "react";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
-import { SelectAccountProps, Wallet } from "@/Models/WalletProvider";
+import { SelectAccountProps, Wallet } from "@/lib/wallets/types/wallet";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import { ChevronDown, Plus } from "lucide-react";
 import { WalletItem } from "@/components/Wallet/WalletComponents/WalletsList";

@@ -44,7 +44,7 @@ export class ZkSyncBalanceProvider extends BalanceProvider {
 
 import { PublicClient } from 'viem';
 import { insertIfNotExists } from "../helpers";
-import { BalanceProvider } from "@/Models/BalanceProvider";
+import { BalanceProvider } from "@/lib/wallets/types/balance";
 
 type Balances = {
     [currency: string]: string;

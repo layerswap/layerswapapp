@@ -1,6 +1,6 @@
 import { Plus, Unplug } from "lucide-react";
 import AddressIcon from "@/components/Common/AddressIcon";
-import { SelectAccountProps, Wallet, WalletConnectionProvider } from "@/Models/WalletProvider";
+import { SelectAccountProps, Wallet, WalletConnectionProvider } from "@/lib/wallets/types/wallet";
 import { FC, HTMLAttributes } from "react";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import { clsx } from 'clsx';

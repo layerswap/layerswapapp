@@ -1,6 +1,6 @@
 import KnownInternalNames from "../../knownIds"
 import { useMemo } from "react"
-import { InternalConnector, Wallet, WalletConnectionProvider } from "@/Models/WalletProvider"
+import { InternalConnector, Wallet, WalletConnectionProvider } from "@/lib/wallets/types/wallet"
 import { useConnectModal } from "@/components/Wallet/WalletModal"
 import { type ConnectorAlreadyConnectedError } from '@wagmi/core'
 import useEVMConnection from "../evm/useEVMConnection"

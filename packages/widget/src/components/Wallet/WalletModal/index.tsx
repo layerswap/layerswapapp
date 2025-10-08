@@ -1,5 +1,5 @@
 import { Context, createContext, useCallback, useContext, useEffect, useState } from 'react'
-import { InternalConnector, Wallet, WalletConnectionProvider } from '../../../Models/WalletProvider';
+import { InternalConnector, Wallet, WalletConnectionProvider } from '@/lib/wallets/types/wallet';
 
 export type WalletModalConnector = InternalConnector & {
     qr?: ({

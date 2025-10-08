@@ -1,5 +1,5 @@
 import { Network } from "../Models/Network"
-import { Wallet, WalletConnectionProvider } from "../Models/WalletProvider";
+import { Wallet, WalletConnectionProvider } from "../lib/wallets/types/wallet";
 import { useCallback, useMemo } from "react";
 import { useWalletProviders } from "../context/walletProviders";
 

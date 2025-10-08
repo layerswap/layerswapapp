@@ -1,6 +1,6 @@
 import { Network } from "../../../Models/Network";
 import KnownInternalNames from "../../knownIds";
-import { GasProvider } from "@/lib/gases/providers/types";
+import { GasProvider } from "@/lib/wallets/types/gas";
 
 export class TonGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {

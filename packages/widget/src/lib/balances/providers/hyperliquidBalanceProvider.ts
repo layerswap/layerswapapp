@@ -2,7 +2,7 @@ import { NetworkWithTokens } from "@/Models/Network";
 import { TokenBalance } from "@/Models/Balance";
 import KnownInternalNames from "../../knownIds";
 import { HyperliquidClient } from "../../apiClients/hyperliquidClient";
-import { BalanceProvider } from "@/Models/BalanceProvider";
+import { BalanceProvider } from "@/lib/wallets/types/balance";
 
 export class HyperliquidBalanceProvider extends BalanceProvider {
     private client: HyperliquidClient;

@@ -10,7 +10,7 @@ import { useSelectedAccount } from "@/context/balanceAccounts";
 import { SwapValues } from "..";
 import { deriveQuoteComputed } from "./utils";
 import { RateElement } from "../Rate";
-import { Wallet } from "@/Models/WalletProvider";
+import { Wallet } from "@/lib/wallets/types/wallet";
 
 type DetailedEstimatesProps = {
     quote: Quote | undefined

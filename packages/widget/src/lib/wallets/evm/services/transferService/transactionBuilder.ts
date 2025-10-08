@@ -1,8 +1,8 @@
-import { TransferProps } from "@/components/Pages/Swap/Withdraw/Wallet/Common/sharedTypes"
+import { TransferProps } from "@/lib/wallets/types/transfer"
 import { parseEther } from "viem"
 
 export const transactionBuilder = async (params: TransferProps) => {
-    const { amount, callData, depositAddress, network, selectedSourceAccount } = params
+    const { amount, callData, depositAddress, network, selectedWallet } = params
 
     const tx = {
         chainId: Number(network?.chain_id),
@@ -10,7 +10,7 @@ export const transactionBuilder = async (params: TransferProps) => {
         value: parseEther(amount.toString()),
         gas: undefined,
         data: callData as `0x${string}`,
-        account: selectedSourceAccount.address as `0x${string}`
+        account: selectedWallet.address as `0x${string}`
     }
 
     return tx

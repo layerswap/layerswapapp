@@ -152,9 +152,10 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     const { networks } = useSettingsState()
     const networkWithTokens = networks.find(n => n.name === swapData.source_network.name)
 
-    const { provider } = useWallet(swapData.source_network, "withdrawal")
+    const { provider, wallets } = useWallet(swapData.source_network, "withdrawal")
     const { balances } = useBalance(selectedSourceAccount?.address, networkWithTokens)
-
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
+    
     const clickHandler = useCallback(async ({ amount, callData, depositAddress }: TransferProps) => {
         setButtonClicked(true)
         setError(undefined)
@@ -164,7 +165,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
                 throw new Error('Missing deposit address')
             if (amount == undefined)
                 throw new Error('Missing amount')
-            if (!selectedSourceAccount?.address)
+            if (!wallet)
                 throw new Error('No selected account')
             if (!provider?.transfer) throw new Error('No provider transfer')
 
@@ -173,7 +174,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
                 amount,
                 depositAddress,
                 callData,
-                selectedSourceAccount,
+                selectedWallet: wallet,
                 network: swapData.source_network,
                 balances: balances,
                 userDestinationAddress: swapData.destination_address,

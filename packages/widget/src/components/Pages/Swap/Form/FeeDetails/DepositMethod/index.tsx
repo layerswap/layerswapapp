@@ -3,7 +3,7 @@ import React, { FC, useEffect, useRef } from "react";
 import { Network } from "@/Models/Network";
 import { useInitialSettings } from "@/context/settings";
 import useWallet from "@/hooks/useWallet";
-import { WalletConnectionProvider } from "@/Models/WalletProvider";
+import { WalletConnectionProvider } from "@/lib/wallets/types/wallet";
 import { SwapFormValues } from "../../SwapFormValues";
 
 const depositMethods = [

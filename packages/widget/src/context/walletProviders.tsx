@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo } from "react";
-import { WalletConnectionProvider } from "@/Models/WalletProvider";
+import { WalletConnectionProvider } from "@/lib/wallets/types/wallet";
 import { useSettingsState } from "./settings";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import IconButton from "@/components/Buttons/iconButton";

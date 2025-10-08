@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { Wallet } from '../Models/WalletProvider';
+import { Wallet } from '../lib/wallets/types/wallet';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 type ParadexAccount = {

@@ -4,7 +4,7 @@ import formatAmount from "@/lib/formatAmount";
 import Erc20Abi from '@/lib/jsons/abis/ERC20.json'
 import KnownInternalNames from "@/lib/knownIds";
 import { insertIfNotExists } from "@/lib/balances/helpers";
-import { BalanceProvider } from "@/Models/BalanceProvider";
+import { BalanceProvider } from "@/lib/wallets/types/balance";
 
 export class StarknetBalanceProvider extends BalanceProvider {
     supportsNetwork = (network: NetworkWithTokens): boolean => {

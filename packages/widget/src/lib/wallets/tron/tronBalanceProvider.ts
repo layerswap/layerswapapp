@@ -4,7 +4,7 @@ import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
 import { TronWeb } from 'tronweb'
 import { insertIfNotExists } from "@/lib/balances/helpers";
-import { BalanceProvider } from "@/Models/BalanceProvider";
+import { BalanceProvider } from "@/lib/wallets/types/balance";
 
 export class TronBalanceProvider extends BalanceProvider {
     supportsNetwork = (network: NetworkWithTokens): boolean => {

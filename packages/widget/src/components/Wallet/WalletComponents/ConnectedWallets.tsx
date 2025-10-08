@@ -5,7 +5,7 @@ import ConnectButton from "../../Buttons/connectButton"
 import { useState } from "react"
 import WalletsList from "./WalletsList"
 import VaulDrawer from "../../Modal/vaulModal"
-import { Wallet } from "../../../Models/WalletProvider"
+import { Wallet } from "../../../lib/wallets/types/wallet"
 
 export const WalletsHeader = () => {
     const { wallets } = useWallet()

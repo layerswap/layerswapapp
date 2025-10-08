@@ -1,7 +1,7 @@
 import { GasProps } from "../../../Models/Balance";
 import { Network, NetworkType } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
-import { GasProvider } from "../../gases/providers/types";
+import { GasProvider } from "../types/gas";
 
 export class SolanaGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {

@@ -2,7 +2,7 @@ import { GasProps } from "../../../Models/Balance";
 import { Network } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
-import { GasProvider } from "@/lib/gases/providers/types";
+import { GasProvider } from "@/lib/wallets/types/gas";
 
 export class TronGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {

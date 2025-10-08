@@ -18,9 +18,9 @@ import WalletsProviders from "@/components/Wallet/WalletProviders";
 import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
 import { InitialSettings } from "../Models/InitialSettings";
 import { BalanceAccountsProvider } from "./balanceAccounts";
-import { WalletConnectionProvider } from "@/Models/WalletProvider";
-import { GasProvider } from "@/lib/gases/providers/types";
-import { BalanceProvider } from "@/Models/BalanceProvider";
+import { WalletConnectionProvider } from "@/lib/wallets/types/wallet";
+import { GasProvider } from "@/lib/wallets/types/gas";
+import { BalanceProvider } from "@/lib/wallets/types/balance";
 import { useEVM, useStarknet, useTON, useTron, useFuel, useImtblX, useBitcoin, useSVM } from "@/lib/wallets";
 import { BalanceAndGasResolverProvider } from "./resolverContext";
 

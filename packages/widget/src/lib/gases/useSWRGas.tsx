@@ -1,8 +1,8 @@
 import useSWR from "swr"
 import { Network, Token } from "../../Models/Network"
 import { resolverService } from "../resolvers/resolverService"
-import { GasWithToken } from "./providers/types"
-import { Wallet } from "@/Models/WalletProvider"
+import { GasWithToken } from "../wallets/types/gas"
+import { Wallet } from "@/lib/wallets/types/wallet"
 
 //TODO: Add type for address
 const useSWRGas = (address: any, network: Network | undefined, token?: Token, wallet?: Wallet, amount?: string): { gasData: GasWithToken | undefined, isGasLoading: boolean, gasError: any } => {

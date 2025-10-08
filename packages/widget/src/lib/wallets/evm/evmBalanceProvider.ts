@@ -10,7 +10,7 @@ import { getBalance, GetBalanceReturnType } from '@wagmi/core'
 import resolveChain from "@/lib/resolveChain"
 import BalanceGetterAbi from "@/lib/jsons/abis/BALANCEGETTERABI.json"
 import KnownInternalNames from "@/lib/knownIds"
-import { BalanceProvider } from "@/Models/BalanceProvider"
+import { BalanceProvider } from "@/lib/wallets/types/balance"
 
 export class EVMBalanceProvider extends BalanceProvider {
     supportsNetwork = (network: NetworkWithTokens): boolean => {
