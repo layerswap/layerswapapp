@@ -1,72 +1,80 @@
-import { FC, SVGProps } from "react";
+import { FC, SVGProps, useMemo } from "react";
 import AverageCompletionTime from "@/components/Common/AverageCompletionTime";
 import { Tooltip, TooltipContent, TooltipTrigger, } from "@/components/shadcn/tooltip"
-import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import useWallet from "@/hooks/useWallet";
-import GasIcon from '@/components/Icons/GasIcon';
-import Clock from '@/components/Icons/Clock';
-import FeeIcon from "@/components/Icons/FeeIcon";
-import LayerSwapApiClient, { Campaign, Quote } from '@/lib/apiClients/layerSwapApiClient';
+import { Quote } from '@/lib/apiClients/layerSwapApiClient';
 import useSWRNftBalance from "@/lib/nft/useSWRNftBalance";
-import { QuoteComponentProps } from ".";
-import useSWR from "swr";
-import { ApiResponse } from "@/Models/ApiResponse";
 import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 import { useSelectedAccount } from "@/context/balanceAccounts";
-import { CupIcon } from "@/components/Icons/CupIcon";
+import { SwapValues } from "..";
+import { deriveQuoteComputed } from "./utils";
+import { RateElement } from "../Rate";
+import { Wallet } from "@/Models/WalletProvider";
 
-export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoading, destination, destinationAddress, swapValues: values }) => {
-    const { quote, reward } = quoteData || {}
-    const { from, fromAsset, fromExchange } = values;
-    const isCEX = !!fromExchange;
-    const sourceAccountNetwork = !isCEX ? values.from : undefined
-    const selectedSourceAccount = useSelectedAccount("from", sourceAccountNetwork?.name);
-    const { wallets } = useWallet(from, 'withdrawal')
-    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
-    const { gasData, isGasLoading } = useSWRGas(selectedSourceAccount?.address, from, fromAsset, wallet, values.amount)
+type DetailedEstimatesProps = {
+    quote: Quote | undefined
+    isQuoteLoading?: boolean
+    sourceAddress?: string
+    swapValues: SwapValues
+    variant?: "base" | "extended"
+}
+
+export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
+    quote: quoteData,
+    isQuoteLoading,
+    sourceAddress,
+    swapValues: values,
+    variant
+}) => {
+
+    const quote = quoteData?.quote
+    const reward = quoteData?.reward
+
+    const isCEX = !!values.fromExchange
+    const { provider } = useWallet(!isCEX ? values.from : undefined, 'withdrawal')
+
+    const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
+    const wallet = useMemo(() => provider?.connectedWallets?.find(w => w.id === selectedSourceAccount?.id), [provider?.connectedWallets, selectedSourceAccount])
+
+    const { gasData, isGasLoading } = useSWRGas(wallet?.address, values.from, values.fromAsset)
+    const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quoteData?.quote)
+
+    const { gasFeeInUsd, displayGasFeeInUsd, displayLsFee, displayLsFeeInUsd, receiveAtLeast, currencyName } = useMemo(
+        () => deriveQuoteComputed({
+            values,
+            quote: quoteData?.quote,
+            reward: quoteData?.reward,
+            gasData,
+            gasTokenPriceInUsd,
+        }),
+        [values, quoteData?.quote, quoteData?.reward, gasData, gasTokenPriceInUsd]
+    )
 
     const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && reward?.nft_contract_address;
     const { balance: nftBalance, isLoading, error } = useSWRNftBalance(
-        destinationAddress || '',
-        destination,
+        values.destination_address || '',
+        values.to,
         reward?.nft_contract_address || ''
     );
-    const apiClient = new LayerSwapApiClient()
-    const { data: campaignsData } = useSWR<ApiResponse<Campaign[]>>('/campaigns', apiClient.fetcher)
-    const now = new Date().getTime()
-    const campaign = campaignsData
-        ?.data
-        ?.find(c =>
-            c?.network.name === destination?.name
-            && new Date(c?.end_date).getTime() - now > 0)
 
-    const displayLsFee = quote?.total_fee !== undefined ? truncateDecimals(quote.total_fee, fromAsset?.decimals) : undefined
-    const currencyName = fromAsset?.symbol || ""
-    const lsFeeAmountInUsd = quote?.total_fee_in_usd
-    const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quote)
-    const gasFeeInUsd = (gasData && gasTokenPriceInUsd) ? gasData.gas * gasTokenPriceInUsd : null;
-    const displayLsFeeInUsd = lsFeeAmountInUsd ? (lsFeeAmountInUsd < 0.01 ? '<$0.01' : `$${lsFeeAmountInUsd?.toFixed(2)}`) : null
-    const displayGasFeeInUsd = gasFeeInUsd ? (gasFeeInUsd < 0.01 ? '<$0.01' : `$${gasFeeInUsd?.toFixed(2)}`) : null
+    const detailsElements = variant === "extended" ? extendedDetailsElements : baseDetailsElements;
 
-    return <div className="flex flex-col w-full divide-y divide-secondary-400 px-3 pt-1">
+    return <div className="flex flex-col w-full px-2">
         {
             detailsElements.map((item) => {
-                const showElement = item.showCondition ? item.showCondition({ gasFeeInUsd, shouldCheckNFT, isLoading, error, nftBalance, campaign, reward, destinationAddress }) : true
+                const showElement = item.showCondition ? item.showCondition({ gasFeeInUsd, shouldCheckNFT, isLoading, error, nftBalance, reward, destinationAddress: values.destination_address, sourceAddress }) : true
                 if (!showElement) return null
 
                 return (
                     <div key={item.name} className="flex items-center w-full justify-between gap-1 py-3 px-2 text-sm">
                         <div className="inline-flex items-center text-left text-secondary-text gap-1 pr-4">
-                            <div className="w-5">
-                                <item.icon className="text-secondary-text" />
-                            </div>
                             <label>
                                 {item.name}
                             </label>
                         </div>
                         <div className="text-right text-primary-text">
-                            {item.content({ gas: gasData?.gas, currencyName, nativeCurrencyName: gasData?.token?.symbol, displayGasFeeInUsd, quote, displayLsFee, displayLsFeeInUsd, isGasLoading, isQuoteLoading, reward })}
+                            {item.content({ gas: gasData?.gas, values, currencyName, nativeCurrencyName: gasData?.token?.symbol, displayGasFeeInUsd, quote, displayLsFee, displayLsFeeInUsd, wallet: wallet, isGasLoading, isQuoteLoading, reward, receiveAtLeast, destinationAddress: values.destination_address, sourceAddress })}
                         </div>
                     </div>
                 )
@@ -77,18 +85,15 @@ export const DetailedEstimates: FC<QuoteComponentProps> = ({ quote: quoteData, i
 
 const LoadingBar = () => (<div className='h-[10px] w-16 inline-flex bg-gray-500 rounded-xs animate-pulse' />);
 
-const RewardIcon = () => (<CupIcon alt="Reward" width={16} height={16} />)
-
-const detailsElements: DetailedElement[] = [
+const baseDetailsElements: DetailedElement[] = [
     {
         name: 'Gas Fee',
-        icon: GasIcon,
         showCondition: (props) => { return props.gasFeeInUsd !== null && props.gasFeeInUsd !== undefined },
         content: ({ gas, nativeCurrencyName, displayGasFeeInUsd, isGasLoading }) => {
             return isGasLoading ? (
                 <LoadingBar />
             ) : <div>
-                <Tooltip delayDuration={100}>
+                <Tooltip>
                     <TooltipTrigger asChild>
                         {gas !== undefined && (
                             <span className="text-sm ml-1 font-small">
@@ -96,7 +101,7 @@ const detailsElements: DetailedElement[] = [
                             </span>
                         )}
                     </TooltipTrigger>
-                    <TooltipContent className="!bg-secondary-300 !border-secondary-300 !text-primart-text">
+                    <TooltipContent className="!bg-secondary-300 !border-secondary-300 !text-primary-text">
                         <span>{gas || '-'} </span>
                         <span>{gas ? nativeCurrencyName : ''}</span>
                     </TooltipContent>
@@ -105,13 +110,12 @@ const detailsElements: DetailedElement[] = [
         }
     },
     {
-        name: 'Layerswap Fee',
-        icon: FeeIcon,
+        name: 'Fees',
         content: ({ displayLsFeeInUsd, displayLsFee, currencyName, isQuoteLoading }) => {
             return isQuoteLoading ? (
                 <LoadingBar />
             ) : <div>
-                <Tooltip delayDuration={100}>
+                <Tooltip>
                     <TooltipTrigger asChild>
                         {displayLsFeeInUsd !== undefined && (
                             <span className="text-sm ml-1 font-small">
@@ -119,7 +123,7 @@ const detailsElements: DetailedElement[] = [
                             </span>
                         )}
                     </TooltipTrigger>
-                    <TooltipContent className="!bg-secondary-300 !border-secondary-300 !text-primart-text">
+                    <TooltipContent className="!bg-secondary-300 !border-ssecondary-300 !text-primart-text">
                         <span>{displayLsFee || '-'} </span>
                         <span>{displayLsFee ? currencyName : ''}</span>
                     </TooltipContent>
@@ -128,8 +132,22 @@ const detailsElements: DetailedElement[] = [
         }
     },
     {
-        name: 'Estimated time',
-        icon: Clock,
+        name: 'Rate',
+        content: ({ isQuoteLoading, quote, values }) => {
+            if (isQuoteLoading) return <LoadingBar />
+
+            return (
+                <RateElement
+                    fromAsset={values?.fromAsset}
+                    toAsset={values?.toAsset}
+                    requestAmount={quote?.requested_amount}
+                    receiveAmount={quote?.receive_amount}
+                />
+            )
+        }
+    },
+    {
+        name: 'Est. time',
         content: ({ quote }) => {
             return quote && quote.avg_completion_time !== '00:00:00' ?
                 <div>
@@ -142,10 +160,9 @@ const detailsElements: DetailedElement[] = [
     },
     {
         name: 'Reward',
-        icon: RewardIcon,
         showCondition: (props) => {
-            const { campaign, reward, destinationAddress, shouldCheckNFT, isLoading, error, nftBalance } = props || {}
-            if (!campaign || !reward || !destinationAddress)
+            const { reward, destinationAddress, shouldCheckNFT, isLoading, error, nftBalance } = props || {}
+            if (!reward || !destinationAddress)
                 return false
 
             if (shouldCheckNFT && (isLoading || error || nftBalance === undefined || nftBalance <= 0))
@@ -157,7 +174,7 @@ const detailsElements: DetailedElement[] = [
             return !reward ? (
                 <LoadingBar />
             ) : <div>
-                <Tooltip delayDuration={100}>
+                <Tooltip>
                     <TooltipTrigger asChild>
                         {reward?.amount_in_usd !== undefined && (
                             <span className="text-sm ml-1 font-small">
@@ -175,7 +192,23 @@ const detailsElements: DetailedElement[] = [
     }
 ]
 
-
+const extendedDetailsElements: DetailedElement[] = [
+    {
+        name: 'Receive at least',
+        content: ({ isQuoteLoading, receiveAtLeast, values }) => {
+            return isQuoteLoading ? (
+                <LoadingBar />
+            ) : <div>
+                {receiveAtLeast !== undefined && (
+                    <span className="text-sm ml-1 font-small">
+                        {receiveAtLeast} {values?.toAsset?.symbol}
+                    </span>
+                )}
+            </div >
+        }
+    },
+    ...baseDetailsElements
+]
 
 type DetailsContentProps = {
     gas: number | undefined
@@ -187,8 +220,12 @@ type DetailsContentProps = {
     quote: Quote["quote"] | undefined
     isQuoteLoading?: boolean
     isGasLoading?: boolean
-
+    receiveAtLeast?: number | undefined
     reward?: Quote["reward"]
+    values?: SwapValues
+    destinationAddress?: string | undefined
+    sourceAddress?: string | undefined
+    wallet?: Wallet | undefined
 }
 
 type ShowConditionProps = {
@@ -200,13 +237,13 @@ type ShowConditionProps = {
     nftBalance?: number
 
     destinationAddress?: string | undefined
+    sourceAddress?: string | undefined
     reward?: Quote["reward"]
-    campaign?: Campaign | undefined
 }
 
 type DetailedElement = {
     name: string
-    icon: (props: SVGProps<SVGSVGElement>) => JSX.Element
+    icon?: (props: SVGProps<SVGSVGElement>) => JSX.Element
     content: (props: DetailsContentProps) => JSX.Element
     showCondition?: (props: ShowConditionProps) => boolean
 }

@@ -50,7 +50,7 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess }) => {
                             : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} />
                     )
                     :
-                    <div className='space-y-3'>
+                    <div className='space-y-3 w-full'>
                         <Processing />
                         {
                             storedWalletTransaction?.status == BackendTransactionStatus.Failed &&

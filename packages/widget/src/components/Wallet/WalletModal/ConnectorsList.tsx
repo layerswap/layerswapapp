@@ -18,7 +18,7 @@ import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { SearchComponent } from "@/components/Input/Search";
 
-const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
+const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();
     const { setSelectedConnector, selectedProvider, setSelectedProvider, selectedConnector, selectedMultiChainConnector, setSelectedMultiChainConnector } = useConnectModal()
     let [recentConnectors, setRecentConnectors] = usePersistedState<({ providerName?: string, connectorName?: string }[])>([], 'recentConnectors', 'localStorage');
@@ -421,4 +421,4 @@ function sortRecentConnectors(a: { name: string, type?: string }, b: { name: str
     return 0;
 }
 
-export default ConnectorsLsit
+export default ConnectorsList

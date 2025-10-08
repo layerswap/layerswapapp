@@ -56,18 +56,13 @@ type AdderssIconprops = {
 const ResolvedIcon = (props: AdderssIconprops) => {
     const { addressItem, wallet, partner } = props
     if (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) {
-        return <div className="rounded-lg bg-secondary-700 pl-2 flex items-center space-x-2 text-sm leading-4">
-            {
-                partner?.logo &&
-                <ImageWithFallback
-                    alt="Partner logo"
-                    className='rounded-md object-contain'
-                    src={partner.logo}
-                    width="20"
-                    height="20"
-                />
-            }
-        </div>
+        return <ImageWithFallback
+            alt="Partner logo"
+            className='rounded-md object-contain'
+            src={partner.logo}
+            width="16"
+            height="26"
+        />
     }
     else if (addressItem.group === AddressGroup.ConnectedWallet && wallet) {
         return <wallet.icon className="w-4 h-4" />

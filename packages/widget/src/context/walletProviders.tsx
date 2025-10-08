@@ -36,7 +36,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
 
     const providers = useMemo(() => {
         const allProviders: WalletProvider[] = [
-            bitcoin, evm, starknet, svm, ton, fuel, tron, paradex, imtblX
+            evm, starknet, svm, bitcoin, ton, fuel, tron, paradex, imtblX
         ];
         const filteredProviders = allProviders.filter(provider => isMobilePlatform ? !provider.unsupportedPlatforms?.includes('mobile') : !provider.unsupportedPlatforms?.includes('desktop'));
 

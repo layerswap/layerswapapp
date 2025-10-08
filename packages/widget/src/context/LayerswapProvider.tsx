@@ -64,7 +64,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
         <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
             <SettingsProvider initialLayerswapData={appSettings} initialSettings={initialValues}>
                 <CallbackProvider callbacks={callbacks}>
-                    <TooltipProvider delayDuration={500}>
+                    <TooltipProvider delayDuration={400}>
                         <ErrorBoundary FallbackComponent={ErrorFallback} >
                             <ThemeWrapper>
                                 <WalletsProviders appName={integrator} basePath="/" themeData={themeData}>
