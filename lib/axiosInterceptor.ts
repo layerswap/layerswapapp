@@ -19,6 +19,7 @@ export const InitializeAuthInstance = (baseURL?: string) => {
             } else {
                 throw new Error("NEXT_PUBLIC_API_KEY is not set up in env vars")
             }
+
             return config;
         },
         (error) => {

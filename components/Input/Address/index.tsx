@@ -3,7 +3,6 @@ import { SwapFormValues } from "../../DTOs/SwapFormValues"
 import { useFormikContext } from "formik"
 import { Partner } from "@/Models/Partner"
 import AddressPicker, { AddressTriggerProps } from "./AddressPicker"
-
 type AddressProps = {
     children: (props: AddressTriggerProps) => JSX.Element;
     partner: Partner | undefined
