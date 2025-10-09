@@ -88,8 +88,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         max_amount_in_usd: number
     }>>(limitsURL, apiClient.fetcher, {
         refreshInterval: (refreshInterval || refreshInterval == 0) ? refreshInterval : 20000,
-        dedupingInterval: 20000,
-        keepPreviousData: true
+        dedupingInterval: 20000
     })
 
     const canGetQuote = from && to && depositMethod && toCurrency && fromCurrency
