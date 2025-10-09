@@ -113,6 +113,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                                         selectable={true}
                                         network={destination}
                                         selectedAddress={undefined}
+                                        isCompatible={false}
                                     />
                                 </div>
                             ))}
@@ -131,6 +132,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                             selectable={true}
                             network={destination}
                             selectedAddress={undefined}
+                            isCompatible={false}
                         />
                     </div>
                 </div>

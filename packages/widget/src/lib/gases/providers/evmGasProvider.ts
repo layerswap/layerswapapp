@@ -40,7 +40,7 @@ export class EVMGasProvider implements GasProvider {
                     publicClient,
                     chainId,
                     contract_address,
-                    account: address,
+                    account: address as `0x${string}`,
                     from: network,
                     currency: token,
                     destination: recipientAddress as `0x${string}`,

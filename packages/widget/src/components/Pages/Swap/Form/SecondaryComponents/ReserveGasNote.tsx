@@ -20,7 +20,7 @@ const ReserveGasNote = ({ onSubmit, minAllowedAmount, maxAllowedAmount }: Props)
     } = useFormikContext<SwapFormValues>();
     const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
     const { balances } = useBalance(selectedSourceAccount?.address, values.from)
-    const { gasData } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset)
+    const { gasData } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset, values.amount)
 
     const nativeTokenBalance = balances?.find(b => b.token == values?.from?.token?.symbol)
 
