@@ -10,12 +10,13 @@ export class BitcoinGasProvider {
         return KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) || KnownInternalNames.Networks.BitcoinTestnet.includes(network.name)
     }
 
-    async getGas({ address, network, recipientAddress = 'tb1q5dc7f552h57tfepls66tgkta8wwjpha3ktw45s', amount }: GasProps): Promise<number | undefined> {
+    async getGas({ address, network, recipientAddress, amount }: GasProps): Promise<number | undefined> {
         if (!network?.token) throw new Error("No native token provided")
         if (!address) throw new Error("No address provided")
         if (!amount) throw new Error("No amount provided")
-        const version = KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) ? 'mainnet' : 'testnet';
 
+        const version = KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) ? 'mainnet' : 'testnet';
+        recipientAddress = version == 'testnet' ? 'tb1q5dc7f552h57tfepls66tgkta8wwjpha3ktw45s': 'bc1plxa9q77gz9r33g8pd4c2ygzezchjffuedtzdrkclyceseyw8v80qasmquf'
         const rpcClient = new JsonRpcClient(network.node_url);
 
         const amountInSatoshi = Math.floor(amount * 1e8);
