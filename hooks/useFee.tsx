@@ -50,14 +50,7 @@ type Props = {
 }
 
 export function useQuoteData(formValues: Props | undefined, refreshInterval?: number): UseQuoteData {
-    const latest = useRef<Props | undefined>(undefined);
-    useEffect(() => {
-        if (formValues) latest.current = formValues;
-    }, [formValues]);
-
-    const values = latest.current;
-
-    const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod } = values || {}
+    const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod } = formValues || {}
     const [debouncedAmount, setDebouncedAmount] = useState(amount)
     const [isDebouncing, setIsDebouncing] = useState(false)
 
