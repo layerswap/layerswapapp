@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { RowElement } from "../../../Models/Route";
-import { SwapDirection } from "../../DTOs/SwapFormValues";
-import { useVirtualizer } from "../../../lib/virtual";
-import { Accordion } from "../../shadcn/accordion";
+import { RowElement } from "@/Models/Route";
+import { SwapDirection } from "@/components/DTOs/SwapFormValues";
+import { useVirtualizer } from "@/lib/virtual";
+import { Accordion } from "@/components/shadcn/accordion";
 import Row from "./Rows";
 import { LayoutGroup, motion } from "framer-motion";
-import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
-import { useSelectorState } from "../../Select/Selector/Index";
+import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { useSelectorState } from "@/components/Select/Selector/Index";
 import useWallet from "@/hooks/useWallet";
-import ConnectWalletButton from "../../Common/ConnectWalletButton";
+import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
 import { SearchComponent } from "../Search";
 
 type ContentProps = {
@@ -43,7 +43,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
     useEffect(() => {
         return () => setSearchQuery('')
     }, [])
-    
+
     return <div className="overflow-y-auto flex flex-col h-full z-40 openpicker" >
         <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={shouldFocus} />
         <LayoutGroup>

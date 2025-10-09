@@ -1,7 +1,7 @@
 import { FC } from "react";
-import { SwapFormValues } from "../DTOs/SwapFormValues";
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { useFormikContext } from "formik";
-import { ImageWithFallback } from "../Common/ImageWithFallback";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 type Props = {
     direction: "from" | "to",

@@ -1,10 +1,10 @@
-import shortenAddress from "../utils/ShortenAddress";
+import shortenAddress from "@/components/utils/ShortenAddress";
 import { ChevronDown, PlusIcon } from "lucide-react";
 import { AddressGroup, AddressItem, AddressTriggerProps } from "./Address/AddressPicker";
 import { Partner } from "@/Models/Partner";
 import AddressIcon from "../AddressIcon";
 import { Wallet } from "@/Models/WalletProvider";
-import { ImageWithFallback } from "../Common/ImageWithFallback";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import clsx from 'clsx';
 
 const DestinationWalletPicker = (props: AddressTriggerProps) => {

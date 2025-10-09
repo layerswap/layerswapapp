@@ -1,18 +1,10 @@
-import {
-  RefObject,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { AccordionContent, AccordionItem, AccordionTrigger } from "../../../shadcn/accordion";
+import { RefObject, useMemo, useRef, useState, } from "react";
+import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcn/accordion";
 import { motion } from "framer-motion";
-import {
-  NetworkElement,
-  GroupedTokenElement,
-} from "../../../../Models/Route";
-import { SwapDirection } from "../../../DTOs/SwapFormValues";
+import { NetworkElement, GroupedTokenElement, } from "@/Models/Route";
+import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { CurrencySelectItemDisplay } from "../Routes";
-import { NetworkRoute, NetworkRouteToken } from "../../../../Models/Network";
+import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { CollapsableHeader } from "./CollapsableHeader";
 import { StickyHeader } from "./StickyHeader";
 
@@ -74,7 +66,7 @@ export const CollapsibleRow = ({
   };
 
   return (
-    <motion.div layout="position">
+    <motion.div>
       <AccordionItem value={groupName}>
         <div
           ref={headerRef}
