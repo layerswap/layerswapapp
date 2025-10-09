@@ -78,7 +78,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                         />
                     </div>
                     {
-                        receiveAmount != undefined ?
+                        receiveAmount && (
                             <div className="flex flex-col justify-end items-end w-full col-start-7 col-span-4">
                                 <p className={clsx("text-primary-text text-sm text-end")}>
                                     <NumberFlow value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
@@ -88,11 +88,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                                     <NumberFlow value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD' }} trend={0} />
                                 </p>
                             </div>
-                            :
-                            <div className="flex flex-col items-end w-full col-span-4">
-                                <div className="h-[10px] my-[5px] w-20 animate-pulse rounded-sm bg-gray-500" />
-                                <div className="h-[10px] my-[5px] w-10 animate-pulse rounded-sm bg-gray-500 ml-auto" />
-                            </div>
+                        )
                     }
                 </div>
                 {
