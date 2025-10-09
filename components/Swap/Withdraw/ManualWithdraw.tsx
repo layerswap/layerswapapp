@@ -178,7 +178,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
     )
 
     return (
-        <div className="flex flex-col flex-1 h-full min-h-0 w-full mb-3">
+        <div className="flex flex-col flex-1 h-full min-h-0 w-full">
             <div className='flex flex-col flex-1 h-full min-h-0 w-full space-y-3 mb-3'>
                 {(loading || exchangeSourceNetworksLoading) ? (
                     <>
