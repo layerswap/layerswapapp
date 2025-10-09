@@ -9,7 +9,7 @@ export class GasResolver {
         this.providers = providers || [];
     }
 
-    getGas({ address, network, token, recipientAddress, wallet, amount }: GasProps) {
+    getGas({ address, network, token, recipientAddress, amount, wallet }: GasProps) {
         const provider = this.providers.find(p => p.supportsNetwork(network));
         if (!provider) return;
 

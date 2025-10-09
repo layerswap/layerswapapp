@@ -1,19 +1,18 @@
-import useSWR from "swr"
-import { Network, Token } from "../../Models/Network"
+import { Network, Token } from "@/Models/Network"
 import { resolverService } from "../resolvers/resolverService"
 import { GasWithToken } from "../wallets/types/gas"
 import { Wallet } from "@/lib/wallets/types/wallet"
+import useSWR from "swr"
 
-//TODO: Add type for address
-const useSWRGas = (address: any, network: Network | undefined, token?: Token, wallet?: Wallet, amount?: string): { gasData: GasWithToken | undefined, isGasLoading: boolean, gasError: any } => {
+const useSWRGas = (address: string | undefined | null, network: Network | undefined | null, token?: Token | null, amount?: number | string | null,  wallet?: Wallet ): { gasData: GasWithToken | undefined, isGasLoading: boolean, gasError: any } => {
 
-    const { data: gasData, error: gasError, isLoading } = useSWR((network && address) ? `/gases/${address}/${network.name}/${token?.symbol}` : null, () => {
+    const { data: gasData, error: gasError, isLoading } = useSWR((network && address) ? `/gases/${address}/${network.name}/${token?.symbol}${amount ? `/${amount}` : ''}` : null, () => {
         if (!network || !token || !address) return
-        return resolverService.getGasResolver().getGas({ address, network, token, wallet, amount  })
+        return resolverService.getGasResolver().getGas({ address, network, token, amount: Number(amount), wallet  })
     }, { refreshInterval: 60000 })
 
     return {
-        gasData: gasData,
+        gasData,
         isGasLoading: isLoading,
         gasError: gasError
     }

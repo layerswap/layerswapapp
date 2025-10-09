@@ -5,7 +5,7 @@ export class BAKO_STATE {
     static period_durtion: number = 10_000
 }
 
-export class BaskoRequestAPI {
+export class BakoRequestAPI {
     baseUrl: string;
 
     constructor(baseUrl: string) {

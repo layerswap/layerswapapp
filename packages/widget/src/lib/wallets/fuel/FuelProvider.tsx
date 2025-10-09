@@ -1,9 +1,9 @@
 
-import { BaskoRequestAPI } from '@/lib/wallets/fuel/connectors/bako-safe/Bako';
-import { BakoSafeConnector } from '@/lib/wallets/fuel/connectors/bako-safe';
+import { BakoRequestAPI } from './connectors/bako-safe/Bako';
+import { BakoSafeConnector } from './connectors/bako-safe';
 import { FuelProvider, NetworkConfig } from '@fuels/react';
-import { FueletWalletConnector } from '@/lib/wallets/fuel/connectors/fuelet-wallet';
-import { FuelWalletConnector } from '@/lib/wallets/fuel/connectors/fuel-wallet';
+import { FueletWalletConnector } from './connectors/fuelet-wallet';
+import { FuelWalletConnector } from './connectors/fuel-wallet';
 import { useSettingsState } from '@/context/settings';
 import { NetworkType } from '@/Models/Network';
 import { useMemo } from 'react';
@@ -20,7 +20,7 @@ const FuelProviderWrapper = ({
         connectors: [
             new FuelWalletConnector(),
             new BakoSafeConnector({
-                api: new BaskoRequestAPI(HOST_URL)
+                api: new BakoRequestAPI(HOST_URL)
             }),
             new FueletWalletConnector(),
         ]

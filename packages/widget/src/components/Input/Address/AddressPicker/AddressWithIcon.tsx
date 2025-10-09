@@ -14,7 +14,7 @@ import clsx from "clsx";
 type Props = {
     addressItem: AddressItem;
     partner?: Partner;
-    network: Network;
+    network?: Network;
     balance?: { amount: number, symbol: string, isLoading: boolean } | undefined;
     onDisconnect?: ExtendedAddressProps['onDisconnect']
 }

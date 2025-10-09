@@ -7,7 +7,7 @@ export type GasProps = {
     address?: string,
     recipientAddress?: string,
     wallet?: Wallet,
-    amount?: string,
+    amount?: number,
 }
 
 export type TokenBalance = {

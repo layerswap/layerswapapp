@@ -250,7 +250,6 @@ const BlankHistory = ({ onNewTransferClick }: BlankHistoryProps) => {
 }
 
 const ConnectWalletCard = () => {
-
     return <div className="w-full h-full flex flex-col justify-between items-center space-y-10">
         <div className="flex flex-col items-center justify-center text-center w-full h-full">
             <HistoryItemSceleton className="scale-[.63] w-full shadow-lg mr-7" />
@@ -277,7 +276,6 @@ const ConnectWalletCard = () => {
 type DaysAgoProps = {
     dateInput: string
 }
-
 function DaysAgo({ dateInput }: DaysAgoProps) {
     // Get the current date
     const today = new Date();
