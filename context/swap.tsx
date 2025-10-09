@@ -83,7 +83,7 @@ export function SwapDataProvider({ children }) {
     const { providers } = useWallet(swapBasicFormData?.source_network, 'asSource')
 
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
-    console.log(quoteArgs,"quoteArgs")
+
     const { quote: formDataQuote } = useQuoteData(swapId ? undefined : quoteArgs);
 
     const handleUpdateSwapid = useCallback((value: string | undefined) => {
