@@ -56,7 +56,7 @@ const KnownEVMConnectors = [
         icon: Phantom
     },
     {
-        id: 'argent',
+        id: 'ready (formerly argent)',
         icon: Argent
     },
     {

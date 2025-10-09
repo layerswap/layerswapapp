@@ -5,11 +5,11 @@ import Keplr from "../../../components/icons/Wallets/Keplr"
 
 const KnownStarknetConnectors = [
     {
-        id: 'argent x',
+        id: 'ready wallet (formerly argent)',
         icon: ArgentX
     },
     {
-        id: 'argent mobile',
+        id: 'ready (formerly argent)',
         icon: Argent
     },
     {
