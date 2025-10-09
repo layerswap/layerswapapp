@@ -11,13 +11,14 @@ import {
     getPredicateRoot,
 } from '@fuel-ts/account';
 import { Address } from '@fuel-ts/address';
-import shortenAddress from "../../../components/utils/ShortenAddress";
-import { BAKO_STATE } from "./Basko";
+import shortenAddress from "@/components/utils/ShortenAddress";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
-import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
+import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider";
 import { useEffect, useMemo } from "react";
-import { useWalletStore } from "../../../stores/walletStore";
-import { useSettingsState } from "../../../context/settings";
+import { useWalletStore } from "@/stores/walletStore";
+import { useSettingsState } from "@/context/settings";
+import { BAKO_STATE } from "./Bako";
+import sleep from "../utils/sleep";
 
 export default function useFuel(): WalletProvider {
     const commonSupportedNetworks = [
@@ -39,40 +40,50 @@ export default function useFuel(): WalletProvider {
     const connectedWallets = wallets.filter(wallet => wallet.providerName === name)
 
     const connectWallet = async ({ connector }: { connector: InternalConnector }) => {
-        try {
+        const attemptConnection = async (isRetry: boolean = false): Promise<Wallet | undefined> => {
+            try {
 
-            const fuelConnector = connectors.find(w => w.name === connector.name)
+                const fuelConnector = connectors.find(w => w.name === connector.name)
 
-            BAKO_STATE.state.last_req = undefined
-            BAKO_STATE.period_durtion = 120_000
-            await fuelConnector?.connect()
+                BAKO_STATE.state.last_req = undefined
+                BAKO_STATE.period_durtion = 120_000
+                await fuelConnector?.connect()
 
-            const addresses = (await fuelConnector?.accounts())?.map(a => Address.fromAddressOrString(a).toB256())
+                const addresses = (await fuelConnector?.accounts())?.map(a => new Address(a).toB256())
 
-            if (addresses && fuelConnector) {
+                if (addresses && fuelConnector) {
 
-                const result = await resolveFuelWallet({
-                    address: addresses[0],
-                    addresses: addresses,
-                    connector: fuelConnector,
-                    evmAddress,
-                    evmConnector,
-                    disconnectWallet,
-                    name,
-                    commonSupportedNetworks,
-                    networkIcon: networks.find(n => commonSupportedNetworks.some(name => name === n.name))?.logo
-                })
+                    const result = await resolveFuelWallet({
+                        address: addresses[0],
+                        addresses: addresses,
+                        connector: fuelConnector,
+                        evmAddress,
+                        evmConnector,
+                        disconnectWallet,
+                        name,
+                        commonSupportedNetworks,
+                        networkIcon: networks.find(n => commonSupportedNetworks.some(name => name === n.name))?.logo
+                    })
 
-                addWallet(result)
-                await switchAccount(result)
-                return result
+                    addWallet(result)
+                    await switchAccount(result)
+                    return result
+                }
+
             }
+            catch (e) {
+                // For Bako Safe, retry once if error is 'false' (connection timeout/user closed popup)
+                if (connector.name === 'Bako Safe' && e === false && !isRetry) {
+                    console.log('Bako Safe connection failed with false, retrying once...')
+                    await sleep(1000)
+                    return await attemptConnection(true)
+                }
+                console.log(e)
+                throw new Error(e)
+            }
+        }
 
-        }
-        catch (e) {
-            console.log(e)
-            throw new Error(e)
-        }
+        return await attemptConnection()
     }
 
     const disconnectWallet = async (connectorName: string) => {
