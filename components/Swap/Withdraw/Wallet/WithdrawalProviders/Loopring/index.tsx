@@ -158,7 +158,6 @@ export const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, r
                             <SendTransactionButton
                                 isDisabled={!!(loading || transferDone)}
                                 onClick={handleTransfer}
-                                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
                                 swapData={swapBasicData}
                                 refuel={refuel}
                             />

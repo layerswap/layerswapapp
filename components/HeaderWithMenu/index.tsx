@@ -4,12 +4,10 @@ import { ArrowLeft } from 'lucide-react'
 import LayerswapMenu from "../LayerswapMenu"
 import { useQueryState } from "@/context/query"
 import { WalletsHeader } from "../Wallet/ConnectedWallets"
-
 type Props = {
    goBack: (() => void) | undefined | null
    contextualMenu?: React.ReactNode
 }
-
 function HeaderWithMenu({ goBack, contextualMenu }: Props) {
    const query = useQueryState()
    return (

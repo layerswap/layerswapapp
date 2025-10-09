@@ -1,5 +1,4 @@
 import { SwapFormValues } from '../DTOs/SwapFormValues';
-import { DetailedEstimates } from './DetailedEstimates';
 import ResizablePanel from '../ResizablePanel';
 import { FC, useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
@@ -19,6 +18,7 @@ import useSWRNftBalance from '@/lib/nft/useSWRNftBalance';
 import NumberFlow from '@number-flow/react';
 import { resolveTokenUsdPrice } from '@/helpers/tokenHelper';
 import { useSelectedAccount } from '@/context/balanceAccounts';
+import { DetailedEstimates } from './SwapQuote/DetailedEstimates';
 
 export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
     from?: Network;
@@ -66,11 +66,11 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
                                 {
                                     (quoteData || isQuoteLoading) && fromCurrency && toAsset &&
                                     <DetailedEstimates
-                                        quote={quoteData}
                                         isQuoteLoading={isQuoteLoading}
-                                        destination={values.to}
                                         swapValues={values}
-                                        destinationAddress={destination_address} />
+                                        quote={quoteData}
+                                        variant='base'
+                                    />
                                 }
                             </ResizablePanel>
                         </AccordionContent>
@@ -82,7 +82,7 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
 }
 
 
-const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoading, swapValues: values, destination, destinationAddress }) => {
+export const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoading, swapValues: values, destination, destinationAddress }) => {
     const { quote, reward } = quoteData || {}
     const isCEX = !!values.fromExchange;
     const sourceAccountNetwork = !isCEX ? values.from : undefined
@@ -102,7 +102,7 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
     );
 
     return (
-        <div className='flex items-center space-x-4'>
+        <div className='flex items-center'>
             {
                 gasFeeInUsd &&
                 <div className={clsx(
@@ -115,14 +115,14 @@ const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoadi
                         }
                     </div>
                     <NumberFlow className="text-primary-text text-sm leading-6" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} format={{ style: 'currency', currency: 'USD' }} prefix={gasFeeInUsd < 0.01 ? '<' : undefined} />
-                    <div className="ml-3 w-px h-3 bg-primary-text-tertiary rounded-2xl" />
+                    <div className="mx-1 w-px h-3 bg-primary-text-tertiary rounded-2xl" />
                 </div>
             }
             {
                 averageCompletionTime &&
                 <>
                     <div className={clsx(
-                        "text-right inline-flex items-center gap-1 text-sm",
+                        "text-right inline-flex items-center gap-1 text-sm ml-1",
                         { "animate-pulse-strong": isQuoteLoading }
                     )}>
                         <div className='p-0.5'>

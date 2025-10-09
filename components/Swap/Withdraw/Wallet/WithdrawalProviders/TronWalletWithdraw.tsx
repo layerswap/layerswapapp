@@ -77,7 +77,6 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refue
                     isDisabled={!!loading || isGasLoading}
                     isSubmitting={!!loading || isGasLoading}
                     onClick={handleTransfer}
-                    icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />}
                     error={!!error}
                     refuel={refuel}
                     swapData={swapBasicData}
