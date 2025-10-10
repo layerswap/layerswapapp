@@ -202,19 +202,19 @@ const TransactionMessage: FC<{ error: Error, isLoading: boolean }> = ({ error, i
     if (isLoading) {
         return <TransactionMessages.ConfirmTransactionMessage />
     }
-    else if (error.message === TransactionMessageType.TransactionRejected) {
+    else if (error.name === TransactionMessageType.TransactionRejected) {
         return <TransactionMessages.TransactionRejectedMessage />
     }
-    else if (error.message === TransactionMessageType.TransactionFailed) {
+    else if (error.name === TransactionMessageType.TransactionFailed) {
         return <TransactionMessages.TransactionFailedMessage />
     }
-    else if (error.message === TransactionMessageType.InsufficientFunds) {
+    else if (error.name === TransactionMessageType.InsufficientFunds) {
         return <TransactionMessages.InsufficientFundsMessage />
     }
-    else if (error.message === TransactionMessageType.WaletMismatch) {
+    else if (error.name === TransactionMessageType.WaletMismatch) {
         return <TransactionMessages.WaletMismatchMessage address={error.message} />
     }
-    else if (error.message === TransactionMessageType.DifferentAccountsNotAllowedError) {
+    else if (error.name === TransactionMessageType.DifferentAccountsNotAllowedError) {
         return <TransactionMessages.DifferentAccountsNotAllowedError network={error.message} />
     }
     else if (error) {

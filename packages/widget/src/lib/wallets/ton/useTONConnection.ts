@@ -133,12 +133,16 @@ export default function useTONConnection(): WalletConnectionProvider {
             }
         } catch (error) {
             if (error && error.includes('Reject request')) {
-                throw new Error(TransactionMessageType.TransactionRejected)
+                error.name = TransactionMessageType.TransactionRejected
+                throw new Error(error)
             }
             else if (error && error.includes('Transaction was not sent')) {
-                throw new Error(TransactionMessageType.TransactionFailed)
+                error.name = TransactionMessageType.TransactionFailed
+                throw new Error(error)
             }
             else {
+                error.name = TransactionMessageType.UexpectedErrorMessage
+                error.message = error
                 throw new Error(error)
             }
         }

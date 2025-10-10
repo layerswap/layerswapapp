@@ -4,6 +4,7 @@ import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { useSettingsState } from "@//context/settings";
 import { useConnect, useDisconnect } from "@starknet-react/core";
 import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wallet";
+import { TransactionMessageType } from "@/components/Pages/Swap/Withdraw/messages/TransactionMessages";
 
 const starknetNames = [KnownInternalNames.Networks.StarkNetGoerli, KnownInternalNames.Networks.StarkNetMainnet, KnownInternalNames.Networks.StarkNetSepolia]
 export default function useStarknetConnection(): WalletConnectionProvider {
@@ -129,13 +130,26 @@ export default function useStarknetConnection(): WalletConnectionProvider {
     const transfer: WalletConnectionProvider['transfer'] = async (params, wallet) => {
         const { callData } = params
 
-        const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.execute(JSON.parse(callData || "")) || {});
+        try {
+            const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.execute(JSON.parse(callData || "")) || {});
 
-        if (transferTxHash) {
-            return transferTxHash
-        }
-        else {
-            throw new Error('failedTransfer')
+            if (transferTxHash) {
+                return transferTxHash
+            }
+        } catch (error) {
+            if (error === "An error occurred (USER_REFUSED_OP)" || error === "Execute failed") {
+                error.name = TransactionMessageType.TransactionRejected
+                throw new Error(error)
+            }
+            else if (error === "failedTransfer") {
+                error.name = TransactionMessageType.TransactionFailed
+                throw new Error(error)
+            }
+            else {
+                error.name = TransactionMessageType.UexpectedErrorMessage
+                error.message = error
+                throw new Error(error)
+            }
         }
     }
 

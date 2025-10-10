@@ -1,16 +1,7 @@
 import KnownInternalNames from "../../knownIds";
-import {
-    useConnectors,
-    useFuel as useGlobalFuel,
-} from '@fuels/react';
+import { useConnectors, useFuel as useGlobalFuel, } from '@fuels/react';
 import { Connector, useAccount } from "wagmi";
-import {
-    FuelConnector,
-    FuelConnectorEventTypes,
-    Predicate,
-    Provider,
-    getPredicateRoot,
-} from '@fuel-ts/account';
+import { FuelConnector, FuelConnectorEventTypes, Predicate, Provider, getPredicateRoot, } from '@fuel-ts/account';
 import { Address } from '@fuel-ts/address';
 import shortenAddress from "@/components/utils/ShortenAddress";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
@@ -21,6 +12,7 @@ import { useSettingsState } from "@/context/settings";
 import { transactionBuilder } from "./services/transferService/transactionBuilder";
 import { BAKO_STATE } from "./connectors/bako-safe/Bako";
 import sleep from "../utils/sleep";
+import { TransactionMessageType } from "@/components/Pages/Swap/Withdraw/messages/TransactionMessages";
 
 export default function useFuelConnection(): WalletConnectionProvider {
     const commonSupportedNetworks = [
@@ -149,13 +141,31 @@ export default function useFuelConnection(): WalletConnectionProvider {
 
         if (!fuelWallet) throw Error("Fuel wallet not found")
 
-        const scriptTransaction = await transactionBuilder({ fuelWallet, callData })
-        await fuelProvider.simulate(scriptTransaction);
+        try {
+            const scriptTransaction = await transactionBuilder({ fuelWallet, callData })
+            await fuelProvider.simulate(scriptTransaction);
 
-        const transactionResponse = await fuelWallet.sendTransaction(scriptTransaction);
+            const transactionResponse = await fuelWallet.sendTransaction(scriptTransaction);
 
-        if (swapId && transactionResponse) {
-            return transactionResponse.id;
+            if (swapId && transactionResponse) {
+                return transactionResponse.id;
+            }
+        } catch (error) {
+            if (error === "The account(s) sending the transaction don't have enough funds to cover the transaction."
+                || error === "the target cannot be met due to no coins available or exceeding the 255 coin limit."
+            ) {
+                error.name = TransactionMessageType.InsufficientFunds
+                throw new Error(error)
+            }
+            else if (error === "Request cancelled without user response!" || error === "User rejected the transaction!" || error === "User canceled sending transaction") {
+                error.name = TransactionMessageType.TransactionRejected
+                throw new Error(error)
+            }
+            else {
+                error.name = TransactionMessageType.UexpectedErrorMessage
+                error.message = error
+                throw new Error(error)
+            }
         }
     }
 

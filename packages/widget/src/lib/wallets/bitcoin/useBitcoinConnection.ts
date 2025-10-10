@@ -13,6 +13,7 @@ import { isValidAddress } from "@/lib/address/validator"
 import { useBitcoinConnectors } from "@/lib/wallets/bitcoin/BitcoinProvider"
 import { sendTransaction } from "./services/transferService/sendTransaction"
 import { JsonRpcClient } from "@/lib/apiClients/jsonRpcClient"
+import { TransactionMessageType } from "@/components/Pages/Swap/Withdraw/messages/TransactionMessages";
 
 const bitcoinNames = [KnownInternalNames.Networks.BitcoinMainnet, KnownInternalNames.Networks.BitcoinTestnet]
 
@@ -112,10 +113,10 @@ export default function useBitcoinConnection(): WalletConnectionProvider {
     const transfer: WalletConnectionProvider['transfer'] = async (params) => {
         const { amount, callData, depositAddress, selectedWallet, network } = params
 
-        if(!account.connector) {
+        if (!account.connector) {
             throw new Error("Connector not found");
         }
-        if(!depositAddress) {
+        if (!depositAddress) {
             throw new Error("Deposit address not provided");
         }
 
@@ -123,18 +124,33 @@ export default function useBitcoinConnection(): WalletConnectionProvider {
         const isTestnet = network?.name === KnownInternalNames.Networks.BitcoinTestnet;
         const publicClient = config.getClient()
 
-        const txHash = await sendTransaction({
-            amount,
-            depositAddress,
-            userAddress: selectedWallet.address,
-            isTestnet,
-            rpcClient,
-            callData,
-            connector: account.connector,
-            publicClient
-        });
-
-        return txHash;
+        try {
+            const txHash = await sendTransaction({
+                amount,
+                depositAddress,
+                userAddress: selectedWallet.address,
+                isTestnet,
+                rpcClient,
+                callData,
+                connector: account.connector,
+                publicClient
+            });
+            return txHash;
+        } catch (error) {
+            if (error && error.includes('User rejected the request.')) {
+                error.name = TransactionMessageType.TransactionRejected
+                throw new Error(error)
+            }
+            else if (error && error.includes('Insufficient balance.')) {
+                error.name = TransactionMessageType.InsufficientFunds
+                throw new Error(error)
+            }
+            else {
+                error.name = TransactionMessageType.UexpectedErrorMessage
+                error.message = error
+                throw new Error(error)
+            }
+        }
     }
 
     const resolvedWallet = useMemo(() => {
@@ -167,7 +183,7 @@ export default function useBitcoinConnection(): WalletConnectionProvider {
         connectWallet,
         disconnectWallets,
         switchAccount,
-        
+
         transfer,
 
         connectedWallets: resolvedWallet ? [resolvedWallet] : [],
