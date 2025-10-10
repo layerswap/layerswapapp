@@ -1,17 +1,17 @@
 import { FC, useCallback, useMemo, useState } from 'react'
 import toast from 'react-hot-toast';
 import useWallet from '@/hooks/useWallet';
-import WalletIcon from '@/components/Icons/WalletIcon';
 import { ConnectWalletButton, SendTransactionButton } from '../../Common/buttons';
 import { useAccount, useConfig } from '@bigmi/react';
 import KnownInternalNames from '@/lib/knownIds';
 import { JsonRpcClient } from '@/lib/apiClients/jsonRpcClient';
 import { sendTransaction } from './sendTransaction';
 import { useConnectModal } from '@/components/Wallet/WalletModal';
-import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
+import { WithdrawPageProps } from '../../Common/sharedTypes';
 import TransactionMessages from '../../../messages/TransactionMessages';
 import { posthog } from 'posthog-js';
 import { useSelectedAccount } from '@/context/balanceAccounts';
+import { TransferProps } from '@/types';
 
 export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);

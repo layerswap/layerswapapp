@@ -1,10 +1,10 @@
 import AddressIcon from "@/components/Common/AddressIcon";
 import SVGWithImg from "@/components/Icons/SvgWithImg";
 import WalletIcon from "@/components/Icons/WalletIcon";
-import KnownEVMConnectors from "../evm/KnownEVMConnectors";
-import KnownFuelConnectors from "../fuel/KnownFuelConnectors";
-import KnownSolanaConnectors from "../solana/KnownSolanaConnectors";
-import KnownStarknetConnectors from "../starknet/KnownStarknetConnectors";
+import KnownEVMConnectors from "../evm/utils/KnownEVMConnectors";
+import KnownFuelConnectors from "../fuel/utils/KnownFuelConnectors";
+import KnownSolanaConnectors from "../svm/utils/KnownSolanaConnectors";
+import KnownStarknetConnectors from "../starknet/utils/KnownStarknetConnectors";
 
 const connectors = [
     ...KnownEVMConnectors,

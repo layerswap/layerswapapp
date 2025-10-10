@@ -1,39 +1,15 @@
 import posthog from "posthog-js";
 import { NetworkBalance } from "@/Models/Balance";
-import { BalanceProvider } from "@/Models/BalanceProvider";
+import { BalanceProvider } from "@/types/balance";
 import { NetworkWithTokens } from "@/Models/Network";
-import { truncateDecimals } from "@/components/utils/RoundDecimals";
-import {
-    BitcoinBalanceProvider,
-    EVMBalanceProvider,
-    FuelBalanceProvider,
-    ImmutableXBalanceProvider,
-    LoopringBalanceProvider,
-    ParadexBalanceProvider,
-    SolanaBalanceProvider,
-    StarknetBalanceProvider,
-    TonBalanceProvider,
-    TronBalanceProvider,
-    ZkSyncBalanceProvider,
-    HyperliquidBalanceProvider
-} from "./providers";
 
 export class BalanceResolver {
 
-    private providers: BalanceProvider[] = [
-        new StarknetBalanceProvider(),
-        new EVMBalanceProvider(),
-        new FuelBalanceProvider(),
-        new ImmutableXBalanceProvider(),
-        new LoopringBalanceProvider(),
-        new SolanaBalanceProvider(),
-        new TonBalanceProvider(),
-        new ZkSyncBalanceProvider(),
-        new TronBalanceProvider(),
-        new ParadexBalanceProvider(),
-        new BitcoinBalanceProvider(),
-        new HyperliquidBalanceProvider()
-    ];
+    private providers: BalanceProvider[];
+
+    constructor(providers?: BalanceProvider[]) {
+        this.providers = providers || []
+    }
 
     async getBalance(network: NetworkWithTokens, address?: string,): Promise<NetworkBalance> {
         try {

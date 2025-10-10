@@ -1,16 +1,16 @@
 import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
 import useWallet from '@/hooks/useWallet';
-import WalletIcon from '@/components/Icons/WalletIcon';
 import { useTonConnectUI } from '@tonconnect/ui-react';
 import { Address, JettonMaster, beginCell, toNano } from '@ton/ton'
 import { Token } from '@/Models/Network';
 import tonClient from '@/lib/wallets/ton/client';
-import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
+import { WithdrawPageProps } from '../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import TransactionMessages from '../../messages/TransactionMessages';
 import { useConnectModal } from '@/components/Wallet/WalletModal';
 import { useSelectedAccount } from '@/context/balanceAccounts';
+import { TransferProps } from '@/types';
 
 export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);

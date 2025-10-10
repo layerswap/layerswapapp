@@ -6,6 +6,8 @@ import {
     DynamicContextProvider,
 } from "@dynamic-labs/sdk-react-core";
 import CustomHooks from '../components/CustomHooks';
+import { createConfig, http, WagmiProvider } from "wagmi";
+import { mainnet, sepolia } from "viem/chains";
 
 const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
 
@@ -15,39 +17,48 @@ const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
     //         && net.token)
     //     .map(resolveChain) as Chain[]
 
+    const config = createConfig({
+        chains: [mainnet, sepolia],
+        transports: {
+            [mainnet.id]: http(),
+            [sepolia.id]: http(),
+        },
+    })
     return (
-        <DynamicContextProvider
-            settings={{
-                // Find your environment id at https://app.dynamic.xyz/dashboard/developer
-                environmentId: "63a881b4-4008-45d7-9697-4a9e743f51d9",
-                walletConnectors: [EthereumWalletConnectors],
-                // overrides: {
-                //     evmNetworks: settingsChains
-                //         ? convertToDynamicNetworks(settingsChains)
-                //         : undefined,
-                // }
-            }}
-        >
-            <div className="max-w-lg mx-auto flex flex-col justify-center place-self-center h-screen rounded-lg">
-                <LayerswapProvider
-                    integrator='experimental'
-                    settings={settings}
-                    version='mainnet'
-                    themeData={{ enablePortal: false, borderRadius: 'extraLarge' }}
-                    apiKey='m1jz5JMmndWbMmYLm5vcsHtpxQ35xGT2Z4xa+rp/i98GXVc1vhH7lvY0zbLMTdkD9BXw+HLUTku4H6VumEDogQ'
-                >
-                    <CustomHooks >
-                        <Swap
-                            featuredNetwork={{
-                                initialDirection: 'from',
-                                network: 'LINEA_MAINNET',
-                                oppositeDirectionOverrides: 'onlyExchanges'
-                            }}
-                        />
-                    </CustomHooks>
-                </LayerswapProvider>
-            </div>
-        </DynamicContextProvider>
+        <WagmiProvider config={config}>
+            <DynamicContextProvider
+                settings={{
+                    // Find your environment id at https://app.dynamic.xyz/dashboard/developer
+                    environmentId: "63a881b4-4008-45d7-9697-4a9e743f51d9",
+                    walletConnectors: [EthereumWalletConnectors],
+                    // overrides: {
+                    //     evmNetworks: settingsChains
+                    //         ? convertToDynamicNetworks(settingsChains)
+                    //         : undefined,
+                    // }
+                }}
+            >
+                <div className="max-w-lg mx-auto flex flex-col justify-center place-self-center h-screen rounded-lg">
+                    <LayerswapProvider
+                        integrator='experimental'
+                        settings={settings}
+                        version='mainnet'
+                        themeData={{ enablePortal: false, borderRadius: 'extraLarge' }}
+                        apiKey='m1jz5JMmndWbMmYLm5vcsHtpxQ35xGT2Z4xa+rp/i98GXVc1vhH7lvY0zbLMTdkD9BXw+HLUTku4H6VumEDogQ'
+                    >
+                        <CustomHooks >
+                            <Swap
+                                featuredNetwork={{
+                                    initialDirection: 'from',
+                                    network: 'LINEA_MAINNET',
+                                    oppositeDirectionOverrides: 'onlyExchanges'
+                                }}
+                            />
+                        </CustomHooks>
+                    </LayerswapProvider>
+                </div>
+            </DynamicContextProvider>
+        </WagmiProvider>
     )
 }
 

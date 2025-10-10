@@ -1,10 +1,11 @@
 import { FC, useCallback, useState } from 'react'
-import useWallet from '@/hooks/useWallet';
 import WalletIcon from '@/components/Icons/WalletIcon';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import TransactionMessages from '../../messages/TransactionMessages';
-import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
+import { WithdrawPageProps } from '../Common/sharedTypes';
+import { TransferProps } from '@/types';
 import { useSelectedAccount } from '@/context/balanceAccounts';
+import useWallet from '@/hooks/useWallet';
 
 export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [error, setError] = useState<string | undefined>()

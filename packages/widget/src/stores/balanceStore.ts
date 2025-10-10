@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { NetworkBalance } from '../Models/Balance'
 import { NetworkWithTokens } from '../Models/Network'
-import { BalanceResolver } from '../lib/balances/balanceResolver'
+import { resolverService } from '../lib/resolvers/resolverService'
 
 export function getKey(address: string, network: NetworkWithTokens): string
 export function getKey(address: string, networkName: string): string
@@ -42,7 +42,7 @@ interface BalanceStore {
   getResolvedInitiatedBalances: () => Record<string, NetworkBalance> | null
 }
 
-const balanceFetcher = new BalanceResolver()
+// balanceFetcher is now accessed through resolverService
 const MAX_CONCURRENT = 500
 let activeCount = 0
 const queue: Array<() => void> = []
@@ -72,7 +72,7 @@ export const useBalanceStore = create<BalanceStore>()(
 
       const queuedPromise = new Promise<NetworkBalance>((resolve, reject) => {
         const job = () => {
-          balanceFetcher.getBalance(network, address)
+          resolverService.getBalanceResolver().getBalance(network, address)
             .then(data => {
               set(state => ({
                 balances: {

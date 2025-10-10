@@ -1,6 +1,5 @@
-import { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import useWallet from '@/hooks/useWallet';
-import WalletIcon from '@/components/Icons/WalletIcon';
 import { ButtonWrapper, ChangeNetworkMessage, ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import {
     useSelectNetwork,
@@ -8,9 +7,10 @@ import {
     useNetwork,
 } from '@fuels/react';
 import { coinQuantityfy, CoinQuantityLike, Provider, ScriptTransactionRequest } from 'fuels';
-import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
+import { WithdrawPageProps } from '../Common/sharedTypes';
 import TransactionMessages from '../../messages/TransactionMessages';
 import { useSelectedAccount } from '@/context/balanceAccounts';
+import { TransferProps } from '@/types';
 
 export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);

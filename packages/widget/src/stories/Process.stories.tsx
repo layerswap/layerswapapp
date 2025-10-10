@@ -37,24 +37,22 @@ const Comp: FC<{ settings: any, swapData: SwapContextData, failedSwap?: SwapItem
     return <IntercomProvider appId='123'>
         <SettingsStateContext.Provider value={appSettings as any}>
             <SwapDataProvider >
-                <TimerProvider>
-                    <WalletsProviders basePath={'/'} themeData={THEME_COLORS['default']} appName={'Layerswap'}>
-                        <BalanceAccountsProvider>
-                            <SwapDataStateContext.Provider value={swapContextInitialValues}>
-                                <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
-                                    <Formik
-                                        innerRef={formikRef}
-                                        initialValues={initialValues!}
-                                        validateOnMount={true}
-                                        onSubmit={() => { }}
-                                    >
-                                        <Component />
-                                    </Formik>
-                                </SwapDataUpdateContext.Provider>
-                            </SwapDataStateContext.Provider >
-                        </BalanceAccountsProvider>
-                    </WalletsProviders>
-                </TimerProvider>
+                <WalletsProviders basePath={'/'} themeData={THEME_COLORS['default']} appName={'Layerswap'} walletProviders={[]}>
+                    <BalanceAccountsProvider>
+                        <SwapDataStateContext.Provider value={swapContextInitialValues}>
+                            <SwapDataUpdateContext.Provider value={SwapMockFunctions}>
+                                <Formik
+                                    innerRef={formikRef}
+                                    initialValues={initialValues!}
+                                    validateOnMount={true}
+                                    onSubmit={() => { }}
+                                >
+                                    <Component />
+                                </Formik>
+                            </SwapDataUpdateContext.Provider>
+                        </SwapDataStateContext.Provider >
+                    </BalanceAccountsProvider>
+                </WalletsProviders>
             </SwapDataProvider>
         </SettingsStateContext.Provider>
     </IntercomProvider>
