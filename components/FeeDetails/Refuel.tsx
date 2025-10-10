@@ -44,7 +44,7 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote, minAllowedAmount 
     return (
         showRefuel &&
         <div
-            className={clsx("gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3 bg-secondary-500 border border-transparent transition-colors duration-200 rounded-2xl mt-auto", {
+            className={clsx("gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3 bg-secondary-500 border border-transparent transition-colors duration-200 rounded-2xl", {
                 "!border-primary": needRefuel && !refuel
             })}
         >
