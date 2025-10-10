@@ -6,46 +6,50 @@ on:
     branches: ["**"]
 
 permissions:
-  contents: write 
-  pull-requests: write 
+  contents: read
+  pages: write           # needed for deploy-pages
+  id-token: write        # needed for OIDC with deploy-pages
+  pull-requests: write   # for commenting
 
 concurrency:
   group: "pr-preview-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
-  preview:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4 
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: yarn
       - run: yarn install --frozen-lockfile
       - run: yarn build-storybook
 
-      # Publishes to: https://<owner>.github.io/<repo>/pr-preview/pr-<PR_NUMBER>/
-      - name: Deploy PR Preview to Pages
-        id: preview
-        uses: rossjrw/pr-preview-action@v1
+      # Upload the Storybook as an artifact for Pages
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          source-dir: storybook-static
-          umbrella-dir: pr-preview
-          comment: false  # we'll post our own comment below
+          path: ./storybook-static
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    # PR previews require this
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages (PR preview)
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          preview: true
 
       - name: Comment preview link on PR (sticky)
-        if: steps.preview.outputs.deployment-action == 'deploy'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: storybook-preview
           message: |
-            🚀 **Storybook preview:** ${{ steps.preview.outputs.preview-url }}
-
-      # Make the link visible in the job summary
-      - name: Show Preview URL
-        if: always()
-        run: |
-          echo "Preview: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-preview/pr-${{ github.event.pull_request.number }}/" >> $GITHUB_STEP_SUMMARY
+            🚀 **Storybook preview:** ${{ steps.deployment.outputs.page_url }}
