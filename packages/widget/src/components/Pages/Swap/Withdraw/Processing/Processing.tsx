@@ -348,7 +348,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     const swapStatus = swapDetails.status;
     return (
         <Widget.Content>
-            <div className={`w-full min-h-[410px] space-y-3 flex flex-col justify-between text-primary-text`}>
+            <div className={`w-full min-h-[410px] h-full space-y-3 flex flex-col justify-between text-primary-text`}>
                 <SwapSummary />
                 <div className="bg-secondary-500 font-normal px-3 pt-6 pb-3 rounded-2xl space-y-4 flex flex-col w-full relative z-10 divide-y-2 divide-secondary-300 divide-dashed">
                     <div className='pb-4'>

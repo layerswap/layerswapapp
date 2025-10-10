@@ -23,7 +23,6 @@ export const SummaryRow: FC<{
     sourceAddress?: string
     quoteData: Quote
 }> = ({ quoteData, isQuoteLoading, values, wallet, onOpen, sourceAddress, isOpen, destination, destinationAddress }) => {
-
     return (
         <div className={clsx("flex flex-col w-full p-2", { "!pb-0 !-mb-1": isOpen })}>
             {values.destination_address && sourceAddress?.toLowerCase() !== values.destination_address?.toLowerCase() && (
@@ -56,8 +55,8 @@ export const SummaryRow: FC<{
                     <label>Receive at least</label>
                 </div>
                 <div className="text-right text-primary-text">
-                    {quoteData.quote.min_receive_amount !== undefined && (
-                        <span className="text-sm font-small">{quoteData.quote.min_receive_amount} {values?.toAsset?.symbol}</span>
+                    {quoteData?.quote?.min_receive_amount !== undefined && (
+                        <span className="text-sm font-small">{quoteData?.quote?.min_receive_amount} {values?.toAsset?.symbol}</span>
                     )}
                 </div>
             </div>

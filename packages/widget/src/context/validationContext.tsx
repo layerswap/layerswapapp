@@ -8,7 +8,7 @@ import { useSwapDataState } from './swap';
 import { useSelectedAccount } from './balanceAccounts';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
 
-interface ValidationDetails {
+export interface ValidationDetails {
     title?: string;
     type?: string;
     icon?: React.ReactNode;
