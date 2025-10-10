@@ -4,7 +4,7 @@ import useWallet from "@/hooks/useWallet";
 import shortenAddress from "@/components/utils/ShortenAddress";
 import { ChevronDown, CircleHelp, QrCode } from "lucide-react";
 import VaulDrawer, { ModalFooterPortal } from "@/components/Modal/vaulModal";
-import { SelectAccountProps, Wallet } from "@/lib/wallets/types/wallet";
+import { SelectAccountProps, Wallet } from "@/types/wallet";
 import WalletIcon from "@/components/Icons/WalletIcon";
 import SubmitButton from "@/components/Buttons/submitButton";
 import { useConnectModal } from "@/components/Wallet/WalletModal";

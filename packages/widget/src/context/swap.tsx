@@ -6,7 +6,7 @@ import { ApiResponse } from '@/Models/ApiResponse';
 import { Partner } from '@/Models/Partner';
 import { ApiError } from '@/Models/ApiError';
 import { ResolvePollingInterval } from '@/components/utils/SwapStatus';
-import { Wallet, WalletConnectionProvider } from '@/lib/wallets/types/wallet';
+import { Wallet, WalletConnectionProvider } from '@/types/wallet';
 import useWallet from '@/hooks/useWallet';
 import { Network } from '@/Models/Network';
 import { useSettingsState } from './settings';

@@ -1,17 +1,17 @@
-import { FC, useCallback, useMemo, useState } from "react";
+import { FC, useCallback, useState } from "react";
 import {
     useConfig,
 } from "wagmi";
 import { parseEther } from 'viem'
-import WalletIcon from "@/components/Icons/WalletIcon";
-import { ActionData, TransferProps } from "../../Common/sharedTypes";
+import { ActionData } from "../../Common/sharedTypes";
 import TransactionMessage from "./transactionMessage";
 import { SendTransactionButton } from "../../Common/buttons";
 import { sendTransaction } from '@wagmi/core'
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { useSelectedAccount } from "@/context/balanceAccounts";
-import { isMobile } from "@/lib/isMobile";
 import useWallet from "@/hooks/useWallet";
+import { TransferProps } from "@/types";
+import { isMobile } from "@/lib/isMobile";
 
 type Props = {
     savedTransactionHash?: string;

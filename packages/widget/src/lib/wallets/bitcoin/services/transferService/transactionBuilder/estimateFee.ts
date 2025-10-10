@@ -4,7 +4,7 @@ import { Psbt } from 'bitcoinjs-lib'
 
 export const estimateFee = async (psbt: Psbt, rpcClient: JsonRpcClient, version: 'testnet' | 'mainnet') => {
     const recommendedFee = await fetchRecommendedFee(version)
-    const satsPerVbyte = recommendedFee.fastestFee
+    const satsPerVbyte = recommendedFee.minimumFee
 
     const fee = calculateFee(psbt.txInputs.length, psbt.txOutputs.length, satsPerVbyte);
     return fee

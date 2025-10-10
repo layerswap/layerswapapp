@@ -15,7 +15,7 @@ import { ArrowUpDown } from "lucide-react";
 import { classNames } from "@/components/utils/classNames";
 import FormButton from "./SecondaryComponents/FormButton";
 import { InitialSettings } from "@/Models/InitialSettings";
-import { WalletConnectionProvider } from "@/lib/wallets/types/wallet";
+import { WalletConnectionProvider } from "@/types/wallet";
 import { updateForm, updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
@@ -104,7 +104,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
             <DepositMethodComponent />
             <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-3">
                 <Widget.Content>
-                    <div className="w-full flex flex-col justify-between">
+                    <div className="w-full flex flex-col justify-between flex-1 gap-3">
                         <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
                             {
                                 !(initialSettings?.hideFrom && values?.from) && <SourcePicker

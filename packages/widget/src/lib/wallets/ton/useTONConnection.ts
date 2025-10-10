@@ -1,7 +1,7 @@
 import { ConnectedWallet, useTonConnectUI, useTonWallet } from "@tonconnect/ui-react"
 import { Address } from "@ton/core";
 import KnownInternalNames from "../../knownIds";
-import { InternalConnector, Wallet, WalletConnectionProvider } from "../types/wallet";
+import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wallet";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { useSettingsState } from "../../../context/settings";
 import { transactionBuilder } from "./services/transferService/transactionBuilder";

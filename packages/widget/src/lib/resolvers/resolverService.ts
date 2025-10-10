@@ -1,7 +1,7 @@
 import { BalanceResolver } from "@/lib/balances/balanceResolver";
 import { GasResolver } from "@/lib/gases/gasResolver";
-import { BalanceProvider } from "@/lib/wallets/types/balance";
-import { GasProvider } from "@/lib/wallets/types/gas";
+import { BalanceProvider } from "@/types/balance";
+import { GasProvider } from "@/types/gas";
 
 class BalanceAndGasResolverService {
     private balanceResolver: BalanceResolver | null = null;

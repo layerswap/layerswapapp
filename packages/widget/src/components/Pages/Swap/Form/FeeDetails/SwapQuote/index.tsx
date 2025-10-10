@@ -16,7 +16,7 @@ interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
 }
 
 interface QuoteComponentProps {
-    quote: Quote | undefined;
+    quote: Quote;
     isQuoteLoading?: boolean;
     swapValues: SwapValues;
     destination?: Network,
@@ -34,8 +34,6 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
     const wallet = (values?.to && values?.destination_address) ? wallets?.find(w => addressFormat(w.address, values?.to!) === addressFormat(values?.destination_address!, values?.to!)) : undefined
     const selectedSourceAccount = useSelectedAccount("from", values?.from?.name);
     
-    if (!quoteData) return null
-
     return (
         <Accordion
             type="single"

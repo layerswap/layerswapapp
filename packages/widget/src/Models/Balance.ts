@@ -1,5 +1,5 @@
 import { Network, Token } from "./Network"
-import { Wallet } from "../lib/wallets/types/wallet"
+import { Wallet } from "@/types/wallet"
 
 export type GasProps = {
     network: Network,

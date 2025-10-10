@@ -2,7 +2,7 @@ import { FC } from 'react'
 import { ChevronDown } from 'lucide-react'
 import AddressIcon from '@/components/Common/AddressIcon'
 import shortenAddress from '@/components/utils/ShortenAddress'
-import { Wallet } from '@/lib/wallets/types/wallet'
+import { Wallet } from '@/types/wallet'
 import { SwapValues } from '..'
 import { isValidAddress } from '@/lib/address/validator'
 import { addressFormat } from '@/lib/address/formatter'
@@ -25,7 +25,7 @@ export const SummaryRow: FC<{
 }> = ({ quoteData, isQuoteLoading, values, wallet, onOpen, sourceAddress, isOpen, destination, destinationAddress }) => {
 
     return (
-        <div className={clsx("flex flex-col w-full p-2", { "pb-0 -mb-1": isOpen })}>
+        <div className={clsx("flex flex-col w-full p-2", { "!pb-0 !-mb-1": isOpen })}>
             {values.destination_address && sourceAddress?.toLowerCase() !== values.destination_address?.toLowerCase() && (
                 <div className={`flex items-center w-full justify-between gap-1 text-sm px-2 py-3`}>
                     <div className="inline-flex items-center text-left text-secondary-text gap-1 pr-4">

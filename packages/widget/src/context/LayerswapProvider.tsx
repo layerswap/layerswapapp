@@ -18,10 +18,10 @@ import WalletsProviders from "@/components/Wallet/WalletProviders";
 import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
 import { InitialSettings } from "../Models/InitialSettings";
 import { BalanceAccountsProvider } from "./balanceAccounts";
-import { WalletConnectionProvider } from "@/lib/wallets/types/wallet";
-import { GasProvider } from "@/lib/wallets/types/gas";
-import { BalanceProvider } from "@/lib/wallets/types/balance";
-import { useEVM, useStarknet, useTON, useTron, useFuel, useImtblX, useBitcoin, useSVM } from "@/lib/wallets";
+import { WalletConnectionProvider } from "@/types/wallet";
+import { GasProvider } from "@/types/gas";
+import { BalanceProvider } from "@/types/balance";
+import { useEVM, useStarknet, useTON, useTron, useFuel, useImtblX, useBitcoin, useSVM, useLoopring, useZkSync, useParadex } from "@/lib/wallets";
 import { BalanceAndGasResolverProvider } from "./resolverContext";
 
 export type WalletProvider = {
@@ -29,7 +29,7 @@ export type WalletProvider = {
     wrapper?: React.ComponentType<any>,
     walletConnectionProvider: () => WalletConnectionProvider,
     gasProvider?: GasProvider,
-    balanceProvider?: BalanceProvider,
+    balanceProvider?: BalanceProvider | BalanceProvider[],
 }
 export type LayerswapContextProps = {
     children?: ReactNode;
@@ -72,7 +72,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
 
     themeData = { ...THEME_COLORS['default'], ...themeData }
 
-    walletProviders = [useEVM, useSVM, useStarknet, useTON, useTron, useFuel, useImtblX, useBitcoin]
+    walletProviders = [useEVM, useSVM, useStarknet, useTON, useTron, useFuel, useImtblX, useBitcoin, useLoopring, useZkSync, useParadex]
 
     return (
         <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>

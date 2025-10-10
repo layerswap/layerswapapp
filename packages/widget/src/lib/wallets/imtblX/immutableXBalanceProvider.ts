@@ -1,4 +1,4 @@
-import { BalanceProvider } from "@/lib/wallets/types/balance";
+import { BalanceProvider } from "@/types/balance";
 import { NetworkWithTokens } from "../../../Models/Network";
 import formatAmount from "@/lib/formatAmount";
 import KnownInternalNames from "@/lib/knownIds";

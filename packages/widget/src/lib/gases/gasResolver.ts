@@ -1,6 +1,6 @@
 
 import { GasProps } from "../../Models/Balance";
-import { GasProvider } from "../wallets/types/gas";
+import { GasProvider } from "@/types/gas";
 
 export class GasResolver {
     private providers: GasProvider[];

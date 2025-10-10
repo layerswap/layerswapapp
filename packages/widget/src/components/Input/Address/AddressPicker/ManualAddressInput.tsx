@@ -7,7 +7,7 @@ import FilledX from "@/components/Icons/FilledX";
 import { AddressGroup, AddressItem } from ".";
 import { addressFormat } from "@/lib/address/formatter";
 import AddressWithIcon from "./AddressWithIcon";
-import { Wallet } from "@/lib/wallets/types/wallet";
+import { Wallet } from "@/types/wallet";
 import { FormikHelpers } from "formik";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 

@@ -3,10 +3,11 @@ import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
 import GuideLink from '@/components/Common/guideLink';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
-import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
+import { WithdrawPageProps } from '../Common/sharedTypes';
 import WarningMessage from '@/components/Common/WarningMessage';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import useWallet from '@/hooks/useWallet';
+import { TransferProps } from '@/types';
 
 export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false)

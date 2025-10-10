@@ -19,7 +19,7 @@ import clsx from "clsx";
 import { useSwapDataState } from "@/context/swap";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { Network } from "@/Models/Network";
-import { Wallet } from "@/lib/wallets/types/wallet";
+import { Wallet } from "@/types/wallet";
 import { SwapFormValues } from "./SwapFormValues";
 import { useFormChangeCallback } from "@/context/callbackProvider";
 import QuoteDetails from "./FeeDetails";

@@ -1,4 +1,4 @@
-import { SelectAccountProps, WalletConnectionProvider } from "@/lib/wallets/types/wallet";
+import { SelectAccountProps, WalletConnectionProvider } from "@/types/wallet";
 
 export function SwitchWalletAccount(props: SelectAccountProps, provider: WalletConnectionProvider | undefined) {
     const { walletId, address, providerName } = props;

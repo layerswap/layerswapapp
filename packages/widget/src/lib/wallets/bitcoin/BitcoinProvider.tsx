@@ -5,7 +5,7 @@ import { http, bitcoin, createClient, defineChain, Chain } from '@bigmi/core'
 import { NetworkType, NetworkWithTokens } from '../../../Models/Network'
 import { useSettingsState } from '../../../context/settings'
 import { createContext, useContext, useEffect, useState } from 'react'
-import { InternalConnector } from '@/lib/wallets/types/wallet'
+import { InternalConnector } from '@/types/wallet'
 
 export const BitcoinProvider = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
     const { networks } = useSettingsState()

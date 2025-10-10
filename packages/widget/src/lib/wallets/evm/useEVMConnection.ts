@@ -10,7 +10,7 @@ import { isMobile } from "../../isMobile"
 import convertSvgComponentToBase64 from "@/components/utils/convertSvgComponentToBase64"
 import { LSConnector } from "./connectors/types"
 import { explicitInjectedProviderDetected } from "./connectors/explicitInjectedProviderDetected"
-import { InternalConnector, Wallet, WalletConnectionProvider } from "@/lib/wallets/types/wallet"
+import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wallet"
 import { useConnectModal } from "@/components/Wallet/WalletModal"
 import sleep from "../utils/sleep"
 import { useEvmConnectors } from "@/lib/wallets/evm/EVMProvider/evmConnectorsContext"
@@ -26,11 +26,7 @@ export default function useEVMConnection(): WalletConnectionProvider {
     const { networks } = useSettingsState()
 
     const asSourceSupportedNetworks = useMemo(() => [
-        ...networks.filter(network => network.type === NetworkType.EVM).map(l => l.name),
-        KnownInternalNames.Networks.ZksyncMainnet,
-        KnownInternalNames.Networks.LoopringGoerli,
-        KnownInternalNames.Networks.LoopringMainnet,
-        KnownInternalNames.Networks.LoopringSepolia
+        ...networks.filter(network => network.type === NetworkType.EVM).map(l => l.name)
     ], [networks])
 
     const withdrawalSupportedNetworks = useMemo(() => [

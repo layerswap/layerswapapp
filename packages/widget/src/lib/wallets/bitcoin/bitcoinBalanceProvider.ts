@@ -2,7 +2,7 @@ import { TokenBalance } from "@/Models/Balance";
 import { NetworkWithTokens } from "@/Models/Network";
 import KnownInternalNames from "../../knownIds";
 import axios from "axios";
-import { BalanceProvider } from "@/lib/wallets/types/balance";
+import { BalanceProvider } from "@/types/balance";
 
 interface Utxo {
     txid: string

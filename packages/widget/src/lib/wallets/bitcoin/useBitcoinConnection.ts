@@ -1,6 +1,6 @@
 import { NetworkType, NetworkWithTokens } from "@/Models/Network"
 import { useSettingsState } from "@/context/settings"
-import { InternalConnector, Wallet, WalletConnectionProvider } from "@/lib/wallets/types/wallet"
+import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wallet"
 import { useConnectModal } from "@/components/Wallet/WalletModal"
 import { useConnect, useAccount, useConfig } from '@bigmi/react'
 import { disconnect } from "@bigmi/client"
@@ -110,7 +110,7 @@ export default function useBitcoinConnection(): WalletConnectionProvider {
     }
 
     const transfer: WalletConnectionProvider['transfer'] = async (params) => {
-        const { amount, callData, depositAddress, selectedSourceAccount, network } = params
+        const { amount, callData, depositAddress, selectedWallet, network } = params
 
         if(!account.connector) {
             throw new Error("Connector not found");
@@ -126,7 +126,7 @@ export default function useBitcoinConnection(): WalletConnectionProvider {
         const txHash = await sendTransaction({
             amount,
             depositAddress,
-            userAddress: selectedSourceAccount.address,
+            userAddress: selectedWallet.address,
             isTestnet,
             rpcClient,
             callData,

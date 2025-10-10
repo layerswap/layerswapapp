@@ -1,4 +1,4 @@
-import { TransferProps } from "@/components/Pages/Swap/Withdraw/Wallet/Common/sharedTypes"
+import { TransferProps } from "@/types"
 import { Account, coinQuantityfy, CoinQuantityLike, ScriptTransactionRequest } from 'fuels';
 
 export const transactionBuilder = async (params: { fuelWallet: Account, callData: TransferProps['callData'] }) => {

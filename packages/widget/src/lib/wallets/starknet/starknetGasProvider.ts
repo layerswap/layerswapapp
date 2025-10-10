@@ -3,7 +3,7 @@ import { Network } from "@/Models/Network";
 import KnownInternalNames from "../../knownIds";
 import { CallData, cairo, type Call, type EstimateFeeResponse } from "starknet";
 import formatAmount from "@/lib/formatAmount";
-import { GasProvider } from "@/lib/wallets/types/gas";
+import { GasProvider } from "@/types/gas";
 
 export class StarknetGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { Wallet } from '../lib/wallets/types/wallet';
+import { Wallet } from '@/types/wallet';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 type ParadexAccount = {

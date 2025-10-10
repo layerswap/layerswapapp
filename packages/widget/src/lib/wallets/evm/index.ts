@@ -1,5 +1,5 @@
 import { WalletProvider } from "@/context/LayerswapProvider"
-import { EVMBalanceProvider } from "./evmBalanceProvider"
+import { EVMBalanceProvider, HyperliquidBalanceProvider } from "./balanceProviders"
 import { EVMGasProvider } from "./evmGasProvider"
 import useEVMConnection from "./useEVMConnection"
 import EVMProvider from "./EVMProvider"
@@ -9,5 +9,5 @@ export const useEVM: WalletProvider = {
     wrapper: EVMProvider,
     walletConnectionProvider: useEVMConnection,
     gasProvider: new EVMGasProvider(),
-    balanceProvider: new EVMBalanceProvider(),
+    balanceProvider: [new EVMBalanceProvider(), new HyperliquidBalanceProvider()],
 }

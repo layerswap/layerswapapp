@@ -5,11 +5,12 @@ import { TronWeb } from 'tronweb'
 import useSWRGas from '@/lib/gases/useSWRGas';
 import { ContractParamter, Transaction, TransferContract } from 'tronweb/lib/esm/types';
 import { Token } from '@/Models/Network';
-import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
+import { WithdrawPageProps } from '../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import TransactionMessages from '../../messages/TransactionMessages';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import useWallet from '@/hooks/useWallet';
+import { TransferProps } from '@/types';
 
 export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);

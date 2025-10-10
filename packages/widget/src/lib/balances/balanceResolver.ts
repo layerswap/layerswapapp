@@ -1,8 +1,7 @@
 import posthog from "posthog-js";
 import { NetworkBalance } from "@/Models/Balance";
-import { BalanceProvider } from "@/lib/wallets/types/balance";
+import { BalanceProvider } from "@/types/balance";
 import { NetworkWithTokens } from "@/Models/Network";
-import { truncateDecimals } from "@/components/utils/RoundDecimals";
 
 export class BalanceResolver {
 

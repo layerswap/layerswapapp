@@ -1,18 +1,15 @@
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
-import KnownInternalNames from "@/lib/knownIds";
-import {
-    LoopringWalletWithdraw, ParadexWalletWithdraw, ZkSyncWalletWithdrawStep
-} from "./WithdrawalProviders";
 import { PublishedSwapTransactions, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
 import useWallet from "@/hooks/useWallet";
-import { useSelectedAccount } from "@/context/balanceAccounts"; 
-import { TransferProps, WithdrawPageProps } from "./Common/sharedTypes";
+import { useSelectedAccount } from "@/context/balanceAccounts";
+import { WithdrawPageProps } from "./Common/sharedTypes";
 import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from "./Common/buttons";
 import TransactionMessages, { TransactionMessageType } from "../messages/TransactionMessages";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
 import WalletIcon from "@/components/Icons/WalletIcon";
 import { useBalance } from "@/lib/balances/useBalance";
+import { TransferProps } from "@/types";
 
 type Props = {
     swapData: SwapBasicData
@@ -20,41 +17,11 @@ type Props = {
     refuel: boolean
     onWalletWithdrawalSuccess?: () => void
 };
-//TODO have separate components for evm and none_evm as others are sweepless anyway
 export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWalletWithdrawalSuccess }) => {
     const { source_network } = swapData
-    const source_network_internal_name = source_network?.name;
 
     const { provider, wallets } = useWallet(source_network, "withdrawal")
     const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
-
-    const WithdrawalPages = useMemo(() => [
-        {
-            supportedNetworks: [
-                KnownInternalNames.Networks.ZksyncMainnet,
-            ],
-            component: ZkSyncWalletWithdrawStep
-        },
-        {
-            supportedNetworks: [
-                KnownInternalNames.Networks.LoopringMainnet,
-                KnownInternalNames.Networks.LoopringGoerli,
-                KnownInternalNames.Networks.LoopringSepolia
-            ],
-            component: LoopringWalletWithdraw
-        },
-        {
-            supportedNetworks: [
-                KnownInternalNames.Networks.ParadexMainnet,
-                KnownInternalNames.Networks.ParadexTestnet
-            ],
-            component: ParadexWalletWithdraw
-        },
-    ], [source_network])
-
-    const WithdrawalComponent = WithdrawalPages.find(page =>
-        page.supportedNetworks.includes(source_network_internal_name)
-    )?.component;
 
     useEffect(() => {
         const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
@@ -85,11 +52,16 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
 
     const { source_network, destination_network, destination_address } = swapBasicData
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network.name);
-    const { wallets } = useWallet(source_network, "withdrawal")
+    const { wallets, provider } = useWallet(source_network, "withdrawal")
     const { sameAccountNetwork } = useInitialSettings()
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const networkChainId = Number(source_network?.chain_id) ?? undefined
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
+
+    // Check if the provider supports multi-step transfers
+    const isMultiStepProvider = useMemo(() => {
+        return provider?.isMultiStepTransfer === true
+    }, [provider?.isMultiStepTransfer])
 
     useEffect(() => {
         if (!swapId) return;
@@ -104,6 +76,21 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
             console.error(e.message)
         }
     }, [swapId])
+
+    if (isMultiStepProvider && provider?.MultiStepHandler) {
+        const MultiStepHandler = provider.MultiStepHandler
+
+        if (MultiStepHandler) {
+            return <MultiStepHandler
+                swapId={swapId}
+                swapBasicData={swapBasicData}
+                refuel={refuel}
+                onTransferComplete={(hash: string) => {
+                    setSavedTransactionHash(hash)
+                }}
+            />
+        }
+    }
 
     if ((source_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() || destination_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase())
         && (selectedSourceAccount?.address && destination_address && selectedSourceAccount?.address.toLowerCase() !== destination_address?.toLowerCase())) {
@@ -155,7 +142,7 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     const { provider, wallets } = useWallet(swapData.source_network, "withdrawal")
     const { balances } = useBalance(selectedSourceAccount?.address, networkWithTokens)
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
-    
+
     const clickHandler = useCallback(async ({ amount, callData, depositAddress }: TransferProps) => {
         setButtonClicked(true)
         setError(undefined)
@@ -217,25 +204,25 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
 }
 
 const TransactionMessage: FC<{ error: Error, isLoading: boolean }> = ({ error, isLoading }) => {
-    if(isLoading) {
+    if (isLoading) {
         return <TransactionMessages.ConfirmTransactionMessage />
     }
-    else if(error.message === TransactionMessageType.TransactionRejected) {
+    else if (error.message === TransactionMessageType.TransactionRejected) {
         return <TransactionMessages.TransactionRejectedMessage />
     }
-    else if(error.message === TransactionMessageType.TransactionFailed) {
+    else if (error.message === TransactionMessageType.TransactionFailed) {
         return <TransactionMessages.TransactionFailedMessage />
     }
-    else if(error.message === TransactionMessageType.InsufficientFunds) {
+    else if (error.message === TransactionMessageType.InsufficientFunds) {
         return <TransactionMessages.InsufficientFundsMessage />
     }
-    else if(error.message === TransactionMessageType.WaletMismatch) {
+    else if (error.message === TransactionMessageType.WaletMismatch) {
         return <TransactionMessages.WaletMismatchMessage address={error.message} />
     }
-    else if(error.message === TransactionMessageType.DifferentAccountsNotAllowedError) {
+    else if (error.message === TransactionMessageType.DifferentAccountsNotAllowedError) {
         return <TransactionMessages.DifferentAccountsNotAllowedError network={error.message} />
     }
-    else if(error) {
+    else if (error) {
         return <TransactionMessages.UexpectedErrorMessage message={error.message} />
     }
     else return <></>

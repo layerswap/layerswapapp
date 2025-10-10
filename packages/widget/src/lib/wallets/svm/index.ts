@@ -1,8 +1,8 @@
 import { WalletProvider } from "@/context/LayerswapProvider";
 import useSVMConnection from "./useSVMConnection";
 import SVMProvider from "./SVMProvider";
-import { SolanaBalanceProvider } from "@/lib/balances/providers";
-import { SolanaGasProvider } from "@/lib/wallets/svm/svmGasProvider";
+import { SolanaBalanceProvider } from "./svmBalanceProvider";
+import { SolanaGasProvider } from "./svmGasProvider";
 
 export const useSVM: WalletProvider = {
     id: "solana",

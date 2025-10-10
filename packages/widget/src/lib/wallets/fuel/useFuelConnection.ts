@@ -14,7 +14,7 @@ import {
 import { Address } from '@fuel-ts/address';
 import shortenAddress from "@/components/utils/ShortenAddress";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
-import { InternalConnector, Wallet, WalletConnectionProvider } from "@/lib/wallets/types/wallet";
+import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wallet";
 import { useEffect, useMemo } from "react";
 import { useWalletStore } from "@/stores/walletStore";
 import { useSettingsState } from "@/context/settings";

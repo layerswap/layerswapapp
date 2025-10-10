@@ -6,7 +6,7 @@ import { NetworkRoute } from "@/Models/Network";
 import { FC } from "react";
 import AddressWithIcon from "./AddressWithIcon";
 import { Partner } from "@/Models/Partner";
-import { Wallet } from "@/lib/wallets/types/wallet";
+import { Wallet } from "@/types/wallet";
 import { BookOpen } from "lucide-react";
 
 type AddressBookProps = {

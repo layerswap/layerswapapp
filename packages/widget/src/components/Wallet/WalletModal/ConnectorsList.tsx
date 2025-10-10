@@ -1,7 +1,7 @@
 import { Dispatch, FC, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import useWallet from "@/hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
-import { InternalConnector, Wallet, WalletConnectionProvider } from "@/lib/wallets/types/wallet";
+import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wallet";
 import { CircleX, Link2Off, RotateCw, SlidersHorizontal } from "lucide-react";
 import { resolveWalletConnectorIcon } from "@/lib/wallets/utils/resolveWalletIcon";
 import { QRCodeSVG } from "qrcode.react";

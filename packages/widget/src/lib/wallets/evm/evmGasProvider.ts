@@ -1,7 +1,7 @@
 
 import { GasProps } from "@/Models/Balance"
 import { NetworkType, Network, Token } from "@/Models/Network"
-import { GasProvider } from "../types/gas"
+import { GasProvider } from "@/types/gas"
 import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, http, serializeTransaction } from "viem";
 import { erc20Abi } from "viem";
 import formatAmount from "../../formatAmount";

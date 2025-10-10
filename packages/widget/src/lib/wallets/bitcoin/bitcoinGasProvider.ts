@@ -1,16 +1,17 @@
-import { buildPsbt } from "@/components/Swap/Withdraw/Wallet/WithdrawalProviders/BitcoinWalletWithdraw/transactionBuilder/buildPsbt";
 import { GasProps } from "@/Models/Balance";
 import { Network } from "@/Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
 import { JsonRpcClient } from "@/lib/apiClients/jsonRpcClient";
+import { buildPsbt } from "./services/transferService/transactionBuilder/buildPsbt";
+import { GasProvider, GasWithToken } from "@/types";
 
-export class BitcoinGasProvider {
+export class BitcoinGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
         return KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) || KnownInternalNames.Networks.BitcoinTestnet.includes(network.name)
     }
 
-    async getGas({ address, network, recipientAddress, amount }: GasProps): Promise<number | undefined> {
+    async getGas({ address, network, recipientAddress, amount }: GasProps): Promise<GasWithToken | undefined> {
         if (!network?.token) throw new Error("No native token provided")
         if (!address) throw new Error("No address provided")
         if (!amount) throw new Error("No amount provided")
@@ -32,7 +33,7 @@ export class BitcoinGasProvider {
                 rpcClient: rpcClient
             })
             const formattedGas = formatAmount(fee, network.token.decimals)
-            return formattedGas
+            return { gas: formattedGas, token: network.token }
 
         } catch (e) {
             console.log(e)
