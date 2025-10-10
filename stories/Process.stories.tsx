@@ -25,6 +25,8 @@ const Comp: FC<{ settings: any, swapData: SwapContextData, failedSwap?: SwapItem
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const appSettings = new LayerSwapAppSettings(Settings)
     const swapContextInitialValues: SwapContextData = {
+        swapError: '',
+        setSwapError: () => { },
         codeRequested: false, swapBasicData: swapData.swapBasicData, quote: swapData.quote, refuel: swapData.refuel, swapDetails: swapData.swapDetails, depositAddressIsFromAccount: false, withdrawType: undefined, swapTransaction: undefined,
         quoteIsLoading: false,
         swapId: undefined,

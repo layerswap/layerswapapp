@@ -49,7 +49,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const { setSwapError } = useSwapDataState()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
-        setSwapError('')
+        setSwapError && setSwapError('')
         const { destination_address, to } = values
         setWalletWihdrawDone(false)
         if (!walletWihdrawDone) {

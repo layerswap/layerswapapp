@@ -68,8 +68,8 @@ export type SwapContextData = {
     quoteIsLoading: boolean,
     swapId: string | undefined,
     swapModalOpen: boolean,
-    swapError: string | null | undefined,
-    setSwapError: (value: string) => void
+    swapError?: string | null | undefined,
+    setSwapError?: (value: string) => void
 }
 
 export function SwapDataProvider({ children }) {
