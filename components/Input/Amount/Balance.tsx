@@ -1,6 +1,5 @@
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
-import useWallet from "@/hooks/useWallet";
 import InfoIcon from "@/components/icons/InfoIcon";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import { useBalance } from "@/lib/balances/useBalance";

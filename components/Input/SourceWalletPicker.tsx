@@ -1,17 +1,17 @@
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { Dispatch, FC, SetStateAction, useCallback, useState } from "react";
-import useWallet from "../../hooks/useWallet";
-import shortenAddress from "../utils/ShortenAddress";
+import useWallet from "@/hooks/useWallet";
+import shortenAddress from "@/components/utils/ShortenAddress";
 import { ChevronDown, CircleHelp, QrCode } from "lucide-react";
 import VaulDrawer, { ModalFooterPortal } from "../modal/vaulModal";
-import { SelectAccountProps, Wallet } from "../../Models/WalletProvider";
-import WalletIcon from "../icons/WalletIcon";
-import SubmitButton from "../buttons/submitButton";
+import { SelectAccountProps, Wallet } from "@/Models/WalletProvider";
+import WalletIcon from "@/components/icons/WalletIcon";
+import SubmitButton from "@/components/buttons/submitButton";
 import { useConnectModal } from "../WalletModal";
-import WalletsList from "../Wallet/WalletsList";
-import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
-import FilledCheck from "../icons/FilledCheck";
+import WalletsList from "@/components/Wallet/WalletsList";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
+import FilledCheck from "@/components/icons/FilledCheck";
 import clsx from "clsx";
 import { useSelectedAccount, useUpdateBalanceAccount } from "@/context/balanceAccounts";
 

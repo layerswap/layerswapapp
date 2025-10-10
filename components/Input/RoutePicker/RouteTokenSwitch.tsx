@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { motion } from "framer-motion";
-import TokenIcon from "../../icons/TokenIcon";
+import TokenIcon from "@/components/icons/TokenIcon";
 import { Globe } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import clsx from "clsx";

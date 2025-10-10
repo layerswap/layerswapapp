@@ -1,7 +1,7 @@
 import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useState } from "react";
-import { SwapDirection, SwapFormValues } from "../../DTOs/SwapFormValues";
-import { Selector, SelectorContent, SelectorTrigger } from "../../Select/Selector/Index";
+import { SwapDirection, SwapFormValues } from "@/components/DTOs/SwapFormValues";
+import { Selector, SelectorContent, SelectorTrigger } from "@/components/Select/Selector/Index";
 import { SelectedRouteDisplay } from "./Routes";
 import React from "react";
 import useFormRoutes from "@/hooks/useFormRoutes";

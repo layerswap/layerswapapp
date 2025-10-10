@@ -1,8 +1,8 @@
 import { useField, useFormikContext } from "formik";
 import { ChangeEvent, FC, forwardRef } from "react";
-import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { classNames } from '../utils/classNames'
-import { isScientific } from "../utils/RoundDecimals";
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
+import { classNames } from '@/components/utils/classNames'
+import { isScientific } from "@/components/utils/RoundDecimals";
 
 type Input = {
     tempValue?: number;

@@ -1,10 +1,10 @@
 import { FC } from "react"
 import { ExternalLink } from "lucide-react"
-import CopyButton from "../../buttons/copyButton"
+import CopyButton from "@/components/buttons/copyButton"
 import Link from "next/link"
-import AddressIcon from "../../AddressIcon"
-import { SwapFormValues } from "../../DTOs/SwapFormValues"
-import { Partner } from "../../../Models/Partner"
+import AddressIcon from "@/components/AddressIcon"
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues"
+import { Partner } from "@/Models/Partner"
 
 type AddressNoteModalProps = {
     partner: Partner | undefined;

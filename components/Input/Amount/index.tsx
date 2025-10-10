@@ -1,6 +1,6 @@
 import { useFormikContext } from "formik";
 import { forwardRef, useEffect, useMemo, useRef } from "react";
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import NumericInput from "../NumericInput";
 import { useQuoteData } from "@/hooks/useFee";
 import { formatUsd } from "@/components/utils/formatUsdAmount";

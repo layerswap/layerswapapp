@@ -12,6 +12,7 @@ type Props = {
     item: RowElement;
     selectedRoute: string | undefined;
     selectedToken: string | undefined;
+    searchQuery: string
     direction: SwapDirection;
     toggleContent: (itemName: string) => void;
     onSelect: (route: NetworkRoute, token: NetworkRouteToken) => void;
@@ -25,6 +26,7 @@ export default function Row({
     direction,
     selectedRoute,
     selectedToken,
+    searchQuery,
     toggleContent,
     onSelect,
     openValues,
@@ -41,6 +43,7 @@ export default function Row({
                     direction={direction}
                     selectedRoute={selectedRoute}
                     selectedToken={selectedToken}
+                    searchQuery={searchQuery}
                     toggleContent={toggleContent}
                     onSelect={onSelect}
                     openValues={openValues}

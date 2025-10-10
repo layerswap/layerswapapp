@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import React, { useMemo } from "react";

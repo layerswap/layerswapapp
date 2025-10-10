@@ -1,7 +1,7 @@
 import useWindowDimensions from "@/hooks/useWindowDimensions";
 import { useEffect, useRef } from "react";
-import FilledX from "../icons/FilledX";
-import SearchIcon from "../icons/SearchIcon";
+import FilledX from "@/components/icons/FilledX";
+import SearchIcon from "@/components/icons/SearchIcon";
 
 type SearchComponentProps = {
     searchQuery: string;

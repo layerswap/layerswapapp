@@ -1,5 +1,5 @@
 import { FC } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip"
 import { Info, RouteOff } from "lucide-react"
 
 type Props = {
