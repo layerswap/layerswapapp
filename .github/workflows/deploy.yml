@@ -7,8 +7,7 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
-  deployments: write
+  pull-requests: write 
 
 concurrency:
   group: "pr-preview-${{ github.ref }}"
@@ -21,7 +20,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4  
+      - uses: actions/setup-node@v4 
         with:
           node-version: 20
           cache: yarn
@@ -44,7 +43,6 @@ jobs:
           header: storybook-preview
           message: |
             🚀 **Storybook preview:** ${{ steps.preview.outputs.preview-url }}
-
       # Make the link visible in the job summary
       - name: Show Preview URL
         if: always()
