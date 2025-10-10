@@ -1,5 +1,5 @@
 import { ValidationDetails } from '@/context/validationContext';
-import { Info } from 'lucide-react';
+import { Info, RouteOff } from 'lucide-react';
 import React from 'react';
 import { ICON_CLASSES_WARNING } from './constants';
 
@@ -12,6 +12,10 @@ export const defaultErrors: { [errorName: string]: ErrorDisplayProps } = {
     "insufficientFunds": {
         message: "You don't have enough balance to complete this transaction, this might cause the transaction to fail please try to enter a smaller amount.",
         details: { title: "Insufficient Balance", type: 'warning', icon: <Info className={ICON_CLASSES_WARNING} /> }
+    },
+    "quoteError": {
+        message: "Unable to retrieve quote",
+        details: { title: "Unable to retrieve quote", type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> }
     }
 }
 export const ErrorDisplay: React.FC<Partial<ErrorDisplayProps & { errorName?: string }>> = (props) => {

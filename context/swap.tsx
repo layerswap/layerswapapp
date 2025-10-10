@@ -13,7 +13,7 @@ import useWallet from '../hooks/useWallet';
 import { Network } from '../Models/Network';
 import { TrackEvent } from "@/pages/_document";
 import { useSettingsState } from './settings';
-import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
+import { QuoteError, transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
 import { parse, ParsedUrlQuery } from 'querystring';
 import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
@@ -28,10 +28,11 @@ export const SwapDataStateContext = createContext<SwapContextData>({
     depositActionsResponse: undefined,
     swapApiError: undefined,
     quote: undefined,
+    quoteError: undefined,
+    quoteIsLoading: false,
     refuel: undefined,
     swapBasicData: undefined,
     swapDetails: undefined,
-    quoteIsLoading: false,
     swapId: undefined,
     swapModalOpen: false
 });
@@ -61,9 +62,10 @@ export type SwapContextData = {
     swapTransaction: SwapTransaction | undefined,
     swapBasicData: SwapBasicData & { refuel: boolean } | undefined,
     quote: SwapQuote | undefined,
+    quoteIsLoading: boolean,
+    quoteError: QuoteError | undefined,
     refuel: Refuel | undefined,
     swapDetails: SwapDetails | undefined,
-    quoteIsLoading: boolean,
     swapId: string | undefined,
     swapModalOpen: boolean
 }
@@ -84,7 +86,7 @@ export function SwapDataProvider({ children }) {
 
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
 
-    const { quote: formDataQuote } = useQuoteData(quoteArgs, swapId ? 0 : undefined);
+    const { quote: formDataQuote, quoteError: formDataQuoteError } = useQuoteData(quoteArgs, swapId ? 0 : undefined);
 
     const handleUpdateSwapid = useCallback((value: string | undefined) => {
         setSwapId(value)
@@ -142,6 +144,13 @@ export function SwapDataProvider({ children }) {
         }
         return formDataQuote?.quote
     }, [formDataQuote, data, swapId]);
+
+    const quoteError = useMemo(() => {
+        if (swapId && data?.data) {
+            return undefined
+        }
+        return formDataQuoteError
+    }, [formDataQuoteError, data, swapId]);
 
     const refuel = useMemo(() => {
         if (swapId) {
@@ -254,10 +263,11 @@ export function SwapDataProvider({ children }) {
             swapApiError: error,
             depositActionsResponse,
             quote,
+            quoteIsLoading,
+            quoteError,
             refuel,
             swapBasicData,
             swapDetails,
-            quoteIsLoading,
             swapId,
             swapModalOpen
         }}>
