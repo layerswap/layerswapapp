@@ -1,4 +1,4 @@
-ame: Storybook PR Preview
+name: Storybook PR Preview
 
 on:
   pull_request:
