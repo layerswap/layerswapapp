@@ -111,7 +111,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                             }
                         </div>
                         {
-                            Number(values.amount) > 0 &&
+                           
                             <ReserveGasNote
                                 maxAllowedAmount={minAllowedAmount}
                                 minAllowedAmount={maxAllowedAmount}
