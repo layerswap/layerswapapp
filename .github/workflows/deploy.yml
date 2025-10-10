@@ -2,13 +2,13 @@ name: Storybook PR Preview
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, closed]
     branches: ["**"]
 
 permissions:
   contents: write
   pull-requests: write
-  deployments: write   # NEW
+  deployments: write
 
 concurrency:
   group: "pr-preview-${{ github.ref }}"
@@ -17,6 +17,7 @@ concurrency:
 jobs:
   preview:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,41 +28,58 @@ jobs:
           node-version: 20
           cache: yarn
 
-      - run: yarn install --frozen-lockfile
-      - run: yarn build-storybook
+      - name: Install deps
+        if: github.event.action != 'closed'
+        run: yarn install --frozen-lockfile
+
+      - name: Build Storybook
+        if: github.event.action != 'closed'
+        run: yarn build-storybook
 
       # Publishes to: https://<owner>.github.io/<repo>/pr-preview/pr-<PR_NUMBER>/
-      - name: Deploy PR Preview to Pages
+      # On "closed", this action automatically deletes the preview directory.
+      - name: Deploy/Remove PR Preview on GitHub Pages
         id: preview
         uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: storybook-static
           umbrella-dir: pr-preview
-          comment: false  # we'll post our own comment below
+          comment: false
 
-      # NEW: create a GitHub Deployment so the PR shows a "Deployment" badge
-      - name: Create deployment (in_progress)
-        id: create_deployment
+      # ---- GitHub Deployment (separate env so it doesn't clash with Vercel's "Preview") ----
+      - name: Create Storybook deployment (in_progress)
+        id: create_storybook_deployment
         uses: chrnorm/deployment-action@v2
         with:
           token: ${{ github.token }}
           ref: ${{ github.sha }}
-          environment: pr-${{ github.event.pull_request.number }}
+          environment: storybook-pr-${{ github.event.pull_request.number }}
           transient-environment: true
           production-environment: false
           task: deploy
           initial_status: in_progress
           auto_inactive: true
 
-      - name: Mark deployment success with URL
+      # When we deployed/updated the preview, attach the URL and mark success.
+      - name: Mark Storybook deployment success with URL
         if: steps.preview.outputs.deployment-action == 'deploy' || steps.preview.outputs.deployment-action == 'update'
         uses: chrnorm/deployment-status@v2
         with:
           token: ${{ github.token }}
-          deployment-id: ${{ steps.create_deployment.outputs.deployment_id }}
+          deployment-id: ${{ steps.create_storybook_deployment.outputs.deployment_id }}
           environment-url: ${{ steps.preview.outputs.preview-url }}
           state: success
 
+      # When the PR is closed, mark the Storybook environment inactive.
+      - name: Mark Storybook deployment inactive (PR closed)
+        if: github.event.action == 'closed'
+        uses: chrnorm/deployment-status@v2
+        with:
+          token: ${{ github.token }}
+          deployment-id: ${{ steps.create_storybook_deployment.outputs.deployment_id }}
+          state: inactive
+
+      # Sticky comment with the link (nice to have even with Deployments UI)
       - name: Comment preview link on PR (sticky)
         if: steps.preview.outputs.deployment-action == 'deploy' || steps.preview.outputs.deployment-action == 'update'
         uses: marocchino/sticky-pull-request-comment@v2
@@ -70,7 +88,8 @@ jobs:
           message: |
             🚀 **Storybook preview:** ${{ steps.preview.outputs.preview-url }}
 
+      # Make the link visible in the job summary too
       - name: Show Preview URL
-        if: always()
+        if: steps.preview.outputs.deployment-action == 'deploy' || steps.preview.outputs.deployment-action == 'update'
         run: |
           echo "Preview: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-preview/pr-${{ github.event.pull_request.number }}/" >> $GITHUB_STEP_SUMMARY
