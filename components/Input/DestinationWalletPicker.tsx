@@ -16,7 +16,7 @@ const DestinationWalletPicker = (props: AddressTriggerProps) => {
             "bg-secondary-400 hover:bg-secondary-300": !addressItem
         }
     )}>
-        <div className="rounded-lg flex space-x-1 items-center cursor-pointer">
+        <div className="rounded-lg flex space-x-1 items-center cursor-pointer max-sm:ml-2">
             {
                 addressItem &&
                 <>

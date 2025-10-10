@@ -26,11 +26,11 @@ const DestinationPicker = (props: Props) => {
     const { quote, isQuoteLoading } = useQuoteData(quoteArgs, quoteRefreshInterval)
 
     return <div className="flex flex-col w-full bg-secondary-500 rounded-2xl p-4 pb-[15px] space-y-[27px]">
-        <div className="grid grid-cols-9 gap-2 justify-between items-center h-7">
-            <label htmlFor="To" className="block col-span-4 font-normal text-secondary-text text-base leading-5 w-30">
+        <div className="grid grid-cols-9 gap-2 items-center h-7">
+            <label htmlFor="To" className="block col-span-5 font-normal text-secondary-text text-base leading-5 w-30">
                 Receive at
             </label>
-            <div className="col-span-5">
+            <div className="col-span-4 justify-self-end">
                 <Address partner={partner}>
                     {({ destination, addressItem, connectedWallet, partner }) =>
                         <DestinationWalletPicker destination={destination} addressItem={addressItem} connectedWallet={connectedWallet} partner={partner} />}
