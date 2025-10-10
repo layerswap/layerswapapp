@@ -1,7 +1,6 @@
 import { RouteOff } from 'lucide-react';
 import { SwapFormValues } from '@/components/DTOs/SwapFormValues';
 import { useMemo } from 'react';
-import { useSettingsState } from '@/context/settings';
 import { useQueryState } from '@/context/query';
 import { useFormikContext } from 'formik';
 import { QuoteError } from './useFee';
