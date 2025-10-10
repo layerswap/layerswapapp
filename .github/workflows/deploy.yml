@@ -8,7 +8,7 @@ on:
 permissions:
   contents: write
   pull-requests: write
-  deployments: write
+  deployments: write   # NEW
 
 concurrency:
   group: "pr-preview-${{ github.ref }}"
@@ -21,10 +21,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4  
+
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: yarn
+
       - run: yarn install --frozen-lockfile
       - run: yarn build-storybook
 
@@ -37,15 +39,37 @@ jobs:
           umbrella-dir: pr-preview
           comment: false  # we'll post our own comment below
 
+      # NEW: create a GitHub Deployment so the PR shows a "Deployment" badge
+      - name: Create deployment (in_progress)
+        id: create_deployment
+        uses: chrnorm/deployment-action@v2
+        with:
+          token: ${{ github.token }}
+          ref: ${{ github.sha }}
+          environment: pr-${{ github.event.pull_request.number }}
+          transient-environment: true
+          production-environment: false
+          task: deploy
+          initial_status: in_progress
+          auto_inactive: true
+
+      - name: Mark deployment success with URL
+        if: steps.preview.outputs.deployment-action == 'deploy' || steps.preview.outputs.deployment-action == 'update'
+        uses: chrnorm/deployment-status@v2
+        with:
+          token: ${{ github.token }}
+          deployment-id: ${{ steps.create_deployment.outputs.deployment_id }}
+          environment-url: ${{ steps.preview.outputs.preview-url }}
+          state: success
+
       - name: Comment preview link on PR (sticky)
-        if: steps.preview.outputs.deployment-action == 'deploy'
+        if: steps.preview.outputs.deployment-action == 'deploy' || steps.preview.outputs.deployment-action == 'update'
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: storybook-preview
           message: |
             🚀 **Storybook preview:** ${{ steps.preview.outputs.preview-url }}
 
-      # Make the link visible in the job summary
       - name: Show Preview URL
         if: always()
         run: |
