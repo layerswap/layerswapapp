@@ -157,7 +157,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 }) => {
     const [actionStateText, setActionStateText] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
-    const { quote, quoteIsLoading } = useSwapDataState()
+    const { quote, quoteIsLoading, setSwapError } = useSwapDataState()
     const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
     const query = useQueryState()
@@ -224,7 +224,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         catch (e) {
             setSwapId(undefined)
             console.log('Error in SendTransactionButton:', e)
-
+            setSwapError(e.message ?? 'An error occurred during the swap withdrawal process. Please try again.')
+            
             const swapWithdrawalError = new Error(e);
             swapWithdrawalError.name = `SwapWithdrawalError`;
             swapWithdrawalError.cause = e;

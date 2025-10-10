@@ -33,7 +33,9 @@ export const SwapDataStateContext = createContext<SwapContextData>({
     swapDetails: undefined,
     quoteIsLoading: false,
     swapId: undefined,
-    swapModalOpen: false
+    swapModalOpen: false,
+    swapError: '',
+    setSwapError: (value: string) => { }
 });
 
 export const SwapDataUpdateContext = createContext<UpdateSwapInterface | null>(null);
@@ -65,7 +67,9 @@ export type SwapContextData = {
     swapDetails: SwapDetails | undefined,
     quoteIsLoading: boolean,
     swapId: string | undefined,
-    swapModalOpen: boolean
+    swapModalOpen: boolean,
+    swapError: string | null | undefined,
+    setSwapError: (value: string) => void
 }
 
 export function SwapDataProvider({ children }) {
@@ -80,6 +84,7 @@ export function SwapDataProvider({ children }) {
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
     const [swapModalOpen, setSwapModalOpen] = useState(false)
+    const [swapError, setSwapError] = useState<string>('')
     const { providers } = useWallet(swapBasicFormData?.source_network, 'asSource')
 
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
@@ -258,7 +263,9 @@ export function SwapDataProvider({ children }) {
             swapDetails,
             quoteIsLoading,
             swapId,
-            swapModalOpen
+            swapModalOpen,
+            swapError,
+            setSwapError
         }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}

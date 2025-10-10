@@ -31,7 +31,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
         content?: JSX.Element | JSX.Element[],
         footer?: JSX.Element | JSX.Element[],
     } = {}
-
+    
     const showInsufficientBalanceWarning = swapBasicData?.use_deposit_address === false
         && swapBasicData?.requested_amount
         && Number(swapBasicData?.requested_amount)
