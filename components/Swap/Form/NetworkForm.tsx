@@ -57,7 +57,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const fromAsset = values.fromAsset;
     const { formValidation, routeValidation } = useValidationContext();
     const query = useQueryState();
-
+console.log("routeValidation", routeValidation);
     const isValid = !formValidation.message;
     const error = formValidation.message;
 

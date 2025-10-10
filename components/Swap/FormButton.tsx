@@ -23,7 +23,7 @@ const FormButton = ({
     partner,
 }: Props) => {
     const query = useQueryState();
-    const actionDisplayName = error || query?.actionButtonText || "Next";
+    const actionDisplayName = query?.actionButtonText || "Next";
 
     if (shouldConnectWallet && (!error || !values.to || !values.amount)) {
         return <FormSourceWalletButton />;
