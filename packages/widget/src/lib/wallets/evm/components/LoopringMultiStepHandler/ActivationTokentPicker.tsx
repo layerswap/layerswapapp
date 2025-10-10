@@ -3,7 +3,7 @@ import { ISelectMenuItem } from '@/components/Select/Shared/Props/selectMenuItem
 import formatAmount from '@/lib/formatAmount';
 import { useEffect, useState } from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/shadcn/select';
-import { UserBalanceInfo } from '@/lib/wallets/loopring/services/transferService/loopring/defs';
+import { UserBalanceInfo } from '@/lib/wallets/evm/services/transferService/loopring/defs';
 import { ImageWithFallback } from '@/components/Common/ImageWithFallback';
 import AppSettings from '@/lib/AppSettings';
 

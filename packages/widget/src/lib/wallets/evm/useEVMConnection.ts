@@ -16,6 +16,7 @@ import sleep from "../utils/sleep"
 import { useEvmConnectors } from "@/lib/wallets/evm/EVMProvider/evmConnectorsContext"
 import { useActiveEvmAccount } from "@/lib/wallets/evm/EVMProvider/ActiveEvmAccount"
 import { transactionBuilder } from "./services/transferService/transactionBuilder"
+import { LoopringMultiStepHandler, ZkSyncMultiStepHandler } from "./components"
 
 const ethereumNames = [KnownInternalNames.Networks.EthereumMainnet, KnownInternalNames.Networks.EthereumSepolia]
 const immutableZKEvm = [KnownInternalNames.Networks.ImmutableZkEVM]
@@ -26,7 +27,11 @@ export default function useEVMConnection(): WalletConnectionProvider {
     const { networks } = useSettingsState()
 
     const asSourceSupportedNetworks = useMemo(() => [
-        ...networks.filter(network => network.type === NetworkType.EVM).map(l => l.name)
+        ...networks.filter(network => network.type === NetworkType.EVM).map(l => l.name),
+        KnownInternalNames.Networks.ZksyncMainnet,
+        KnownInternalNames.Networks.LoopringGoerli,
+        KnownInternalNames.Networks.LoopringMainnet,
+        KnownInternalNames.Networks.LoopringSepolia
     ], [networks])
 
     const withdrawalSupportedNetworks = useMemo(() => [
@@ -281,7 +286,18 @@ export default function useEVMConnection(): WalletConnectionProvider {
             availableHiddenWalletsForConnect: walletConnectConnectors,
             name,
             id,
-            providerIcon
+            providerIcon,
+
+            multiStepHandlers: [
+                {
+                    component: LoopringMultiStepHandler,
+                    supportedNetworks: [KnownInternalNames.Networks.LoopringMainnet, KnownInternalNames.Networks.LoopringGoerli, KnownInternalNames.Networks.LoopringSepolia]
+                },
+                {
+                    component: ZkSyncMultiStepHandler,
+                    supportedNetworks: [KnownInternalNames.Networks.ZksyncMainnet]
+                }
+            ]
         }
     }, [connectWallet, disconnectWallets, switchAccount, resolvedConnectors, availableFeaturedWalletsForConnect, walletConnectConnectors, autofillSupportedNetworks, withdrawalSupportedNetworks, asSourceSupportedNetworks, name, id, networks]);
 

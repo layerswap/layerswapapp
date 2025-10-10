@@ -2,11 +2,11 @@ import axios from "axios";
 import { NetworkWithTokens } from "@/Models/Network";
 import formatAmount from "@/lib/formatAmount";
 import KnownInternalNames from "@/lib/knownIds";
-import { LOOPRING_URLs } from "@/lib/wallets/loopring/services/transferService/loopring/defs";
-import { LoopringAPI } from "@/lib/wallets/loopring/services/transferService/loopring/LoopringAPI";
 import { TokenBalance } from "@/Models/Balance";
-import { insertIfNotExists } from "../../balances/helpers";
+import { insertIfNotExists } from "../../../balances/helpers";
 import { BalanceProvider } from "@/types/balance";
+import { LoopringAPI } from "../services/transferService/loopring/LoopringAPI";
+import { LOOPRING_URLs } from "../services/transferService/loopring/defs";
 
 export class LoopringBalanceProvider extends BalanceProvider {
     supportsNetwork = (network: NetworkWithTokens): boolean => {

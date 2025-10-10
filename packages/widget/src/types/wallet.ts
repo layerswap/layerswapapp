@@ -65,11 +65,13 @@ export type WalletConnectionProvider = {
     providerIcon?: string,
     unsupportedPlatforms?: string[],
     hideFromList?: boolean,
-    
-    // Multi-step transfer configuration
-    isMultiStepTransfer?: boolean,
-    multiStepTransferService?: any, // The actual multi-step service instance
-    MultiStepHandler?: React.ComponentType<any>, // The multi-step handler component
+
+    multiStepHandlers?: MultiStepHandler[],
+}
+
+type MultiStepHandler = {
+    component: React.ComponentType<any>,
+    supportedNetworks: string[]
 }
 
 export type SelectAccountProps = {

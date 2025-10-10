@@ -1,11 +1,11 @@
 import axios from "axios";
 import { Network } from "@/Models/Network";
-import formatAmount from "../../formatAmount";
-import KnownInternalNames from "../../knownIds";
+import formatAmount from "@/lib/formatAmount";
+import KnownInternalNames from "@/lib/knownIds";
 import { GasProps } from "@/Models/Balance";
 import { GasProvider } from "@/types";
-import { LoopringAPI } from "./services/transferService/loopring/LoopringAPI";
-import { LOOPRING_URLs, LpFee } from "./services/transferService/loopring/defs";
+import { LoopringAPI } from "../services/transferService/loopring/LoopringAPI";
+import { LOOPRING_URLs, LpFee } from "../services/transferService/loopring/defs";
 
 export class LoopringGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {

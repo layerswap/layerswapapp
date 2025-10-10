@@ -4,9 +4,9 @@ import { NetworkType, Network, Token } from "@/Models/Network"
 import { GasProvider } from "@/types/gas"
 import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, http, serializeTransaction } from "viem";
 import { erc20Abi } from "viem";
-import formatAmount from "../../formatAmount";
+import formatAmount from "@/lib/formatAmount";
 import { publicActionsL2 } from 'viem/op-stack'
-import resolveChain from "../../resolveChain";
+import resolveChain from "@/lib/resolveChain";
 import posthog from "posthog-js";
 
 export class EVMGasProvider implements GasProvider {
@@ -27,9 +27,8 @@ export class EVMGasProvider implements GasProvider {
         try {
 
             const { createPublicClient, http } = await import("viem")
-            const resolveNetworkChain = (await import("../../resolveChain")).default
             const publicClient = createPublicClient({
-                chain: resolveNetworkChain(network),
+                chain: resolveChain(network),
                 transport: http(),
             })
 

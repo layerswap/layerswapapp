@@ -1,6 +1,6 @@
 import useSWR from "swr";
-import { LoopringAPI } from "@/lib/wallets/loopring/services/transferService/loopring/LoopringAPI";
-import { AccountInfo, LOOPRING_URLs, OffchainFeeReqType, TokenInfo, UserBalanceInfo } from "@/lib/wallets/loopring/services/transferService/loopring/defs";
+import { LoopringAPI } from "@/lib/wallets/evm/services/transferService/loopring/LoopringAPI";
+import { AccountInfo, LOOPRING_URLs, OffchainFeeReqType, TokenInfo, UserBalanceInfo } from "@/lib/wallets/evm/services/transferService/loopring/defs";
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 

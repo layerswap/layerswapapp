@@ -27,7 +27,6 @@ import DepositMethodComponent from "./FeeDetails/DepositMethod";
 import RefuelToggle from "./FeeDetails/Refuel";
 import RefuelModal from "./FeeDetails/RefuelModal";
 import { SwapFormValues } from "./SwapFormValues";
-import { useBalance } from "@/lib/balances/useBalance";
 import { useFormChangeCallback } from "@/context/callbackProvider";
 
 type Props = {

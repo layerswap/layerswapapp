@@ -21,14 +21,14 @@ import { BalanceAccountsProvider } from "./balanceAccounts";
 import { WalletConnectionProvider } from "@/types/wallet";
 import { GasProvider } from "@/types/gas";
 import { BalanceProvider } from "@/types/balance";
-import { useEVM, useStarknet, useTON, useTron, useFuel, useImtblX, useBitcoin, useSVM, useLoopring, useZkSync, useParadex } from "@/lib/wallets";
+import { useEVM, useStarknet, useTON, useTron, useFuel, useImtblX, useBitcoin, useSVM, useParadex } from "@/lib/wallets";
 import { BalanceAndGasResolverProvider } from "./resolverContext";
 
 export type WalletProvider = {
     id: string,
     wrapper?: React.ComponentType<any>,
     walletConnectionProvider: () => WalletConnectionProvider,
-    gasProvider?: GasProvider,
+    gasProvider?: GasProvider | GasProvider[],
     balanceProvider?: BalanceProvider | BalanceProvider[],
 }
 export type LayerswapContextProps = {
@@ -72,7 +72,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
 
     themeData = { ...THEME_COLORS['default'], ...themeData }
 
-    walletProviders = [useEVM, useSVM, useStarknet, useTON, useTron, useFuel, useImtblX, useBitcoin, useLoopring, useZkSync, useParadex]
+    walletProviders = [useEVM, useSVM, useStarknet, useTON, useTron, useFuel, useImtblX, useBitcoin, useParadex]
 
     return (
         <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>

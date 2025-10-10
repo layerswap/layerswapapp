@@ -1,8 +1,8 @@
 import { GasProps } from "@/Models/Balance";
 import { Network } from "@/Models/Network";
-import formatAmount from "../../formatAmount";
-import KnownInternalNames from "../../knownIds";
-import ZkSyncLiteRPCClient from "./zkSyncBalanceProvider";
+import formatAmount from "@/lib/formatAmount";
+import KnownInternalNames from "@/lib/knownIds";
+import ZkSyncLiteRPCClient from "../balanceProviders/zkSyncBalanceProvider";
 import { GasProvider } from "@/types/gas";
 
 export class ZkSyncGasProvider implements GasProvider {

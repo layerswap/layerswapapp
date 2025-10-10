@@ -58,11 +58,6 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
     const networkChainId = Number(source_network?.chain_id) ?? undefined
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
 
-    // Check if the provider supports multi-step transfers
-    const isMultiStepProvider = useMemo(() => {
-        return provider?.isMultiStepTransfer === true
-    }, [provider?.isMultiStepTransfer])
-
     useEffect(() => {
         if (!swapId) return;
         try {
@@ -77,8 +72,8 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
         }
     }, [swapId])
 
-    if (isMultiStepProvider && provider?.MultiStepHandler) {
-        const MultiStepHandler = provider.MultiStepHandler
+    if (provider?.multiStepHandlers) {
+        const MultiStepHandler = provider.multiStepHandlers.find(handler => handler.supportedNetworks.includes(source_network?.name))?.component
 
         if (MultiStepHandler) {
             return <MultiStepHandler

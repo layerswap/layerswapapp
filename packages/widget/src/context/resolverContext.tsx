@@ -24,6 +24,7 @@ export const BalanceAndGasResolverProvider: React.FC<React.PropsWithChildren<{ w
         // Extract gas providers from wallet providers
         const gasProviders: GasProvider[] = walletProviders
             .map(provider => provider.gasProvider)
+            .flat()
             .filter((provider): provider is GasProvider => Boolean(provider));
 
         // Initialize the resolver service with the providers

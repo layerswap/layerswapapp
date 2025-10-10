@@ -209,8 +209,12 @@ export function useParadexConnection(): WalletConnectionProvider {
         id,
         providerIcon,
         hideFromList: true,
-        isMultiStepTransfer: true,
-        MultiStepHandler: ParadexMultiStepHandler,
+        multiStepHandlers: [
+            {
+                component: ParadexMultiStepHandler,
+                supportedNetworks: withdrawalSupportedNetworks
+            }
+        ]
     }
     return provider
 }

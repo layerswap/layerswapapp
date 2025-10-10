@@ -1,7 +1,7 @@
 export { ImtblxWalletWithdrawStep } from "./ImtblxWalletWithdrawStep";
 export { StarknetWalletWithdrawStep } from "./StarknetWalletWithdraw";
 export { EVMWalletWithdrawal } from "./EVMWalletWithdraw";
-export { default as ZkSyncWalletWithdrawStep } from "@/lib/wallets/zksyncLite/components/ZkSyncMultiStepHandler";
+export { default as ZkSyncWalletWithdrawStep } from "@/lib/wallets/evm/components/ZkSyncMultiStepHandler";
 export { default as LoopringWalletWithdraw } from "@/lib/wallets/loopring/components/LoopringMultiStepHandler";
 export { TonWalletWithdrawStep } from "./TonWalletWithdraw";
 export { default as ParadexWalletWithdraw } from "@/lib/wallets/paradex/components/ParadexMultiStepHandler";

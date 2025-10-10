@@ -43,8 +43,8 @@ export class ZkSyncBalanceProvider extends BalanceProvider {
 
 
 import { PublicClient } from 'viem';
-import { insertIfNotExists } from "../../balances/helpers";
 import { BalanceProvider } from "@/types/balance";
+import { insertIfNotExists } from "../../../balances/helpers";
 
 type Balances = {
     [currency: string]: string;
