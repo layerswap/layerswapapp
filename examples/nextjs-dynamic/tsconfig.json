@@ -1,0 +1,16 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "incremental": true
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/**/*.tsx",
+    "pages/_app.js"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+}

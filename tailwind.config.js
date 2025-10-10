@@ -130,7 +130,7 @@ module.exports = {
         'widget-footer': '-1px -28px 21px -6px var(--ls-colors-secondary-700, #0C1527)',
         'card': '5px 5px 40px rgba(0, 0, 0, 0.2), 0px 0px 20px rgba(0, 0, 0, 0.43)',
       },
-      typography: (theme) => ({
+      typography: (/** @type {(arg0: string) => any} */ theme) => ({
         DEFAULT: {
           css: {
             h1: {
