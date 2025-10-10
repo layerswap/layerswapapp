@@ -14,13 +14,13 @@ const progress = new ProgressBar({
   delay: 100,
 });
 
-if (typeof window !== "undefined" && process.env.NODE_ENV === 'production' && process.env.NEXT_PUBLIC_API_VERSION === 'mainnet') {
-  posthog.init(process.env.NEXT_PUBLIC_POSTHOG_API_KEY, {
+if (typeof window !== "undefined") {
+  posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
     capture_pageview: 'history_change',
     capture_pageleave: true,
-    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || 'https://app.posthog.com',
+    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     defaults: '2025-05-24'
-  });
+  })
 }
 
 Router.events.on("routeChangeStart", progress.start);

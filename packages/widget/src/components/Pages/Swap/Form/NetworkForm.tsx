@@ -28,7 +28,6 @@ import RefuelToggle from "./FeeDetails/Refuel";
 import RefuelModal from "./FeeDetails/RefuelModal";
 import { SwapFormValues } from "./SwapFormValues";
 import { useBalance } from "@/lib/balances/useBalance";
-import { InsufficientBalanceWarning } from "./SecondaryComponents/validationError/insufficientBalance";
 import { useFormChangeCallback } from "@/context/callbackProvider";
 
 type Props = {
@@ -47,7 +46,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const {
         to: destination,
         from: source,
-        amount,
         depositMethod
     } = values;
 
@@ -55,7 +53,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const { providers, wallets } = useWallet();
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
-    const { swapId, swapModalOpen } = useSwapDataState()
+    const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
     const { minAllowedAmount, maxAllowedAmount, isQuoteLoading, quote } = useQuoteData(quoteArgs, quoteRefreshInterval);
 
@@ -66,10 +64,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const isValid = !formValidation.message;
     const error = formValidation.message;
-
-    const { balances } = useBalance(selectedSourceAccount?.address, source)
-    const walletBalance = source && balances?.find(b => b?.network === source?.name && b?.token === fromAsset?.symbol)
-    const walletBalanceAmount = walletBalance?.amount
 
     const triggerFormChangeCallback = useFormChangeCallback()
     useEffect(() => {
@@ -93,11 +87,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
-    const showInsufficientBalanceWarning = !!(values.depositMethod === 'wallet'
-        && !routeValidation.message
-        && !swapModalOpen
-        && Number(amount) > 0
-        && Number(walletBalanceAmount) < Number(amount))
 
     return (
         <>
@@ -130,13 +119,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 />
                             }
                         </div>
-                        <>
-                            {
-                                showInsufficientBalanceWarning ?
-                                    <InsufficientBalanceWarning />
-                                    : null
-                            }
-                        </>
                         {
                             Number(values.amount) > 0 ?
                                 <ReserveGasNote

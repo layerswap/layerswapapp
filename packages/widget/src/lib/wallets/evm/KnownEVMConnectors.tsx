@@ -1,14 +1,14 @@
-import MetaMaskIcon from "../../../components/Icons/Wallets/MetaMask"
-import WalletConnectIcon from "../../../components/Icons/Wallets/WalletConnect"
-import BitKeep from "../../../components/Icons/Wallets/BitKeep"
-import RainbowIcon from "../../../components/Icons/Wallets/Rainbow"
-import CoinbaseIcon from "../../../components/Icons/Wallets/Coinbase"
-import Phantom from "../../../components/Icons/Wallets/Phantom"
+import MetaMaskIcon from "@/components/Icons/Wallets/MetaMask"
+import WalletConnectIcon from "@/components/Icons/Wallets/WalletConnect"
+import BitKeep from "@/components/Icons/Wallets/BitKeep"
+import RainbowIcon from "@/components/Icons/Wallets/Rainbow"
+import CoinbaseIcon from "@/components/Icons/Wallets/Coinbase"
+import Phantom from "@/components/Icons/Wallets/Phantom"
 import { Connector } from "wagmi"
-import Argent from "../../../components/Icons/Wallets/Argent"
-import ImtblPassportIcon from "../../../components/Icons/Wallets/ImtblPassport"
-import BitGetIcon from "../../../components/Icons/Wallets/Bitget"
-import BrowserWallet from "../../../components/Icons/Wallets/BrowserWallet"
+import Argent from "@/components/Icons/Wallets/Argent"
+import ImtblPassportIcon from "@/components/Icons/Wallets/ImtblPassport"
+import BitGetIcon from "@/components/Icons/Wallets/Bitget"
+import BrowserWallet from "@/components/Icons/Wallets/BrowserWallet"
 
 const KnownEVMConnectors = [
     {
@@ -56,7 +56,7 @@ const KnownEVMConnectors = [
         icon: Phantom
     },
     {
-        id: 'argent',
+        id: 'ready (formerly argent)',
         icon: Argent
     },
     {
