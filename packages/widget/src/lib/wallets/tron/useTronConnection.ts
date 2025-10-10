@@ -6,6 +6,7 @@ import { useSettingsState } from "../../../context/settings";
 import { GasResolver } from "@/lib/gases/gasResolver";
 import { buildInitialTransaction } from "./services/transferService/transactionBuilder";
 import { GasWithToken } from "@/types/gas";
+import { TransactionMessageType } from "@/components/Pages/Swap/Withdraw/messages/TransactionMessages";
 
 export default function useTronConnection(): WalletConnectionProvider {
     const commonSupportedNetworks = [
@@ -99,22 +100,36 @@ export default function useTronConnection(): WalletConnectionProvider {
         const tronNode = network?.node_url
         const TronWeb = (await import('tronweb')).TronWeb
 
-        const tronWeb = new TronWeb({ fullNode: tronNode, solidityNode: tronNode });
+        try {
+            const tronWeb = new TronWeb({ fullNode: tronNode, solidityNode: tronNode });
 
-        const gasData: GasWithToken | undefined = await new GasResolver().getGas({ address: wallet?.address, network, token })
+            const gasData: GasWithToken | undefined = await new GasResolver().getGas({ address: wallet?.address, network, token })
 
-        const amountInWei = Math.pow(10, token?.decimals) * amount
+            const amountInWei = Math.pow(10, token?.decimals) * amount
 
-        const initialTransaction = await buildInitialTransaction({ tronWeb, token: token, depositAddress, amountInWei, gas: gasData?.gas, issuerAddress: wallet?.address })
-        const data = Buffer.from(callData).toString('hex')
-        const transaction = await tronWeb.transactionBuilder.addUpdateData(initialTransaction, data, "hex")
-        const signature = await signTransaction(transaction)
-        const res = await tronWeb.trx.sendRawTransaction(signature)
+            const initialTransaction = await buildInitialTransaction({ tronWeb, token: token, depositAddress, amountInWei, gas: gasData?.gas, issuerAddress: wallet?.address })
+            const data = Buffer.from(callData).toString('hex')
+            const transaction = await tronWeb.transactionBuilder.addUpdateData(initialTransaction, data, "hex")
+            const signature = await signTransaction(transaction)
+            const res = await tronWeb.trx.sendRawTransaction(signature)
 
-        if (signature && res.result) {
-            return signature.txID
-        } else {
-            throw new Error(res.code.toString())
+            if (signature && res.result) {
+                return signature.txID
+            }
+        } catch (error) {
+            if (error === "BANDWITH_ERROR") {
+                error.name = TransactionMessageType.InsufficientFunds
+                throw new Error(error)
+            }
+            else if (error === "user reject this request") {
+                error.name = TransactionMessageType.TransactionRejected
+                throw new Error(error)
+            }
+            else {
+                error.name = TransactionMessageType.UexpectedErrorMessage
+                error.message = error
+                throw new Error(error)
+            }
         }
 
     }
