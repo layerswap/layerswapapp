@@ -91,6 +91,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                                                 item={data}
                                                 selectedRoute={selectedRoute}
                                                 selectedToken={selectedToken}
+                                                searchQuery={searchQuery}
                                                 toggleContent={toggleAccordionItem}
                                             />
                                         </div>
