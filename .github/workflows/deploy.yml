@@ -1,65 +1,40 @@
-name: Storybook PR Preview
+ame: Storybook PR Preview
 
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize, reopened]
+    branches: ["**"]
 
-# The deploy job needs write perms; the build job stays read-only
 permissions:
-  contents: read
-  pull-requests: write
+  contents: write
+  pull-requests: write 
 
 concurrency:
-  group: "pr-preview-${{ github.event.pull_request.number }}"
+  group: "pr-preview-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
-  build:
+  preview:
     runs-on: ubuntu-latest
     steps:
-      # IMPORTANT: check out the PR HEAD from the fork safely
-      - name: Checkout PR code (from fork)
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
-
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4 
         with:
-          node-version: 22
+          node-version: 20
           cache: yarn
-
       - run: yarn install --frozen-lockfile
       - run: yarn build-storybook
-      - name: Upload Storybook artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: storybook-static
-          path: storybook-static
-          if-no-files-found: error
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    # elevate only here
-    permissions:
-      contents: write
-      pull-requests: write
-    steps:
-      - name: Download Storybook artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: storybook-static
-          path: storybook-static
-
+      # Publishes to: https://<owner>.github.io/<repo>/pr-preview/pr-<PR_NUMBER>/
       - name: Deploy PR Preview to Pages
         id: preview
         uses: rossjrw/pr-preview-action@v1
         with:
           source-dir: storybook-static
           umbrella-dir: pr-preview
-          comment: false
+          comment: false  # we'll post our own comment below
 
       - name: Comment preview link on PR (sticky)
         if: steps.preview.outputs.deployment-action == 'deploy'
@@ -69,6 +44,7 @@ jobs:
           message: |
             🚀 **Storybook preview:** ${{ steps.preview.outputs.preview-url }}
 
+      # Make the link visible in the job summary
       - name: Show Preview URL
         if: always()
         run: |
