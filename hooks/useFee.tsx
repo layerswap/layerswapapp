@@ -50,13 +50,14 @@ type Props = {
 }
 
 export function useQuoteData(formValues: Props | undefined, refreshInterval?: number): UseQuoteData {
-    const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod, withDelay } = formValues || {}
+    const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod } = formValues || {}
     const [debouncedAmount, setDebouncedAmount] = useState(amount)
     const [isDebouncing, setIsDebouncing] = useState(false)
 
     useEffect(() => {
-        setIsDebouncing(true)
+        if (amount === debouncedAmount) return;
 
+        setIsDebouncing(true)
         const handler = setTimeout(() => {
             setDebouncedAmount(amount)
             setIsDebouncing(false)
@@ -87,7 +88,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         max_amount_in_usd: number
     }>>(limitsURL, apiClient.fetcher, {
         refreshInterval: (refreshInterval || refreshInterval == 0) ? refreshInterval : 20000,
-        dedupingInterval: 20000,
+        dedupingInterval: 20000
     })
 
     const canGetQuote = from && to && depositMethod && toCurrency && fromCurrency
@@ -118,21 +119,17 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
             return newData
         }
         catch (error) {
+            setLoading(false)
             setKey(null)
             throw error
         }
-        finally {
-            setLoading(false)
-        }
-
     }, [cache])
 
     const { data: quote, mutate: mutateFee, error: quoteError } = useSWR<ApiResponse<Quote>>(quoteURL, quoteFetchWrapper, {
         refreshInterval: (refreshInterval || refreshInterval == 0) ? refreshInterval : 42000,
         dedupingInterval: 42000,
-        keepPreviousData: true
+        keepPreviousData: true,
     })
-
 
     return {
         minAllowedAmount: amountRange?.data?.min_amount,
@@ -147,7 +144,6 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
 }
 
 export function transformFormValuesToQuoteArgs(values: SwapFormValues, withDelay?: boolean): Props | undefined {
-    if (values.fromAsset?.status !== 'active' || values.toAsset?.status !== 'active') return undefined
     return {
         amount: values.amount,
         from: values.from?.name,

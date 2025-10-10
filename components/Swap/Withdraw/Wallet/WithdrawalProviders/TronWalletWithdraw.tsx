@@ -25,7 +25,7 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refue
     const networkName = source_network?.name
     const { networks } = useSettingsState()
     const networkWithTokens = networks.find(n => n.name === networkName)
-    const { gasData, isGasLoading } = useSWRGas(walletAddress, networkWithTokens, source_token, wallet)
+    const { gasData, isGasLoading } = useSWRGas(walletAddress, networkWithTokens, source_token, swapBasicData.requested_amount, wallet)
 
     const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setError(undefined)
@@ -77,7 +77,6 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refue
                     isDisabled={!!loading || isGasLoading}
                     isSubmitting={!!loading || isGasLoading}
                     onClick={handleTransfer}
-                    icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />}
                     error={!!error}
                     refuel={refuel}
                     swapData={swapBasicData}

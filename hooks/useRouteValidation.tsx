@@ -1,4 +1,4 @@
-import { Info, RouteOff } from 'lucide-react';
+import { RouteOff } from 'lucide-react';
 import { SwapFormValues } from '@/components/DTOs/SwapFormValues';
 import { useMemo } from 'react';
 import { useSettingsState } from '@/context/settings';
@@ -6,8 +6,10 @@ import { useQueryState } from '@/context/query';
 import { useFormikContext } from 'formik';
 import { QuoteError } from './useFee';
 import { useSelectedAccount } from '@/context/balanceAccounts';
-
-const ICON_CLASSES_WARNING = 'w-5 h-5 text-warning-foreground';
+import { useSwapDataState } from '@/context/swap';
+import { ICON_CLASSES_WARNING } from '@/components/validationError/constants';
+import { useBalance } from '@/lib/balances/useBalance';
+import { defaultErrors } from '@/components/validationError/ErrorDisplay';
 
 interface ValidationDetails {
     title?: string;
@@ -17,67 +19,23 @@ interface ValidationDetails {
 
 export function resolveRouteValidation(quoteError?: QuoteError) {
     const { values } = useFormikContext<SwapFormValues>();
-    const { destinationRoutes: allDestinations, sourceRoutes: allSources } = useSettingsState()
-    const { to, from, fromAsset: fromCurrency, toAsset: toCurrency, fromExchange, validatingSource, validatingDestination, destination_address } = values;
+    const { to, from, fromAsset: fromCurrency, destination_address, amount } = values;
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
     const query = useQueryState();
-    const fromDisplayName = fromExchange ? fromExchange.display_name : from?.display_name;
-    const toDisplayName = to?.display_name;
     const quoteMessage = quoteError?.response?.data?.error?.message || quoteError?.message
+
+    const { balances } = useBalance(selectedSourceAccount?.address, from)
+    const walletBalance = from && balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
+    const walletBalanceAmount = walletBalance?.amount
+
+    const { swapModalOpen } = useSwapDataState()
 
     let validationMessage: string = '';
     let validationDetails: ValidationDetails = {};
 
-    if (query?.lockToAsset) {
-        if (fromCurrency?.status === 'not_found') {
-            validationMessage = `Transfers from ${fromDisplayName} ${fromCurrency?.symbol || fromCurrency?.symbol} to this token are not supported`;
-            validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
-        }
-        else if (fromCurrency?.status === 'inactive') {
-            validationMessage = `Sorry, transfers of ${fromCurrency?.symbol} from ${fromDisplayName} are not available at the moment. Please try later.`;
-            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info className={ICON_CLASSES_WARNING} /> };
-        }
-        else if (!toCurrency) {
-            validationMessage = `Sorry, transfers of ${query?.toAsset} to ${toDisplayName || query.to} are not available at the moment. Please try later.`;
-            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info className={ICON_CLASSES_WARNING} /> };
-        }
-    }
-    else if (query?.lockFromAsset) {
-        if (toCurrency?.status === 'not_found') {
-            validationMessage = `Transfers to ${toDisplayName} ${toCurrency?.symbol} from this token are not supported`;
-            validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
-        }
-        else if (toCurrency?.status === 'inactive') {
-            validationMessage = `Sorry, transfers of ${toCurrency?.symbol} to ${toDisplayName} are not available at the moment. Please try later.`;
-            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info className={ICON_CLASSES_WARNING} /> };
-        }
-        else if (!fromCurrency) {
-            validationMessage = `Sorry, transfers of ${query?.fromAsset} from ${fromDisplayName || query.from} are not available at the moment. Please try later.`;
-            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info className={ICON_CLASSES_WARNING} /> };
-        }
-    }
-    else if (toCurrency?.status === 'inactive' || fromCurrency?.status === 'inactive') {
-        const unfilteredDestinationRoute = allDestinations?.find(r => r.name === to?.name)
-        const unfilteredDestinationCurrency = unfilteredDestinationRoute?.tokens?.find(t => t.symbol === toCurrency?.symbol)
-        const unfilteredSourceRoute = allSources?.find(r => r.name === from?.name)
-        const unfilteredSourceCurrency = unfilteredSourceRoute?.tokens?.find(t => t.symbol === fromCurrency?.symbol)
-
-        if (unfilteredDestinationCurrency?.status === 'inactive') {
-            validationMessage = `Sorry, transfers of ${toCurrency?.symbol} to ${toDisplayName} are not available at the moment. Please try later.`;
-            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info className={ICON_CLASSES_WARNING} /> };
-        }
-        else if (unfilteredSourceCurrency?.status === 'inactive') {
-            validationMessage = `Sorry, transfers of ${fromCurrency?.symbol} from ${fromDisplayName} are not available at the moment. Please try later.`;
-            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info className={ICON_CLASSES_WARNING} /> };
-        }
-        else {
-            validationMessage = `Please change one of the selected tokens or try later.`;
-            validationDetails = { title: 'Temporarily unavailable.', type: 'warning', icon: <Info className={ICON_CLASSES_WARNING} /> };
-        }
-    }
-    else if (!validatingSource && !validatingDestination && (toCurrency?.status === 'not_found' || fromCurrency?.status === 'not_found')) {
-        validationMessage = 'Please change one of the selected tokens';
-        validationDetails = { title: 'Route Unavailable', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
+    if (Number(amount) > 0 && Number(walletBalanceAmount) < Number(amount) && values.depositMethod === 'wallet' && !swapModalOpen) {
+        validationMessage = defaultErrors["insufficientFunds"].message;
+        validationDetails = defaultErrors["insufficientFunds"].details;
     }
 
     if (((from?.name && from?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase()) || (to?.name && to?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase()))) {

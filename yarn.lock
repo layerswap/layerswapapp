@@ -16516,10 +16516,10 @@ posthog-js-lite@3.2.1:
   resolved "https://registry.yarnpkg.com/posthog-js-lite/-/posthog-js-lite-3.2.1.tgz#d2101ef6f0388ad6ff09c13c2708c8b2991cea04"
   integrity sha512-F+S+T9XiQr2rOkD0UFTr8yu8qScm4aM2lR5PmyknxxqlkC5gpRKS+Hi8cq5CYda7Q3BODh0h7pdW1P2XfZjEag==
 
-posthog-js@^1.261.0:
-  version "1.268.8"
-  resolved "https://registry.yarnpkg.com/posthog-js/-/posthog-js-1.268.8.tgz#2d2f77aa46a926fa43f93d14573a3087c0ecf956"
-  integrity sha512-BJiKK4MlUvs7ybnQcy1KkwAz+SZkE/wRLotetIoank5kbqZs8FLbeyozFvmmgx4aoMmaVymYBSmYphYjYQeidw==
+posthog-js@^1.272.0:
+  version "1.272.0"
+  resolved "https://registry.yarnpkg.com/posthog-js/-/posthog-js-1.272.0.tgz#b08123bee0f21de6f9c27ce6bd4eb40ec038c8eb"
+  integrity sha512-q8vegjiB7PQSjo2sgRBf1lie0bPnBgqIyWCXHvH6U5BEqTV5fr3Zr+iv7KXL/sVP+g4xp4lEjbKmyLENz2Iybw==
   dependencies:
     "@posthog/core" "1.2.2"
     core-js "^3.38.1"
