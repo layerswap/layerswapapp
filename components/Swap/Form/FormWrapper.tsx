@@ -46,8 +46,10 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const query = useQueryState()
     const { destination_address: destinationAddressFromQuery } = query
     const { createSwap, setSwapId, setSubmitedFormValues, setSwapModalOpen } = useSwapDataUpdate()
+    const { setSwapError } = useSwapDataState()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
+        setSwapError('')
         const { destination_address, to } = values
         setWalletWihdrawDone(false)
         if (!walletWihdrawDone) {

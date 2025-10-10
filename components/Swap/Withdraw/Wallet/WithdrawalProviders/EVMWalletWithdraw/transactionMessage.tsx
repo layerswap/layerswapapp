@@ -19,10 +19,6 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     const transactionResolvedError = resolveError(transaction?.error as BaseError)
     const hasError = transaction?.isError || wait?.isError
 
-    if (swapError) {
-        return <ActionMessages.SwapErrorMessage message={swapError} />
-    }
-
     if (wait?.isPending || applyingTransaction) {
         return <ActionMessages.TransactionInProgressMessage />
     }
@@ -34,6 +30,9 @@ const TransactionMessage: FC<TransactionMessageProps> = ({
     }
     else if (transaction?.isError && transactionResolvedError === "transaction_rejected") {
         return <ActionMessages.TransactionRejectedMessage />
+    }
+    else if (swapError) {
+        return <ActionMessages.SwapErrorMessage message={swapError} />
     }
     //TODO: this is old we mihght need to remove it, as now the selected account is the active one
     else if (transaction.isError && activeAddress && selectedSourceAddress && (activeAddress?.toLowerCase() !== selectedSourceAddress?.toLowerCase())) {

@@ -217,7 +217,12 @@ export function SwapDataProvider({ children }) {
             refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined
         }
 
-        const swapResponse = await layerswapApiClient.CreateSwapAsync(data)
+        let swapResponse
+        try {
+            swapResponse = await layerswapApiClient.CreateSwapAsync(data)
+        } catch (error) {
+            setSwapError(error?.response?.data?.error?.message || 'Unexpected error occurred.')
+        }
 
         if (swapResponse?.error) {
             throw swapResponse?.error

@@ -54,7 +54,7 @@ const WaletMismatchMessage: FC<{ address: string }> = ({ address }) => {
 const SwapErrorMessage: FC<{ message: string }> = ({ message }) => {
     return <WalletMessage
         status="error"
-        header='Swap error'
+        header='API error'
         details={message} />
 }
 
