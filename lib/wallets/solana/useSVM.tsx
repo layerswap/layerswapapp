@@ -17,15 +17,14 @@ export default function useSVM(): WalletProvider {
 
     const name = 'Solana'
     const id = 'solana'
-    const { disconnect, select, wallets, connected } = useWallet();
-
-    const connectedWallet = wallets.find(w => w.adapter.connected === true)
+    const { disconnect, select, wallets, wallet: solanaWallet } = useWallet();
+    const connectedWallet = solanaWallet?.adapter.connected === true ? solanaWallet : undefined
     const connectedAddress = connectedWallet?.adapter.publicKey?.toBase58()
     const connectedAdapterName = connectedWallet?.adapter.name
 
     const connectedWallets = useMemo(() => {
 
-        const wallet: Wallet | undefined = (connectedAddress && connectedAdapterName && connected) ? {
+        const wallet: Wallet | undefined = (connectedAddress && connectedAdapterName) ? {
             id: connectedAdapterName,
             address: connectedAddress,
             displayName: `${connectedWallet?.adapter.name} - Solana`,
@@ -44,7 +43,7 @@ export default function useSVM(): WalletProvider {
             return [wallet]
         }
 
-    }, [connectedAddress, connectedAdapterName, connected])
+    }, [connectedAddress, connectedAdapterName])
 
 
     const switchAccount = async (wallet: Wallet, address: string) => {
