@@ -53,7 +53,7 @@ export function resolveRouteValidation(quoteError?: QuoteError) {
     }
 
     if (quoteError) {
-        validationMessage = '';
+        validationMessage = 'Route not found';
         validationDetails = { title: quoteMessage || 'Unable to retrieve quote', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
     }
 
