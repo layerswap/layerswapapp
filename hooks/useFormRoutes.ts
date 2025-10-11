@@ -14,6 +14,8 @@ import { Exchange } from "@/Models/Exchange";
 import useExchangeNetworks from "./useExchangeNetworks";
 import { RoutesHistory, useRecentNetworksStore } from "@/stores/recentRoutesStore";
 import { useRouteTokenSwitchStore } from "@/stores/routeTokenSwitchStore";
+import { useQueryState } from "@/context/query";
+import { getTotalBalanceInUSD } from "../helpers/balanceHelper";
 
 type Props = {
     direction: SwapDirection;
@@ -28,21 +30,29 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         to: values.to?.name,
         toAsset: values.toAsset?.symbol
     });
+    const { lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset } = useQueryState()
     const groupByToken = useRouteTokenSwitchStore((s) => s.showTokens)
     const { balances, isLoading: balancesLoading } = useAllWithdrawalBalances();
     const routesHistory = useRecentNetworksStore(state => state.recentRoutes)
-    const routeElements = useMemo(() => groupRoutes(routes, direction, balances, groupByToken ? "token" : "network", routesHistory, balancesLoading, search), [balancesLoading, routes, balances, direction, search, groupByToken, routesHistory]);
+    
+    // Apply query-based filtering
+    const filteredRoutes = useMemo(() => {
+        const filtered = filterRoutesByQuery(routes, direction, { lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset });
+        return filtered;
+    }, [routes, direction, lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset]);
+    
+    const routeElements = useMemo(() => groupRoutes(filteredRoutes, direction, balances, groupByToken ? "token" : "network", routesHistory, balancesLoading, search), [balancesLoading, filteredRoutes, balances, direction, search, groupByToken, routesHistory]);
 
     const exchanges = useMemo(() => {
-        return groupExchanges(exchangesRoutes, search);
-    }, [exchangesRoutes, search]);
+        return groupExchanges(exchangesRoutes, search, direction, { lockFrom, from, lockTo, to });
+    }, [exchangesRoutes, search, direction, lockFrom, from, lockTo, to]);
 
 
     const selectedRoute = useMemo(() => resolveSelectedRoute(values, direction), [values, direction]);
     const selectedToken = useMemo(() => resolveSelectedToken(values, direction), [values, direction]);
 
     return useMemo(() => ({
-        allRoutes: routes,
+        allRoutes: filteredRoutes,
         isLoading: routesLoading,
         routeElements,
         exchanges,
@@ -53,7 +63,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         selectedToken,
         allbalancesLoaded: !balancesLoading,
     }), [
-        routes,
+        filteredRoutes,
         routesLoading,
         routeElements,
         exchanges,
@@ -81,6 +91,61 @@ function useRoutesData<T extends object>(url: string, defaultData: T[], fetcher:
     return { routes, isLoading };
 }
 
+// ---------- Query-based Filtering ----------
+
+type QueryFilterParams = {
+    lockFrom?: boolean;
+    from?: string;
+    lockTo?: boolean;
+    to?: string;
+    lockFromAsset?: boolean;
+    fromAsset?: string;
+    lockToAsset?: boolean;
+    toAsset?: string;
+};
+
+function filterRoutesByQuery(
+    routes: NetworkRoute[],
+    direction: SwapDirection,
+    queryParams: QueryFilterParams
+): NetworkRoute[] {
+    const { lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset } = queryParams;
+
+    // If no locks are set, return all routes
+    const hasNetworkLock = (direction === 'from' && lockFrom) || (direction === 'to' && lockTo);
+    const hasAssetLock = (direction === 'from' && lockFromAsset) || (direction === 'to' && lockToAsset);
+    
+    if (!hasNetworkLock && !hasAssetLock) {
+        return routes;
+    }
+
+    let filteredRoutes = [...routes];
+
+    // Filter by network based on direction (case-insensitive)
+    if (direction === 'from' && lockFrom && from) {
+        const networkName = from.toLowerCase();
+        filteredRoutes = filteredRoutes.filter(route => route.name.toLowerCase() === networkName);
+    } else if (direction === 'to' && lockTo && to) {
+        const networkName = to.toLowerCase();
+        filteredRoutes = filteredRoutes.filter(route => route.name.toLowerCase() === networkName);
+    }
+
+    // Filter by asset based on direction - only if lock is explicitly true
+    if (direction === 'from' && lockFromAsset && fromAsset) {
+        filteredRoutes = filteredRoutes.map(route => {
+            const filteredTokens = route.tokens?.filter(token => token.symbol === fromAsset) || [];
+            return filteredTokens.length > 0 ? { ...route, tokens: filteredTokens } : null;
+        }).filter((route): route is NetworkRoute => route !== null);
+    } else if (direction === 'to' && lockToAsset && toAsset) {
+        filteredRoutes = filteredRoutes.map(route => {
+            const filteredTokens = route.tokens?.filter(token => token.symbol === toAsset) || [];
+            return filteredTokens.length > 0 ? { ...route, tokens: filteredTokens } : null;
+        }).filter((route): route is NetworkRoute => route !== null);
+    }
+
+    return filteredRoutes;
+}
+
 function useRoutes({ direction, values }: Props) {
     const { sourceRoutes, destinationRoutes } = useSettingsState();
     const apiClient = new LayerSwapApiClient();
@@ -102,16 +167,20 @@ function sortRoutesByBalance(
     routes: NetworkRoute[],
     balances: Record<string, NetworkBalance> | null
 ): NetworkRoute[] {
-    return routes.sort((a, b) => {
-        const balanceA = balances?.[a.name]?.totalInUSD || 0;
-        const balanceB = balances?.[b.name]?.totalInUSD || 0;
-
-        if (balanceB !== balanceA) {
-            return balanceB - balanceA;
-        }
-
-        return a.display_name.localeCompare(b.display_name);
-    });
+    // Calculate summed balances for each route before sorting
+    const routesWithBalances = routes.map(route => ({
+        route,
+        totalBalanceUSD: balances?.[route.name] ? getTotalBalanceInUSD(balances[route.name], route) : 0
+    }));
+    
+    return routesWithBalances
+        .sort((a, b) => {
+            if (b.totalBalanceUSD !== a.totalBalanceUSD) {
+                return b.totalBalanceUSD - a.totalBalanceUSD;
+            }
+            return a.route.display_name.localeCompare(b.route.display_name);
+        })
+        .map(item => item.route);
 }
 
 function sortGroupedTokensByBalance(tokenElements: GroupedTokenElement[], balances: Record<string, NetworkBalance>): GroupedTokenElement[] {
@@ -226,22 +295,48 @@ const resolveTokenRoutes = (routes: NetworkRoute[], balances: Record<string, Net
 
 }
 
-function groupExchanges(exchangesRoutes: (Exchange)[], search?: string): Exchange[] {
-    if (search) {
-        const exchanges = exchangesRoutes.filter(r => r.name.toLowerCase().includes(search.toLowerCase())).map((r): Exchange => ({ ...r }))
+function filterExchangesByQuery(
+    exchanges: Exchange[],
+    direction: SwapDirection,
+    queryParams: QueryFilterParams
+): Exchange[] {
+    const { lockFrom, from, lockTo, to } = queryParams;
 
-        return [
-            ...exchanges,
-        ]
+    // If no locks are set, return all exchanges
+    const hasNetworkLock = (direction === 'from' && lockFrom) || (direction === 'to' && lockTo);
+    
+    if (!hasNetworkLock) {
+        return exchanges;
     }
 
-    const exchanges = exchangesRoutes
-        .map((r): Exchange => ({ ...r }))
-        .sort((a, b) => a.name.localeCompare(b.name));
+    let filteredExchanges = [...exchanges];
 
-    return [
-        ...exchanges,
-    ]
+    // Filter by exchange name based on direction (case-insensitive)
+    // Only handle lockFrom/lockTo, ignore asset locks for exchanges
+    if (direction === 'from' && lockFrom && from) {
+        const exchangeName = from.toLowerCase();
+        filteredExchanges = filteredExchanges.filter(exchange => exchange.name.toLowerCase() === exchangeName);
+    } else if (direction === 'to' && lockTo && to) {
+        const exchangeName = to.toLowerCase();
+        filteredExchanges = filteredExchanges.filter(exchange => exchange.name.toLowerCase() === exchangeName);
+    }
+
+    return filteredExchanges;
+}
+
+function groupExchanges(exchangesRoutes: (Exchange)[], search?: string, direction?: SwapDirection, queryParams?: QueryFilterParams): Exchange[] {
+    let exchanges = exchangesRoutes.map((r): Exchange => ({ ...r }));
+
+    // Apply query-based filtering if parameters are provided
+    if (direction && queryParams) {
+        exchanges = filterExchangesByQuery(exchanges, direction, queryParams);
+    }
+
+    if (search) {
+        exchanges = exchanges.filter(r => r.name.toLowerCase().includes(search.toLowerCase()));
+    }
+
+    return exchanges.sort((a, b) => a.name.localeCompare(b.name));
 }
 
 // ---------- Token Grouping ----------

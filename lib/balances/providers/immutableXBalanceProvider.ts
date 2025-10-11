@@ -1,5 +1,5 @@
 import { BalanceProvider } from "@/Models/BalanceProvider";
-import { NetworkWithTokens } from "../../../Models/Network";
+import { NetworkWithTokens } from "@/Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
 import { insertIfNotExists } from "../helpers";
