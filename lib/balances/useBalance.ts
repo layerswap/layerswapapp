@@ -58,7 +58,6 @@ export function useBalance(
 
     return {
         balances: entry?.data?.balances,
-        totalInUSD: entry?.data?.totalInUSD,
         error: entry?.error,
         isLoading: entry?.status === 'loading',
         mutate,

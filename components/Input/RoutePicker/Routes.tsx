@@ -12,6 +12,8 @@ import { useBalanceAccounts } from "@/context/balanceAccounts";
 import clsx from "clsx";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import { ExtendedAddress } from "../Address/AddressPicker/AddressWithIcon";
+import { getTotalBalanceInUSD } from "@/helpers/balanceHelper";
+import { useMemo } from "react";
 
 type TokenItemProps = {
     route: NetworkRoute;
@@ -122,8 +124,9 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const balanceAccounts = useBalanceAccounts(direction)
 
     const selectedAccount = balanceAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(item.name));
-    const { balances, totalInUSD } = useBalance(selectedAccount?.address, item)
-    const tokensWithBalance = balances?.filter(b => b.amount && b.amount > 0)
+    const networkBalances = useBalance(selectedAccount?.address, item)
+    const totalInUSD = useMemo(() => networkBalances && getTotalBalanceInUSD(networkBalances, item), [networkBalances.balances, item])
+    const tokensWithBalance = networkBalances.balances?.filter(b => b.amount && b.amount > 0)
         ?.map(b => b.token);
     const filteredNetworkTokens = item?.tokens?.filter(token =>
         tokensWithBalance?.includes(token.symbol)
