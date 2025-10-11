@@ -1,6 +1,6 @@
-import type { Preview } from "@storybook/react";
+import type { Preview } from "@storybook/nextjs";
 import "../styles/globals.css";
-import { themes } from '@storybook/theming';
+import { themes } from 'storybook/theming';
 
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },

@@ -1,10 +1,10 @@
 import KnownInternalNames from "../../knownIds"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon"
-import { NetworkType } from "../../../Models/Network"
-import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
+import { NetworkType } from "@/Models/Network"
+import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider"
 import { useMemo } from "react"
-import { useSettingsState } from "../../../context/settings"
+import { useSettingsState } from "@/context/settings"
 
 const solanaNames = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet, KnownInternalNames.Networks.SolanaTestnet]
 
@@ -17,9 +17,8 @@ export default function useSVM(): WalletProvider {
 
     const name = 'Solana'
     const id = 'solana'
-    const { disconnect, select, wallets } = useWallet();
-
-    const connectedWallet = wallets.find(w => w.adapter.connected === true)
+    const { disconnect, select, wallets, wallet: solanaWallet } = useWallet();
+    const connectedWallet = solanaWallet?.adapter.connected === true ? solanaWallet : undefined
     const connectedAddress = connectedWallet?.adapter.publicKey?.toBase58()
     const connectedAdapterName = connectedWallet?.adapter.name
 
@@ -46,6 +45,10 @@ export default function useSVM(): WalletProvider {
 
     }, [connectedAddress, connectedAdapterName])
 
+
+    const switchAccount = async (wallet: Wallet, address: string) => {
+        // as we do not have multiple accounts management we will leave the method empty
+    }
 
     const connectWallet = async ({ connector }: { connector: InternalConnector }) => {
         const solanaConnector = wallets.find(w => w.adapter.name.includes(connector.name))
@@ -102,7 +105,7 @@ export default function useSVM(): WalletProvider {
         return connectors;
     }, [wallets]);
 
-    const provider = {
+    const provider: WalletProvider = {
         connectedWallets: connectedWallets,
         activeWallet: connectedWallets?.[0],
         connectWallet,
@@ -114,7 +117,8 @@ export default function useSVM(): WalletProvider {
         asSourceSupportedNetworks: commonSupportedNetworks,
         name,
         id,
-        providerIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo
+        providerIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo,
+        switchAccount
     }
 
     return provider
@@ -135,11 +139,11 @@ function resolveSupportedNetworks(supportedNetworks: string[], connectorId: stri
     const supportedNetworksForWallet: string[] = [];
 
     supportedNetworks.forEach((network) => {
-        const networkName = network.split("_")[0].toLowerCase();
-        if (networkName === "solana") {
-            supportedNetworksForWallet.push(networkName);
-        } else if (networkSupport[networkName] && networkSupport[networkName].includes(connectorId?.toLowerCase())) {
-            supportedNetworksForWallet.push(networkName);
+        const lowerCaseName = network.split("_")[0].toLowerCase();
+        if (lowerCaseName === "solana") {
+            supportedNetworksForWallet.push(network);
+        } else if (networkSupport[lowerCaseName] && networkSupport[lowerCaseName].includes(connectorId?.toLowerCase())) {
+            supportedNetworksForWallet.push(network);
         }
     });
 

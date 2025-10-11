@@ -26,7 +26,7 @@ const DialogOverlay = React.forwardRef<
     <DialogPrimitive.Overlay
         ref={ref}
         className={classNames(
-            "fixed inset-0 z-50 bg-black/50 backdrop-blur-sm transition-all duration-100 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in",
+            "fixed inset-0 z-50 bg-black/50 backdrop-blur-xs transition-all duration-100 data-[state=closed]:animate-out data-[state=closed]:fade-out data-[state=open]:fade-in",
             className
         )}
         {...props}
@@ -43,13 +43,13 @@ const DialogContent = React.forwardRef<
         <DialogPrimitive.Content
             ref={ref}
             className={classNames(
-                "fixed z-50 grid w-full gap-4 rounded-t-lg bg-secondary-800 p-4 shadow-lg animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-sm sm:rounded-lg sm:zoom-in-90 data-[state=open]:sm:slide-in-from-bottom-0",
+                "fixed z-50 grid w-full gap-4 rounded-t-lg bg-secondary-800 p-4 shadow-lg animate-in data-[state=open]:fade-in-90 data-[state=open]:slide-in-from-bottom-10 sm:max-w-sm sm:rounded-lg sm:zoom-in-90 sm:data-[state=open]:slide-in-from-bottom-0",
                 className
             )}
             {...props}
         >
             {children}
-            <DialogPrimitive.Close className="absolute text-secondary-text right-4 top-3 p-1 justify-self-start hover:brightness-105 hover:scale-110 duartion-100 ring-1 ring-secondary-400 transition bg-secondary-500 hover:text-primary-text focus:outline-none rounded-full items-center">
+            <DialogPrimitive.Close className="absolute text-secondary-text right-4 top-3 p-1 justify-self-start hover:brightness-105 hover:scale-110 duartion-100 ring-1 ring-secondary-400 transition bg-secondary-500 hover:text-primary-text focus:outline-hidden rounded-full items-center">
                 <X className="h-4 w-4" />
                 <span className="sr-only">Close</span>
             </DialogPrimitive.Close>

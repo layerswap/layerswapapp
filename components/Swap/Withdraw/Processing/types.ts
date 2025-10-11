@@ -10,7 +10,8 @@ export type ProgressStates = {
 export enum Progress {
     InputTransfer = 'input_transfer',
     Refuel = 'refuel',
-    OutputTransfer = 'output_transfer'
+    OutputTransfer = 'output_transfer',
+    Refund = 'refund'
 }
 export enum ProgressStatus {
     Upcoming = 'upcoming',

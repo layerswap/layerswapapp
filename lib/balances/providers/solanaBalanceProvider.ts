@@ -1,10 +1,11 @@
-import { Balance } from "../../../Models/Balance";
-import { NetworkType, NetworkWithTokens } from "../../../Models/Network";
-import formatAmount from "../../formatAmount";
-import { insertIfNotExists } from "./helpers";
+import { BalanceProvider } from "@/Models/BalanceProvider";
+import { TokenBalance } from "@/Models/Balance";
+import { NetworkType, NetworkWithTokens } from "@/Models/Network";
+import formatAmount from "@/lib/formatAmount";
+import { insertIfNotExists } from "../helpers";
 
-export class SolanaBalanceProvider {
-    supportsNetwork(network: NetworkWithTokens): boolean {
+export class SolanaBalanceProvider extends BalanceProvider {
+    supportsNetwork = (network: NetworkWithTokens): boolean => {
         return network.type === NetworkType.Solana
     }
 
@@ -17,7 +18,7 @@ export class SolanaBalanceProvider {
         class SolanaConnection extends Connection { }
         const { getAssociatedTokenAddress } = await import('@solana/spl-token');
         const walletPublicKey = new PublicKey(address)
-        let balances: Balance[] = []
+        let balances: TokenBalance[] = []
 
         if (!network?.tokens || !walletPublicKey) return
 
@@ -51,7 +52,7 @@ export class SolanaBalanceProvider {
                     result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
                 } else {
                     const res = await connection.getBalance(walletPublicKey)
-                    result = res ? formatAmount(Number(res), token.decimals) : 0
+                    if (res) result = formatAmount(Number(res), token.decimals)
                 }
 
                 if (result != null && !isNaN(result)) {
@@ -64,15 +65,12 @@ export class SolanaBalanceProvider {
                         isNativeCurrency: false
                     }
 
-                    balances = [
-                        ...balances,
-                        balance
-                    ]
+                    balances.push(balance)
                 }
 
             }
             catch (e) {
-                console.log(e)
+                balances.push(this.resolveTokenBalanceFetchError(e, token, network))
             }
         }
 

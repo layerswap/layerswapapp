@@ -21,7 +21,7 @@ export class Network {
     type: NetworkType;
     transaction_explorer_template: string;
     account_explorer_template: string;
-    metadata: Metadata;
+    metadata?: Metadata;
     deposit_methods: string[]
     token?: Token
     source_rank?: number | undefined;
@@ -32,12 +32,13 @@ export class NetworkWithTokens extends Network {
     tokens: Token[];
 }
 
-export class RouteNetwork extends Network {
-    tokens: RouteToken[]
+export class NetworkRoute extends Network {
+    tokens: NetworkRouteToken[]
 }
 
 export class Token {
     symbol: string;
+    display_asset?: string
     logo: string;
     //TODO may be plain string
     contract: string | null | undefined;
@@ -50,7 +51,7 @@ export class Token {
     destination_rank?: number | undefined;
 }
 
-export class RouteToken extends Token {
+export class NetworkRouteToken extends Token {
     refuel?: Refuel
 }
 

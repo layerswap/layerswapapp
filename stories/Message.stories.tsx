@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs';
 import { THEME_COLORS } from '../Models/Theme';
 import { FC } from 'react';
 import { Widget } from '../components/Widget/Index';

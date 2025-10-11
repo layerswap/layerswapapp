@@ -1,8 +1,9 @@
+import { BalanceProvider } from "@/Models/BalanceProvider";
 import { NetworkWithTokens } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
-import { insertIfNotExists } from "./helpers";
+import { insertIfNotExists } from "../helpers";
 
-export class QueryBalanceProvider {
+export class QueryBalanceProvider extends BalanceProvider {
     private query: {
         from?: string | null;
         to?: string | null;
@@ -11,6 +12,7 @@ export class QueryBalanceProvider {
     };
 
     constructor() {
+        super();
         this.query = this.getQueryParams();
     }
 
@@ -34,7 +36,7 @@ export class QueryBalanceProvider {
         };
     }
 
-    supportsNetwork(network: NetworkWithTokens): boolean {
+    supportsNetwork = (network: NetworkWithTokens): boolean => {
         if (!this.query.balances) return false
         return network?.name?.toLocaleLowerCase() === this.query.from?.toLowerCase() || network?.name?.toLocaleLowerCase() === this.query.to?.toLowerCase()
     }

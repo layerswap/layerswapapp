@@ -16,7 +16,7 @@ export default function ErrorFallback({ error, resetErrorBoundary }) {
             <main className="styled-scroll">
                 <div className="min-h-screen overflow-hidden relative font-robo">
                     <Navbar />
-                    <div className="mx-auto max-w-xl bg-secondary-900 shadow-card rounded-lg w-full overflow-hidden relative px-0 md:px-8 py-6 h-[500px] min-h-[550px]">
+                    <div className="mx-auto max-w-xl bg-secondary-700 shadow-card rounded-lg w-full overflow-hidden relative px-0 md:px-8 py-6 h-[500px] min-h-[550px]">
                         <MessageComponent>
                             <MessageComponent.Content icon="red">
                                 <MessageComponent.Header>

@@ -13,12 +13,11 @@ import { useQueryState } from '../../../context/query';
 
 const Success: FC = () => {
     const { networks: layers } = useSettingsState()
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
+    const { swapDetails, swapBasicData } = useSwapDataState()
     const { externalId } = useQueryState()
-    const destination_network = layers.find(n => n.name === swap?.destination_network.name)
+    const destination_network = layers.find(n => n.name === swapBasicData?.destination_network.name)
     const transaction_explorer_template = destination_network?.transaction_explorer_template
-    const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
+    const swapOutputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Output)
 
     const handleViewInExplorer = useCallback(() => {
         if (!transaction_explorer_template)

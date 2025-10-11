@@ -183,6 +183,10 @@ export default class NetworkSettings {
             DefaultPriorityFee: 0.3,
             BaseFeeMultiplier: 1.7
         };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.AbstractMainnet] = {
+            ChainId: 1,
+            BaseFeeMultiplier: 1.9
+        };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumSepolia] = {
             ChainOrder: 1
         };

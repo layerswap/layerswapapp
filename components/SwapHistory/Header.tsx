@@ -42,7 +42,7 @@ const Header = () => {
         max-sm:inset-x-0
         max-sm:top-0 
         max-sm:z-30
-        max-sm:bg-secondary-900 
+        max-sm:bg-secondary-700 
         max-sm:shadow-widget-footer 
         max-sm:w-full`}>
             <HeaderWithMenu goBack={goBack} />

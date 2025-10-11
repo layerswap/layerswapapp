@@ -39,7 +39,9 @@ export class FuelGasProvider {
 
             const { maxFee } = await scope.getTransactionCost();
 
-            return Number((formatAmount(Number(maxFee), network.token.decimals) * 2).toFixed(network.token.decimals))
+            const formatedGas = Number((formatAmount(Number(maxFee), network.token.decimals) * 2).toFixed(network.token.decimals))
+
+            if (formatedGas) return { gas: formatedGas, token: network.token }
 
         } catch (e) {
             console.log(e)

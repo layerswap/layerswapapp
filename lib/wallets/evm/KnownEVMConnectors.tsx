@@ -1,14 +1,14 @@
-import MetaMaskIcon from "../../../components/icons/Wallets/MetaMask"
-import WalletConnectIcon from "../../../components/icons/Wallets/WalletConnect"
-import BitKeep from "../../../components/icons/Wallets/BitKeep"
-import RainbowIcon from "../../../components/icons/Wallets/Rainbow"
-import CoinbaseIcon from "../../../components/icons/Wallets/Coinbase"
-import Phantom from "../../../components/icons/Wallets/Phantom"
+import MetaMaskIcon from "@/components/icons/Wallets/MetaMask"
+import WalletConnectIcon from "@/components/icons/Wallets/WalletConnect"
+import BitKeep from "@/components/icons/Wallets/BitKeep"
+import RainbowIcon from "@/components/icons/Wallets/Rainbow"
+import CoinbaseIcon from "@/components/icons/Wallets/Coinbase"
+import Phantom from "@/components/icons/Wallets/Phantom"
 import { Connector } from "wagmi"
-import Argent from "../../../components/icons/Wallets/Argent"
-import ImtblPassportIcon from "../../../components/icons/Wallets/ImtblPassport"
-import BitGetIcon from "../../../components/icons/Wallets/Bitget"
-import BrowserWallet from "../../../components/icons/Wallets/BrowserWallet"
+import Argent from "@/components/icons/Wallets/Argent"
+import ImtblPassportIcon from "@/components/icons/Wallets/ImtblPassport"
+import BitGetIcon from "@/components/icons/Wallets/Bitget"
+import BrowserWallet from "@/components/icons/Wallets/BrowserWallet"
 
 const KnownEVMConnectors = [
     {
@@ -44,7 +44,7 @@ const KnownEVMConnectors = [
         icon: BitGetIcon
     },
     {
-        id: 'coinbasewalletsdk',
+        id: 'coinbaseWalletSDK',
         icon: CoinbaseIcon
     },
     {
@@ -56,7 +56,7 @@ const KnownEVMConnectors = [
         icon: Phantom
     },
     {
-        id: 'argent',
+        id: 'ready (formerly argent)',
         icon: Argent
     },
     {
@@ -71,8 +71,8 @@ const KnownEVMConnectors = [
 
 export const evmConnectorNameResolver = (connector: Connector) => {
 
-    const connectorById = KnownEVMConnectors.find(c => c.id === connector.id.toLowerCase())
-    const connectorByName = KnownEVMConnectors.find(c => c.id === connector.name.toLowerCase())
+    const connectorById = KnownEVMConnectors.find(c => c.id.toLowerCase() === connector.id.toLowerCase())
+    const connectorByName = KnownEVMConnectors.find(c => c.id.toLowerCase() === connector.name.toLowerCase())
 
     if (connectorById) return connectorById.id
     else if (connectorByName) return connectorByName.id

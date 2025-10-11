@@ -25,6 +25,8 @@ type ConnectModalContextType = {
     isWalletModalOpen?: boolean;
     selectedConnector: WalletModalConnector | undefined;
     setSelectedConnector: (value: WalletModalConnector | undefined) => void;
+    selectedMultiChainConnector: InternalConnector | undefined;
+    setSelectedMultiChainConnector: (value: InternalConnector | undefined) => void;
     goBack: () => void;
     onFinish: (connectedWallet?: Wallet | undefined) => void;
     setOpen: (value: boolean) => void;
@@ -38,6 +40,7 @@ export function WalletModalProvider({ children }) {
 
     const [selectedProvider, setSelectedProvider] = useState<ModalWalletProvider | undefined>(undefined);
     const [selectedConnector, setSelectedConnector] = useState<WalletModalConnector | undefined>(undefined);
+    const [selectedMultiChainConnector, setSelectedMultiChainConnector] = useState<InternalConnector | undefined>(undefined)
     const [open, setOpen] = useState(false);
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
@@ -70,20 +73,25 @@ export function WalletModalProvider({ children }) {
     const goBack = useCallback(() => {
         if (selectedConnector) {
             setSelectedConnector(undefined)
+            setSelectedMultiChainConnector(undefined)
+            return;
+        } else if (selectedMultiChainConnector) {
+            setSelectedMultiChainConnector(undefined)
             return;
         }
-    }, [setSelectedConnector, selectedConnector])
+    }, [setSelectedConnector, selectedMultiChainConnector, selectedConnector, selectedMultiChainConnector])
 
     useEffect(() => {
-        if (!open && selectedConnector) {
+        if (!open && (selectedConnector || selectedMultiChainConnector)) {
             setSelectedConnector(undefined)
+            setSelectedMultiChainConnector(undefined)
             setSelectedProvider(undefined)
         }
         setIsWalletModalOpen(open)
     }, [open])
 
     return (
-        <ConnectModalContext.Provider value={{ connect, cancel, selectedProvider, setSelectedProvider, selectedConnector, setSelectedConnector, isWalletModalOpen, goBack, onFinish, setOpen, open }}>
+        <ConnectModalContext.Provider value={{ connect, cancel, selectedProvider, setSelectedProvider, selectedConnector, setSelectedConnector, selectedMultiChainConnector, setSelectedMultiChainConnector, isWalletModalOpen, goBack, onFinish, setOpen, open }}>
             {children}
         </ConnectModalContext.Provider>
     )

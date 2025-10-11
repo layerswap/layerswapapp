@@ -2,7 +2,7 @@ import { Dispatch, FC, SetStateAction, useEffect, useMemo, useRef, useState } fr
 import useWallet from "../../hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
 import { InternalConnector, Wallet, WalletProvider } from "../../Models/WalletProvider";
-import { CircleX, Link2Off, RotateCw, Search, SlidersHorizontal, XCircle } from "lucide-react";
+import { CircleX, Link2Off, RotateCw, SlidersHorizontal } from "lucide-react";
 import { resolveWalletConnectorIcon } from "../../lib/wallets/utils/resolveWalletIcon";
 import { QRCodeSVG } from "qrcode.react";
 import CopyButton from "../buttons/copyButton";
@@ -10,24 +10,21 @@ import clsx from "clsx";
 import useWindowDimensions from "../../hooks/useWindowDimensions";
 import Connector from "./Connector";
 import { removeDuplicatesWithKey } from "./utils";
-import VaulDrawer from "../modal/vaulModal";
-import Image from "next/image";
 import { usePersistedState } from "../../hooks/usePersistedState";
 import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
 import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
 import { Checkbox } from "../shadcn/checkbox";
+import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
+import { ImageWithFallback } from "../Common/ImageWithFallback";
+import { SearchComponent } from "../Input/Search";
 
-const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
-    const { isMobile } = useWindowDimensions()
+const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();
-    const { setSelectedConnector, selectedProvider, setSelectedProvider, selectedConnector } = useConnectModal()
+    const { setSelectedConnector, selectedProvider, setSelectedProvider, selectedConnector, selectedMultiChainConnector, setSelectedMultiChainConnector } = useConnectModal()
     let [recentConnectors, setRecentConnectors] = usePersistedState<({ providerName?: string, connectorName?: string }[])>([], 'recentConnectors', 'localStorage');
     const [connectionError, setConnectionError] = useState<string | undefined>(undefined);
     const [searchValue, setSearchValue] = useState<string | undefined>(undefined)
-    const [isFocused, setIsFocused] = useState(false)
-    const [showEcosystemSeletion, setShowEcosystemSelection] = useState(false)
-    const [selectedMultiChainConnector, setSelectedMultiChainConnector] = useState<InternalConnector | undefined>(undefined)
-
+    const { isMobile: isMobileSize } = useWindowDimensions()
     const [isScrolling, setIsScrolling] = useState(false);
     const scrollTimeout = useRef<any>(null);
 
@@ -48,27 +45,14 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const connect = async (connector: InternalConnector, provider: WalletProvider) => {
         try {
             setConnectionError(undefined)
-            if (connector.isMultiChain) {
+            if (connector?.isMultiChain) {
                 setSelectedMultiChainConnector(connector)
-                return setShowEcosystemSelection(true)
+                return;
             }
             setSelectedConnector(connector)
             if (connector.installUrl) return
 
             const result = provider?.connectWallet && await provider.connectWallet({ connector })
-
-            window.safary?.track({
-                eventName: 'connected_wallet',
-                eventType: 'connect',
-                parameters: {
-                    custom_str_1_label: 'wallet_name',
-                    custom_str_1_value: connector.name,
-                    custom_str_2_label: 'network',
-                    custom_str_2_value: provider.id,
-                    custom_str_3_label: 'address',
-                    custom_str_3_value: result?.address || '',
-                }
-            })
 
             if (result && connector && provider) {
                 setRecentConnectors((prev) => {
@@ -114,10 +98,12 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const filteredProviders = providers.filter(p => !p.hideFromList)
     const featuredProviders = selectedProvider ? [selectedProvider] : filteredProviders
 
-    const allConnectors = featuredProviders.filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0).map((provider) =>
-        provider.availableWalletsForConnect?.filter(v => (isFocused || searchValue) ? (searchValue ? v.name.toLowerCase().includes(searchValue?.toLowerCase()) : false) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat()
+    const allFeaturedConnectors = useMemo(() => featuredProviders.filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0).map((provider) =>
+        provider.availableWalletsForConnect?.filter(v => searchValue ? (searchValue ? v.name.toLowerCase().includes(searchValue?.toLowerCase()) : false) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat(), [featuredProviders, searchValue])
+    const allHiddenConnectors = useMemo(() => featuredProviders.filter(g => g.availableHiddenWalletsForConnect && g.availableHiddenWalletsForConnect?.length > 0).map((provider) =>
+        provider.availableHiddenWalletsForConnect?.filter(v => searchValue ? (searchValue ? v.name.toLowerCase().includes(searchValue?.toLowerCase()) : false) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat(), [featuredProviders, searchValue])
 
-    const resolvedConnectors: InternalConnector[] = useMemo(() => removeDuplicatesWithKey(allConnectors, 'name'), [allConnectors])
+    const allConnectors: InternalConnector[] = useMemo(() => removeDuplicatesWithKey(([...allFeaturedConnectors, ...(searchValue ? allHiddenConnectors : [])] as InternalConnector[]).sort((a, b) => sortRecentConnectors(a, b, recentConnectors)), 'name'), [allFeaturedConnectors, allHiddenConnectors, searchValue])
 
     if (selectedConnector?.qr?.state) {
         const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
@@ -126,7 +112,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             <p className="text-secondary-text">
                 Scan the QR code with your phone
             </p>
-            <div className="w-full h-full bg-secondary-700 pb-3 pt-5 rounded-lg">
+            <div className="w-full h-full bg-secondary-600 pb-3 pt-5 rounded-lg">
                 <div className='flex flex-col justify-center items-center pt-2 w-fit mx-auto'>
                     {
                         selectedConnector?.qr.state == 'fetched' ?
@@ -153,7 +139,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                                 <ConnectorIcon className='h-[50px] w-[50px] absolute top-[calc(50%-25px)] right-[calc(50%-25px)]' />
                             </div>
                     }
-                    <div className='bg-secondary-500 text-secondary-text w-full px-2 py-1.5 rounded-md mt-3 flex justify-center items-center'>
+                    <div className='bg-secondary-400 text-secondary-text w-full px-2 py-1.5 rounded-md mt-3 flex justify-center items-center'>
                         <CopyButton toCopy={selectedConnector?.qr.value || ''}>Copy QR URL</CopyButton>
                     </div>
                 </div>
@@ -162,37 +148,34 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     }
 
     if (selectedConnector) {
-        const connector = allConnectors.find(c => c?.name === selectedConnector.name)
+        const connector = allFeaturedConnectors.find(c => c?.name === selectedConnector.name)
         const provider = featuredProviders.find(p => p.name === connector?.providerName)
         return <LoadingConnect
-            isMobile={isMobile}
-            onRetry={() => { connect(connector!, provider!) }}
+            onRetry={() => { (connector && provider) && connect(connector, provider) }}
             selectedConnector={selectedConnector}
             connectionError={connectionError}
         />
     }
+
+    if (selectedMultiChainConnector) {
+        return <MultichainConnectorPicker
+            selectedConnector={selectedMultiChainConnector}
+            allConnectors={allFeaturedConnectors as InternalConnector[]}
+            providers={featuredProviders}
+            connect={connect}
+        />
+    }
+
     return (
         <>
             <div className="text-primary-text space-y-3">
                 <div className="flex items-center gap-3">
-                    <div className="relative z-0 flex items-center px-3 rounded-lg bg-secondary-700 border border-secondary-500 w-full">
-                        <Search className="w-6 h-6 mr-2 text-primary-text-placeholder" />
-                        <input
-                            value={searchValue}
-                            onChange={(e) => setSearchValue(e.target.value)}
-                            onFocus={() => setIsFocused(true)}
-                            onBlur={() => setIsFocused(false)}
-                            placeholder="Search wallet"
-                            autoComplete="off"
-                            className="placeholder:text-primary-text-placeholder border-0 border-b-0 border-primary-text focus:border-primary-text appearance-none block py-2.5 px-0 w-full h-10 bg-transparent text-base outline-none focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-50"
-                        />
-                        {
-                            searchValue &&
-                            <button type="button" onClick={() => setSearchValue('')} className="absolute right-3">
-                                <XCircle className="w-4 h-4 text-primary-text-placeholder" />
-                            </button>
-                        }
-                    </div>
+                    <SearchComponent
+                        searchQuery={searchValue || ""}
+                        setSearchQuery={setSearchValue}
+                        placeholder={allHiddenConnectors.length > 300 ? "Search through 400+ wallets..." : "Search wallet"}
+                        className="w-full !mb-0"
+                    />
                     {
                         (!selectedProvider || selectedProvider?.isSelectedFromFilter) &&
                         <ProviderPicker
@@ -205,14 +188,14 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 <div
                     onScroll={handleScroll}
                     className={clsx('overflow-y-scroll -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar-thumb:bg-transparent', {
-                        'h-[55vh]': isMobile,
-                        'h-[265px]': !isMobile,
+                        'h-[55vh]': isMobileSize,
+                        'h-[265px]': !isMobileSize,
                         'styled-scroll': isScrolling
                     })}
                 >
                     <div className='grid grid-cols-2 gap-2'>
                         {
-                            resolvedConnectors.sort((a, b) => sortRecentConnectors(a, b, recentConnectors)).map(item => {
+                            allConnectors.map(item => {
                                 const provider = featuredProviders.find(p => p.name === item.providerName)
                                 const isRecent = recentConnectors?.some(v => v.connectorName === item.name)
                                 return (
@@ -229,29 +212,20 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                     </div>
                 </div>
             </div>
-            {
-                selectedMultiChainConnector &&
-                <MultichainConnectorModal
-                    selectedConnector={selectedMultiChainConnector}
-                    allConnectors={allConnectors as InternalConnector[]}
-                    providers={featuredProviders}
-                    showEcosystemSelection={showEcosystemSeletion}
-                    setShowEcosystemSelection={setShowEcosystemSelection}
-                    connect={connect}
-                />
-            }
         </>
     )
 }
 
-const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalConnector, connectionError: string | undefined, isMobile: boolean }> = ({ onRetry, selectedConnector, connectionError, isMobile }) => {
+const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalConnector, connectionError: string | undefined }> = ({ onRetry, selectedConnector, connectionError }) => {
     const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
+    const { isMobile: isMobileSize } = useWindowDimensions()
+    const isMobilePlatform = isMobile();
 
     if (selectedConnector.installUrl) {
         return <div
             className={clsx('w-full flex flex-col justify-center items-center font-semibold relative', {
-                'h-[60vh]': isMobile,
-                'h-[360px]': !isMobile,
+                'h-[60vh]': isMobileSize,
+                'h-[360px]': !isMobileSize,
             })}
         >
             <div className="flex flex-col gap-4 items-center justify-end row-start-2 row-span-1">
@@ -263,6 +237,7 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
                 </div>
                 <button
                     onClick={() => window.open(selectedConnector.installUrl, '_blank')}
+                    type="button"
                     className="px-3 py-1 rounded-full bg-secondary-600 text-primary-500 font-semibold text-base hover:brightness-125 transition-all duration-200"
                 >
                     INSTALL
@@ -274,8 +249,8 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
     return (
         <div
             className={clsx('w-full flex flex-col justify-center items-center font-semibold relative', {
-                'h-[60vh]': isMobile,
-                'h-[360px]': !isMobile,
+                'h-[60vh]': isMobileSize,
+                'h-[360px]': !isMobileSize,
                 'pb-20': connectionError
             })}
         >
@@ -301,15 +276,15 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
                     {
                         !connectionError &&
                         <div className="py-1 text-center">
-                            <p className="text-base font-medium">Click connect in your wallet popup</p>
-                            <p className="text-sm font-normal text-secondary-text">Don&apos;t see a pop up? Check your other browser windows</p>
+                            <p className="text-base font-medium">{isMobilePlatform ? 'Approve connection in your wallet' : 'Approve connection in your wallet pop-up'}</p>
+                            <p className="text-sm font-normal text-secondary-text">{isMobilePlatform ? "Don't see the request? Check your wallet app." : "Don't see a pop-up? Check your browser windows."}</p>
                         </div>
                     }
                 </div>
             }
             {
                 connectionError &&
-                <div className={`bg-secondary-700 rounded-lg flex flex-col gap-1.5 items-center p-3 w-full absolute bottom-0`}>
+                <div className={`bg-secondary-500 rounded-lg flex flex-col gap-1.5 items-center p-3 w-full absolute bottom-0`}>
                     <div className="flex w-full gap-1 text-sm text-secondary-text justify-start">
                         <CircleX className="w-5 h-5 stroke-primary-500 mr-1 mt-0.5 flex-shrink-0" />
                         <div className='flex flex-col gap-1'>
@@ -321,7 +296,7 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
                     </div>
                     <button
                         type="button"
-                        className="flex gap-1.5 items-center justify-center bg-secondary-500 w-full text-primary-text p-4 border-none rounded-lg cursor-pointer text-sm font-medium leading-4"
+                        className="flex gap-1.5 items-center justify-center bg-secondary-400 w-full text-primary-text p-4 border-none rounded-lg cursor-pointer text-sm font-medium leading-4"
                         onClick={onRetry}
                     >
                         <RotateCw className='h-4 w-4' />
@@ -347,7 +322,7 @@ const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: st
     return (
         <Popover open={open} onOpenChange={() => setOpen(!open)}>
             <PopoverTrigger
-                className={clsx('p-3 border border-secondary-500 rounded-lg bg-secondary-700 hover:brightness-125', {
+                className={clsx('p-3 border border-secondary-500 rounded-lg bg-secondary-600 hover:brightness-125', {
                     '!bg-secondary-500 brightness-125': !!selectedProviderName,
                 })}
             >
@@ -356,12 +331,15 @@ const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: st
             <PopoverContent align="end" className="min-w-40 !text-primary-text p-2 space-y-1 !bg-secondary-600 !rounded-xl">
                 {
                     values.sort().map((item, index) => (
-                        <div key={index} onClick={() => onSelect(item)} className="px-3 py-1 text-left flex items-center w-full gap-3 hover:bg-secondary-800 rounded-lg transition-colors duration-200 text-secondary-text cursor-pointer">
+                        <div key={index} className="px-3 py-1 text-left flex items-center w-full gap-3 hover:bg-secondary-800 rounded-lg transition-colors duration-200 text-secondary-text cursor-pointer">
                             <Checkbox
                                 id={item}
                                 checked={selectedProviderName === item}
+                                onClick={() => onSelect(item)}
                             />
-                            {item}
+                            <label htmlFor={item} className="w-full cursor-pointer">
+                                {item}
+                            </label>
                         </div>
                     ))
                 }
@@ -375,64 +353,55 @@ type MultichainConnectorModalProps = {
     selectedConnector: WalletModalConnector,
     allConnectors: InternalConnector[],
     providers: WalletProvider[],
-    showEcosystemSelection: boolean,
-    setShowEcosystemSelection: Dispatch<SetStateAction<boolean>>
     connect: (connector: InternalConnector, provider: WalletProvider) => Promise<void>
 }
 
-const MultichainConnectorModal: FC<MultichainConnectorModalProps> = ({ selectedConnector, allConnectors, providers, setShowEcosystemSelection, showEcosystemSelection, connect }) => {
-    const Icon = resolveWalletConnectorIcon({ connector: selectedConnector.name, iconUrl: selectedConnector.icon })
+const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ selectedConnector, allConnectors, providers, connect }) => {
+    const Icon = resolveWalletConnectorIcon({ connector: selectedConnector.id, iconUrl: selectedConnector.icon })
     return (
-        <VaulDrawer
-            show={showEcosystemSelection}
-            setShow={setShowEcosystemSelection}
-            modalId={"selectEcosystem"}
-            header={
-                <div>
-                    <div className="flex items-center gap-1">
-                        <Icon className="w-5 h-auto" />
-                        <p className="text-xl font-semibold"><span>Connect</span> <span>{selectedConnector.name}</span></p>
-                    </div>
+        <div>
+            <div className="flex flex-col gap-4 py-15">
+                <div className="flex justify-center gap-1">
+                    <Icon className="w-14 h-auto rounded-lg" />
                 </div>
-            }
-        >
-            <VaulDrawer.Snap id="item-1" className="flex flex-col items-center gap-4 pb-6">
-                <p className="text-base text-left text-secondary-text">
+                <p className="text-base text-center text-primary-text">
                     <span>{selectedConnector.name}</span> <span>supports multiple network types. Please select the one you&apos;d like to use.</span>
                 </p>
-                <div className="flex flex-col gap-2 w-full">
-                    {
-                        allConnectors.filter(c => c?.name === selectedConnector.name)?.map((connector, index) => {
-                            const provider = providers.find(p => p.name === connector?.providerName)
-                            return (
-                                <button
-                                    key={index}
-                                    onClick={async () => {
-                                        setShowEcosystemSelection(false);
-                                        await connect(connector!, provider!)
-                                    }}
-                                    className="w-full h-fit flex items-center gap-3 bg-secondary-700 hover:bg-secondary-500 transition-colors duration-200 rounded-xl p-3"
-                                >
-                                    {
-                                        provider?.providerIcon &&
-                                        <Image
-                                            className="w-8 h-8 rounded-md"
-                                            width={30}
-                                            height={30}
-                                            src={provider.providerIcon}
-                                            alt={provider.name}
-                                        />
-                                    }
-                                    <p>
-                                        {connector?.providerName}
-                                    </p>
-                                </button>
-                            )
-                        })
-                    }
-                </div>
-            </VaulDrawer.Snap>
-        </VaulDrawer>
+
+            </div>
+
+            <div className="flex flex-col gap-2 w-full">
+                {
+                    allConnectors.filter(c => c?.name === selectedConnector.name)?.map((connector, index) => {
+                        const provider = providers.find(p => p.name === connector?.providerName)
+                        return (
+                            <button
+                                type="button"
+                                key={index}
+                                onClick={async () => {
+                                    await connect(connector!, provider!)
+                                }}
+                                className="w-full h-fit flex items-center gap-3 bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl p-3"
+                            >
+                                {
+                                    provider?.providerIcon &&
+                                    <ImageWithFallback
+                                        className="w-8 h-8 rounded-md"
+                                        width={30}
+                                        height={30}
+                                        src={provider.providerIcon}
+                                        alt={provider.name}
+                                    />
+                                }
+                                <p>
+                                    {connector?.providerName}
+                                </p>
+                            </button>
+                        )
+                    })
+                }
+            </div>
+        </div>
     )
 }
 
@@ -452,4 +421,4 @@ function sortRecentConnectors(a: { name: string, type?: string }, b: { name: str
     return 0;
 }
 
-export default ConnectorsLsit
+export default ConnectorsList

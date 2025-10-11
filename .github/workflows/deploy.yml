@@ -1,0 +1,51 @@
+name: Storybook PR Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: ["**"]
+
+permissions:
+  contents: write
+  pull-requests: write 
+
+concurrency:
+  group: "pr-preview-${{ github.ref }}"
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4 
+        with:
+          node-version: 20
+          cache: yarn
+      - run: yarn install --frozen-lockfile --ignore-engines
+      - run: yarn build-storybook
+
+      # Publishes to: https://<owner>.github.io/<repo>/pr-preview/pr-<PR_NUMBER>/
+      - name: Deploy PR Preview to Pages
+        id: preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: storybook-static
+          umbrella-dir: pr-preview
+          comment: false  # we'll post our own comment below
+
+      - name: Comment preview link on PR (sticky)
+        if: steps.preview.outputs.deployment-action == 'deploy'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: storybook-preview
+          message: |
+            🚀 **Storybook preview:** ${{ steps.preview.outputs.preview-url }}
+
+      # Make the link visible in the job summary
+      - name: Show Preview URL
+        if: always()
+        run: |
+          echo "Preview: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr-preview/pr-${{ github.event.pull_request.number }}/" >> $GITHUB_STEP_SUMMARY

@@ -1,61 +1,54 @@
-import { FC, useState, useEffect } from 'react'
-import { useSwapDataState, useSwapDataUpdate } from '../../../context/swap';
-import WalletIcon from '../../icons/WalletIcon';
-import useWallet from '../../../hooks/useWallet';
-import AddressWithIcon from '../../Input/Address/AddressPicker/AddressWithIcon';
-import { AddressGroup } from '../../Input/Address/AddressPicker';
-import { ChevronRight } from 'lucide-react';
-import { truncateDecimals } from '../../utils/RoundDecimals';
-import VaulDrawer from '../../modal/vaulModal';
-import { Wallet } from '../../../Models/WalletProvider';
-import useSWRBalance from '../../../lib/balances/useSWRBalance';
-import { useSettingsState } from '../../../context/settings';
-import WalletsList from '../../Wallet/WalletsList';
+import { FC, useMemo } from 'react'
+import WalletIcon from '@/components/icons/WalletIcon';
+import useWallet from '@/hooks/useWallet';
+import AddressWithIcon from '@/components/Input/Address/AddressPicker/AddressWithIcon';
+import { AddressGroup } from '@/components/Input/Address/AddressPicker';
+import { truncateDecimals } from '@/components/utils/RoundDecimals';
+import VaulDrawer from '@/components/modal/vaulModal';
+import { SelectAccountProps, Wallet } from '@/Models/WalletProvider';
+import { useSettingsState } from '@/context/settings';
+import WalletsList from '@/components/Wallet/WalletsList';
+import { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
+import { useSelectedAccount, useUpdateBalanceAccount } from '@/context/balanceAccounts';
+import { useBalance } from '@/lib/balances/useBalance';
 
-const WalletTransferContent: FC = () => {
+type Props = {
+    swapData: SwapBasicData
+    openModal: boolean;
+    setOpenModal: (show: boolean) => void
+}
+const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal, swapData }) => {
     const { networks } = useSettingsState()
-    const { swapResponse, selectedSourceAccount } = useSwapDataState()
-    const { setSelectedSourceAccount } = useSwapDataUpdate()
-    const { swap } = swapResponse || {}
-    const { source_token, source_network: swap_source_network } = swap || {}
+
+    const { source_token, source_network: swap_source_network } = swapData
     const source_network = swap_source_network && networks.find(n => n.name === swap_source_network?.name)
     const { provider } = useWallet(source_network, 'withdrawal')
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
     const availableWallets = provider?.connectedWallets?.filter(c => !c.isNotAvailable) || []
+    const selectSourceAccount = useUpdateBalanceAccount("from");
 
-    const [openModal, setOpenModal] = useState(false)
-
-    const changeWallet = async (wallet: Wallet, address: string) => {
-        provider?.switchAccount && provider.switchAccount(wallet, address)
-        setSelectedSourceAccount({ wallet, address })
+    const changeWallet = async (props: SelectAccountProps) => {
+        selectSourceAccount({
+            id: props.walletId,
+            address: props.address,
+            providerName: props.providerName
+        })
         setOpenModal(false)
     }
 
-    const selectedWallet = selectedSourceAccount?.wallet
-    const activeWallet = provider?.activeWallet
+    const { balances } = useBalance(selectedSourceAccount?.address, source_network)
+    const { wallets } = useWallet(source_network, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
 
-    useEffect(() => {
-        if (!selectedSourceAccount && activeWallet) {
-            setSelectedSourceAccount({
-                wallet: activeWallet,
-                address: activeWallet.address
-            })
-        }
-    }, [activeWallet?.address, setSelectedSourceAccount, provider, selectedSourceAccount?.address])
-
-    const { balance, isBalanceLoading } = useSWRBalance(selectedSourceAccount?.address, source_network)
-
-    const walletBalance = source_network && balance?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
+    const walletBalance = source_network && balances?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
 
     let accountAddress: string | undefined = ""
-    if (swap?.source_exchange) {
-        accountAddress = swap.exchange_account_name || ""
-    }
-    else if (selectedSourceAccount) {
+    if (selectedSourceAccount) {
         accountAddress = selectedSourceAccount.address || "";
     }
 
-    if (!accountAddress || (swap?.source_exchange && !swap.exchange_account_connected)) {
+    if (!accountAddress) {
         return <>
             <div className='flex justify-center'>
                 <WalletIcon className='w-12 text-secondary-800/70' />
@@ -66,16 +59,18 @@ const WalletTransferContent: FC = () => {
     return <>
         <div className="grid content-end">
             {
-                selectedWallet &&
+                selectedSourceAccount &&
                 source_network &&
-                <div onClick={() => setOpenModal(true)} className="cursor-pointer group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-sm mt-1.5 text-primary-text bg-secondary-700 border-secondary-500 border disabled:cursor-not-allowed h-12 leading-4 font-medium w-full px-3 py-7">
+                <div className="group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-xs mt-1.5 text-primary-text bg-secondary-500 disabled:cursor-not-allowed h-12 leading-4 font-medium w-full py-7">
                     <AddressWithIcon
-                        addressItem={{ address: accountAddress, group: AddressGroup.ConnectedWallet }}
-                        connectedWallet={selectedWallet}
+                        addressItem={{ address: accountAddress, group: AddressGroup.ConnectedWallet, wallet: wallet }}
                         network={source_network}
-                        balance={(walletBalanceAmount && source_token) ? { amount: Number(walletBalanceAmount), symbol: source_token?.symbol, isLoading: isBalanceLoading } : undefined}
+                        onDisconnect={() => wallet?.disconnect && wallet?.disconnect()}
                     />
-                    <ChevronRight className="h-4 w-4" />
+                    <div className="flex flex-col col-start-8 col-span-3 items-end font-normal text-secondary-text text-xs">
+                        <p>Balance</p>
+                        <p className='flex items-center gap-1'><span>{truncateDecimals(Number(walletBalanceAmount), walletBalance?.decimals)}</span> <span>{walletBalance?.token}</span></p>
+                    </div>
                 </div>
             }
         </div>

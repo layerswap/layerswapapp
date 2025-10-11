@@ -125,6 +125,20 @@ export default function useFuel(): WalletProvider {
         }
     }
 
+    const switchChain = async (connector: Wallet, chainId: string | number) => {
+        try {
+            const fuelConnector = connectors.find(c => c.name === connector.id)
+
+            if (!fuelConnector) throw new Error('Connector not found')
+
+            const res = await fuelConnector.selectNetwork({ chainId: Number(chainId) })
+
+            if (!res) throw new Error('Could not switch chain')
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
     const connectedConnectors = useMemo(() => connectors.filter(w => w.connected), [connectors])
 
     useEffect(() => {
@@ -185,10 +199,11 @@ export default function useFuel(): WalletProvider {
         }
     })
 
-    const provider = {
+    const provider: WalletProvider = {
         connectWallet,
         disconnectWallets,
         switchAccount,
+        switchChain,
         availableWalletsForConnect,
         autofillSupportedNetworks: commonSupportedNetworks,
         withdrawalSupportedNetworks: commonSupportedNetworks,

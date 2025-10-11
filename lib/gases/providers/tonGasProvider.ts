@@ -1,8 +1,8 @@
 import { Network } from "../../../Models/Network";
 import KnownInternalNames from "../../knownIds";
-import { Provider } from "./types";
+import { GasProvider } from "./types";
 
-export class TonGasProvider implements Provider {
+export class TonGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
         return KnownInternalNames.Networks.TONMainnet.includes(network.name)
     }

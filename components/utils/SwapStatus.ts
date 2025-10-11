@@ -7,6 +7,6 @@ export const ResolvePollingInterval = (step: SwapStatus): number => {
         case SwapStatus.Completed:
             return 0;
         default:
-            return 7000;
+            return 1000;
     }
 }

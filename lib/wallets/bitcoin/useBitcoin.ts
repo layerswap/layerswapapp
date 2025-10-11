@@ -4,11 +4,13 @@ import { InternalConnector, Wallet, WalletProvider } from "../../../Models/Walle
 import { useConnectModal } from "../../../components/WalletModal"
 import { useConnect, useAccount, useConfig } from '@bigmi/react'
 import { disconnect } from "@bigmi/client"
-import { useEffect, useMemo, useState } from "react"
+import { useMemo } from "react"
 import convertSvgComponentToBase64 from "../../../components/utils/convertSvgComponentToBase64"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon"
 import KnownInternalNames from "../../knownIds"
 import { Connector, CreateConnectorFn } from "@bigmi/client"
+import { isValidAddress } from "@/lib/address/validator"
+import { useBitcoinConnectors } from "@/components/WalletProviders/BitcoinProvider"
 
 const bitcoinNames = [KnownInternalNames.Networks.BitcoinMainnet, KnownInternalNames.Networks.BitcoinTestnet]
 
@@ -16,7 +18,7 @@ export default function useBitcoin(): WalletProvider {
     const name = 'Bitcoin'
     const id = 'bitcoin'
     const { networks } = useSettingsState()
-    const [resolvedConnectors, setResolvedConnectors] = useState<InternalConnector[]>([])
+    const { connectors: resolvedConnectors } = useBitcoinConnectors()
 
     const commonSupportedNetworks = [
         ...networks.filter(network => network.type === NetworkType.Bitcoin).map(l => l.name),
@@ -26,6 +28,10 @@ export default function useBitcoin(): WalletProvider {
     const { connectAsync, connectors } = useConnect()
     const config = useConfig()
     const { setSelectedConnector } = useConnectModal()
+
+    const switchAccount = async (wallet: Wallet, address: string) => {
+        // as we do not have multiple accounts management we will leave the method empty
+    }
 
     const disconnectWallet = async (connectorName: string) => {
         try {
@@ -66,11 +72,20 @@ export default function useBitcoin(): WalletProvider {
             if (!result.accounts) throw new Error("No result from connector")
 
             const address = result.accounts[0]
+            const network = networks.find(n => commonSupportedNetworks.includes(n.name))
+            const wrongChanin = !isValidAddress(address, network)
+
+            if (address && wrongChanin) {
+                await disconnect(config, { connector })
+                const isMainnet = network?.name === KnownInternalNames.Networks.BitcoinMainnet
+                const errorMessage = `Please switch the network in your wallet to ${isMainnet ? 'Mainnet' : 'Testnet'} and click connect again`
+                throw new Error(errorMessage)
+            }
 
             const wallet = resolveWallet({
                 activeConnection: { address: address, id: connector.id },
                 connector,
-                addresses: result.accounts as unknown as string[],
+                addresses: [address],
                 networks,
                 discconnect: disconnectWallet,
                 supportedNetworks: {
@@ -100,7 +115,7 @@ export default function useBitcoin(): WalletProvider {
         const wallet = resolveWallet({
             activeConnection: { address: account.address || '', id: connector.id },
             connector,
-            addresses: account.addresses as string[],
+            addresses: account.address ? [account.address] : [],
             networks,
             discconnect: disconnectWallet,
             supportedNetworks: {
@@ -116,25 +131,6 @@ export default function useBitcoin(): WalletProvider {
         return wallet
     }, [account, connectors])
 
-    useEffect(() => {
-        (async () => {
-            const resolvedConnectors: InternalConnector[] = await Promise.all(connectors.map(async (connector) => {
-                const provider = await connector.getProvider()
-                const isInjected = !!provider
-                const installLink = !isInjected ? connectorsConfigs.find(c => c.id === connector.id)?.installLink : undefined
-                const internalConnector: InternalConnector = {
-                    name: connector.name,
-                    id: connector.id,
-                    icon: connector.icon,
-                    type: isInjected ? 'injected' : 'other',
-                    installUrl: installLink,
-                }
-                return internalConnector
-            }))
-            setResolvedConnectors(resolvedConnectors)
-        })()
-    }, [connectors])
-
     const providerIcon = networks.find(n => commonSupportedNetworks.some(name => name === n.name))?.logo
 
     const provider: WalletProvider = {
@@ -149,7 +145,8 @@ export default function useBitcoin(): WalletProvider {
         name,
         id,
         providerIcon,
-        unsupportedPlatforms: ["mobile"]
+        unsupportedPlatforms: ["mobile"],
+        switchAccount
     }
 
     return provider
@@ -187,7 +184,7 @@ const resolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
         internalId: connector.id,
         isActive: accountIsActive,
         address: addresses[0],
-        addresses: addresses,
+        addresses: [addresses[0]],
         displayName: walletname,
         providerName,
         icon: resolveWalletConnectorIcon({ connector: connector.name, address: addresses[0], iconUrl: connector.icon }),
@@ -201,41 +198,3 @@ const resolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
 
     return wallet
 }
-
-const connectorsConfigs = [
-    {
-        id: "XverseProviders.BitcoinProvider",
-        name: "Xverse",
-        installLink: "https://www.xverse.app/download"
-    },
-    {
-        id: "app.phantom.bitcoin",
-        name: 'Phantom',
-        installLink: "https://phantom.com/download"
-    },
-    {
-        id: "unisat",
-        name: 'UniSat',
-        installLink: "https://unisat.io/"
-    },
-    {
-        id: "io.xdefi.bitcoin",
-        name: 'Ctrl',
-        installLink: "https://ctrl.xyz/download/"
-    },
-    {
-        id: "com.okex.wallet.bitcoin",
-        name: 'OKX Wallet',
-        installLink: "https://web3.okx.com/"
-    },
-    {
-        id: "so.onekey.app.wallet.bitcoin",
-        name: 'OneKey',
-        installLink: "https://onekey.so/download/"
-    },
-    {
-        id: "LeatherProvider",
-        name: 'Leather',
-        installLink: "https://leather.io/"
-    }
-]

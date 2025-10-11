@@ -32,11 +32,11 @@ const Banner: FC<BannerProps> = ({ localStorageId, desktopMessage, mobileMessage
                             <span className="hidden md:inline">{desktopMessage}</span>
                         </p>
                     </div>
-                    <div className="order-2 flex-shrink-0 sm:order-3 sm:ml-2">
+                    <div className="order-2 shrink-0 sm:order-3 sm:ml-2">
                         <button
                             type="button"
                             onClick={() => onClickClose()}
-                            className="-mr-1 flex p-2 rounded-md hover:bg-primary-400 focus:outline-none focus:ring-2 focus:ring-white"
+                            className="-mr-1 flex p-2 rounded-md hover:bg-primary-400 focus:outline-hidden focus:ring-2 focus:ring-white"
                         >
                             <span className="sr-only">Dismiss</span>
                             <X className="h-4 w-5 text-primary-text" aria-hidden="true" />

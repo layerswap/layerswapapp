@@ -1,11 +1,11 @@
 export const TRANSITIONS = {
-  DURATION: 0.5,
+  DURATION: 0.1,
   EASE: [0.32, 0.72, 0, 1],
 };
 
-export const VELOCITY_THRESHOLD = 0.4;
+export const VELOCITY_THRESHOLD = 0.1;
 
-export const CLOSE_THRESHOLD = 0.25;
+export const CLOSE_THRESHOLD = 0.1;
 
 export const SCROLL_LOCK_TIMEOUT = 100;
 

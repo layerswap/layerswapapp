@@ -1,15 +1,15 @@
 
 import { GasProps } from "../../../Models/Balance"
 import { NetworkType, Network, Token } from "../../../Models/Network"
-import { Provider } from "./types"
+import { GasProvider } from "./types"
 import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, http, parseEther, serializeTransaction } from "viem";
 import { erc20Abi } from "viem";
-import { datadogRum } from "@datadog/browser-rum";
 import formatAmount from "../../formatAmount";
 import { publicActionsL2 } from 'viem/op-stack'
 import resolveChain from "../../resolveChain";
+import posthog from "posthog-js";
 
-export class EVMGasProvider implements Provider {
+export class EVMGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
         return network.type === NetworkType.EVM && !!network.token
     }
@@ -18,7 +18,7 @@ export class EVMGasProvider implements Provider {
 
         const chainId = Number(network?.chain_id)
 
-        if (!network || !address || !chainId || !recipientAddress) {
+        if (!network || !address || !chainId || !recipientAddress || !network.token) {
             return
         }
 
@@ -44,13 +44,15 @@ export class EVMGasProvider implements Provider {
                     from: network,
                     currency: token,
                     destination: recipientAddress as `0x${string}`,
-                    nativeToken: token
+                    nativeToken: network.token
                 }
             )
 
             const gas = await gasProvider.resolveGas()
 
-            return gas
+            if (gas) {
+                return { gas, token: network.token }
+            }
         }
         catch (e) {
             console.log(e)
@@ -126,7 +128,14 @@ abstract class getEVMGas {
             const error = new Error(e)
             error.name = "GasPriceError"
             error.cause = e
-            datadogRum.addError(error);
+            posthog.capture('$exception', {
+                name: error.name,
+                message: error.message,
+                stack: error.stack,
+                cause: error.cause,
+                where: 'getGasPrice',
+                severity: 'error',
+            })
         }
     }
     private async estimateFeesPerGas() {
@@ -137,7 +146,14 @@ abstract class getEVMGas {
             const error = new Error(e)
             error.name = "FeesPerGasError"
             error.cause = e
-            datadogRum.addError(error);
+            posthog.capture('$exception', {
+                name: error.name,
+                message: error.message,
+                stack: error.stack,
+                cause: error.cause,
+                where: 'feesPerGasError',
+                severity: 'error',
+            })
         }
     }
     private async estimateMaxPriorityFeePerGas() {
@@ -148,7 +164,14 @@ abstract class getEVMGas {
             const error = new Error(e)
             error.name = "MaxPriorityFeePerGasError"
             error.cause = e
-            datadogRum.addError(error);
+            posthog.capture('$exception', {
+                name: error.name,
+                message: error.message,
+                stack: error.stack,
+                cause: error.cause,
+                where: 'maxPriorityFeePerGasError',
+                severity: 'error',
+            })
         }
     }
 
@@ -283,7 +306,7 @@ export default class getOptimismGas extends getEVMGas {
             data: serializedTransaction,
             to: this.destination,
             account: this.account,
-            gasPriceOracleAddress: this.from.metadata.evm_oracle_contract as `0x${string}`,
+            gasPriceOracleAddress: this.from.metadata?.evm_oracle_contract as `0x${string}`,
             gasPrice: gasPrice as any
         })
 

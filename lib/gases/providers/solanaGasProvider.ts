@@ -1,9 +1,9 @@
 import { GasProps } from "../../../Models/Balance";
 import { Network, NetworkType } from "../../../Models/Network";
 import formatAmount from "../../formatAmount";
-import { Provider } from "./types";
+import { GasProvider } from "./types";
 
-export class SolanaGasProvider implements Provider {
+export class SolanaGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
         return network.type === NetworkType.Solana
     }
@@ -34,7 +34,8 @@ export class SolanaGasProvider implements Provider {
 
             const formatedGas = formatAmount(result.value, network.token?.decimals)
 
-            return formatedGas
+            if (formatedGas) return { gas: formatedGas, token: network.token }
+
         }
         catch (e) {
             console.log(e)

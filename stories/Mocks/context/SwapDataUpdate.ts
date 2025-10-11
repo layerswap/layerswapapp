@@ -1,14 +1,18 @@
-import { UpdateInterface } from "../../../context/swap"
+import { UpdateSwapInterface } from "../../../context/swap"
 
-const MockFunctions: UpdateInterface = {
-    setSelectedSourceAccount: () => { throw new Error("Not implemented") },
+const MockFunctions: UpdateSwapInterface = {
     createSwap: () => { throw new Error("Not implemented") },
     setCodeRequested: () => { throw new Error("Not implemented") },
     mutateSwap: () => { throw new Error("Not implemented") },
     setDepositAddressIsFromAccount: () => { throw new Error("Not implemented") },
-    setWithdrawType: () => {  },
+    setWithdrawType: () => { },
     setInterval: () => { console.log("set interval called") },
     setSwapId: () => { throw new Error("Not implemented") },
+    setSubmitedFormValues: () => { throw new Error("Not implemented") },
+    setQuoteLoading: () => { throw new Error("Not implemented") },
+    setSwapModalOpen: function (value: boolean): void {
+        throw new Error("Function not implemented.")
+    }
 }
 
 
