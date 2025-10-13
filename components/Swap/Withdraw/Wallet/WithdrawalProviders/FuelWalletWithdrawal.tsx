@@ -1,6 +1,5 @@
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import useWallet from '@/hooks/useWallet';
-import WalletIcon from '@/components/icons/WalletIcon';
 import { ButtonWrapper, ChangeNetworkMessage, ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import {
     useSelectNetwork,
@@ -9,7 +8,7 @@ import {
 } from '@fuels/react';
 import { coinQuantityfy, CoinQuantityLike, Provider, ScriptTransactionRequest } from 'fuels';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
-import TransactionMessages from '../../messages/TransactionMessages';
+import ActionMessages from '../../messages/TransactionMessages';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 
 export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
@@ -152,18 +151,18 @@ const ChangeNetworkButton: FC<{ chainId: number, network: string, onChange: () =
 
 const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> = ({ isLoading, error }) => {
     if (isLoading) {
-        return <TransactionMessages.ConfirmTransactionMessage />
+        return <ActionMessages.ConfirmTransactionMessage />
     }
     else if (error === "The account(s) sending the transaction don't have enough funds to cover the transaction."
         || error === "the target cannot be met due to no coins available or exceeding the 255 coin limit."
     ) {
-        return <TransactionMessages.InsufficientFundsMessage />
+        return <ActionMessages.InsufficientFundsMessage />
     }
     else if (error === "Request cancelled without user response!" || error === "User rejected the transaction!" || error === "User canceled sending transaction") {
-        return <TransactionMessages.TransactionRejectedMessage />
+        return <ActionMessages.TransactionRejectedMessage />
     }
     else if (error) {
-        return <TransactionMessages.UexpectedErrorMessage message={error} />
+        return <ActionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>
 }

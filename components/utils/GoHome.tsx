@@ -26,7 +26,7 @@ const GoHomeButton: FC<Props> = (({ className, children }) => {
                             <div>
                                 <LayerswapMobileLogo
                                     className={clsx(
-                                        "block md:hidden px-4 h-4 w-auto text-logo fill-primary-text",
+                                        "block md:hidden h-4 w-auto text-logo fill-primary-text",
                                         className
                                     )}
                                     onClick={goHome}
