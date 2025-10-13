@@ -8,7 +8,7 @@ import { resolveRouteValidation } from '@/hooks/useRouteValidation';
 import { useSwapDataState } from './swap';
 import { useSelectedAccount } from './balanceAccounts';
 
-interface ValidationDetails {
+export interface ValidationDetails {
     title?: string;
     type?: string;
     icon?: React.ReactNode;
