@@ -97,8 +97,18 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         && Number(debouncedAmount) > 0
         && (!amountRange || Number(debouncedAmount) >= (amountRange?.data?.min_amount || 0) && Number(debouncedAmount) <= (amountRange?.data?.max_amount || 0))
 
-    const quoteURL = (canGetQuote && !isDebouncing) ?
-        `/quote?source_network=${from}&source_token=${fromCurrency}&destination_network=${to}&destination_token=${toCurrency}&amount=${debouncedAmount}&refuel=${!!refuel}&use_deposit_address=${use_deposit_address}&slippage=${slippage}` : null
+    const quoteURL = (canGetQuote && !isDebouncing)
+        ? buildQuoteUrl({
+            sourceNetwork: from!,
+            sourceToken: fromCurrency!,
+            destinationNetwork: to!,
+            destinationToken: toCurrency!,
+            amount: debouncedAmount!,
+            refuel: !!refuel,
+            useDepositAddress: use_deposit_address,
+            slippage,
+        })
+        : null
 
     const { cache } = useSWRConfig();
     const isQuoteLoading = useLoadingStore((state) => state.isLoading);
@@ -168,6 +178,46 @@ export function transformSwapDataToQuoteArgs(swapData: SwapBasicData | undefined
         to: swapData?.destination_network.name,
         toCurrency: swapData?.destination_token.symbol,
     }
+}
+
+type QuoteUrlArgs = {
+    sourceNetwork: string
+    sourceToken: string
+    destinationNetwork: string
+    destinationToken: string
+    amount: string | number
+    refuel: boolean
+    useDepositAddress: boolean
+    slippage?: number
+}
+
+export function buildQuoteUrl(args: QuoteUrlArgs): string {
+    const {
+        sourceNetwork,
+        sourceToken,
+        destinationNetwork,
+        destinationToken,
+        amount,
+        refuel,
+        useDepositAddress,
+        slippage,
+    } = args
+
+    const params = new URLSearchParams({
+        source_network: sourceNetwork,
+        source_token: sourceToken,
+        destination_network: destinationNetwork,
+        destination_token: destinationToken,
+        amount: String(amount),
+        refuel: String(!!refuel),
+        use_deposit_address: useDepositAddress ? 'true' : 'false',
+    })
+
+    if (slippage !== undefined) {
+        params.append('slippage', String(slippage))
+    }
+
+    return `/quote?${params.toString()}`
 }
 
 export const getLimits = async (swapValues: LimitsQueryOptions) => {

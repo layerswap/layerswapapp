@@ -19,10 +19,6 @@ export const Slippage = ({ quoteData, values }: SlippageProps) => {
     const [autoSlippage, setAutoSlippage] = useState(!slippage)
     const inputRef = useRef<HTMLInputElement | null>(null)
     const [editingCustomSlippage, setEditingCustomSlippage] = useState(false)
-    console.log("editingCustomSlippage", editingCustomSlippage)
-    console.log("autoSlippage", autoSlippage)
-    console.log("slippage", slippage)
-    console.log("editingSlippage", editingSlippage)
 
     useEffect(() => {
         if (!isActive && editingSlippage) {
@@ -66,7 +62,7 @@ export const Slippage = ({ quoteData, values }: SlippageProps) => {
                 !editingSlippage &&
                 <div className="text-right text-primary-text flex items-center gap-1">
                     {!slippage && <div className="text-secondary-text">(Auto)</div>}
-                    <span>{slippage || quoteData?.slippage}%</span>
+                    <span>{(((slippage ?? quoteData?.slippage) ?? 0) * 100).toFixed(2)}%</span>
                     <div
                         onClick={() => { setEditingSlippage(true); activate() }}
                         className="cursor-pointer hover:bg-secondary-400 p-1 bg-secondary-300 rounded-md text-secondary-text">
@@ -87,15 +83,13 @@ export const Slippage = ({ quoteData, values }: SlippageProps) => {
 
                     {!editingCustomSlippage &&
                         <div
-                            className="flex items-center gap-1 text-secondary-text px-2 py-2 -my-1 border border-secondary-300 rounded-lg font-medium leading-4 cursor-pointer"
+                            className="flex items-center gap-1 text-secondary-text text-sm px-2 py-2 -my-1 border border-secondary-300 rounded-lg font-normal leading-4 cursor-pointer"
                             onClick={() => {
                                 setEditingCustomSlippage(true);
                                 setTimeout(() => inputRef.current?.focus(), 0)
                                 setAutoSlippage(false)
                             }}>
-                            <span>
-                                {quoteData?.slippage}
-                            </span>
+                            <span>{(((quoteData?.slippage) ?? 0) * 100).toFixed(2)}</span>
                             <span>
                                 %
                             </span>
@@ -103,19 +97,19 @@ export const Slippage = ({ quoteData, values }: SlippageProps) => {
                     }
                     {
                         editingCustomSlippage &&
-                        <div className="flex items-center gap-1 text-secondary-text px-2 py-2 -my-1 border border-secondary-300 rounded-lg font-medium leading-4 focus-within:outline-none focus-within:ring-0">
+                        <div className="flex items-center gap-1 text-secondary-text text-sm px-2 py-2 -my-1 border border-secondary-300 rounded-lg font-normal leading-4 focus-within:outline-none focus-within:ring-0">
                             <input
                                 type="number"
                                 inputMode="decimal"
                                 max={80}
                                 ref={inputRef}
                                 className="w-10 bg-transparent border-none outline-none focus:outline-none focus-visible:outline-none ring-0 focus:ring-0 focus-visible:ring-0 focus:border-transparent focus:shadow-none text-primary-text text-sm leading-none p-0 text-right"
-                                value={slippage ?? ""}
+                                value={slippage !== undefined ? ((slippage * 100).toFixed(2)) : ""}
                                 onChange={(e) => {
                                     const next = e.target.value === "" ? undefined : Number(e.target.value)
                                     if (!Number.isNaN(next as number)) {
                                         setAutoSlippage(false)
-                                        setSlippage(next as number | undefined)
+                                        setSlippage(next !== undefined ? (Number(next) / 100) : undefined)
                                     }
                                 }}
                             />
@@ -148,15 +142,15 @@ const QuickAction = ({ value }: QuickActionProps) => {
         <button
             type="button"
             onClick={() => {
-                setSlippage(value)
+                setSlippage(value / 100)
                 setFlash(true)
                 setTimeout(() => setFlash(false), 600)
             }}
             className={clsx(
-                "flex items-center text-secondary-text px-2 py-1 border rounded-lg font-medium leading-4 cursor-pointer transition-colors ease-in-out duration-200",
+                "flex items-center text-secondary-text px-2 py-1 border text-xs rounded-lg font-normal leading-4 cursor-pointer transition-colors ease-in-out duration-200",
                 flash ? "bg-secondary-300" : "bg-secondary-500"
             )}>
-            <span>{value}</span>
+            <span>{value.toFixed(2)}</span>
             <span>%</span>
         </button>
     )
