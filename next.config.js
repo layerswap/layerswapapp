@@ -31,12 +31,30 @@ const REMOTE_PATTERNS = [
   },
 ];
 
-module.exports = (phase, { defaultConfig }) => {
-  /**
-   * @type {import('next').NextConfig}
-   */
+module.exports = (phase) => {
+  /** @type {import('next').NextConfig} */
+  const nextConfig = {
+    i18n: { locales: ['en'], defaultLocale: 'en' },
+    images: { remotePatterns: REMOTE_PATTERNS },
+    compiler: { removeConsole: false },
+    reactStrictMode: true,
+    webpack: (config) => {
+      config.resolve.fallback = { fs: false, net: false, tls: false }
+      return config
+    },
+    productionBrowserSourceMaps: true,
+    transpilePackages: ['@imtbl/sdk', '@fuels/connectors', '@fuels/react', '@radix-ui/react-dismissable-layer'],
+    ...(process.env.APP_BASE_PATH ? { basePath: process.env.APP_BASE_PATH } : {})
+  }
 
-  const posthogWrapped = withPostHogConfig({}, {
+  if (phase === PHASE_PRODUCTION_SERVER) {
+    nextConfig.headers = async () => [{
+      source: '/:path*',
+      headers: securityHeaders,
+    }]
+  }
+
+  return withPostHogConfig(nextConfig, {
     personalApiKey: process.env.POSTHOG_API_KEY,
     envId: process.env.POSTHOG_ENV_ID,
     host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
@@ -46,42 +64,5 @@ module.exports = (phase, { defaultConfig }) => {
       version: process.env.VERCEL_GIT_COMMIT_SHA,
       deleteAfterUpload: true,
     },
-  });
-
-  const nextConfig = {
-    i18n: {
-      locales: ["en"],
-      defaultLocale: "en",
-    },
-    images: {
-      remotePatterns: REMOTE_PATTERNS
-    },
-    compiler: {
-      removeConsole: false,
-    },
-    reactStrictMode: true,
-    webpack: config => {
-      config.resolve.fallback = { fs: false, net: false, tls: false };
-      return config;
-    },
-    productionBrowserSourceMaps: true,
-    transpilePackages: ['@imtbl/sdk', '@fuels/connectors', '@fuels/react', "@radix-ui/react-dismissable-layer"]
-  }
-  if (process.env.APP_BASE_PATH) {
-    nextConfig.basePath = process.env.APP_BASE_PATH
-  }
-  if (phase === PHASE_PRODUCTION_SERVER) {
-    nextConfig.headers = async () => {
-      return [
-        {
-          // Apply these headers to all routes in your application.
-          source: '/:path*',
-          headers: securityHeaders,
-        },
-      ]
-    }
-  }
-  let merged = { ...posthogWrapped, ...nextConfig };
-
-  return merged
+  })
 }
