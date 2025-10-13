@@ -8,6 +8,7 @@ import NotFoundIcon from "./icons/NotFoundIcon";
 import GoHomeButton from "./utils/GoHome";
 import SubmitButton from "./buttons/submitButton";
 import Navbar from "./navbar";
+import posthog from "posthog-js";
 
 export default function ErrorFallback({ error, resetErrorBoundary }) {
 
@@ -16,7 +17,12 @@ export default function ErrorFallback({ error, resetErrorBoundary }) {
     const updateWithProps = () => update({ customAttributes: { swapId: query?.swapId } })
 
     useEffect(() => {
-        plausible(error?.message || '')
+        posthog.capture('$exception', {
+            name: error?.name,
+            message: error?.message,
+            where: 'ErrorFallback',
+            severity: 'error',
+        });
     }, [])
 
     const startIntercom = useCallback(() => {
