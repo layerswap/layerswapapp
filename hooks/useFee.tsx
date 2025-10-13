@@ -6,6 +6,7 @@ import { ApiResponse } from '../Models/ApiResponse'
 import { sleep } from 'fuels'
 import { create } from 'zustand';
 import { isDiffByPercent } from '@/components/utils/numbers'
+import { useSlippageStore } from '@/stores/slippageStore'
 
 
 type UseQuoteData = {
@@ -53,6 +54,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod } = formValues || {}
     const [debouncedAmount, setDebouncedAmount] = useState(amount)
     const [isDebouncing, setIsDebouncing] = useState(false)
+    const { slippage } = useSlippageStore()
 
     useEffect(() => {
         if (amount === debouncedAmount) return;
@@ -96,7 +98,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         && (!amountRange || Number(debouncedAmount) >= (amountRange?.data?.min_amount || 0) && Number(debouncedAmount) <= (amountRange?.data?.max_amount || 0))
 
     const quoteURL = (canGetQuote && !isDebouncing) ?
-        `/quote?source_network=${from}&source_token=${fromCurrency}&destination_network=${to}&destination_token=${toCurrency}&amount=${debouncedAmount}&refuel=${!!refuel}&use_deposit_address=${use_deposit_address}` : null
+        `/quote?source_network=${from}&source_token=${fromCurrency}&destination_network=${to}&destination_token=${toCurrency}&amount=${debouncedAmount}&refuel=${!!refuel}&use_deposit_address=${use_deposit_address}&slippage=${slippage}` : null
 
     const { cache } = useSWRConfig();
     const isQuoteLoading = useLoadingStore((state) => state.isLoading);
