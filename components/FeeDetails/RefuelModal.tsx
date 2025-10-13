@@ -1,7 +1,7 @@
 import { SwapFormValues } from '../DTOs/SwapFormValues';
 import { Dispatch, FC, SetStateAction } from 'react';
 import Modal from '../modal/modal';
-import { roundDecimals, truncateDecimals } from '../utils/RoundDecimals';
+import { truncateDecimals } from '../utils/RoundDecimals';
 import { useFormikContext } from 'formik';
 import { useQuoteData } from '@/hooks/useFee';
 import GasIcon from '../icons/GasIcon';
@@ -69,7 +69,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal, fee }) => 
                                                 You will receive
                                             </div>
                                             <p>
-                                                <span>{roundDecimals(toCurrency.refuel?.amount, nativeAsset.precision)} {nativeAsset?.symbol}</span>
+                                                <span>{truncateDecimals(toCurrency.refuel?.amount, nativeAsset.precision)} {nativeAsset?.symbol}</span>
                                             </p>
                                         </div>
                                     </div>

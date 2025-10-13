@@ -52,12 +52,10 @@ const Summary: FC<SwapInfoProps> = (props) => {
 
             <div className="font-normal flex flex-col w-full relative z-10 space-y-3">
                 <div className="w-full grid grid-cols-10">
-                    <div className="col-span-6">
-                        <RouteTokenPair
-                            route={sourceExchange || source}
-                            token={sourceCurrency}
-                        />
-                    </div>
+                    <RouteTokenPair
+                        route={sourceExchange || source}
+                        token={sourceCurrency}
+                    />
                     <div className="flex flex-col col-start-7 col-span-4 items-end">
                         {
                             requestedAmount &&
@@ -71,12 +69,10 @@ const Summary: FC<SwapInfoProps> = (props) => {
                     <ArrowDown className="absolute left-1/2 -translate-x-1/2 top-[-10px] h-6 w-6 p-1 bg-secondary-400 rounded-md text-secondary-text" />
                 </div>
                 <div className="w-full grid grid-cols-10">
-                    <div className="col-span-6">
-                        <RouteTokenPair
-                            route={destination}
-                            token={destinationCurrency}
-                        />
-                    </div>
+                    <RouteTokenPair
+                        route={destination}
+                        token={destinationCurrency}
+                    />
                     {
                         receiveAmount && (
                             <div className="flex flex-col justify-end items-end w-full col-start-7 col-span-4">
@@ -121,7 +117,7 @@ type RouteTokenPairProps = {
 const RouteTokenPair: FC<RouteTokenPairProps> = ({ route, token }) => {
 
     return (
-        <div className="flex grow gap-4 text-left items-center md:text-base relative">
+        <div className="flex grow gap-4 text-left items-center md:text-base relative col-span-6 align-center">
             <div className="inline-flex items-center relative shrink-0 mb-1.5">
                 <ImageWithFallback
                     src={token.logo}

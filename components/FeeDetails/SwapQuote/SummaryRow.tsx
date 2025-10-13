@@ -11,6 +11,7 @@ import { DetailsButton } from '..'
 import { Quote } from '@/lib/apiClients/layerSwapApiClient'
 import { Network } from '@/Models/Network'
 import clsx from 'clsx'
+import { truncateDecimals } from '@/components/utils/RoundDecimals'
 
 export const SummaryRow: FC<{
     destination?: Network
@@ -56,7 +57,7 @@ export const SummaryRow: FC<{
                 </div>
                 <div className="text-right text-primary-text">
                     {quoteData?.quote?.min_receive_amount !== undefined && (
-                        <span className="text-sm font-small">{quoteData?.quote?.min_receive_amount} {values?.toAsset?.symbol}</span>
+                        <span className="text-sm font-small">{truncateDecimals(quoteData?.quote?.min_receive_amount, values?.toAsset?.precision)} {values?.toAsset?.symbol}</span>
                     )}
                 </div>
             </div>

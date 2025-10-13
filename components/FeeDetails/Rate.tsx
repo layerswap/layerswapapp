@@ -24,8 +24,8 @@ export const RateElement = ({
     const fromToRate = receiveAmount / requestAmount
     const toFromRate = requestAmount / receiveAmount
 
-    const displayFromToRate = truncateDecimals(fromToRate, fromAsset?.decimals || 6)
-    const displayToFromRate = truncateDecimals(toFromRate, toAsset?.decimals || 6)
+    const displayFromToRate = truncateDecimals(fromToRate, fromAsset?.precision || 6)
+    const displayToFromRate = truncateDecimals(toFromRate, toAsset?.precision || 6)
 
     return (
         <div
