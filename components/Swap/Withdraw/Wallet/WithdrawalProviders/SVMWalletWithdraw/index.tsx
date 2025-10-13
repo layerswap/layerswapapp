@@ -3,7 +3,6 @@ import { Transaction, Connection, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import useWallet from '@/hooks/useWallet';
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
-import WalletIcon from '@/components/icons/WalletIcon';
 import { useSettingsState } from '@/context/settings';
 import { transactionSenderAndConfirmationWaiter } from './transactionSender';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
@@ -76,14 +75,20 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
 
         }
         catch (e) {
+            if (e.name == "WalletNotConnectedError") {
+                await solanaWallet?.adapter.disconnect()
+                setError('Wallet not connected')
+                return
+            }
             setLoading(false)
             if (e?.message) {
                 if (e?.logs?.some(m => m?.includes('insufficient funds')) || e.message.includes('Attempt to debit an account')) setError('insufficientFunds')
                 else setError(e.message)
+                return
             }
-            throw e
+            setError(e.message)
         }
-    }, [walletPublicKey, signTransaction, source_network, source_token])
+    }, [walletPublicKey, signTransaction, source_network, source_token, solanaWallet])
 
     if (!wallet || !walletPublicKey) {
         return <ConnectWalletButton />
