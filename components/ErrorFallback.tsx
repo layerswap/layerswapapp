@@ -1,6 +1,6 @@
-import { FC, useCallback, useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useIntercom } from "react-use-intercom";
-import { Home, RefreshCcw, RotateCcw } from "lucide-react";
+import { Home, RotateCcw } from "lucide-react";
 import { useRouter } from "next/router";
 import { TrackEvent } from '../pages/_document';
 import MessageComponent from "./MessageComponent";
