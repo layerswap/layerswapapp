@@ -133,7 +133,7 @@ export type CreateSwapParams = {
     destination_network: string,
     destination_token: string
     refuel?: boolean,
-    slippage?: number,
+    slippage?: string,
     destination_address: string,
     source_address?: string
     refund_address?: string

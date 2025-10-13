@@ -64,7 +64,7 @@ export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
         {gasFeeInUsd !== null && gasFeeInUsd !== undefined && <GasFee gas={gasData?.gas} nativeCurrencyName={gasData?.token?.symbol} displayGasFeeInUsd={displayGasFeeInUsd} isGasLoading={isGasLoading} />}
         <Fees displayLsFeeInUsd={displayLsFeeInUsd} displayLsFee={displayLsFee} currencyName={currencyName} />
         <Rate fromAsset={values?.fromAsset} toAsset={values?.toAsset} requestAmount={quote?.requested_amount} receiveAmount={quote?.receive_amount} />
-        <Slippage quoteData={quote} values={values} />
+        {values.depositMethod === "wallet" && <Slippage quoteData={quote} values={values} />}
         <Estimates quote={quote} />
         {showReward && <Reward reward={reward} />}
         {variant === "extended" && <ReceiveAtLeast receiveAtLeast={receiveAtLeast} values={values} />}
