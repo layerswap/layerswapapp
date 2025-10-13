@@ -1,6 +1,5 @@
 import { Lock } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
-import toast from 'react-hot-toast';
 import { useAccount } from 'wagmi';
 import { ActivationTokenPicker } from './ActivationTokentPicker';
 import { useActivationData, useLoopringAccount, useLoopringTokens } from './hooks';
@@ -13,6 +12,7 @@ import { TransferProps } from '@/types';
 import WalletMessage from '@/components/Pages/Swap/Withdraw/messages/Message';
 import { ChainId, UnlockedAccount } from '../../services/transferService/loopring/defs';
 import { LoopringAPI } from '../../services/transferService/loopring/LoopringAPI';
+import { TransactionMessageType } from '@/components/Pages/Swap/Withdraw/messages/TransactionMessages';
 
 const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -43,9 +43,10 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
             const res = await LoopringAPI.userAPI.unlockAccount(accInfo, config)
             setUnlockedAccount(res)
         }
-        catch (e) {
-            toast(e.message)
-            throw e
+        catch (error) {
+            error.name = TransactionMessageType.UexpectedErrorMessage
+            error.message = error
+            throw new Error(error)
         }
         finally {
             setLoading(false)
@@ -66,8 +67,10 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
             setActivationPubKey(publicKey)
             await refetchAccount()
         }
-        catch (e) {
-            toast(e.message)
+        catch (error) {
+            error.name = TransactionMessageType.UexpectedErrorMessage
+            error.message = error
+            throw new Error(error)
         }
         finally {
             setLoading(false)
@@ -93,13 +96,14 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
                 return transferResult.hash
             }
             else {
-                toast(transferResult.resultInfo?.message || "Unexpected error.")
+                throw new Error(transferResult.resultInfo?.message || "Unexpected error.")
             }
         }
-        catch (e) {
+        catch (error) {
             setLoading(false)
-            if (e?.message)
-                toast(e.message)
+            error.name = TransactionMessageType.UexpectedErrorMessage
+            error.message = error
+            throw new Error(error)
         }
     }, [source_network, accInfo, unlockedAccount, source_token])
 

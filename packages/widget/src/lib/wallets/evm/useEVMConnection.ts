@@ -17,6 +17,9 @@ import { useEvmConnectors } from "@/lib/wallets/evm/EVMProvider/evmConnectorsCon
 import { useActiveEvmAccount } from "@/lib/wallets/evm/EVMProvider/ActiveEvmAccount"
 import { transactionBuilder } from "./services/transferService/transactionBuilder"
 import { LoopringMultiStepHandler, ZkSyncMultiStepHandler } from "./components"
+import { BaseError } from "viem"
+import resolveError from "./utils/resolveError"
+import { TransactionMessageType } from "@/components/Pages/Swap/Withdraw/messages/TransactionMessages"
 
 const ethereumNames = [KnownInternalNames.Networks.EthereumMainnet, KnownInternalNames.Networks.EthereumSepolia]
 const immutableZKEvm = [KnownInternalNames.Networks.ImmutableZkEVM]
@@ -242,16 +245,33 @@ export default function useEVMConnection(): WalletConnectionProvider {
     const transfer: WalletConnectionProvider['transfer'] = async (params) => {
         const { selectedWallet } = params
 
-        const tx = await transactionBuilder(params)
+        try {
+            const tx = await transactionBuilder(params)
 
-        if (isMobile() && selectedWallet?.metadata?.deepLink) {
-            window.location.href = selectedWallet.metadata?.deepLink
-            await new Promise(resolve => setTimeout(resolve, 100))
-        }
-        const hash = await sendTransaction(config, tx)
+            if (isMobile() && selectedWallet?.metadata?.deepLink) {
+                window.location.href = selectedWallet.metadata?.deepLink
+                await new Promise(resolve => setTimeout(resolve, 100))
+            }
+            const hash = await sendTransaction(config, tx)
 
-        if (hash) {
-            return hash
+            if (hash) {
+                return hash
+            }
+        } catch (error) {
+            const transactionResolvedError = resolveError(error as BaseError)
+            if (transactionResolvedError && transactionResolvedError === "insufficient_funds") {
+                error.name = TransactionMessageType.InsufficientFunds
+                throw new Error(error)
+            }
+            else if (transactionResolvedError && transactionResolvedError === "transaction_rejected") {
+                error.name = TransactionMessageType.TransactionRejected
+                throw new Error(error)
+            }
+            else {
+                error.name = TransactionMessageType.UexpectedErrorMessage
+                error.message = error
+                throw new Error(error)
+            }
         }
     }
 
