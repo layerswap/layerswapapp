@@ -119,6 +119,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
             if (key !== url) {
                 setLoading(true)
             }
+
             const previousData = cache.get(url)?.data as ApiResponse<Quote>
             const newData = await apiClient.fetcher(url) as ApiResponse<Quote>
             if (previousData?.data?.quote && isDiffByPercent(previousData?.data?.quote.receive_amount, newData.data?.quote.receive_amount, 2)) {
@@ -126,11 +127,16 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
                 setLoading(true)
                 await sleep(3500)
             }
+          
+            
             setKey(url)
             setLoading(false)
             return newData
         }
         catch (error) {
+            if(error.response?.data?.error?.code === "VALIDATION_ERROR"){
+                useSlippageStore.getState().clearSlippage()
+            }
             setLoading(false)
             setKey(null)
             throw error

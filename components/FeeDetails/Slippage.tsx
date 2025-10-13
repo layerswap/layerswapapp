@@ -2,7 +2,8 @@ import { SwapQuote } from "@/lib/apiClients/layerSwapApiClient"
 import { SwapValues } from "."
 import { Info, Pencil } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip"
-import { useCallback, useEffect, useRef, useState } from "react"
+import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover"
+import { useCallback, useEffect, useRef, useState, forwardRef } from "react"
 import { useClickOutside } from "@/hooks/useClickOutside"
 import clsx from "clsx"
 import { useSlippageStore } from "@/stores/slippageStore"
@@ -97,24 +98,12 @@ export const Slippage = ({ quoteData, values }: SlippageProps) => {
                     }
                     {
                         editingCustomSlippage &&
-                        <div className="flex items-center gap-1 text-secondary-text text-sm px-2 py-2 -my-1 border border-secondary-300 rounded-lg font-normal leading-4 focus-within:outline-none focus-within:ring-0">
-                            <input
-                                type="number"
-                                inputMode="decimal"
-                                max={80}
-                                ref={inputRef}
-                                className="w-10 bg-transparent border-none outline-none focus:outline-none focus-visible:outline-none ring-0 focus:ring-0 focus-visible:ring-0 focus:border-transparent focus:shadow-none text-primary-text text-sm leading-none p-0 text-right"
-                                value={slippage !== undefined ? ((slippage * 100).toFixed(2)) : ""}
-                                onChange={(e) => {
-                                    const next = e.target.value === "" ? undefined : Number(e.target.value)
-                                    if (!Number.isNaN(next as number)) {
-                                        setAutoSlippage(false)
-                                        setSlippage(next !== undefined ? (Number(next) / 100) : undefined)
-                                    }
-                                }}
-                            />
-                            <span>%</span>
-                        </div>
+                        <SlippageInput
+                            ref={inputRef}
+                            valueDecimal={slippage}
+                            onEditing={() => setAutoSlippage(false)}
+                            onDebouncedChange={(decimal) => setSlippage(decimal)}
+                        />
                     }
                     <div
                         onClick={handleAutoButtonClick}
@@ -155,3 +144,58 @@ const QuickAction = ({ value }: QuickActionProps) => {
         </button>
     )
 }
+
+type SlippageInputProps = {
+    valueDecimal: number | undefined
+    onDebouncedChange: (decimal: number | undefined) => void
+    onEditing?: () => void
+}
+
+const SlippageInput = forwardRef<HTMLInputElement, SlippageInputProps>(function SlippageInput({ valueDecimal, onDebouncedChange, onEditing }, ref) {
+    const [localPercent, setLocalPercent] = useState<number | undefined>(valueDecimal !== undefined ? valueDecimal * 100 : undefined)
+
+    useEffect(() => {
+        setLocalPercent(valueDecimal !== undefined ? valueDecimal * 100 : undefined)
+    }, [valueDecimal])
+
+    useEffect(() => {
+        const t = setTimeout(() => {
+            if (invalid) return
+            onDebouncedChange(localPercent !== undefined ? localPercent / 100 : undefined)
+        }, 300)
+        return () => clearTimeout(t)
+    }, [localPercent])
+
+    const invalid = localPercent !== undefined && (localPercent < 0 || localPercent > 80)
+
+    return (
+        <Popover open={invalid}>
+            <PopoverTrigger asChild>
+                <div className={clsx("flex items-center gap-1 text-secondary-text text-sm px-2 py-2 -my-1 border rounded-lg font-normal leading-4 focus-within:outline-none focus-within:ring-0 border-secondary-300",
+                    invalid ? "animate-shake" : "")}
+                >
+                    <input
+                        type="number"
+                        inputMode="decimal"
+                        max={80}
+                        ref={ref}
+                        className={clsx("w-10 bg-transparent border-none outline-none focus:outline-none focus-visible:outline-none ring-0 focus:ring-0 focus-visible:ring-0 focus:border-transparent focus:shadow-none text-primary-text text-sm leading-none p-0 text-right",
+                            invalid && "shake")}
+                        value={localPercent !== undefined ? localPercent : ""}
+                        onChange={(e) => {
+                            const next = e.target.value === "" ? undefined : Number(e.target.value)
+                            if (!Number.isNaN(next as number)) {
+                                onEditing?.()
+                                setLocalPercent(next)
+                            }
+                        }}
+                    />
+                    <span>%</span>
+                </div>
+            </PopoverTrigger>
+            <PopoverContent side="top" align="center" className="text-xs">
+                Slippage can not be out of  %0 - 80% range.
+            </PopoverContent>
+        </Popover>
+    )
+})
