@@ -7,6 +7,7 @@ import MessageComponent from "./MessageComponent";
 import NotFoundIcon from "./icons/NotFoundIcon";
 import GoHomeButton from "./utils/GoHome";
 import SubmitButton from "./buttons/submitButton";
+import Navbar from "./navbar";
 
 export default function ErrorFallback({ error, resetErrorBoundary }) {
 
@@ -15,7 +16,7 @@ export default function ErrorFallback({ error, resetErrorBoundary }) {
     const updateWithProps = () => update({ customAttributes: { swapId: query?.swapId } })
 
     useEffect(() => {
-        plausible(TrackEvent.SwapFailed)
+        plausible(error.message || '')
     }, [])
 
     const startIntercom = useCallback(() => {
@@ -28,7 +29,8 @@ export default function ErrorFallback({ error, resetErrorBoundary }) {
         <div className="styled-scroll">
             <main className="styled-scroll">
                 <div className="min-h-screen overflow-hidden relative font-robo">
-                    <div className="mx-auto max-w-xl bg-secondary-700 shadow-card rounded-lg w-full overflow-hidden relative pt-6 pb-2 h-[500px] min-h-[550px]">
+                    <Navbar />
+                    <div className="mx-auto max-w-lg bg-secondary-700 shadow-card rounded-lg w-full overflow-hidden relative px-6 pt-6 pb-2 h-[500px] min-h-[550px]">
                         <MessageComponent>
                             <MessageComponent.Content center>
                                 <MessageComponent.Header className="mb-3">
