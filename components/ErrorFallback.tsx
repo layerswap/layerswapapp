@@ -16,7 +16,7 @@ export default function ErrorFallback({ error, resetErrorBoundary }) {
     const updateWithProps = () => update({ customAttributes: { swapId: query?.swapId } })
 
     useEffect(() => {
-        plausible(error.message || '')
+        plausible(error?.message || '')
     }, [])
 
     const startIntercom = useCallback(() => {
