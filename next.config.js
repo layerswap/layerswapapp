@@ -73,7 +73,7 @@ module.exports = (phase, { defaultConfig }) => {
   if (phase === PHASE_PRODUCTION_SERVER) {
     nextConfig.headers = async () => {
       return [
-        {
+        { 
           // Apply these headers to all routes in your application.
           source: '/:path*',
           headers: securityHeaders,
