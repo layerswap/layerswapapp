@@ -1,57 +1,42 @@
-import { GasProps } from "../../../Models/Balance";
-import { Network, NetworkWithTokens } from "../../../Models/Network";
+import { buildPsbt } from "@/components/Swap/Withdraw/Wallet/WithdrawalProviders/BitcoinWalletWithdraw/transactionBuilder/buildPsbt";
+import { GasProps } from "@/Models/Balance";
+import { Network } from "@/Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
-import axios from "axios";
+import { JsonRpcClient } from "@/lib/apiClients/jsonRpcClient";
 
-interface RecommendedFeeResponse {
-    fastestFee: number,
-    halfHourFee: number,
-    hourFee: number,
-    economyFee: number,
-    minimumFee: number
-}
-
-//TODO implement
 export class BitcoinGasProvider {
     supportsNetwork(network: Network): boolean {
         return KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) || KnownInternalNames.Networks.BitcoinTestnet.includes(network.name)
     }
 
-    async getGas({ network }: GasProps): Promise<any> {
-
+    async getGas({ address, network, recipientAddress, amount }: GasProps): Promise<number | undefined> {
         if (!network?.token) throw new Error("No native token provided")
+        if (!address) throw new Error("No address provided")
+        if (!amount) throw new Error("No amount provided")
+
+        const version = KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) ? 'mainnet' : 'testnet';
+        recipientAddress = version == 'testnet' ? 'tb1q5dc7f552h57tfepls66tgkta8wwjpha3ktw45s': 'bc1plxa9q77gz9r33g8pd4c2ygzezchjffuedtzdrkclyceseyw8v80qasmquf'
+        const rpcClient = new JsonRpcClient(network.node_url);
+
+        const amountInSatoshi = Math.floor(amount * 1e8);
+        const hexMemo = Number('69420').toString(16);
 
         try {
-              return
+            const { fee } = await buildPsbt({
+                userAddress: address,
+                depositAddress: recipientAddress,
+                version: version,
+                memo: hexMemo,
+                amount: amountInSatoshi,
+                rpcClient: rpcClient
+            })
+            const formattedGas = formatAmount(fee, network.token.decimals)
+            return formattedGas
 
         } catch (e) {
             console.log(e)
         }
 
     }
-}
-
-async function fetchRecommendedFees(node_url: string): Promise<RecommendedFeeResponse> {
-    const payload = {
-        jsonrpc: "2.0",
-        method: 'estimatesmartfee',
-        params: [6],
-        id: 1,
-    };
-
-    const response = await fetch(node_url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-    });
-    const json = await response.json();
-
-    if (!response.ok || !json.result || !json.result.feerate) {
-        throw new Error(`Failed to fetch fee: ${json.error?.message || 'Unknown error'}`);
-    }
-    return json.result.feerate; // Returns the fee rate in satoshis per byte
-
 }

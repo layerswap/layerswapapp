@@ -1,23 +1,23 @@
-import LinkWithIcon from '../../../Common/LinkWithIcon';
+import LinkWithIcon from '@/components/Common/LinkWithIcon';
 import React, { FC, useCallback, useEffect, useRef } from 'react'
-import { Widget } from '../../../Widget/Index';
+import { Widget } from '@/components/Widget/Index';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
-import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, Transaction, SwapBasicData, SwapDetails, SwapQuote, Refuel } from '../../../../lib/apiClients/layerSwapApiClient';
-import { truncateDecimals } from '../../../utils/RoundDecimals';
-import { SwapStatus } from '../../../../Models/SwapStatus';
-import { SwapFailReasons } from '../../../../Models/RangeError';
-import { Gauge } from '../../../gauge';
+import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, Transaction, SwapBasicData, SwapDetails, SwapQuote, Refuel } from '@/lib/apiClients/layerSwapApiClient';
+import { truncateDecimals } from '@/components/utils/RoundDecimals';
+import { SwapStatus } from '@/Models/SwapStatus';
+import { SwapFailReasons } from '@/Models/RangeError';
+import { Gauge } from '@/components/gauge';
 import { Check, CircleCheck, Undo2 } from 'lucide-react';
 import Failed from '../Failed';
 import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
-import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import CountdownTimer from '../../../Common/CountDownTimer';
+import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
+import CountdownTimer from '@/components/Common/CountDownTimer';
 import useSWR from 'swr';
-import { ApiResponse } from '../../../../Models/ApiResponse';
+import { ApiResponse } from '@/Models/ApiResponse';
 import { useIntercom } from 'react-use-intercom';
-import logError from '../../../../lib/logError';
-import SubmitButton from '../../../buttons/submitButton';
+import logError from '@/lib/logError';
+import SubmitButton from '@/components/buttons/submitButton';
 import { posthog } from 'posthog-js';
 
 type Props = {
@@ -348,7 +348,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     const swapStatus = swapDetails.status;
     return (
         <Widget.Content>
-            <div className={`w-full min-h-[410px] space-y-3 flex flex-col justify-between text-primary-text`}>
+            <div className={`w-full min-h-[410px] h-full space-y-3 flex flex-col justify-between text-primary-text`}>
                 <SwapSummary />
                 <div className="bg-secondary-500 font-normal px-3 pt-6 pb-3 rounded-2xl space-y-4 flex flex-col w-full relative z-10 divide-y-2 divide-secondary-300 divide-dashed">
                     <div className='pb-4'>
@@ -395,7 +395,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                     <div className='pt-4'>
                         {
                             swapStatus != SwapStatus.Cancelled && swapStatus != SwapStatus.Expired && currentSteps.find(x => x.status != null) &&
-                            <div className='flex flex-col h-full justify-center space-y-4'>
+                            <div className='flex flex-col justify-center space-y-4'>
                                 <Steps steps={currentSteps} />
                             </div>
                         }

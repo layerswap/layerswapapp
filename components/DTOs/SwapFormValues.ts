@@ -1,5 +1,5 @@
-import { NetworkRoute, NetworkRouteToken } from "../../Models/Network";
-import { Exchange } from "../../Models/Exchange";
+import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { Exchange } from "@/Models/Exchange";
 
 export type SwapFormValues = {
   amount?: string;

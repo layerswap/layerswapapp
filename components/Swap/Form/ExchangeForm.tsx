@@ -21,6 +21,8 @@ import useWallet from "@/hooks/useWallet";
 import clsx from "clsx";
 import { useSwapDataState } from "@/context/swap";
 import { useClickOutside } from "@/hooks/useClickOutside";
+import { Network } from "@/Models/Network";
+import { Wallet } from "@/Models/WalletProvider";
 
 type Props = {
     partner?: Partner;
@@ -36,7 +38,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     const [actionTempValue, setActionTempValue] = useState<number | undefined>(undefined)
 
     const { wallets } = useWallet();
-    const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == destination_address?.toLowerCase())?.icon;
+    const wallet = wallets.find(wallet => wallet.address.toLowerCase() == destination_address?.toLowerCase());
 
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
@@ -76,18 +78,21 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                     </div>
                                     <div className="hover:bg-secondary-300 bg-secondary-500 rounded-2xl p-3">
                                         <Address partner={partner} >{
-                                            ({ disabled, addressItem }) => <>
+                                            ({ addressItem }) => <>
                                                 {
                                                     addressItem ? <>
-                                                        <AddressButton addressItem={addressItem} network={destination} disabled={disabled} WalletIcon={WalletIcon} />
+                                                        <AddressButton address={addressItem.address} network={destination} wallet={wallet} />
                                                     </>
-                                                        :
-                                                        <span className="flex items-center">
-                                                            <SelectedEchangePlaceholder placeholder='Enter destination address' />
-                                                            <span className="absolute right-0 px-1 pr-5 pointer-events-none text-primary-text">
-                                                                <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
+                                                        : destination_address ? <>
+                                                            <AddressButton address={destination_address} />
+                                                        </>
+                                                            :
+                                                            <span className="flex items-center">
+                                                                <SelectedEchangePlaceholder placeholder='Enter destination address' />
+                                                                <span className="absolute right-0 px-1 pr-5 pointer-events-none text-primary-text">
+                                                                    <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
+                                                                </span>
                                                             </span>
-                                                        </span>
                                                 }
                                             </>
                                         }</Address>
@@ -129,8 +134,9 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                         {
                             routeValidation.message
                                 ? <ValidationError />
-                                : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                                : null
                         }
+                        <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                     </div>
                     <FormButton
                         shouldConnectWallet={false}
@@ -148,24 +154,24 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
 
 export default ExchangeForm;
 
-const AddressButton = ({ addressItem, network, disabled, WalletIcon }) => {
+const AddressButton = ({ address, network, wallet }: { address: string, network?: Network, wallet?: Wallet }) => {
     return <div className="justify-between w-full items-center flex font-light space-x-2 mx-auto rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative">
         <div className="flex items-center gap-2">
             <div className="flex bg-secondary-400 text-primary-text items-center justify-center rounded-md h-7 w-7 overflow-hidden">
                 {
-                    WalletIcon ? (
-                        <WalletIcon className="h-7 w-7 object-contain" />
+                    wallet?.icon ? (
+                        <wallet.icon className="h-7 w-7 object-contain" />
                     ) : (
-                        <AddressIcon className="scale-150 h-9 w-9" address={addressItem.address} size={36} />
+                        <AddressIcon className="scale-150 h-9 w-9" address={address} size={36} />
                     )
                 }
             </div>
-            <ExtendedAddress address={addressItem.address} network={network} showDetails={true} title="USDC" description="Circle USD Coin" logo="https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/arusdc.png" />
+            <ExtendedAddress address={address} network={network} showDetails={wallet ? true : false} title={wallet?.displayName?.split("-")[0]} description={wallet?.providerName} logo={wallet?.icon} />
         </div>
         <span className="justify-self-end right-0 flex items-center pointer-events-none  text-primary-text">
-            {!disabled && <span className="absolute right-0 pr-2 pointer-events-none text-primary-text">
+            <span className="absolute right-0 pr-2 pointer-events-none text-primary-text">
                 <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
-            </span>}
+            </span>
         </span>
     </div>
 }

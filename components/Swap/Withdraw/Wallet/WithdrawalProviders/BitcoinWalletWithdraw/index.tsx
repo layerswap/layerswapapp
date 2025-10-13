@@ -9,7 +9,7 @@ import { JsonRpcClient } from '@/lib/apiClients/jsonRpcClient';
 import { sendTransaction } from './sendTransaction';
 import { useConnectModal } from '@/components/WalletModal';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
-import TransactionMessages from '../../../messages/TransactionMessages';
+import ActionMessages from '../../../messages/TransactionMessages';
 import { posthog } from 'posthog-js';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 
@@ -89,7 +89,6 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData
                 isDisabled={!!loading || dataLoading}
                 isSubmitting={!!loading || dataLoading}
                 onClick={handleTransfer}
-                icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />}
                 swapData={swapBasicData}
                 refuel={refuel}
             />
@@ -99,13 +98,13 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData
 
 const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> = ({ isLoading, error }) => {
     if (isLoading) {
-        return <TransactionMessages.ConfirmTransactionMessage />
+        return <ActionMessages.ConfirmTransactionMessage />
     }
     else if (error && error.includes('User rejected the request.')) {
-        return <TransactionMessages.TransactionRejectedMessage />
+        return <ActionMessages.TransactionRejectedMessage />
     }
     else if (error && error.includes('Insufficient balance.')) {
-        return <TransactionMessages.InsufficientFundsMessage />
+        return <ActionMessages.InsufficientFundsMessage />
     }
     else if (error) {
         const swapWithdrawalError = new Error(error);
@@ -120,7 +119,7 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
             severity: 'error',
         });
 
-        return <TransactionMessages.UexpectedErrorMessage message={error} />
+        return <ActionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>
 }

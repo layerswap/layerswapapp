@@ -1,10 +1,10 @@
 import KnownInternalNames from "../../knownIds"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon"
-import { NetworkType } from "../../../Models/Network"
-import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
+import { NetworkType } from "@/Models/Network"
+import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider"
 import { useMemo } from "react"
-import { useSettingsState } from "../../../context/settings"
+import { useSettingsState } from "@/context/settings"
 
 const solanaNames = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet, KnownInternalNames.Networks.SolanaTestnet]
 
@@ -17,9 +17,8 @@ export default function useSVM(): WalletProvider {
 
     const name = 'Solana'
     const id = 'solana'
-    const { disconnect, select, wallets } = useWallet();
-
-    const connectedWallet = wallets.find(w => w.adapter.connected === true)
+    const { disconnect, select, wallets, wallet: solanaWallet } = useWallet();
+    const connectedWallet = solanaWallet?.adapter.connected === true ? solanaWallet : undefined
     const connectedAddress = connectedWallet?.adapter.publicKey?.toBase58()
     const connectedAdapterName = connectedWallet?.adapter.name
 

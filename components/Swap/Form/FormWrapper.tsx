@@ -1,5 +1,5 @@
-import { Formik, FormikProps, useFormikContext } from "formik";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { Formik, FormikProps } from "formik";
+import { useCallback, useRef, useState } from "react";
 import { useSettingsState } from "@/context/settings";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { removeSwapPath, UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
@@ -7,11 +7,8 @@ import React from "react";
 import ConnectNetwork from "@/components/ConnectNetwork";
 import toast from "react-hot-toast";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/lib/generateSwapInitialValues";
-import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 import Modal from "@/components/modal/modal";
-import useSWR from "swr";
 import { useRouter } from "next/router";
-import { ApiResponse } from "@/Models/ApiResponse";
 import { Partner } from "@/Models/Partner";
 import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
 import { useQueryState } from "@/context/query";
@@ -30,8 +27,7 @@ type NetworkToConnect = {
     AppURL: string;
 }
 
-
-export default function FormWrapper({ children, type }: { children?: React.ReactNode, type: 'cross-chain' | 'exchange' }) {
+export default function FormWrapper({ children, type, partner }: { children?: React.ReactNode, type: 'cross-chain' | 'exchange', partner?: Partner }) {
 
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
@@ -48,14 +44,12 @@ export default function FormWrapper({ children, type }: { children?: React.React
 
     const { getConfirmation } = useAsyncModal();
     const query = useQueryState()
-    const { appName, destination_address: destinationAddressFromQuery } = query
+    const { destination_address: destinationAddressFromQuery } = query
     const { createSwap, setSwapId, setSubmitedFormValues, setSwapModalOpen } = useSwapDataUpdate()
-
-    const layerswapApiClient = new LayerSwapApiClient()
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
-    const partner = appName && partnerData?.data?.client_id?.toLowerCase() === (appName as string)?.toLowerCase() ? partnerData?.data : undefined
+    const { setSwapError } = useSwapDataState()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
+        setSwapError && setSwapError('')
         const { destination_address, to } = values
         setWalletWihdrawDone(false)
         if (!walletWihdrawDone) {

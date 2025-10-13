@@ -157,7 +157,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 }) => {
     const [actionStateText, setActionStateText] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
-    const { quote, quoteIsLoading } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError } = useSwapDataState()
     const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
     const query = useQueryState()
@@ -224,7 +224,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         catch (e) {
             setSwapId(undefined)
             console.log('Error in SendTransactionButton:', e)
-
+            
             const swapWithdrawalError = new Error(e);
             swapWithdrawalError.name = `SwapWithdrawalError`;
             swapWithdrawalError.cause = e;
@@ -259,9 +259,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             {...props}
             isSubmitting={props.isSubmitting || loading || quoteIsLoading}
             onClick={handleClick}
-            isDisabled={quoteIsLoading}
+            isDisabled={quoteIsLoading || !!quoteError}
         >
-            {error ? 'Try again' : 'Send from wallet'}
+            {error ? 'Try again' : 'Swap now'}
         </ButtonWrapper>
     )
 }

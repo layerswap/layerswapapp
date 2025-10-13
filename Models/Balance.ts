@@ -4,9 +4,10 @@ import { Wallet } from "./WalletProvider"
 export type GasProps = {
     network: Network,
     token: Token,
-    address?: `0x${string}`,
+    address?: string,
     recipientAddress?: string,
-    wallet?: Wallet
+    wallet?: Wallet,
+    amount?: number,
 }
 
 export type TokenBalance = {

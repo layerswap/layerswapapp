@@ -4,8 +4,8 @@ import { SwapDetails, TransactionType } from "../../lib/apiClients/layerSwapApiC
 import posthog from "posthog-js";
 
 const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThresholdChange?: (threshold: boolean) => void }> = ({ initialTime, swapDetails, onThresholdChange }) => {
-
     const [elapsedTimer, setElapsedTimer] = useState<number>(0);
+
     const [thresholdElapsed, setThresholdElapsed] = useState<boolean>(false);
     const swapInputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Input)
 
@@ -26,7 +26,7 @@ const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThre
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [initialTime, swapDetails.status, swapInputTransaction, thresholdElapsed]);
+    }, [initialTime, swapDetails.status]);
 
     const formatTime = (milliseconds: number): string => {
         const totalSeconds = Math.floor(milliseconds / 1000);

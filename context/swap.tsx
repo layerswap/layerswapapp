@@ -13,11 +13,12 @@ import useWallet from '../hooks/useWallet';
 import { Network } from '../Models/Network';
 import { TrackEvent } from "@/pages/_document";
 import { useSettingsState } from './settings';
-import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
+import { QuoteError, transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
 import { parse, ParsedUrlQuery } from 'querystring';
 import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
 import { useSelectedAccount } from './balanceAccounts';
+import { addressFormat } from '@/lib/address/formatter';
 
 export const SwapDataStateContext = createContext<SwapContextData>({
     codeRequested: false,
@@ -27,12 +28,15 @@ export const SwapDataStateContext = createContext<SwapContextData>({
     depositActionsResponse: undefined,
     swapApiError: undefined,
     quote: undefined,
+    quoteError: undefined,
+    quoteIsLoading: false,
     refuel: undefined,
     swapBasicData: undefined,
     swapDetails: undefined,
-    quoteIsLoading: false,
     swapId: undefined,
-    swapModalOpen: false
+    swapModalOpen: false,
+    swapError: '',
+    setSwapError: (value: string) => { }
 });
 
 export const SwapDataUpdateContext = createContext<UpdateSwapInterface | null>(null);
@@ -60,11 +64,14 @@ export type SwapContextData = {
     swapTransaction: SwapTransaction | undefined,
     swapBasicData: SwapBasicData & { refuel: boolean } | undefined,
     quote: SwapQuote | undefined,
+    quoteIsLoading: boolean,
+    quoteError: QuoteError | undefined,
     refuel: Refuel | undefined,
     swapDetails: SwapDetails | undefined,
-    quoteIsLoading: boolean,
     swapId: string | undefined,
-    swapModalOpen: boolean
+    swapModalOpen: boolean,
+    swapError?: string | null | undefined,
+    setSwapError?: (value: string) => void
 }
 
 export function SwapDataProvider({ children }) {
@@ -79,14 +86,12 @@ export function SwapDataProvider({ children }) {
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
     const [swapModalOpen, setSwapModalOpen] = useState(false)
+    const [swapError, setSwapError] = useState<string>('')
     const { providers } = useWallet(swapBasicFormData?.source_network, 'asSource')
 
-    const selectedSourceAccount = useSelectedAccount("from", swapBasicFormData?.source_network?.name);
-    const { wallets } = useWallet(swapBasicFormData?.source_network, 'asSource')
-    const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
-
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
-    const { quote: formDataQuote } = useQuoteData(swapId ? undefined : quoteArgs);
+
+    const { quote: formDataQuote, quoteError: formDataQuoteError } = useQuoteData(quoteArgs, swapId ? 0 : undefined);
 
     const handleUpdateSwapid = useCallback((value: string | undefined) => {
         setSwapId(value)
@@ -145,6 +150,13 @@ export function SwapDataProvider({ children }) {
         return formDataQuote?.quote
     }, [formDataQuote, data, swapId]);
 
+    const quoteError = useMemo(() => {
+        if (swapId && data?.data) {
+            return undefined
+        }
+        return formDataQuoteError
+    }, [formDataQuoteError, data, swapId]);
+
     const refuel = useMemo(() => {
         if (swapId) {
             return data?.data?.refuel
@@ -152,7 +164,11 @@ export function SwapDataProvider({ children }) {
         return formDataQuote?.refuel
     }, [formDataQuote, data, swapId]);
 
-    const sourceIsSupported = swapBasicData && WalletIsSupportedForSource({
+    const selectedSourceAccount = useSelectedAccount("from", swapBasicFormData?.source_network?.name);
+    const { wallets } = useWallet(swapBasicFormData?.source_network, 'asSource')
+    const selectedWallet = (selectedSourceAccount?.address && swapBasicFormData) && wallets.find(w => addressFormat(w.address, swapBasicFormData?.source_network) === addressFormat(selectedSourceAccount?.address, swapBasicFormData?.source_network))
+
+    const sourceIsSupported = (swapBasicData && selectedWallet) && WalletIsSupportedForSource({
         providers: providers,
         sourceNetwork: swapBasicData.source_network,
         sourceWallet: selectedWallet
@@ -190,7 +206,7 @@ export function SwapDataProvider({ children }) {
         if (!to || !fromCurrency || !toCurrency || !from || !amount || !destination_address || !depositMethod)
             throw new Error("Form data is missing")
 
-        const sourceIsSupported = WalletIsSupportedForSource({
+        const sourceIsSupported = selectedWallet && WalletIsSupportedForSource({
             providers: providers,
             sourceNetwork: from,
             sourceWallet: selectedWallet
@@ -207,10 +223,16 @@ export function SwapDataProvider({ children }) {
             reference_id: query.externalId,
             refuel: !!refuel,
             use_deposit_address: depositMethod === 'wallet' ? false : true,
-            source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined
+            source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
+            refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined
         }
 
-        const swapResponse = await layerswapApiClient.CreateSwapAsync(data)
+        let swapResponse
+        try {
+            swapResponse = await layerswapApiClient.CreateSwapAsync(data)
+        } catch (error) {
+            setSwapError(error?.response?.data?.error?.message || 'Unexpected error occurred.')
+        }
 
         if (swapResponse?.error) {
             throw swapResponse?.error
@@ -251,12 +273,15 @@ export function SwapDataProvider({ children }) {
             swapApiError: error,
             depositActionsResponse,
             quote,
+            quoteIsLoading,
+            quoteError,
             refuel,
             swapBasicData,
             swapDetails,
-            quoteIsLoading,
             swapId,
-            swapModalOpen
+            swapModalOpen,
+            swapError,
+            setSwapError
         }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}

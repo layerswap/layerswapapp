@@ -9,9 +9,6 @@ import KnownInternalNames from "../../lib/knownIds"
 import { ChevronRightIcon } from 'lucide-react'
 import StatusIcon from "./StatusIcons"
 import { FC } from "react"
-import { findIndexOfFirstNonZeroAfterComma, truncateDecimals } from "../utils/RoundDecimals";
-import AddressIcon from "../AddressIcon";
-import { addressFormat } from "../../lib/address/formatter";
 import { SwapStatus } from "../../Models/SwapStatus";
 import { Wallet } from "../../Models/WalletProvider";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
@@ -93,7 +90,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <span className="truncate overflow-hidden whitespace-nowrap max-w-[100px]">
-                                            {requested_amount}
+                                            {requested_amount.toLocaleString('en-US', { maximumFractionDigits: 20 })}
                                         </span>
                                     </TooltipTrigger>
                                     <TooltipContent>
@@ -122,7 +119,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <span className="truncate overflow-hidden whitespace-nowrap max-w-[100px]">
-                                            {calculatedReceiveAmount}
+                                            {calculatedReceiveAmount.toLocaleString('en-US', { maximumFractionDigits: 20 })}
                                         </span>
                                     </TooltipTrigger>
                                     <TooltipContent>

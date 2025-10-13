@@ -15,7 +15,7 @@ import clsx from "clsx";
 type Props = {
     addressItem: AddressItem;
     partner?: Partner;
-    network: Network;
+    network?: Network;
     balance?: { amount: number, symbol: string, isLoading: boolean } | undefined;
     onDisconnect?: ExtendedAddressProps['onDisconnect']
 }
@@ -124,6 +124,7 @@ type ExtendedAddressProps = {
     description?: string;
     logo?: string | ((e: SVGProps<SVGSVGElement>) => ReactNode);
     children?: ReactNode
+    shouldShowChevron?: boolean
 }
 
 const calculateMaxWidth = (balance: string | undefined) => {
@@ -138,7 +139,7 @@ const calculateMaxWidth = (balance: string | undefined) => {
     }
 };
 
-export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo }) => {
+export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo, shouldShowChevron = true }) => {
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
 
@@ -175,7 +176,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
             <Popover open={isPopoverOpen} onOpenChange={() => setPopoverOpen(!isPopoverOpen)} modal={true}>
                 <PopoverTrigger asChild>
                     <div>
-                        <Tooltip delayDuration={400}>
+                        <Tooltip>
                             <TooltipTrigger asChild>
                                 {
                                     children ??
@@ -183,7 +184,10 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
                                         <p className={`${isForCurrency ? "text-xs self-end" : "text-sm"} block font-medium`}>
                                             {shortenAddress(address)}
                                         </p>
-                                        <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4" />
+                                        {shouldShowChevron ?
+                                            <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4" />
+                                            : null
+                                        }
                                     </div>
                                 }
                             </TooltipTrigger>
@@ -229,7 +233,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
                         </div>
 
                     )}
-                    <p className="text-secondary-text text-sm leading-5 font-mono break-all shadow-lg text-left">
+                    <p className="text-secondary-text text-sm leading-5 font-mono break-all text-left">
                         <span className="text-primary-text font-medium">{address.slice(0, 4)}</span><span>{address.slice(4, -4)}</span><span className="text-primary-text font-medium">{address.slice(-4)}</span>
                     </p>
                     <div className="flex gap-3">
@@ -297,7 +301,7 @@ const ActionButton: FC<ActionButtonProps> = ({ title, Icon, onClick, href, iconC
     }
 
     return (
-        <Tooltip disableHoverableContent delayDuration={400} key={title} open={showTooltip} onOpenChange={setShowTooltip}>
+        <Tooltip disableHoverableContent key={title} open={showTooltip} onOpenChange={setShowTooltip}>
             <TooltipTrigger asChild>
                 {renderButton()}
             </TooltipTrigger>

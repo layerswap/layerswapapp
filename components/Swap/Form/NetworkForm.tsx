@@ -22,13 +22,11 @@ import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
 import { updateForm, updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
-import { InsufficientBalanceWarning } from "@/components/insufficientBalance";
 import { useSwapDataState } from "@/context/swap";
 import RefuelToggle from "@/components/FeeDetails/Refuel";
 import ReserveGasNote from "@/components/ReserveGasNote";
 import RefuelModal from "@/components/FeeDetails/RefuelModal";
 import { useSelectedAccount } from "@/context/balanceAccounts";
-import { useBalance } from "@/lib/balances/useBalance";
 
 type Props = {
     partner?: Partner;
@@ -44,7 +42,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const {
         to: destination,
         from: source,
-        amount,
         depositMethod
     } = values;
 
@@ -52,7 +49,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const { providers, wallets } = useWallet();
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
-    const { swapId, swapModalOpen } = useSwapDataState()
+    const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
     const { minAllowedAmount, maxAllowedAmount, isQuoteLoading, quote } = useQuoteData(quoteArgs, quoteRefreshInterval);
 
@@ -63,10 +60,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const isValid = !formValidation.message;
     const error = formValidation.message;
-
-    const { balances } = useBalance(selectedSourceAccount?.address, source)
-    const walletBalance = source && balances?.find(b => b?.network === source?.name && b?.token === fromAsset?.symbol)
-    const walletBalanceAmount = walletBalance?.amount
 
     useEffect(() => {
         if (!source || !toAsset || !toAsset.refuel) {
@@ -85,74 +78,60 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
-    const showInsufficientBalanceWarning = !!(values.depositMethod === 'wallet'
-        && !routeValidation.message
-        && !swapModalOpen
-        && Number(amount) > 0
-        && Number(walletBalanceAmount) < Number(amount))
 
     return (
         <>
             <DepositMethodComponent />
             <Form className="h-full grow flex flex-col flex-1 justify-between w-full">
                 <Widget.Content>
-                    <div className="w-full flex flex-col justify-between flex-1">
-                        <div>
-                            <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
-                                {
-                                    !(query?.hideFrom && values?.from) && <SourcePicker
-                                        minAllowedAmount={minAllowedAmount}
-                                        maxAllowedAmount={maxAllowedAmount}
-                                        fee={quote}
-                                    />
-                                }
-                                {
-                                    !query?.hideFrom && !query?.hideTo &&
-                                    <ValueSwapperButton
-                                        values={values}
-                                        setValues={setValues}
-                                        providers={providers}
-                                        query={query}
-                                    />
-                                }
-                                {
-                                    !(query?.hideTo && values?.to) && <DestinationPicker
-                                        isFeeLoading={isQuoteLoading}
-                                        fee={quote}
-                                        partner={partner}
-                                    />
-                                }
-                            </div>
-                        </div>
-                        <div className="space-y-3 mt-3">
-                            <>
-                                {
-                                    showInsufficientBalanceWarning &&
-                                    <InsufficientBalanceWarning />
-                                }
-                            </>
+                    <div className="w-full flex flex-col justify-between flex-1 gap-3">
+                        <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
                             {
-                                Number(values.amount) > 0 &&
-                                <ReserveGasNote
-                                    maxAllowedAmount={minAllowedAmount}
-                                    minAllowedAmount={maxAllowedAmount}
-                                    onSubmit={handleReserveGas}
-                                />
-                            }
-                            {
-                                values.toAsset?.refuel && !query.hideRefuel &&
-                                <RefuelToggle
-                                    quote={quote}
-                                    onButtonClick={() => setOpenRefuelModal(true)}
+                                !(query?.hideFrom && values?.from) && <SourcePicker
                                     minAllowedAmount={minAllowedAmount}
+                                    maxAllowedAmount={maxAllowedAmount}
+                                    fee={quote}
                                 />
                             }
                             {
-                                routeValidation.message
-                                    ? <ValidationError />
-                                    : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                                !query?.hideFrom && !query?.hideTo &&
+                                <ValueSwapperButton
+                                    values={values}
+                                    setValues={setValues}
+                                    providers={providers}
+                                    query={query}
+                                />
+                            }
+                            {
+                                !(query?.hideTo && values?.to) && <DestinationPicker
+                                    isFeeLoading={isQuoteLoading}
+                                    fee={quote}
+                                    partner={partner}
+                                />
                             }
                         </div>
+                        {
+                            Number(values.amount) > 0 &&
+                            <ReserveGasNote
+                                maxAllowedAmount={minAllowedAmount}
+                                minAllowedAmount={maxAllowedAmount}
+                                onSubmit={handleReserveGas}
+                            />
+                        }
+                        {
+                            values.toAsset?.refuel && !query.hideRefuel &&
+                            <RefuelToggle
+                                quote={quote}
+                                onButtonClick={() => setOpenRefuelModal(true)}
+                                minAllowedAmount={minAllowedAmount}
+                            />
+                        }
+                        {
+                            routeValidation.message
+                                ? <ValidationError />
+                                : null
+                        }
+                        <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                     </div>
                 </Widget.Content>
                 <Widget.Footer>

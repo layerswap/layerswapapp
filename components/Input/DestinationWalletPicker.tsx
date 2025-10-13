@@ -1,9 +1,9 @@
 import shortenAddress from "../utils/ShortenAddress";
 import { ChevronDown, PlusIcon } from "lucide-react";
 import { AddressGroup, AddressItem, AddressTriggerProps } from "./Address/AddressPicker";
-import { Partner } from "../../Models/Partner";
+import { Partner } from "@/Models/Partner";
 import AddressIcon from "../AddressIcon";
-import { Wallet } from "../../Models/WalletProvider";
+import { Wallet } from "@/Models/WalletProvider";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
 import clsx from 'clsx';
 
@@ -16,7 +16,7 @@ const DestinationWalletPicker = (props: AddressTriggerProps) => {
             "bg-secondary-400 hover:bg-secondary-300": !addressItem
         }
     )}>
-        <div className="rounded-lg flex space-x-1 items-center cursor-pointer">
+        <div className="rounded-lg flex space-x-1 items-center cursor-pointer max-sm:ml-2">
             {
                 addressItem &&
                 <>
@@ -56,18 +56,13 @@ type AdderssIconprops = {
 const ResolvedIcon = (props: AdderssIconprops) => {
     const { addressItem, wallet, partner } = props
     if (partner?.is_wallet && addressItem.group === AddressGroup.FromQuery) {
-        return <div className="rounded-lg bg-secondary-700 pl-2 flex items-center space-x-2 text-sm leading-4">
-            {
-                partner?.logo &&
-                <ImageWithFallback
-                    alt="Partner logo"
-                    className='rounded-md object-contain'
-                    src={partner.logo}
-                    width="20"
-                    height="20"
-                />
-            }
-        </div>
+        return <ImageWithFallback
+            alt="Partner logo"
+            className='rounded-md object-contain'
+            src={partner.logo}
+            width="16"
+            height="26"
+        />
     }
     else if (addressItem.group === AddressGroup.ConnectedWallet && wallet) {
         return <wallet.icon className="w-4 h-4" />

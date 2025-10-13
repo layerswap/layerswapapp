@@ -7,8 +7,7 @@ import { ContractParamter, Transaction, TransferContract } from 'tronweb/lib/esm
 import { Token } from '@/Models/Network';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
-import TransactionMessages from '../../messages/TransactionMessages';
-import WalletIcon from '@/components/icons/WalletIcon';
+import ActionMessages from '../../messages/TransactionMessages';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import useWallet from '@/hooks/useWallet';
 
@@ -25,7 +24,7 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refue
     const networkName = source_network?.name
     const { networks } = useSettingsState()
     const networkWithTokens = networks.find(n => n.name === networkName)
-    const { gasData, isGasLoading } = useSWRGas(walletAddress, networkWithTokens, source_token)
+    const { gasData, isGasLoading } = useSWRGas(walletAddress, networkWithTokens, source_token, swapBasicData.requested_amount, wallet)
 
     const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setError(undefined)
@@ -77,7 +76,6 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refue
                     isDisabled={!!loading || isGasLoading}
                     isSubmitting={!!loading || isGasLoading}
                     onClick={handleTransfer}
-                    icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />}
                     error={!!error}
                     refuel={refuel}
                     swapData={swapBasicData}
@@ -89,16 +87,16 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refue
 
 const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> = ({ isLoading, error }) => {
     if (isLoading) {
-        return <TransactionMessages.ConfirmTransactionMessage />
+        return <ActionMessages.ConfirmTransactionMessage />
     }
     else if (error === "BANDWITH_ERROR") {
-        return <TransactionMessages.InsufficientFundsMessage />
+        return <ActionMessages.InsufficientFundsMessage />
     }
     else if (error === "user reject this request") {
-        return <TransactionMessages.TransactionRejectedMessage />
+        return <ActionMessages.TransactionRejectedMessage />
     }
     else if (error) {
-        return <TransactionMessages.UexpectedErrorMessage message={error} />
+        return <ActionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>
 }
