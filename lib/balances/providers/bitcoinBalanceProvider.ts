@@ -12,11 +12,11 @@ interface Utxo {
 }
 
 export class BitcoinBalanceProvider extends BalanceProvider {
-    supportsNetwork = (network: NetworkWithTokens): boolean => {
+    supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) || KnownInternalNames.Networks.BitcoinTestnet.includes(network.name)
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number, retryCount?: number }) => {
+    fetchBalance: BalanceProvider['fetchBalance'] = async (address, network, options) => {
         let balances: TokenBalance[] = []
         const token = network.tokens.find(t => t.symbol == 'BTC')
 

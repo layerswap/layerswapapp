@@ -3,11 +3,11 @@ import formatAmount from "@/lib/formatAmount";
 import KnownInternalNames from "@/lib/knownIds";
 
 export class ZkSyncBalanceProvider extends BalanceProvider {
-    supportsNetwork = (network: NetworkWithTokens): boolean => {
+    supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return KnownInternalNames.Networks.ZksyncMainnet.includes(network.name)
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens, _options?: { timeoutMs?: number }) => {
+    fetchBalance: BalanceProvider['fetchBalance'] = async (address, network) => {
         const client = new ZkSyncLiteRPCClient();
         const tokens = insertIfNotExists(network.tokens || [], network.token)
 

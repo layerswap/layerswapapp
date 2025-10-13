@@ -1,15 +1,15 @@
 import { BalanceProvider } from "@/Models/BalanceProvider";
-import { NetworkWithTokens } from "../../../Models/Network";
+import { NetworkWithTokens } from "@/Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
 import { insertIfNotExists } from "../helpers";
 
 export class ImmutableXBalanceProvider extends BalanceProvider {
-    supportsNetwork = (network: NetworkWithTokens): boolean => {
+    supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return (KnownInternalNames.Networks.ImmutableXMainnet.includes(network.name) || KnownInternalNames.Networks.ImmutableXGoerli.includes(network.name))
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number, retryCount?: number }) => {
+    fetchBalance: BalanceProvider['fetchBalance'] = async (address, network, options) => {
         const axios = (await import("axios")).default
 
         if (!network?.tokens && !network.token) return

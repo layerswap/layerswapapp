@@ -13,11 +13,11 @@ import KnownInternalNames from "@/lib/knownIds"
 import { BalanceProvider } from "@/Models/BalanceProvider"
 
 export class EVMBalanceProvider extends BalanceProvider {
-    supportsNetwork = (network: NetworkWithTokens): boolean => {
+    supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return network.type === NetworkType.EVM && !!network.token
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number }) => {
+    fetchBalance: BalanceProvider['fetchBalance'] = async (address, network, options) => {
         if (!network) return
         const chain = resolveChain(network)
         if (!chain) throw new Error("Could not resolve chain")

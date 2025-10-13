@@ -1,21 +1,20 @@
 import { BalanceProvider } from "@/Models/BalanceProvider";
 import { TokenBalance } from "@/Models/Balance";
-import { NetworkType, NetworkWithTokens } from "@/Models/Network";
+import { NetworkType } from "@/Models/Network";
 import formatAmount from "@/lib/formatAmount";
 import { insertIfNotExists } from "../helpers";
-import SolanaWeb3 from "@solana/web3.js"
 import fetchWithTimeout from "@/lib/fetchWithTimeout";
 
 export class SolanaBalanceProvider extends BalanceProvider {
-    supportsNetwork = (network: NetworkWithTokens): boolean => {
+    supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return network.type === NetworkType.Solana
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens, _options?: { timeoutMs?: number }) => {
+    fetchBalance: BalanceProvider['fetchBalance'] = async (address, network, _options) => {
         if (!address) return
 
         const tokens = insertIfNotExists(network.tokens || [], network.token)
-        const { PublicKey, Connection } = SolanaWeb3
+        const { PublicKey, Connection } = await import("@solana/web3.js")
         class SolanaConnection extends Connection { }
         const { getAssociatedTokenAddress } = await import('@solana/spl-token');
         const walletPublicKey = new PublicKey(address)

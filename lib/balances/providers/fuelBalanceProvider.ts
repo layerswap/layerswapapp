@@ -7,11 +7,11 @@ import retryWithExponentialBackoff from "../../retry";
 import fetchWithTimeout from "@/lib/fetchWithTimeout";
 
 export class FuelBalanceProvider extends BalanceProvider {
-    supportsNetwork = (network: NetworkWithTokens): boolean => {
+    supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return KnownInternalNames.Networks.FuelMainnet.includes(network.name) || KnownInternalNames.Networks.FuelTestnet.includes(network.name)
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number, retryCount?: number }) => {
+    fetchBalance: BalanceProvider['fetchBalance'] = async (address, network, options) => {
         let balances: TokenBalance[] = []
 
         if (!network?.tokens) return

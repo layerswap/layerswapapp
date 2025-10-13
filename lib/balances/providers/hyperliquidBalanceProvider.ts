@@ -12,12 +12,12 @@ export class HyperliquidBalanceProvider extends BalanceProvider {
         this.client = new HyperliquidClient();
     }
 
-    supportsNetwork = (network: NetworkWithTokens): boolean => {
+    supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return network.name === KnownInternalNames.Networks.HyperliquidMainnet ||
             network.name === KnownInternalNames.Networks.HyperliquidTestnet;
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number, retryCount?: number }): Promise<TokenBalance[] | undefined> => {
+    fetchBalance: BalanceProvider['fetchBalance'] = async (address, network, options) => {
         if (!network?.tokens && !network.token) return;
 
         try {
