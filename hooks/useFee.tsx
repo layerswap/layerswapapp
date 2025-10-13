@@ -90,7 +90,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         max_amount_in_usd: number
     }>>(limitsURL, apiClient.fetcher, {
         refreshInterval: (refreshInterval || refreshInterval == 0) ? refreshInterval : 20000,
-        dedupingInterval: 20000
+        dedupingInterval: 5000
     })
 
     const canGetQuote = from && to && depositMethod && toCurrency && fromCurrency
@@ -145,7 +145,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
 
     const { data: quote, mutate: mutateFee, error: quoteError } = useSWR<ApiResponse<Quote>>(quoteURL, quoteFetchWrapper, {
         refreshInterval: (refreshInterval || refreshInterval == 0) ? refreshInterval : 42000,
-        dedupingInterval: 42000,
+        dedupingInterval: 5000,
         keepPreviousData: true,
     })
 

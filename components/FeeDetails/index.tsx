@@ -66,10 +66,9 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
                                 {
                                     (quoteData || isQuoteLoading) && fromCurrency && toAsset &&
                                     <DetailedEstimates
-                                        isQuoteLoading={isQuoteLoading}
                                         swapValues={values}
                                         quote={quoteData}
-                                        variant='base'
+                                        variant='extended'
                                     />
                                 }
                             </ResizablePanel>

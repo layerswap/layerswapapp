@@ -12,6 +12,7 @@ import { Quote } from '@/lib/apiClients/layerSwapApiClient'
 import { Network } from '@/Models/Network'
 import clsx from 'clsx'
 import { Slippage } from '../Slippage'
+import { GasFee } from './DetailedEstimates'
 
 export const SummaryRow: FC<{
     destination?: Network
@@ -62,7 +63,10 @@ export const SummaryRow: FC<{
                 </div>
             </div>
             <Slippage quoteData={quoteData.quote} values={values} />
-
+            {
+                isOpen &&
+                <GasFee values={values} quote={quoteData.quote} />
+            }
             <div className={`${isOpen ? "hidden" : ""} flex items-center w-full justify-between px-2 py-3`}>
                 <DetailsButton quote={quoteData} isQuoteLoading={isQuoteLoading} swapValues={values} destination={destination} destinationAddress={destinationAddress} />
 
