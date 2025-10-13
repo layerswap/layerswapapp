@@ -32,7 +32,7 @@ const ErrorPage: FC = () => {
 };
 
 const meta: Meta<typeof ErrorPage> = {
-    title: 'LayerSwap/NotFound',
+    title: 'LayerSwap/ErrorPage',
     component: ErrorPage,
     parameters: {
         layout: 'centered',
