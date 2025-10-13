@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from '@storybook/nextjs';
 import { FC, useEffect } from 'react';
 import { IntercomProvider } from 'react-use-intercom';
 import { Widget } from '../components/Widget/Index';
-import NotFound from '@/components/Swap/NotFound';
 import ErrorFallback from '@/components/ErrorFallback';
 
 declare global {
@@ -22,7 +21,9 @@ const ErrorPage: FC = () => {
                 <div className={`rounded-lg overflow-hidden relative h-[548px] w-[480px]`}>
                     <ErrorFallback
                         error={new Error('Simulated error for Storybook')}
-                        resetErrorBoundary={action('resetErrorBoundary')}
+                        resetErrorBoundary={() => {
+                            console.log('resetErrorBoundary called');
+                        }}
                     />
                 </div>
             </Widget>
