@@ -34,13 +34,13 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     const groupByToken = useRouteTokenSwitchStore((s) => s.showTokens)
     const { balances, isLoading: balancesLoading } = useAllWithdrawalBalances();
     const routesHistory = useRecentNetworksStore(state => state.recentRoutes)
-    
+
     // Apply query-based filtering
     const filteredRoutes = useMemo(() => {
         const filtered = filterRoutesByQuery(routes, direction, { lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset });
         return filtered;
     }, [routes, direction, lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset]);
-    
+
     const routeElements = useMemo(() => groupRoutes(filteredRoutes, direction, balances, groupByToken ? "token" : "network", routesHistory, balancesLoading, search), [balancesLoading, filteredRoutes, balances, direction, search, groupByToken, routesHistory]);
 
     const exchanges = useMemo(() => {
@@ -111,39 +111,35 @@ function filterRoutesByQuery(
 ): NetworkRoute[] {
     const { lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset } = queryParams;
 
-    // If no locks are set, return all routes
-    const hasNetworkLock = (direction === 'from' && lockFrom) || (direction === 'to' && lockTo);
-    const hasAssetLock = (direction === 'from' && lockFromAsset) || (direction === 'to' && lockToAsset);
-    
-    if (!hasNetworkLock && !hasAssetLock) {
-        return routes;
+    const hasNetworkLock = direction === 'from' ? !!lockFrom : !!lockTo;
+    const hasAssetLock = direction === 'from' ? !!lockFromAsset : !!lockToAsset;
+
+    if (!hasNetworkLock && !hasAssetLock) return routes;
+
+    // Resolve locked network (case-insensitive) and asset symbol (case-sensitive as before)
+    const lockedNetworkName = direction === 'from'
+        ? (lockFrom && from ? normalize(from) : undefined)
+        : (lockTo && to ? normalize(to) : undefined);
+
+    const lockedAssetSymbol = direction === 'from'
+        ? (lockFromAsset ? fromAsset : undefined)
+        : (lockToAsset ? toAsset : undefined);
+
+
+    if (lockedNetworkName) {
+        const filteredRoutes = routes.filter(r => normalize(r.name) === lockedNetworkName);
+        if (lockedAssetSymbol) {
+            return filteredRoutes
+                .map(route => {
+                    const filteredTokens = route.tokens?.filter(t => t.symbol === lockedAssetSymbol) || [];
+                    return filteredTokens.length > 0 ? { ...route, tokens: filteredTokens } : null;
+                })
+                .filter((r): r is NetworkRoute => r !== null);
+        }
+        return filteredRoutes;
     }
 
-    let filteredRoutes = routes;
-
-    // Filter by network based on direction (case-insensitive)
-    if (direction === 'from' && lockFrom && from) {
-        const networkName = from.toLowerCase();
-        filteredRoutes = filteredRoutes.filter(route => route.name.toLowerCase() === networkName);
-    } else if (direction === 'to' && lockTo && to) {
-        const networkName = to.toLowerCase();
-        filteredRoutes = filteredRoutes.filter(route => route.name.toLowerCase() === networkName);
-    }
-
-    // Filter by asset based on direction - only if lock is explicitly true
-    if (direction === 'from' && lockFromAsset && fromAsset) {
-        filteredRoutes = filteredRoutes.map(route => {
-            const filteredTokens = route.tokens?.filter(token => token.symbol === fromAsset) || [];
-            return filteredTokens.length > 0 ? { ...route, tokens: filteredTokens } : null;
-        }).filter((route): route is NetworkRoute => route !== null);
-    } else if (direction === 'to' && lockToAsset && toAsset) {
-        filteredRoutes = filteredRoutes.map(route => {
-            const filteredTokens = route.tokens?.filter(token => token.symbol === toAsset) || [];
-            return filteredTokens.length > 0 ? { ...route, tokens: filteredTokens } : null;
-        }).filter((route): route is NetworkRoute => route !== null);
-    }
-
-    return filteredRoutes;
+    return routes;
 }
 
 function useRoutes({ direction, values }: Props) {
@@ -172,7 +168,7 @@ function sortRoutesByBalance(
         route,
         totalBalanceUSD: balances?.[route.name] ? getTotalBalanceInUSD(balances[route.name], route) : 0
     }));
-    
+
     return routesWithBalances
         .sort((a, b) => {
             if (b.totalBalanceUSD !== a.totalBalanceUSD) {
@@ -302,26 +298,16 @@ function filterExchangesByQuery(
 ): Exchange[] {
     const { lockFrom, from, lockTo, to } = queryParams;
 
-    // If no locks are set, return all exchanges
-    const hasNetworkLock = (direction === 'from' && lockFrom) || (direction === 'to' && lockTo);
-    
-    if (!hasNetworkLock) {
-        return exchanges;
-    }
+    const hasNetworkLock = direction === 'from' ? !!lockFrom : !!lockTo;
+    if (!hasNetworkLock) return exchanges;
 
-    let filteredExchanges = exchanges;
+    const lockedExchangeName = direction === 'from'
+        ? (lockFrom && from ? normalize(from) : undefined)
+        : (lockTo && to ? normalize(to) : undefined);
 
-    // Filter by exchange name based on direction (case-insensitive)
-    // Only handle lockFrom/lockTo, ignore asset locks for exchanges
-    if (direction === 'from' && lockFrom && from) {
-        const exchangeName = from.toLowerCase();
-        filteredExchanges = filteredExchanges.filter(exchange => exchange.name.toLowerCase() === exchangeName);
-    } else if (direction === 'to' && lockTo && to) {
-        const exchangeName = to.toLowerCase();
-        filteredExchanges = filteredExchanges.filter(exchange => exchange.name.toLowerCase() === exchangeName);
-    }
+    if (lockedExchangeName) return exchanges.filter(e => normalize(e.name) === lockedExchangeName);
 
-    return filteredExchanges;
+    return exchanges;
 }
 
 function groupExchanges(exchangesRoutes: (Exchange)[], search?: string, direction?: SwapDirection, queryParams?: QueryFilterParams): Exchange[] {
@@ -464,3 +450,5 @@ const getRank = (item: NetworkTokenElement, direction: SwapDirection) => {
 const resolveTitle = (text: string): TitleElement => {
     return { type: 'group_title', text }
 }
+
+const normalize = (v?: string) => (v ?? "").toLowerCase();
