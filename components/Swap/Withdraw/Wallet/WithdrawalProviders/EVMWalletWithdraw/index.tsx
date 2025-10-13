@@ -3,7 +3,7 @@ import { useAccount } from "wagmi";
 import { PublishedSwapTransactions } from "@/lib/apiClients/layerSwapApiClient";
 import { ChangeNetworkButton, ConnectWalletButton } from "../../Common/buttons";
 import TransferTokenButton from "./TransferToken";
-import TransactionMessages from "../../../messages/TransactionMessages";
+import ActionMessages from "../../../messages/TransactionMessages";
 import { useQueryState } from "@/context/query";
 import { WithdrawPageProps } from "../../Common/sharedTypes";
 import { useSelectedAccount } from "@/context/balanceAccounts";
@@ -42,7 +42,7 @@ export const EVMWalletWithdrawal: FC<WithdrawPageProps> = ({
     if ((source_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() || destination_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase())
         && (selectedSourceAccount?.address && destination_address && selectedSourceAccount?.address.toLowerCase() !== destination_address?.toLowerCase())) {
         const network = source_network?.name.toLowerCase() === sameAccountNetwork?.toLowerCase() ? source_network : destination_network
-        return <TransactionMessages.DifferentAccountsNotAllowedError network={network?.display_name!} />
+        return <ActionMessages.DifferentAccountsNotAllowedError network={network?.display_name!} />
     }
 
     if (!isConnected || !wallet) {

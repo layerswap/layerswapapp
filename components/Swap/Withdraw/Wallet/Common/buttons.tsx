@@ -224,7 +224,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         catch (e) {
             setSwapId(undefined)
             console.log('Error in SendTransactionButton:', e)
-
+            
             const swapWithdrawalError = new Error(e);
             swapWithdrawalError.name = `SwapWithdrawalError`;
             swapWithdrawalError.cause = e;
