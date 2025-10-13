@@ -1,16 +1,16 @@
 import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo } from 'react'
-import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, Quote, SwapBasicData, SwapQuote, Refuel, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
+import { SwapFormValues } from '@/components/DTOs/SwapFormValues';
+import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, Quote, SwapBasicData, SwapQuote, Refuel, SwapDetails, TransactionType, Reward, QuoteReward } from '@/lib/apiClients/layerSwapApiClient';
 import { NextRouter, useRouter } from 'next/router';
-import { QueryParams } from '../Models/QueryParams';
+import { QueryParams } from '@/Models/QueryParams';
 import useSWR, { KeyedMutator } from 'swr';
-import { ApiResponse } from '../Models/ApiResponse';
-import { Partner } from '../Models/Partner';
-import { ApiError } from '../Models/ApiError';
-import { ResolvePollingInterval } from '../components/utils/SwapStatus';
-import { Wallet, WalletProvider } from '../Models/WalletProvider';
-import useWallet from '../hooks/useWallet';
-import { Network } from '../Models/Network';
+import { ApiResponse } from '@/Models/ApiResponse';
+import { Partner } from '@/Models/Partner';
+import { ApiError } from '@/Models/ApiError';
+import { ResolvePollingInterval } from '@/components/utils/SwapStatus';
+import { Wallet, WalletProvider } from '@/Models/WalletProvider';
+import useWallet from '@/hooks/useWallet';
+import { Network } from '@/Models/Network';
 import { TrackEvent } from "@/pages/_document";
 import { useSettingsState } from './settings';
 import { QuoteError, transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
@@ -28,6 +28,7 @@ export const SwapDataStateContext = createContext<SwapContextData>({
     depositActionsResponse: undefined,
     swapApiError: undefined,
     quote: undefined,
+    reward: undefined,
     quoteError: undefined,
     quoteIsLoading: false,
     refuel: undefined,
@@ -64,6 +65,7 @@ export type SwapContextData = {
     swapTransaction: SwapTransaction | undefined,
     swapBasicData: SwapBasicData & { refuel: boolean } | undefined,
     quote: SwapQuote | undefined,
+    reward: QuoteReward | undefined,
     quoteIsLoading: boolean,
     quoteError: QuoteError | undefined,
     refuel: Refuel | undefined,
@@ -163,6 +165,14 @@ export function SwapDataProvider({ children }) {
         }
         return formDataQuote?.refuel
     }, [formDataQuote, data, swapId]);
+
+    const reward = useMemo(() => {
+        //       wait till backend gives data to uncomment this
+        //    if (swapId && data?.data) {
+        //         return data?.data?.quote
+        //     }
+        return formDataQuote?.reward
+    }, [formDataQuote, swapId])
 
     const selectedSourceAccount = useSelectedAccount("from", swapBasicFormData?.source_network?.name);
     const { wallets } = useWallet(swapBasicFormData?.source_network, 'asSource')
@@ -273,6 +283,7 @@ export function SwapDataProvider({ children }) {
             swapApiError: error,
             depositActionsResponse,
             quote,
+            reward,
             quoteIsLoading,
             quoteError,
             refuel,

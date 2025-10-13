@@ -33,7 +33,7 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
 
     const wallet = (values?.to && values?.destination_address) ? wallets?.find(w => addressFormat(w.address, values?.to!) === addressFormat(values?.destination_address!, values?.to!)) : undefined
     const selectedSourceAccount = useSelectedAccount("from", values?.from?.name);
-    
+
     return (
         <Accordion
             type="single"

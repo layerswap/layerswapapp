@@ -1,6 +1,6 @@
 import { FC } from 'react'
 import { SwapValues } from '@/components/FeeDetails';
-import { Refuel, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
+import { QuoteReward, Refuel, SwapBasicData, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 import SwapQuoteComp from '@/components/FeeDetails/SwapQuote';
 import { QuoteError } from '@/hooks/useFee';
 import { ErrorDisplay } from '@/components/validationError/ErrorDisplay';
@@ -8,12 +8,13 @@ import { ErrorDisplay } from '@/components/validationError/ErrorDisplay';
 type Props = {
     swapBasicData: SwapBasicData | undefined,
     quote: SwapQuote | undefined,
+    reward: QuoteReward | undefined,
     quoteError: QuoteError | undefined,
     refuel: Refuel | undefined,
     quoteIsLoading: boolean
 }
 
-export const SwapQuoteDetails: FC<Props> = ({ swapBasicData: swapData, quote, refuel, quoteIsLoading, quoteError }) => {
+export const SwapQuoteDetails: FC<Props> = ({ swapBasicData: swapData, quote, refuel, quoteIsLoading, quoteError, reward }) => {
     const { source_network, destination_network, use_deposit_address, destination_token, requested_amount, source_token, destination_address } = swapData || {}
 
     if (quoteError) return <ErrorDisplay errorName='quoteError' />
@@ -30,6 +31,6 @@ export const SwapQuoteDetails: FC<Props> = ({ swapBasicData: swapData, quote, re
         destination_address,
     }
 
-    return <SwapQuoteComp quote={{ quote, refuel }} swapValues={values} isQuoteLoading={quoteIsLoading} />
+    return <SwapQuoteComp quote={{ quote, refuel, reward }} swapValues={values} isQuoteLoading={quoteIsLoading} />
 
 }
