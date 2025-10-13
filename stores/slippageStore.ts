@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import { createJSONStorage, persist } from 'zustand/middleware'
 
 type SlippageState = {
     slippage: number | undefined
@@ -7,13 +6,10 @@ type SlippageState = {
     clearSlippage: () => void
 }
 
-export const useSlippageStore = create<SlippageState>()(persist((set) => ({
+export const useSlippageStore = create<SlippageState>()((set) => ({
     slippage: undefined,
     setSlippage: (value) => set({ slippage: value }),
     clearSlippage: () => set({ slippage: undefined })
-}), {
-    name: 'ls-slippage',
-    storage: createJSONStorage(() => sessionStorage)
 }))
 
 
