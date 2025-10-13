@@ -119,7 +119,7 @@ function filterRoutesByQuery(
         return routes;
     }
 
-    let filteredRoutes = [...routes];
+    let filteredRoutes = routes;
 
     // Filter by network based on direction (case-insensitive)
     if (direction === 'from' && lockFrom && from) {
@@ -309,7 +309,7 @@ function filterExchangesByQuery(
         return exchanges;
     }
 
-    let filteredExchanges = [...exchanges];
+    let filteredExchanges = exchanges;
 
     // Filter by exchange name based on direction (case-insensitive)
     // Only handle lockFrom/lockTo, ignore asset locks for exchanges
