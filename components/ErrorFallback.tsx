@@ -3,7 +3,6 @@ import { useIntercom } from "react-use-intercom";
 import { Home, RefreshCcw, RotateCcw } from "lucide-react";
 import { useRouter } from "next/router";
 import { TrackEvent } from '../pages/_document';
-import Navbar from "./navbar";
 import MessageComponent from "./MessageComponent";
 import NotFoundIcon from "./icons/NotFoundIcon";
 import GoHomeButton from "./utils/GoHome";
@@ -29,7 +28,6 @@ export default function ErrorFallback({ error, resetErrorBoundary }) {
         <div className="styled-scroll">
             <main className="styled-scroll">
                 <div className="min-h-screen overflow-hidden relative font-robo">
-                    <Navbar />
                     <div className="mx-auto max-w-xl bg-secondary-700 shadow-card rounded-lg w-full overflow-hidden relative px-0 md:px-8 py-6 h-[500px] min-h-[550px]">
                         <MessageComponent>
                             <MessageComponent.Content center>
