@@ -1,4 +1,4 @@
-import { FC, useState } from 'react'
+import { FC, useRef, useState } from 'react'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../../shadcn/accordion'
 import { ChevronDown } from 'lucide-react'
 import useWallet from '@/hooks/useWallet'
@@ -33,7 +33,10 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
 
     const wallet = (values?.to && values?.destination_address) ? wallets?.find(w => addressFormat(w.address, values?.to!) === addressFormat(values?.destination_address!, values?.to!)) : undefined
     const selectedSourceAccount = useSelectedAccount("from", values?.from?.name);
-    
+
+    const cardRef = useRef<HTMLDivElement>(null)
+
+
     return (
         <Accordion
             type="single"
@@ -45,7 +48,7 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
             <AccordionItem value="quote" className="bg-secondary-500 rounded-2xl">
                 <AccordionTrigger
                     onClick={(e) => e.preventDefault()}
-                    className="w-full rounded-2xl flex items-center justify-between cursor-auto"
+                    className="w-full rounded-2xl flex flex-col items-center justify-between cursor-auto"
                 >
                     <SummaryRow
                         isQuoteLoading={isQuoteLoading}
@@ -58,17 +61,16 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
                         isOpen={isOpen}
                         sourceAddress={selectedSourceAccount?.address}
                     />
+                    {isOpen && (
+                        <DetailedEstimates
+                            isQuoteLoading={isQuoteLoading}
+                            swapValues={values}
+                            quote={quoteData}
+                            sourceAddress={wallet?.address}
+                            variant='base'
+                        />
+                    )}
                 </AccordionTrigger>
-
-                <AccordionContent className="rounded-2xl">
-                    <DetailedEstimates
-                        isQuoteLoading={isQuoteLoading}
-                        swapValues={values}
-                        quote={quoteData}
-                        sourceAddress={wallet?.address}
-                        variant='base'
-                    />
-                </AccordionContent>
 
                 {isOpen && (
                     <div className="px-3.5 pb-3">
