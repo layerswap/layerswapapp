@@ -114,8 +114,8 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuo
                             <GasIcon className='h-4 w-4 text-secondary-text' /> : <ExchangeGasIcon className='h-5 w-5 text-secondary-text' />
                         }
                     </div>
-                    <NumberFlow className="text-primary-text text-sm leading-6" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} format={{ style: 'currency', currency: 'USD' }} prefix={gasFeeInUsd < 0.01 ? '<' : undefined} />
-                    <div className="mx-1 w-px h-3 bg-primary-text-tertiary rounded-2xl" />
+                    <NumberFlow className="text-primary-text text-sm leading-6 pr-3" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} format={{ style: 'currency', currency: 'USD' }} prefix={gasFeeInUsd < 0.01 ? '<' : undefined} />
+                    <div className="w-px h-3 bg-primary-text-tertiary rounded-2xl" />
                 </div>
             }
             {
@@ -125,10 +125,10 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuo
                         "text-right inline-flex items-center gap-1 text-sm",
                         { "animate-pulse-strong": isQuoteLoading }
                     )}>
-                        <div className='p-0.5'>
+                        <div className='p-0.5 pl-2 '>
                             <Clock className='h-4 w-4 text-secondary-text' />
                         </div>
-                        <AverageCompletionTime className="text-primary-text" avgCompletionTime={quote.avg_completion_time} />
+                        <AverageCompletionTime className="text-primary-text pr-3" avgCompletionTime={quote.avg_completion_time} />
                     </div>
                 </>
             }
@@ -138,7 +138,9 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuo
                 <>
                     <div className="w-px h-3 bg-primary-text-tertiary rounded-2xl" />
                     <div className='text-right text-primary-text inline-flex items-center gap-1 pr-4'>
-                        <Image src={rewardCup} alt="Reward" width={16} height={16} />
+                        <div className='p-0.5 pl-2'>
+                            <Image src={rewardCup} alt="Reward" width={16} height={16} />
+                        </div>
                         <NumberFlow value={reward?.amount_in_usd < 0.01 ? '0.01' : reward?.amount_in_usd} format={{ style: 'currency', currency: 'USD' }} prefix={reward?.amount_in_usd < 0.01 ? '<' : undefined} />
                     </div>
                 </>
