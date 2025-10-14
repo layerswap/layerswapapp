@@ -74,11 +74,11 @@ export const Slippage = ({ quoteData, values }: SlippageProps) => {
                 editingSlippage &&
                 <div className="flex items-center gap-1">
                     {
-                        !autoSlippage && <>
+                        !autoSlippage && <span className="flex items-center gap-1 max-sm:hidden">
                             <QuickAction value={0.5} />
                             <QuickAction value={1} />
                             <QuickAction value={2.5} />
-                        </>
+                        </span>
                     }
 
                     {!editingCustomSlippage &&
@@ -121,8 +121,9 @@ export const Slippage = ({ quoteData, values }: SlippageProps) => {
 }
 type QuickActionProps = {
     value: number
+    className?: string
 }
-const QuickAction = ({ value }: QuickActionProps) => {
+const QuickAction = ({ value, className }: QuickActionProps) => {
     const { setSlippage } = useSlippageStore()
     const [flash, setFlash] = useState(false)
 
@@ -176,6 +177,7 @@ const SlippageInput = forwardRef<HTMLInputElement, SlippageInputProps>(function 
                     <input
                         type="number"
                         ref={ref}
+                        autoFocus
                         className={clsx("w-10 bg-transparent border-none outline-none focus:outline-none focus-visible:outline-none ring-0 focus:ring-0 focus-visible:ring-0 focus:border-transparent focus:shadow-none text-primary-text text-sm leading-none p-0 text-right",
                             invalid && "shake")}
                         value={localPercent}
