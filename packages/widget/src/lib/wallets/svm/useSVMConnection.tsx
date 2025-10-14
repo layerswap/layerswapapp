@@ -137,7 +137,7 @@ export default function useSVMConnection(): WalletConnectionProvider {
                 e.name = error
                 throw e
             }
-            else if (error === "User rejected the request.") {
+            else if (error.message === "User rejected the request.") {
                 e.name = TransactionMessageType.TransactionRejected
                 throw e
             }
