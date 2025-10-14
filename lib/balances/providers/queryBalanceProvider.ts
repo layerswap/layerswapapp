@@ -36,12 +36,12 @@ export class QueryBalanceProvider extends BalanceProvider {
         };
     }
 
-    supportsNetwork = (network: NetworkWithTokens): boolean => {
+    supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         if (!this.query.balances) return false
         return network?.name?.toLocaleLowerCase() === this.query.from?.toLowerCase() || network?.name?.toLocaleLowerCase() === this.query.to?.toLowerCase()
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens) => {
+    fetchBalance: BalanceProvider['fetchBalance'] = async (_, network) => {
         if (!network) return null;
         const tokens = insertIfNotExists(network.tokens || [], network.token)
 

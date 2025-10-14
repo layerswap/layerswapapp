@@ -7,7 +7,6 @@ import { isScientific } from "@/components/utils/RoundDecimals";
 type Input = {
     tempValue?: number;
     label?: JSX.Element | JSX.Element[]
-    pattern?: string;
     disabled?: boolean;
     placeholder: string;
     minLength?: number;
@@ -25,7 +24,7 @@ type Input = {
 
 // Use with Formik
 const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    function NumericInput({ label, pattern, tempValue, disabled, placeholder, minLength, maxLength, precision, step, name, className, children, onChange, onFocus, onBlur }, ref) {
+    function NumericInput({ label, tempValue, disabled, placeholder, minLength, maxLength, precision, step, name, className, children, onChange, onFocus, onBlur }, ref) {
         const { handleChange } = useFormikContext<SwapFormValues>();
         const [field] = useField(name)
 
@@ -55,7 +54,6 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     !tempValue &&
                     <input
                         {...field}
-                        pattern={pattern ? pattern : "^[0-9]*[.,]?[0-9]*$"}
                         inputMode="decimal"
                         autoComplete="off"
                         disabled={disabled}

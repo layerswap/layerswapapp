@@ -1,13 +1,11 @@
-import { Info, RouteOff } from 'lucide-react';
+import { RouteOff } from 'lucide-react';
 import { SwapFormValues } from '@/components/DTOs/SwapFormValues';
 import { useMemo } from 'react';
-import { useSettingsState } from '@/context/settings';
 import { useQueryState } from '@/context/query';
 import { useFormikContext } from 'formik';
 import { QuoteError } from './useFee';
 import { useSelectedAccount } from '@/context/balanceAccounts';
-
-const ICON_CLASSES_WARNING = 'w-5 h-5 text-warning-foreground';
+import { ICON_CLASSES_WARNING } from '@/components/validationError/constants';
 
 interface ValidationDetails {
     title?: string;
@@ -17,12 +15,9 @@ interface ValidationDetails {
 
 export function resolveRouteValidation(quoteError?: QuoteError) {
     const { values } = useFormikContext<SwapFormValues>();
-    const { destinationRoutes: allDestinations, sourceRoutes: allSources } = useSettingsState()
-    const { to, from, fromAsset: fromCurrency, toAsset: toCurrency, fromExchange, validatingSource, validatingDestination, destination_address } = values;
+    const { to, from, destination_address } = values;
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
     const query = useQueryState();
-    const fromDisplayName = fromExchange ? fromExchange.display_name : from?.display_name;
-    const toDisplayName = to?.display_name;
     const quoteMessage = quoteError?.response?.data?.error?.message || quoteError?.message
 
     let validationMessage: string = '';

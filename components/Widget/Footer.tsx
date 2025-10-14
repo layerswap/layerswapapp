@@ -36,7 +36,7 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
 
     return (
         sticky ?
-            <div>
+            <div className="w-full">
                 <motion.div
                     ref={footerRef}
                     transition={{

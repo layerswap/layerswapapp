@@ -8,11 +8,11 @@ import { insertIfNotExists } from "../helpers";
 import { BalanceProvider } from "@/Models/BalanceProvider";
 
 export class TonBalanceProvider extends BalanceProvider {
-    supportsNetwork = (network: NetworkWithTokens): boolean => {
+    supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return KnownInternalNames.Networks.TONMainnet.includes(network.name)
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens) => {
+    fetchBalance: BalanceProvider['fetchBalance'] = async (address, network) => {
         let balances: TokenBalance[] = []
         const tokens = insertIfNotExists(network.tokens || [], network.token)
 
