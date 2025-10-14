@@ -46,11 +46,7 @@ const MinMax = (props: MinMaxProps) => {
 
     const handleSetValue = (value: string) => {
         mutateBalances()
-        updateForm({
-            formDataKey: 'amount',
-            formDataValue: value,
-            setFieldValue
-        })
+        setFieldValue('amount', value, true)
         onActionHover(undefined)
     }
 
