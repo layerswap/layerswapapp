@@ -43,7 +43,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
     useEffect(() => {
         return () => setSearchQuery('')
     }, [])
-    
+
     return <div className="overflow-y-auto flex flex-col h-full z-40 openpicker" >
         <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={shouldFocus} className="mb-2" />
         <LayoutGroup>
@@ -91,6 +91,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                                                 item={data}
                                                 selectedRoute={selectedRoute}
                                                 selectedToken={selectedToken}
+                                                searchQuery={searchQuery}
                                                 toggleContent={toggleAccordionItem}
                                             />
                                         </div>

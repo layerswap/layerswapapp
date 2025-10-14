@@ -12,6 +12,7 @@ import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import { isMobile } from "@/lib/isMobile";
 import useWallet from "@/hooks/useWallet";
+import { useSwapDataState } from "@/context/swap";
 
 type Props = {
     savedTransactionHash?: string;
@@ -29,6 +30,7 @@ const TransferTokenButton: FC<Props> = ({
     const config = useConfig()
     const [error, setError] = useState<any | undefined>()
     const [loading, setLoading] = useState(false)
+    const { swapError } = useSwapDataState()
 
     const selectedSourceAccount = useSelectedAccount("from", swapData.source_network.name);
     const { wallets } = useWallet(swapData.source_network, 'withdrawal')
@@ -79,13 +81,15 @@ const TransferTokenButton: FC<Props> = ({
 
     return <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
         {
-            buttonClicked &&
-            <TransactionMessage
-                transaction={transaction}
-                applyingTransaction={!!savedTransactionHash}
-                activeAddress={selectedSourceAccount?.address}
-                selectedSourceAddress={selectedSourceAccount?.address}
-            />
+            (buttonClicked || swapError) ? (
+                <TransactionMessage
+                    transaction={transaction}
+                    applyingTransaction={!!savedTransactionHash}
+                    activeAddress={selectedSourceAccount?.address}
+                    selectedSourceAddress={selectedSourceAccount?.address}
+                    swapError={swapError}
+                />
+            ) : null
         }
         {
             !loading &&

@@ -26,7 +26,8 @@ const Comp: FC<{ settings: any, swapData: SwapContextData, failedSwap?: SwapItem
         swapBasicData: swapData.swapBasicData, quote: swapData.quote, refuel: swapData.refuel, swapDetails: swapData.swapDetails, depositAddressIsFromAccount: false, withdrawType: undefined, swapTransaction: undefined,
         quoteIsLoading: false,
         swapId: undefined,
-        swapModalOpen: false
+        swapModalOpen: false,
+        quoteError: undefined
     }
 
     if (!appSettings) {
@@ -140,6 +141,7 @@ export const UserTransferInitiated: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
@@ -177,6 +179,7 @@ export const UserTransferDetected: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
@@ -207,6 +210,7 @@ export const UserTransferPendingInputCompleted: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
@@ -238,6 +242,7 @@ export const LsTransferPending: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
@@ -270,6 +275,7 @@ export const LsTransferPendingWithRefuel: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
@@ -303,6 +309,7 @@ export const LsTransferInitiated: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
@@ -336,6 +343,7 @@ export const Completed: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
@@ -369,6 +377,7 @@ export const OnlyRefuelCompleted: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
@@ -403,6 +412,7 @@ export const UserTransferDelayed: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
@@ -434,6 +444,7 @@ export const Failed: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
@@ -465,6 +476,7 @@ export const FailedInput: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
@@ -502,6 +514,7 @@ export const FailedOutOfRangeAmount: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
@@ -533,6 +546,7 @@ export const Cancelled: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
@@ -562,6 +576,7 @@ export const Expired: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
@@ -591,6 +606,7 @@ export const RefundPending: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
@@ -624,6 +640,7 @@ export const RefundCompleted: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,

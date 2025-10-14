@@ -395,7 +395,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                     <div className='pt-4'>
                         {
                             swapStatus != SwapStatus.Cancelled && swapStatus != SwapStatus.Expired && currentSteps.find(x => x.status != null) &&
-                            <div className='flex flex-col h-full justify-center space-y-4'>
+                            <div className='flex flex-col justify-center space-y-4'>
                                 <Steps steps={currentSteps} />
                             </div>
                         }

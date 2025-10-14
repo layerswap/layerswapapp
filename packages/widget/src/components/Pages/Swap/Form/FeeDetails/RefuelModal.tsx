@@ -1,6 +1,6 @@
 import { Dispatch, FC, SetStateAction } from 'react';
 import Modal from '@/components/Modal/modal';
-import { roundDecimals, truncateDecimals } from '@/components/utils/RoundDecimals';
+import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import { useFormikContext } from 'formik';
 import { useBalance } from '@/lib/balances/useBalance';
 import { useQuoteData } from '@/hooks/useFee';
@@ -69,7 +69,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal, fee }) => 
                                                 You will receive
                                             </div>
                                             <p>
-                                                <span>{roundDecimals(toCurrency.refuel?.amount, nativeAsset.precision)} {nativeAsset?.symbol}</span>
+                                                <span>{truncateDecimals(toCurrency.refuel?.amount, nativeAsset.precision)} {nativeAsset?.symbol}</span>
                                             </p>
                                         </div>
                                     </div>

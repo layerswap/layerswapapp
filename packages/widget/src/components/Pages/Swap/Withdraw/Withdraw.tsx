@@ -13,7 +13,7 @@ import { useSelectedAccount } from '@/context/balanceAccounts';
 import { ErrorDisplay } from '@/components/Pages/Swap/Form/SecondaryComponents/validationError/ErrorDisplay';
 
 const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void }> = ({ type, onWalletWithdrawalSuccess }) => {
-    const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading } = useSwapDataState()
+    const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
     const { appName, signature } = useInitialSettings()
     const sourceIsImmutableX = swapBasicData?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
         || swapBasicData?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
@@ -55,7 +55,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
                 <div className="w-full flex flex-col justify-between  text-secondary-text">
                     <div className='grid grid-cols-1 gap-3 '>
                         <SwapSummary />
-                        <SwapQuoteDetails swapBasicData={swapBasicData} quote={quote} refuel={refuel} quoteIsLoading={quoteIsLoading} />
+                        <SwapQuoteDetails swapBasicData={swapBasicData} quote={quote} refuel={refuel} quoteIsLoading={quoteIsLoading} quoteError={quoteError} />
                         {withdraw?.content}
                     </div>
                 </div>

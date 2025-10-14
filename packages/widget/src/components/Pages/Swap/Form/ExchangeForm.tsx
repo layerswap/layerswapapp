@@ -140,8 +140,9 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                         {
                             routeValidation.message
                                 ? <ValidationError />
-                                : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                                : null
                         }
+                        <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                     </div>
                     <FormButton
                         shouldConnectWallet={false}

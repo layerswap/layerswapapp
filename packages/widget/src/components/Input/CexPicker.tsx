@@ -6,7 +6,7 @@ import { SelectItem } from "../Select/Selector/SelectItem";
 import useFormRoutes from "@/hooks/useFormRoutes";
 import { LayoutGroup, motion } from "framer-motion";
 import { SearchComponent } from "./Search";
-import { ImageWithFallback } from "../Common/ImageWithFallback";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { ChevronDown } from "lucide-react";
 import { updateForm } from "../Pages/Swap/Form/updateForm";
 import { SwapDirection, SwapFormValues } from "../Pages/Swap/Form/SwapFormValues";

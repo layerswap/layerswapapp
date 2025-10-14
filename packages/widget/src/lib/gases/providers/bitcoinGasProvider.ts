@@ -1,9 +1,9 @@
-import { buildPsbt } from "@/components/Swap/Withdraw/Wallet/WithdrawalProviders/BitcoinWalletWithdraw/transactionBuilder/buildPsbt";
 import { GasProps } from "@/Models/Balance";
 import { Network } from "@/Models/Network";
 import formatAmount from "../../formatAmount";
 import KnownInternalNames from "../../knownIds";
 import { JsonRpcClient } from "@/lib/apiClients/jsonRpcClient";
+import { buildPsbt } from "@/components/Pages/Swap/Withdraw/Wallet/WithdrawalProviders/BitcoinWalletWithdraw/transactionBuilder/buildPsbt";
 
 export class BitcoinGasProvider {
     supportsNetwork(network: Network): boolean {
