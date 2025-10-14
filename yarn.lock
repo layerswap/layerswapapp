@@ -3123,10 +3123,37 @@
     rxjs "^7.8.1"
     semver "^7.3.5"
 
-"@ledgerhq/errors@^6.26.0":
+"@ledgerhq/devices@^6.27.1":
+  version "6.27.1"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/devices/-/devices-6.27.1.tgz#3b13ab1d1ba8201e9e74a08f390560483978c962"
+  integrity sha512-jX++oy89jtv7Dp2X6gwt3MMkoajel80JFWcdc0HCouwDsV1mVJ3SQdwl/bQU0zd8HI6KebvUP95QTwbQLLK/RQ==
+  dependencies:
+    "@ledgerhq/errors" "^6.10.0"
+    "@ledgerhq/logs" "^6.10.0"
+    rxjs "6"
+    semver "^7.3.5"
+
+"@ledgerhq/errors@^6.10.0", "@ledgerhq/errors@^6.26.0":
   version "6.26.0"
   resolved "https://registry.yarnpkg.com/@ledgerhq/errors/-/errors-6.26.0.tgz#ab04a573f962ef97e6a5127726b114ab0d945ea8"
   integrity sha512-4OlisaDBafkn7KN5emue08lCGMVREX6T+nxj47C7W30EBA/leLAEDaVvUw5/gFOWrv8Q2A9Scb8aMM3uokyt0w==
+
+"@ledgerhq/hw-app-trx@^6.27.8":
+  version "6.31.4"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-app-trx/-/hw-app-trx-6.31.4.tgz#097ce9398c33b7434d06a5d645b6881c712e977e"
+  integrity sha512-JUoBxCOCKVlPx3Ilb+mChcRBp1mnKy4z9zqwIxq21HEQIPA+c8TFcYDBYPlC9xUTawuUM82waSAmAcanqekarw==
+  dependencies:
+    "@ledgerhq/hw-transport" "^6.31.8"
+
+"@ledgerhq/hw-transport-webhid@6.27.1":
+  version "6.27.1"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport-webhid/-/hw-transport-webhid-6.27.1.tgz#8fd1710d23b6bd7cbe2382dd02054dfabe788447"
+  integrity sha512-u74rBYlibpbyGblSn74fRs2pMM19gEAkYhfVibq0RE1GNFjxDMFC1n7Sb+93Jqmz8flyfB4UFJsxs8/l1tm2Kw==
+  dependencies:
+    "@ledgerhq/devices" "^6.27.1"
+    "@ledgerhq/errors" "^6.10.0"
+    "@ledgerhq/hw-transport" "^6.27.1"
+    "@ledgerhq/logs" "^6.10.0"
 
 "@ledgerhq/hw-transport-webhid@^6.30.1":
   version "6.30.8"
@@ -3138,7 +3165,16 @@
     "@ledgerhq/hw-transport" "^6.31.12"
     "@ledgerhq/logs" "^6.13.0"
 
-"@ledgerhq/hw-transport@^6.31.12", "@ledgerhq/hw-transport@^6.31.5":
+"@ledgerhq/hw-transport@6.27.1":
+  version "6.27.1"
+  resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport/-/hw-transport-6.27.1.tgz#88072278f69c279cb6569352acd4ae2fec33ace3"
+  integrity sha512-hnE4/Fq1YzQI4PA1W0H8tCkI99R3UWDb3pJeZd6/Xs4Qw/q1uiQO+vNLC6KIPPhK0IajUfuI/P2jk0qWcMsuAQ==
+  dependencies:
+    "@ledgerhq/devices" "^6.27.1"
+    "@ledgerhq/errors" "^6.10.0"
+    events "^3.3.0"
+
+"@ledgerhq/hw-transport@^6.27.1", "@ledgerhq/hw-transport@^6.31.12", "@ledgerhq/hw-transport@^6.31.5", "@ledgerhq/hw-transport@^6.31.8":
   version "6.31.12"
   resolved "https://registry.yarnpkg.com/@ledgerhq/hw-transport/-/hw-transport-6.31.12.tgz#737f309bfff9de3844192050f7f29a5e15f01239"
   integrity sha512-FO5LRIXYC8ELtaohlO8qK0b3TfHUNBZ3+CXKPHiHj2jJwrxPf4s5kcgBYrmzuf1C/1vfrMOjzyty6OgrMIbU6Q==
@@ -3148,7 +3184,7 @@
     "@ledgerhq/logs" "^6.13.0"
     events "^3.3.0"
 
-"@ledgerhq/logs@^6.13.0":
+"@ledgerhq/logs@^6.10.0", "@ledgerhq/logs@^6.13.0":
   version "6.13.0"
   resolved "https://registry.yarnpkg.com/@ledgerhq/logs/-/logs-6.13.0.tgz#0b083af64b6b85db0630c7b940a0ed74ff6262b6"
   integrity sha512-4+qRW2Pc8V+btL0QEmdB2X+uyx0kOWMWE1/LWsq5sZy3Q5tpi4eItJS6mB0XL3wGW59RQ+8bchNQQ1OW/va8Og==
@@ -8236,10 +8272,79 @@
     eventemitter3 "^4.0.0"
     tronweb "6"
 
-"@tronweb3/tronwallet-adapter-react-hooks@^1.1.9":
+"@tronweb3/tronwallet-adapter-bitkeep@^1.1.5":
+  version "1.1.5"
+  resolved "https://registry.yarnpkg.com/@tronweb3/tronwallet-adapter-bitkeep/-/tronwallet-adapter-bitkeep-1.1.5.tgz#85898a8224bf564b3027fe055c6196613313ee60"
+  integrity sha512-ZQA9y30yO2HFZdiOfAQMuojc9qlXIdZjD37QT6GTJbn497d3cUSaEMomvCmVINfi45Jvk16hAV9eteAEEM0FOg==
+  dependencies:
+    "@tronweb3/tronwallet-abstract-adapter" "^1.1.9"
+    "@tronweb3/tronwallet-adapter-tronlink" "^1.1.12"
+
+"@tronweb3/tronwallet-adapter-bybit@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@tronweb3/tronwallet-adapter-bybit/-/tronwallet-adapter-bybit-1.0.1.tgz#c7aefafd9955db768981aef316227c8c26779ac4"
+  integrity sha512-j0Zff2ZjCEBUa60ncd+57VBbaILgVZcCV5lEK4LqLM9KLw2wCRiWUl+5WZoHBZrmH0ewjNS760Ozzu6V6DBAvw==
+  dependencies:
+    "@tronweb3/tronwallet-abstract-adapter" "^1.1.9"
+    "@tronweb3/tronwallet-adapter-tronlink" "^1.1.12"
+
+"@tronweb3/tronwallet-adapter-foxwallet@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@tronweb3/tronwallet-adapter-foxwallet/-/tronwallet-adapter-foxwallet-1.0.1.tgz#3eacd51f2e5a2b71df0ea962bd18e7976ac869b1"
+  integrity sha512-XRPyhY6gixXwzk9ipp5z6PxpjKWVuoIKhvNEuxPTQN8Z58OGOvii/dg6veS65Rqio+GRMVPI9sk+zCmLjF0ywA==
+  dependencies:
+    "@tronweb3/tronwallet-abstract-adapter" "^1.1.9"
+    "@tronweb3/tronwallet-adapter-tronlink" "^1.1.12"
+
+"@tronweb3/tronwallet-adapter-gatewallet@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@tronweb3/tronwallet-adapter-gatewallet/-/tronwallet-adapter-gatewallet-1.0.3.tgz#4ce51aa59132b7ddfab62ee81a16badfe50bc551"
+  integrity sha512-Crbf2RY9ToTndc8hkP0EJJX4gIrjlhAdyVyvYdafRZj3ml2zSVJzCOo55fGmsm1r34VdmHESAgqoSX/bEX/i2Q==
+  dependencies:
+    "@tronweb3/tronwallet-abstract-adapter" "^1.1.9"
+    "@tronweb3/tronwallet-adapter-tronlink" "^1.1.12"
+
+"@tronweb3/tronwallet-adapter-imtoken@^1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@tronweb3/tronwallet-adapter-imtoken/-/tronwallet-adapter-imtoken-1.0.2.tgz#32c783886368284e46c8b108826e25f8cef61bf4"
+  integrity sha512-v7bTSc4r9wp1OZqpFNDyDQXZBVfruv0x8984gIpzuMmcZOSjSRkyLXtwicNYVLpPRbhtxbGKHvi9OoebbHA4QQ==
+  dependencies:
+    "@tronweb3/tronwallet-abstract-adapter" "^1.1.9"
+    "@tronweb3/tronwallet-adapter-tronlink" "^1.1.12"
+
+"@tronweb3/tronwallet-adapter-ledger@^1.1.11":
+  version "1.1.11"
+  resolved "https://registry.yarnpkg.com/@tronweb3/tronwallet-adapter-ledger/-/tronwallet-adapter-ledger-1.1.11.tgz#6735ff6d162b20be0eb36636189aacbe97d53baf"
+  integrity sha512-r0S/4W9fszd247nKa+e/QWTdd1q6crqtUsHumbkT6YSU//tAy2iDoI9Ecz5o1ORabZ5WL7nLiuEr/ZuqCYcabA==
+  dependencies:
+    "@ledgerhq/hw-app-trx" "^6.27.8"
+    "@ledgerhq/hw-transport" "6.27.1"
+    "@ledgerhq/hw-transport-webhid" "6.27.1"
+    "@tronweb3/tronwallet-abstract-adapter" "^1.1.9"
+    buffer "^6.0.3"
+    eventemitter3 "^4.0.0"
+    preact "^10.11.3"
+
+"@tronweb3/tronwallet-adapter-okxwallet@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@tronweb3/tronwallet-adapter-okxwallet/-/tronwallet-adapter-okxwallet-1.0.6.tgz#e1f1d9ef0b239adc1320e912b7a4f1a0f478f5b9"
+  integrity sha512-RSq+1uhelI/Fh0rBpga44TpQUa+1p3H5PlGbBMFYvOoTbXcwkQZYLock/UzfWVZx/NmGjpbtO3hqih9kTvcXyg==
+  dependencies:
+    "@tronweb3/tronwallet-abstract-adapter" "^1.1.9"
+    "@tronweb3/tronwallet-adapter-tronlink" "^1.1.12"
+
+"@tronweb3/tronwallet-adapter-react-hooks@^1.1.10", "@tronweb3/tronwallet-adapter-react-hooks@^1.1.9":
   version "1.1.10"
   resolved "https://registry.yarnpkg.com/@tronweb3/tronwallet-adapter-react-hooks/-/tronwallet-adapter-react-hooks-1.1.10.tgz#482963ada3efb72c1466693abbeb8fe68ca4d221"
   integrity sha512-/6rOFGc9imOHIiqQ/a7nSkR3tFae0HeUovq5dD2qygu9Rmb09rbJhyV0Nc4wH+yTFORjYCguIUqCi2QBbH/WOA==
+  dependencies:
+    "@tronweb3/tronwallet-abstract-adapter" "^1.1.9"
+    "@tronweb3/tronwallet-adapter-tronlink" "^1.1.12"
+
+"@tronweb3/tronwallet-adapter-tokenpocket@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@tronweb3/tronwallet-adapter-tokenpocket/-/tronwallet-adapter-tokenpocket-1.0.6.tgz#00d271c6d6f45b8032cde5dcdf8d568f65bc403c"
+  integrity sha512-NOsnAcF1nzVNkRsqSCt9pno5/w7QfH+ZOel9aO9ULW46lG5sSX5rFumqBE+CkK/SZg4wpDNkzvaf85d7vi+0+A==
   dependencies:
     "@tronweb3/tronwallet-abstract-adapter" "^1.1.9"
     "@tronweb3/tronwallet-adapter-tronlink" "^1.1.12"
@@ -8250,6 +8355,14 @@
   integrity sha512-Oq5L0FyBM+g49DCr0DYdSx8xuhiqIlKoBTPNVmCTSDoWnoZpIh0XE33Axm/4OUMO2NHFpQMvP3pFo7QIllOZ/w==
   dependencies:
     "@tronweb3/tronwallet-abstract-adapter" "^1.1.9"
+
+"@tronweb3/tronwallet-adapter-trust@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@tronweb3/tronwallet-adapter-trust/-/tronwallet-adapter-trust-1.0.0.tgz#24fe58ea3eea6fb9a809eab3f78faea1998cd89f"
+  integrity sha512-c5jlI4DIo0ZEU8YOkeYFU9Wcwq2m3DqTa8rkhbAnQT+oHNDC34bvnboWNc958crKEwbvJ56md4mLZ0i1fkPcyg==
+  dependencies:
+    "@tronweb3/tronwallet-abstract-adapter" "^1.1.9"
+    "@tronweb3/tronwallet-adapter-tronlink" "^1.1.12"
 
 "@trpc/client@^10.38.1":
   version "10.45.2"
@@ -17426,6 +17539,11 @@ posthog-js@^1.261.0:
     preact "^10.19.3"
     web-vitals "^4.2.4"
 
+preact@^10.11.3:
+  version "10.26.9"
+  resolved "https://registry.yarnpkg.com/preact/-/preact-10.26.9.tgz#b3898d1b65140640799062ad73b89846c293b6a7"
+  integrity sha512-SSjF9vcnF27mJK1XyFMNJzFd5u3pQiATFqoaDy03XuN00u4ziveVVEGt5RKJrDR8MHE/wJo9Nnad56RLzS2RMA==
+
 preact@^10.16.0, preact@^10.19.3, preact@^10.24.2:
   version "10.27.2"
   resolved "https://registry.yarnpkg.com/preact/-/preact-10.27.2.tgz#19b9009c1be801a76a0aaf0fe5ba665985a09312"
@@ -18413,7 +18531,7 @@ run-parallel@^1.1.9:
   dependencies:
     queue-microtask "^1.2.2"
 
-rxjs@^6.6.3:
+rxjs@6, rxjs@^6.6.3:
   version "6.6.7"
   resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-6.6.7.tgz#90ac018acabf491bf65044235d5863c4dab804c9"
   integrity sha512-hTdwr+7yYNIT5n4AMYp85KA6yw2Va0FLa3Rguvbpa4W3I5xynaBZo41cM3XM+4Q6fRMj3sBYIR1VAmZMXYJvRQ==

@@ -7,6 +7,7 @@ import { GasResolver } from "@/lib/gases/gasResolver";
 import { buildInitialTransaction } from "./services/transferService/transactionBuilder";
 import { GasWithToken } from "@/types/gas";
 import { TransactionMessageType } from "@/components/Pages/Swap/Withdraw/messages/TransactionMessages";
+import { useMemo } from "react";
 
 export default function useTronConnection(): WalletConnectionProvider {
     const commonSupportedNetworks = [
@@ -135,15 +136,16 @@ export default function useTronConnection(): WalletConnectionProvider {
 
     }
 
-    const availableWalletsForConnect: InternalConnector[] = wallets.map(wallet => {
+    const availableWalletsForConnect: InternalConnector[] = useMemo(() => wallets.map(wallet => {
+        const isNotInstalled = wallet.state == 'NotFound' || wallet.adapter.name == "TronLink"
         return {
             id: wallet.adapter.name,
             name: wallet.adapter.name,
             icon: wallet.adapter.icon,
-            type: wallet.state !== 'NotFound' ? 'injected' : 'other',
-            installUrl: wallet.state !== 'NotFound' ? undefined : wallet.adapter?.url,
+            type: isNotInstalled ? 'other' : 'injected',
+            installUrl: isNotInstalled ? wallet.adapter?.url : undefined,
         }
-    })
+    }), [wallets])
 
     const provider: WalletConnectionProvider = {
         connectWallet,

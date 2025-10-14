@@ -62,7 +62,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const { destination_address, to: destination } = values
     const selectDestinationAccount = useUpdateBalanceAccount("to");
 
-    const { provider, wallets } = useWallet(destination, 'autofil')
+    const { provider, unAvailableWallets } = useWallet(destination, 'autofil')
     const connectedWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
     const defaultAccount = useSelectedAccount("to", values.to?.name);
     const connectedWalletskey = connectedWallets?.map(w => w.addresses.join('')).join('')
@@ -198,7 +198,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                             && !manualAddress &&
                             <ConnectedWallets
                                 provider={provider}
-                                wallets={wallets}
+                                notCompatibleWallets={unAvailableWallets}
                                 onClick={(props) => handleSelectAddress(props.address)}
                                 onConnect={onConnect}
                                 destination={destination}

@@ -94,9 +94,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     })
 
     const canGetQuote = from && to && depositMethod && toCurrency && fromCurrency
-        && Number(debouncedAmount) > 0
-        && (!amountRange || Number(debouncedAmount) >= (amountRange?.data?.min_amount || 0) && Number(debouncedAmount) <= (amountRange?.data?.max_amount || 0))
-
+    
     const quoteURL = (canGetQuote && !isDebouncing)
         ? buildQuoteUrl({
             sourceNetwork: from!,
