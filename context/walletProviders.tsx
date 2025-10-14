@@ -61,7 +61,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
                     <div className="flex items-center gap-1">
                         {
                             (selectedConnector || selectedMultiChainConnector) &&
-                            <div className='-ml-2'>
+                            <div className="sm:-ml-2 -ml-0">
                                 <IconButton onClick={goBack} icon={
                                     <ChevronLeft className="h-6 w-6" />
                                 }>
