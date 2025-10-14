@@ -26,7 +26,7 @@ const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThre
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [initialTime, swapDetails.status, swapInputTransaction, thresholdElapsed]);
+    }, [initialTime, swapDetails.status]);
 
     const formatTime = (milliseconds: number): string => {
         const totalSeconds = Math.floor(milliseconds / 1000);

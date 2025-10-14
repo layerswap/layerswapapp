@@ -21,11 +21,11 @@ export const RateElement = ({
         return null
     }
 
-    const fromToRate = receiveAmount / requestAmount
-    const toFromRate = requestAmount / receiveAmount
+    const fromRate = receiveAmount / requestAmount
+    const toRate = requestAmount / receiveAmount
 
-    const displayFromToRate = truncateDecimals(fromToRate, fromAsset?.decimals || 6)
-    const displayToFromRate = truncateDecimals(toFromRate, toAsset?.decimals || 6)
+    const fromRateTruncated = truncateDecimals(fromRate, fromAsset?.precision || 6)
+    const toRateTruncated = truncateDecimals(toRate, toAsset?.precision || 6)
 
     return (
         <div
@@ -36,27 +36,13 @@ export const RateElement = ({
                 <>
                     <p><span>1</span> <span>{fromAsset?.symbol}</span></p>
                     <ArrowRight className="w-3 h-3 mx-1" />
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <span>{displayFromToRate} {toAsset?.symbol}</span>
-                        </TooltipTrigger>
-                        <TooltipContent className="!bg-secondary-300 !border-secondary-300 !text-primary-text">
-                            <span>{fromToRate}</span>
-                        </TooltipContent>
-                    </Tooltip>
+                    <span>{fromRateTruncated} {toAsset?.symbol}</span>
                 </>
             ) : (
                 <>
                     <p><span>1</span> <span>{toAsset?.symbol}</span></p>
                     <ArrowRight className="w-3 h-3 mx-1" />
-                    <Tooltip delayDuration={100}>
-                        <TooltipTrigger asChild>
-                            <span>{displayToFromRate} {fromAsset?.symbol}</span>
-                        </TooltipTrigger>
-                        <TooltipContent className="!bg-secondary-300 !border-secondary-300 !text-primary-text">
-                            <span>{toFromRate}</span>
-                        </TooltipContent>
-                    </Tooltip>
+                    <span>{toRateTruncated} {fromAsset?.symbol}</span>
                 </>
             )}
         </div>

@@ -1,17 +1,20 @@
 import { ValidationDetails } from '@/context/validationContext';
-import { Info } from 'lucide-react';
+import { Info, RouteOff } from 'lucide-react';
 import React from 'react';
 import { ICON_CLASSES_WARNING } from './constants';
 
 interface ErrorDisplayProps {
-    message: string;
+    message?: string;
     details: ValidationDetails;
 }
 
 export const defaultErrors: { [errorName: string]: ErrorDisplayProps } = {
     "insufficientFunds": {
-        message: "You don't have enough balance to complete this transaction, this might cause the transaction to fail please try to enter a smaller amount.",
         details: { title: "Insufficient Balance", type: 'warning', icon: <Info className={ICON_CLASSES_WARNING} /> }
+    },
+    "quoteError": {
+        message: "Unable to retrieve quote",
+        details: { title: "Unable to retrieve quote", type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> }
     }
 }
 export const ErrorDisplay: React.FC<Partial<ErrorDisplayProps & { errorName?: string }>> = (props) => {
@@ -21,8 +24,8 @@ export const ErrorDisplay: React.FC<Partial<ErrorDisplayProps & { errorName?: st
             <div className="flex items-start gap-2">
                 <span className="shrink-0">{details?.icon}</span>
                 <div className="flex flex-col gap-1">
-                    <p className="text-white font-medium leading-4 text-base">{details?.title}</p>
-                    <p className="text-secondary-text text-sm leading-[18px]">{message}</p>
+                    <p className="text-white font-medium leading-4 text-base mt-0.5">{details?.title}</p>
+                    {message ? <p className="text-secondary-text text-sm leading-[18px]">{message}</p> : null}
                 </div>
             </div>
         </div>

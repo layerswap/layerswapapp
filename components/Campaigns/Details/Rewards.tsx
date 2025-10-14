@@ -1,14 +1,14 @@
 import { FC } from "react"
-import BackgroundField from "../../backgroundField";
+import BackgroundField from "@/components/backgroundField";
 import { Clock } from "lucide-react"
-import LayerSwapApiClient, { Campaign, Reward, RewardPayout } from "../../../lib/apiClients/layerSwapApiClient"
-import { RewardsComponentSceleton } from "../../Sceletons"
+import LayerSwapApiClient, { Campaign, Reward, RewardPayout } from "@/lib/apiClients/layerSwapApiClient"
+import { RewardsComponentSceleton } from "@/components/Sceletons"
 import useSWR from "swr"
-import { ApiResponse } from "../../../Models/ApiResponse"
-import ClickTooltip from "../../Tooltips/ClickTooltip"
-import shortenAddress from "../../utils/ShortenAddress"
-import { Progress } from "../../ProgressBar";
-import useWallet from "../../../hooks/useWallet";
+import { ApiResponse } from "@/Models/ApiResponse"
+import ClickTooltip from "@/components/Tooltips/ClickTooltip"
+import shortenAddress from "@/components/utils/ShortenAddress"
+import { Progress } from "@/components/ProgressBar";
+import useWallet from "@/hooks/useWallet";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 type Props = {
