@@ -13,6 +13,7 @@ import { Network } from '@/Models/Network'
 import clsx from 'clsx'
 import { Slippage } from '../Slippage'
 import { GasFee } from './DetailedEstimates'
+import NumberFlow from '@number-flow/react'
 
 export const SummaryRow: FC<{
     destination?: Network
@@ -58,7 +59,7 @@ export const SummaryRow: FC<{
                 </div>
                 <div className="text-right text-primary-text">
                     {quoteData?.quote?.min_receive_amount !== undefined && (
-                        <span className="text-sm font-small">{quoteData?.quote?.min_receive_amount} {values?.toAsset?.symbol}</span>
+                        <NumberFlow value={quoteData?.quote?.min_receive_amount || 0} trend={0} format={{ maximumFractionDigits: quoteData?.quote.destination_token?.decimals || 2 }} suffix={` ${values?.toAsset?.symbol}`}/>
                     )}
                 </div>
             </div>

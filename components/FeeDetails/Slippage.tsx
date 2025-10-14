@@ -28,7 +28,6 @@ export const Slippage = ({ quoteData, values }: SlippageProps) => {
         }
     }, [isActive, editingSlippage])
 
-
     const handleAutoButtonClick = useCallback(() => {
         setAutoSlippage(auto => {
             if (auto) {
@@ -124,7 +123,7 @@ type QuickActionProps = {
     value: number
 }
 const QuickAction = ({ value }: QuickActionProps) => {
-    const { slippage, setSlippage } = useSlippageStore()
+    const { setSlippage } = useSlippageStore()
     const [flash, setFlash] = useState(false)
 
     return (
@@ -155,18 +154,18 @@ const SlippageInput = forwardRef<HTMLInputElement, SlippageInputProps>(function 
     const [localPercent, setLocalPercent] = useState<number | undefined>(valueDecimal !== undefined ? valueDecimal * 100 : undefined)
 
     useEffect(() => {
-        setLocalPercent(valueDecimal !== undefined ? valueDecimal * 100 : undefined)
+        setLocalPercent(valueDecimal !== undefined ? Math.round(valueDecimal * 10000) / 100 : undefined)
     }, [valueDecimal])
+
+    const invalid = localPercent !== undefined && (localPercent < 0 || localPercent > 80)
 
     useEffect(() => {
         const t = setTimeout(() => {
-            if (invalid) return
-            onDebouncedChange(localPercent !== undefined ? localPercent / 100 : undefined)
+            if (localPercent !== undefined && (localPercent < 0 || localPercent > 80)) return
+            onDebouncedChange(localPercent !== undefined ? Math.round(localPercent * 100) / 10000 : undefined)
         }, 300)
         return () => clearTimeout(t)
     }, [localPercent])
-
-    const invalid = localPercent !== undefined && (localPercent < 0 || localPercent > 80)
 
     return (
         <Popover open={invalid}>
@@ -176,12 +175,10 @@ const SlippageInput = forwardRef<HTMLInputElement, SlippageInputProps>(function 
                 >
                     <input
                         type="number"
-                        inputMode="decimal"
-                        max={80}
                         ref={ref}
                         className={clsx("w-10 bg-transparent border-none outline-none focus:outline-none focus-visible:outline-none ring-0 focus:ring-0 focus-visible:ring-0 focus:border-transparent focus:shadow-none text-primary-text text-sm leading-none p-0 text-right",
                             invalid && "shake")}
-                        value={localPercent !== undefined ? localPercent : ""}
+                        value={localPercent}
                         onChange={(e) => {
                             const next = e.target.value === "" ? undefined : Number(e.target.value)
                             if (!Number.isNaN(next as number)) {
