@@ -13,8 +13,8 @@ type Props = {
 function HeaderWithMenu({ goBack, contextualMenu }: Props) {
    const initialSettings = useInitialSettings()
    return (
-      <div className="items-center justify-between sm:flex sm:items-center grid grid-cols-5 w-full sm:grid-cols-none sm:grid-none mt-2 pb-2 px-6">
-         <div className="self-center col-start-1 md:col-start-2 md:col-span-3 justify-self-start md:justify-self-center">
+      <div className="items-center justify-between sm:flex sm:items-center grid grid-cols-5 w-full sm:grid-cols-none sm:grid-none mt-2 pb-2 max-sm:px-4 px-6">
+         <div className="self-center col-start-1 md:col-start-2 md:col-span-3 justify-self-start md:justify-self-center flex items-center gap-2">
             {
                goBack ?
                   <IconButton onClick={goBack}
@@ -30,12 +30,10 @@ function HeaderWithMenu({ goBack, contextualMenu }: Props) {
                      : null
             }
          </div>
-         <div className="col-start-5 justify-self-end self-center flex items-center gap-x-2 sm:gap-x-1 -mr-2">
+         <div className="col-start-5 justify-self-end self-center flex items-center gap-x-2 sm:gap-x-1">
             <WalletsHeader />
             {contextualMenu}
-            <div className="fixed-width-container max-sm:bg-secondary-500 max-sm:rounded-lg max-sm:p-0.5">
-               <LayerswapMenu />
-            </div>
+            <LayerswapMenu />
          </div>
       </div>
    )
