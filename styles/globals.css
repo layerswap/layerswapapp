@@ -488,5 +488,5 @@ padding: calc(var(--number-flow-mask-height, 0.25em) / 2) 0;
 @keyframes releasePointerAfterDelay { to { pointer-events: none; } }
 .click-delay-on-hover:hover::after {
   pointer-events: auto;
-  animation: releasePointerAfterDelay 600ms linear forwards;
+  animation: releasePointerAfterDelay 300ms linear forwards;
 }

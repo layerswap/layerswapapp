@@ -32,18 +32,18 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
                         <span>Network issue</span>
                     </div>
                     : (network && token && truncatedBalance) ?
-                        ((tokenBalance?.amount && tokenBalance.amount < Number(values.amount) && values.depositMethod === 'wallet' && direction == 'from') ?
+                        ((Number(tokenBalance?.amount )>= 0 && Number(tokenBalance?.amount) < Number(values.amount) && values.depositMethod === 'wallet' && direction == 'from') ?
                             <InsufficientBalance balance={truncatedBalance} />
                             :
                             <span>{truncatedBalance}</span>
-                        )
+                        ) 
                         : null
         }
     </div>
 }
 
 const InsufficientBalance: FC<{ balance: string }> = ({ balance }) => {
-    return <Tooltip>
+    return <Tooltip openOnClick>
         <TooltipTrigger asChild>
             <div className="flex items-center gap-1 text-warning-foreground justify-center">
                 <InfoIcon className='w-3 h-3' />
