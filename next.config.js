@@ -1,8 +1,7 @@
-// next.config.mjs
 import {
   PHASE_PRODUCTION_SERVER,
   PHASE_PRODUCTION_BUILD,
-} from 'next/constants';
+} from 'next/dist/shared/lib/constants.js'; // ✅ works in ESM
 import { withPostHogConfig } from '@posthog/nextjs-config';
 
 const securityHeaders = [
