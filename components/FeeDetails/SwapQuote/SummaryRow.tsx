@@ -58,9 +58,9 @@ export const SummaryRow: FC<{
                 <div className="inline-flex items-center text-left text-secondary-text">
                     <label>Receive at least</label>
                 </div>
-                <div className="text-right text-primary-text">
-                    {quoteData?.quote?.min_receive_amount !== undefined && (
-                        <NumberFlow value={truncateDecimals(quoteData?.quote?.min_receive_amount, values?.toAsset?.precision) || 0} trend={0} format={{ maximumFractionDigits: quoteData?.quote.destination_token?.decimals || 2 }} suffix={` ${values?.toAsset?.symbol}`}/>
+                <div className="text-right text-primary-text h-5">
+                    {quoteData?.quote?.min_receive_amount !== undefined && !isNaN(quoteData?.quote?.min_receive_amount) && (
+                        <NumberFlow value={quoteData?.quote?.min_receive_amount} trend={0} format={{ maximumFractionDigits: quoteData?.quote.destination_token?.decimals || 2 }} suffix={` ${values?.toAsset?.symbol}`} />
                     )}
                 </div>
             </div>
