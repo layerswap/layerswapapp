@@ -1,7 +1,8 @@
 import { ValidationDetails } from '@/context/validationContext';
-import { Info, RouteOff } from 'lucide-react';
+import { RouteOff } from 'lucide-react';
 import React from 'react';
 import { ICON_CLASSES_WARNING } from './constants';
+import InfoIcon from "@/components/icons/InfoIcon";
 
 interface ErrorDisplayProps {
     message?: string;
@@ -10,7 +11,7 @@ interface ErrorDisplayProps {
 
 export const defaultErrors: { [errorName: string]: ErrorDisplayProps } = {
     "insufficientFunds": {
-        details: { title: "Insufficient Balance", type: 'warning', icon: <Info className={ICON_CLASSES_WARNING} /> }
+        details: { title: "Insufficient Balance", type: 'warning', icon: <InfoIcon className={ICON_CLASSES_WARNING} /> }
     },
     "quoteError": {
         message: "Unable to retrieve quote",
