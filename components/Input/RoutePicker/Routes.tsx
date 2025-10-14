@@ -76,7 +76,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
                             :
                             <p className="flex items-center gap-1 text-xs text-secondary-text">
                                 <span>•</span>
-                                <p className="truncate max-w-[80px]">{item.display_asset || item.symbol}</p>
+                                <span className="truncate max-w-[80px]">{item.display_asset || item.symbol}</span>
                             </p>
                     }
                 </div>
