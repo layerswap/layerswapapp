@@ -5,10 +5,6 @@ import { useFormikContext } from 'formik';
 import { QuoteError } from './useFee';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
-
-import { useSwapDataState } from '@/context/swap';
-import { useBalance } from '@/lib/balances/useBalance';
-import { defaultErrors } from '@/components/Pages/Swap/Form/SecondaryComponents/validationError/ErrorDisplay';
 import { ICON_CLASSES_WARNING } from '@/components/Pages/Swap/Form/SecondaryComponents/validationError/constants';
 
 interface ValidationDetails {
@@ -19,24 +15,13 @@ interface ValidationDetails {
 
 export function resolveRouteValidation(quoteError?: QuoteError) {
     const { values } = useFormikContext<SwapFormValues>();
-    const { to, from, fromAsset, destination_address, amount } = values;
+    const { to, from, destination_address } = values;
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
     const initialSettings = useInitialSettings();
     const quoteMessage = quoteError?.response?.data?.error?.message || quoteError?.message
 
-    const { balances } = useBalance(selectedSourceAccount?.address, from)
-    const walletBalance = from && balances?.find(b => b?.network === from?.name && b?.token === fromAsset?.symbol)
-    const walletBalanceAmount = walletBalance?.amount
-
-    const { swapModalOpen } = useSwapDataState()
-
     let validationMessage: string = '';
     let validationDetails: ValidationDetails = {};
-
-    if (Number(amount) > 0 && Number(walletBalanceAmount) < Number(amount) && values.depositMethod === 'wallet' && !swapModalOpen) {
-        validationMessage = defaultErrors["insufficientFunds"].message;
-        validationDetails = defaultErrors["insufficientFunds"].details;
-    }
 
     if (((from?.name && from?.name.toLowerCase() === initialSettings.sameAccountNetwork?.toLowerCase()) || (to?.name && to?.name.toLowerCase() === initialSettings.sameAccountNetwork?.toLowerCase()))) {
         const network = from?.name.toLowerCase() === initialSettings.sameAccountNetwork?.toLowerCase() ? from : to;

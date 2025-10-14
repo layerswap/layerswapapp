@@ -6,7 +6,7 @@ import { useSettingsState } from '@/context/settings';
 import { transactionSenderAndConfirmationWaiter } from './transactionSender';
 import { WithdrawPageProps } from '../../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../../Common/buttons';
-import TransactionMessages from '../../../messages/TransactionMessages';
+import ActionMessages from '../../../messages/TransactionMessages';
 import WalletMessage from '../../../messages/Message';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import { useBalance } from '@/lib/balances/useBalance';
@@ -76,14 +76,20 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
 
         }
         catch (e) {
+            if (e.name == "WalletNotConnectedError") {
+                await solanaWallet?.adapter.disconnect()
+                setError('Wallet not connected')
+                return
+            }
             setLoading(false)
             if (e?.message) {
                 if (e?.logs?.some(m => m?.includes('insufficient funds')) || e.message.includes('Attempt to debit an account')) setError('insufficientFunds')
                 else setError(e.message)
+                return
             }
-            throw e
+            setError(e.message)
         }
-    }, [walletPublicKey, signTransaction, source_network, source_token])
+    }, [walletPublicKey, signTransaction, source_network, source_token, solanaWallet])
 
     if (!wallet || !walletPublicKey) {
         return <ConnectWalletButton />
@@ -113,7 +119,7 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
 
 const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined, insufficientTokens: string[] }> = ({ isLoading, error, insufficientTokens }) => {
     if (isLoading) {
-        return <TransactionMessages.ConfirmTransactionMessage />
+        return <ActionMessages.ConfirmTransactionMessage />
     }
     else if (error === "insufficientFunds") {
         return <WalletMessage
@@ -122,10 +128,10 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined, in
             details={`The balance of ${insufficientTokens?.join(" and ")} in the connected wallet is not enough`} />
     }
     else if (error === "User rejected the request.") {
-        return <TransactionMessages.TransactionRejectedMessage />
+        return <ActionMessages.TransactionRejectedMessage />
     }
     else if (error) {
-        return <TransactionMessages.UexpectedErrorMessage message={error} />
+        return <ActionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>
 }

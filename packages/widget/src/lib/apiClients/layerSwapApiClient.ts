@@ -132,7 +132,7 @@ export type CreateSwapParams = {
     destination_network: string,
     destination_token: string
     refuel?: boolean,
-    slippage?: number,
+    slippage?: string,
     destination_address: string,
     source_address?: string
     refund_address?: string
@@ -166,8 +166,7 @@ export type SwapBasicData = {
     destination_token: Token,
     destination_address: string,
     requested_amount: number,
-    use_deposit_address: boolean,
-
+    use_deposit_address: boolean
 }
 
 export type SwapDetails = {

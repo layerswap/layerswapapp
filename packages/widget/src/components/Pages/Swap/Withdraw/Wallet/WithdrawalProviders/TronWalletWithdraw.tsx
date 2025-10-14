@@ -7,7 +7,7 @@ import { ContractParamter, Transaction, TransferContract } from 'tronweb/lib/esm
 import { Token } from '@/Models/Network';
 import { WithdrawPageProps } from '../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
-import TransactionMessages from '../../messages/TransactionMessages';
+import ActionMessages from '../../messages/TransactionMessages';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import useWallet from '@/hooks/useWallet';
 import { TransferProps } from '@/types';
@@ -88,16 +88,16 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refue
 
 const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> = ({ isLoading, error }) => {
     if (isLoading) {
-        return <TransactionMessages.ConfirmTransactionMessage />
+        return <ActionMessages.ConfirmTransactionMessage />
     }
     else if (error === "BANDWITH_ERROR") {
-        return <TransactionMessages.InsufficientFundsMessage />
+        return <ActionMessages.InsufficientFundsMessage />
     }
     else if (error === "user reject this request") {
-        return <TransactionMessages.TransactionRejectedMessage />
+        return <ActionMessages.TransactionRejectedMessage />
     }
     else if (error) {
-        return <TransactionMessages.UexpectedErrorMessage message={error} />
+        return <ActionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>
 }

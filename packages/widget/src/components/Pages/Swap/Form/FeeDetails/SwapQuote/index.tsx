@@ -33,7 +33,7 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
 
     const wallet = (values?.to && values?.destination_address) ? wallets?.find(w => addressFormat(w.address, values?.to!) === addressFormat(values?.destination_address!, values?.to!)) : undefined
     const selectedSourceAccount = useSelectedAccount("from", values?.from?.name);
-    
+
     return (
         <Accordion
             type="single"
@@ -62,10 +62,8 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
 
                 <AccordionContent className="rounded-2xl">
                     <DetailedEstimates
-                        isQuoteLoading={isQuoteLoading}
                         swapValues={values}
                         quote={quoteData}
-                        sourceAddress={wallet?.address}
                         variant='base'
                     />
                 </AccordionContent>

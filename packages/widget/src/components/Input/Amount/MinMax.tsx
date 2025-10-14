@@ -3,7 +3,6 @@ import useSWRGas from "@/lib/gases/useSWRGas";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import React, { useMemo } from "react";
 import { resolveMaxAllowedAmount } from "./helpers";
-import { updateForm } from "@/components/Pages/Swap/Form/updateForm";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
@@ -46,11 +45,7 @@ const MinMax = (props: MinMaxProps) => {
 
     const handleSetValue = (value: string) => {
         mutateBalances()
-        updateForm({
-            formDataKey: 'amount',
-            formDataValue: value,
-            setFieldValue
-        })
+        setFieldValue('amount', value, true)
         onActionHover(undefined)
     }
 

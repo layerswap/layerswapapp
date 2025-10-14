@@ -26,7 +26,8 @@ export class JsonRpcClient {
     this.url = url;
   }
 
-  async call<P, R>(method: string, params: P): Promise<R> {
+  async call<P, R>(method: string, params: P, timeoutMs?: number, retryCount?: number): Promise<R> {
+    const { fetchWithTimeout } = await import("@/lib/fetchWithTimeout");
     const request: JsonRpcRequest<P> = {
       jsonrpc: '2.0',
       method,
@@ -34,11 +35,13 @@ export class JsonRpcClient {
       id: this.nextId++,
     };
 
-    const res: Response = await fetch(this.url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(request),
-    });
+    const { retry } = await import("@/lib/retry");
+    const res: Response = await retry(async () => await fetchWithTimeout(this.url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(request),
+        timeoutMs: timeoutMs ?? 60000,
+      }), retryCount ?? 3, 500);
 
     const response: JsonRpcResponse<R> = await res.json();
     if (response.error) {

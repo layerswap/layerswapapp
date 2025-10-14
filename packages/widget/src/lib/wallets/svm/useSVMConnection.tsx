@@ -19,9 +19,8 @@ export default function useSVMConnection(): WalletConnectionProvider {
 
     const name = 'Solana'
     const id = 'solana'
-    const { disconnect, select, wallets, signTransaction } = useWallet();
-
-    const connectedWallet = wallets.find(w => w.adapter.connected === true)
+    const { disconnect, select, wallets, wallet: solanaWallet, signTransaction } = useWallet();
+    const connectedWallet = solanaWallet?.adapter.connected === true ? solanaWallet : undefined
     const connectedAddress = connectedWallet?.adapter.publicKey?.toBase58()
     const connectedAdapterName = connectedWallet?.adapter.name
 
