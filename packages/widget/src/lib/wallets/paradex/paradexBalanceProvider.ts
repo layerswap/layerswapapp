@@ -1,17 +1,16 @@
 import { BalanceProvider } from "@/types/balance";
 import { TokenBalance } from "@/Models/Balance";
-import { NetworkWithTokens } from "@/Models/Network";
 import KnownInternalNames from "@/lib/knownIds";
 import * as Paradex from "@/lib/wallets/paradex/lib";
 import { insertIfNotExists } from "../../balances/helpers";
 import AppSettings from "@/lib/AppSettings";
 
 export class ParadexBalanceProvider extends BalanceProvider {
-    supportsNetwork = (network: NetworkWithTokens): boolean => {
+    supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return KnownInternalNames.Networks.ParadexMainnet.includes(network.name) || KnownInternalNames.Networks.ParadexTestnet.includes(network.name)
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens) => {
+    fetchBalance: BalanceProvider['fetchBalance'] = async (address, network) => {
         const environment = AppSettings.ApiVersion === 'sandbox' ? 'testnet' : 'prod'
         const config = await Paradex.Config.fetchConfig(environment);
         const tokens = insertIfNotExists(network.tokens || [], network.token)

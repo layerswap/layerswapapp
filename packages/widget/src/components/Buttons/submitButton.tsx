@@ -1,4 +1,4 @@
-import { FC, MouseEventHandler } from "react";
+import { CSSProperties, FC, MouseEventHandler } from "react";
 import SpinIcon from "../Icons/spinIcon";
 import clsx from "clsx";
 
@@ -19,16 +19,17 @@ export class SubmitButtonProps {
     button_align?: button_align = 'left';
     className?: string;
     children?: React.ReactNode;
+    style?: CSSProperties;
 }
 
-const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, icon, children, type, onClick, buttonStyle = 'filled', size = 'medium', text_align = 'center', button_align = 'left', className }) => {
+const SubmitButton: FC<SubmitButtonProps> = ({ isDisabled, isSubmitting, icon, children, type, onClick, buttonStyle = 'filled', size = 'medium', text_align = 'center', button_align = 'left', className, style }) => {
 
     return (
         <button
             disabled={isDisabled || isSubmitting}
             type={type}
             onClick={onClick}
-
+            style={style}
             className={clsx('enabled:active:animate-press-down text-primary focus:outline-none focus:ring-0 items-center space-x-1 disabled:bg-secondary-300 disabled:text-secondary-text/50 disabled:cursor-not-allowed relative w-full flex justify-center font-medium rounded-xl transform hover:brightness-125 transition duration-200 ease-in-out', {
                 className,
                 'text-primary-buttonTextColor bg-primary-500': buttonStyle === 'filled',

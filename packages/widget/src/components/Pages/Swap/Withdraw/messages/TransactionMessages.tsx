@@ -51,6 +51,13 @@ const WaletMismatchMessage: FC<{ address: string }> = ({ address }) => {
         details={`Select ${shortenAddress(address)} in your wallet, then try again`} />
 }
 
+const SwapErrorMessage: FC<{ message: string }> = ({ message }) => {
+    return <WalletMessage
+        status="error"
+        header='API error'
+        details={message} />
+}
+
 const UexpectedErrorMessage: FC<{ message: string }> = ({ message }) => {
     return <WalletMessage
         status="error"
@@ -59,13 +66,14 @@ const UexpectedErrorMessage: FC<{ message: string }> = ({ message }) => {
         showInModal />
 }
 
-const TransactionMessages = {
+const ActionMessages = {
     ConfirmTransactionMessage,
     TransactionInProgressMessage,
     InsufficientFundsMessage,
     TransactionRejectedMessage,
     WaletMismatchMessage,
     TransactionFailedMessage,
+    SwapErrorMessage,
     UexpectedErrorMessage,
     DifferentAccountsNotAllowedError
 }
@@ -81,4 +89,4 @@ export enum TransactionMessageType {
     DifferentAccountsNotAllowedError = 'DifferentAccountsNotAllowedError',
 }
 
-export default TransactionMessages
+export default ActionMessages

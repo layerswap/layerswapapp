@@ -10,13 +10,14 @@ import { Wallet, WalletConnectionProvider } from '@/types/wallet';
 import useWallet from '@/hooks/useWallet';
 import { Network } from '@/Models/Network';
 import { useSettingsState } from './settings';
-import { transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
+import { QuoteError, transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
 import { useSelectedAccount } from './balanceAccounts';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
 import { useSwapIdChangeCallback } from './callbackProvider';
 import { useInitialSettings } from './settings';
 import { addressFormat } from '@/lib/address/formatter';
+import { useSlippageStore } from '@/stores/slippageStore';
 
 export const SwapDataStateContext = createContext<SwapContextData>({
     depositAddressIsFromAccount: false,
@@ -25,12 +26,15 @@ export const SwapDataStateContext = createContext<SwapContextData>({
     depositActionsResponse: undefined,
     swapApiError: undefined,
     quote: undefined,
+    quoteError: undefined,
+    quoteIsLoading: false,
     refuel: undefined,
     swapBasicData: undefined,
     swapDetails: undefined,
-    quoteIsLoading: false,
     swapId: undefined,
-    swapModalOpen: false
+    swapModalOpen: false,
+    swapError: '',
+    setSwapError: (value: string) => { }
 });
 
 export const SwapDataUpdateContext = createContext<UpdateSwapInterface | null>(null);
@@ -56,11 +60,14 @@ export type SwapContextData = {
     swapTransaction: SwapTransaction | undefined,
     swapBasicData: SwapBasicData & { refuel: boolean } | undefined,
     quote: SwapQuote | undefined,
+    quoteIsLoading: boolean,
+    quoteError: QuoteError | undefined,
     refuel: Refuel | undefined,
     swapDetails: SwapDetails | undefined,
-    quoteIsLoading: boolean,
     swapId: string | undefined,
-    swapModalOpen: boolean
+    swapModalOpen: boolean,
+    swapError?: string | null | undefined,
+    setSwapError?: (value: string) => void
 }
 
 export function SwapDataProvider({ children }) {
@@ -74,11 +81,12 @@ export function SwapDataProvider({ children }) {
     const [swapBasicFormData, setSwapBasicFormData] = useState<SwapBasicData & { refuel: boolean }>()
     const updateRecentTokens = useRecentNetworksStore(state => state.updateRecentNetworks)
     const [swapModalOpen, setSwapModalOpen] = useState(false)
+    const [swapError, setSwapError] = useState<string>('')
     const { providers } = useWallet(swapBasicFormData?.source_network, 'asSource')
 
     const quoteArgs = useMemo(() => transformSwapDataToQuoteArgs(swapBasicFormData, !!swapBasicFormData?.refuel), [swapBasicFormData]);
 
-    const { quote: formDataQuote } = useQuoteData(quoteArgs, swapId ? 0 : undefined);
+    const { quote: formDataQuote, quoteError: formDataQuoteError } = useQuoteData(quoteArgs, swapId ? 0 : undefined);
 
     const triggerSwapIdChangeCallback = useSwapIdChangeCallback()
     const handleUpdateSwapid = (value: string | undefined) => {
@@ -132,6 +140,13 @@ export function SwapDataProvider({ children }) {
         }
         return formDataQuote?.quote
     }, [formDataQuote, data, swapId]);
+
+    const quoteError = useMemo(() => {
+        if (swapId && data?.data) {
+            return undefined
+        }
+        return formDataQuoteError
+    }, [formDataQuoteError, data, swapId]);
 
     const refuel = useMemo(() => {
         if (swapId) {
@@ -187,7 +202,7 @@ export function SwapDataProvider({ children }) {
             sourceNetwork: from,
             sourceWallet: selectedWallet
         })
-
+        const slippage = useSlippageStore.getState().slippage
         const data: CreateSwapParams = {
             amount: amount,
             source_network: from.name,
@@ -203,7 +218,16 @@ export function SwapDataProvider({ children }) {
             refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined
         }
 
-        const swapResponse = await layerswapApiClient.CreateSwapAsync(data)
+        if (depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {
+            data.slippage = slippage.toString()
+        }
+
+        let swapResponse
+        try {
+            swapResponse = await layerswapApiClient.CreateSwapAsync(data)
+        } catch (error) {
+            setSwapError(error?.response?.data?.error?.message || 'Unexpected error occurred.')
+        }
 
         if (swapResponse?.error) {
             throw swapResponse?.error
@@ -240,12 +264,15 @@ export function SwapDataProvider({ children }) {
             swapApiError: error,
             depositActionsResponse,
             quote,
+            quoteIsLoading,
+            quoteError,
             refuel,
             swapBasicData,
             swapDetails,
-            quoteIsLoading,
             swapId,
-            swapModalOpen
+            swapModalOpen,
+            swapError,
+            setSwapError
         }}>
             <SwapDataUpdateContext.Provider value={updateFns}>
                 {children}

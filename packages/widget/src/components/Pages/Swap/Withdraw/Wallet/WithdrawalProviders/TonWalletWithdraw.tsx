@@ -7,10 +7,10 @@ import { Token } from '@/Models/Network';
 import tonClient from '@/lib/wallets/ton/client';
 import { WithdrawPageProps } from '../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
-import TransactionMessages from '../../messages/TransactionMessages';
 import { useConnectModal } from '@/components/Wallet/WalletModal';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import { TransferProps } from '@/types';
+import ActionMessages from '../../messages/TransactionMessages';
 
 export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -87,16 +87,16 @@ export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
 
 const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> = ({ isLoading, error }) => {
     if (isLoading) {
-        return <TransactionMessages.ConfirmTransactionMessage />
+        return <ActionMessages.ConfirmTransactionMessage />
     }
     else if (error && error.includes('Reject request')) {
-        return <TransactionMessages.TransactionRejectedMessage />
+        return <ActionMessages.TransactionRejectedMessage />
     }
     else if (error && error.includes('Transaction was not sent')) {
-        return <TransactionMessages.TransactionFailedMessage />
+        return <ActionMessages.TransactionFailedMessage />
     }
     else if (error) {
-        return <TransactionMessages.UexpectedErrorMessage message={error} />
+        return <ActionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>
 }

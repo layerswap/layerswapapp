@@ -3,11 +3,11 @@ import formatAmount from "@/lib/formatAmount";
 import KnownInternalNames from "@/lib/knownIds";
 
 export class ZkSyncBalanceProvider extends BalanceProvider {
-    supportsNetwork = (network: NetworkWithTokens): boolean => {
+    supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return KnownInternalNames.Networks.ZksyncMainnet.includes(network.name)
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens) => {
+    fetchBalance: BalanceProvider['fetchBalance'] = async (address, network) => {
         const client = new ZkSyncLiteRPCClient();
         const tokens = insertIfNotExists(network.tokens || [], network.token)
 
@@ -30,12 +30,7 @@ export class ZkSyncBalanceProvider extends BalanceProvider {
             return zkSyncBalances
         }
         catch (e) {
-            const error = {
-                message: e?.message ?? "Failed get token balance",
-                code: e?.code,
-                cause: e,
-            }
-            return tokens.map((currency) => (this.resolveTokenBalanceFetchError(error, currency, network)))
+            return tokens.map((currency) => (this.resolveTokenBalanceFetchError(e, currency, network)))
         }
     }
 

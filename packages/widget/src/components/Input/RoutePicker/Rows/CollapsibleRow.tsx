@@ -22,6 +22,7 @@ type GenericAccordionRowProps = {
   onSelect: (route: NetworkRoute, token: NetworkRouteToken) => void;
   selectedRoute: string | undefined;
   selectedToken: string | undefined;
+  searchQuery: string
   toggleContent: (itemName: string) => void;
   openValues?: string[];
   scrollContainerRef: RefObject<HTMLDivElement>;
@@ -40,6 +41,7 @@ export const CollapsibleRow = ({
   onSelect,
   selectedRoute,
   selectedToken,
+  searchQuery,
   openValues,
   scrollContainerRef,
   allbalancesLoaded,
@@ -74,7 +76,7 @@ export const CollapsibleRow = ({
   };
 
   return (
-    <motion.div layout="position">
+    <motion.div {...(!searchQuery && { layout: "position" })} key={searchQuery ? "search" : "default"}>
       <AccordionItem value={groupName}>
         <div
           ref={headerRef}

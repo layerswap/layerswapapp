@@ -65,10 +65,8 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
                                 {
                                     (quoteData || isQuoteLoading) && fromCurrency && toAsset &&
                                     <DetailedEstimates
-                                        isQuoteLoading={isQuoteLoading}
                                         swapValues={values}
                                         quote={quoteData}
-                                        variant='base'
                                     />
                                 }
                             </ResizablePanel>
@@ -101,27 +99,30 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuo
     );
 
     return (
-        <div className='flex items-center'>
+        <div className='flex items-center gap-1 space-x-3'>
             {
                 gasFeeInUsd &&
-                <div className={clsx(
-                    "inline-flex items-center gap-1",
-                    { "animate-pulse-strong": isQuoteLoading }
-                )}>
-                    <div className='p-0.5'>
-                        {!values.fromExchange ?
-                            <GasIcon className='h-4 w-4 text-secondary-text' /> : <ExchangeGasIcon className='h-5 w-5 text-secondary-text' />
-                        }
+                <>
+                    <div className={clsx(
+                        "inline-flex items-center gap-1",
+                        { "animate-pulse-strong": isQuoteLoading }
+                    )}>
+                        <div className='p-0.5'>
+                            {!values.fromExchange ?
+                                <GasIcon className='h-4 w-4 text-secondary-text' /> : <ExchangeGasIcon className='h-5 w-5 text-secondary-text' />
+                            }
+                        </div>
+                        <NumberFlow className="text-primary-text text-sm leading-6" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} format={{ style: 'currency', currency: 'USD' }} prefix={gasFeeInUsd < 0.01 ? '<' : undefined} />
+
                     </div>
-                    <NumberFlow className="text-primary-text text-sm leading-6" value={gasFeeInUsd < 0.01 ? '0.01' : gasFeeInUsd} format={{ style: 'currency', currency: 'USD' }} prefix={gasFeeInUsd < 0.01 ? '<' : undefined} />
-                    <div className="mx-1 w-px h-3 bg-primary-text-tertiary rounded-2xl" />
-                </div>
+                    <div className="w-px h-3 bg-primary-text-tertiary rounded-2xl" />
+                </>
             }
             {
                 averageCompletionTime &&
                 <>
                     <div className={clsx(
-                        "text-right inline-flex items-center gap-1 text-sm ml-1",
+                        "text-right inline-flex items-center gap-1 text-sm",
                         { "animate-pulse-strong": isQuoteLoading }
                     )}>
                         <div className='p-0.5'>
@@ -136,7 +137,7 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuo
                 (!shouldCheckNFT || (!isLoading && !error && nftBalance !== undefined && nftBalance > 0)) &&
                 <>
                     <div className="w-px h-3 bg-primary-text-tertiary rounded-2xl" />
-                    <div className='text-right text-primary-text inline-flex items-center gap-1 pr-4'>
+                    <div className='text-right text-primary-text inline-flex items-center gap-1'>
                         <CupIcon alt="Reward" width={16} height={16} />
                         <NumberFlow value={reward?.amount_in_usd < 0.01 ? '0.01' : reward?.amount_in_usd} format={{ style: 'currency', currency: 'USD' }} prefix={reward?.amount_in_usd < 0.01 ? '<' : undefined} />
                     </div>

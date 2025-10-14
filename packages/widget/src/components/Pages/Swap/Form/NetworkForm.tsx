@@ -77,11 +77,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const handleReserveGas = useCallback((nativeTokenBalance: TokenBalance, networkGas: number) => {
         if (nativeTokenBalance.amount && networkGas)
-            updateForm({
-                formDataKey: 'amount',
-                formDataValue: (nativeTokenBalance?.amount - networkGas).toString(),
-                setFieldValue
-            });
+            setFieldValue('amount', (nativeTokenBalance?.amount - networkGas).toString(), true);
     }, [setFieldValue]);
 
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
@@ -139,8 +135,9 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                         {
                             routeValidation.message
                                 ? <ValidationError />
-                                : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                                : null
                         }
+                        <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
