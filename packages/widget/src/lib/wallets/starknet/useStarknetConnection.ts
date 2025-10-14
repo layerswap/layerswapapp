@@ -137,18 +137,19 @@ export default function useStarknetConnection(): WalletConnectionProvider {
                 return transferTxHash
             }
         } catch (error) {
+            const e = new Error()
+            e.message = error
             if (error === "An error occurred (USER_REFUSED_OP)" || error === "Execute failed") {
-                error.name = TransactionMessageType.TransactionRejected
-                throw new Error(error)
+                e.name = TransactionMessageType.TransactionRejected
+                throw e
             }
             else if (error === "failedTransfer") {
-                error.name = TransactionMessageType.TransactionFailed
-                throw new Error(error)
+                e.name = TransactionMessageType.TransactionFailed
+                throw e
             }
             else {
-                error.name = TransactionMessageType.UexpectedErrorMessage
-                error.message = error
-                throw new Error(error)
+                e.name = TransactionMessageType.UexpectedErrorMessage
+                throw e
             }
         }
     }

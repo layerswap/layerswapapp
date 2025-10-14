@@ -151,20 +151,21 @@ export default function useFuelConnection(): WalletConnectionProvider {
                 return transactionResponse.id;
             }
         } catch (error) {
+            const e = new Error()
+            e.message = error.message
             if (error === "The account(s) sending the transaction don't have enough funds to cover the transaction."
                 || error === "the target cannot be met due to no coins available or exceeding the 255 coin limit."
             ) {
                 error.name = TransactionMessageType.InsufficientFunds
-                throw new Error(error)
+                throw e
             }
             else if (error === "Request cancelled without user response!" || error === "User rejected the transaction!" || error === "User canceled sending transaction") {
-                error.name = TransactionMessageType.TransactionRejected
-                throw new Error(error)
+                e.name = TransactionMessageType.TransactionRejected
+                throw e
             }
             else {
-                error.name = TransactionMessageType.UexpectedErrorMessage
-                error.message = error
-                throw new Error(error)
+                e.name = TransactionMessageType.UexpectedErrorMessage
+                throw e
             }
         }
     }
