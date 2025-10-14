@@ -1,9 +1,10 @@
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
-import useWallet from "@/hooks/useWallet";
 import InfoIcon from "@/components/icons/InfoIcon";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import { useBalance } from "@/lib/balances/useBalance";
+import { FC } from "react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
@@ -31,10 +32,31 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
                         <span>Network issue</span>
                     </div>
                     : (network && token && truncatedBalance) ?
-                        <span>{truncatedBalance}</span>
-                        : <span></span>
+                        ((tokenBalance?.amount && tokenBalance.amount < Number(values.amount) && values.depositMethod === 'wallet' && direction == 'from') ?
+                            <InsufficientBalance balance={truncatedBalance} />
+                            :
+                            <span>{truncatedBalance}</span>
+                        )
+                        : null
         }
     </div>
+}
+
+const InsufficientBalance: FC<{ balance: string }> = ({ balance }) => {
+    return <Tooltip>
+        <TooltipTrigger asChild>
+            <div className="flex items-center gap-1 text-warning-foreground justify-center">
+                <InfoIcon className='w-3 h-3' />
+                <p>{balance}</p>
+            </div>
+        </TooltipTrigger>
+        <TooltipContent className="!bg-secondary-400 !border-0 !p-3 !rounded-xl">
+            <div className="flex items-center gap-2 justify-center">
+                <InfoIcon className='w-4 h-4 text-warning-foreground' />
+                <p className="text-sm">Insufficient balance</p>
+            </div>
+        </TooltipContent>
+    </Tooltip>
 }
 
 export default Balance

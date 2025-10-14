@@ -5,10 +5,7 @@ import { useQueryState } from '@/context/query';
 import { useFormikContext } from 'formik';
 import { QuoteError } from './useFee';
 import { useSelectedAccount } from '@/context/balanceAccounts';
-import { useSwapDataState } from '@/context/swap';
 import { ICON_CLASSES_WARNING } from '@/components/validationError/constants';
-import { useBalance } from '@/lib/balances/useBalance';
-import { defaultErrors } from '@/components/validationError/ErrorDisplay';
 
 interface ValidationDetails {
     title?: string;
@@ -18,24 +15,13 @@ interface ValidationDetails {
 
 export function resolveRouteValidation(quoteError?: QuoteError) {
     const { values } = useFormikContext<SwapFormValues>();
-    const { to, from, fromAsset: fromCurrency, destination_address, amount } = values;
+    const { to, from, destination_address } = values;
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
     const query = useQueryState();
     const quoteMessage = quoteError?.response?.data?.error?.message || quoteError?.message
 
-    const { balances } = useBalance(selectedSourceAccount?.address, from)
-    const walletBalance = from && balances?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
-    const walletBalanceAmount = walletBalance?.amount
-
-    const { swapModalOpen } = useSwapDataState()
-
     let validationMessage: string = '';
     let validationDetails: ValidationDetails = {};
-
-    if (Number(amount) > 0 && Number(walletBalanceAmount) < Number(amount) && values.depositMethod === 'wallet' && !swapModalOpen) {
-        validationMessage = defaultErrors["insufficientFunds"].message;
-        validationDetails = defaultErrors["insufficientFunds"].details;
-    }
 
     if (((from?.name && from?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase()) || (to?.name && to?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase()))) {
         const network = from?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase() ? from : to;

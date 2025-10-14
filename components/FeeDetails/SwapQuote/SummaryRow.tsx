@@ -12,6 +12,9 @@ import { Quote } from '@/lib/apiClients/layerSwapApiClient'
 import { Network } from '@/Models/Network'
 import clsx from 'clsx'
 import { truncateDecimals } from '@/components/utils/RoundDecimals'
+import { Slippage } from '../Slippage'
+import { GasFee } from './DetailedEstimates'
+import NumberFlow from '@number-flow/react'
 
 export const SummaryRow: FC<{
     destination?: Network
@@ -57,11 +60,15 @@ export const SummaryRow: FC<{
                 </div>
                 <div className="text-right text-primary-text">
                     {quoteData?.quote?.min_receive_amount !== undefined && (
-                        <span className="text-sm font-small">{truncateDecimals(quoteData?.quote?.min_receive_amount, values?.toAsset?.precision)} {values?.toAsset?.symbol}</span>
+                        <NumberFlow value={truncateDecimals(quoteData?.quote?.min_receive_amount, values?.toAsset?.precision) || 0} trend={0} format={{ maximumFractionDigits: quoteData?.quote.destination_token?.decimals || 2 }} suffix={` ${values?.toAsset?.symbol}`}/>
                     )}
                 </div>
             </div>
-
+            <Slippage quoteData={quoteData.quote} values={values} />
+            {
+                isOpen &&
+                <GasFee values={values} quote={quoteData.quote} />
+            }
             <div className={`${isOpen ? "hidden" : ""} flex items-center w-full justify-between px-2 py-3`}>
                 <DetailsButton quote={quoteData} isQuoteLoading={isQuoteLoading} swapValues={values} destination={destination} destinationAddress={destinationAddress} />
 

@@ -6,6 +6,7 @@ import { ApiResponse } from '../Models/ApiResponse'
 import { sleep } from 'fuels'
 import { create } from 'zustand';
 import { isDiffByPercent } from '@/components/utils/numbers'
+import { useSlippageStore } from '@/stores/slippageStore'
 
 
 type UseQuoteData = {
@@ -53,6 +54,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
     const { fromCurrency, toCurrency, from, to, amount, refuel, depositMethod } = formValues || {}
     const [debouncedAmount, setDebouncedAmount] = useState(amount)
     const [isDebouncing, setIsDebouncing] = useState(false)
+    const { slippage } = useSlippageStore()
 
     useEffect(() => {
         if (amount === debouncedAmount) return;
@@ -88,15 +90,25 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         max_amount_in_usd: number
     }>>(limitsURL, apiClient.fetcher, {
         refreshInterval: (refreshInterval || refreshInterval == 0) ? refreshInterval : 20000,
-        dedupingInterval: 20000
+        dedupingInterval: 5000
     })
 
     const canGetQuote = from && to && depositMethod && toCurrency && fromCurrency
         && Number(debouncedAmount) > 0
         && (!amountRange || Number(debouncedAmount) >= (amountRange?.data?.min_amount || 0) && Number(debouncedAmount) <= (amountRange?.data?.max_amount || 0))
 
-    const quoteURL = (canGetQuote && !isDebouncing) ?
-        `/quote?source_network=${from}&source_token=${fromCurrency}&destination_network=${to}&destination_token=${toCurrency}&amount=${debouncedAmount}&refuel=${!!refuel}&use_deposit_address=${use_deposit_address}` : null
+    const quoteURL = (canGetQuote && !isDebouncing)
+        ? buildQuoteUrl({
+            sourceNetwork: from!,
+            sourceToken: fromCurrency!,
+            destinationNetwork: to!,
+            destinationToken: toCurrency!,
+            amount: debouncedAmount!,
+            refuel: !!refuel,
+            useDepositAddress: use_deposit_address,
+            slippage,
+        })
+        : null
 
     const { cache } = useSWRConfig();
     const isQuoteLoading = useLoadingStore((state) => state.isLoading);
@@ -107,6 +119,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
             if (key !== url) {
                 setLoading(true)
             }
+
             const previousData = cache.get(url)?.data as ApiResponse<Quote>
             const newData = await apiClient.fetcher(url) as ApiResponse<Quote>
             if (previousData?.data?.quote && isDiffByPercent(previousData?.data?.quote.receive_amount, newData.data?.quote.receive_amount, 2)) {
@@ -114,11 +127,16 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
                 setLoading(true)
                 await sleep(3500)
             }
+          
+            
             setKey(url)
             setLoading(false)
             return newData
         }
         catch (error) {
+            if(error.response?.data?.error?.code === "VALIDATION_ERROR"){
+                useSlippageStore.getState().clearSlippage()
+            }
             setLoading(false)
             setKey(null)
             throw error
@@ -127,7 +145,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
 
     const { data: quote, mutate: mutateFee, error: quoteError } = useSWR<ApiResponse<Quote>>(quoteURL, quoteFetchWrapper, {
         refreshInterval: (refreshInterval || refreshInterval == 0) ? refreshInterval : 42000,
-        dedupingInterval: 42000,
+        dedupingInterval: 5000,
         keepPreviousData: true,
     })
 
@@ -166,6 +184,46 @@ export function transformSwapDataToQuoteArgs(swapData: SwapBasicData | undefined
         to: swapData?.destination_network.name,
         toCurrency: swapData?.destination_token.symbol,
     }
+}
+
+type QuoteUrlArgs = {
+    sourceNetwork: string
+    sourceToken: string
+    destinationNetwork: string
+    destinationToken: string
+    amount: string | number
+    refuel: boolean
+    useDepositAddress: boolean
+    slippage?: number
+}
+
+export function buildQuoteUrl(args: QuoteUrlArgs): string {
+    const {
+        sourceNetwork,
+        sourceToken,
+        destinationNetwork,
+        destinationToken,
+        amount,
+        refuel,
+        useDepositAddress,
+        slippage,
+    } = args
+
+    const params = new URLSearchParams({
+        source_network: sourceNetwork,
+        source_token: sourceToken,
+        destination_network: destinationNetwork,
+        destination_token: destinationToken,
+        amount: String(amount),
+        refuel: String(!!refuel),
+        use_deposit_address: useDepositAddress ? 'true' : 'false',
+    })
+
+    if (slippage !== undefined) {
+        params.append('slippage', String(slippage))
+    }
+
+    return `/quote?${params.toString()}`
 }
 
 export const getLimits = async (swapValues: LimitsQueryOptions) => {
