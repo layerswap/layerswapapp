@@ -65,7 +65,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({
                 <span className={clsx("flex text-secondary-text items-center cursor-default hover:text-primary-text", className)}>
                     <span className="flex items-center gap-0.5">
                         <span>(</span>
-                        <Triangle className={`w-3 h-3 stroke-1 fill-current transition-transform ${priceImpact < 0 ? "rotate-180" : ""}`} />
+                        <Triangle fill="currentColor" className={`w-3.5 h-3.5 stroke-1 fill-current transition-transform ${priceImpact < 0 ? "rotate-180" : ""}`} />
                         <span>
                             ${Math.abs(priceImpact).toFixed(2)}
                         </span>

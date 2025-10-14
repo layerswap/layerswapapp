@@ -1,6 +1,6 @@
 import { ComponentProps, FC, useCallback, useState } from "react";
 import WalletIcon from "@/components/Icons/WalletIcon";
-import { ActionData, TransferProps } from "./sharedTypes";
+import { ActionData } from "./sharedTypes";
 import SubmitButton, { SubmitButtonProps } from "@/components/Buttons/submitButton";
 import useWallet from "@/hooks/useWallet";
 import { useSwapDataState, useSwapDataUpdate } from "@/context/swap";
@@ -19,6 +19,7 @@ import { useWalletWithdrawalState } from "@/context/withdrawalContext";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import { SwapFormValues } from "../../../Form/SwapFormValues";
 import { useSwapCreateCallback } from "@/context/callbackProvider";
+import { TransferProps } from "@/types";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
@@ -209,7 +210,17 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             setSwapId(swapId)
             const depositAction = newSwapData?.deposit_actions && newSwapData?.deposit_actions[0];
 
+            if (!depositAction) {
+                throw new Error('No deposit action')
+            }
+            if (!depositAction.call_data) {
+                throw new Error('No deposit action call data')
+            }
+           
             const transferProps: TransferProps = {
+                network: swapData.source_network,
+                token: swapData.source_token,
+                selectedWallet: selectedWallet,
                 amount: depositAction?.amount,
                 callData: depositAction?.call_data,
                 depositAddress: depositAction?.to_address,

@@ -1,8 +1,8 @@
 import { ButtonHTMLAttributes, DetailedHTMLProps, FC, useState } from "react";
 import { WalletModalConnector } from ".";
-import { InternalConnector } from "../../../Models/WalletProvider";
+import { InternalConnector } from "@/types/wallet";
 import { Loader } from "lucide-react";
-import { resolveWalletConnectorIcon } from "../../../lib/wallets/utils/resolveWalletIcon";
+import { resolveWalletConnectorIcon } from "@/lib/wallets/utils/resolveWalletIcon";
 
 type Connector = DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement> & {
     connector: InternalConnector,

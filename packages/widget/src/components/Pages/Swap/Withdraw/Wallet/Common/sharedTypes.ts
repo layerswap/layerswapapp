@@ -12,12 +12,3 @@ export type WithdrawPageProps = {
     refuel: boolean
     savedTransactionHash?: string
 }
-
-export type TransferProps = {
-    callData?: string
-    depositAddress?: string
-    amount?: number
-    swapId?: string
-    userDestinationAddress?: string
-    sequenceNumber?: number
-}

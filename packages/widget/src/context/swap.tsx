@@ -6,7 +6,7 @@ import { ApiResponse } from '@/Models/ApiResponse';
 import { Partner } from '@/Models/Partner';
 import { ApiError } from '@/Models/ApiError';
 import { ResolvePollingInterval } from '@/components/utils/SwapStatus';
-import { Wallet, WalletProvider } from '@/Models/WalletProvider';
+import { Wallet, WalletConnectionProvider } from '@/types/wallet';
 import useWallet from '@/hooks/useWallet';
 import { Network } from '@/Models/Network';
 import { useSettingsState } from './settings';
@@ -299,7 +299,7 @@ export function useSwapDataUpdate() {
     return updateFns;
 }
 
-const WalletIsSupportedForSource = ({ providers, sourceNetwork, sourceWallet }: { providers: WalletProvider[] | undefined, sourceWallet: Wallet | undefined, sourceNetwork: Network | undefined }) => {
+const WalletIsSupportedForSource = ({ providers, sourceNetwork, sourceWallet }: { providers: WalletConnectionProvider[] | undefined, sourceWallet: Wallet | undefined, sourceNetwork: Network | undefined }) => {
     const isSupported = sourceWallet && providers?.find(p => p.name === sourceWallet.providerName)?.asSourceSupportedNetworks?.some(n => n === sourceNetwork?.name) || false
     return isSupported
 }

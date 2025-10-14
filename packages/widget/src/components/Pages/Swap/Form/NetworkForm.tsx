@@ -15,7 +15,7 @@ import { ArrowUpDown } from "lucide-react";
 import { classNames } from "@/components/utils/classNames";
 import FormButton from "./SecondaryComponents/FormButton";
 import { InitialSettings } from "@/Models/InitialSettings";
-import { WalletProvider } from "@/Models/WalletProvider";
+import { WalletConnectionProvider } from "@/types/wallet";
 import { updateForm, updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
@@ -27,7 +27,6 @@ import DepositMethodComponent from "./FeeDetails/DepositMethod";
 import RefuelToggle from "./FeeDetails/Refuel";
 import RefuelModal from "./FeeDetails/RefuelModal";
 import { SwapFormValues } from "./SwapFormValues";
-import { useBalance } from "@/lib/balances/useBalance";
 import { useFormChangeCallback } from "@/context/callbackProvider";
 
 type Props = {
@@ -89,7 +88,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
             <DepositMethodComponent />
             <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-3">
                 <Widget.Content>
-                    <div className="w-full flex flex-col justify-between">
+                    <div className="w-full flex flex-col justify-between flex-1 gap-3">
                         <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
                             {
                                 !(initialSettings?.hideFrom && values?.from) && <SourcePicker
@@ -161,7 +160,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     );
 };
 
-const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<SwapFormValues>['setValues'], providers: WalletProvider[], query: InitialSettings }> = ({ values, setValues, providers, query }) => {
+const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<SwapFormValues>['setValues'], providers: WalletConnectionProvider[], query: InitialSettings }> = ({ values, setValues, providers, query }) => {
     const [animate, cycle] = useCycle(
         { rotateX: 0 },
         { rotateX: 180 }

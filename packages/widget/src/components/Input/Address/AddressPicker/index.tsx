@@ -13,7 +13,7 @@ import AddressBook from "./AddressBook";
 import AddressButton from "./AddressButton";
 import { useInitialSettings } from "@/context/settings";
 import ConnectedWallets from "./ConnectedWallets";
-import { Wallet } from "@/Models/WalletProvider";
+import { Wallet } from "@/types/wallet";
 import { useSelectedAccount, useUpdateBalanceAccount } from "@/context/balanceAccounts";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 
