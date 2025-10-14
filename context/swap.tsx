@@ -19,6 +19,7 @@ import { parse, ParsedUrlQuery } from 'querystring';
 import { resolvePersistantQueryParams } from '@/helpers/querryHelper';
 import { useSelectedAccount } from './balanceAccounts';
 import { addressFormat } from '@/lib/address/formatter';
+import { useSlippageStore } from '@/stores/slippageStore';
 
 export const SwapDataStateContext = createContext<SwapContextData>({
     codeRequested: false,
@@ -211,7 +212,7 @@ export function SwapDataProvider({ children }) {
             sourceNetwork: from,
             sourceWallet: selectedWallet
         })
-
+        const slippage = useSlippageStore.getState().slippage
         const data: CreateSwapParams = {
             amount: amount,
             source_network: from.name,
@@ -225,6 +226,10 @@ export function SwapDataProvider({ children }) {
             use_deposit_address: depositMethod === 'wallet' ? false : true,
             source_address: sourceIsSupported ? selectedSourceAccount?.address : undefined,
             refund_address: sourceIsSupported ? selectedSourceAccount?.address : undefined
+        }
+
+        if (depositMethod === 'wallet' && slippage && slippage > 0 && slippage < 0.8) {
+            data.slippage = slippage.toString()
         }
 
         let swapResponse

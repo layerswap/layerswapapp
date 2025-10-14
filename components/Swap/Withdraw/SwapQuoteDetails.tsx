@@ -31,5 +31,4 @@ export const SwapQuoteDetails: FC<Props> = ({ swapBasicData: swapData, quote, re
     }
 
     return <SwapQuoteComp quote={{ quote, refuel }} swapValues={values} isQuoteLoading={quoteIsLoading} />
-
 }
