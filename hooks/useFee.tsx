@@ -8,7 +8,6 @@ import { create } from 'zustand';
 import { isDiffByPercent } from '@/components/utils/numbers'
 import { useSlippageStore } from '@/stores/slippageStore'
 
-
 type UseQuoteData = {
     minAllowedAmount?: number
     maxAllowedAmount?: number
@@ -93,7 +92,7 @@ export function useQuoteData(formValues: Props | undefined, refreshInterval?: nu
         dedupingInterval: 5000
     })
 
-    const canGetQuote = from && to && depositMethod && toCurrency && fromCurrency
+    const canGetQuote = from && to && depositMethod && toCurrency && fromCurrency && debouncedAmount
     
     const quoteURL = (canGetQuote && !isDebouncing)
         ? buildQuoteUrl({
