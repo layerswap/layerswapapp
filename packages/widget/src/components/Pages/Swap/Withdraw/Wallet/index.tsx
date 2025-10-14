@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import { PublishedSwapTransactions, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
 import useWallet from "@/hooks/useWallet";
@@ -96,7 +96,7 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
     if (!wallet) {
         return <ConnectWalletButton />
     }
-    else if (wallet.chainId !== networkChainId && source_network) {
+    else if (wallet.chainId && wallet.chainId !== networkChainId && source_network) {
         return <ChangeNetworkButton
             chainId={networkChainId}
             network={source_network}
@@ -222,5 +222,3 @@ const TransactionMessage: FC<{ error: Error, isLoading: boolean }> = ({ error, i
     }
     else return <></>
 }
-
-export default TransferTokenButton
