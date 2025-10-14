@@ -4,6 +4,7 @@ import { LayerSwapAppSettings } from '../Models/LayerSwapAppSettings';
 export const SettingsStateContext = React.createContext<LayerSwapAppSettings | null>(null);
 
 export const SettingsProvider: FC<{ data: LayerSwapAppSettings, children?: React.ReactNode }> = ({ children, data }) => {
+  throw new Error('SettingsProvider is deprecated, please use SettingsProvider in context/settings.tsx');
   return (
     <SettingsStateContext.Provider value={data}>
       {children}
