@@ -2,13 +2,13 @@ import { WalletIcon } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
 import { useSettingsState } from '@/context/settings';
 import KnownInternalNames from '@/lib/knownIds';
-import toast from 'react-hot-toast';
 import { AuthorizeStarknet } from '@/lib/wallets/paradex/Authorize/Starknet';
 import { WithdrawPageProps } from '@/components/Pages/Swap/Withdraw/Wallet/Common/sharedTypes';
 import { SendTransactionButton } from '@/components/Pages/Swap/Withdraw/Wallet/Common/buttons';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import useWallet from '@/hooks/useWallet';
 import { TransferProps } from '@/types';
+import { TransactionMessageType } from '@/components/Pages/Swap/Withdraw/messages/TransactionMessages';
 
 const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
 
@@ -48,15 +48,15 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
                     return res.transaction_hash
                 }
             }
-            catch (e) {
-                toast(e.message)
+            catch (error) {
+                throw error
             }
         }
-        catch (e) {
+        catch (error) {
             setLoading(false)
-            if (e?.message)
-                toast(e.message)
-            throw e
+            error.name = TransactionMessageType.UexpectedErrorMessage
+            error.message = error
+            throw new Error(error)
         }
     }, [selectedSourceAccount?.address, starknet, source_token])
 

@@ -1,6 +1,5 @@
 import { ArrowLeftRight, Info } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
-import toast from 'react-hot-toast';
 import * as zksync from 'zksync';
 import { utils } from 'ethers';
 import { useEthersSigner } from '@/lib/ethersToViem/ethers';
@@ -15,6 +14,7 @@ import { WithdrawPageProps } from '@/components/Pages/Swap/Withdraw/Wallet/Commo
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import useWallet from '@/hooks/useWallet';
 import { TransferProps } from '@/types';
+import { TransactionMessageType } from '@/components/Pages/Swap/Withdraw/messages/TransactionMessages';
 
 const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -58,8 +58,10 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel
             }
             setSyncWallet(wallet)
         }
-        catch (e) {
-            toast(e.message)
+        catch (error) {
+            error.name = TransactionMessageType.UexpectedErrorMessage
+            error.message = error
+            throw new Error(error)
         }
         finally {
             setLoading(false)
@@ -81,13 +83,14 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel
             if (receipt.success)
                 setAccountIsActivated(true)
             else if (receipt.failReason)
-                toast(receipt.failReason)
-
+                throw new Error(receipt.failReason)
             else
-                toast("Activation failed")
+                throw new Error("Activation failed")
         }
-        catch (e) {
-            toast(e.message)
+        catch (error) {
+            error.name = TransactionMessageType.UexpectedErrorMessage
+            error.message = error
+            throw new Error(error)
         }
         finally {
             setLoading(false)
@@ -112,12 +115,11 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel
                 return txHash;
             }
         }
-        catch (e) {
+        catch (error) {
             setLoading(false)
-            if (e?.message) {
-                toast(e.message)
-            }
-            throw e
+            error.name = TransactionMessageType.UexpectedErrorMessage
+            error.message = error
+            throw new Error(error)
         }
     }, [syncWallet, source_token])
 

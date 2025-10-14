@@ -6,11 +6,12 @@ import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wal
 import { useMemo } from "react"
 import { useSettingsState } from "@/context/settings"
 import { configureAndSendCurrentTransaction } from "./services/transferService/transactionSender"
+import { TransactionMessageType } from "@/components/Pages/Swap/Withdraw/messages/TransactionMessages"
 
 const solanaNames = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet, KnownInternalNames.Networks.SolanaTestnet]
 
 export default function useSVMConnection(): WalletConnectionProvider {
-    const { networks } = useSettingsState() 
+    const { networks } = useSettingsState()
 
     const commonSupportedNetworks = [
         ...networks.filter(network => network.type === NetworkType.Solana).map(l => l.name)
@@ -91,7 +92,7 @@ export default function useSVMConnection(): WalletConnectionProvider {
         const { callData, network, token, amount, balances } = params
 
         const { Connection, Transaction, LAMPORTS_PER_SOL } = await import("@solana/web3.js")
-        
+
         if (!signTransaction) throw new Error('Missing signTransaction')
 
         const connection = new Connection(
@@ -102,32 +103,48 @@ export default function useSVMConnection(): WalletConnectionProvider {
         const arrayBufferCallData = Uint8Array.from(atob(callData), c => c.charCodeAt(0))
         const transaction = Transaction.from(arrayBufferCallData)
 
-        const feeInLamports = await transaction.getEstimatedFee(connection)
-        const feeInSol = feeInLamports / LAMPORTS_PER_SOL
+        try {
+            const feeInLamports = await transaction.getEstimatedFee(connection)
+            const feeInSol = feeInLamports / LAMPORTS_PER_SOL
 
-        const nativeTokenBalance = balances?.find(b => b.token == network?.token?.symbol)
-        const tokenbalanceData = balances?.find(b => b.token == token?.symbol)
-        const tokenBalanceAmount = tokenbalanceData?.amount
-        const nativeTokenBalanceAmount = nativeTokenBalance?.amount
+            const nativeTokenBalance = balances?.find(b => b.token == network?.token?.symbol)
+            const tokenbalanceData = balances?.find(b => b.token == token?.symbol)
+            const tokenBalanceAmount = tokenbalanceData?.amount
+            const nativeTokenBalanceAmount = nativeTokenBalance?.amount
 
-        const insufficientTokensArr: string[] = []
+            const insufficientTokensArr: string[] = []
 
-        if (network?.token && (Number(nativeTokenBalanceAmount) < feeInSol || isNaN(Number(nativeTokenBalanceAmount)))) {
-            insufficientTokensArr.push(network.token?.symbol);
+            if (network?.token && (Number(nativeTokenBalanceAmount) < feeInSol || isNaN(Number(nativeTokenBalanceAmount)))) {
+                insufficientTokensArr.push(network.token?.symbol);
+            }
+            if (network?.token?.symbol !== token?.symbol && amount && token?.symbol && Number(tokenBalanceAmount) < amount) {
+                insufficientTokensArr.push(token?.symbol);
+            }
+
+            if (insufficientTokensArr.length > 0) throw new Error(TransactionMessageType.InsufficientFunds)
+
+            const signature = await configureAndSendCurrentTransaction(
+                transaction,
+                connection,
+                signTransaction
+            );
+
+            return signature;
+        } catch (error) {
+            if (error in TransactionMessageType) {
+                error.name = error
+                throw error
+            }
+            else if (error === "User rejected the request.") {
+                error.name = TransactionMessageType.TransactionRejected
+                throw new Error(error)
+            }
+            else {
+                error.name = TransactionMessageType.UexpectedErrorMessage
+                error.message = error
+                throw new Error(error)
+            }
         }
-        if (network?.token?.symbol !== token?.symbol && amount && token?.symbol && Number(tokenBalanceAmount) < amount) {
-            insufficientTokensArr.push(token?.symbol);
-        }
-
-        if (insufficientTokensArr.length > 0) throw new Error('Insufficient tokens')
-
-        const signature = await configureAndSendCurrentTransaction(
-            transaction,
-            connection,
-            signTransaction
-        );
-
-        return signature;
     }
 
     const availableWalletsForConnect = useMemo(() => {

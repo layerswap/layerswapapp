@@ -4,6 +4,7 @@ import KnownInternalNames from "../../knownIds"
 import IMX from "@/components/Icons/Wallets/IMX"
 import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wallet"
 import { useSettingsState } from "@/context/settings"
+import { TransactionMessageType } from "@/components/Pages/Swap/Withdraw/messages/TransactionMessages"
 
 const supportedNetworks = [
     KnownInternalNames.Networks.ImmutableXMainnet,
@@ -66,24 +67,36 @@ export default function useImtblXConnection(): WalletConnectionProvider {
 
     const transfer: WalletConnectionProvider['transfer'] = async (params) => {
         const { network, token, amount, depositAddress, swapId } = params
-        const ImtblClient = (await import('@/lib/wallets/imtblX/client')).default;
-        const imtblClient = new ImtblClient(network?.name)
+        try {
+            const ImtblClient = (await import('@/lib/wallets/imtblX/client')).default;
+            const imtblClient = new ImtblClient(network?.name)
 
-        if (!token) {
-            throw new Error("No source currency could be found");
-        }
-        if (!depositAddress) {
-            throw new Error("Deposit address not found");
-        }
-        const res = await imtblClient.Transfer(amount.toString(), token, depositAddress)
-        const transactionRes = res?.result?.[0]
-        if (!transactionRes)
-            throw new Error('Transfer failed or terminated')
-        else if (transactionRes.status == "error") {
-            throw new Error(transactionRes.message)
-        }
-        else if (transactionRes && swapId) {
-            return transactionRes.txId.toString()
+            if (!token) {
+                throw new Error("No source currency could be found");
+            }
+            if (!depositAddress) {
+                throw new Error("Deposit address not found");
+            }
+            const res = await imtblClient.Transfer(amount.toString(), token, depositAddress)
+            const transactionRes = res?.result?.[0]
+            if (!transactionRes)
+                throw new Error(TransactionMessageType.TransactionFailed)
+            else if (transactionRes.status == "error") {
+                throw new Error(transactionRes.message)
+            }
+            else if (transactionRes && swapId) {
+                return transactionRes.txId.toString()
+            }
+        } catch (error) {
+            if (error in TransactionMessageType) {
+                error.name = error
+                throw error
+            }
+            else {
+                error.name = TransactionMessageType.UexpectedErrorMessage
+                error.message = error
+                throw new Error(error)
+            }
         }
     }
 

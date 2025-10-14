@@ -4,13 +4,13 @@ import { useAccount } from 'wagmi';
 import { useSettingsState } from '@/context/settings';
 import KnownInternalNames from '@/lib/knownIds';
 import { useEthersSigner } from '@/lib/ethersToViem/ethers';
-import toast from 'react-hot-toast';
 import AuhorizeEthereum from '@/lib/wallets/paradex/Authorize/Ethereum';
 import WalletIcon from '@/components/Icons/WalletIcon';
 import { WithdrawPageProps } from '@/components/Pages/Swap/Withdraw/Wallet/Common/sharedTypes';
 import { TransferProps } from '@/types';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import useWallet from '@/hooks/useWallet';
+import { TransactionMessageType } from '@/components/Pages/Swap/Withdraw/messages/TransactionMessages';
 
 const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
 
@@ -42,14 +42,11 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
             if (res.transaction_hash) {
                 return res.transaction_hash
             }
-        } catch (e) {
+        } catch (error) {
             setLoading(false)
-            if (e.message.includes('Contract not found')) {
-                toast.error('Account not found', { duration: 30000 })
-                throw e
-            }
-            toast.error(e.message, { duration: 30000 })
-            throw e
+            error.name = TransactionMessageType.UexpectedErrorMessage
+            error.message = error
+            throw new Error(error)
         }
     }
 
