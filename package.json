@@ -5,8 +5,7 @@
   "workspaces": {
     "packages": [
       "packages/*",
-      "apps/*",
-      "examples/*"
+      "apps/*"
     ]
   },
   "devDependencies": {
