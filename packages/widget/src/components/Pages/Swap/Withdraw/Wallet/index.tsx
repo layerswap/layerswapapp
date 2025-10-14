@@ -24,11 +24,11 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
     const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
 
     useEffect(() => {
-        const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
+        const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id && w.withdrawalSupportedNetworks?.includes(source_network?.name))
         if (selectedSourceAccount && selectedWallet) {
             provider?.switchAccount(selectedWallet, selectedSourceAccount.address)
         }
-    }, [selectedSourceAccount?.address])
+    }, [selectedSourceAccount?.address, source_network?.name])
 
     return <>
         {
@@ -54,7 +54,7 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network.name);
     const { wallets, provider } = useWallet(source_network, "withdrawal")
     const { sameAccountNetwork } = useInitialSettings()
-    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id && w.withdrawalSupportedNetworks?.includes(source_network?.name))
     const networkChainId = Number(source_network?.chain_id) ?? undefined
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
 
