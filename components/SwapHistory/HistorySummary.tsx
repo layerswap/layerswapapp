@@ -1,16 +1,16 @@
 
 import useSWR from "swr"
-import LayerSwapApiClient, { SwapResponse, TransactionType } from "../../lib/apiClients/layerSwapApiClient"
-import { ApiResponse } from "../../Models/ApiResponse"
-import { useQueryState } from "../../context/query"
-import { Partner } from "../../Models/Partner"
+import LayerSwapApiClient, { SwapResponse, TransactionType } from "@/lib/apiClients/layerSwapApiClient"
+import { ApiResponse } from "@/Models/ApiResponse"
+import { useQueryState } from "@/context/query"
+import { Partner } from "@/Models/Partner"
 import { addressEnding, shortenEmail } from "../utils/ShortenAddress"
-import KnownInternalNames from "../../lib/knownIds"
+import KnownInternalNames from "@/lib/knownIds"
 import { ChevronRightIcon } from 'lucide-react'
 import StatusIcon from "./StatusIcons"
 import { FC } from "react"
-import { SwapStatus } from "../../Models/SwapStatus";
-import { Wallet } from "../../Models/WalletProvider";
+import { SwapStatus } from "@/Models/SwapStatus";
+import { Wallet } from "@/Models/WalletProvider";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip"
 

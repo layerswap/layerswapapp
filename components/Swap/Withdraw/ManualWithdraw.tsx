@@ -21,6 +21,7 @@ import { useAsyncModal } from '@/context/asyncModal'
 import { handleLimitsUpdate } from './QuoteUpdate'
 import SubmitButton from '@/components/buttons/submitButton'
 import { Widget } from '@/components/Widget/Index'
+import { truncateDecimals } from '@/components/utils/RoundDecimals'
 
 interface Props {
     swapBasicData: SwapBasicData;
@@ -99,7 +100,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
 
     const requestAmount = (
         <span className='inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg'>
-            <span>{swapBasicData?.requested_amount}</span> <span>{swapBasicData?.source_token?.symbol}</span>
+            <span>{truncateDecimals(swapBasicData?.requested_amount, swapBasicData?.source_token?.precision)}</span> <span>{swapBasicData?.source_token?.symbol}</span>
             <CopyButton toCopy={swapBasicData?.requested_amount} iconClassName='text-secondary-text' />
         </span>
     )
@@ -263,7 +264,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                                 number={3}
                                 label={
                                     <span className='flex items-center gap-1'>
-                                        <span>Receive</span> <span>{quote?.receive_amount}</span> <span>{swapBasicData?.destination_token?.symbol}</span> <span>at</span> <span>{destinationNetwork}</span>
+                                        <span>Receive</span> <span>{truncateDecimals(quote?.receive_amount ?? 0, swapBasicData?.destination_token?.precision)}</span> <span>{swapBasicData?.destination_token?.symbol}</span> <span>at</span> <span>{destinationNetwork}</span>
                                     </span>
                                 }
                                 value={

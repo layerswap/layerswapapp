@@ -100,7 +100,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
                                         <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-xs animate-pulse' />
                                         :
                                         <>
-                                            <span>{balance.amount}</span> <span>{balance.symbol}</span>
+                                            <span>{balance.amount.toLocaleString()}</span> <span>{balance.symbol}</span>
                                         </>
                                 }
                             </div>

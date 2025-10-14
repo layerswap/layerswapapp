@@ -11,6 +11,7 @@ import { DetailsButton } from '..'
 import { Quote } from '@/lib/apiClients/layerSwapApiClient'
 import { Network } from '@/Models/Network'
 import clsx from 'clsx'
+import { truncateDecimals } from '@/components/utils/RoundDecimals'
 import { Slippage } from '../Slippage'
 import { GasFee } from './DetailedEstimates'
 import NumberFlow from '@number-flow/react'
@@ -59,7 +60,7 @@ export const SummaryRow: FC<{
                 </div>
                 <div className="text-right text-primary-text">
                     {quoteData?.quote?.min_receive_amount !== undefined && (
-                        <NumberFlow value={quoteData?.quote?.min_receive_amount || 0} trend={0} format={{ maximumFractionDigits: quoteData?.quote.destination_token?.decimals || 2 }} suffix={` ${values?.toAsset?.symbol}`}/>
+                        <NumberFlow value={truncateDecimals(quoteData?.quote?.min_receive_amount, values?.toAsset?.precision) || 0} trend={0} format={{ maximumFractionDigits: quoteData?.quote.destination_token?.decimals || 2 }} suffix={` ${values?.toAsset?.symbol}`}/>
                     )}
                 </div>
             </div>
