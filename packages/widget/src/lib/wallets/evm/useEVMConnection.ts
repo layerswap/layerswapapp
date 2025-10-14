@@ -259,18 +259,19 @@ export default function useEVMConnection(): WalletConnectionProvider {
             }
         } catch (error) {
             const transactionResolvedError = resolveError(error as BaseError)
+            const e = new Error()
+            e.message = error.message
             if (transactionResolvedError && transactionResolvedError === "insufficient_funds") {
-                error.name = TransactionMessageType.InsufficientFunds
-                throw new Error(error)
+                e.name = TransactionMessageType.TransactionRejected
+                throw e
             }
             else if (transactionResolvedError && transactionResolvedError === "transaction_rejected") {
-                error.name = TransactionMessageType.TransactionRejected
-                throw new Error(error)
+                e.name = TransactionMessageType.TransactionRejected
+                throw e
             }
             else {
-                error.name = TransactionMessageType.UexpectedErrorMessage
-                error.message = error
-                throw new Error(error)
+                e.name = TransactionMessageType.UexpectedErrorMessage
+                throw e
             }
         }
     }

@@ -117,18 +117,19 @@ export default function useTronConnection(): WalletConnectionProvider {
                 return signature.txID
             }
         } catch (error) {
+            const e = new Error()
+            e.message = error.message
             if (error === "BANDWITH_ERROR") {
-                error.name = TransactionMessageType.InsufficientFunds
-                throw new Error(error)
+                e.name = TransactionMessageType.InsufficientFunds
+                throw e
             }
             else if (error === "user reject this request") {
-                error.name = TransactionMessageType.TransactionRejected
-                throw new Error(error)
+                e.name = TransactionMessageType.TransactionRejected
+                throw e
             }
             else {
-                error.name = TransactionMessageType.UexpectedErrorMessage
-                error.message = error
-                throw new Error(error)
+                e.name = TransactionMessageType.UexpectedErrorMessage
+                throw e
             }
         }
 
