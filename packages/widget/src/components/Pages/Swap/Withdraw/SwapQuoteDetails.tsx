@@ -18,7 +18,7 @@ export const SwapQuoteDetails: FC<Props> = ({ swapBasicData: swapData, quote, re
 
     if (quoteError) return <ErrorDisplay errorName='quoteError' />
 
-    if (!quote) return <div style={{height: '150px'}} className='h-[150px] w-full rounded-xl bg-secondary-500 animate-pulse' />
+    if (!quote) return <div className='h-[150px] w-full rounded-xl bg-secondary-500 animate-pulse' />
 
     const values: SwapValues = {
         amount: requested_amount?.toString(),
