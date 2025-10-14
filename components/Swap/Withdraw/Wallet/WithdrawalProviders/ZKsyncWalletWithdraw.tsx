@@ -174,7 +174,7 @@ export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
                                                     <span>The connected address is not </span>
                                                     <span className='italic'>active</span>
                                                     <span><span> in the zkSync Lite network.</span>
-                                                        <p>You can learn more about account activation and the associated fee</p>
+                                                        <span>You can learn more about account activation and the associated fee</span>
                                                     </span>
                                                 </span>
                                                 <a target='_blank' className='text-primary underline hover:no-underline decoration-primary cursor-pointer' href="https://docs.zksync.io/userdocs/faq/#what-is-the-account-activation-fee/">in the zkSync Lite FAQ</a>
