@@ -1,13 +1,12 @@
 import { useField, useFormikContext } from "formik";
 import { ChangeEvent, FC, forwardRef } from "react";
-import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { classNames } from '../utils/classNames'
-import { isScientific, truncateDecimals } from "../utils/RoundDecimals";
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
+import { classNames } from '@/components/utils/classNames'
+import { isScientific } from "@/components/utils/RoundDecimals";
 
 type Input = {
     tempValue?: number;
     label?: JSX.Element | JSX.Element[]
-    pattern?: string;
     disabled?: boolean;
     placeholder: string;
     minLength?: number;
@@ -25,11 +24,11 @@ type Input = {
 
 // Use with Formik
 const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    function NumericInput({ label, pattern, tempValue, disabled, placeholder, minLength, maxLength, precision, step, name, className, children, onChange, onFocus, onBlur }, ref) {
+    function NumericInput({ label, tempValue, disabled, placeholder, minLength, maxLength, precision, step, name, className, children, onChange, onFocus, onBlur }, ref) {
         const { handleChange } = useFormikContext<SwapFormValues>();
         const [field] = useField(name)
 
-        const formattedTempValue = isScientific(tempValue) 
+        const formattedTempValue = isScientific(tempValue)
             ? tempValue?.toFixed(precision ?? 0).replace(/\.?0+$/, '')
             : tempValue?.toString();
 
@@ -55,7 +54,6 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                     !tempValue &&
                     <input
                         {...field}
-                        pattern={pattern ? pattern : "^[0-9]*[.,]?[0-9]*$"}
                         inputMode="decimal"
                         autoComplete="off"
                         disabled={disabled}

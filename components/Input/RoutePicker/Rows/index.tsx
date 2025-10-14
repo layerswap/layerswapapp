@@ -12,6 +12,7 @@ type Props = {
     item: RowElement;
     selectedRoute: string | undefined;
     selectedToken: string | undefined;
+    searchQuery: string
     direction: SwapDirection;
     toggleContent: (itemName: string) => void;
     onSelect: (route: NetworkRoute, token: NetworkRouteToken) => void;
@@ -25,6 +26,7 @@ export default function Row({
     direction,
     selectedRoute,
     selectedToken,
+    searchQuery,
     toggleContent,
     onSelect,
     openValues,
@@ -41,6 +43,7 @@ export default function Row({
                     direction={direction}
                     selectedRoute={selectedRoute}
                     selectedToken={selectedToken}
+                    searchQuery={searchQuery}
                     toggleContent={toggleContent}
                     onSelect={onSelect}
                     openValues={openValues}
@@ -55,7 +58,7 @@ export default function Row({
             const isSelected = selectedRoute === route.name && selectedToken === token.symbol;
 
             return (
-                <div className={clsx("cursor-pointer hover:bg-secondary-500 outline-none disabled:cursor-not-allowed rounded-lg")} onClick={() => onSelect(route, token)} >
+                <div className={clsx("cursor-pointer hover:bg-secondary-500 outline-none disabled:cursor-not-allowed rounded-xl")} onClick={() => onSelect(route, token)} >
                     <CurrencySelectItemDisplay
                         allbalancesLoaded={allbalancesLoaded}
                         item={token}
@@ -69,7 +72,7 @@ export default function Row({
         }
         case "group_title":
             return (
-                <div className="text-primary-text-placeholder text-base font-normal leading-5 pl-1 sticky top-0 z-50 flex items-baseline" style={{ position: "sticky", top: 0, transform: "none" }} >
+                <div className="text-primary-text-tertiary text-base font-normal leading-5 pl-1 sticky top-0 z-50 flex items-baseline" style={{ position: "sticky", top: 0, transform: "none" }} >
                     <p>
                         {item.text}
                     </p>
@@ -88,7 +91,7 @@ export default function Row({
                         altText={`sceleton logo `}
                         className="rounded-full bg-secondary-500"
                     />
-                    <SelectItem.Title className="py-2">
+                    <SelectItem.Title className="py-0.5">
                         <div className="grid gap-0 leading-5 align-middle space-y-0.5 font-medium">
                             <span className="align-middle h-3.5 my-1 w-12 bg-secondary-500 rounded-sm" />
                             <div className="flex items-center space-x-1 align-middle" >

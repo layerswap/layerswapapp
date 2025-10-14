@@ -1,7 +1,7 @@
 import { FC } from "react";
-import { SwapFormValues } from "../DTOs/SwapFormValues";
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { useFormikContext } from "formik";
-import { ImageWithFallback } from "../Common/ImageWithFallback";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 type Props = {
     direction: "from" | "to",
@@ -23,12 +23,12 @@ const TransferCEX: FC<Props> = ({ direction }) => {
     return (<div className="font-normal flex flex-col w-full relative z-10 my-3 pb-4 border-b-2 border-b-secondary">
         <div className="w-full px-2.5 space-y-2">
             <div className="flex items-center mb-">
-                <p className="text-primary-text-placeholder text-base leading-5">
+                <p className="text-primary-text-tertiary text-base leading-5">
                     <span>Please select an intermediary network available on </span>
                     <span>{fromExchange ? fromExchange.display_name : toExchange?.display_name}&nbsp;</span>
                     <span>to be used for </span>
                     <span>{fromExchange ? 'withdrawal' : 'deposit'}</span><span>.</span>
-                    <a target='_blank' href={learnMoreUrl} className='text-primary-text-placeholder underline hover:no-underline decoration-primary-text-placeholder ml-1 cursor-pointer'>Learn more</a>
+                    <a target='_blank' href={learnMoreUrl} className='text-primary-text-tertiary underline hover:no-underline decoration-primary-text-tertiary ml-1 cursor-pointer'>Learn more</a>
                 </p>
             </div>
             <div className="relative flex items-center space-x-2 py-2">
@@ -42,7 +42,7 @@ const TransferCEX: FC<Props> = ({ direction }) => {
                         className="rounded-md object-contain"
                     />}
                 </div>
-                <div className="w-full h-[2px] bg-primary-text-placeholder my-2 line line-left" />
+                <div className="w-full h-[2px] bg-primary-text-tertiary my-2 line line-left" />
                 <div className="shrink-0 h-8 w-8 relative">
                     {exchangeNetwork ? <ImageWithFallback
                         src={exchangeNetwork.logo}
@@ -52,10 +52,10 @@ const TransferCEX: FC<Props> = ({ direction }) => {
                         loading="eager"
                         className="rounded-md object-contain"
                     /> : <div className="mainImage flex justify-center items-center bg-secondary-400 h-full w-full rounded-md">
-                        <span className="font-bold text-primary-text-placeholder text-xl">?</span>
+                        <span className="font-bold text-primary-text-tertiary text-xl">?</span>
                     </div>}
                 </div>
-                <div className="w-full h-[2px] bg-primary-text-placeholder my-2 line line-right" />
+                <div className="w-full h-[2px] bg-primary-text-tertiary my-2 line line-right" />
                 <div className="shrink-0 h-6 w-6 relative">
                     {destinationLogo && <ImageWithFallback
                         src={destinationLogo!}

@@ -1,12 +1,12 @@
-import { CommandGroup, CommandList, CommandWrapper } from "../../../shadcn/command";
-import { addressFormat } from "../../../../lib/address/formatter";
-import FilledCheck from "../../../icons/FilledCheck";
+import { CommandGroup, CommandList, CommandWrapper } from "@/components/shadcn/command";
+import { addressFormat } from "@/lib/address/formatter";
+import FilledCheck from "@/components/icons/FilledCheck";
 import { AddressGroup, AddressItem } from ".";
-import { NetworkRoute } from "../../../../Models/Network";
+import { NetworkRoute } from "@/Models/Network";
 import { FC } from "react";
 import AddressWithIcon from "./AddressWithIcon";
-import { Partner } from "../../../../Models/Partner";
-import { Wallet } from "../../../../Models/WalletProvider";
+import { Partner } from "@/Models/Partner";
+import { Wallet } from "@/Models/WalletProvider";
 import { BookOpen } from "lucide-react";
 
 type AddressBookProps = {
@@ -38,7 +38,7 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                                 return (
                                     <button type="button" key={item.address} onClick={() => onSelectAddress(item.address, item.wallet)} className={`group/addressItem px-3 py-3 rounded-lg hover:bg-secondary-600 w-full transition duration-200 bg-secondary-500 ${isSelected && 'bg-secondary-400'}`}>
                                         <div className={`flex items-center justify-between w-full`}>
-                                            <AddressWithIcon addressItem={item} partner={partner} network={destination} connectedWallet={item.wallet} />
+                                            <AddressWithIcon addressItem={item} partner={partner} network={destination} />
                                             <div className="flex h-6 items-center px-1">
                                                 {
                                                     isSelected &&

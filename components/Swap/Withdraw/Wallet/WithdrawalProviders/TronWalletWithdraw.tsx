@@ -1,5 +1,4 @@
 import { FC, useCallback, useState } from 'react'
-import useWallet from '@/hooks/useWallet';
 import { useWallet as useTronWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
 import { useSettingsState } from '@/context/settings';
 import { TronWeb } from 'tronweb'
@@ -8,22 +7,24 @@ import { ContractParamter, Transaction, TransferContract } from 'tronweb/lib/esm
 import { Token } from '@/Models/Network';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
-import TransactionMessages from '../../messages/TransactionMessages';
-import WalletIcon from '@/components/icons/WalletIcon';
+import ActionMessages from '../../messages/TransactionMessages';
+import { useSelectedAccount } from '@/context/balanceAccounts';
+import useWallet from '@/hooks/useWallet';
 
 export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | undefined>()
     const { source_network, source_token } = swapBasicData;
-    const { provider } = useWallet(source_network, 'withdrawal');
-    const wallet = provider?.activeWallet
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
+    const { wallets } = useWallet(source_network, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const { wallet: tronWallet, signTransaction } = useTronWallet();
     const walletAddress = tronWallet?.adapter.address
     const tronNode = source_network?.node_url
     const networkName = source_network?.name
     const { networks } = useSettingsState()
     const networkWithTokens = networks.find(n => n.name === networkName)
-    const { gasData, isGasLoading } = useSWRGas(walletAddress, networkWithTokens, source_token)
+    const { gasData, isGasLoading } = useSWRGas(walletAddress, networkWithTokens, source_token, swapBasicData.requested_amount, wallet)
 
     const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setError(undefined)
@@ -75,7 +76,6 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refue
                     isDisabled={!!loading || isGasLoading}
                     isSubmitting={!!loading || isGasLoading}
                     onClick={handleTransfer}
-                    icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />}
                     error={!!error}
                     refuel={refuel}
                     swapData={swapBasicData}
@@ -87,16 +87,16 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refue
 
 const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> = ({ isLoading, error }) => {
     if (isLoading) {
-        return <TransactionMessages.ConfirmTransactionMessage />
+        return <ActionMessages.ConfirmTransactionMessage />
     }
     else if (error === "BANDWITH_ERROR") {
-        return <TransactionMessages.InsufficientFundsMessage />
+        return <ActionMessages.InsufficientFundsMessage />
     }
     else if (error === "user reject this request") {
-        return <TransactionMessages.TransactionRejectedMessage />
+        return <ActionMessages.TransactionRejectedMessage />
     }
     else if (error) {
-        return <TransactionMessages.UexpectedErrorMessage message={error} />
+        return <ActionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>
 }

@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { motion } from "framer-motion";
-import TokenIcon from "../../icons/TokenIcon";
+import TokenIcon from "@/components/icons/TokenIcon";
 import { Globe } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import clsx from "clsx";
@@ -35,7 +35,7 @@ const RouteTokenSwitch: FC = () => {
                                     />
                                 )}
                                 <item.icon
-                                    className={clsx("text-primary-text-placeholder h-5 w-5", {
+                                    className={clsx("text-primary-text-tertiary h-5 w-5", {
                                         "!text-primary-text": activeTab === item.id,
                                     })}
                                 />

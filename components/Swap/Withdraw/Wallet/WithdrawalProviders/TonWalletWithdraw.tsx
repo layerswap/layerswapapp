@@ -1,15 +1,15 @@
 import { FC, useCallback, useState } from 'react'
 import toast from 'react-hot-toast';
 import useWallet from '@/hooks/useWallet';
-import WalletIcon from '@/components/icons/WalletIcon';
 import { useTonConnectUI } from '@tonconnect/ui-react';
 import { Address, JettonMaster, beginCell, toNano } from '@ton/ton'
 import { Token } from '@/Models/Network';
 import tonClient from '@/lib/wallets/ton/client';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
-import TransactionMessages from '../../messages/TransactionMessages';
+import ActionMessages from '../../messages/TransactionMessages';
 import { useConnectModal } from '@/components/WalletModal';
+import { useSelectedAccount } from '@/context/balanceAccounts';
 
 export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -18,7 +18,9 @@ export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
     const { provider } = useWallet(source_network, 'withdrawal');
     const [tonConnectUI] = useTonConnectUI();
     const [transactionErrorMessage, setTransactionErrorMessage] = useState<string | undefined>(undefined)
-    const wallet = provider?.activeWallet
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
+    const { wallets } = useWallet(source_network, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
 
     const handleConnect = useCallback(async () => {
         setLoading(true)
@@ -37,13 +39,13 @@ export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
     const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setLoading(true)
         setTransactionErrorMessage(undefined)
-        if (!swapId || !depositAddress || !source_token || !wallet?.address || !callData || amount === undefined) {
+        if (!swapId || !depositAddress || !source_token || !selectedSourceAccount?.address || !callData || amount === undefined) {
             setLoading(false)
             toast('Something went wrong, please try again.')
             return
         }
         try {
-            const transaction = await transactionBuilder(amount, source_token, depositAddress, wallet?.address, callData)
+            const transaction = await transactionBuilder(amount, source_token, depositAddress, selectedSourceAccount?.address, callData)
             const res = await tonConnectUI.sendTransaction(transaction)
 
             if (res) {
@@ -73,7 +75,6 @@ export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
                     isDisabled={!!loading}
                     isSubmitting={!!loading}
                     onClick={handleTransfer}
-                    icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />}
                     error={!!transactionErrorMessage}
                     swapData={swapBasicData}
                     refuel={refuel}
@@ -85,16 +86,16 @@ export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
 
 const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> = ({ isLoading, error }) => {
     if (isLoading) {
-        return <TransactionMessages.ConfirmTransactionMessage />
+        return <ActionMessages.ConfirmTransactionMessage />
     }
     else if (error && error.includes('Reject request')) {
-        return <TransactionMessages.TransactionRejectedMessage />
+        return <ActionMessages.TransactionRejectedMessage />
     }
     else if (error && error.includes('Transaction was not sent')) {
-        return <TransactionMessages.TransactionFailedMessage />
+        return <ActionMessages.TransactionFailedMessage />
     }
     else if (error) {
-        return <TransactionMessages.UexpectedErrorMessage message={error} />
+        return <ActionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>
 }

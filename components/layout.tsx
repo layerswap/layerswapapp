@@ -17,6 +17,7 @@ import ColorSchema from "./ColorSchema";
 import { IsExtensionError } from "../helpers/errorHelper";
 import { AsyncModalProvider } from "../context/asyncModal";
 import WalletsProviders from "./WalletProviders";
+import { BalanceAccountsProvider } from "@/context/balanceAccounts";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -122,17 +123,19 @@ export default function Layout({ children, settings, themeData }: Props) {
       <ColorSchema themeData={themeData} />
     }
     <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
-      <TooltipProvider delayDuration={500}>
+      <TooltipProvider delayDuration={400}>
         <QueryProvider query={query}>
           <SettingsProvider data={appSettings}>
             <WalletsProviders basePath={basePath} themeData={themeData} appName={router.query.appName?.toString()}>
-              <ThemeWrapper>
-                <AsyncModalProvider>
-                  {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
-                    <MaintananceContent />
-                    : children}
-                </AsyncModalProvider>
-              </ThemeWrapper>
+              <BalanceAccountsProvider>
+                <ThemeWrapper>
+                  <AsyncModalProvider>
+                    {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
+                      <MaintananceContent />
+                      : children}
+                  </AsyncModalProvider>
+                </ThemeWrapper>
+              </BalanceAccountsProvider>
             </WalletsProviders>
           </SettingsProvider >
         </QueryProvider >

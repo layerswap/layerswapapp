@@ -2,7 +2,6 @@ import { X } from "lucide-react";
 import toast, { ToastBar, Toaster } from "react-hot-toast"
 import Navbar from "./navbar"
 import GlobalFooter from "./globalFooter";
-
 type Props = {
     children: JSX.Element | JSX.Element[]
 }

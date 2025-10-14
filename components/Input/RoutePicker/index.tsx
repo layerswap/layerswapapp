@@ -1,7 +1,7 @@
 import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useState } from "react";
-import { SwapDirection, SwapFormValues } from "../../DTOs/SwapFormValues";
-import { Selector, SelectorContent, SelectorTrigger } from "../../Select/Selector/Index";
+import { SwapDirection, SwapFormValues } from "@/components/DTOs/SwapFormValues";
+import { Selector, SelectorContent, SelectorTrigger } from "@/components/Select/Selector/Index";
 import { SelectedRouteDisplay } from "./Routes";
 import React from "react";
 import useFormRoutes from "@/hooks/useFormRoutes";
@@ -63,7 +63,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
     return (
         <div className={clsx("flex flex-col self-end relative items-center", className)}>
             <Selector>
-                <SelectorTrigger disabled={false} className="group-[.exchange-picker]:bg-secondary-500 group-[.exchange-picker]:!p-3">
+                <SelectorTrigger disabled={false} className={"group-[.exchange-picker]:bg-secondary-500 py-[6px] px-2 group-[.exchange-picker]:!py-2 group-[.exchange-picker]:!px-3 active:animate-press-down group-[.exchange-picker]:active:animate-none"}>
                     <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select token" />
                 </SelectorTrigger>
                 <SelectorContent isLoading={isLoading} searchHint="Search" header={<PickerWalletConnect direction={direction} />}>

@@ -1,27 +1,24 @@
-import LinkWithIcon from '../../../Common/LinkWithIcon';
-import React, { FC, useCallback, useEffect, useMemo, useRef } from 'react'
-import { Widget } from '../../../Widget/Index';
+import LinkWithIcon from '@/components/Common/LinkWithIcon';
+import React, { FC, useCallback, useEffect, useRef } from 'react'
+import { Widget } from '@/components/Widget/Index';
 import Steps from '../../StepsComponent';
 import SwapSummary from '../../Summary';
-import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, SwapResponse, Transaction, SwapBasicData, SwapDetails, SwapQuote, Refuel } from '../../../../lib/apiClients/layerSwapApiClient';
-import { truncateDecimals } from '../../../utils/RoundDecimals';
-import { SwapStatus } from '../../../../Models/SwapStatus';
-import { SwapFailReasons } from '../../../../Models/RangeError';
-import { Gauge } from '../../../gauge';
-import { Undo2 } from 'lucide-react';
+import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, Transaction, SwapBasicData, SwapDetails, SwapQuote, Refuel } from '@/lib/apiClients/layerSwapApiClient';
+import { truncateDecimals } from '@/components/utils/RoundDecimals';
+import { SwapStatus } from '@/Models/SwapStatus';
+import { SwapFailReasons } from '@/Models/RangeError';
+import { Gauge } from '@/components/gauge';
+import { Check, CircleCheck, Undo2 } from 'lucide-react';
 import Failed from '../Failed';
 import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
-import { useSwapTransactionStore } from '../../../../stores/swapTransactionStore';
-import CountdownTimer from '../../../Common/CountDownTimer';
+import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
+import CountdownTimer from '@/components/Common/CountDownTimer';
 import useSWR from 'swr';
-import { ApiResponse } from '../../../../Models/ApiResponse';
+import { ApiResponse } from '@/Models/ApiResponse';
 import { useIntercom } from 'react-use-intercom';
-import logError from '../../../../lib/logError';
-import SubmitButton from '../../../buttons/submitButton';
+import logError from '@/lib/logError';
+import SubmitButton from '@/components/buttons/submitButton';
 import { posthog } from 'posthog-js';
-import useSWRBalance from '@/lib/balances/useSWRBalance';
-import useWallet from '@/hooks/useWallet';
-import { useSettingsState } from '@/context/settings';
 
 type Props = {
     swapBasicData: SwapBasicData;
@@ -31,7 +28,6 @@ type Props = {
 }
 
 const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) => {
-    const { networks } = useSettingsState()
     const { boot, show, update, showNewMessages } = useIntercom();
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
     const [showSupportButton, setShowSupportButton] = React.useState(false);
@@ -49,8 +45,6 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
         show();
         updateWithProps();
     }, [boot, show, updateWithProps]);
-
-
 
     const input_tx_explorer = source_network?.transaction_explorer_template
     const output_tx_explorer = destination_network?.transaction_explorer_template
@@ -93,7 +87,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 logError(`Transaction not detected in ${source_network.name}. Tx hash: \`${transactionHash}\`. Tx status: ${inputTxStatus}. Swap id: \`${swapDetails.id}\`. ${source_network.display_name} explorer: ${source_network?.transaction_explorer_template?.replace("{0}", transactionHash)} . LS explorer: https://layerswap.io/explorer/${storedWalletTransaction?.hash} `);
             }
         }
-    }, [swapDetails, storedWalletTransaction, source_network, inputTxStatus]);
+    }, [swapDetails, storedWalletTransaction, source_network]);
 
     useEffect(() => {
         if (storedWalletTransaction?.status !== inputTxStatus) setSwapTransaction(swapDetails?.id, inputTxStatus, storedWalletTransaction?.hash)
@@ -117,19 +111,18 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     }, [inputTxStatus, transactionHash, swapDetails?.id])
 
     useEffect(() => {
-        if (swapDetails?.status === SwapStatus.Completed || swapDetails.status === SwapStatus.Failed) {
-            window.safary?.track({
-                eventName: "swap_status",
-                eventType: "status",
-                parameters: {
-                    custom_str_1_label: "swap_id",
-                    custom_str_1_value: swapDetails?.id,
-                    custom_str_2_label: "status",
-                    custom_str_2_value: swapDetails?.status,
-                }
+        if (
+            swapDetails?.status === SwapStatus.Completed ||
+            swapDetails?.status === SwapStatus.Failed ||
+            swapDetails?.status === SwapStatus.Expired ||
+            swapDetails?.status === SwapStatus.LsTransferPending
+        ) {
+            posthog?.capture(`${swapDetails?.status}`, {
+                swap_id: swapDetails?.id,
+                status: swapDetails?.status,
             })
         }
-    }, [swapDetails.status])
+    }, [swapDetails?.status, swapDetails?.id])
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 
@@ -355,18 +348,30 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     const swapStatus = swapDetails.status;
     return (
         <Widget.Content>
-            <div className={`w-full min-h-[410px] space-y-3 flex flex-col justify-between text-primary-text`}>
+            <div className={`w-full min-h-[410px] h-full space-y-3 flex flex-col justify-between text-primary-text`}>
                 <SwapSummary />
                 <div className="bg-secondary-500 font-normal px-3 pt-6 pb-3 rounded-2xl space-y-4 flex flex-col w-full relative z-10 divide-y-2 divide-secondary-300 divide-dashed">
                     <div className='pb-4'>
                         <div className='flex flex-col gap-2 items-center'>
                             <div className='flex items-center'>
-                                {(swapStatus === SwapStatus.PendingRefund || swapStatus === SwapStatus.Refunded) ? (
+                                {swapStatus === SwapStatus.PendingRefund && (
                                     <span className="relative z-10 flex h-10 w-10 items-center justify-center rounded-full bg-primary/20">
                                         <Undo2 className="h-7 w-7 text-primary" aria-hidden="true" />
                                     </span>
-                                ) : (
-                                    <Gauge value={stepsProgressPercentage} size="small" showCheckmark={swapStatus === SwapStatus.Completed} />
+                                )}
+
+                                {swapStatus === SwapStatus.Refunded && (
+                                    <span className="relative z-10 flex h-10 w-10 items-center justify-center">
+                                        <CircleCheck className="h-10 w-10 text-primary" strokeWidth={2} aria-hidden="true" />
+                                    </span>
+                                )}
+
+                                {swapStatus !== SwapStatus.PendingRefund && swapStatus !== SwapStatus.Refunded && (
+                                    <Gauge
+                                        value={stepsProgressPercentage}
+                                        size="small"
+                                        showCheckmark={swapStatus === SwapStatus.Completed}
+                                    />
                                 )}
                             </div>
                             <div className="flex-col text-center ">
@@ -390,7 +395,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                     <div className='pt-4'>
                         {
                             swapStatus != SwapStatus.Cancelled && swapStatus != SwapStatus.Expired && currentSteps.find(x => x.status != null) &&
-                            <div className='flex flex-col h-full justify-center space-y-4'>
+                            <div className='flex flex-col justify-center space-y-4'>
                                 <Steps steps={currentSteps} />
                             </div>
                         }
@@ -448,16 +453,9 @@ const getProgressStatuses = (swapDetails: SwapDetails, refuel: Refuel | undefine
 
     let input_transfer = transactionStatusToProgressStatus(swapInputTxStatus) || ''
 
-    let output_transfer =
-        (!swapOutputTransaction && inputIsCompleted) || swapOutputTransaction?.status == BackendTransactionStatus.Pending ? ProgressStatus.Current
-            : swapOutputTransaction?.status == BackendTransactionStatus.Initiated || swapOutputTransaction?.status == BackendTransactionStatus.Completed ? ProgressStatus.Complete
-                : ProgressStatus.Upcoming;
+    let output_transfer = swapOutputTransaction?.transaction_hash ? ProgressStatus.Complete : inputIsCompleted ? ProgressStatus.Current : ProgressStatus.Upcoming;
 
-    let refuel_transfer =
-        (!!refuel && !swapRefuelTransaction) ? ProgressStatus.Upcoming
-            : swapRefuelTransaction?.status == BackendTransactionStatus.Pending ? ProgressStatus.Current
-                : swapRefuelTransaction?.status == BackendTransactionStatus.Initiated || swapRefuelTransaction?.status == BackendTransactionStatus.Completed ? ProgressStatus.Complete
-                    : ProgressStatus.Removed;
+    let refuel_transfer = swapRefuelTransaction?.transaction_hash ? ProgressStatus.Complete : !!refuel ? ProgressStatus.Upcoming : ProgressStatus.Removed;
 
     let refund_status = ProgressStatus.Removed;
 

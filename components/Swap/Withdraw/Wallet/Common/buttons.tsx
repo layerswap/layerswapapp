@@ -17,6 +17,7 @@ import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
 import posthog from "posthog-js";
 import { useWalletWithdrawalState } from "@/context/withdrawalContext";
+import { useSelectedAccount } from "@/context/balanceAccounts";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
@@ -80,24 +81,25 @@ export const ChangeNetworkButton: FC<ChangeNetworkProps> = (props) => {
     const [error, setError] = useState<Error | null>(null)
     const [isPending, setIsPending] = useState(false)
 
-    const { provider } = useWallet(network, "withdrawal")
-    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
+    const selectedSourceAccount = useSelectedAccount("from", network?.name);
+    const { wallets } = useWallet(network, 'withdrawal')
 
     const clickHandler = useCallback(async () => {
         try {
             setIsPending(true)
-            if (!provider) throw new Error(`No provider from ${network?.name}`)
-            if (!provider.switchChain) throw new Error(`No switchChain from ${network?.name}`)
-            if (!selectedSourceAccount) throw new Error(`No selectedSourceAccount from ${network?.name}`)
+            const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
+            if (!selectedWallet) throw new Error(`No selectedWallet for ${network?.name}`)
+            if (!selectedSourceAccount) throw new Error(`No selectedSourceAccount for ${network?.name}`)
+            if (!selectedSourceAccount.provider.switchChain) throw new Error(`No switchChain from ${network?.name}`)
 
-            return await provider.switchChain(selectedSourceAccount, chainId)
+            return await selectedSourceAccount.provider.switchChain(selectedWallet, chainId)
         } catch (e) {
             setError(e)
         } finally {
             setIsPending(false)
         }
 
-    }, [provider, chainId])
+    }, [selectedSourceAccount, chainId])
 
     return <>
         <ChangeNetworkMessage
@@ -155,22 +157,28 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 }) => {
     const [actionStateText, setActionStateText] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
-    const { quote, quoteIsLoading } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError } = useSwapDataState()
     const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
     const query = useQueryState()
 
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess } = useWalletWithdrawalState();
 
+    const selectedSourceAccount = useSelectedAccount("from", swapData.source_network?.name);
+    const { wallets } = useWallet(swapData.source_network, 'withdrawal')
+
     const handleClick = async () => {
         try {
+            const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
+            if (!selectedSourceAccount) {
+                throw new Error('Selected source account is undefined')
+            }
+            if (!selectedWallet?.isActive) {
+                throw new Error('Wallet is not active')
+            }
             setLoading(true)
             setActionStateText("Preparing")
             setSwapId(undefined)
-            window.safary?.track({
-                eventName: 'click',
-                eventType: 'send_from_wallet',
-            })
 
             const swapValues: SwapFormValues = {
                 amount: swapData.requested_amount.toString(),
@@ -216,7 +224,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         catch (e) {
             setSwapId(undefined)
             console.log('Error in SendTransactionButton:', e)
-
+            
             const swapWithdrawalError = new Error(e);
             swapWithdrawalError.name = `SwapWithdrawalError`;
             swapWithdrawalError.cause = e;
@@ -251,9 +259,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             {...props}
             isSubmitting={props.isSubmitting || loading || quoteIsLoading}
             onClick={handleClick}
-            isDisabled={quoteIsLoading}
+            isDisabled={quoteIsLoading || !!quoteError}
         >
-            {error ? 'Try again' : 'Send from wallet'}
+            {error ? 'Try again' : 'Swap now'}
         </ButtonWrapper>
     )
 }

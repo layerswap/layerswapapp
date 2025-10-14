@@ -1,8 +1,8 @@
 import { useEffect } from "react";
-import ReactPortal from "../../../Common/ReactPortal";
+import ReactPortal from "@/components/Common/ReactPortal";
 import { CollapsableHeader } from "./CollapsableHeader";
-import { GroupedTokenElement, NetworkElement } from "../../../../Models/Route";
-import { SwapDirection } from "../../../DTOs/SwapFormValues";
+import { GroupedTokenElement, NetworkElement } from "@/Models/Route";
+import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 
 type StickyHeaderProps = {
     item: NetworkElement | GroupedTokenElement;

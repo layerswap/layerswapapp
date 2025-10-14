@@ -6,7 +6,7 @@ import ecc from '@bitcoinerlab/secp256k1';
 
 initEccLib(ecc);
 
-const MIN_FEE = 1000n // sats, as BigInt
+const MIN_FEE = 0n // sats, as BigInt
 
 async function fetchUtxos(
   address: string,
@@ -48,12 +48,12 @@ function selectUtxos(utxos: Utxo[], target: bigint): { selected: Utxo[]; total: 
 }
 
 export async function buildPsbt({
-  amount,         
-  depositAddress, 
-  userAddress,    
-  memo,           
-  version,        
-  rpcClient,      
+  amount,
+  depositAddress,
+  userAddress,
+  memo,
+  version,
+  rpcClient,
 }: TransactionBuilderParams) {
   const network = version === 'testnet' ? networks.testnet : networks.bitcoin
 
@@ -65,48 +65,52 @@ export async function buildPsbt({
   const data = Buffer.from(memo || '', 'utf8')
   if (data.length > 80) throw new Error('Memo too long; max 80 bytes')
 
-  let psbt: Psbt
+  let psbt: Psbt | undefined = undefined
   let fee = MIN_FEE
   let totalSelected: bigint
+  let error = undefined
 
-  // 4️⃣ iterate until selection covers amount + fee
-  do {
-    const target = BigInt(amount) + fee
-    const { selected, total } = selectUtxos(utxos, target)
-    totalSelected = total
+  try {
+    // 4️⃣ iterate until selection covers amount + fee
+    do {
+      const target = BigInt(amount) + fee
+      const { selected, total } = selectUtxos(utxos, target)
+      totalSelected = total
 
-    // build a fresh PSBT
-    psbt = new Psbt({ network })
+      // build a fresh PSBT
+      psbt = new Psbt({ network })
 
-    // inputs
-    for (const u of selected) {
-      const tx = rawTxMap[u.txid]
-      const out = tx.outs[u.vout]
-      psbt.addInput({
-        hash: u.txid,
-        index: u.vout,
-        witnessUtxo: { script: out.script, value: out.value },
+      // inputs
+      for (const u of selected) {
+        const tx = rawTxMap[u.txid]
+        const out = tx.outs[u.vout]
+        psbt.addInput({
+          hash: u.txid,
+          index: u.vout,
+          witnessUtxo: { script: out.script, value: out.value },
+        })
+      }
+
+      // main output
+      psbt.addOutput({ address: depositAddress, value: BigInt(amount) })
+
+      // OP_RETURN
+      psbt.addOutput({
+        script: script.compile([opcodes.OP_RETURN, data]),
+        value: 0n,
       })
+
+      // re‐estimate fee on this draft PSBT
+      fee = BigInt((await estimateFee(psbt, rpcClient, version)).toFixed())
+    } while (totalSelected < BigInt(amount) + fee)
+    // 5️⃣ add change if any
+    const change = totalSelected - BigInt(amount) - fee
+    if (change > 0n) {
+      psbt.addOutput({ address: userAddress, value: change })
     }
-
-    // main output
-    psbt.addOutput({ address: depositAddress, value: BigInt(amount) })
-
-    // OP_RETURN
-    psbt.addOutput({
-      script: script.compile([opcodes.OP_RETURN, data]),
-      value: 0n,
-    })
-
-    // re‐estimate fee on this draft PSBT
-    fee = BigInt((await estimateFee(psbt, rpcClient, version)).toFixed())
-  } while (totalSelected < BigInt(amount) + fee)
-
-  // 5️⃣ add change if any
-  const change = totalSelected - BigInt(amount) - fee
-  if (change > 0n) {
-    psbt.addOutput({ address: userAddress, value: change })
+  } catch (e) {
+    error = e
   }
 
-  return { psbt, utxos }
+  return { psbt, utxos, fee, error }
 }

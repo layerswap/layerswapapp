@@ -1,4 +1,4 @@
-import { FC, useMemo } from "react";
+import { FC, useEffect, useMemo } from "react";
 import KnownInternalNames from "@/lib/knownIds";
 import { NetworkType } from "@/Models/Network";
 import {
@@ -6,6 +6,8 @@ import {
 } from "./WithdrawalProviders";
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { WithdrawalProvider } from "@/context/withdrawalContext";
+import useWallet from "@/hooks/useWallet";
+import { useSelectedAccount } from "@/context/balanceAccounts";
 
 type Props = {
     swapData: SwapBasicData
@@ -17,6 +19,9 @@ type Props = {
 export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWalletWithdrawalSuccess }) => {
     const { source_network } = swapData
     const source_network_internal_name = source_network?.name;
+
+    const { provider, wallets } = useWallet(source_network, "withdrawal")
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
 
     const WithdrawalPages = useMemo(() => [
         {
@@ -100,6 +105,13 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
     const WithdrawalComponent = WithdrawalPages.find(page =>
         page.supportedNetworks.includes(source_network_internal_name)
     )?.component;
+
+    useEffect(() => {
+        const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
+        if (selectedSourceAccount && selectedWallet) {
+            provider?.switchAccount(selectedWallet, selectedSourceAccount.address)
+        }
+    }, [selectedSourceAccount?.address])
 
     return <>
         {

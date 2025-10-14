@@ -2,17 +2,18 @@ import { FC, useCallback, useState } from 'react'
 import useWallet from '@/hooks/useWallet';
 import WalletIcon from '@/components/icons/WalletIcon';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
-import TransactionMessages from '../../messages/TransactionMessages';
+import ActionMessages from '../../messages/TransactionMessages';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
+import { useSelectedAccount } from '@/context/balanceAccounts';
 
 export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [error, setError] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
     const [transferDone, setTransferDone] = useState<boolean>()
     const { source_network, source_token } = swapBasicData
-    const { provider } = useWallet(source_network, 'withdrawal')
-
-    const wallet = provider?.activeWallet
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
+    const { wallets } = useWallet(source_network, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
 
     const handleTransfer = useCallback(async ({ callData, swapId }: TransferProps) => {
         if (!swapId || !source_token) {
@@ -72,16 +73,16 @@ export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicDat
 
 const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> = ({ isLoading, error }) => {
     if (isLoading) {
-        return <TransactionMessages.ConfirmTransactionMessage />
+        return <ActionMessages.ConfirmTransactionMessage />
     }
     else if (error === "An error occurred (USER_REFUSED_OP)" || error === "Execute failed") {
-        return <TransactionMessages.TransactionRejectedMessage />
+        return <ActionMessages.TransactionRejectedMessage />
     }
     else if (error === "failedTransfer") {
-        return <TransactionMessages.TransactionFailedMessage />
+        return <ActionMessages.TransactionFailedMessage />
     }
     else if (error) {
-        return <TransactionMessages.UexpectedErrorMessage message={error} />
+        return <ActionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>
 }

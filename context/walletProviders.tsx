@@ -36,7 +36,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
 
     const providers = useMemo(() => {
         const allProviders: WalletProvider[] = [
-            bitcoin, evm, starknet, svm, ton, fuel, tron, paradex, imtblX
+            evm, starknet, svm, bitcoin, ton, fuel, tron, paradex, imtblX
         ];
         const filteredProviders = allProviders.filter(provider => isMobilePlatform ? !provider.unsupportedPlatforms?.includes('mobile') : !provider.unsupportedPlatforms?.includes('desktop'));
 
@@ -60,8 +60,8 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
                 header={
                     <div className="flex items-center gap-1">
                         {
-                            (selectedConnector || selectedMultiChainConnector) && 
-                            <div className='-ml-2'>
+                            (selectedConnector || selectedMultiChainConnector) &&
+                            <div className="sm:-ml-2 -ml-0">
                                 <IconButton onClick={goBack} icon={
                                     <ChevronLeft className="h-6 w-6" />
                                 }>

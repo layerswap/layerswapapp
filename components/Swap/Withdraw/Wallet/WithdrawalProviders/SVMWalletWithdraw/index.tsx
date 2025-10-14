@@ -3,14 +3,14 @@ import { Transaction, Connection, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import useWallet from '@/hooks/useWallet';
 import { useWallet as useSolanaWallet } from '@solana/wallet-adapter-react';
 import { SignerWalletAdapterProps } from '@solana/wallet-adapter-base';
-import WalletIcon from '@/components/icons/WalletIcon';
-import useSWRBalance from '@/lib/balances/useSWRBalance';
 import { useSettingsState } from '@/context/settings';
 import { transactionSenderAndConfirmationWaiter } from './transactionSender';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import { ConnectWalletButton, SendTransactionButton } from '../../Common/buttons';
-import TransactionMessages from '../../../messages/TransactionMessages';
+import ActionMessages from '../../../messages/TransactionMessages';
 import WalletMessage from '../../../messages/Message';
+import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useBalance } from '@/lib/balances/useBalance';
 
 export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -18,9 +18,10 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
     const [insufficientTokens, setInsufficientTokens] = useState<string[]>([])
     const { source_network, source_token } = swapBasicData;
 
-    const { provider } = useWallet(source_network, 'withdrawal');
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
+    const { wallets } = useWallet(source_network, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
 
-    const wallet = provider?.activeWallet
     const { wallet: solanaWallet, signTransaction } = useSolanaWallet();
     const walletPublicKey = solanaWallet?.adapter.publicKey
     const solanaNode = source_network?.node_url
@@ -28,7 +29,7 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
 
     const { networks } = useSettingsState()
     const networkWithTokens = networks.find(n => n.name === networkName)
-    const { balances } = useSWRBalance(wallet?.address, networkWithTokens)
+    const { balances } = useBalance(selectedSourceAccount?.address, networkWithTokens)
 
     const handleTransfer = useCallback(async ({ amount, callData, swapId }: TransferProps) => {
         setLoading(true)
@@ -74,14 +75,20 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
 
         }
         catch (e) {
+            if (e.name == "WalletNotConnectedError") {
+                await solanaWallet?.adapter.disconnect()
+                setError('Wallet not connected')
+                return
+            }
             setLoading(false)
             if (e?.message) {
                 if (e?.logs?.some(m => m?.includes('insufficient funds')) || e.message.includes('Attempt to debit an account')) setError('insufficientFunds')
                 else setError(e.message)
+                return
             }
-            throw e
+            setError(e.message)
         }
-    }, [walletPublicKey, signTransaction, source_network, source_token])
+    }, [walletPublicKey, signTransaction, source_network, source_token, solanaWallet])
 
     if (!wallet || !walletPublicKey) {
         return <ConnectWalletButton />
@@ -100,7 +107,6 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
                     isDisabled={!!loading}
                     isSubmitting={!!loading}
                     onClick={handleTransfer}
-                    icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />}
                     error={!!error}
                     refuel={refuel}
                     swapData={swapBasicData}
@@ -112,7 +118,7 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
 
 const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined, insufficientTokens: string[] }> = ({ isLoading, error, insufficientTokens }) => {
     if (isLoading) {
-        return <TransactionMessages.ConfirmTransactionMessage />
+        return <ActionMessages.ConfirmTransactionMessage />
     }
     else if (error === "insufficientFunds") {
         return <WalletMessage
@@ -121,10 +127,10 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined, in
             details={`The balance of ${insufficientTokens?.join(" and ")} in the connected wallet is not enough`} />
     }
     else if (error === "User rejected the request.") {
-        return <TransactionMessages.TransactionRejectedMessage />
+        return <ActionMessages.TransactionRejectedMessage />
     }
     else if (error) {
-        return <TransactionMessages.UexpectedErrorMessage message={error} />
+        return <ActionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>
 }

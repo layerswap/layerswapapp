@@ -1,16 +1,19 @@
-import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
-import { SwapDirection } from "../../DTOs/SwapFormValues";
-import { truncateDecimals } from "../../utils/RoundDecimals";
-import { SelectItem } from "../../Select/Selector/SelectItem";
-import { ChevronDown } from "lucide-react";
-import RoutePickerIcon from "../../icons/RoutePickerPlaceholder";
-import { useBalance } from "../../../lib/balances/providers/useBalance";
+import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { SwapDirection } from "@/components/DTOs/SwapFormValues";
+import { truncateDecimals } from "@/components/utils/RoundDecimals";
+import { SelectItem } from "@/components/Select/Selector/SelectItem";
+import { ChevronDown, Info } from "lucide-react";
+import RoutePickerIcon from "@/components/icons/RoutePickerPlaceholder";
+import { useBalance } from "@/lib/balances/useBalance";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { GroupedTokenElement, RowElement } from "@/Models/Route";
-import { useBalanceStore } from "@/stores/balanceStore";
+import { getKey, useBalanceStore } from "@/stores/balanceStore";
 import { useBalanceAccounts } from "@/context/balanceAccounts";
 import clsx from "clsx";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
+import { ExtendedAddress } from "../Address/AddressPicker/AddressWithIcon";
+import { getTotalBalanceInUSD } from "@/helpers/balanceHelper";
+import { useMemo } from "react";
 
 type TokenItemProps = {
     route: NetworkRoute;
@@ -24,13 +27,13 @@ type TokenItemProps = {
 export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
     const { item, route, direction, allbalancesLoaded, type } = props
 
-    return <SelectItem>
+    return <SelectItem className="group">
         <SelectItem.Logo
             imgSrc={item.logo}
             altText={`${item.symbol} logo`}
             className="rounded-full"
         />
-        <NetworkTokenTitle item={item as NetworkRouteToken} route={route} direction={direction} allbalancesLoaded={allbalancesLoaded} type={type} />
+        <NetworkTokenTitle item={item} route={route} direction={direction} allbalancesLoaded={allbalancesLoaded} type={type} />
     </SelectItem>
 }
 
@@ -49,13 +52,36 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
     const { balances } = useBalance(selectedAccount?.address, route)
 
     const tokenbalance = balances?.find(b => b.token === item.symbol)
+
     const formatted_balance_amount = (tokenbalance?.amount || tokenbalance?.amount === 0) ? truncateDecimals(tokenbalance?.amount, item.precision) : ''
     const usdAmount = (tokenbalance?.amount && item?.price_in_usd) ? item?.price_in_usd * tokenbalance?.amount : undefined;
 
     return <SelectItem.DetailedTitle
         title={item.symbol}
         secondaryImageAlt={route.display_name}
-        secondary={route.display_name}
+        secondary={
+            <div className="flex items-center gap-1">
+                <span>{route.display_name}</span>
+                <div className="transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:delay-400 click-delay-on-hover">
+                    {
+                        item.contract ?
+                            <ExtendedAddress network={route} isForCurrency showDetails address={item.contract} logo={item.logo} title={item.symbol} description={item.display_asset}>
+                                <div className="flex items-center gap-1 text-secondary-text text-xs cursor-pointer hover:text-primary-text">
+                                    <p className="max-w-[90px] truncate">
+                                        <span>•</span> <span>{item.display_asset || item.symbol}</span>
+                                    </p>
+                                    <Info className="h-3 w-3" />
+                                </div>
+                            </ExtendedAddress>
+                            :
+                            <p className="flex items-center gap-1 text-xs text-secondary-text">
+                                <span>•</span>
+                                <span className="truncate max-w-[80px]">{item.display_asset || item.symbol}</span>
+                            </p>
+                    }
+                </div>
+            </div>
+        }
         secondaryLogoSrc={route.logo}
     >
         {(allbalancesLoaded && tokenbalance && Number(tokenbalance?.amount) >= 0) ? (
@@ -98,8 +124,9 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const balanceAccounts = useBalanceAccounts(direction)
 
     const selectedAccount = balanceAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(item.name));
-    const { balances, totalInUSD } = useBalance(selectedAccount?.address, item)
-    const tokensWithBalance = balances?.filter(b => b.amount > 0)
+    const networkBalances = useBalance(selectedAccount?.address, item)
+    const totalInUSD = useMemo(() => networkBalances && getTotalBalanceInUSD(networkBalances, item), [networkBalances.balances, item])
+    const tokensWithBalance = networkBalances.balances?.filter(b => b.amount && b.amount > 0)
         ?.map(b => b.token);
     const filteredNetworkTokens = item?.tokens?.filter(token =>
         tokensWithBalance?.includes(token.symbol)
@@ -176,20 +203,25 @@ export const GroupedTokenHeader = ({
     allbalancesLoaded?: boolean;
     hideTokenImages?: boolean;
 }) => {
+    const balanceAccounts = useBalanceAccounts(direction)
+
     const tokens = item.items;
 
-    const allBalances = useBalanceStore(s => s.allBalances)
+    const balances = useBalanceStore(s => s.balances)
 
     const networksWithBalance: NetworkRoute[] = Array.from(
         new Map(
             tokens
                 .map(({ route }) => {
+                    const address = balanceAccounts.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.route.name))?.address
+                    const key = address && route.route ? getKey(address, route.route) : 'unknown'
+
                     const tokenSymbol = route.token.symbol;
                     const networkRoute = route.route;
 
-                    const networkBalances = allBalances?.[networkRoute.name];
-                    const balanceEntry = networkBalances?.balances?.find(
-                        (b) => b.token === tokenSymbol && b.amount >= 0
+                    const networkBalances = balances?.[key];
+                    const balanceEntry = networkBalances?.data?.balances?.find(
+                        (b) => b.token === tokenSymbol && b.amount && b.amount >= 0
                     );
 
                     return balanceEntry ? [networkRoute.name, networkRoute] as const : null;
@@ -199,16 +231,19 @@ export const GroupedTokenHeader = ({
     );
 
     const tokenBalances = tokens.reduce((acc, { route }) => {
+        const address = balanceAccounts.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.route.name))?.address
+        const key = address && route.route ? getKey(address, route.route) : 'unknown'
+
         const tokenSymbol = route.token.symbol;
         const networkName = route.route.name;
         const price = route.token.price_in_usd;
 
-        const networkBalances = allBalances?.[networkName];
-        const balanceEntry = networkBalances?.balances?.find(
+        const networkBalances = balances?.[key];
+        const balanceEntry = networkBalances?.data?.balances?.find(
             (b) => b.token === tokenSymbol
         );
 
-        if (!balanceEntry) return acc;
+        if (!balanceEntry?.amount) return acc;
         return { sum: acc.sum + balanceEntry.amount * price, hasVale: true };
     }, { sum: 0, hasVale: false });
 
@@ -255,7 +290,7 @@ export const GroupedTokenHeader = ({
                                 </div>
                             )}
                         </div>
-                    ) : allBalances ? (
+                    ) : balances ? (
                         <div className="px-0.5">-</div>
                     ) : <></>}
 
@@ -293,7 +328,7 @@ export const SelectedCurrencyDisplay = (props: SelectedCurrencyDisplayProps) => 
                 {value.symbol}
             </span>
             :
-            <span className="block font-medium text-primary-text-placeholder flex-auto items-center">
+            <span className="block font-medium text-primary-text-tertiary flex-auto items-center">
                 {placeholder}
             </span>
         }
@@ -333,12 +368,12 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
                             className="h-3.5 w-3.5 absolute left-3.5 top-3.5 object-contain rounded border-1 border-secondary-300"
                         />
                     </div>
-                    <span className="ml-3 flex flex-col grow font-medium text-primary-text overflow-hidden min-w-0 max-w-3/5">
-                        <span className="leading-5">{token.symbol}</span>
-                        <span className="text-secondary-text grow font-normal text-sm leading-4 truncate whitespace-nowrap">
+                    <div className="ml-3 flex flex-col grow font-medium text-primary-text overflow-hidden min-w-0 max-w-3/4 group-[.exchange-picker]:max-w-full">
+                        <p className="leading-5">{token.symbol}</p>
+                        <p className="text-secondary-text grow font-normal text-sm leading-4 truncate whitespace-nowrap">
                             {route.display_name}
-                        </span>
-                    </span>
+                        </p>
+                    </div>
                 </>
             ) : (
                 <SelectedRoutePlaceholder placeholder={placeholder} />
@@ -352,10 +387,10 @@ export const SelectedRouteDisplay = ({ route, token, placeholder }: SelectedRout
 
 export const SelectedRoutePlaceholder = ({ placeholder }: { placeholder: string }) => (
     <>
-        <div className="inline-flex items-center relative">
+        <div className="inline-flex items-center relative py-1">
             <RoutePickerIcon className="w-7 h-7" />
         </div>
-        <span className="flex text-secondary-text text-base font-normal leading-5 flex-auto items-center max-w-2/3">
+        <span className="flex text-secondary-text text-base font-normal leading-5 flex-auto items-center max-w-3/4 group-[.exchange-picker]:max-w-full">
             <span className="ml-2 text-sm sm:text-base sm:leading-5 whitespace-nowrap">{placeholder}</span>
         </span>
     </>

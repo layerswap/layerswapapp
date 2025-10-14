@@ -30,9 +30,6 @@ export default class LayerSwapApiClient {
     async GetSourceExchangesAsync(): Promise<ApiResponse<Exchange[]>> {
         return await this.UnauthenticatedRequest<ApiResponse<Exchange[]>>("GET", `/source_exchanges`);
     }
-    async GetDestinationExchangesAsync(): Promise<ApiResponse<Exchange[]>> {
-        return await this.UnauthenticatedRequest<ApiResponse<Exchange[]>>("GET", `/destination_exchanges`);
-    }
 
     async GetLSNetworksAsync(): Promise<ApiResponse<NetworkWithTokens[]>> {
         return await this.UnauthenticatedRequest<ApiResponse<NetworkWithTokens[]>>("GET", `/networks`);
@@ -136,9 +133,10 @@ export type CreateSwapParams = {
     destination_network: string,
     destination_token: string
     refuel?: boolean,
-    slippage?: number,
+    slippage?: string,
     destination_address: string,
     source_address?: string
+    refund_address?: string
     amount: string,
     reference_id?: string,
     source_exchange?: string
@@ -169,8 +167,7 @@ export type SwapBasicData = {
     destination_token: Token,
     destination_address: string,
     requested_amount: number,
-    use_deposit_address: boolean,
-
+    use_deposit_address: boolean
 }
 
 export type SwapDetails = {
@@ -274,6 +271,7 @@ export type SwapQuote = {
     service_fee: number,
     avg_completion_time: string,
     refuel_in_source?: number,
+    slippage?: number,
 }
 
 export type AddressBookItem = {

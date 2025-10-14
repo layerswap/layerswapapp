@@ -109,7 +109,7 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
 
             <div className="space-y-3 w-full">
                 <hr className="border-secondary-500" />
-                <p className="text-primary-text-muted flex justify-center my-3">Media links & suggestions:</p>
+                <p className="text-primary-text-tertiary flex justify-center my-3">Media links & suggestions:</p>
             </div>
 
             <div className="grid grid-cols-2 gap-2 justify-center">

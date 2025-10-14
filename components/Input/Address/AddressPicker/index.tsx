@@ -15,7 +15,7 @@ import AddressButton from "./AddressButton";
 import { useQueryState } from "@/context/query";
 import ConnectedWallets from "./ConnectedWallets";
 import { Wallet } from "@/Models/WalletProvider";
-import { useBalanceAccounts, useUpdateBalanceAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount, useUpdateBalanceAccount } from "@/context/balanceAccounts";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
@@ -35,7 +35,6 @@ export type AddressTriggerProps = {
     addressItem?: AddressItem;
     connectedWallet?: Wallet;
     partner?: Partner;
-    disabled: boolean;
     destination: Network | undefined,
 }
 
@@ -44,17 +43,15 @@ interface Input {
     showAddressModal: boolean;
     setShowAddressModal: (show: boolean) => void;
     hideLabel?: boolean;
-    disabled: boolean;
     name: string;
     close: () => void,
     partner?: Partner,
     canFocus?: boolean,
     address_book?: AddressBookItem[],
-
 }
 
 const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
-    ({ showAddressModal, setShowAddressModal, name, canFocus, close, address_book, disabled, partner, children }, ref) {
+    ({ showAddressModal, setShowAddressModal, name, canFocus, close, address_book, partner, children }, ref) {
 
     const {
         values,
@@ -62,26 +59,22 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     } = useFormikContext<SwapFormValues>();
 
     const query = useQueryState()
-    const { destination_address, to: destination } = values
-    const balanceAccounts = useBalanceAccounts("to")
+    const { destination_address, to: destination, toExchange } = values
     const selectDestinationAccount = useUpdateBalanceAccount("to");
 
     const { provider, wallets } = useWallet(destination, 'autofil')
     const connectedWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
-
+    const defaultAccount = useSelectedAccount("to", values.to?.name);
     const connectedWalletskey = connectedWallets?.map(w => w.addresses.join('')).join('')
-    const defaultAccount = useMemo(() => balanceAccounts.find(w => w.provider?.name === provider?.name), [balanceAccounts, provider?.name])
-
     const [manualAddress, setManualAddress] = useState<string>('')
     const [newAddress, setNewAddress] = useState<{ address: string, networkType: NetworkType | string } | undefined>()
 
     useEffect(() => {
-        if (!destination && destination_address) updateDestAddress('')
-    }, [destination, destination_address])
-
-    useEffect(() => {
-        if (destination_address && !isValidAddress(destination_address, destination)) updateDestAddress('')
-    }, [destination, destination_address])
+        if (destination_address && destination && !isValidAddress(destination_address, destination)) {
+            updateDestAddress('');
+            setManualAddress('');
+        }
+    }, [destination, destination_address, toExchange])
 
     const inputReference = useRef<HTMLInputElement>(null);
 
@@ -96,7 +89,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     }, [address_book, destination, connectedWallets, newAddress, query.destination_address, connectedWalletskey])
 
     const destinationAddressItem = destination && destination_address ?
-        groupedAddresses?.find(a => a.address.toLowerCase() === destination_address.toLowerCase()) || { address: destination_address, group: AddressGroup.ManualAdded }
+        groupedAddresses?.find(a => a.address.toLowerCase() === destination_address.toLowerCase())
         : undefined
 
     const addressBookAddresses = groupedAddresses?.filter(a => a.group !== AddressGroup.ConnectedWallet)
@@ -110,7 +103,13 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
         close()
     }, [close, setFieldValue, groupedAddresses])
 
-    const onConnect = () => {
+    const onConnect = (wallet: Wallet) => {
+        setFieldValue('destination_address', wallet.address)
+        selectDestinationAccount({
+            address: wallet.address,
+            id: wallet.id,
+            providerName: wallet.providerName
+        });
         close()
     }
 
@@ -143,7 +142,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                     providerName: provider.name,
                 });
         }
-    }, [destination, connectedWallets, provider]);
+    }, [destination, connectedWallets, provider, selectDestinationAccount]);
 
     useEffect(() => {
         if (canFocus) {
@@ -154,13 +153,12 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     return (
         <>
             <AddressButton
-                disabled={disabled}
                 addressItem={destinationAddressItem}
                 openAddressModal={() => setShowAddressModal(true)}
                 connectedWallet={connectedWallet}
                 partner={partner}
                 destination={destination}
-            >{children({ destination, disabled, addressItem: destinationAddressItem, connectedWallet: connectedWallet, partner })}</AddressButton>
+            >{children({ destination, addressItem: destinationAddressItem, connectedWallet: connectedWallet, partner })}</AddressButton>
             <Modal
                 header='Send To'
                 height="80%"
@@ -172,10 +170,9 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                     <div className='flex flex-col self-center grow w-full space-y-5 h-full'>
 
                         {
-                            !disabled
-                            && destination
+                            destination
                             && provider
-                            && !provider?.activeWallet &&
+                            && !connectedWallets.length &&
                             <ConnectWalletButton
                                 provider={provider}
                                 onConnect={onConnect}
@@ -196,8 +193,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                             connectedWallet={connectedWallet}
                         />
                         {
-                            !disabled
-                            && destination
+                            destination
                             && provider
                             && !manualAddress &&
                             <ConnectedWallets
@@ -211,7 +207,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         }
 
                         {
-                            !disabled && addressBookAddresses && addressBookAddresses?.length > 0 && !manualAddress && destination &&
+                            addressBookAddresses && addressBookAddresses?.length > 0 && !manualAddress && destination &&
                             <AddressBook
                                 addressBook={addressBookAddresses}
                                 onSelectAddress={handleSelectAddress}

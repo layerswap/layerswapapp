@@ -24,10 +24,10 @@ const Rewards = () => {
     const inactiveCampaigns = sortedCampaigns?.filter(c => !IsCampaignActive(c)) || []
 
     return (
-        <Widget className="min-h-[520px]">
-            <Widget.Content>
+        <Widget>
+            <Widget.Content center>
                 {!isLoading ?
-                    <div className="space-y-5 h-full text-primary-text">
+                    <div className="space-y-5 h-full text-primary-text sm:min-h-[350px]">
                         <div className="space-y-2">
                             <p className="font-bold text-left leading-5">Campaigns</p>
                             <div className="bg-secondary-500 divide-y divide-secondary-500 rounded-lg shadow-lg border border-secondary-500 hover:border-secondary-400 transition duration-200">
@@ -97,7 +97,7 @@ const CampaignItem: FC<CampaignProps> = ({ campaign }) => {
         </span>
         {
             campaignIsActive &&
-            <span className="text-primary-text-muted text-right text-sm">
+            <span className="text-primary-text-tertiary text-right text-sm">
                 {campaignDaysLeft} days left
             </span>
         }

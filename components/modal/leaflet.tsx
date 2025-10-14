@@ -89,7 +89,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                onClick={handleCloseModal} 
+                onClick={handleCloseModal}
             />
 
             <motion.div
@@ -106,12 +106,12 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 dragElastic={{ top: 0, bottom: 1 }}
                 dragConstraints={{ top: 0, bottom: 0 }}
             >
-                <div className={`py-3 overflow-y-auto flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-700 rounded-t-2xl ' : ''} pb-4`}>
+                <div className={`py-2 overflow-y-auto flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-700 rounded-t-2xl ' : ''} pb-4`}>
                     <div className={`px-4 pb-2 flex justify-between items-center ${height != 'full' && 'hover:cursor-grab'}`}>
                         <div className="text-lg text-secondary-text font-semibold w-full">
                             <div>{title}</div>
                         </div>
-                        <div className='flex space-x-1'>
+                        <div className='flex space-x-1 active:animate-press-down'>
                             {walletComp && <div>{walletComp}</div>}
                             <IconButton onClick={handleCloseModal} icon={
                                 <X strokeWidth={3} />

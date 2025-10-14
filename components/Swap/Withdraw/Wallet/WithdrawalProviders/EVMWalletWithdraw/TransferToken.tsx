@@ -10,7 +10,9 @@ import { SendTransactionButton } from "../../Common/buttons";
 import { isMobile } from "@/lib/openLink";
 import { sendTransaction } from '@wagmi/core'
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
+import { useSelectedAccount } from "@/context/balanceAccounts";
 import useWallet from "@/hooks/useWallet";
+import { useSwapDataState } from "@/context/swap";
 
 type Props = {
     savedTransactionHash?: string;
@@ -28,9 +30,11 @@ const TransferTokenButton: FC<Props> = ({
     const config = useConfig()
     const [error, setError] = useState<any | undefined>()
     const [loading, setLoading] = useState(false)
+    const { swapError } = useSwapDataState()
 
-    const { provider } = useWallet(swapData.source_network, "withdrawal")
-    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
+    const selectedSourceAccount = useSelectedAccount("from", swapData.source_network.name);
+    const { wallets } = useWallet(swapData.source_network, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
 
     const clickHandler = useCallback(async ({ amount, callData, depositAddress }: TransferProps) => {
         setButtonClicked(true)
@@ -51,8 +55,8 @@ const TransferTokenButton: FC<Props> = ({
                 data: callData as `0x${string}`,
                 account: selectedSourceAccount.address as `0x${string}`
             }
-            if (isMobile() && selectedSourceAccount?.metadata?.deepLink) {
-                window.location.href = selectedSourceAccount.metadata?.deepLink
+            if (isMobile() && wallet?.metadata?.deepLink) {
+                window.location.href = wallet.metadata?.deepLink
                 await new Promise(resolve => setTimeout(resolve, 100))
             }
             const hash = await sendTransaction(config, tx)
@@ -77,19 +81,20 @@ const TransferTokenButton: FC<Props> = ({
 
     return <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
         {
-            buttonClicked &&
-            <TransactionMessage
-                transaction={transaction}
-                applyingTransaction={!!savedTransactionHash}
-                activeAddress={selectedSourceAccount?.address}
-                selectedSourceAddress={selectedSourceAccount?.address}
-            />
+            (buttonClicked || swapError) ? (
+                <TransactionMessage
+                    transaction={transaction}
+                    applyingTransaction={!!savedTransactionHash}
+                    activeAddress={selectedSourceAccount?.address}
+                    selectedSourceAddress={selectedSourceAccount?.address}
+                    swapError={swapError}
+                />
+            ) : null
         }
         {
             !loading &&
             <SendTransactionButton
                 onClick={clickHandler}
-                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
                 error={!!error && buttonClicked}
                 swapData={swapData}
                 refuel={refuel}

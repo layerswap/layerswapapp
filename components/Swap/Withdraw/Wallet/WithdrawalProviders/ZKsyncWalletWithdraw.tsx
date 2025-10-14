@@ -10,10 +10,11 @@ import { useAccount } from 'wagmi';
 import ClickTooltip from '@/components/Tooltips/ClickTooltip';
 import SignatureIcon from '@/components/icons/SignatureIcon';
 import formatAmount from '@/lib/formatAmount';
-import useWallet from '@/hooks/useWallet';
 import Link from 'next/link';
 import KnownInternalNames from '@/lib/knownIds';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
+import { useSelectedAccount } from '@/context/balanceAccounts';
+import useWallet from '@/hooks/useWallet';
 
 export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -28,9 +29,10 @@ export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
     const defaultProvider = source_network?.name?.split('_')?.[1]?.toLowerCase() == "mainnet" ? "mainnet" : "goerli";
     const l1Network = layers.find(n => n.name === KnownInternalNames.Networks.EthereumMainnet || n.name === KnownInternalNames.Networks.EthereumSepolia);
 
-    const { provider } = useWallet(source_network, 'withdrawal')
 
-    const wallet = provider?.activeWallet
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
+    const { wallets } = useWallet(source_network, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
 
     useEffect(() => {
         if (signer?._address !== syncWallet?.cachedAddress && source_network) {
@@ -172,7 +174,7 @@ export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
                                                     <span>The connected address is not </span>
                                                     <span className='italic'>active</span>
                                                     <span><span> in the zkSync Lite network.</span>
-                                                        <p>You can learn more about account activation and the associated fee</p>
+                                                        <span>You can learn more about account activation and the associated fee</span>
                                                     </span>
                                                 </span>
                                                 <a target='_blank' className='text-primary underline hover:no-underline decoration-primary cursor-pointer' href="https://docs.zksync.io/userdocs/faq/#what-is-the-account-activation-fee/">in the zkSync Lite FAQ</a>

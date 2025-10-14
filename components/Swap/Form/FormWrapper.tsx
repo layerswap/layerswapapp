@@ -1,5 +1,5 @@
-import { Formik, FormikProps, useFormikContext } from "formik";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { Formik, FormikProps } from "formik";
+import { useCallback, useRef, useState } from "react";
 import { useSettingsState } from "@/context/settings";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { removeSwapPath, UpdateSwapInterface, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
@@ -7,40 +7,27 @@ import React from "react";
 import ConnectNetwork from "@/components/ConnectNetwork";
 import toast from "react-hot-toast";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/lib/generateSwapInitialValues";
-import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 import Modal from "@/components/modal/modal";
-import useSWR from "swr";
 import { useRouter } from "next/router";
-import { ApiResponse } from "@/Models/ApiResponse";
 import { Partner } from "@/Models/Partner";
 import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
 import { useQueryState } from "@/context/query";
 import useWallet from "@/hooks/useWallet";
-import { dynamicWithRetries } from "@/lib/dynamicWithRetries";
 import { useAsyncModal } from "@/context/asyncModal";
 import { QueryParams } from "@/Models/QueryParams";
 import VaulDrawer from "@/components/modal/vaulModal";
 import { addressFormat } from "@/lib/address/formatter";
 import AddressNote from "@/components/Input/Address/AddressNote";
-import useSWRBalance from "@/lib/balances/useSWRBalance";
+import { useSelectedAccount } from "@/context/balanceAccounts";
+import SwapDetails from "..";
+import { useBalance } from "@/lib/balances/useBalance";
 
 type NetworkToConnect = {
     DisplayName: string;
     AppURL: string;
 }
-const SwapDetails = dynamicWithRetries(() => import(".."),
-    <div className="w-full h-[400px]">
-        <div className="animate-pulse flex space-x-4">
-            <div className="flex-1 space-y-6 py-1">
-                <div className="h-32 bg-secondary-500 rounded-lg"></div>
-                <div className="h-40 bg-secondary-500 rounded-lg"></div>
-                <div className="h-12 bg-secondary-500 rounded-lg"></div>
-            </div>
-        </div>
-    </div>
-)
 
-export default function FormWrapper({ children, type }: { children?: React.ReactNode, type: 'cross-chain' | 'exchange' }) {
+export default function FormWrapper({ children, type, partner }: { children?: React.ReactNode, type: 'cross-chain' | 'exchange', partner?: Partner }) {
 
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
@@ -52,20 +39,17 @@ export default function FormWrapper({ children, type }: { children?: React.React
     const sourceNetworkWithTokens = settings.networks.find(n => n.name === swapBasicData?.source_network.name)
     const { getProvider } = useWallet(sourceNetworkWithTokens, "withdrawal")
     const [walletWihdrawDone, setWalletWihdrawDone] = useState(false);
-    const { provider } = useWallet(swapBasicData?.source_network, 'withdrawal')
-    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider])
-    const { mutate: mutateBalances } = useSWRBalance(selectedSourceAccount?.address, sourceNetworkWithTokens)
+    const selectedSourceAccount = useSelectedAccount("from", swapBasicData?.source_network?.name);
+    const { mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, sourceNetworkWithTokens)
 
     const { getConfirmation } = useAsyncModal();
     const query = useQueryState()
-    const { appName, destination_address: destinationAddressFromQuery } = query
+    const { destination_address: destinationAddressFromQuery } = query
     const { createSwap, setSwapId, setSubmitedFormValues, setSwapModalOpen } = useSwapDataUpdate()
-
-    const layerswapApiClient = new LayerSwapApiClient()
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
-    const partner = appName && partnerData?.data?.client_id?.toLowerCase() === (appName as string)?.toLowerCase() ? partnerData?.data : undefined
+    const { setSwapError } = useSwapDataState()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
+        setSwapError && setSwapError('')
         const { destination_address, to } = values
         setWalletWihdrawDone(false)
         if (!walletWihdrawDone) {
@@ -121,16 +105,16 @@ export default function FormWrapper({ children, type }: { children?: React.React
         if (!value) {
             removeSwapPath(router)
             if (walletWihdrawDone) {
+                mutateBalances()
                 setWalletWihdrawDone(false)
                 formikRef?.current?.setFieldValue('amount', 0, true);
             }
         }
-    }, [router, swapDetails, walletWihdrawDone])
+    }, [router, swapDetails, walletWihdrawDone, mutateBalances])
 
     const handleWalletWithdrawalSuccess = useCallback(() => {
-        mutateBalances()
         setWalletWihdrawDone(true)
-    }, [mutateBalances]);
+    }, []);
 
     return <>
         <Formik
@@ -156,7 +140,8 @@ export default function FormWrapper({ children, type }: { children?: React.React
                     show={swapModalOpen}
                     setShow={handleShowSwapModal}
                     header={`Complete the swap`}
-                    modalId="showSwap">
+                    modalId="showSwap"
+                    className={!swapBasicData?.use_deposit_address ? "openwithdrawalmodal" : ""}>
                     <VaulDrawer.Snap id="item-1">
                         <SwapDetails type="contained" onWalletWithdrawalSuccess={handleWalletWithdrawalSuccess} />
                     </VaulDrawer.Snap>

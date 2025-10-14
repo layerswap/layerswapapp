@@ -2,6 +2,8 @@ import React, { createContext, useContext, FC, ReactNode, useState, SVGProps } f
 import { motion } from 'framer-motion'
 import clsx from 'clsx'
 import useWindowDimensions from '@/hooks/useWindowDimensions'
+import NetworkTabIcon from '@/components/icons/NetworkTabIcon'
+import ExchangeTabIcon from '@/components/icons/ExchangeTabIcon'
 
 interface TabsContextType {
     activeId: string
@@ -33,7 +35,7 @@ export const TabsList: FC<TabsListProps> = ({ children }) => {
                 onHoverStart={() => setHovered(true)}
                 onHoverEnd={() => setHovered(false)}
                 animate={{ width: hoveredOnDesktop ? 180 : 48 }}
-                className="absolute right-full top-24 overflow-hidden rounded-l-xl max-sm:right-19 max-sm:z-20 max-sm:top-[9px] max-sm:w-fit! max-sm:rounded-lg"
+                className="sm:absolute right-full top-24 overflow-hidden rounded-l-xl max-sm:right-19 max-sm:z-20 max-sm:top-[9px] max-sm:w-fit! max-sm:rounded-lg"
                 transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
             >
                 <div className="flex flex-col bg-secondary-500 h-full p-1.5 sm:p-2 w-full space-y-2 max-sm:flex-row max-sm:space-y-0 max-sm:space-x-2">
@@ -86,4 +88,11 @@ export const TabsContent: FC<TabsContentProps> = ({ value, children }) => {
             </div>
         )}
     </>
+}
+
+export const NetworkExchangeTabs = () => {
+    return <TabsList>
+        <TabsTrigger label="Swap" Icon={NetworkTabIcon} value="cross-chain" />
+        <TabsTrigger label="Deposit from CEX" Icon={ExchangeTabIcon} value="exchange" />
+    </TabsList>
 }

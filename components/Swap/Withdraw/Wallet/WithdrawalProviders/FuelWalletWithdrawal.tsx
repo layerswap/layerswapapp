@@ -1,6 +1,5 @@
 import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import useWallet from '@/hooks/useWallet';
-import WalletIcon from '@/components/icons/WalletIcon';
 import { ButtonWrapper, ChangeNetworkMessage, ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import {
     useSelectNetwork,
@@ -9,7 +8,8 @@ import {
 } from '@fuels/react';
 import { coinQuantityfy, CoinQuantityLike, Provider, ScriptTransactionRequest } from 'fuels';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
-import TransactionMessages from '../../messages/TransactionMessages';
+import ActionMessages from '../../messages/TransactionMessages';
+import { useSelectedAccount } from '@/context/balanceAccounts';
 
 export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -17,19 +17,21 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, r
     const [error, setError] = useState<string | undefined>()
     const { source_network, source_token } = swapBasicData;
     const { provider } = useWallet(source_network, 'withdrawal');
-    const selectedSourceAccount = useMemo(() => provider?.activeWallet, [provider]);
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
     const { network: fuelNetwork, refetch: refetchNetwork } = useNetwork()
     const networkChainId = Number(source_network?.chain_id)
     const { fuel } = useFuel()
+    const { wallets } = useWallet(source_network, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
 
     const activeChainId = fuelNetwork?.chainId || (fuelNetwork?.url.includes('testnet') ? 0 : 9889)
 
     useEffect(() => {
-        if (provider?.activeWallet && selectedSourceAccount && selectedSourceAccount?.address) {
-            provider?.switchAccount && provider?.switchAccount(selectedSourceAccount, selectedSourceAccount?.address)
+        if (selectedSourceAccount && selectedSourceAccount?.address && wallet) {
+            provider?.switchAccount && provider?.switchAccount(wallet, selectedSourceAccount?.address)
             refetchNetwork()
         }
-    }, [selectedSourceAccount, provider?.activeWallet])
+    }, [selectedSourceAccount])
 
     const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setButtonClicked(true)
@@ -80,7 +82,7 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, r
         }
     }, [source_network, selectedSourceAccount, source_token, fuel])
 
-    if (!provider?.activeWallet) {
+    if (!selectedSourceAccount) {
         return <ConnectWalletButton />
     }
     else if (source_network && activeChainId !== undefined && networkChainId !== activeChainId) {
@@ -105,7 +107,6 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, r
                     isDisabled={!!loading}
                     isSubmitting={!!loading}
                     onClick={handleTransfer}
-                    icon={<WalletIcon className="stroke-2 w-6 h-6" aria-hidden="true" />}
                     swapData={swapBasicData}
                     refuel={refuel}
                 />
@@ -138,7 +139,6 @@ const ChangeNetworkButton: FC<{ chainId: number, network: string, onChange: () =
             !isPending &&
             <ButtonWrapper
                 onClick={clickHandler}
-                icon={<WalletIcon className="stroke-2 w-6 h-6" />}
             >
                 {
                     error ? <span>Try again</span>
@@ -151,18 +151,18 @@ const ChangeNetworkButton: FC<{ chainId: number, network: string, onChange: () =
 
 const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> = ({ isLoading, error }) => {
     if (isLoading) {
-        return <TransactionMessages.ConfirmTransactionMessage />
+        return <ActionMessages.ConfirmTransactionMessage />
     }
     else if (error === "The account(s) sending the transaction don't have enough funds to cover the transaction."
         || error === "the target cannot be met due to no coins available or exceeding the 255 coin limit."
     ) {
-        return <TransactionMessages.InsufficientFundsMessage />
+        return <ActionMessages.InsufficientFundsMessage />
     }
     else if (error === "Request cancelled without user response!" || error === "User rejected the transaction!" || error === "User canceled sending transaction") {
-        return <TransactionMessages.TransactionRejectedMessage />
+        return <ActionMessages.TransactionRejectedMessage />
     }
     else if (error) {
-        return <TransactionMessages.UexpectedErrorMessage message={error} />
+        return <ActionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>
 }

@@ -1,20 +1,12 @@
-import {
-  RefObject,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
-import { AccordionContent, AccordionItem, AccordionTrigger } from "../../../shadcn/accordion";
+import { RefObject, useMemo, useRef, useState, } from "react";
+import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcn/accordion";
 import { motion } from "framer-motion";
-import {
-  NetworkElement,
-  GroupedTokenElement,
-} from "../../../../Models/Route";
-import { SwapDirection } from "../../../DTOs/SwapFormValues";
-import { CurrencySelectItemDisplay } from "../Routes";
-import { NetworkRoute, NetworkRouteToken } from "../../../../Models/Network";
+import { NetworkElement, GroupedTokenElement, } from "@/Models/Route";
+import { SwapDirection } from "@/components/DTOs/SwapFormValues";
+import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { CollapsableHeader } from "./CollapsableHeader";
 import { StickyHeader } from "./StickyHeader";
+import { CurrencySelectItemDisplay } from "../Routes";
 
 type GenericAccordionRowProps = {
   item: NetworkElement | GroupedTokenElement;
@@ -22,6 +14,7 @@ type GenericAccordionRowProps = {
   onSelect: (route: NetworkRoute, token: NetworkRouteToken) => void;
   selectedRoute: string | undefined;
   selectedToken: string | undefined;
+  searchQuery: string
   toggleContent: (itemName: string) => void;
   openValues?: string[];
   scrollContainerRef: RefObject<HTMLDivElement>;
@@ -40,6 +33,7 @@ export const CollapsibleRow = ({
   onSelect,
   selectedRoute,
   selectedToken,
+  searchQuery,
   openValues,
   scrollContainerRef,
   allbalancesLoaded,
@@ -74,7 +68,7 @@ export const CollapsibleRow = ({
   };
 
   return (
-    <motion.div layout="position">
+    <motion.div {...(!searchQuery && { layout: "position" })} key={searchQuery ? "search" : "default"}>
       <AccordionItem value={groupName}>
         <div
           ref={headerRef}
@@ -112,15 +106,15 @@ export const CollapsibleRow = ({
           ref={contentRef}
           itemsCount={childrenList?.length}
         >
-          <div className="has-[.token-item]:mt-1 bg-secondary-400 rounded-xl overflow-hidden">
-            <div className="overflow-y-auto styled-scroll">
+          <div className="has-[.token-item]:mt-1 bg-secondary-500 rounded-xl overflow-hidden">
+            <div className="overflow-y-auto styled-scroll p-2">
               {childrenList?.map(({ token, route }, index) => {
                 const isSelected = selectedRoute === route.name && selectedToken === token.symbol;
 
                 return (
                   <div
                     key={`${groupName}-${index}`}
-                    className={`token-item pl-5 cursor-pointer hover:bg-secondary-300 outline-none disabled:cursor-not-allowed`}
+                    className={`token-item pl-2 pr-3 cursor-pointer hover:bg-secondary-400 rounded-xl outline-none disabled:cursor-not-allowed`}
                     onClick={() => onSelect(route, token)}
                   >
                     <CurrencySelectItemDisplay

@@ -2,15 +2,15 @@ import { useFormikContext } from "formik";
 import { FC, useCallback, useEffect, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { Selector, SelectorContent, SelectorTrigger } from "../Select/Selector/Index";
-import { Exchange } from "../../Models/Exchange";
+import { Exchange } from "@/Models/Exchange";
 import React from "react";
-import { SelectItem } from "../Select/Selector/SelectItem";
+import { SelectItem } from "@/components/Select/Selector/SelectItem";
 import useFormRoutes from "@/hooks/useFormRoutes";
 import { LayoutGroup, motion } from "framer-motion";
 import { SearchComponent } from "./Search";
-import { ImageWithFallback } from "../Common/ImageWithFallback";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { ChevronDown } from "lucide-react";
-import { updateForm } from "../Swap/Form/updateForm";
+import { updateForm } from "@/components/Swap/Form/updateForm";
 
 const CexPicker: FC = () => {
     const {
@@ -98,7 +98,7 @@ const ExchangeNetwork = (props: ExchangeNetworkProps) => {
     return <div className="bg-secondary-500 cursor-pointer hover:bg-secondary-400 rounded-xl outline-none disabled:cursor-not-allowed relative" onClick={() => onSelect(route)} >
         <SelectItem>
             <SelectItem.Logo imgSrc={route.logo} altText={`${route.display_name} logo`} />
-            <SelectItem.Title className="py-3">{route.display_name}</SelectItem.Title>
+            <SelectItem.Title className="!py-3">{route.display_name}</SelectItem.Title>
         </SelectItem>
     </div>
 }
