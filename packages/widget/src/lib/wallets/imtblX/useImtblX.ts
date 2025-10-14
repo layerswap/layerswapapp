@@ -80,7 +80,7 @@ export default function useImtblXConnection(): WalletConnectionProvider {
             const res = await imtblClient.Transfer(amount.toString(), token, depositAddress)
             const transactionRes = res?.result?.[0]
             if (!transactionRes)
-                throw new Error('Transfer failed or terminated')
+                throw new Error(TransactionMessageType.TransactionFailed)
             else if (transactionRes.status == "error") {
                 throw new Error(transactionRes.message)
             }
@@ -88,9 +88,9 @@ export default function useImtblXConnection(): WalletConnectionProvider {
                 return transactionRes.txId.toString()
             }
         } catch (error) {
-            if (error === "Transfer failed or terminated") {
-                error.name = TransactionMessageType.TransactionFailed
-                throw new Error(error)
+            if (error in TransactionMessageType) {
+                error.name = error
+                throw error
             }
             else {
                 error.name = TransactionMessageType.UexpectedErrorMessage

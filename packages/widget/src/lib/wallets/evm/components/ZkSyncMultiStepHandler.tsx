@@ -83,15 +83,21 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel
             if (receipt.success)
                 setAccountIsActivated(true)
             else if (receipt.failReason)
-                throw new Error(receipt.failReason)
+                throw new Error(TransactionMessageType.TransactionFailed)
 
             else
                 throw new Error("Activation failed")
         }
         catch (error) {
-            error.name = TransactionMessageType.UexpectedErrorMessage
-            error.message = error
-            throw new Error(error)
+            if (error in TransactionMessageType) {
+                error.name = error
+                throw error
+            }
+            else {
+                error.name = TransactionMessageType.UexpectedErrorMessage
+                error.message = error
+                throw new Error(error)
+            }
         }
         finally {
             setLoading(false)

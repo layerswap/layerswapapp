@@ -96,14 +96,20 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
                 return transferResult.hash
             }
             else {
-                throw new Error(transferResult.resultInfo?.message || "Unexpected error.")
+                throw new Error(TransactionMessageType.TransactionFailed)
             }
         }
         catch (error) {
             setLoading(false)
-            error.name = TransactionMessageType.UexpectedErrorMessage
-            error.message = error
-            throw new Error(error)
+            if (error in TransactionMessageType) {
+                error.name = error
+                throw error
+            }
+            else {
+                error.name = TransactionMessageType.UexpectedErrorMessage
+                error.message = error
+                throw new Error(error)
+            }
         }
     }, [source_network, accInfo, unlockedAccount, source_token])
 

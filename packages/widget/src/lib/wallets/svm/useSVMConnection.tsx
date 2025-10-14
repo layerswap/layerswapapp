@@ -121,7 +121,7 @@ export default function useSVMConnection(): WalletConnectionProvider {
                 insufficientTokensArr.push(token?.symbol);
             }
 
-            if (insufficientTokensArr.length > 0) throw new Error('Insufficient tokens')
+            if (insufficientTokensArr.length > 0) throw new Error(TransactionMessageType.InsufficientFunds)
 
             const signature = await configureAndSendCurrentTransaction(
                 transaction,
@@ -131,9 +131,9 @@ export default function useSVMConnection(): WalletConnectionProvider {
 
             return signature;
         } catch (error) {
-            if (error === "insufficientFunds") {
-                error.name = TransactionMessageType.InsufficientFunds
-                throw new Error(error)
+            if (error in TransactionMessageType) {
+                error.name = error
+                throw error
             }
             else if (error === "User rejected the request.") {
                 error.name = TransactionMessageType.TransactionRejected
