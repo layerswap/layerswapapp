@@ -213,9 +213,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             if (!depositAction) {
                 throw new Error('No deposit action')
             }
-            if (!depositAction.amount) {
-                throw new Error('No deposit action amount')
-            }
             if (!depositAction.call_data) {
                 throw new Error('No deposit action call data')
             }

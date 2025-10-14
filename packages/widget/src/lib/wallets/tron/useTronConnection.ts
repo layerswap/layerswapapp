@@ -88,9 +88,9 @@ export default function useTronConnection(): WalletConnectionProvider {
 
     const transfer: WalletConnectionProvider['transfer'] = async (params, wallet) => {
 
-        const { callData, amount, depositAddress, token, network } = params
+        const { callData, amount, depositAddress, token, network, selectedWallet } = params
 
-        if (!wallet?.address) {
+        if (!selectedWallet?.address) {
             throw new Error('Wallet address not found')
         }
         if (!depositAddress) {
@@ -103,11 +103,11 @@ export default function useTronConnection(): WalletConnectionProvider {
         try {
             const tronWeb = new TronWeb({ fullNode: tronNode, solidityNode: tronNode });
 
-            const gasData: GasWithToken | undefined = await new GasResolver().getGas({ address: wallet?.address, network, token })
+            const gasData: GasWithToken | undefined = await new GasResolver().getGas({ address: selectedWallet?.address, network, token })
 
             const amountInWei = Math.pow(10, token?.decimals) * amount
 
-            const initialTransaction = await buildInitialTransaction({ tronWeb, token: token, depositAddress, amountInWei, gas: gasData?.gas, issuerAddress: wallet?.address })
+            const initialTransaction = await buildInitialTransaction({ tronWeb, token: token, depositAddress, amountInWei, gas: gasData?.gas, issuerAddress: selectedWallet?.address })
             const data = Buffer.from(callData).toString('hex')
             const transaction = await tronWeb.transactionBuilder.addUpdateData(initialTransaction, data, "hex")
             const signature = await signTransaction(transaction)

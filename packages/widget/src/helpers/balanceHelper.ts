@@ -12,7 +12,6 @@ export function getTotalBalanceInUSD(networkBalance: NetworkBalance, network: Ne
     if (!networkBalance.balances || networkBalance.balances.length === 0) {
         return 0;
     }
-    if (network.name.includes('SOLANA')) console.log(networkBalance.balances, network)
     return networkBalance.balances.reduce((total, tokenBalance) => {
         const token = network.tokens.find(t => t?.symbol === tokenBalance.token);
 
