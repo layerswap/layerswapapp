@@ -2,7 +2,6 @@ import posthog from "posthog-js";
 import { NetworkBalance } from "@/Models/Balance";
 import { BalanceProvider } from "@/Models/BalanceProvider";
 import { NetworkWithTokens } from "@/Models/Network";
-import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import {
     BitcoinBalanceProvider,
     EVMBalanceProvider,
@@ -47,13 +46,7 @@ export class BalanceResolver {
             if (!provider) throw new Error(`No balance provider found for network ${network.name}`)
             const balances = await provider.fetchBalance(address, network, { timeoutMs: options?.timeoutMs, retryCount: options?.retryCount })
 
-            const totalInUSD = balances?.reduce((acc, b) => {
-                const token = network.tokens.find(t => t?.symbol === b?.token);
-                const tokenPriceInUsd = token?.price_in_usd || 0;
-                const amount = b?.amount || 0;
-                return acc + (amount * tokenPriceInUsd);
-            }, 0)
-            return { balances, totalInUSD };
+            return { balances };
         }
         catch (e) {
             const error = new Error(e)
@@ -68,7 +61,7 @@ export class BalanceResolver {
                 severity: 'error',
             });
 
-            return { balances: [], totalInUSD: undefined }
+            return { balances: [] }
         }
     }
 }

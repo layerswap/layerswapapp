@@ -22,5 +22,4 @@ export type TokenBalance = {
 
 export type NetworkBalance = {
     balances?: TokenBalance[] | null,
-    totalInUSD?: number,
 }
