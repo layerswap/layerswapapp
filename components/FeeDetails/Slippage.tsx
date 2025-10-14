@@ -191,7 +191,7 @@ const SlippageInput = forwardRef<HTMLInputElement, SlippageInputProps>(function 
                 </div>
             </PopoverTrigger>
             <PopoverContent side="top" align="center" className="text-xs">
-                Slippage can not be out of  %0 - 80% range.
+                Slippage can not be out of 0% - 80% range.
             </PopoverContent>
         </Popover>
     )
