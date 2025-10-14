@@ -15,7 +15,6 @@ import SwapMockFunctions from './Mocks/context/SwapDataUpdate';
 import { Formik, FormikProps } from 'formik';
 import { useArgs } from 'storybook/preview-api';
 import WalletsProviders from '../components/Wallet/WalletProviders';
-import { TimerProvider } from '@/context/timerContext';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
 import { BalanceAccountsProvider } from '@/context/balanceAccounts';
 

@@ -8,7 +8,6 @@ import { THEME_COLORS } from '../Models/Theme';
 import WalletsProviders from '../components/Wallet/WalletProviders';
 import { SwapDataProvider } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
-import { TimerProvider } from '@/context/timerContext';
 import { PriceImpact } from '@/components/Input/Amount/PriceImpact';
 
 type PriceImpactRelevant = {
@@ -28,20 +27,16 @@ const Comp: FC<{ quote: PriceImpactRelevant; theme?: 'default' | 'light' }> = ({
     return (
         <IntercomProvider appId="123">
             <SettingsStateContext.Provider value={appSettings as any}>
-                    <SwapDataProvider>
-                        <TimerProvider>
-                            <WalletsProviders basePath="/" themeData={THEME_COLORS['default']} appName="Layerswap">
-                                <PriceImpact
-                                    bridgeFee={quote.blockchain_fee}
-                                    destinationTokenPriceUsd={quote.destination_token.price_in_usd}
-                                    receiveAmount={quote.receive_amount}
-                                    requestedAmount={quote.requested_amount}
-                                    serviceFee={quote.service_fee}
-                                    sourceTokenPriceUsd={quote.source_token.price_in_usd}
-                                />
-                            </WalletsProviders>
-                        </TimerProvider>
-                    </SwapDataProvider>
+                <SwapDataProvider>
+                    <PriceImpact
+                        bridgeFee={quote.blockchain_fee}
+                        destinationTokenPriceUsd={quote.destination_token.price_in_usd}
+                        receiveAmount={quote.receive_amount}
+                        requestedAmount={quote.requested_amount}
+                        serviceFee={quote.service_fee}
+                        sourceTokenPriceUsd={quote.source_token.price_in_usd}
+                    />
+                </SwapDataProvider>
             </SettingsStateContext.Provider>
         </IntercomProvider>
     );
