@@ -6,11 +6,11 @@ import * as Paradex from "@/lib/wallets/paradex/lib";
 import { insertIfNotExists } from "../helpers";
 
 export class ParadexBalanceProvider extends BalanceProvider {
-    supportsNetwork = (network: NetworkWithTokens): boolean => {
+    supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return KnownInternalNames.Networks.ParadexMainnet.includes(network.name) || KnownInternalNames.Networks.ParadexTestnet.includes(network.name)
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens) => {
+    fetchBalance: BalanceProvider['fetchBalance'] = async (address, network) => {
         const environment = process.env.NEXT_PUBLIC_API_VERSION === 'sandbox' ? 'testnet' : 'prod'
         const config = await Paradex.Config.fetchConfig(environment);
         const tokens = insertIfNotExists(network.tokens || [], network.token)
