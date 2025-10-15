@@ -1,4 +1,4 @@
-import { WalletProvider } from "@/context/LayerswapProvider";
+import { WalletProvider } from "@/types";
 import useSVMConnection from "./useSVMConnection";
 import SVMProvider from "./SVMProvider";
 import { SolanaBalanceProvider } from "./svmBalanceProvider";

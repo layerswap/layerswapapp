@@ -1,4 +1,4 @@
-import { WalletProvider } from "@/context/LayerswapProvider";
+import { WalletProvider } from "@/types";
 import { ImmutableXBalanceProvider } from "./immutableXBalanceProvider";
 import { ImmutableXGasProvider } from "./immutableXGasProvider";
 import useImtblXConnection from "./useImtblX";

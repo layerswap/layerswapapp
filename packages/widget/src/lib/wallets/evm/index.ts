@@ -1,4 +1,4 @@
-import { WalletProvider } from "@/context/LayerswapProvider"
+import { WalletProvider } from "@/types";
 import { EVMBalanceProvider, HyperliquidBalanceProvider, LoopringBalanceProvider, ZkSyncBalanceProvider } from "./balanceProviders"
 import useEVMConnection from "./useEVMConnection"
 import EVMProvider from "./EVMProvider"

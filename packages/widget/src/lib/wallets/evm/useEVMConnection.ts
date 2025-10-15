@@ -1,29 +1,24 @@
 import { useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
-import { NetworkType, NetworkWithTokens } from "@/Models/Network"
-import { useSettingsState } from "@/context/settings"
-import KnownInternalNames from "../../knownIds"
-import { resolveWalletConnectorIcon, resolveWalletConnectorIndex, isMobile, sleep, convertSvgComponentToBase64 } from "../utils"
-import { evmConnectorNameResolver, resolveError } from "./utils"
-import { useCallback, useEffect, useMemo, useRef } from "react"
 import { CreateConnectorFn, getAccount, getConnections, sendTransaction } from '@wagmi/core'
+import { BaseError } from "viem"
+import { useCallback, useEffect, useMemo, useRef } from "react"
+import { TransactionMessageType, NetworkType, NetworkWithTokens, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@/exports/types"
+import { resolveWalletConnectorIcon, resolveWalletConnectorIndex, isMobile, sleep, convertSvgComponentToBase64 } from "../utils"
+import { evmConnectorNameResolver, resolveError } from "./evmUtils"
 import { LSConnector } from "./connectors/types"
 import { explicitInjectedProviderDetected } from "./connectors/explicitInjectedProviderDetected"
-import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wallet"
-import { useConnectModal } from "@/components/Wallet/WalletModal"
-import { useEvmConnectors } from "@/lib/wallets/evm/EVMProvider/evmConnectorsContext"
-import { useActiveEvmAccount } from "@/lib/wallets/evm/EVMProvider/ActiveEvmAccount"
+import { useConnectModal, KnownInternalNames } from "@/exports/internal"
+import { useEvmConnectors } from "./EVMProvider/evmConnectorsContext"
+import { useActiveEvmAccount } from "./EVMProvider/ActiveEvmAccount"
 import { transactionBuilder } from "./services/transferService/transactionBuilder"
 import { LoopringMultiStepHandler, ZkSyncMultiStepHandler } from "./components"
-import { BaseError } from "viem"
-import { TransactionMessageType } from "@/types"
 
 const ethereumNames = [KnownInternalNames.Networks.EthereumMainnet, KnownInternalNames.Networks.EthereumSepolia]
 const immutableZKEvm = [KnownInternalNames.Networks.ImmutableZkEVM]
 
-export default function useEVMConnection(): WalletConnectionProvider {
+export default function useEVMConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
     const name = 'EVM'
     const id = 'evm'
-    const { networks } = useSettingsState()
 
     const asSourceSupportedNetworks = useMemo(() => [
         ...networks.filter(network => network.type === NetworkType.EVM).map(l => l.name),

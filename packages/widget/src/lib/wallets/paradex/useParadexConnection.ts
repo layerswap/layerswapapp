@@ -1,6 +1,6 @@
 import KnownInternalNames from "../../knownIds"
 import { useMemo } from "react"
-import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wallet"
+import { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@/types"
 import { useConnectModal } from "@/components/Wallet/WalletModal"
 import { type ConnectorAlreadyConnectedError } from '@wagmi/core'
 import useEVMConnection from "../evm/useEVMConnection"
@@ -12,16 +12,14 @@ import AuhorizeEthereum from "./Authorize/Ethereum"
 import { getWalletClient } from '@wagmi/core'
 import { useConfig } from "wagmi"
 import { switchChain, getChainId } from '@wagmi/core'
-import { useSettingsState } from "@/context/settings"
 import shortenAddress from "@/components/utils/ShortenAddress"
 import sleep from "../utils/sleep"
 import { useActiveParadexAccount } from "@/lib/wallets/paradex/ActiveParadexAccount"
 import ParadexMultiStepHandler from "./components/ParadexMultiStepHandler"
 
-export function useParadexConnection(): WalletConnectionProvider {
+export function useParadexConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
     const name = 'Paradex'
     const id = 'prdx'
-    const { networks } = useSettingsState()
     const { activeConnection, setActiveAddress } = useActiveParadexAccount()
     const paradexAccounts = useWalletStore((state) => state.paradexAccounts)
     const addParadexAccount = useWalletStore((state) => state.addParadexAccount)
@@ -39,8 +37,8 @@ export function useParadexConnection(): WalletConnectionProvider {
     ]
 
     const { setSelectedConnector } = useConnectModal()
-    const evmProvider = useEVMConnection()
-    const starknetProvider = useStarknetConnection()
+    const evmProvider = useEVMConnection({ networks })
+    const starknetProvider = useStarknetConnection({ networks })
 
     const config = useConfig()
 
