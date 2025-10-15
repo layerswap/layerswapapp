@@ -18,7 +18,7 @@ const progress = new ProgressBar({
 
 if (typeof window !== "undefined") {
   posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
-    efore_send: (event) => {
+    before_send: (event) => {
       if (event.event === "$exception") {
         const exceptionList = event.properties["$exception_list"] || []
         const exception = exceptionList.length > 0 ? exceptionList[0] : null;
