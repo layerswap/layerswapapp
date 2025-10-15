@@ -105,7 +105,7 @@ export class EVMBalanceProvider extends BalanceProvider {
             if (amount >= 0) return {
                 network: network.name,
                 token: token.symbol,
-                amount: formatUnits(BigInt('2428515188933003594'), token.decimals),
+                amount: formatUnits(BigInt(amount), token.decimals),
                 request_time: new Date().toJSON(),
                 decimals: token.decimals,
                 isNativeCurrency: false,
