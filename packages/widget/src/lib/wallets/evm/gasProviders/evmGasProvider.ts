@@ -1,10 +1,6 @@
-
-import { GasProps } from "@/Models/Balance"
-import { NetworkType, Network, Token } from "@/Models/Network"
-import { GasProvider } from "@/types/gas"
+import { GasProvider, GasProps, Network, Token, NetworkType } from "@/types"
 import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, http, serializeTransaction } from "viem";
-import { erc20Abi } from "viem";
-import formatAmount from "@/lib/formatAmount";
+import { erc20Abi, formatUnits } from "viem";
 import { publicActionsL2 } from 'viem/op-stack'
 import resolveChain from "@/lib/resolveChain";
 import posthog from "posthog-js";
@@ -229,7 +225,7 @@ class getEthereumGas extends getEVMGas {
 
         const totalGas = multiplier * estimatedGasLimit
 
-        const formattedGas = formatAmount(totalGas, this.nativeToken?.decimals)
+        const formattedGas = Number(formatUnits(BigInt(totalGas), this.nativeToken?.decimals))
         return formattedGas
     }
 
@@ -261,7 +257,7 @@ export default class getOptimismGas extends getEVMGas {
 
         let totalGas = (multiplier * estimatedGasLimit) + l1OpFee
 
-        const formattedGas = formatAmount(totalGas, this.nativeToken?.decimals)
+        const formattedGas = Number(formatUnits(BigInt(totalGas), this.nativeToken?.decimals))
         return formattedGas
     }
 

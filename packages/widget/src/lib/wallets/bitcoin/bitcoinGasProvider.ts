@@ -1,6 +1,6 @@
 import { GasProps } from "@/Models/Balance";
 import { Network } from "@/Models/Network";
-import formatAmount from "../../formatAmount";
+import { formatUnits } from "viem";
 import KnownInternalNames from "../../knownIds";
 import { JsonRpcClient } from "@/lib/apiClients/jsonRpcClient";
 import { buildPsbt } from "./services/transferService/transactionBuilder/buildPsbt";
@@ -32,7 +32,7 @@ export class BitcoinGasProvider implements GasProvider {
                 amount: amountInSatoshi,
                 rpcClient: rpcClient
             })
-            const formattedGas = formatAmount(fee, network.token.decimals)
+            const formattedGas = Number(formatUnits(BigInt(fee), network.token.decimals))
             return { gas: formattedGas, token: network.token }
 
         } catch (e) {

@@ -2,9 +2,10 @@ import { Network } from "@/Models/Network";
 import KnownInternalNames from "@/lib/knownIds";
 import { GasProps } from "@/Models/Balance";
 import WatchdogAbi from '@/lib/jsons/abis/FUELWATCHDOG.json'
-import formatAmount from "@/lib/formatAmount";
+import { formatUnits } from "viem";
+import { GasProvider } from "@/types";
 
-export class FuelGasProvider {
+export class FuelGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
         return (KnownInternalNames.Networks.FuelMainnet.includes(network.name) || KnownInternalNames.Networks.FuelTestnet.includes(network.name))
     }
@@ -39,7 +40,7 @@ export class FuelGasProvider {
 
             const { maxFee } = await scope.getTransactionCost();
 
-            const formatedGas = Number((formatAmount(Number(maxFee), network.token.decimals) * 2).toFixed(network.token.decimals))
+            const formatedGas = Number((Number(formatUnits(BigInt(Number(maxFee)), network.token.decimals)) * 2).toFixed(network.token.decimals))
 
             if (formatedGas) return { gas: formatedGas, token: network.token }
 

@@ -1,6 +1,6 @@
-import { GasProps } from "../../../Models/Balance";
-import { Network } from "../../../Models/Network";
-import formatAmount from "../../formatAmount";
+import { GasProps } from "@/Models/Balance";
+import { Network } from "@/Models/Network";
+import { formatUnits } from "viem";
 import KnownInternalNames from "../../knownIds";
 import { GasProvider } from "@/types/gas";
 
@@ -37,7 +37,7 @@ export class TronGasProvider implements GasProvider {
 
             if (!energyUsage) throw new Error('Failed to estimate energy usage');
 
-            const formatedGas = formatAmount(energyUsage * energyPrice, network.token?.decimals);
+            const formatedGas = Number(formatUnits(BigInt(energyUsage * energyPrice), network.token?.decimals));
             if (formatedGas) return { gas: formatedGas, token: network.token }
         } catch (e) {
             console.log(e)

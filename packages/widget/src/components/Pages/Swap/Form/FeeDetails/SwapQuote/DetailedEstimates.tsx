@@ -147,15 +147,6 @@ const Reward = ({ reward }: { reward: QuoteReward }) => {
     </RowWrapper>
 }
 
-const ReceiveAtLeast = ({ receiveAtLeast, values }) => {
-    return <RowWrapper title="Receive at least">
-        {receiveAtLeast !== undefined && (
-            <span className="text-sm ml-1 font-small">
-                {receiveAtLeast} {values?.toAsset?.symbol}
-            </span>
-        )}
-    </RowWrapper>
-}
 const Rate = ({ fromAsset, toAsset, requestAmount, receiveAmount }) => {
     return <RowWrapper title="Rate">
         <RateElement fromAsset={fromAsset} toAsset={toAsset} requestAmount={requestAmount} receiveAmount={receiveAmount} />

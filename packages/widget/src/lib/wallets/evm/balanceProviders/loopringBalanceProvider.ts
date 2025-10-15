@@ -1,6 +1,6 @@
 import axios from "axios";
 import { NetworkWithTokens } from "@/Models/Network";
-import formatAmount from "@/lib/formatAmount";
+import { formatUnits } from "viem";
 import KnownInternalNames from "@/lib/knownIds";
 import { TokenBalance } from "@/Models/Balance";
 import { insertIfNotExists } from "../../../balances/helpers";
@@ -41,7 +41,7 @@ export class LoopringBalanceProvider extends BalanceProvider {
                 return ({
                     network: network.name,
                     token: asset?.symbol,
-                    amount: amount ? formatAmount(amount, Number(asset?.decimals)) : result.data ? 0 : undefined,
+                    amount: amount ? Number(formatUnits(BigInt(amount), Number(asset?.decimals))) : result.data ? 0 : undefined,
                     request_time: new Date().toJSON(),
                     decimals: Number(asset?.decimals),
                     isNativeCurrency: false,

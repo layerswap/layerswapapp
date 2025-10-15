@@ -1,6 +1,6 @@
 import { TokenBalance } from "../../../Models/Balance";
 import { Network, NetworkWithTokens, Token } from "../../../Models/Network";
-import formatAmount from "../../formatAmount";
+import { formatUnits } from "viem";
 import KnownInternalNames from "../../knownIds";
 import { TronWeb } from 'tronweb'
 import { insertIfNotExists } from "@/lib/balances/helpers";
@@ -58,7 +58,7 @@ const getNativeAssetBalance = async ({ network, token, address, provider }: GetB
     return ({
         network: network.name,
         token: token.symbol,
-        amount: formatAmount(balance.toString(), Number(token?.decimals)),
+        amount: Number(formatUnits(BigInt(balance.toString()), Number(token?.decimals))),
         request_time: new Date().toJSON(),
         decimals: Number(token?.decimals),
         isNativeCurrency: true,
@@ -77,7 +77,7 @@ const getTRC20Balance = async ({ network, token, address, provider }: GetBalance
     const balance = {
         network: network.name,
         token: token.symbol,
-        amount: formatAmount(BigInt(balanceResponse as any), token.decimals),
+        amount: Number(formatUnits(BigInt(balanceResponse as any), token.decimals)),
         request_time: new Date().toJSON(),
         decimals: token.decimals,
         isNativeCurrency: false,

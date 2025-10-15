@@ -1,11 +1,9 @@
 import axios from "axios";
-import { Network } from "@/Models/Network";
-import formatAmount from "@/lib/formatAmount";
 import KnownInternalNames from "@/lib/knownIds";
-import { GasProps } from "@/Models/Balance";
-import { GasProvider } from "@/types";
+import { GasProvider, GasProps, Network } from "@/types";
 import { LoopringAPI } from "../services/transferService/loopring/LoopringAPI";
 import { LOOPRING_URLs, LpFee } from "../services/transferService/loopring/defs";
+import { formatUnits } from "viem";
 
 export class LoopringGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
@@ -17,7 +15,7 @@ export class LoopringGasProvider implements GasProvider {
             const account: { data: AccountInfo } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.ACCOUNT_ACTION}?owner=${address}`)
             const accInfo = account.data
             const result: { data: LpFee } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.GET_OFFCHAIN_FEE_AMT}?accountId=${accInfo.accountId}&requestType=3`)
-            const formatedGas = formatAmount(result.data.fees.find(f => f?.token === token.symbol)?.fee, Number(token.decimals));
+            const formatedGas = Number(formatUnits(BigInt(result.data.fees.find(f => f?.token === token.symbol)?.fee || 0), Number(token.decimals)));
             if (formatedGas) return { gas: formatedGas, token: token }
         }
         catch (e) {

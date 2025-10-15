@@ -8,13 +8,13 @@ import { useSettingsState } from '@/context/settings';
 import { useAccount } from 'wagmi';
 import ClickTooltip from '@/components/Common/ClickTooltip';
 import SignatureIcon from '@/components/Icons/SignatureIcon';
-import formatAmount from '@/lib/formatAmount';
 import KnownInternalNames from '@/lib/knownIds';
 import { WithdrawPageProps } from '@/components/Pages/Swap/Withdraw/Wallet/Common/sharedTypes';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import useWallet from '@/hooks/useWallet';
 import { TransferProps } from '@/types';
 import { TransactionMessageType } from '@/components/Pages/Swap/Withdraw/messages/TransactionMessages';
+import { formatUnits } from 'viem';
 
 const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
@@ -52,7 +52,7 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel
                 let activationFee = await syncProvider.getTransactionFee({
                     ChangePubKey: 'ECDSA'
                 }, wallet.address(), Number(source_token?.contract));
-                const formatedGas = formatAmount(activationFee.totalFee, Number(source_token?.decimals))
+                const formatedGas = Number(formatUnits(BigInt(activationFee.totalFee.toString()), Number(source_token?.decimals)))
                 let assetUsdPrice = source_token?.price_in_usd;
                 setActivationFee({ feeInAsset: formatedGas, feeInUsd: formatedGas * (assetUsdPrice ?? 0) })
             }

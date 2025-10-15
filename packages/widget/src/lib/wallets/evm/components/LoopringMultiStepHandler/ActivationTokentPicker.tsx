@@ -1,6 +1,6 @@
 import { FeeData, useLoopringTokens } from './hooks';
 import { ISelectMenuItem } from '@/components/Select/Shared/Props/selectMenuItem';
-import formatAmount from '@/lib/formatAmount';
+import { formatUnits } from "viem";
 import { useEffect, useState } from 'react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/shadcn/select';
 import { UserBalanceInfo } from '@/lib/wallets/evm/services/transferService/loopring/defs';
@@ -25,7 +25,7 @@ export const ActivationTokenPicker = ({ availableBalances, defaultValue, onSelec
             const symbol: string = loopringToken?.symbol || "-"
             const decimals = loopringToken?.decimals
             const details = <span className="text-primary-text-tertiary">
-                {decimals ? `${formatAmount(b.total, decimals)}` : ''}
+                {decimals ? `${formatUnits(BigInt(b.total), decimals)}` : ''}
             </span>
             return {
                 id: symbol,
@@ -57,7 +57,7 @@ export const ActivationTokenPicker = ({ availableBalances, defaultValue, onSelec
 
     const decimals = loopringToken?.decimals
     const selectedTokenFee = feeData?.fees?.find(f => f.token === selectedValue)?.fee
-    const formattedFee = selectedTokenFee && decimals && formatAmount(selectedTokenFee, decimals)
+    const formattedFee = selectedTokenFee && decimals && Number(formatUnits(BigInt(selectedTokenFee), decimals))
 
     return <p className="break-allspace-x-1 flex mt-4 w-full justify-end items-center text-sm text-secondary-text">
         <span className='font-base sm:inline hidden'>One time activation fee</span>
