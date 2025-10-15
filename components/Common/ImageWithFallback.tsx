@@ -2,11 +2,10 @@ import Image, { ImageProps } from "next/image";
 import React, { forwardRef, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
-const fallbackImage = "/images/logo_placeholder.png";
+const fallbackImage = "https://layerswap.io/beta/_next/image?url=%2Fimages%2Flogo_placeholder.png&w=96&q=75&dpl=dpl_F5qCEJtwT2ipBr2zVii46hGUTTff";
 
 function withBasePath(path: string, basePath: string) {
-  console.log({ path, basePath });
-  return `${basePath}${path.startsWith("/") ? path : `/${path}`}`;
+  return `${basePath || (window && window?.location?.origin)}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
 export const ImageWithFallback = forwardRef<HTMLImageElement, ImageProps>(

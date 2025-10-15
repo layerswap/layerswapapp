@@ -33,6 +33,10 @@ const REMOTE_PATTERNS = [
     protocol: 'https',
     hostname: 'layerswap.io',
   },
+  {
+    protocol: 'http',
+    hostname: 'localhost',
+  },
 ];
 
 module.exports = (phase, { defaultConfig }) => {
