@@ -20,6 +20,10 @@ if (typeof window !== "undefined") {
   posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
     capture_pageview: 'history_change',
     capture_pageleave: true,
+    capture_exceptions: {
+      capture_unhandled_errors: true,
+      capture_unhandled_rejections: true,
+    },
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
     defaults: '2025-05-24'
   })
