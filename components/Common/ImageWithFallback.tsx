@@ -59,7 +59,7 @@ export const ImageWithFallback = forwardRef<HTMLImageElement, ImageProps>(
                 // blurDataURL={fallbackImage} // better: provide a tiny base64 data URI instead of a path
                 alt={alt || "ImageWithFallback"}
                 ref={ref}
-                src={imgSrc}
+                src={fallbackImage}
                 onError={handleError}
                 // Optional: avoid optimization when showing the local fallback
                 unoptimized={imgSrc === fallbackImage}
