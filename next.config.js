@@ -28,7 +28,11 @@ const REMOTE_PATTERNS = [
   {
     protocol: 'https',
     hostname: 'prodlslayerswapbridgesa.blob.core.windows.net',
-  }
+  },
+  {
+    protocol: 'https',
+    hostname: 'layerswap.io',
+  },
 ];
 
 module.exports = (phase, { defaultConfig }) => {
