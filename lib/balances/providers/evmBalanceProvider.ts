@@ -1,8 +1,7 @@
 
-import { Chain, PublicClient } from "viem"
+import { Chain, formatUnits, PublicClient } from "viem"
 import { TokenBalance } from "@/Models/Balance"
 import { Network, NetworkType, NetworkWithTokens, Token } from "@/Models/Network"
-import formatAmount from "@/lib/formatAmount"
 import { http, createConfig } from '@wagmi/core'
 import { erc20Abi } from 'viem'
 import { multicall } from '@wagmi/core'
@@ -106,7 +105,7 @@ export class EVMBalanceProvider extends BalanceProvider {
             if (amount >= 0) return {
                 network: network.name,
                 token: token.symbol,
-                amount: formatAmount(amount, token.decimals),
+                amount: formatUnits(BigInt('2428515188933003594'), token.decimals),
                 request_time: new Date().toJSON(),
                 decimals: token.decimals,
                 isNativeCurrency: false,
@@ -129,7 +128,7 @@ export class EVMBalanceProvider extends BalanceProvider {
         const nativeTokenResolvedBalance: TokenBalance | undefined = network.token?.decimals ? {
             network: network.name,
             token: network.token?.symbol,
-            amount: nativeTokenBalance >= 0 ? formatAmount(nativeTokenBalance, network.token?.decimals) : undefined,
+            amount: nativeTokenBalance >= 0 ? Number(formatUnits(BigInt(nativeTokenBalance), network.token?.decimals)) : undefined,
             request_time: new Date().toJSON(),
             decimals: network.token?.decimals,
             isNativeCurrency: true,
@@ -154,7 +153,7 @@ export class EVMBalanceProvider extends BalanceProvider {
                 return {
                     network: network.name,
                     token: currency.symbol,
-                    amount: formatAmount(d.result, currency.decimals),
+                    amount: Number(formatUnits(BigInt(d.result as string | number), currency.decimals)),
                     request_time: new Date().toJSON(),
                     decimals: currency.decimals,
                     isNativeCurrency: false,
@@ -178,7 +177,7 @@ export class EVMBalanceProvider extends BalanceProvider {
         const nativeBalance: TokenBalance = {
             network: network.name,
             token: token.symbol,
-            amount: formatAmount(balanceData?.value, token.decimals),
+            amount: Number(formatUnits(BigInt(balanceData?.value), token.decimals)),
             request_time: new Date().toJSON(),
             decimals: token.decimals,
             isNativeCurrency: true,

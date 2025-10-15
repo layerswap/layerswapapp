@@ -1,6 +1,6 @@
 import { BalanceProvider } from "@/Models/BalanceProvider";
 import { NetworkWithTokens } from "../../../Models/Network";
-import formatAmount from "../../formatAmount";
+import { formatUnits } from "viem";
 import { insertIfNotExists } from "../helpers";
 
 export class QueryBalanceProvider extends BalanceProvider {
@@ -52,7 +52,7 @@ export class QueryBalanceProvider extends BalanceProvider {
 
         return [{
             network: network.name,
-            amount: formatAmount(balancesFromQueries[asset.symbol], asset.decimals),
+            amount: Number(formatUnits(BigInt(balancesFromQueries[asset.symbol]), asset.decimals)),
             decimals: asset.decimals,
             isNativeCurrency: network.token?.symbol === asset.symbol,
             token: asset.symbol,

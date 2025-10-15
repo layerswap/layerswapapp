@@ -1,5 +1,5 @@
 import { TokenBalance } from "@/Models/Balance";
-import formatAmount from "@/lib/formatAmount";
+import { formatUnits } from "viem";
 import Erc20Abi from '@/lib/abis/ERC20.json'
 import KnownInternalNames from "@/lib/knownIds";
 import { insertIfNotExists } from "../helpers";
@@ -38,7 +38,7 @@ export class StarknetBalanceProvider extends BalanceProvider {
                 const balance = {
                     network: network.name,
                     token: token.symbol,
-                    amount: formatAmount(balanceInWei, token.decimals),
+                    amount: Number(formatUnits(BigInt(balanceInWei), token.decimals)),
                     request_time: new Date().toJSON(),
                     decimals: token.decimals,
                     isNativeCurrency: false,
