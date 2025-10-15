@@ -14,7 +14,7 @@ export const ImageWithFallback = forwardRef<HTMLImageElement, ImageProps>(({ src
         setImgSrc(fallbackImage)
     }
 
-    return <Image
+    return <Image 
         {...props}
         alt={props.alt || 'ImageWithFallback'}
         ref={ref}
