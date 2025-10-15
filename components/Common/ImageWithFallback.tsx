@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 const fallbackImage = "/images/logo_placeholder.png";
 
 function withBasePath(path: string, basePath: string) {
-  // Ensure basePath is applied in prod (e.g., /beta)
+  console.log({ path, basePath });
   return `${basePath}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
@@ -29,7 +29,7 @@ export const ImageWithFallback = forwardRef<HTMLImageElement, ImageProps>(
         ref={ref}
         src={withBasePath(fallbackImage, router.basePath)}
         onError={handleError}
-        placeholder="blur"
+        blurDataURL={withBasePath(fallbackImage, router.basePath)}
       />
     );
   }
