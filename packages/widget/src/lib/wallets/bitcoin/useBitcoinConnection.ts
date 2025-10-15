@@ -5,15 +5,14 @@ import { useConnectModal } from "@/components/Wallet/WalletModal"
 import { useConnect, useAccount, useConfig } from '@bigmi/react'
 import { disconnect } from "@bigmi/client"
 import { useMemo } from "react"
-import convertSvgComponentToBase64 from "@/components/utils/convertSvgComponentToBase64"
-import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon"
+import { resolveWalletConnectorIcon, convertSvgComponentToBase64 } from "../utils"
 import KnownInternalNames from "../../knownIds"
 import { Connector, CreateConnectorFn } from "@bigmi/client"
 import { isValidAddress } from "@/lib/address/validator"
 import { useBitcoinConnectors } from "@/lib/wallets/bitcoin/BitcoinProvider"
 import { sendTransaction } from "./services/transferService/sendTransaction"
 import { JsonRpcClient } from "@/lib/apiClients/jsonRpcClient"
-import { TransactionMessageType } from "@/components/Pages/Swap/Withdraw/messages/TransactionMessages";
+import { TransactionMessageType } from "@/types";
 
 const bitcoinNames = [KnownInternalNames.Networks.BitcoinMainnet, KnownInternalNames.Networks.BitcoinTestnet]
 

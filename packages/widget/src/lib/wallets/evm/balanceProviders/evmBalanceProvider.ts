@@ -1,15 +1,9 @@
-
-import { Chain, formatUnits, PublicClient } from "viem"
-import { TokenBalance } from "@/Models/Balance"
-import { Network, NetworkType, NetworkWithTokens, Token } from "@/Models/Network"
-import { http, createConfig } from '@wagmi/core'
-import { erc20Abi } from 'viem'
-import { multicall } from '@wagmi/core'
-import { getBalance, GetBalanceReturnType } from '@wagmi/core'
-import resolveChain from "@/lib/resolveChain"
+import { multicall, getBalance, GetBalanceReturnType, createConfig, http } from '@wagmi/core'
+import { Chain, formatUnits, PublicClient, erc20Abi } from "viem"
+import resolveChain from "@/lib/wallets/evm/utils/resolveChain"
 import BalanceGetterAbi from "@/lib/jsons/abis/BALANCEGETTERABI.json"
 import KnownInternalNames from "@/lib/knownIds"
-import { BalanceProvider } from "@/types/balance"
+import { BalanceProvider, TokenBalance, NetworkType, NetworkWithTokens, Token, Network } from "@/types"
 
 export class EVMBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {

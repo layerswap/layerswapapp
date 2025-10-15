@@ -4,15 +4,14 @@ import { Connector, useAccount } from "wagmi";
 import { FuelConnector, FuelConnectorEventTypes, Predicate, Provider, getPredicateRoot, } from '@fuel-ts/account';
 import { Address } from '@fuel-ts/address';
 import shortenAddress from "@/components/utils/ShortenAddress";
-import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
+import { resolveWalletConnectorIcon, sleep } from "../utils";
 import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wallet";
 import { useEffect, useMemo } from "react";
 import { useWalletStore } from "@/stores/walletStore";
 import { useSettingsState } from "@/context/settings";
 import { transactionBuilder } from "./services/transferService/transactionBuilder";
 import { BAKO_STATE } from "./connectors/bako-safe/Bako";
-import sleep from "../utils/sleep";
-import { TransactionMessageType } from "@/components/Pages/Swap/Withdraw/messages/TransactionMessages";
+import { TransactionMessageType } from "@/types";
 
 export default function useFuelConnection(): WalletConnectionProvider {
     const commonSupportedNetworks = [

@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from "react-dom/server";
 
-export default function convertSvgComponentToBase64(Component, props = {}) {
+export function convertSvgComponentToBase64(Component, props = {}) {
     // Render the React component to an SVG string
     const svgString = renderToStaticMarkup(<Component {...props} />);
 

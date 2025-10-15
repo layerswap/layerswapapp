@@ -7,8 +7,7 @@ import { WithdrawPageProps } from '@/components/Pages/Swap/Withdraw/Wallet/Commo
 import { SendTransactionButton } from '@/components/Pages/Swap/Withdraw/Wallet/Common/buttons';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import useWallet from '@/hooks/useWallet';
-import { TransferProps } from '@/types';
-import { TransactionMessageType } from '@/components/Pages/Swap/Withdraw/messages/TransactionMessages';
+import { TransferProps, TransactionMessageType } from '@/types';
 
 const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
 

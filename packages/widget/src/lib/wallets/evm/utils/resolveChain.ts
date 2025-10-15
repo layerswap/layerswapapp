@@ -1,7 +1,7 @@
 import { defineChain, parseGwei } from "viem";
-import { Network } from "../Models/Network";
-import NetworkSettings from "./NetworkSettings";
-import logError from "./logError";
+import { Network } from "@/types";
+import NetworkSettings from "@/lib/NetworkSettings";
+import logError from "@/lib/logError";
 
 export default function resolveChain(network: Network) {
 

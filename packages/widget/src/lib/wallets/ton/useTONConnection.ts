@@ -1,11 +1,10 @@
 import { ConnectedWallet, useTonConnectUI, useTonWallet } from "@tonconnect/ui-react"
 import { Address } from "@ton/core";
 import KnownInternalNames from "../../knownIds";
-import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wallet";
-import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
+import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType } from "@/types";
+import { resolveWalletConnectorIcon } from "../utils";
 import { useSettingsState } from "../../../context/settings";
 import { transactionBuilder } from "./services/transferService/transactionBuilder";
-import { TransactionMessageType } from "@/components/Pages/Swap/Withdraw/messages/TransactionMessages";
 
 export default function useTONConnection(): WalletConnectionProvider {
     const { networks } = useSettingsState()

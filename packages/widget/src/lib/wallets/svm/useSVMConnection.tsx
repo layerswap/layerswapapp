@@ -1,12 +1,10 @@
 import KnownInternalNames from "../../knownIds"
 import { useWallet } from "@solana/wallet-adapter-react"
-import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon"
-import { NetworkType } from "@/Models/Network"
-import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wallet"
+import { resolveWalletConnectorIcon } from "../utils"
+import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType, NetworkType } from "@/types"
 import { useMemo } from "react"
 import { useSettingsState } from "@/context/settings"
 import { configureAndSendCurrentTransaction } from "./services/transferService/transactionSender"
-import { TransactionMessageType } from "@/components/Pages/Swap/Withdraw/messages/TransactionMessages"
 
 const solanaNames = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet, KnownInternalNames.Networks.SolanaTestnet]
 

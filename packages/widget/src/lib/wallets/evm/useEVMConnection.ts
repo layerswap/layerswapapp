@@ -2,24 +2,20 @@ import { useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, 
 import { NetworkType, NetworkWithTokens } from "@/Models/Network"
 import { useSettingsState } from "@/context/settings"
 import KnownInternalNames from "../../knownIds"
-import { resolveWalletConnectorIcon, resolveWalletConnectorIndex } from "../utils/resolveWalletIcon"
-import { evmConnectorNameResolver } from "./utils/KnownEVMConnectors"
+import { resolveWalletConnectorIcon, resolveWalletConnectorIndex, isMobile, sleep, convertSvgComponentToBase64 } from "../utils"
+import { evmConnectorNameResolver, resolveError } from "./utils"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { CreateConnectorFn, getAccount, getConnections, sendTransaction } from '@wagmi/core'
-import { isMobile } from "../../isMobile"
-import convertSvgComponentToBase64 from "@/components/utils/convertSvgComponentToBase64"
 import { LSConnector } from "./connectors/types"
 import { explicitInjectedProviderDetected } from "./connectors/explicitInjectedProviderDetected"
 import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wallet"
 import { useConnectModal } from "@/components/Wallet/WalletModal"
-import sleep from "../utils/sleep"
 import { useEvmConnectors } from "@/lib/wallets/evm/EVMProvider/evmConnectorsContext"
 import { useActiveEvmAccount } from "@/lib/wallets/evm/EVMProvider/ActiveEvmAccount"
 import { transactionBuilder } from "./services/transferService/transactionBuilder"
 import { LoopringMultiStepHandler, ZkSyncMultiStepHandler } from "./components"
 import { BaseError } from "viem"
-import resolveError from "./utils/resolveError"
-import { TransactionMessageType } from "@/components/Pages/Swap/Withdraw/messages/TransactionMessages"
+import { TransactionMessageType } from "@/types"
 
 const ethereumNames = [KnownInternalNames.Networks.EthereumMainnet, KnownInternalNames.Networks.EthereumSepolia]
 const immutableZKEvm = [KnownInternalNames.Networks.ImmutableZkEVM]

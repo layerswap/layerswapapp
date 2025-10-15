@@ -2,9 +2,8 @@ import { useWalletStore } from "@/stores/walletStore"
 import ImtblClient from "./client"
 import KnownInternalNames from "../../knownIds"
 import IMX from "@/components/Icons/Wallets/IMX"
-import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wallet"
+import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType } from "@/types"
 import { useSettingsState } from "@/context/settings"
-import { TransactionMessageType } from "@/components/Pages/Swap/Withdraw/messages/TransactionMessages"
 
 const supportedNetworks = [
     KnownInternalNames.Networks.ImmutableXMainnet,

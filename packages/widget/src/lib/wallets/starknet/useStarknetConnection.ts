@@ -3,8 +3,7 @@ import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { useSettingsState } from "@//context/settings";
 import { useConnect, useDisconnect } from "@starknet-react/core";
-import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wallet";
-import { TransactionMessageType } from "@/components/Pages/Swap/Withdraw/messages/TransactionMessages";
+import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType } from "@/types";
 
 const starknetNames = [KnownInternalNames.Networks.StarkNetGoerli, KnownInternalNames.Networks.StarkNetMainnet, KnownInternalNames.Networks.StarkNetSepolia]
 export default function useStarknetConnection(): WalletConnectionProvider {

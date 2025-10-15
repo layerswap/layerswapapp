@@ -10,7 +10,7 @@ import { WithdrawPageProps } from '@/components/Pages/Swap/Withdraw/Wallet/Commo
 import { TransferProps } from '@/types';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import useWallet from '@/hooks/useWallet';
-import { TransactionMessageType } from '@/components/Pages/Swap/Withdraw/messages/TransactionMessages';
+import { TransactionMessageType } from '@/types';
 
 const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
 

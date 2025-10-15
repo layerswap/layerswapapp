@@ -1,4 +1,4 @@
-import { TransferProps } from "@/types/transfer"
+import { TransferProps } from "@/types"
 import { parseEther } from "viem"
 
 export const transactionBuilder = async (params: TransferProps) => {

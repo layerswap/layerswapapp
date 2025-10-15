@@ -12,8 +12,7 @@ import KnownInternalNames from '@/lib/knownIds';
 import { WithdrawPageProps } from '@/components/Pages/Swap/Withdraw/Wallet/Common/sharedTypes';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import useWallet from '@/hooks/useWallet';
-import { TransferProps } from '@/types';
-import { TransactionMessageType } from '@/components/Pages/Swap/Withdraw/messages/TransactionMessages';
+import { TransferProps, TransactionMessageType } from '@/types';
 import { formatUnits } from 'viem';
 
 const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
