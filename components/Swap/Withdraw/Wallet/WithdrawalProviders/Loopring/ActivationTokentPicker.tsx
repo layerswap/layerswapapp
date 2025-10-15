@@ -24,7 +24,7 @@ export const ActivationTokenPicker = ({ availableBalances, defaultValue, onSelec
             const symbol: string = loopringToken?.symbol || "-"
             const decimals = loopringToken?.decimals
             const details = <span className="text-primary-text-tertiary">
-                {decimals ? `${Number(formatUnits(BigInt(b.total), decimals))}` : ''}
+                {decimals ? `${formatUnits(BigInt(b.total), decimals)}` : ''}
             </span>
             return {
                 id: symbol,
