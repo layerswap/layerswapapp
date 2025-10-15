@@ -29,6 +29,7 @@ const REMOTE_PATTERNS = [
     protocol: 'https',
     hostname: 'prodlslayerswapbridgesa.blob.core.windows.net',
   },
+  { protocol: 'http', hostname: 'localhost', port: '3000', pathname: '/**' },
 ];
 
 module.exports = (phase, { defaultConfig }) => {

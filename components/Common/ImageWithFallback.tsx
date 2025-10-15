@@ -1,7 +1,8 @@
 import Image, { ImageProps } from "next/image";
 import React, { forwardRef, useEffect, useState } from "react";
 
-const fallbackImage = '/images/logo_placeholder.png';
+const fallbackImage = 'http://localhost:3000/_next/image?url=%2Fimages%2Flogo_placeholder.png&w=96&q=75&dpl=dpl_F5qCEJtwT2ipBr2zVii46hGUTTff';
+const fallbackImage1 = '/images/logo_placeholder.png';
 
 export const ImageWithFallback = forwardRef<HTMLImageElement, ImageProps>(({ src, ...props }, ref) => {
     const [imgSrc, setImgSrc] = useState(src);
@@ -10,16 +11,26 @@ export const ImageWithFallback = forwardRef<HTMLImageElement, ImageProps>(({ src
         setImgSrc(src);
     }, [src])
 
-    const handleErrpr = () => {
+    const handleError = () => {
         setImgSrc(fallbackImage)
     }
 
-    return <Image
+    return <><Image
         {...props}
         alt={props.alt || 'ImageWithFallback'}
         ref={ref}
-        src={imgSrc}
-        onError={handleErrpr}
+        src={fallbackImage}
+        onError={handleError}
         blurDataURL={fallbackImage}
-    />;
+    />
+        <Image
+            {...props}
+            alt={props.alt || 'ImageWithFallback'}
+            ref={ref}
+            src={fallbackImage1}
+            onError={handleError}
+            blurDataURL={fallbackImage1}
+        />
+
+    </>
 });

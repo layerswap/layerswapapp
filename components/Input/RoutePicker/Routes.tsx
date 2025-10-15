@@ -120,8 +120,69 @@ type NetworkRouteItemProps = {
 }
 
 export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
-    const { item, direction, allbalancesLoaded, hideTokenImages } = props
+    const { direction, allbalancesLoaded, hideTokenImages } = props
     const balanceAccounts = useBalanceAccounts(direction)
+
+    const item = {
+        "tokens": [
+            {
+                "status": "active",
+                "symbol": "USDC",
+                "display_asset": "USDC",
+                "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/usdc.png",
+                "contract": "0x28c3d1cd466ba22f6cae51b1a4692a831696391a",
+                "decimals": 6,
+                "price_in_usd": 0.99981,
+                "precision": 6,
+                "listing_date": "2024-02-27T13:32:05.350291+00:00",
+                "source_rank": 77,
+                "destination_rank": 66,
+            },
+            {
+                "status": "active",
+                "symbol": "WETH",
+                "display_asset": "WETH",
+                "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/weth.png",
+                "contract": "0xa722c13135930332eb3d749b2f0906559d2c5b99",
+                "decimals": 18,
+                "price_in_usd": 4150.07,
+                "precision": 8,
+                "listing_date": "2024-08-28T15:09:58.090584+00:00",
+                "source_rank": 77,
+                "destination_rank": 66,
+            }
+        ],
+        "name": "FUSE_MAINNET",
+        "display_name": "Fuse",
+        "logo": "http://localhost:3000/_next/image?url=%2Fimages%Flogo_placeholder.png&w=96&q=75&dpl=dpl_F5qCEJtwT2ipBr2zVii46hGUTTff",
+        "chain_id": "122",
+        "node_url": "https://rpc.fuse.io",
+        "type": "evm",
+        "transaction_explorer_template": "https://explorer.fuse.io/tx/{0}",
+        "account_explorer_template": "https://explorer.fuse.io/address/{0}",
+        "source_rank": 48,
+        "destination_rank": 38,
+        "token": {
+            "symbol": "FUSE",
+            "display_asset": "FUSE",
+            "logo": "https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/fuse.png",
+            "contract": null,
+            "decimals": 18,
+            "price_in_usd": 0.00916944,
+            "precision": 8,
+            "listing_date": "2023-08-01T18:54:45.790489+00:00",
+            "source_rank": 77,
+            "destination_rank": 66,
+            "group": "FUSE"
+        },
+        "metadata": {
+            "listing_date": "2023-03-13T20:00:00+00:00"
+        },
+        "deposit_methods": [
+            "deposit_address",
+            "wallet"
+        ]
+    } as NetworkRoute
 
     const selectedAccount = balanceAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(item.name));
     const networkBalances = useBalance(selectedAccount?.address, item)
