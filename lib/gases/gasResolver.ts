@@ -13,7 +13,7 @@ import { ZkSyncGasProvider } from "./providers/zkSyncGasProvider";
 
 export class GasResolver {
     private providers = [
-        // new BitcoinGasProvider(),
+        new BitcoinGasProvider(),
         new StarknetGasProvider(),
         new EVMGasProvider(),
         new FuelGasProvider(),
@@ -23,10 +23,9 @@ export class GasResolver {
         new TronGasProvider()
     ];
 
-    getGas({ address, network, token, recipientAddress }: GasProps) {
+    getGas({ address, network, token, recipientAddress, amount }: GasProps) {
         const provider = this.providers.find(p => p.supportsNetwork(network));
         if (!provider) return;
-
-        return provider.getGas({ address, network, token, recipientAddress });
+        return provider.getGas({ address, network, token, recipientAddress, amount });
     }
 }

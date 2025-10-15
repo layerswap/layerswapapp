@@ -16,7 +16,7 @@ const ReserveGasNote = ({ onSubmit }: { onSubmit: (walletBalance: Balance, netwo
     const { selectedSourceAccount } = useSwapDataState()
 
     const { balance } = useSWRBalance(selectedSourceAccount?.address, values.from)
-    const { gas: networkGas } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromCurrency)
+    const { gas: networkGas } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromCurrency, values.amount)
 
     const walletBalance = selectedSourceAccount && balance?.find(b => b?.network === values?.from?.name && b?.token === values?.fromCurrency?.symbol)
 

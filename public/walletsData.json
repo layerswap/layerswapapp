@@ -1,5 +1,5 @@
 {
-  "count": 571,
+  "count": 573,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -11127,12 +11127,14 @@
         "eip155:8453",
         "mvx:1",
         "mvx:D",
-        "mvx:T"
+        "mvx:T",
+        "sui:mainnet",
+        "sui:testnet"
       ],
       "description": "Buy, sell, stake, and swap crypto cross-chain. Spend it with xPortal debit cards. Play with blockchain and win rewards.",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://xportal.com",
       "id": "4119a5b3e5ebc809b6a3680a280ae517b92fead02e4c07b7cec0d3385c87aee2",
@@ -21199,6 +21201,66 @@
         "2"
       ]
     },
+    "7eb95f5e01a3c45f7f0111f736d73e5c88aa5f268256c6a38b7f631216f620fb": {
+      "app": {
+        "android": "",
+        "browser": "",
+        "chrome": "https://chromewebstore.google.com/detail/qie-wallet-and-web3-domai/oljchdcgmibnjbbopolafbjncfhdacjb?authuser=1&hl=en",
+        "edge": null,
+        "firefox": null,
+        "ios": "",
+        "linux": "",
+        "mac": "",
+        "opera": null,
+        "safari": null,
+        "windows": ""
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:42220",
+        "eip155:43114",
+        "eip155:8453"
+      ],
+      "description": "Introducing the ultimate browser crypto wallet extension for QIE, designed to revolutionize the way you manage your digital assets.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://www.qiewallet.me/",
+      "id": "7eb95f5e01a3c45f7f0111f736d73e5c88aa5f268256c6a38b7f631216f620fb",
+      "image_id": "047f1e60-9c14-4601-f357-3e2804769600",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/047f1e60-9c14-4601-f357-3e2804769600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/047f1e60-9c14-4601-f357-3e2804769600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/047f1e60-9c14-4601-f357-3e2804769600?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": ""
+      },
+      "name": "qie-wallet",
+      "rdns": "me.qiewallet",
+      "sdks": [
+        "sign_v1"
+      ],
+      "slug": "qie-wallet",
+      "updatedAt": "2025-10-14T04:51:18.643979+00:00",
+      "versions": [
+        "1"
+      ]
+    },
     "7ee7b95f4ae8b3e08aab5158be7fe8e71f79bcd3717594254b34fa1f3cd4611a": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=online.puzzle",
@@ -23162,7 +23224,11 @@
       "category": null,
       "chains": [
         "eip155:1",
-        "eip155:1875"
+        "eip155:10",
+        "eip155:1875",
+        "eip155:42161",
+        "eip155:56",
+        "eip155:8453"
       ],
       "description": "Whitewallet is your gateway to web3 and a secure crypto wallet built to enhance your on-chain experience.",
       "desktop": {
@@ -26018,14 +26084,14 @@
     },
     "a21d06c656c8b1de253686e06fc2f1b3d4aa39c46df2bfda8a6cc524ef32c20c": {
       "app": {
-        "android": null,
+        "android": "https://play.google.com/store/apps/details?id=io.venly.wallet",
         "browser": "https://wallet.venly.io",
         "chrome": null,
         "edge": null,
         "firefox": null,
-        "ios": null,
+        "ios": "https://apps.apple.com/app/venly/id1670915956",
         "linux": null,
-        "mac": null,
+        "mac": "https://apps.apple.com/app/venly/id1670915956",
         "opera": null,
         "safari": null,
         "windows": null
@@ -26034,15 +26100,23 @@
       "category": "Cloud-based Wallets",
       "chains": [
         "eip155:1",
+        "eip155:11155111",
         "eip155:137",
         "eip155:31337",
+        "eip155:42161",
         "eip155:43113",
         "eip155:43114",
-        "eip155:5",
         "eip155:56",
         "eip155:60",
-        "eip155:80001",
-        "eip155:97"
+        "eip155:8453",
+        "eip155:84532",
+        "eip155:97",
+        "hedera:mainnet",
+        "hedera:testnet",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+        "vechain:87721b09ed2e15997f466536b20bb127",
+        "vechain:b1ac3413d346d43539627e6be7ec1b4a"
       ],
       "description": "Onboard users in seconds! Venly Wallet allows your users to interact with Web3 familiarly, while we take care of the security & complexity.",
       "desktop": {
@@ -34614,35 +34688,43 @@
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.zelcash.zelcore",
         "browser": null,
-        "chrome": null,
-        "edge": null,
+        "chrome": "https://chromewebstore.google.com/detail/zelcore/khpdakhaigcopakcondjleibgpdjpmck",
+        "edge": "https://chromewebstore.google.com/detail/zelcore/khpdakhaigcopakcondjleibgpdjpmck",
         "firefox": null,
-        "ios": "https://apps.apple.com/us/app/zelcore/id1436296839",
-        "linux": "https://zelcore.io/downloads/",
-        "mac": null,
+        "ios": "https://apps.apple.com/gr/app/zelcore/id1436296839",
+        "linux": "https://zelcore.io/wallet",
+        "mac": "https://zelcore.io/wallet",
         "opera": null,
         "safari": null,
-        "windows": null
+        "windows": "https://zelcore.io/wallet"
       },
       "app_type": "wallet",
       "category": "Desktop Wallets",
       "chains": [
         "eip155:1",
+        "eip155:10",
+        "eip155:137",
+        "eip155:324",
+        "eip155:42161",
+        "eip155:43114",
         "eip155:56",
-        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+        "eip155:57073",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "sui:mainnet"
       ],
       "description": "Multi-chain wallet for Desktop & Mobile with Walletconnect, quickswaps, fiat ramps, and more",
       "desktop": {
         "native": "zel://",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://zelcore.io",
       "id": "d166c283d59164538cdc50e414546a7433d5f62b9410c9aa563e4e2ec496a106",
-      "image_id": "1b9e652e-1667-425a-f828-707bf9b05400",
+      "image_id": "9fa44558-a22b-47b1-87a4-b7655eb30700",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/1b9e652e-1667-425a-f828-707bf9b05400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/1b9e652e-1667-425a-f828-707bf9b05400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/1b9e652e-1667-425a-f828-707bf9b05400?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/9fa44558-a22b-47b1-87a4-b7655eb30700?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/9fa44558-a22b-47b1-87a4-b7655eb30700?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/9fa44558-a22b-47b1-87a4-b7655eb30700?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -34654,16 +34736,77 @@
       },
       "mobile": {
         "native": "zel://",
-        "universal": null
+        "universal": ""
       },
       "name": "Zelcore",
-      "rdns": null,
+      "rdns": "io.zelcore",
       "sdks": [
         "sign_v1",
         "sign_v2"
       ],
       "slug": "zelcore-1",
       "updatedAt": "2023-07-18T09:44:06.819992+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "d496d30a1213ee22d7b7b93c1f0ed3d96c9dc5800634b6e319efe7b70b65d694": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.lfwallet.app",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": null,
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:11155111",
+        "eip155:137",
+        "eip155:56",
+        "eip155:8453"
+      ],
+      "description": "LF Wallet – A Non-Custodial Crypto Wallet for Everyday Web3 Users",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://lflabs.fund/wallet",
+      "id": "d496d30a1213ee22d7b7b93c1f0ed3d96c9dc5800634b6e319efe7b70b65d694",
+      "image_id": "be4b9c16-f8a2-47b9-bfa3-833fa5b70e00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/be4b9c16-f8a2-47b9-bfa3-833fa5b70e00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/be4b9c16-f8a2-47b9-bfa3-833fa5b70e00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/be4b9c16-f8a2-47b9-bfa3-833fa5b70e00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "lfwallet://",
+        "universal": "https://lflabs.fund/wallet"
+      },
+      "name": "LF Wallet App",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "lf-wallet-app",
+      "updatedAt": "2025-10-14T05:55:29.940841+00:00",
       "versions": [
         "1",
         "2"
@@ -37605,14 +37748,14 @@
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.companyname.swaptobe&hl=vi",
         "browser": null,
-        "chrome": "https://",
-        "edge": null,
-        "firefox": null,
+        "chrome": "",
+        "edge": "",
+        "firefox": "",
         "ios": "https://apps.apple.com/us/app/pione-wallet/id6738914833",
         "linux": "",
         "mac": "https://apps.apple.com/us/app/pione-wallet/id6738914833",
-        "opera": null,
-        "safari": null,
+        "opera": "",
+        "safari": "",
         "windows": ""
       },
       "app_type": "wallet",
@@ -38112,11 +38255,11 @@
         "shortName": "TBC"
       },
       "mobile": {
-        "native": "pionewallet://",
+        "native": "tobewallet://",
         "universal": ""
       },
       "name": "PioneWallet",
-      "rdns": "com.pionewallet",
+      "rdns": "",
       "sdks": [
         "sign_v1",
         "sign_v2",
@@ -41508,18 +41651,18 @@
         "eip155:80085",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
-      "description": "Your key to the world of crypto",
+      "description": "It pays to be here. Create, trade and earn all in one place.",
       "desktop": {
         "native": "",
         "universal": null
       },
-      "homepage": "https://www.coinbase.com/wallet/",
+      "homepage": "https://base.app",
       "id": "fd20dc426fb37566d803205b19bbc1d4096b248ac04548e3cfb6b3a38bd033aa",
-      "image_id": "a5ebc364-8f91-4200-fcc6-be81310a0000",
+      "image_id": "04c88bf0-f115-4686-8c29-90a3d018a400",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/a5ebc364-8f91-4200-fcc6-be81310a0000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/a5ebc364-8f91-4200-fcc6-be81310a0000?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/a5ebc364-8f91-4200-fcc6-be81310a0000?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/04c88bf0-f115-4686-8c29-90a3d018a400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/04c88bf0-f115-4686-8c29-90a3d018a400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/04c88bf0-f115-4686-8c29-90a3d018a400?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": [
         {
@@ -41538,7 +41681,7 @@
         "native": "",
         "universal": null
       },
-      "name": "Coinbase Wallet",
+      "name": "Base (formerly Coinbase Wallet)",
       "rdns": "com.coinbase.wallet",
       "sdks": [
         "sign_v1",
@@ -42043,5 +42186,5 @@
       ]
     }
   },
-  "total": 571
+  "total": 573
 }
