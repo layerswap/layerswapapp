@@ -18,6 +18,7 @@ import { IsExtensionError } from "../helpers/errorHelper";
 import { AsyncModalProvider } from "../context/asyncModal";
 import WalletsProviders from "./WalletProviders";
 import { BalanceAccountsProvider } from "@/context/balanceAccounts";
+import DevCrashButton from "./DevCrashButton";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -132,7 +133,14 @@ export default function Layout({ children, settings, themeData }: Props) {
                   <AsyncModalProvider>
                     {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
                       <MaintananceContent />
-                      : children}
+                      : (
+                        <>
+                          {children}
+                          <div className="mt-6 flex justify-center">
+                            <DevCrashButton />
+                          </div>
+                        </>
+                      )}
                   </AsyncModalProvider>
                 </ThemeWrapper>
               </BalanceAccountsProvider>

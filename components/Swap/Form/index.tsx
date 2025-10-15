@@ -1,5 +1,5 @@
 import { SwapDataProvider } from "@/context/swap";
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 import { NetworkExchangeTabs, Tabs, TabsContent } from "./NetworkExchangeTabs";
 import NetworkForm from "./NetworkForm";
 import ExchangeForm from "./ExchangeForm";
