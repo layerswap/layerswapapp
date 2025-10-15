@@ -1,7 +1,7 @@
 import { BalanceProvider } from "@/Models/BalanceProvider";
-import { TokenBalance } from "../../../Models/Balance";
-import { NetworkWithTokens } from "../../../Models/Network";
-import formatAmount from "../../formatAmount";
+import { TokenBalance } from "@/Models/Balance";
+import { NetworkWithTokens } from "@/Models/Network";
+import { formatUnits } from "viem";
 import KnownInternalNames from "../../knownIds";
 import retryWithExponentialBackoff from "../../retry";
 import fetchWithTimeout from "@/lib/fetchWithTimeout";
@@ -62,7 +62,7 @@ export class FuelBalanceProvider extends BalanceProvider {
 
                 const balanceObj: TokenBalance = {
                     network: network.name,
-                    amount: balance?.amount ? formatAmount(Number(balance?.amount), token.decimals) : undefined,
+                    amount: balance?.amount ? Number(formatUnits(BigInt(Number(balance?.amount)), token.decimals)) : undefined,
                     decimals: token.decimals,
                     isNativeCurrency: network.token?.symbol === token.symbol,
                     token: token.symbol,

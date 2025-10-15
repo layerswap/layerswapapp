@@ -1,6 +1,6 @@
 import axios from "axios";
-import { Network } from "../../../Models/Network";
-import formatAmount from "../../formatAmount";
+import { Network } from "@/Models/Network";
+import { formatUnits } from "viem";
 import KnownInternalNames from "../../knownIds";
 import { LOOPRING_URLs, LpFee } from "../../loopring/defs";
 import { LoopringAPI } from "../../loopring/LoopringAPI";
@@ -17,7 +17,7 @@ export class LoopringGasProvider implements GasProvider {
             const account: { data: AccountInfo } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.ACCOUNT_ACTION}?owner=${address}`)
             const accInfo = account.data
             const result: { data: LpFee } = await axios.get(`${LoopringAPI.BaseApi}${LOOPRING_URLs.GET_OFFCHAIN_FEE_AMT}?accountId=${accInfo.accountId}&requestType=3`)
-            const formatedGas = formatAmount(result.data.fees.find(f => f?.token === token.symbol)?.fee, Number(token.decimals));
+            const formatedGas = Number(formatUnits(BigInt(result.data.fees.find(f => f?.token === token.symbol)?.fee || 0), Number(token.decimals)));
             if (formatedGas) return { gas: formatedGas, token: token }
         }
         catch (e) {

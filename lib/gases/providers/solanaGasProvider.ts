@@ -1,6 +1,6 @@
-import { GasProps } from "../../../Models/Balance";
-import { Network, NetworkType } from "../../../Models/Network";
-import formatAmount from "../../formatAmount";
+import { GasProps } from "@/Models/Balance";
+import { Network, NetworkType } from "@/Models/Network";
+import { formatUnits } from "viem";
 import { GasProvider } from "./types";
 
 export class SolanaGasProvider implements GasProvider {
@@ -32,7 +32,7 @@ export class SolanaGasProvider implements GasProvider {
             const message = transaction.compileMessage();
             const result = await connection.getFeeForMessage(message)
 
-            const formatedGas = formatAmount(result.value, network.token?.decimals)
+            const formatedGas = Number(formatUnits(BigInt(result.value), network.token?.decimals))
 
             if (formatedGas) return { gas: formatedGas, token: network.token }
 
