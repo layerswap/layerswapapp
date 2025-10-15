@@ -1,7 +1,7 @@
 import { BalanceProvider } from "@/Models/BalanceProvider";
 import { TokenBalance } from "@/Models/Balance";
 import { NetworkType } from "@/Models/Network";
-import formatAmount from "@/lib/formatAmount";
+import { formatUnits } from "viem";
 import { insertIfNotExists } from "../helpers";
 import fetchWithTimeout from "@/lib/fetchWithTimeout";
 
@@ -57,7 +57,7 @@ export class SolanaBalanceProvider extends BalanceProvider {
                     result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
                 } else {
                     const res = await connection.getBalance(walletPublicKey)
-                    if (res) result = formatAmount(Number(res), token.decimals)
+                    if (res) result = Number(formatUnits(BigInt(Number(res)), token.decimals))
                 }
 
                 if (result != null && !isNaN(result)) {

@@ -9,7 +9,7 @@ import { useSettingsState } from '@/context/settings';
 import { useAccount } from 'wagmi';
 import ClickTooltip from '@/components/Tooltips/ClickTooltip';
 import SignatureIcon from '@/components/icons/SignatureIcon';
-import formatAmount from '@/lib/formatAmount';
+import { formatUnits } from "viem";
 import Link from 'next/link';
 import KnownInternalNames from '@/lib/knownIds';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
@@ -52,7 +52,7 @@ export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
                 let activationFee = await syncProvider.getTransactionFee({
                     ChangePubKey: 'ECDSA'
                 }, wallet.address(), Number(source_token?.contract));
-                const formatedGas = formatAmount(activationFee.totalFee, Number(source_token?.decimals))
+                const formatedGas = Number(formatUnits(BigInt(activationFee.totalFee.toString()), Number(source_token?.decimals)))
                 let assetUsdPrice = source_token?.price_in_usd;
                 setActivationFee({ feeInAsset: formatedGas, feeInUsd: formatedGas * (assetUsdPrice ?? 0) })
             }

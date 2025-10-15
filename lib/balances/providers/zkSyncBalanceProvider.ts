@@ -1,5 +1,5 @@
 import { NetworkWithTokens } from "@/Models/Network";
-import formatAmount from "@/lib/formatAmount";
+import { formatUnits } from "viem";
 import KnownInternalNames from "@/lib/knownIds";
 
 export class ZkSyncBalanceProvider extends BalanceProvider {
@@ -20,7 +20,7 @@ export class ZkSyncBalanceProvider extends BalanceProvider {
                 return ({
                     network: network.name,
                     token: currency.symbol,
-                    amount: formatAmount(amount, Number(currency?.decimals)),
+                    amount: Number(formatUnits(BigInt(amount), Number(currency?.decimals))),
                     request_time: new Date().toJSON(),
                     decimals: Number(currency?.decimals),
                     isNativeCurrency: true

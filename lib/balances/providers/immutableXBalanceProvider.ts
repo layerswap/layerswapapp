@@ -1,6 +1,6 @@
 import { BalanceProvider } from "@/Models/BalanceProvider";
 import { NetworkWithTokens } from "@/Models/Network";
-import formatAmount from "../../formatAmount";
+import { formatUnits } from "viem";
 import KnownInternalNames from "../../knownIds";
 import { insertIfNotExists } from "../helpers";
 
@@ -25,7 +25,7 @@ export class ImmutableXBalanceProvider extends BalanceProvider {
                 const balance = res.result.find(r => r.symbol === asset.symbol)
                 return {
                     network: network.name,
-                    amount: balance?.balance ? formatAmount(balance?.balance, asset.decimals) : 0,
+                    amount: balance?.balance ? Number(formatUnits(BigInt(balance?.balance), asset.decimals)) : 0,
                     decimals: asset.decimals,
                     isNativeCurrency: false,
                     token: asset.symbol,
