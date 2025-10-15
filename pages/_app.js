@@ -20,14 +20,14 @@ if (typeof window !== "undefined") {
   posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
     before_send: (event) => {
       if (event.event === "$exception") {
-        const exceptionList = event.properties["$exception_list"] || []
-        const exception = exceptionList.length > 0 ? exceptionList[0] : null;
-
-        if (exception && exception["$exception_type"] === "UnwantedError") {
-          return false
+        if (!Array.isArray(event.properties?.['$exception_list'])) {
+          event.properties = {
+            ...event.properties,
+            ['$exception_list']: [], 
+          };
         }
       }
-      return event
+      return event;
     },
     capture_pageview: 'history_change',
     capture_pageleave: true,
