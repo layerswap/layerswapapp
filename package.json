@@ -5,6 +5,7 @@
   "workspaces": {
     "packages": [
       "packages/*",
+      "packages/wallets/*",
       "apps/*"
     ]
   },

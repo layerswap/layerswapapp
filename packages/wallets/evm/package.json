@@ -1,0 +1,86 @@
+{
+  "name": "@layerswap/wallet-evm",
+  "version": "1.0.0-alpha0.1",
+  "description": "EVM Wallet Provider for Layerswap Widget",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "dist/**/*"
+  ],
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist && rm -rf tsconfig.tsbuildinfo",
+    "build:js": "tsup",
+    "build:types": "tsc --outDir dist",
+    "build": "yarn clean && yarn build:js && yarn build:types",
+    "dev": "yarn tsc --build --watch",
+    "lint": "eslint src --ext .ts,.tsx --fix"
+  },
+  "author": "Layerswap",
+  "homepage": "https://github.com/layerswap/layerswapapp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/layerswap/layerswapapp.git",
+    "directory": "packages/wallets/evm"
+  },
+  "keywords": [
+    "layerswap",
+    "evm",
+    "wallet",
+    "provider"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "viem": "^2.21.16",
+    "wagmi": "^2.15.0"
+  },
+  "dependencies": {
+    "@layerswap/widget": "workspace:*",
+    "axios": "^0.21.4",
+    "blake2b": "^2.1.4",
+    "bn.js": "^5.2.0",
+    "crypto-js": "^4.1.1",
+    "ethers": "5.7.2",
+    "js-sha512": "^0.9.0",
+    "lucide-react": "^0.379.0",
+    "posthog-js": "^1.261.0",
+    "swr": "^2.2.5",
+    "viem": "^2.21.16",
+    "wagmi": "^2.15.0",
+    "web-encoding": "^1.1.5",
+    "zksync": "0.13.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.15",
+    "@types/node": "^22.13.13",
+    "eslint": "8.49.0",
+    "tailwindcss": "^4.0.15",
+    "tsup": "^8.4.0",
+    "typescript": "^5.9.2"
+  },
+  "resolutions": {
+    "rpc-websockets": "7.11.0",
+    "@radix-ui/react-dismissable-layer": "1.1.1",
+    "@walletconnect/universal-provider": "2.21.8",
+    "@walletconnect/ethereum-provider": "2.21.8"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "bugs": {
+    "url": "https://github.com/layerswap/layerswapapp/issues"
+  }
+}

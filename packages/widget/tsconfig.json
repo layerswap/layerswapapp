@@ -3,7 +3,8 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "emitDeclarationOnly": false,
-    "module": "esnext",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
     "preserveSymlinks": false,
     "declaration": true,
     "noEmit": false,

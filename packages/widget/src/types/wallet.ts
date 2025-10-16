@@ -1,4 +1,5 @@
 import { WalletAccount } from 'starknet';
+// @ts-ignore
 import { StarknetWindowObject } from 'starknetkit';
 import { TransferProps } from './transfer';
 import { NetworkWithTokens } from '@/Models/Network';

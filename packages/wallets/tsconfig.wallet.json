@@ -1,0 +1,23 @@
+{
+    "extends": "../../tsconfig.base.json",
+    "compilerOptions": {
+      "jsx": "react-jsx",
+      "emitDeclarationOnly": false,
+      "module": "esnext",
+      "moduleResolution": "bundler",
+      "preserveSymlinks": false,
+      "declaration": true,
+      "noEmit": false,
+      "declarationDir": "dist",
+      "outDir": "dist",
+      "resolveJsonModule": true,
+      "esModuleInterop": true,
+    },
+    "include": [
+      "src",
+      "src/jsons/*.json"
+    ],
+    "exclude": [
+      "node_modules"
+    ]
+  }

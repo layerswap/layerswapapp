@@ -5,7 +5,6 @@ import { Widget } from '../components/Widget/Index';
 import ColorSchema from '../components/ColorSchema';
 import WalletMessage, { WalletMessageProps } from '../components/Pages/Swap/Withdraw/messages/Message';
 
-window.plausible = () => { }
 const Comp: FC<{ theme?: "default" | "light", header: string, status: 'pending' | 'error', details: string, showInModal?: boolean }> = ({ theme, status, details, header, showInModal }) => {
     const themeData = theme ? THEME_COLORS[theme] : THEME_COLORS["default"];
 

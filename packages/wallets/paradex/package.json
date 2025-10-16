@@ -1,0 +1,71 @@
+{
+  "name": "@layerswap/wallet-paradex",
+  "version": "1.0.0-alpha0.1",
+  "description": "Paradex Wallet Provider for Layerswap Widget",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "dist/**/*"
+  ],
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "clean": "rimraf dist && rm -rf tsconfig.tsbuildinfo",
+    "build:js": "tsup",
+    "build:types": "tsc --outDir dist",
+    "build": "yarn clean && yarn build:js && yarn build:types",
+    "dev": "yarn tsc --build --watch",
+    "lint": "eslint src --ext .ts,.tsx --fix"
+  },
+  "author": "Layerswap",
+  "homepage": "https://github.com/layerswap/layerswapapp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/layerswap/layerswapapp.git",
+    "directory": "packages/wallets/paradex"
+  },
+  "keywords": [
+    "layerswap",
+    "paradex",
+    "wallet-provider"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "viem": "^2.21.16",
+    "wagmi": "^2.15.0"
+  },
+  "dependencies": {
+    "@layerswap/widget": "workspace:*",
+    "@starkware-industries/starkware-crypto-utils": "^0.2.1",
+    "@paradex/sdk": "0.6.0",
+    "bignumber.js": "^9.3.1",
+    "ethers": "5.7.2",
+    "starknet": "^7.6.4",
+    "viem": "^2.21.16",
+    "wagmi": "^2.15.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.13",
+    "eslint": "8.49.0",
+    "tsup": "^8.4.0",
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "bugs": {
+    "url": "https://github.com/layerswap/layerswapapp/issues"
+  }
+}
