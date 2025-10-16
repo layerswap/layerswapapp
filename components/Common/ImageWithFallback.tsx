@@ -16,15 +16,12 @@ export const ImageWithFallback = forwardRef<HTMLImageElement, ImageProps>(({ src
         setImgSrc(fallbackImage)
     }
 
-    const isFallback = imgSrc === fallbackImage;
-
     return <Image
         {...props}
         alt={props.alt || 'ImageWithFallback'}
         ref={ref}
-        src={imgSrc || ''}
+        src={fallbackImage}
         onError={handleError}
         blurDataURL={fallbackImage}
-        unoptimized={isFallback}
     />;
 });
