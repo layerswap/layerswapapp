@@ -70,7 +70,7 @@ export default class LayerSwapApiClient {
     }
 
     async GetTransactionStatus(network: string, tx_id: string): Promise<ApiResponse<any>> {
-        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/internal/networks/${network}/transaction_status`, { transaction_id: tx_id });
+        return await this.UnauthenticatedRequest<ApiResponse<any>>("GET", `/transaction_status?network=${network}&transaction_id=${tx_id}`);
     }
 
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
