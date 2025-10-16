@@ -105,17 +105,15 @@ export function SwapDataProvider({ children }) {
     }, [router])
 
     const setSubmitedFormValues = useCallback((values: NonNullable<SwapFormValues>) => {
-        const from = sourceRoutes.find(n => n.name === values.from?.name);
-        const to = destinationRoutes.find(n => n.name === values.to?.name);
-        const fromCurrency = from?.tokens.find(t => t.symbol === values.fromAsset?.symbol)
-        const toCurrency = to?.tokens.find(t => t.symbol === values.toAsset?.symbol)
-        if (!from || !to || !fromCurrency || !toCurrency || !values.amount! || !values.destination_address) return
+
+        if (!values.from || !values.to || !values.fromAsset || !values.toAsset || !values.amount! || !values.destination_address)
+            throw new Error("Form data is missing")
 
         setSwapBasicFormData({
-            source_network: from,
-            destination_network: to,
-            source_token: fromCurrency,
-            destination_token: toCurrency,
+            source_network: values.from,
+            destination_network: values.to,
+            source_token: values.fromAsset,
+            destination_token: values.toAsset,
             requested_amount: Number(values.amount),
             destination_address: values.destination_address,
             use_deposit_address: values.depositMethod === 'deposit_address',
