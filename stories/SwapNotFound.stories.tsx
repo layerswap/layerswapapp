@@ -12,10 +12,6 @@ declare global {
 }
 
 const NotFoundComp: FC = () => {
-    useEffect(() => {
-        window.plausible?.('SwapFailed');
-    }, []);
-
     return (
         <IntercomProvider appId='123'>
             <Widget hideMenu={true} >

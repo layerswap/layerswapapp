@@ -90,6 +90,7 @@ export default class LayerSwapApiClient {
                     posthog.capture('$exception', {
                         name: renderingError.name,
                         message: renderingError.message,
+                        $layerswap_exception_type: "API Error",
                         stack: renderingError.stack,
                         cause: renderingError.cause,
                         where: 'apiClient',

@@ -131,6 +131,7 @@ abstract class getEVMGas {
             posthog.capture('$exception', {
                 name: error.name,
                 message: error.message,
+                $layerswap_exception_type: "Gas Price Error",
                 stack: error.stack,
                 cause: error.cause,
                 where: 'getGasPrice',
@@ -149,6 +150,7 @@ abstract class getEVMGas {
             posthog.capture('$exception', {
                 name: error.name,
                 message: error.message,
+                $layerswap_exception_type: "Fees Per Gas Error",
                 stack: error.stack,
                 cause: error.cause,
                 where: 'feesPerGasError',
@@ -167,6 +169,7 @@ abstract class getEVMGas {
             posthog.capture('$exception', {
                 name: error.name,
                 message: error.message,
+                $layerswap_exception_type: "Max Priority Fee Per Gas Error",
                 stack: error.stack,
                 cause: error.cause,
                 where: 'maxPriorityFeePerGasError',

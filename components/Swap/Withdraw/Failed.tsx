@@ -5,6 +5,7 @@ import { SwapStatus } from '../../../Models/SwapStatus';
 import { TrackEvent } from '../../../pages/_document';
 import QuestionIcon from '../../icons/Question';
 import Link from 'next/link';
+import { posthog } from 'posthog-js';
 
 const Failed: FC = () => {
     const { swapDetails } = useSwapDataState()
@@ -12,8 +13,11 @@ const Failed: FC = () => {
     const updateWithProps = () => update({ customAttributes: { swapId: swapDetails?.id } })
 
     useEffect(() => {
-        window.plausible && plausible(TrackEvent.SwapFailed)
-    }, [])
+        posthog.capture(TrackEvent.SwapFailed, {
+            swapId: swapDetails?.id ?? null,
+            path: typeof window !== 'undefined' ? window.location.pathname : undefined,
+        });
+    }, []);
 
     const startIntercom = useCallback(() => {
         boot();
