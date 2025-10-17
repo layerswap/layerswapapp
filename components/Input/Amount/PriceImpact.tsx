@@ -118,9 +118,11 @@ const formatCurrency = (value?: number, decimals: number = 2) => {
     const rounded = Number(value.toFixed(decimals));
 
     // If rounded value is effectively zero, show "$0.00" (no minus sign)
-    if (Object.is(rounded, 0)) {
+    // Math.pow(10, -decimals) defines the smallest meaningful value at the precision
+    const epsilon = Math.pow(10, -decimals);
+    if (Math.abs(rounded) <= epsilon) {
         return `$${(0).toFixed(decimals)}`;
     }
 
-    return `${rounded < 0 ? "-$" : "$"}${Math.abs(rounded).toFixed(decimals)}`;
+    return `${rounded < 0 ? "-$" : "+$"}${Math.abs(rounded).toFixed(decimals)}`;
 };
