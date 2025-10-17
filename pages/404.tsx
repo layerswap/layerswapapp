@@ -4,12 +4,16 @@ import SubmitButton from "../components/buttons/submitButton"
 import MessageComponent from "../components/MessageComponent"
 import Navbar from "../components/navbar"
 import GoHomeButton from "../components/utils/GoHome"
+import { posthog } from "posthog-js"
+import { name } from "@bigmi/core/dist/esm/version"
 
 export default function Custom404() {
-
     useEffect(() => {
-        plausible("404", { props: { path: document.location.pathname } })
-    }, [])
+        posthog.capture("404", {
+            name: "404",
+            path: typeof window !== 'undefined' ? window.location.pathname : undefined,
+        });
+    }, []);
 
     return (
         <div className="styled-scroll">

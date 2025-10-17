@@ -18,6 +18,7 @@ import { IsExtensionError } from "../helpers/errorHelper";
 import { AsyncModalProvider } from "../context/asyncModal";
 import WalletsProviders from "./WalletProviders";
 import { BalanceAccountsProvider } from "@/context/balanceAccounts";
+import posthog from "posthog-js";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -40,11 +41,11 @@ export default function Layout({ children, settings, themeData }: Props) {
       }
       return customUrl
     }
-    plausible('pageview', {
-      u: prepareUrl([
-        'destNetwork', //opsolate
-        'sourceExchangeName', //opsolate
-        'addressSource', //opsolate
+    const trackPageview = () => {
+      const customUrl = prepareUrl([
+        'destNetwork', // obsolete
+        'sourceExchangeName', // obsolete
+        'addressSource', // obsolete
         'from',
         'to',
         'appName',
@@ -52,7 +53,13 @@ export default function Layout({ children, settings, themeData }: Props) {
         'amount',
         'destAddress'
       ])
-    })
+
+      posthog.capture('$pageview', {
+        custom_url: customUrl,
+      })
+    }
+
+    trackPageview()
   }, [])
 
   if (!settings)

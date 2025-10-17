@@ -55,8 +55,10 @@ export class BalanceResolver {
             posthog.capture('$exception', {
                 name: error.name,
                 message: error.message,
+                $layerswap_exception_type: "Balance Error",
                 stack: error.stack,
                 cause: error.cause,
+                type: 'BalanceError',
                 where: 'BalanceProviderError',
                 severity: 'error',
             });

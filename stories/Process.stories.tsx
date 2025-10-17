@@ -20,7 +20,6 @@ import WalletsProviders from '../components/WalletProviders';
 import { TimerProvider } from '@/context/timerContext';
 import { Tabs } from '@/components/Swap/Form/NetworkExchangeTabs';
 
-window.plausible = () => { }
 const Comp: FC<{ settings: any, swapData: SwapContextData, failedSwap?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues, timestamp?: string }> = ({ swapData, theme, initialValues }) => {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const appSettings = new LayerSwapAppSettings(Settings)

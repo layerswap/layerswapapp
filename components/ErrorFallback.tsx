@@ -19,6 +19,7 @@ export default function ErrorFallback({ error, resetErrorBoundary }) {
     useEffect(() => {
         posthog.capture('$exception', {
             name: error?.name,
+            $layerswap_exception_type: "Error Fallback",
             message: error?.message,
             where: 'ErrorFallback',
             severity: 'error',
