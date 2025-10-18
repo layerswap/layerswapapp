@@ -1,6 +1,6 @@
 import KnownInternalNames from "@/lib/knownIds";
 import { Network, NetworkType, AddressUtilsProvider } from "@/types"
-import isValidEtherAddress from "./utils/isValidEtherAddress";
+import isValidEtherAddress from "./evmUtils/isValidEtherAddress";
 
 export class EVMAddressUtilsProvider implements AddressUtilsProvider {
     supportsNetwork(network: Network): boolean {
@@ -10,7 +10,7 @@ export class EVMAddressUtilsProvider implements AddressUtilsProvider {
             || (KnownInternalNames.Networks.ImmutableXMainnet || KnownInternalNames.Networks.ImmutableXSepolia).includes(network.name)
     }
 
-    isValidAddress(address?: string, network?: { name: string } | null) {
+    isValidAddress(address?: string) {
         if (!address) {
             return false
         }
