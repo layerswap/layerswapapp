@@ -3,7 +3,7 @@
   "compilerOptions": {
     "paths": {
       "@layerswap/widget": [
-        "../../packages/widget/src"
+        "../../packages/widget/src/exports"
       ],
       "@/*": [
         "../../packages/widget/src/*"
