@@ -37,10 +37,8 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{ walletProvide
             .map(provider => provider.nftProvider)
             .flat()
             .filter((provider): provider is NftProvider => Boolean(provider));
-
         resolverService.setProviders(balanceProviders, gasProviders, addressUtilsProviders)
-        nftResolverService.setProviders(nftProviders)
-            ;
+        nftResolverService.setProviders(nftProviders);
 
         return true;
     }, [walletProviders]);
