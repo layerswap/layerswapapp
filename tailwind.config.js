@@ -2,7 +2,13 @@
 import plugin from 'tailwindcss/plugin'
 
 module.exports = {
-  content: ["./pages/**/*.{js,ts,jsx,tsx}", "./components/**/*.{js,ts,jsx,tsx}"],
+  content: [
+    "./pages/**/*.{js,ts,jsx,tsx}",
+    "../../apps/**/*.{js,ts,jsx,tsx}",
+    "./components/**/*.{js,ts,jsx,tsx}",
+    "./src/**/*.{js,ts,jsx,tsx}",
+    "../../packages/**/*.{js,ts,jsx,tsx}"
+  ],
   darkMode: 'media',
   theme: {
     extend: {
@@ -36,8 +42,23 @@ module.exports = {
 
         // Button press-down
         'press-down': 'press-down 150ms ease-in-out',
+        'shake': 'shake 0.82s cubic-bezier(.36,.07,.19,.97) both',
       },
       keyframes: {
+        'shake': {
+          '10%, 90%': {
+            transform: 'translate3d(-1px, 0, 0)'
+          },
+          '20%, 80%': {
+            transform: 'translate3d(2px, 0, 0)'
+          },
+          '30%, 50%, 70%': {
+            transform: 'translate3d(-4px, 0, 0)'
+          },
+          '40%, 60%': {
+            transform: 'translate3d(4px, 0, 0)'
+          }
+        },
         "accordion-down": {
           from: { height: 0 },
           to: { height: "var(--radix-accordion-content-height)" },

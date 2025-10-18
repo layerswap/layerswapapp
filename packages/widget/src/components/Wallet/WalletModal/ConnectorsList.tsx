@@ -1,7 +1,7 @@
 import { Dispatch, FC, SetStateAction, useEffect, useMemo, useRef, useState } from "react";
 import useWallet from "@/hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
-import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider";
+import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wallet";
 import { CircleX, Link2Off, RotateCw, SlidersHorizontal } from "lucide-react";
 import { resolveWalletConnectorIcon } from "@/lib/wallets/utils/resolveWalletIcon";
 import { QRCodeSVG } from "qrcode.react";
@@ -14,11 +14,11 @@ import { usePersistedState } from "@/hooks/usePersistedState";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
 import LayerSwapLogoSmall from "@/components/Icons/layerSwapLogoSmall";
 import { Checkbox } from "@/components/shadcn/checkbox";
-import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { SearchComponent } from "@/components/Input/Search";
+import { isMobile } from "@/lib/wallets/utils/isMobile";
 
-const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
+const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();
     const { setSelectedConnector, selectedProvider, setSelectedProvider, selectedConnector, selectedMultiChainConnector, setSelectedMultiChainConnector } = useConnectModal()
     let [recentConnectors, setRecentConnectors] = usePersistedState<({ providerName?: string, connectorName?: string }[])>([], 'recentConnectors', 'localStorage');
@@ -42,7 +42,7 @@ const ConnectorsLsit: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
         return () => clearTimeout(scrollTimeout.current as any);
     }, []);
 
-    const connect = async (connector: InternalConnector, provider: WalletProvider) => {
+    const connect = async (connector: InternalConnector, provider: WalletConnectionProvider) => {
         try {
             setConnectionError(undefined)
             if (connector?.isMultiChain) {
@@ -308,7 +308,7 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
     )
 }
 
-const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: string | undefined, setSelectedProviderName: Dispatch<SetStateAction<string | undefined>> }> = ({ providers, selectedProviderName, setSelectedProviderName }) => {
+const ProviderPicker: FC<{ providers: WalletConnectionProvider[], selectedProviderName: string | undefined, setSelectedProviderName: Dispatch<SetStateAction<string | undefined>> }> = ({ providers, selectedProviderName, setSelectedProviderName }) => {
     const values = providers.map(p => p.name)
 
     const onSelect = (item: string) => {
@@ -352,17 +352,17 @@ const ProviderPicker: FC<{ providers: WalletProvider[], selectedProviderName: st
 type MultichainConnectorModalProps = {
     selectedConnector: WalletModalConnector,
     allConnectors: InternalConnector[],
-    providers: WalletProvider[],
-    connect: (connector: InternalConnector, provider: WalletProvider) => Promise<void>
+    providers: WalletConnectionProvider[],
+    connect: (connector: InternalConnector, provider: WalletConnectionProvider) => Promise<void>
 }
 
 const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ selectedConnector, allConnectors, providers, connect }) => {
-    const Icon = resolveWalletConnectorIcon({ connector: selectedConnector.name, iconUrl: selectedConnector.icon })
+    const Icon = resolveWalletConnectorIcon({ connector: selectedConnector.id, iconUrl: selectedConnector.icon })
     return (
         <div>
             <div className="flex flex-col gap-4 py-15">
                 <div className="flex justify-center gap-1">
-                    <Icon className="w-14 h-auto" />
+                    <Icon className="w-14 h-auto rounded-lg" />
                 </div>
                 <p className="text-base text-center text-primary-text">
                     <span>{selectedConnector.name}</span> <span>supports multiple network types. Please select the one you&apos;d like to use.</span>
@@ -421,4 +421,4 @@ function sortRecentConnectors(a: { name: string, type?: string }, b: { name: str
     return 0;
 }
 
-export default ConnectorsLsit
+export default ConnectorsList

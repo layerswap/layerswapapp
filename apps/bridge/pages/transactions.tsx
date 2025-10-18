@@ -7,7 +7,7 @@ export default function Transactions({ settings, themeData, apiKey }: InferGetSe
   return (
     <>
       <Layout settings={settings} themeData={themeData}>
-        <TransactionsHistory settings={settings} themeData={themeData} apiKey={apiKey} integrator='' />
+        <TransactionsHistory settings={settings} config={{ theme: themeData }} apiKey={apiKey} integrator='' />
       </Layout>
     </>
   )

@@ -3,7 +3,7 @@ import React, { FC, useEffect, useRef } from "react";
 import { Network } from "@/Models/Network";
 import { useInitialSettings } from "@/context/settings";
 import useWallet from "@/hooks/useWallet";
-import { WalletProvider } from "@/Models/WalletProvider";
+import { WalletConnectionProvider } from "@/types/wallet";
 import { SwapFormValues } from "../../SwapFormValues";
 
 const depositMethods = [
@@ -144,7 +144,7 @@ type DepositMethod = {
     display_name: string
 }
 
-function GenerateDepositMethodMenuItems(network: Network, depositMethods: DepositMethod[], walletProvider?: WalletProvider): DepositMethod[] {
+function GenerateDepositMethodMenuItems(network: Network, depositMethods: DepositMethod[], walletProvider?: WalletConnectionProvider): DepositMethod[] {
 
     if (!walletProvider) {
         return depositMethods.filter(m => m.id === 'deposit_address')

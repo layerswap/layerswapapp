@@ -10,7 +10,7 @@ import { ChevronRightIcon } from 'lucide-react'
 import StatusIcon from "./StatusIcons"
 import { FC } from "react"
 import { SwapStatus } from "@/Models/SwapStatus";
-import { Wallet } from "@/Models/WalletProvider";
+import { Wallet } from "@/types/wallet";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip"
 
@@ -90,7 +90,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <span className="truncate overflow-hidden whitespace-nowrap max-w-[100px]">
-                                            {requested_amount}
+                                            {requested_amount.toLocaleString('en-US', { maximumFractionDigits: 20 })}
                                         </span>
                                     </TooltipTrigger>
                                     <TooltipContent>
@@ -119,7 +119,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <span className="truncate overflow-hidden whitespace-nowrap max-w-[100px]">
-                                            {calculatedReceiveAmount}
+                                            {calculatedReceiveAmount.toLocaleString('en-US', { maximumFractionDigits: 20 })}
                                         </span>
                                     </TooltipTrigger>
                                     <TooltipContent>

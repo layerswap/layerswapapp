@@ -1,9 +1,8 @@
-import { useWalletStore } from "../../../stores/walletStore"
-import ImtblClient from "../../imtbl"
+import { useWalletStore } from "@/stores/walletStore"
+import ImtblClient from "./client"
 import KnownInternalNames from "../../knownIds"
-import IMX from "../../../components/Icons/Wallets/IMX"
-import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider"
-import { useSettingsState } from "../../../context/settings"
+import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType, WalletConnectionProviderProps } from "@/types"
+import IMX from "./utils/ImxIcon"
 
 const supportedNetworks = [
     KnownInternalNames.Networks.ImmutableXMainnet,
@@ -11,10 +10,7 @@ const supportedNetworks = [
     KnownInternalNames.Networks.ImmutableXSepolia,
 ]
 
-export default function useImtblX(): WalletProvider {
-
-
-    const { networks } = useSettingsState()
+export default function useImtblXConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
 
     const name = 'ImmutableX'
     const id = 'imx'
@@ -66,6 +62,42 @@ export default function useImtblX(): WalletProvider {
         }
     }
 
+    const transfer: WalletConnectionProvider['transfer'] = async (params) => {
+        const { network, token, amount, depositAddress, swapId } = params
+        try {
+            const ImtblClient = (await import('@/lib/wallets/imtblX/client')).default;
+            const imtblClient = new ImtblClient(network?.name)
+
+            if (!token) {
+                throw new Error("No source currency could be found");
+            }
+            if (!depositAddress) {
+                throw new Error("Deposit address not found");
+            }
+            const res = await imtblClient.Transfer(amount.toString(), token, depositAddress)
+            const transactionRes = res?.result?.[0]
+            if (!transactionRes)
+                throw new Error(TransactionMessageType.TransactionFailed)
+            else if (transactionRes.status == "error") {
+                throw new Error(transactionRes.message)
+            }
+            else if (transactionRes && swapId) {
+                return transactionRes.txId.toString()
+            }
+        } catch (error) {
+            const e = new Error()
+            e.message = error.message
+            if (error in TransactionMessageType) {
+                e.name = error
+                throw e
+            }
+            else {
+                e.name = TransactionMessageType.UexpectedErrorMessage
+                throw e
+            }
+        }
+    }
+
     const disconnectWallet = () => {
         return removeWallet(id)
     }
@@ -77,11 +109,12 @@ export default function useImtblX(): WalletProvider {
         icon: logo,
     }]
 
-    const provider: WalletProvider = {
+    const provider: WalletConnectionProvider = {
         connectedWallets: getWallet(),
         activeWallet: wallet,
         connectWallet,
         disconnectWallets: disconnectWallet,
+        transfer,
         withdrawalSupportedNetworks: supportedNetworks,
         asSourceSupportedNetworks: supportedNetworks,
         autofillSupportedNetworks: supportedNetworks,

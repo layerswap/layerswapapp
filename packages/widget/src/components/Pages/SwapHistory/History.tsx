@@ -203,7 +203,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
                                                 disabled={isLoadingAny || isValidatingAny}
                                                 type="button"
                                                 onClick={handleLoadMore}
-                                                className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80 m-auto w-full"
+                                                className="text-primary inline-flex gap-1 items-center justify-center disabled:opacity-80 m-auto w-full py-4"
                                             >
                                                 <RefreshCw className={`w-4 h-4 ${(isLoadingAny || isValidatingAny) && 'animate-spin'}`} />
                                                 <span>Load more</span>
@@ -250,7 +250,6 @@ const BlankHistory = ({ onNewTransferClick }: BlankHistoryProps) => {
 }
 
 const ConnectWalletCard = () => {
-
     return <div className="w-full h-full flex flex-col justify-between items-center space-y-10">
         <div className="flex flex-col items-center justify-center text-center w-full h-full">
             <HistoryItemSceleton className="scale-[.63] w-full shadow-lg mr-7" />
@@ -277,7 +276,6 @@ const ConnectWalletCard = () => {
 type DaysAgoProps = {
     dateInput: string
 }
-
 function DaysAgo({ dateInput }: DaysAgoProps) {
     // Get the current date
     const today = new Date();

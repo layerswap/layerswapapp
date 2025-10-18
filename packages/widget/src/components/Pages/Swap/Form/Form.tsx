@@ -3,20 +3,27 @@ import { useMemo } from "react";
 import { NetworkExchangeTabs, Tabs, TabsContent } from "./NetworkExchangeTabs";
 import NetworkForm from "./NetworkForm";
 import ExchangeForm from "./ExchangeForm";
-import { BalanceAccountsProvider } from "@/context/balanceAccounts";
 import FormWrapper from "./FormWrapper";
 import { Widget } from "@/components/Widget/Index";
 import { ValidationProvider } from "@/context/validationContext";
 import { useInitialSettings } from "@/context/settings";
 import { useSettingsState } from "@/context/settings";
 import { SwapFormValues } from "./SwapFormValues";
+import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
+import useSWR from "swr";
+import { ApiResponse } from "@/Models/ApiResponse";
+import { Partner } from "@/Models/Partner";
 
 export default function Form({ formValues }: { formValues?: SwapFormValues }) {
-    const { from } = useInitialSettings()
+    const { from, appName } = useInitialSettings()
     const { sourceExchanges } = useSettingsState()
     const defaultTab = useMemo(() => {
         return defaultTabResolver({ from, sourceExchanges })
     }, [from, sourceExchanges])
+
+    const layerswapApiClient = new LayerSwapApiClient()
+    const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
+    const partner = appName && partnerData?.data?.client_id?.toLowerCase() === (appName as string)?.toLowerCase() ? partnerData?.data : undefined
 
     return <Tabs defaultValue={defaultTab}>
         <div className="hidden sm:block">
@@ -25,12 +32,12 @@ export default function Form({ formValues }: { formValues?: SwapFormValues }) {
 
         <TabsContent value="cross-chain">
             <SwapDataProvider>
-                <FormWrapper type="cross-chain">
+                <FormWrapper type="cross-chain" partner={partner}>
                     <Widget contextualMenu={<div className="block sm:hidden">
                         <NetworkExchangeTabs />
                     </div>}>
                         <ValidationProvider>
-                            <NetworkForm />
+                            <NetworkForm partner={partner} />
                         </ValidationProvider>
                     </Widget>
                 </FormWrapper>
@@ -39,12 +46,12 @@ export default function Form({ formValues }: { formValues?: SwapFormValues }) {
 
         <TabsContent value="exchange">
             <SwapDataProvider>
-                <FormWrapper type="exchange">
+                <FormWrapper type="exchange" partner={partner}>
                     <Widget contextualMenu={<div className="block sm:hidden">
                         <NetworkExchangeTabs />
                     </div>}>
                         <ValidationProvider>
-                            <ExchangeForm />
+                            <ExchangeForm partner={partner} />
                         </ValidationProvider>
                     </Widget>
                 </FormWrapper>

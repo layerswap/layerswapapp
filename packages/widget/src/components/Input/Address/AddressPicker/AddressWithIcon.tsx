@@ -14,7 +14,7 @@ import clsx from "clsx";
 type Props = {
     addressItem: AddressItem;
     partner?: Partner;
-    network: Network;
+    network?: Network;
     balance?: { amount: number, symbol: string, isLoading: boolean } | undefined;
     onDisconnect?: ExtendedAddressProps['onDisconnect']
 }
@@ -77,7 +77,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
 
             <div className="flex flex-col items-start grow min-w-0 ml-3 text-sm">
                 <div className="flex w-full min-w-0">
-                    <ExtendedAddress address={addressItem.address} network={network} onDisconnect={onDisconnect} addressClassNames="font-normal" showDetails={true} title="USDC" description="Circle USD Coin" logo="https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/arusdc.png" />
+                    <ExtendedAddress address={addressItem.address} network={network} showDetails={addressItem.wallet ? true : false} title={addressItem.wallet?.displayName?.split("-")[0]} description={addressItem.wallet?.providerName} logo={addressItem.wallet?.icon} />
                 </div>
                 <div className="text-secondary-text w-full min-w-0">
                     <div className="flex items-center gap-1 text-xs">
@@ -99,7 +99,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
                                         <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-xs animate-pulse' />
                                         :
                                         <>
-                                            <span>{balance.amount}</span> <span>{balance.symbol}</span>
+                                            <span>{balance.amount.toLocaleString()}</span> <span>{balance.symbol}</span>
                                         </>
                                 }
                             </div>
@@ -123,6 +123,7 @@ type ExtendedAddressProps = {
     description?: string;
     logo?: string | ((e: SVGProps<SVGSVGElement>) => ReactNode);
     children?: ReactNode
+    shouldShowChevron?: boolean
 }
 
 const calculateMaxWidth = (balance: string | undefined) => {
@@ -137,7 +138,7 @@ const calculateMaxWidth = (balance: string | undefined) => {
     }
 };
 
-export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo }) => {
+export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, isForCurrency, children, onDisconnect, showDetails = false, title, description, logo: Logo, shouldShowChevron = true }) => {
     const [isCopied, setCopied] = useCopyClipboard()
     const [isPopoverOpen, setPopoverOpen] = useState(false)
 
@@ -158,7 +159,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
                 title: 'Disconnect',
                 Icon: Unplug,
                 iconClassNames: 'text-red-400',
-                onClick: (e: React.MouseEvent<HTMLDivElement>) => { e.stopPropagation(); onDisconnect(); }
+                onClick: (e: React.MouseEvent<HTMLDivElement>) => { e.stopPropagation(); setPopoverOpen(false); onDisconnect(); }
             }] : [])
         ];
 
@@ -174,7 +175,7 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
             <Popover open={isPopoverOpen} onOpenChange={() => setPopoverOpen(!isPopoverOpen)} modal={true}>
                 <PopoverTrigger asChild>
                     <div>
-                        <Tooltip delayDuration={400}>
+                        <Tooltip>
                             <TooltipTrigger asChild>
                                 {
                                     children ??
@@ -182,7 +183,10 @@ export const ExtendedAddress: FC<ExtendedAddressProps> = ({ address, network, is
                                         <p className={`${isForCurrency ? "text-xs self-end" : "text-sm"} block font-medium`}>
                                             {shortenAddress(address)}
                                         </p>
-                                        <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4" />
+                                        {shouldShowChevron ?
+                                            <ChevronDown className="invisible group-hover/addressItem:visible h-4 w-4" />
+                                            : null
+                                        }
                                     </div>
                                 }
                             </TooltipTrigger>
@@ -296,7 +300,7 @@ const ActionButton: FC<ActionButtonProps> = ({ title, Icon, onClick, href, iconC
     }
 
     return (
-        <Tooltip disableHoverableContent delayDuration={400} key={title} open={showTooltip} onOpenChange={setShowTooltip}>
+        <Tooltip disableHoverableContent key={title} open={showTooltip} onOpenChange={setShowTooltip}>
             <TooltipTrigger asChild>
                 {renderButton()}
             </TooltipTrigger>

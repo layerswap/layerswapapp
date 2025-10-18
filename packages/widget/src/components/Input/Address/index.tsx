@@ -1,8 +1,6 @@
 import { useState } from "react"
-import { useFormikContext } from "formik"
-import { Partner } from "../../../Models/Partner"
+import { Partner } from "@/Models/Partner"
 import AddressPicker, { AddressTriggerProps } from "./AddressPicker"
-import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues"
 
 type AddressProps = {
     children: (props: AddressTriggerProps) => JSX.Element;
@@ -10,10 +8,6 @@ type AddressProps = {
 }
 
 const Address = ({ partner, children }: AddressProps) => {
-    const {
-        values,
-    } = useFormikContext<SwapFormValues>();
-
     const [showAddressModal, setShowAddressModal] = useState(false);
 
     return (
@@ -21,7 +15,6 @@ const Address = ({ partner, children }: AddressProps) => {
             showAddressModal={showAddressModal}
             setShowAddressModal={setShowAddressModal}
             close={() => setShowAddressModal(false)}
-            disabled={!values.to}
             name={"destination_address"}
             partner={partner}
         >

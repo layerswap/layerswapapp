@@ -5,7 +5,7 @@ import AddressWithIcon from '@/components/Input/Address/AddressPicker/AddressWit
 import { AddressGroup } from '@/components/Input/Address/AddressPicker';
 import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import VaulDrawer from '@/components/Modal/vaulModal';
-import { SelectAccountProps } from '@/Models/WalletProvider';
+import { SelectAccountProps } from '@/types/wallet';
 import { useSettingsState } from '@/context/settings';
 import WalletsList from '@/components/Wallet/WalletComponents/WalletsList';
 import { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
@@ -37,6 +37,8 @@ const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal, swapData })
     }
 
     const { balances } = useBalance(selectedSourceAccount?.address, source_network)
+    const { wallets } = useWallet(source_network, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
 
     const walletBalance = source_network && balances?.find(b => b?.network === source_network?.name && b?.token === source_token?.symbol)
     const walletBalanceAmount = walletBalance?.amount && truncateDecimals(walletBalance?.amount, source_token?.precision)
@@ -61,9 +63,9 @@ const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal, swapData })
                 source_network &&
                 <div className="group/addressItem flex rounded-lg justify-between space-x-3 items-center shadow-xs mt-1.5 text-primary-text bg-secondary-500 disabled:cursor-not-allowed h-12 leading-4 font-medium w-full py-7">
                     <AddressWithIcon
-                        addressItem={{ address: accountAddress, group: AddressGroup.ConnectedWallet, wallet: selectedSourceAccount.wallet }}
+                        addressItem={{ address: accountAddress, group: AddressGroup.ConnectedWallet, wallet: wallet }}
                         network={source_network}
-                        onDisconnect={() => selectedSourceAccount.wallet?.disconnect && selectedSourceAccount.wallet?.disconnect()}
+                        onDisconnect={() => wallet?.disconnect && wallet?.disconnect()}
                     />
                     <div className="flex flex-col col-start-8 col-span-3 items-end font-normal text-secondary-text text-xs">
                         <p>Balance</p>

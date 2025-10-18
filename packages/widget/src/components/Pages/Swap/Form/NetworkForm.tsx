@@ -15,7 +15,7 @@ import { ArrowUpDown } from "lucide-react";
 import { classNames } from "@/components/utils/classNames";
 import FormButton from "./SecondaryComponents/FormButton";
 import { InitialSettings } from "@/Models/InitialSettings";
-import { WalletProvider } from "@/Models/WalletProvider";
+import { WalletConnectionProvider } from "@/types/wallet";
 import { updateForm, updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
@@ -27,8 +27,6 @@ import DepositMethodComponent from "./FeeDetails/DepositMethod";
 import RefuelToggle from "./FeeDetails/Refuel";
 import RefuelModal from "./FeeDetails/RefuelModal";
 import { SwapFormValues } from "./SwapFormValues";
-import { useBalance } from "@/lib/balances/useBalance";
-import { InsufficientBalanceWarning } from "./SecondaryComponents/validationError/insufficientBalance";
 import { useFormChangeCallback } from "@/context/callbackProvider";
 
 type Props = {
@@ -47,7 +45,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const {
         to: destination,
         from: source,
-        amount,
         depositMethod
     } = values;
 
@@ -55,7 +52,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const { providers, wallets } = useWallet();
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
-    const { swapId, swapModalOpen } = useSwapDataState()
+    const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
     const { minAllowedAmount, maxAllowedAmount, isQuoteLoading, quote } = useQuoteData(quoteArgs, quoteRefreshInterval);
 
@@ -66,10 +63,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const isValid = !formValidation.message;
     const error = formValidation.message;
-
-    const { balances } = useBalance(selectedSourceAccount?.address, source)
-    const walletBalance = source && balances?.find(b => b?.network === source?.name && b?.token === fromAsset?.symbol)
-    const walletBalanceAmount = walletBalance?.amount
 
     const triggerFormChangeCallback = useFormChangeCallback()
     useEffect(() => {
@@ -84,27 +77,18 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const handleReserveGas = useCallback((nativeTokenBalance: TokenBalance, networkGas: number) => {
         if (nativeTokenBalance.amount && networkGas)
-            updateForm({
-                formDataKey: 'amount',
-                formDataValue: (nativeTokenBalance?.amount - networkGas).toString(),
-                setFieldValue
-            });
+            setFieldValue('amount', (nativeTokenBalance?.amount - networkGas).toString(), true);
     }, [setFieldValue]);
 
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
-    const showInsufficientBalanceWarning = !!(values.depositMethod === 'wallet'
-        && !routeValidation.message
-        && !swapModalOpen
-        && Number(amount) > 0
-        && Number(walletBalanceAmount) < Number(amount))
 
     return (
         <>
             <DepositMethodComponent />
             <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-3">
                 <Widget.Content>
-                    <div className="w-full flex flex-col justify-between">
+                    <div className="w-full flex flex-col justify-between flex-1 gap-3">
                         <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
                             {
                                 !(initialSettings?.hideFrom && values?.from) && <SourcePicker
@@ -130,15 +114,6 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 />
                             }
                         </div>
-                    </div>
-                </Widget.Content>
-                <Widget.Footer>
-                    <div className="space-y-3">
-                        {
-                            showInsufficientBalanceWarning ?
-                                <InsufficientBalanceWarning />
-                                : null
-                        }
                         {
                             Number(values.amount) > 0 ?
                                 <ReserveGasNote
@@ -160,29 +135,32 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                         {
                             routeValidation.message
                                 ? <ValidationError />
-                                : <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                                : null
                         }
-                        <FormButton
-                            shouldConnectWallet={shouldConnectWallet}
-                            values={values}
-                            disabled={!isValid || isSubmitting || !quote || isQuoteLoading}
-                            error={error}
-                            isSubmitting={isSubmitting}
-                            partner={partner}
-                        />
+                        <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                     </div>
-                </Widget.Footer>
+                </Widget.Content>
+                <Widget.Footer>
+                    <FormButton
+                        shouldConnectWallet={shouldConnectWallet}
+                        values={values}
+                        disabled={!isValid || isSubmitting || !quote || isQuoteLoading}
+                        error={error}
+                        isSubmitting={isSubmitting}
+                        partner={partner}
+                    />
+                </Widget.Footer >
                 <RefuelModal
                     openModal={openRefuelModal}
                     setOpenModal={setOpenRefuelModal}
                     fee={quote}
                 />
-            </Form>
+            </Form >
         </>
     );
 };
 
-const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<SwapFormValues>['setValues'], providers: WalletProvider[], query: InitialSettings }> = ({ values, setValues, providers, query }) => {
+const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<SwapFormValues>['setValues'], providers: WalletConnectionProvider[], query: InitialSettings }> = ({ values, setValues, providers, query }) => {
     const [animate, cycle] = useCycle(
         { rotateX: 0 },
         { rotateX: 180 }
@@ -233,7 +211,7 @@ const ValueSwapperButton: FC<{ values: SwapFormValues, setValues: FormikHelpers<
         const oldDestinationWallet = newDestinationProvider?.connectedWallets?.find(w => w.autofillSupportedNetworks?.some(n => n.toLowerCase() === newTo?.name.toLowerCase()) && w.addresses.some(a => a.toLowerCase() === values.destination_address?.toLowerCase()))
         const oldDestinationWalletIsNotCompatible = destinationProvider && (destinationProvider?.name !== newDestinationProvider?.name || !(newTo && oldDestinationWallet?.autofillSupportedNetworks?.some(n => n.toLowerCase() === newTo?.name.toLowerCase())))
         const destinationWalletIsAvailable = newTo ? newDestinationProvider?.connectedWallets?.some(w => w.autofillSupportedNetworks?.some(n => n.toLowerCase() === newTo.name.toLowerCase()) && w.addresses.some(a => a.toLowerCase() === selectedSourceAccount?.address?.toLowerCase())) : undefined
-        const oldSourceWalletIsNotCompatible = destinationProvider && (selectedSourceAccount?.providerName !== destinationProvider?.name || !(newFrom && selectedSourceAccount?.wallet.withdrawalSupportedNetworks?.some(n => n.toLowerCase() === newFrom.name.toLowerCase())))
+        const oldSourceWalletIsNotCompatible = destinationProvider && (selectedSourceAccount?.providerName !== destinationProvider?.name || !(newFrom && selectedSourceAccount?.walletWithdrawalSupportedNetworks?.some(n => n.toLowerCase() === newFrom.name.toLowerCase())))
 
         const changeDestinationAddress = newTo && (oldDestinationWalletIsNotCompatible || oldSourceWalletIsNotCompatible) && destinationWalletIsAvailable
 

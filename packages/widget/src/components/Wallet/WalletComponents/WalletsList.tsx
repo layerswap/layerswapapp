@@ -1,6 +1,6 @@
 import { Plus, Unplug } from "lucide-react";
 import AddressIcon from "@/components/Common/AddressIcon";
-import { SelectAccountProps, Wallet, WalletProvider } from "@/Models/WalletProvider";
+import { SelectAccountProps, Wallet, WalletConnectionProvider } from "@/types/wallet";
 import { FC, HTMLAttributes } from "react";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import { clsx } from 'clsx';
@@ -19,7 +19,7 @@ type Props = {
     wallets: (Wallet | AccountIdentity)[];
     token?: Token;
     network?: Network;
-    provider?: WalletProvider | undefined;
+    provider?: WalletConnectionProvider | undefined;
     onSelect?: (props: SelectAccountProps) => void;
     selectedDepositMethod?: "wallet" | "deposit_address";
 }
@@ -81,12 +81,16 @@ type WalletItemProps = {
     network?: Network;
     selectedAddress: string | undefined;
     onWalletSelect?: (props: SelectAccountProps) => void;
+    isCompatible?: boolean;
 }
-export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = ({ selectable, account: wallet, network, onWalletSelect, token, selectedAddress, ...props }) => {
+export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = ({ selectable, account: wallet, network, onWalletSelect, token, selectedAddress, isCompatible = true, ...props }) => {
     const { networks } = useSettingsState()
     const balanceNetwork = token ? networks.find(n => n.name === network?.name && n.tokens.some(t => t.symbol === token.symbol)) : undefined
 
-    const { balances, isLoading: isBalanceLoading } = useBalance(wallet.address, balanceNetwork)
+    const { balances, isLoading: isBalanceLoading } = useBalance(
+        isCompatible ? wallet.address : undefined,
+        isCompatible ? balanceNetwork : undefined
+    )
 
     const walletBalance = balances?.find(b => b?.token === token?.symbol)
 
@@ -210,6 +214,7 @@ export const WalletItem: FC<HTMLAttributes<HTMLDivElement> & WalletItemProps> = 
                             onWalletSelect={onWalletSelect}
                             selectedAddress={selectedAddress}
                             token={token}
+                            isCompatible={isCompatible}
                         />)
                     }
                 </div>
@@ -227,12 +232,16 @@ type NestedWalletAddressProps = {
     wallet: AccountIdentity | Wallet,
     onWalletSelect?: (props: SelectAccountProps) => void;
     selectedAddress: string | undefined;
+    isCompatible?: boolean;
 }
 
-const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddressProps> = ({ selectable, address, network, onWalletSelect, token, wallet, selectedAddress, ...props }) => {
+const NestedWalletAddress: FC<HTMLAttributes<HTMLDivElement> & NestedWalletAddressProps> = ({ selectable, address, network, onWalletSelect, token, wallet, selectedAddress, isCompatible, ...props }) => {
     const { networks } = useSettingsState()
     const balanceNetwork = token ? networks.find(n => n.name === network?.name && n.tokens.some(t => t.symbol === token.symbol)) : undefined
-    const { balances, isLoading: isBalanceLoading } = useBalance(address, balanceNetwork)
+    const { balances, isLoading: isBalanceLoading } = useBalance(
+        isCompatible ? address : undefined,
+        isCompatible ? balanceNetwork : undefined
+    )
 
     const isNestedSelected = selectable && address == selectedAddress
     const nestedWalletBalance = balances?.find(b => b?.token === token?.symbol)

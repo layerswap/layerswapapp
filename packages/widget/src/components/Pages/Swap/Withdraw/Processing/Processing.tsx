@@ -348,7 +348,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     const swapStatus = swapDetails.status;
     return (
         <Widget.Content>
-            <div className={`w-full min-h-[410px] space-y-3 flex flex-col justify-between text-primary-text`}>
+            <div className={`w-full min-h-[410px] h-full space-y-3 flex flex-col justify-between text-primary-text`}>
                 <SwapSummary />
                 <div className="bg-secondary-500 font-normal px-3 pt-6 pb-3 rounded-2xl space-y-4 flex flex-col w-full relative z-10 divide-y-2 divide-secondary-300 divide-dashed">
                     <div className='pb-4'>
@@ -395,7 +395,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                     <div className='pt-4'>
                         {
                             swapStatus != SwapStatus.Cancelled && swapStatus != SwapStatus.Expired && currentSteps.find(x => x.status != null) &&
-                            <div className='flex flex-col h-full justify-center space-y-4'>
+                            <div className='flex flex-col justify-center space-y-4'>
                                 <Steps steps={currentSteps} />
                             </div>
                         }

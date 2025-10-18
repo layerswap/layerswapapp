@@ -1,12 +1,13 @@
 import { Network, Token } from "./Network"
-import { Wallet } from "./WalletProvider"
+import { Wallet } from "@/types/wallet"
 
 export type GasProps = {
     network: Network,
     token: Token,
-    address?: `0x${string}`,
+    address?: string,
     recipientAddress?: string,
-    wallet?: Wallet
+    wallet?: Wallet,
+    amount?: number,
 }
 
 export type TokenBalance = {
@@ -21,11 +22,4 @@ export type TokenBalance = {
 
 export type NetworkBalance = {
     balances?: TokenBalance[] | null,
-    totalInUSD?: number,
-}
-
-export type BalanceFetchError = {
-    message: string
-    code?: string | number
-    cause?: unknown
 }

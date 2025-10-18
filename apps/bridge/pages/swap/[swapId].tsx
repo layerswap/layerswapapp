@@ -8,7 +8,7 @@ import LayerSwapApiClient from '../../lib/apiClients/layerswapApiClient';
 const SwapDetails = ({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   return (<>
     <Layout settings={settings} themeData={themeData}>
-      <SwapWithdrawal settings={settings} themeData={themeData} apiKey={apiKey} integrator='' />
+      <SwapWithdrawal settings={settings} config={{ theme: themeData }} apiKey={apiKey} integrator='' />
     </Layout>
   </>)
 }

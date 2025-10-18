@@ -6,10 +6,7 @@ import React from "react";
 import ConnectNetwork from "@/components/Pages/Swap/Form/SecondaryComponents/ConnectNetwork";
 import toast from "react-hot-toast";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/lib/generateSwapInitialValues";
-import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 import Modal from "@/components/Modal/modal";
-import useSWR from "swr";
-import { ApiResponse } from "@/Models/ApiResponse";
 import { Partner } from "@/Models/Partner";
 import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
 import { useInitialSettings } from "@/context/settings";
@@ -30,7 +27,7 @@ type NetworkToConnect = {
     AppURL: string;
 }
 
-export default function FormWrapper({ children, type }: { children?: React.ReactNode, type: 'cross-chain' | 'exchange' }) {
+export default function FormWrapper({ children, type, partner }: { children?: React.ReactNode, type: 'cross-chain' | 'exchange', partner?: Partner }) {
 
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const [showConnectNetworkModal, setShowConnectNetworkModal] = useState(false);
@@ -47,14 +44,12 @@ export default function FormWrapper({ children, type }: { children?: React.React
     const triggerSwapCreateCallback = useSwapCreateCallback()
     const { getConfirmation } = useAsyncModal();
     const initialSettings = useInitialSettings()
-    const { appName, destination_address: destinationAddressFromQuery } = initialSettings
+    const { destination_address: destinationAddressFromQuery } = initialSettings
     const { createSwap, setSwapId, setSubmitedFormValues, setSwapModalOpen } = useSwapDataUpdate()
-
-    const layerswapApiClient = new LayerSwapApiClient()
-    const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
-    const partner = appName && partnerData?.data?.client_id?.toLowerCase() === (appName as string)?.toLowerCase() ? partnerData?.data : undefined
+    const { setSwapError } = useSwapDataState()
 
     const handleSubmit = useCallback(async (values: SwapFormValues) => {
+        setSwapError && setSwapError('')
         const { destination_address, to } = values
         setWalletWihdrawDone(false)
         if (!walletWihdrawDone) {

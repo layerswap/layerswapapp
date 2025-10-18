@@ -1,22 +1,16 @@
 import { ArrowDown, Fuel } from "lucide-react";
-import { FC, useMemo } from "react";
+import { FC } from "react";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
-import LayerSwapApiClient, { Quote, Refuel, SwapBasicData, SwapQuote, SwapResponse } from "@/lib/apiClients/layerSwapApiClient";
+import LayerSwapApiClient, { Quote, SwapBasicData, SwapResponse } from "@/lib/apiClients/layerSwapApiClient";
 import { ApiResponse } from "@/Models/ApiResponse";
 import { Partner } from "@/Models/Partner";
 import useSWR from 'swr'
 import { useInitialSettings } from "@/context/settings";
-import { Network, Token } from "@/Models/Network";
-import { Exchange } from "@/Models/Exchange";
-import { addressFormat } from "@/lib/address/formatter";
-import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
-import { isValidAddress } from "@/lib/address/validator";
-import shortenAddress from "@/components/utils/ShortenAddress";
+import { Token } from "@/Models/Network";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import NumberFlow from "@number-flow/react";
 import clsx from "clsx";
-import { Wallet } from "@/Models/WalletProvider";
-import { useWallet } from "@/index";
+import { PriceImpact } from "@/components/Input/Amount/PriceImpact";
 
 type SwapInfoProps = Omit<SwapResponse, 'quote' | 'swap'> & {
     swap: SwapBasicData
@@ -27,17 +21,15 @@ type SwapInfoProps = Omit<SwapResponse, 'quote' | 'swap'> & {
 }
 
 const Summary: FC<SwapInfoProps> = (props) => {
-    const { swap, quote, sourceAccountAddress, receiveAmount, quoteIsLoading } = props
-    const { refuel } = quote
+    const { swap, quote, receiveAmount, quoteIsLoading } = props
+    const { refuel, quote: swapQuote } = quote
     const { source_token: sourceCurrency, destination_token: destinationCurrency, source_network: from, destination_network: to, requested_amount: requestedAmount, destination_address: destinationAddress, source_exchange: sourceExchange } = swap
     const {
         hideFrom,
         hideTo,
         account,
         appName,
-        hideAddress
     } = useInitialSettings()
-    const { wallets } = useWallet()
 
     const layerswapApiClient = new LayerSwapApiClient()
     const { data: partnerData } = useSWR<ApiResponse<Partner>>(appName && `/internal/apps?name=${appName}`, layerswapApiClient.fetcher)
@@ -54,21 +46,15 @@ const Summary: FC<SwapInfoProps> = (props) => {
         truncateDecimals(refuel.amount, nativeCurrency?.precision) : null
     const refuelAmountInUsd = nativeCurrency && ((nativeCurrency?.price_in_usd || 1) * (Number(truncatedRefuelAmount) || 0)).toFixed(2)
 
-    const destAddress = (hideAddress && hideTo && account) ? account : destinationAddress
     return (
         <div className="bg-secondary-500 rounded-2xl px-3 py-4 w-full relative z-10 space-y-4">
 
             <div className="font-normal flex flex-col w-full relative z-10 space-y-3">
                 <div className="w-full grid grid-cols-10">
-                    <div className="col-span-6">
-                        <RouteTokenPair
-                            route={sourceExchange || source}
-                            exchange={sourceExchange}
-                            network={from}
-                            token={sourceCurrency}
-                            address={sourceAccountAddress}
-                        />
-                    </div>
+                    <RouteTokenPair
+                        route={sourceExchange || source}
+                        token={sourceCurrency}
+                    />
                     <div className="flex flex-col col-start-7 col-span-4 items-end">
                         {
                             requestedAmount &&
@@ -82,33 +68,22 @@ const Summary: FC<SwapInfoProps> = (props) => {
                     <ArrowDown className="absolute left-1/2 -translate-x-1/2 top-[-10px] h-6 w-6 p-1 bg-secondary-400 rounded-md text-secondary-text" />
                 </div>
                 <div className="w-full grid grid-cols-10">
-                    <div className="col-span-6">
-                        <RouteTokenPair
-                            route={destination}
-                            network={to}
-                            token={destinationCurrency}
-                            address={destAddress}
-                            wallets={wallets}
-                        />
-                    </div>
+                    <RouteTokenPair
+                        route={destination}
+                        token={destinationCurrency}
+                    />
                     {
-                        receiveAmount != undefined ?
+                        receiveAmount && (
                             <div className="flex flex-col justify-end items-end w-full col-start-7 col-span-4">
-                                <p className={clsx(
-                                    "text-primary-text text-sm text-end",
-                                    { "animate-pulse-strong": quoteIsLoading }
-                                )}>
+                                <p className={clsx("text-primary-text text-sm text-end")}>
                                     <NumberFlow value={receiveAmount} suffix={` ${destinationCurrency.symbol}`} trend={0} format={{ maximumFractionDigits: quote.quote.destination_token?.decimals || 2 }} />
                                 </p>
-                                <p className="text-secondary-text text-sm">
+                                <p className="text-secondary-text text-sm flex items-center gap-1">
+                                    <PriceImpact className="text-sm" bridgeFee={swapQuote?.blockchain_fee} destinationTokenPriceUsd={swapQuote?.destination_token?.price_in_usd} receiveAmount={swapQuote?.receive_amount} requestedAmount={swapQuote?.requested_amount} serviceFee={swapQuote?.service_fee} sourceTokenPriceUsd={swapQuote?.source_token?.price_in_usd} />
                                     <NumberFlow value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD' }} trend={0} />
                                 </p>
                             </div>
-                            :
-                            <div className="flex flex-col justify-end">
-                                <div className="h-[10px] my-[5px] w-20 animate-pulse rounded-sm bg-gray-500" />
-                                <div className="h-[10px] my-[5px] w-10 animate-pulse rounded-sm bg-gray-500 ml-auto" />
-                            </div>
+                        )
                     }
                 </div>
                 {
@@ -133,10 +108,15 @@ const Summary: FC<SwapInfoProps> = (props) => {
     )
 }
 
-const RouteTokenPair: FC<{ route: { logo: string, display_name: string }, network?: Network, exchange?: Exchange, token: Token, address?: string, wallets?: Wallet[] }> = ({ route, token, exchange, network, address, wallets }) => {
-    const wallet = (network && address) ? wallets?.find(w => addressFormat(w.address, network) === addressFormat(address, network)) : undefined
+type RouteTokenPairProps = {
+    route: { logo: string, display_name: string },
+    token: Token,
+}
+
+const RouteTokenPair: FC<RouteTokenPairProps> = ({ route, token }) => {
+
     return (
-        <div className="flex grow gap-4 text-left items-center md:text-base relative">
+        <div className="flex grow gap-4 text-left items-center md:text-base relative col-span-6 align-center">
             <div className="inline-flex items-center relative shrink-0 mb-1.5">
                 <ImageWithFallback
                     src={token.logo}
@@ -163,21 +143,6 @@ const RouteTokenPair: FC<{ route: { logo: string, display_name: string }, networ
                     <p className="text-secondary-text text-sm truncate whitespace-nowrap">
                         {route.display_name}
                     </p>
-                    {
-                        (address && network && !exchange) ?
-                            <div className="flex items-center gap-1 text-secondary-text">
-                                <p>-</p>
-                                {
-                                    (isValidAddress(address, network) ?
-                                        <div className="text-sm group/addressItem text-secondary-text">
-                                            <ExtendedAddress address={addressFormat(address, network)} network={network} showDetails={wallet ? true : false} title={wallet?.displayName?.split("-")[0]} description={wallet?.providerName} logo={wallet?.icon} />
-                                        </div>
-                                        :
-                                        <p className="text-sm text-secondary-text">{shortenAddress(address)}</p>)
-                                }
-                            </div>
-                            : null
-                    }
                 </div>
             </div>
         </div>

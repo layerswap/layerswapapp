@@ -3,21 +3,21 @@ import { ChevronDown, Plus, RefreshCw } from "lucide-react";
 import { Network } from "@/Models/Network";
 import { FC, useState } from "react";
 import ResizablePanel from "@/components/Common/ResizablePanel";
-import { SelectAccountProps, Wallet, WalletProvider } from "@/Models/WalletProvider";
+import { SelectAccountProps, Wallet, WalletConnectionProvider } from "@/types/wallet";
 import WalletIcon from "@/components/Icons/WalletIcon";
 import { WalletItem } from "@/components/Wallet/WalletComponents/WalletsList";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 
 type Props = {
-    provider: WalletProvider,
-    wallets: Wallet[],
+    provider: WalletConnectionProvider,
+    notCompatibleWallets: Wallet[],
     onClick: (props: SelectAccountProps) => void,
     onConnect?: (wallet: Wallet) => void,
     destination: Network,
     destination_address?: string | undefined
 }
 
-const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, destination, destination_address }) => {
+const ConnectedWallets: FC<Props> = ({ provider, notCompatibleWallets, onClick, onConnect, destination, destination_address }) => {
 
     const [isLoading, setIsLoading] = useState(false)
     const [showIncompatibleWallets, setShowIncompatibleWallets] = useState(false)
@@ -30,9 +30,6 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
         if (onConnect && result) onConnect(result)
         setIsLoading(false)
     }
-
-    //TODO: should check for real compatibility, in the future network can have wallets from multiple providers
-    const notCompatibleWallets = wallets.filter(wallet => wallet.providerName !== provider.name || wallet.isNotAvailable)
 
     return (notCompatibleWallets?.length || connectedWallets?.length) ? <div className="flex flex-col gap-2">
         {
@@ -113,6 +110,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                                         selectable={true}
                                         network={destination}
                                         selectedAddress={undefined}
+                                        isCompatible={false}
                                     />
                                 </div>
                             ))}
@@ -131,6 +129,7 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
                             selectable={true}
                             network={destination}
                             selectedAddress={undefined}
+                            isCompatible={false}
                         />
                     </div>
                 </div>

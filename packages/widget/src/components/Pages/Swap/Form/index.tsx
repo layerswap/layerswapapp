@@ -1,6 +1,5 @@
 "use client";
 import { FC, useEffect, useMemo } from 'react';
-import { TimerProvider } from '@/context/timerContext';
 import SwapForm from "./Form"
 import { SWRConfig, mutate } from 'swr';
 import { SwapStatus } from '@/Models/SwapStatus';
@@ -41,9 +40,7 @@ export const Swap: FC<SwapProps> = (props) => {
   return (
     <div className="text-primary-text">
       <SWRConfig value={{ use: [updatePendingCount] }}>
-        <TimerProvider>
-          <SwapForm formValues={overriddenFormValues} />
-        </TimerProvider>
+        <SwapForm formValues={overriddenFormValues} />
       </SWRConfig>
     </div >
   )

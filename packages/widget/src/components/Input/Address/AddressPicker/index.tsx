@@ -13,8 +13,8 @@ import AddressBook from "./AddressBook";
 import AddressButton from "./AddressButton";
 import { useInitialSettings } from "@/context/settings";
 import ConnectedWallets from "./ConnectedWallets";
-import { Wallet } from "@/Models/WalletProvider";
-import { useBalanceAccounts, useUpdateBalanceAccount } from "@/context/balanceAccounts";
+import { Wallet } from "@/types/wallet";
+import { useSelectedAccount, useUpdateBalanceAccount } from "@/context/balanceAccounts";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 
 export enum AddressGroup {
@@ -35,7 +35,6 @@ export type AddressTriggerProps = {
     addressItem?: AddressItem;
     connectedWallet?: Wallet;
     partner?: Partner;
-    disabled: boolean;
     destination: Network | undefined,
 }
 
@@ -44,17 +43,15 @@ interface Input {
     showAddressModal: boolean;
     setShowAddressModal: (show: boolean) => void;
     hideLabel?: boolean;
-    disabled: boolean;
     name: string;
     close: () => void,
     partner?: Partner,
     canFocus?: boolean,
     address_book?: AddressBookItem[],
-
 }
 
 const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Address
-    ({ showAddressModal, setShowAddressModal, name, canFocus, close, address_book, disabled, partner, children }, ref) {
+    ({ showAddressModal, setShowAddressModal, name, canFocus, close, address_book, partner, children }, ref) {
 
     const {
         values,
@@ -63,23 +60,20 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const initialSettings = useInitialSettings()
     const { destination_address, to: destination } = values
-    const balanceAccounts = useBalanceAccounts("to")
     const selectDestinationAccount = useUpdateBalanceAccount("to");
 
-    const { provider, wallets } = useWallet(destination, 'autofil')
+    const { provider, unAvailableWallets } = useWallet(destination, 'autofil')
     const connectedWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
-
+    const defaultAccount = useSelectedAccount("to", values.to?.name);
     const connectedWalletskey = connectedWallets?.map(w => w.addresses.join('')).join('')
-    const defaultAccount = useMemo(() => balanceAccounts.find(w => w.provider?.name === provider?.name), [balanceAccounts, provider?.name])
     const [manualAddress, setManualAddress] = useState<string>('')
     const [newAddress, setNewAddress] = useState<{ address: string, networkType: NetworkType | string } | undefined>()
 
     useEffect(() => {
-        if (!destination && destination_address) updateDestAddress('')
-    }, [destination, destination_address])
-
-    useEffect(() => {
-        if (destination_address && !isValidAddress(destination_address, destination)) updateDestAddress('')
+        if (destination_address && destination && !isValidAddress(destination_address, destination)) {
+            updateDestAddress('');
+            setManualAddress('');
+        }
     }, [destination, destination_address])
 
     const inputReference = useRef<HTMLInputElement>(null);
@@ -159,13 +153,12 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     return (
         <>
             <AddressButton
-                disabled={disabled}
                 addressItem={destinationAddressItem}
                 openAddressModal={() => setShowAddressModal(true)}
                 connectedWallet={connectedWallet}
                 partner={partner}
                 destination={destination}
-            >{children({ destination, disabled, addressItem: destinationAddressItem, connectedWallet: connectedWallet, partner })}</AddressButton>
+            >{children({ destination, addressItem: destinationAddressItem, connectedWallet: connectedWallet, partner })}</AddressButton>
             <Modal
                 header='Send To'
                 height="80%"
@@ -177,8 +170,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                     <div className='flex flex-col self-center grow w-full space-y-5 h-full'>
 
                         {
-                            !disabled
-                            && destination
+                            destination
                             && provider
                             && !connectedWallets.length &&
                             <ConnectWalletButton
@@ -201,13 +193,12 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                             connectedWallet={connectedWallet}
                         />
                         {
-                            !disabled
-                            && destination
+                            destination
                             && provider
                             && !manualAddress &&
                             <ConnectedWallets
                                 provider={provider}
-                                wallets={wallets}
+                                notCompatibleWallets={unAvailableWallets}
                                 onClick={(props) => handleSelectAddress(props.address)}
                                 onConnect={onConnect}
                                 destination={destination}
@@ -216,7 +207,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                         }
 
                         {
-                            !disabled && addressBookAddresses && addressBookAddresses?.length > 0 && !manualAddress && destination &&
+                            addressBookAddresses && addressBookAddresses?.length > 0 && !manualAddress && destination &&
                             <AddressBook
                                 addressBook={addressBookAddresses}
                                 onSelectAddress={handleSelectAddress}

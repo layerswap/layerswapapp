@@ -3,11 +3,11 @@ import { Pencil } from "lucide-react";
 import { isValidAddress } from "@/lib/address/validator";
 import { Partner } from "@/Models/Partner";
 import { NetworkType } from "@/Models/Network";
-import FilledX from "../../../Icons/FilledX";
+import FilledX from "@/components/Icons/FilledX";
 import { AddressGroup, AddressItem } from ".";
 import { addressFormat } from "@/lib/address/formatter";
 import AddressWithIcon from "./AddressWithIcon";
-import { Wallet } from "@/Models/WalletProvider";
+import { Wallet } from "@/types/wallet";
 import { FormikHelpers } from "formik";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 
@@ -40,17 +40,20 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
     }, [])
 
     const handleSaveNewAddress = () => {
-        if (isValidAddress(manualAddress, destination)) {
+        if (isValidAddress(manualAddress, destination) && destination) {
             if (destination) {
                 setNewAddress({ address: manualAddress, networkType: destination.type })
             }
             setManualAddress("")
         }
+        else if (!destination) {
+            setFieldValue('destination_address', manualAddress)
+        }
         close()
     }
 
     let errorMessage = '';
-    if (manualAddress && !isValidAddress(manualAddress, destination)) {
+    if (manualAddress && !isValidAddress(manualAddress, destination) && values.to?.display_name) {
         errorMessage = `Enter a valid ${values.to?.display_name} address`
     }
 
@@ -104,7 +107,7 @@ const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress,
                 }
 
                 {
-                    manualAddress && !errorMessage && destination &&
+                    manualAddress && !errorMessage &&
                     <div onClick={handleSaveNewAddress} className={`group/addressItem text-left min-h-12 cursor-pointer space-x-2 bg-secondary-600 shadow-xl flex text-sm rounded-md items-center w-full transform hover:bg-secondary-700 transition duration-200 p-3 hover:shadow-xl mt-3`}>
                         <AddressWithIcon addressItem={addressFromList || { address: manualAddress, group: AddressGroup.ManualAdded }} partner={partner} network={destination} />
                     </div>

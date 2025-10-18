@@ -1,6 +1,6 @@
 import { FC } from "react"
 import WalletMessage from "./Message"
-import shortenAddress from "../../../../utils/ShortenAddress"
+import shortenAddress from "@/components/utils/ShortenAddress"
 
 const ConfirmTransactionMessage: FC = () => {
     return <WalletMessage
@@ -51,6 +51,13 @@ const WaletMismatchMessage: FC<{ address: string }> = ({ address }) => {
         details={`Select ${shortenAddress(address)} in your wallet, then try again`} />
 }
 
+const SwapErrorMessage: FC<{ message: string }> = ({ message }) => {
+    return <WalletMessage
+        status="error"
+        header='API error'
+        details={message} />
+}
+
 const UexpectedErrorMessage: FC<{ message: string }> = ({ message }) => {
     return <WalletMessage
         status="error"
@@ -59,15 +66,27 @@ const UexpectedErrorMessage: FC<{ message: string }> = ({ message }) => {
         showInModal />
 }
 
-const TransactionMessages = {
+const ActionMessages = {
     ConfirmTransactionMessage,
     TransactionInProgressMessage,
     InsufficientFundsMessage,
     TransactionRejectedMessage,
     WaletMismatchMessage,
     TransactionFailedMessage,
+    SwapErrorMessage,
     UexpectedErrorMessage,
     DifferentAccountsNotAllowedError
 }
 
-export default TransactionMessages
+export enum TransactionMessageType {
+    ConfirmTransaction = 'ConfirmTransaction',
+    TransactionInProgress = 'TransactionInProgress',
+    InsufficientFunds = 'InsufficientFunds',
+    TransactionRejected = 'TransactionRejected',
+    WaletMismatch = 'WaletMismatch',
+    TransactionFailed = 'TransactionFailed',
+    UexpectedErrorMessage = 'UexpectedErrorMessage',
+    DifferentAccountsNotAllowedError = 'DifferentAccountsNotAllowedError',
+}
+
+export default ActionMessages

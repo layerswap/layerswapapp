@@ -50,6 +50,4 @@ export default class AppSettings {
         }
     static ThemeData?: ThemeData | null
 
-    static ActionButtonDisplayText?: string
-
 }

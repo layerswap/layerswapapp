@@ -9,7 +9,7 @@ export default function CampaignsPage({ settings, themeData, apiKey }: InferGetS
     const router = useRouter()
     return (<>
         <Layout settings={settings} themeData={themeData}>
-            <Campaigns settings={settings} themeData={themeData} apiKey={apiKey} integrator='layerswap' goBack={router.back} onCampaignSelect={(campaign) => router.push({ pathname: `/campaign/${campaign.name}`, query: { ...resolvePersistantQueryParams(router.query) } })} />
+            <Campaigns settings={settings} config={{ theme: themeData }} apiKey={apiKey} integrator='layerswap' goBack={router.back} onCampaignSelect={(campaign) => router.push({ pathname: `/campaign/${campaign.name}`, query: { ...resolvePersistantQueryParams(router.query) } })} />
         </Layout>
     </>)
 }

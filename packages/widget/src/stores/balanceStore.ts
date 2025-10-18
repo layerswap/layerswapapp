@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { subscribeWithSelector } from 'zustand/middleware'
 import { NetworkBalance } from '../Models/Balance'
 import { NetworkWithTokens } from '../Models/Network'
-import { BalanceResolver } from '../lib/balances/balanceResolver'
+import { resolverService } from '../lib/resolvers/resolverService'
 
 export function getKey(address: string, network: NetworkWithTokens): string
 export function getKey(address: string, networkName: string): string
@@ -21,7 +21,9 @@ export interface BalanceEntry {
 
 type Options = {
   dedupeInterval?: number,
-  ignoreCache?: boolean
+  ignoreCache?: boolean,
+  timeoutMs?: number,
+  retryCount?: number
 }
 
 interface BalanceStore {
@@ -42,7 +44,7 @@ interface BalanceStore {
   getResolvedInitiatedBalances: () => Record<string, NetworkBalance> | null
 }
 
-const balanceFetcher = new BalanceResolver()
+// balanceFetcher is now accessed through resolverService
 const MAX_CONCURRENT = 500
 let activeCount = 0
 const queue: Array<() => void> = []
@@ -69,10 +71,9 @@ export const useBalanceStore = create<BalanceStore>()(
 
       if (entry?.promise) return entry.promise
       if (!options?.ignoreCache && entry && now - last < dedupeInterval) return Promise.resolve(entry.data!)
-
       const queuedPromise = new Promise<NetworkBalance>((resolve, reject) => {
         const job = () => {
-          balanceFetcher.getBalance(network, address)
+          resolverService.getBalanceResolver().getBalance(network, address, { timeoutMs: options?.timeoutMs, retryCount: options?.retryCount })
             .then(data => {
               set(state => ({
                 balances: {
@@ -125,7 +126,7 @@ export const useBalanceStore = create<BalanceStore>()(
       set({ initiatedBalances: null })
       // kick off every fetch
       pairs.forEach(({ address, network }) => {
-        get().fetchBalance(address, network, { dedupeInterval: 120_000, ignoreCache: true })
+        get().fetchBalance(address, network, { dedupeInterval: 120_000, ignoreCache: true, timeoutMs: 4000, retryCount: 1 })
       })
 
       // subscribe to balance map changes
@@ -192,7 +193,7 @@ export const selectResolvedInitiatedBalances = (state: BalanceStore) => {
     const lastKeySet = Object.keys(lastInitiatedBalances)
 
     if (currentKeySet.length !== lastKeySet.length ||
-        !currentKeySet.every(k => lastKeySet.includes(k))) {
+      !currentKeySet.every(k => lastKeySet.includes(k))) {
       hasChanged = true
     }
 

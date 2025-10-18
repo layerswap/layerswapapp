@@ -55,7 +55,7 @@ const Comp = ({ children, hidden, sticky = true }: FooterProps) => {
                         max-sm:shadow-widget-footer 
                         max-sm:p-4 
                         max-sm:px-4 
-                        max-sm:w-full ${hidden ? 'animation-slide-out' : ''}`}>
+                        max-sm:w-full ${hidden ? 'animation-slide-out' : ''} w-full`}>
                     {children}
                 </motion.div>
 
@@ -63,7 +63,7 @@ const Comp = ({ children, hidden, sticky = true }: FooterProps) => {
                     className={`text-primary-text text-base      
                              max-sm:inset-x-0
                              max-sm:bottom-0 
-                             max-sm:p-4 max-sm:w-full invisible sm:hidden`}>
+                             max-sm:p-4 max-sm:w-full invisible sm:hidden w-full`}>
                 </div>
             </ >
             :

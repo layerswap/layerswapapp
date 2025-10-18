@@ -1,6 +1,6 @@
 import { Context, createContext, useCallback, useContext, useMemo, useState } from 'react'
 import useWallet from '@/hooks/useWallet';
-import { Wallet, WalletProvider } from '@/Models/WalletProvider';
+import { Wallet, WalletConnectionProvider } from '@/types/wallet';
 import AddressIcon from '@/components/Common/AddressIcon';
 import { SwapDirection } from '@/components/Pages/Swap/Form/SwapFormValues';
 import { getKey, useBalanceStore, BalanceEntry } from '@/stores/balanceStore';
@@ -13,8 +13,8 @@ type PickerAccountsProviderProps = {
 }
 
 type BalanceAccountsContextType = {
-    sourceAccounts: AccountIdentityWithWallet[];
-    destinationAccounts: (AccountIdentity | AccountIdentityWithWallet)[];
+    sourceAccounts: AccountIdentityWithSupportedNetworks[];
+    destinationAccounts: (AccountIdentity | AccountIdentityWithSupportedNetworks)[];
 }
 
 type BalanceAccountsUpdateContextType = {
@@ -31,13 +31,15 @@ type BaseAccountIdentity = {
 export type AccountIdentity = BaseAccountIdentity & {
     displayName: string,
     addresses: string[],
-    provider: WalletProvider;
+    provider: WalletConnectionProvider;
     icon: (props: any) => React.JSX.Element;
 }
 
 
-export type AccountIdentityWithWallet = AccountIdentity & {
-    wallet: Wallet;
+export type AccountIdentityWithSupportedNetworks = AccountIdentity & {
+    walletWithdrawalSupportedNetworks: Wallet['withdrawalSupportedNetworks'];
+    walletAutofillSupportedNetworks: Wallet['autofillSupportedNetworks'];
+    walletAsSourceSupportedNetworks: Wallet['asSourceSupportedNetworks'];
 }
 export function BalanceAccountsProvider({ children }: PickerAccountsProviderProps) {
 
@@ -45,7 +47,7 @@ export function BalanceAccountsProvider({ children }: PickerAccountsProviderProp
     const [selectedSourceAccounts, setSelectedSourceAccounts] = useState<BaseAccountIdentity[]>([])
     const { providers } = useWallet()
 
-    const sourceAccounts: AccountIdentityWithWallet[] = useMemo(() => {
+    const sourceAccounts: AccountIdentityWithSupportedNetworks[] = useMemo(() => {
         return providers.map(provider => {
             if (!hasWallet(provider)) return null;
 
@@ -56,8 +58,23 @@ export function BalanceAccountsProvider({ children }: PickerAccountsProviderProp
             const selectedAccountAddress = selectedWallet ? selectedSourceAccounts.find(acc => acc.providerName === provider.name && acc.id === selectedWallet.id)?.address : undefined
             const address = selectedAccountAddress ? selectedAccountAddress : wallet.address;
 
-            return ResolveWalletBalanceAccount(provider, wallet, address);
-        }).filter(Boolean) as AccountIdentityWithWallet[];
+
+            const res = ResolveWalletBalanceAccount(provider, wallet, address);
+
+            if (!selectedAccountAddress) {
+                setSelectedSourceAccounts(prev => {
+                    const existingAccountIndex = prev.findIndex(acc => acc.providerName === res.providerName);
+                    if (existingAccountIndex !== -1) {
+                        const updatedAccounts = [...prev];
+                        updatedAccounts[existingAccountIndex] = res;
+                        return updatedAccounts;
+                    }
+                    return [...prev, res];
+                });
+            }
+            
+            return res
+        }).filter(Boolean) as AccountIdentityWithSupportedNetworks[];
     }, [providers, selectedSourceAccounts])
 
     const destinationAccounts: AccountIdentity[] = useMemo(() => {
@@ -128,9 +145,9 @@ export function BalanceAccountsProvider({ children }: PickerAccountsProviderProp
         </BalanceAccountsStateContext.Provider>
     )
 }
-export function useBalanceAccounts(direction: "from"): AccountIdentityWithWallet[];
+export function useBalanceAccounts(direction: "from"): AccountIdentityWithSupportedNetworks[];
 export function useBalanceAccounts(direction: "to"): AccountIdentity[];
-export function useBalanceAccounts(direction: SwapDirection): (AccountIdentity | AccountIdentityWithWallet)[];
+export function useBalanceAccounts(direction: SwapDirection): (AccountIdentity | AccountIdentityWithSupportedNetworks)[];
 export function useBalanceAccounts(direction: SwapDirection) {
     const values = useContext<BalanceAccountsContextType>(BalanceAccountsStateContext as Context<BalanceAccountsContextType>);
 
@@ -140,20 +157,20 @@ export function useBalanceAccounts(direction: SwapDirection) {
     return direction === "from" ? values.sourceAccounts : values.destinationAccounts;
 }
 
-export function useSelectedAccount(direction: "from", networkName: string | undefined): AccountIdentityWithWallet | undefined;
+export function useSelectedAccount(direction: "from", networkName: string | undefined): AccountIdentityWithSupportedNetworks | undefined;
 export function useSelectedAccount(direction: "to", networkName: string | undefined): AccountIdentity | undefined;
-export function useSelectedAccount(direction: SwapDirection, networkName: string | undefined): AccountIdentity | AccountIdentityWithWallet | undefined;
+export function useSelectedAccount(direction: SwapDirection, networkName: string | undefined): AccountIdentity | AccountIdentityWithSupportedNetworks | undefined;
 export function useSelectedAccount(direction: SwapDirection, networkName: string | undefined) {
     const values = useContext<BalanceAccountsContextType>(BalanceAccountsStateContext as Context<BalanceAccountsContextType>);
     if (!networkName) return undefined;
     if (values === undefined) {
         throw new Error('useBalanceAccounts must be used within a BalanceAccountsProvider');
     }
-    return direction === "from" ? values.sourceAccounts.find(acc => acc.wallet.withdrawalSupportedNetworks?.some(n => n === networkName))
+    return direction === "from" ? values.sourceAccounts.find(acc => acc.provider.withdrawalSupportedNetworks?.some(n => n === networkName))
         :
         values.destinationAccounts.find(acc => {
-            if ('wallet' in acc) {
-                return acc.wallet.autofillSupportedNetworks?.some(n => n === networkName)
+            if ('walletAutofillSupportedNetworks' in acc) {
+                return acc.walletAutofillSupportedNetworks?.some(n => n === networkName)
             }
             return acc.provider?.autofillSupportedNetworks?.some(n => n === networkName)
         });
@@ -181,25 +198,27 @@ export function useUpdateBalanceAccount(direction: SwapDirection) {
 }
 
 function hasWallet(
-    p: WalletProvider
-): p is WalletProvider & { activeWallet: { address: string; id: string } } {
+    p: WalletConnectionProvider
+): p is WalletConnectionProvider & { activeWallet: { address: string; id: string } } {
     return Boolean(p.activeWallet);
 }
 
-function ResolveWalletBalanceAccount(provider: WalletProvider, wallet: Wallet, address: string): AccountIdentityWithWallet {
+function ResolveWalletBalanceAccount(provider: WalletConnectionProvider, wallet: Wallet, address: string): AccountIdentityWithSupportedNetworks {
     return {
         address,
         provider,
         providerName: provider.name,
         id: wallet.id,
-        wallet,
+        walletWithdrawalSupportedNetworks: wallet.withdrawalSupportedNetworks,
+        walletAutofillSupportedNetworks: wallet.autofillSupportedNetworks,
+        walletAsSourceSupportedNetworks: wallet.asSourceSupportedNetworks,
         displayName: wallet.displayName || provider.name,
         addresses: wallet.addresses || [address],
         icon: wallet.icon || ((props) => <AddressIcon address={address} size={24} {...props} />),
     }
 }
 
-function ResolveManualBalanceAccount(provider: WalletProvider, address: string): AccountIdentity {
+function ResolveManualBalanceAccount(provider: WalletConnectionProvider, address: string): AccountIdentity {
     return {
         address,
         provider,

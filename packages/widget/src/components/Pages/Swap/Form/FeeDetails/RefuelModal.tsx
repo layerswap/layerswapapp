@@ -1,6 +1,6 @@
 import { Dispatch, FC, SetStateAction } from 'react';
 import Modal from '@/components/Modal/modal';
-import { roundDecimals, truncateDecimals } from '@/components/utils/RoundDecimals';
+import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import { useFormikContext } from 'formik';
 import { useBalance } from '@/lib/balances/useBalance';
 import { useQuoteData } from '@/hooks/useFee';
@@ -44,17 +44,17 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal, fee }) => 
                     }
                 </p>
                 {
-                    (refuel || destNativeTokenBalance?.amount) ?
+                    (refuel || Number(destNativeTokenBalance?.amount) >= 0) ?
                         <div className="flex flex-col space-y-2 w-full bg-secondary-700 overflow-hidden ">
                             {
-                                destNativeTokenBalance?.amount ?
+                                Number(destNativeTokenBalance?.amount) >= 0 ?
                                     <div className="gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3 bg-secondary-500 rounded-xl">
                                         <div className="flex items-center justify-between w-full">
                                             <div className="text-secondary-text">
                                                 <span>Current balance</span>
                                             </div>
                                             <p className='text-end'>
-                                                <span>{truncateDecimals(destNativeTokenBalance.amount, nativeAsset?.precision)} {nativeAsset?.symbol}</span>
+                                                <span>{truncateDecimals(destNativeTokenBalance?.amount!, nativeAsset?.precision)} {nativeAsset?.symbol}</span>
                                             </p>
                                         </div>
                                     </div>
@@ -69,7 +69,7 @@ const RefuelModal: FC<RefuelModalProps> = ({ openModal, setOpenModal, fee }) => 
                                                 You will receive
                                             </div>
                                             <p>
-                                                <span>{roundDecimals(toCurrency.refuel?.amount, nativeAsset.precision)} {nativeAsset?.symbol}</span>
+                                                <span>{truncateDecimals(toCurrency.refuel?.amount, nativeAsset.precision)} {nativeAsset?.symbol}</span>
                                             </p>
                                         </div>
                                     </div>

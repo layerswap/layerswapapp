@@ -1,8 +1,6 @@
 "use client";
 import React, { forwardRef, useEffect, useState } from "react";
-
-const fallbackImage = '/images/logo_placeholder.png';
-
+const fallbackImage = 'https://layerswap.io/app/images/logo_placeholder.png';
 export const ImageWithFallback = forwardRef<HTMLImageElement, React.DetailedHTMLProps<React.ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>>(({ src, ...props }, ref) => {
     const [imgSrc, setImgSrc] = useState(src);
 

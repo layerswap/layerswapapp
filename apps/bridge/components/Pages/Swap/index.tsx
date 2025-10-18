@@ -19,7 +19,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
         apiKey={apiKey}
         version={process.env.NEXT_PUBLIC_API_VERSION as 'mainnet' | 'testnet'}
         settings={settings}
-        themeData={{ ...themeData as any, borderRadius: 'default', enablePortal: true }}
+        config={{ theme: { ...themeData as any, borderRadius: 'default', enablePortal: true } }}
         callbacks={{
             onFormChange(formData) {
                 updateFormBulk(formData);

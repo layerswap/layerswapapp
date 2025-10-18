@@ -1,54 +1,34 @@
 "use client";
 import React, { createContext, useContext, useMemo } from "react";
-import { WalletProvider } from "../Models/WalletProvider";
+import { WalletConnectionProvider, WalletProvider } from "@/types";
 import { useSettingsState } from "./settings";
-import VaulDrawer from "../components/Modal/vaulModal";
-import IconButton from "../components/Buttons/iconButton";
+import VaulDrawer from "@/components/Modal/vaulModal";
+import IconButton from "@/components/Buttons/iconButton";
 import { ChevronLeft } from "lucide-react";
-import ConnectorsList from "../components/Wallet/WalletModal/ConnectorsList";
-import { useConnectModal } from "../components/Wallet/WalletModal";
-import useEVM from "../lib/wallets/evm/useEVM";
-import useStarknet from "../lib/wallets/starknet/useStarknet";
-import useImtblX from "../lib/wallets/imtblX/useImtblX";
-import useTON from "../lib/wallets/ton/useTON";
-import useFuel from "../lib/wallets/fuel/useFuel";
-import useTron from "../lib/wallets/tron/useTron";
-import useParadex from "../lib/wallets/paradex/useParadex";
-import useSVM from "../lib/wallets/solana/useSVM";
-import useBitcoin from "../lib/wallets/bitcoin/useBitcoin";
-import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
+import ConnectorsList from "@/components/Wallet/WalletModal/ConnectorsList";
+import { useConnectModal } from "@/components/Wallet/WalletModal";
+import { isMobile } from "@/lib/wallets/utils/isMobile";
 
-const WalletProvidersContext = createContext<WalletProvider[]>([]);
+const WalletProvidersContext = createContext<WalletConnectionProvider[]>([]);
 
-export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
+export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walletProviders: WalletProvider[] }> = ({ children, walletProviders }) => {
     const { networks } = useSettingsState();
     const isMobilePlatform = isMobile();
     const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector } = useConnectModal()
 
-    const bitcoin = useBitcoin()
-    const evm = useEVM();
-    const starknet = useStarknet();
-    const imtblX = useImtblX();
-    const svm = useSVM();
-    const ton = useTON();
-    const fuel = useFuel();
-    const tron = useTron();
-    const paradex = useParadex();
+    const allProviders = walletProviders.map(provider => provider.walletConnectionProvider({ networks }))
 
     const providers = useMemo(() => {
-        const allProviders: WalletProvider[] = [
-            bitcoin, evm, starknet, svm, ton, fuel, tron, paradex, imtblX
-        ];
-        const filteredProviders = allProviders.filter(provider => isMobilePlatform ? !provider.unsupportedPlatforms?.includes('mobile') : !provider.unsupportedPlatforms?.includes('desktop'));
-
-        return filteredProviders.filter(provider =>
+        const filteredProviders = allProviders.filter(provider => (isMobilePlatform ? !provider.unsupportedPlatforms?.includes('mobile') : !provider.unsupportedPlatforms?.includes('desktop')) &&
             networks.some(net =>
                 provider.autofillSupportedNetworks?.includes(net.name) ||
                 provider.withdrawalSupportedNetworks?.includes(net.name) ||
                 provider.asSourceSupportedNetworks?.includes(net.name)
             )
         );
-    }, [networks, bitcoin, evm, starknet, svm, ton, fuel, tron, paradex, imtblX, isMobilePlatform]);
+
+        return filteredProviders
+    }, [networks, isMobilePlatform, allProviders]);
 
     return (
         <WalletProvidersContext.Provider value={providers}>
@@ -62,7 +42,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
                     <div className="flex items-center gap-1">
                         {
                             (selectedConnector || selectedMultiChainConnector) &&
-                            <div className='-ml-2'>
+                            <div className="sm:-ml-2 -ml-0">
                                 <IconButton onClick={goBack} icon={
                                     <ChevronLeft className="h-6 w-6" />
                                 }>

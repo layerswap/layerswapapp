@@ -3,11 +3,11 @@ import useSWRGas from "@/lib/gases/useSWRGas";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import React, { useMemo } from "react";
 import { resolveMaxAllowedAmount } from "./helpers";
-import { updateForm } from "@/components/Pages/Swap/Form/updateForm";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useBalance } from "@/lib/balances/useBalance";
+import useWallet from "@/hooks/useWallet";
 
 type MinMaxProps = {
     fromCurrency: NetworkRouteToken,
@@ -20,12 +20,13 @@ type MinMaxProps = {
 
 const MinMax = (props: MinMaxProps) => {
 
-    const { setFieldValue } = useFormikContext<SwapFormValues>();
+    const { setFieldValue, values } = useFormikContext<SwapFormValues>();
     const { fromCurrency, from, limitsMinAmount, limitsMaxAmount, onActionHover, depositMethod } = props;
 
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
-
-    const { gasData } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency)
+    const { wallets } = useWallet(from, 'withdrawal')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
+    const { gasData } = useSWRGas(selectedSourceAccount?.address, from, fromCurrency, values.amount, wallet)
     const { balances, mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, from)
 
     const walletBalance = useMemo(() => {
@@ -44,11 +45,7 @@ const MinMax = (props: MinMaxProps) => {
 
     const handleSetValue = (value: string) => {
         mutateBalances()
-        updateForm({
-            formDataKey: 'amount',
-            formDataValue: value,
-            setFieldValue
-        })
+        setFieldValue('amount', value, true)
         onActionHover(undefined)
     }
 
@@ -104,12 +101,14 @@ const MinMax = (props: MinMaxProps) => {
                 Number(maxAllowedAmount) > 0 ?
                     <Tooltip disableHoverableContent={true}>
                         <TooltipTrigger asChild>
-                            <ActionButton
-                                label="Max"
-                                onMouseEnter={() => onActionHover(maxAllowedAmount)}
-                                disabled={!maxAllowedAmount}
-                                onClick={handleSetMaxAmount}
-                            />
+                            <div>
+                                <ActionButton
+                                    label="Max"
+                                    onMouseEnter={() => onActionHover(maxAllowedAmount)}
+                                    disabled={!maxAllowedAmount}
+                                    onClick={handleSetMaxAmount}
+                                />
+                            </div>
                         </TooltipTrigger>
                         {showMaxTooltip ? <TooltipContent className="pointer-events-none w-80 grow p-2 !border-none !bg-secondary-300 text-xs rounded-xl" side="top" align="start" alignOffset={-10}>
                             <p>Max is calculated based on your balance minus gas fee for the transaction</p>

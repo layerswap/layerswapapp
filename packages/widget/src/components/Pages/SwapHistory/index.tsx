@@ -6,10 +6,10 @@ import { SwapDataProvider } from "@/context/swap";
 import { FC } from "react";
 import { useBackClickCallback } from "@/context/callbackProvider";
 
-export const TransactionsHistory: FC<LayerswapContextProps> = ({ settings, themeData, apiKey }) => {
+export const TransactionsHistory: FC<LayerswapContextProps> = ({ settings, config, apiKey }) => {
   const triggerOnBackClickCallback = useBackClickCallback()
   return (
-    <LayerswapProvider apiKey={apiKey} integrator="experimental" settings={settings} themeData={themeData}>
+    <LayerswapProvider apiKey={apiKey} integrator="experimental" settings={settings} config={config}>
       <SwapDataProvider >
         <div id="widget" className='bg-secondary-900 sm:shadow-card sm:relative rounded-lg w-full text-primary-text overflow-y-auto sm:overflow-hidden max-h-screen h-full sm:h-[650px]'>
           <div className="overflow-y-auto flex flex-col h-full z-40 pb-4">

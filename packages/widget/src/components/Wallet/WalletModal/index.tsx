@@ -1,6 +1,6 @@
 "use client";
 import { Context, createContext, useCallback, useContext, useEffect, useState } from 'react'
-import { InternalConnector, Wallet, WalletProvider } from '../../../Models/WalletProvider';
+import { InternalConnector, Wallet, WalletConnectionProvider } from '@/types/wallet';
 
 export type WalletModalConnector = InternalConnector & {
     qr?: ({
@@ -12,11 +12,11 @@ export type WalletModalConnector = InternalConnector & {
     });
 }
 
-export type ModalWalletProvider = WalletProvider & {
+export type ModalWalletProvider = WalletConnectionProvider & {
     isSelectedFromFilter?: boolean;
 }
 
-type SharedType = { provider?: WalletProvider, connectCallback: (value: Wallet | undefined) => void }
+type SharedType = { provider?: WalletConnectionProvider, connectCallback: (value: Wallet | undefined) => void }
 
 type ConnectModalContextType = {
     connect: ({ provider, connectCallback }: SharedType) => void;
@@ -106,7 +106,7 @@ export const useConnectModal = () => {
         throw new Error('useConnectModal must be used within a ConnectModalProvider');
     }
 
-    const connect: (provider?: WalletProvider) => Promise<Wallet | undefined> = (provider) =>
+    const connect: (provider?: WalletConnectionProvider) => Promise<Wallet | undefined> = (provider) =>
         new Promise((res) => {
             context.connect({ provider, connectCallback: res });
         });
