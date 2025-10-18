@@ -3,7 +3,7 @@ import { GasResolver } from "@/lib/gases/gasResolver";
 import { AddressUtilsResolver } from '@/lib/address/validator/addressUtilsResolver'
 import { AddressUtilsProvider, BalanceProvider, GasProvider } from "@/types";
 
-class BalanceAndGasResolverService {
+class UtilsResolverService {
     private balanceResolver: BalanceResolver | null = null;
     private gasResolver: GasResolver | null = null;
     private addressUtilsResolver: AddressUtilsResolver | null = null;
@@ -35,4 +35,4 @@ class BalanceAndGasResolverService {
     }
 }
 
-export const resolverService = new BalanceAndGasResolverService();
+export const resolverService = new UtilsResolverService();

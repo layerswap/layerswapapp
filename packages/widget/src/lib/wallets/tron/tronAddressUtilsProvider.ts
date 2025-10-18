@@ -5,7 +5,7 @@ import { AddressUtilsProvider } from "@/types";
 
 export class TronAddressUtilsProvider implements AddressUtilsProvider {
     supportsNetwork(network: Network): boolean {
-        return KnownInternalNames.Networks.TronMainnet.includes(network.name)
+        return KnownInternalNames.Networks.TronMainnet.includes(network.name) || KnownInternalNames.Networks.TronTestnet.includes(network.name)
     }
 
     isValidAddress(address?: string) {

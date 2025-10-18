@@ -27,7 +27,7 @@ export type WalletProvider = {
     id: string,
     wrapper?: React.ComponentType<any>,
     walletConnectionProvider: () => WalletConnectionProvider,
-    addressUtilsProvider: AddressUtilsProvider | AddressUtilsProvider[],
+    addressUtilsProvider?: AddressUtilsProvider | AddressUtilsProvider[],
     gasProvider?: GasProvider | GasProvider[],
     balanceProvider?: BalanceProvider | BalanceProvider[],
 }

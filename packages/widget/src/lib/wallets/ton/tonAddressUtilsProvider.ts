@@ -5,7 +5,7 @@ import { AddressUtilsProvider } from "@/types";
 
 export class TonAddressUtilsProvider implements AddressUtilsProvider {
     supportsNetwork(network: Network): boolean {
-        return KnownInternalNames.Networks.TONMainnet.includes(network.name)
+        return KnownInternalNames.Networks.TONMainnet.includes(network.name) || KnownInternalNames.Networks.TONTestnet.includes(network.name)
     }
 
     isValidAddress(address?: string) {
