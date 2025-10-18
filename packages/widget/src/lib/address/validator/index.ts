@@ -7,10 +7,8 @@ export function isValidAddress(address?: string, network?: { name: string } | nu
     try {
         const resolver = resolverService.getAddressUtilsResolver();
         return resolver.isValidAddress(network, address);
-        // if resolver returns undefined (no provider), fall through to local checks
     } catch (err) {
         return false
-        // resolverService may not be initialized in some environments — fall back to local validation
     }
 }
 

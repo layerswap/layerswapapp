@@ -1,6 +1,6 @@
 import { BalanceResolver } from "@/lib/balances/balanceResolver";
 import { GasResolver } from "@/lib/gases/gasResolver";
-import { AddressUtilsResolver } from '@/lib/address/validator/addressUtilsResolver'
+import { AddressUtilsResolver } from '@/lib/address/addressUtilsResolver'
 import { AddressUtilsProvider, BalanceProvider, GasProvider } from "@/types";
 
 class UtilsResolverService {
