@@ -8,7 +8,7 @@ import { THEME_COLORS } from '../Models/Theme';
 import Layout from '../components/layout';
 import WalletsProviders from '../components/WalletProviders';
 import { SwapDataProvider } from '../context/swap';
-import { SettingsStateContext } from '../context/settings';
+import { SettingsProvider } from '../context/settings';
 import { TimerProvider } from '@/context/timerContext';
 import { PriceImpact } from '@/components/Input/Amount/PriceImpact';
 
@@ -28,7 +28,7 @@ const Comp: FC<{ quote: PriceImpactRelevant; theme?: 'default' | 'light' }> = ({
 
     return (
         <IntercomProvider appId="123">
-            <SettingsStateContext.Provider value={appSettings}>
+            <SettingsProvider data={appSettings}>
                 <Layout settings={Settings} themeData={themeData}>
                     <SwapDataProvider>
                         <TimerProvider>
@@ -45,7 +45,7 @@ const Comp: FC<{ quote: PriceImpactRelevant; theme?: 'default' | 'light' }> = ({
                         </TimerProvider>
                     </SwapDataProvider>
                 </Layout>
-            </SettingsStateContext.Provider>
+            </SettingsProvider>
         </IntercomProvider>
     );
 };
