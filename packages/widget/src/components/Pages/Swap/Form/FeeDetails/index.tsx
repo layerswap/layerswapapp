@@ -97,7 +97,7 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuo
         destination,
         reward?.nft_contract_address || ''
     );
-console.log(shouldCheckNFT, nftBalance)
+
     return (
         <div className='flex items-center gap-1 space-x-3'>
             {

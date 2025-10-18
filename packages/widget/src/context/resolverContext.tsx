@@ -2,7 +2,6 @@ import React, { createContext, useContext, useMemo } from "react";
 import { NftProvider, WalletProvider } from "@/types";
 import { resolverService } from "@/lib/resolvers/resolverService";
 import { AddressUtilsProvider, GasProvider, BalanceProvider } from "@/types";
-import { nftResolverService } from "@/lib/resolvers/nftResolverService";
 
 type ResolverContextType = {
     isInitialized: boolean;
@@ -37,8 +36,8 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{ walletProvide
             .map(provider => provider.nftProvider)
             .flat()
             .filter((provider): provider is NftProvider => Boolean(provider));
-        resolverService.setProviders(balanceProviders, gasProviders, addressUtilsProviders)
-        nftResolverService.setProviders(nftProviders);
+
+        resolverService.setProviders(balanceProviders, gasProviders, addressUtilsProviders, nftProviders)
 
         return true;
     }, [walletProviders]);

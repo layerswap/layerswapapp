@@ -25,8 +25,7 @@ const NFT_ABI = [
 
 export class StarknetNftProvider implements NftProvider {
     supportsNetwork(network: Network): boolean {
-        return (KnownInternalNames.Networks.StarkNetMainnet.includes(network.name)
-            || KnownInternalNames.Networks.StarkNetSepolia.includes(network.name))
+        return (KnownInternalNames.Networks.StarkNetMainnet.includes(network.name) || KnownInternalNames.Networks.StarkNetGoerli.includes(network.name) || KnownInternalNames.Networks.StarkNetSepolia.includes(network.name))
     }
 
     getBalance = async ({ address, network, contractAddress }: NftBalanceProps): Promise<number> => {
