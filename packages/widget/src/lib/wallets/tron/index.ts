@@ -1,4 +1,4 @@
-import { WalletProvider } from "@/context/LayerswapProvider";
+import { WalletProvider } from "@/types";
 import { TronGasProvider } from "./tronGasProvider";
 import TronProvider from "./TronProvider";
 import useTronConnection from "./useTronConnection";

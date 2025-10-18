@@ -1,9 +1,8 @@
 import { useWalletStore } from "@/stores/walletStore"
 import ImtblClient from "./client"
 import KnownInternalNames from "../../knownIds"
-import IMX from "@/components/Icons/Wallets/IMX"
-import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType } from "@/types"
-import { useSettingsState } from "@/context/settings"
+import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType, WalletConnectionProviderProps } from "@/types"
+import IMX from "./utils/ImxIcon"
 
 const supportedNetworks = [
     KnownInternalNames.Networks.ImmutableXMainnet,
@@ -11,8 +10,7 @@ const supportedNetworks = [
     KnownInternalNames.Networks.ImmutableXSepolia,
 ]
 
-export default function useImtblXConnection(): WalletConnectionProvider {
-    const { networks } = useSettingsState()
+export default function useImtblXConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
 
     const name = 'ImmutableX'
     const id = 'imx'

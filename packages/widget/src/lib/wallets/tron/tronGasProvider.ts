@@ -1,8 +1,6 @@
-import { GasProps } from "@/Models/Balance";
-import { Network } from "@/Models/Network";
 import { formatUnits } from "viem";
 import KnownInternalNames from "../../knownIds";
-import { GasProvider } from "@/types/gas";
+import { GasProvider, GasProps, Network } from "@/types";
 
 export class TronGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {

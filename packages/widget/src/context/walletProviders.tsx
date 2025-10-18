@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo } from "react";
-import { WalletConnectionProvider } from "@/types/wallet";
+import { WalletConnectionProvider, WalletProvider } from "@/types";
 import { useSettingsState } from "./settings";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import IconButton from "@/components/Buttons/iconButton";
@@ -7,7 +7,6 @@ import { ChevronLeft } from "lucide-react";
 import ConnectorsList from "@/components/Wallet/WalletModal/ConnectorsList";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { isMobile } from "@/lib/wallets/utils/isMobile";
-import { WalletProvider } from "./LayerswapProvider";
 
 const WalletProvidersContext = createContext<WalletConnectionProvider[]>([]);
 
@@ -16,7 +15,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
     const isMobilePlatform = isMobile();
     const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector } = useConnectModal()
 
-    const allProviders = walletProviders.map(provider => provider.walletConnectionProvider())
+    const allProviders = walletProviders.map(provider => provider.walletConnectionProvider({ networks }))
 
     const providers = useMemo(() => {
         const filteredProviders = allProviders.filter(provider => (isMobilePlatform ? !provider.unsupportedPlatforms?.includes('mobile') : !provider.unsupportedPlatforms?.includes('desktop')) &&

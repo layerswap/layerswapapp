@@ -1,6 +1,4 @@
 import { NetworkType, NetworkWithTokens } from "@/Models/Network"
-import { useSettingsState } from "@/context/settings"
-import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wallet"
 import { useConnectModal } from "@/components/Wallet/WalletModal"
 import { useConnect, useAccount, useConfig } from '@bigmi/react'
 import { disconnect } from "@bigmi/client"
@@ -12,14 +10,13 @@ import { isValidAddress } from "@/lib/address/validator"
 import { useBitcoinConnectors } from "@/lib/wallets/bitcoin/BitcoinProvider"
 import { sendTransaction } from "./services/transferService/sendTransaction"
 import { JsonRpcClient } from "@/lib/apiClients/jsonRpcClient"
-import { TransactionMessageType } from "@/types";
+import { TransactionMessageType, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@/types";
 
 const bitcoinNames = [KnownInternalNames.Networks.BitcoinMainnet, KnownInternalNames.Networks.BitcoinTestnet]
 
-export default function useBitcoinConnection(): WalletConnectionProvider {
+export default function useBitcoinConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
     const name = 'Bitcoin'
     const id = 'bitcoin'
-    const { networks } = useSettingsState()
     const { connectors: resolvedConnectors } = useBitcoinConnectors()
 
     const commonSupportedNetworks = [

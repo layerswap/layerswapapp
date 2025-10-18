@@ -1,4 +1,4 @@
-import { WalletProvider } from "@/context/LayerswapProvider"
+import { WalletProvider } from "@/types"
 import { ParadexBalanceProvider } from "./paradexBalanceProvider"
 import { useParadexConnection } from "./useParadexConnection"
 import { ActiveParadexAccountProvider } from "./ActiveParadexAccount"

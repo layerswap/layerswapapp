@@ -1,20 +1,17 @@
 import KnownInternalNames from "../../knownIds";
 import { useWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
-import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types";
 import { resolveWalletConnectorIcon } from "../utils";
-import { useSettingsState } from "../../../context/settings";
-import { GasResolver } from "@/lib/gases/gasResolver";
 import { buildInitialTransaction } from "./services/transferService/transactionBuilder";
-import { GasWithToken, TransactionMessageType } from "@/types";
+import { GasWithToken, TransactionMessageType, WalletConnectionProviderProps, InternalConnector, Wallet, WalletConnectionProvider } from "@/types";
 import { useMemo } from "react";
+import { TronGasProvider } from "./tronGasProvider";
 
-export default function useTronConnection(): WalletConnectionProvider {
+export default function useTronConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
     const commonSupportedNetworks = [
         KnownInternalNames.Networks.TronMainnet,
         KnownInternalNames.Networks.TronTestnet
     ]
 
-    const { networks } = useSettingsState()
     const network = networks.find(n => n.name === KnownInternalNames.Networks.TronMainnet || n.name === KnownInternalNames.Networks.TronTestnet)
     const name = 'Tron'
     const id = 'tron'
@@ -103,7 +100,7 @@ export default function useTronConnection(): WalletConnectionProvider {
         try {
             const tronWeb = new TronWeb({ fullNode: tronNode, solidityNode: tronNode });
 
-            const gasData: GasWithToken | undefined = await new GasResolver().getGas({ address: selectedWallet?.address, network, token })
+            const gasData: GasWithToken | undefined = await new TronGasProvider().getGas({ address: selectedWallet?.address, network, token })
 
             const amountInWei = Math.pow(10, token?.decimals) * amount
 

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo } from "react";
-import { WalletProvider } from "./LayerswapProvider";
+import { WalletProvider } from "@/types";
 import { BalanceProvider } from "@/types/balance";
 import { GasProvider } from "@/types/gas";
 import { resolverService } from "@/lib/resolvers/resolverService";

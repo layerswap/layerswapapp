@@ -1,10 +1,8 @@
-import { TokenBalance } from "../../../Models/Balance";
-import { Network, NetworkWithTokens, Token } from "../../../Models/Network";
 import { formatUnits } from "viem";
 import KnownInternalNames from "../../knownIds";
 import { TronWeb } from 'tronweb'
 import { insertIfNotExists } from "@/lib/balances/helpers";
-import { BalanceProvider } from "@/types/balance";
+import { BalanceProvider, Network, Token, TokenBalance } from "@/types";
 
 export class TronBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {

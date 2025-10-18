@@ -1,15 +1,13 @@
 import KnownInternalNames from "../../knownIds"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { resolveWalletConnectorIcon } from "../utils"
-import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType, NetworkType } from "@/types"
+import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType, NetworkType, WalletConnectionProviderProps } from "@/types"
 import { useMemo } from "react"
-import { useSettingsState } from "@/context/settings"
 import { configureAndSendCurrentTransaction } from "./services/transferService/transactionSender"
 
 const solanaNames = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet, KnownInternalNames.Networks.SolanaTestnet]
 
-export default function useSVMConnection(): WalletConnectionProvider {
-    const { networks } = useSettingsState()
+export default function useSVMConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
 
     const commonSupportedNetworks = [
         ...networks.filter(network => network.type === NetworkType.Solana).map(l => l.name)

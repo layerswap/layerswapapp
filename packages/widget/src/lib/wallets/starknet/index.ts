@@ -2,7 +2,7 @@ import StarknetProvider from "./StarknetProvider";
 import useStarknetConnection from "./useStarknetConnection";
 import { StarknetBalanceProvider } from "./starknetBalanceProvider";
 import { StarknetGasProvider } from "./starknetGasProvider";
-import { WalletProvider } from "@/context/LayerswapProvider";
+import { WalletProvider } from "@/types";
 
 export const useStarknet: WalletProvider = {
     id: "starknet",
