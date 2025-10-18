@@ -5,15 +5,13 @@ import { FuelConnector, FuelConnectorEventTypes, Predicate, Provider, getPredica
 import { Address } from '@fuel-ts/address';
 import shortenAddress from "@/components/utils/ShortenAddress";
 import { resolveWalletConnectorIcon, sleep } from "../utils";
-import { InternalConnector, Wallet, WalletConnectionProvider } from "@/types/wallet";
 import { useEffect, useMemo } from "react";
 import { useWalletStore } from "@/stores/walletStore";
-import { useSettingsState } from "@/context/settings";
 import { transactionBuilder } from "./services/transferService/transactionBuilder";
 import { BAKO_STATE } from "./connectors/bako-safe/Bako";
-import { TransactionMessageType } from "@/types";
+import { TransactionMessageType, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@/types";
 
-export default function useFuelConnection(): WalletConnectionProvider {
+export default function useFuelConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
     const commonSupportedNetworks = [
         KnownInternalNames.Networks.FuelTestnet,
         KnownInternalNames.Networks.FuelDevnet,
@@ -25,7 +23,6 @@ export default function useFuelConnection(): WalletConnectionProvider {
     const { address: evmAddress, connector: evmConnector } = useAccount()
     const { connectors } = useConnectors()
     const { fuel } = useGlobalFuel()
-    const { networks } = useSettingsState()
 
     const wallets = useWalletStore((state) => state.connectedWallets)
     const addWallet = useWalletStore((state) => state.connectWallet)

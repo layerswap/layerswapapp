@@ -1,6 +1,6 @@
 import { multicall, getBalance, GetBalanceReturnType, createConfig, http } from '@wagmi/core'
 import { Chain, formatUnits, PublicClient, erc20Abi } from "viem"
-import resolveChain from "@/lib/wallets/evm/utils/resolveChain"
+import resolveChain from "@/lib/wallets/evm/evmUtils/resolveChain"
 import BalanceGetterAbi from "@/lib/jsons/abis/BALANCEGETTERABI.json"
 import KnownInternalNames from "@/lib/knownIds"
 import { BalanceProvider, TokenBalance, NetworkType, NetworkWithTokens, Token, Network } from "@/types"

@@ -18,19 +18,10 @@ import WalletsProviders from "@/components/Wallet/WalletProviders";
 import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
 import { InitialSettings } from "../Models/InitialSettings";
 import { BalanceAccountsProvider } from "./balanceAccounts";
-import { WalletConnectionProvider } from "@/types/wallet";
 import { useEVM, useStarknet, useTON, useTron, useFuel, useImtblX, useBitcoin, useSVM, useParadex } from "@/lib/wallets";
+import { WalletProvider } from "@/types";
 import { ResolverProviders } from "./resolverContext";
-import { AddressUtilsProvider, GasProvider, BalanceProvider } from "@/types";
 
-export type WalletProvider = {
-    id: string,
-    wrapper?: React.ComponentType<any>,
-    walletConnectionProvider: () => WalletConnectionProvider,
-    addressUtilsProvider?: AddressUtilsProvider | AddressUtilsProvider[],
-    gasProvider?: GasProvider | GasProvider[],
-    balanceProvider?: BalanceProvider | BalanceProvider[],
-}
 export type LayerswapContextProps = {
     children?: ReactNode;
     settings?: LayerSwapSettings;

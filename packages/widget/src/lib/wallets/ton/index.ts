@@ -1,4 +1,4 @@
-import { WalletProvider } from "@/context/LayerswapProvider";
+import { WalletProvider } from "@/types";
 import { TonBalanceProvider } from "./tonBalanceProvider";
 import { TonGasProvider } from "./tonGasProvider";
 import TonProvider from "./TonProvider";

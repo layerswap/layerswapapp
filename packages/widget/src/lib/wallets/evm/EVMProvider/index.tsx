@@ -6,7 +6,7 @@ import { createConfig } from 'wagmi';
 import { Chain, http } from 'viem';
 import { EvmConnectorsProvider, useEvmConnectors } from "@/lib/wallets/evm/EVMProvider/evmConnectorsContext";
 import { ActiveEvmAccountProvider } from "@/lib/wallets/evm/EVMProvider/ActiveEvmAccount";
-import resolveChain from "@/lib/wallets/evm/utils/resolveChain";
+import resolveChain from "@/lib/wallets/evm/evmUtils/resolveChain";
 import NetworkSettings from "@/lib/NetworkSettings";
 
 type Props = {

@@ -102,6 +102,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             posthog.capture('$exception', {
                 name: renderingError.name,
                 message: renderingError.message,
+                $layerswap_exception_type: "Transaction Error",
                 stack: renderingError.stack,
                 cause: renderingError.cause,
                 where: 'TransactionError',

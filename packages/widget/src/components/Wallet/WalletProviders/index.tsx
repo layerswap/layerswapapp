@@ -4,7 +4,7 @@ import { ThemeData } from "@/Models/Theme"
 import { WalletProvidersProvider } from "@/context/walletProviders";
 import { WalletModalProvider } from "../WalletModal";
 import AppSettings from "@/lib/AppSettings";
-import { WalletProvider } from "@/context/LayerswapProvider"
+import { WalletProvider } from "@/types"
 
 // Dynamic wrapper component that renders provider wrappers
 const DynamicProviderWrapper: FC<{

@@ -2,7 +2,7 @@ import { GasProvider, GasProps, Network, Token, NetworkType } from "@/types"
 import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, http, serializeTransaction } from "viem";
 import { erc20Abi, formatUnits } from "viem";
 import { publicActionsL2 } from 'viem/op-stack'
-import resolveChain from "@/lib/wallets/evm/utils/resolveChain";
+import resolveChain from "@/lib/wallets/evm/evmUtils/resolveChain";
 import posthog from "posthog-js";
 
 export class EVMGasProvider implements GasProvider {
@@ -126,6 +126,7 @@ abstract class getEVMGas {
             posthog.capture('$exception', {
                 name: error.name,
                 message: error.message,
+                $layerswap_exception_type: "Gas Price Error",
                 stack: error.stack,
                 cause: error.cause,
                 where: 'getGasPrice',
@@ -144,6 +145,7 @@ abstract class getEVMGas {
             posthog.capture('$exception', {
                 name: error.name,
                 message: error.message,
+                $layerswap_exception_type: "Fees Per Gas Error",
                 stack: error.stack,
                 cause: error.cause,
                 where: 'feesPerGasError',
@@ -162,6 +164,7 @@ abstract class getEVMGas {
             posthog.capture('$exception', {
                 name: error.name,
                 message: error.message,
+                $layerswap_exception_type: "Max Priority Fee Per Gas Error",
                 stack: error.stack,
                 cause: error.cause,
                 where: 'maxPriorityFeePerGasError',

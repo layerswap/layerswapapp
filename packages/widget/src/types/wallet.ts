@@ -1,6 +1,10 @@
 import { WalletAccount } from 'starknet';
 import { StarknetWindowObject } from 'starknetkit';
 import { TransferProps } from './transfer';
+import { NetworkWithTokens } from '@/Models/Network';
+import { BalanceProvider } from './balance';
+import { GasProvider } from './gas';
+import { AddressUtilsProvider } from './addressUtils';
 
 export type InternalConnector = {
     name: string,
@@ -43,6 +47,18 @@ export type Wallet = {
     networkIcon?: string,
 }
 
+export type WalletProvider = {
+    id: string,
+    wrapper?: React.ComponentType<any>,
+    walletConnectionProvider: (props: WalletConnectionProviderProps) => WalletConnectionProvider,
+    addressUtilsProvider?: AddressUtilsProvider | AddressUtilsProvider[],
+    gasProvider?: GasProvider | GasProvider[],
+    balanceProvider?: BalanceProvider | BalanceProvider[],
+}
+
+export type WalletConnectionProviderProps = {
+    networks: NetworkWithTokens[]
+}
 
 export type WalletConnectionProvider = {
     connectWallet: (props?: { connector?: InternalConnector }) => Promise<Wallet | undefined> | undefined,

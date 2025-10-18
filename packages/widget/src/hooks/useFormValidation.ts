@@ -64,8 +64,9 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
             return { message: 'Manual Transfer is not supported' };
         }
     }
-
-    if (quoteError) {
+    
+    const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
+    if (quoteError && quoteErrorCode !== "QUOTE_REQUIRES_NO_DEPOSIT_ADDRESS") {
         return { message: quoteError.response?.data?.error?.message || 'Unable to retrieve quote' };
     }
 

@@ -8,9 +8,9 @@ import { NetworkWithTokens, NetworkRoute } from "@/Models/Network";
  * @param network - NetworkWithTokens or NetworkRoute object containing token price information
  * @returns Total USD value of all token balances that exist in the route
  */
-export function getTotalBalanceInUSD(networkBalance: NetworkBalance, network: NetworkWithTokens | NetworkRoute): number {
+export function getTotalBalanceInUSD(networkBalance: NetworkBalance, network: NetworkWithTokens | NetworkRoute): number | null {
     if (!networkBalance.balances || networkBalance.balances.length === 0) {
-        return 0;
+        return null;
     }
     return networkBalance.balances.reduce((total, tokenBalance) => {
         const token = network.tokens.find(t => t?.symbol === tokenBalance.token);

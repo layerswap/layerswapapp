@@ -3,7 +3,7 @@ import { FuelBalanceProvider } from "./fuelBalanceProvider";
 import { FuelGasProvider } from "./fuelGasProvider";
 import FuelProvider from "./FuelProvider";
 import useFuelConnection from "./useFuelConnection";
-import { WalletProvider } from "@/context/LayerswapProvider";
+import { WalletProvider } from "@/types";
 
 export const useFuel: WalletProvider = {
     id: "fuel",
