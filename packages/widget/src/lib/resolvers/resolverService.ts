@@ -1,15 +1,16 @@
 import { BalanceResolver } from "@/lib/balances/balanceResolver";
 import { GasResolver } from "@/lib/gases/gasResolver";
-import { BalanceProvider } from "@/types/balance";
-import { GasProvider } from "@/types/gas";
+import { AddressUtilsResolver } from '@/lib/address/addressUtilsResolver'
+import { AddressUtilsProvider, BalanceProvider, GasProvider } from "@/types";
 
-class BalanceAndGasResolverService {
+class UtilsResolverService {
     private balanceResolver: BalanceResolver | null = null;
     private gasResolver: GasResolver | null = null;
-
-    setProviders(balanceProviders: BalanceProvider[], gasProviders: GasProvider[]) {
+    private addressUtilsResolver: AddressUtilsResolver | null = null;
+    setProviders(balanceProviders: BalanceProvider[], gasProviders: GasProvider[], addressUtilsProviders: AddressUtilsProvider[]) {
         this.balanceResolver = new BalanceResolver(balanceProviders);
         this.gasResolver = new GasResolver(gasProviders);
+        this.addressUtilsResolver = new AddressUtilsResolver(addressUtilsProviders);
     }
 
     getBalanceResolver(): BalanceResolver {
@@ -25,6 +26,13 @@ class BalanceAndGasResolverService {
         }
         return this.gasResolver;
     }
+
+    getAddressUtilsResolver(): AddressUtilsResolver {
+        if (!this.addressUtilsResolver) {
+            throw new Error('ResolverService not initialized. Make sure to call setProviders first.');
+        }
+        return this.addressUtilsResolver;
+    }
 }
 
-export const resolverService = new BalanceAndGasResolverService();
+export const resolverService = new UtilsResolverService();

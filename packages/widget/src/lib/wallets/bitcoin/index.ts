@@ -3,11 +3,13 @@ import { WalletProvider } from "@/types";
 import { BitcoinProvider } from "./BitcoinProvider";
 import { BitcoinGasProvider } from "./bitcoinGasProvider";
 import { BitcoinBalanceProvider } from "./bitcoinBalanceProvider";
+import { BitcoinAddressUtilsProvider } from "./bitcoinAddressUtilsProvider";
 
 export const useBitcoin: WalletProvider = {
     id: "bitcoin",
     wrapper: BitcoinProvider,
     walletConnectionProvider: useBitcoinConnection,
+    addressUtilsProvider: new BitcoinAddressUtilsProvider(),
     balanceProvider: new BitcoinBalanceProvider(),
-    gasProvider: new BitcoinGasProvider(),  
+    gasProvider: new BitcoinGasProvider(),
 }

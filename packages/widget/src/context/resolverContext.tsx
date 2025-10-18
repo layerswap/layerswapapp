@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useMemo } from "react";
 import { WalletProvider } from "@/types";
-import { BalanceProvider } from "@/types/balance";
-import { GasProvider } from "@/types/gas";
 import { resolverService } from "@/lib/resolvers/resolverService";
+import { AddressUtilsProvider, GasProvider, BalanceProvider } from "@/types";
 
 type ResolverContextType = {
     isInitialized: boolean;
@@ -10,7 +9,7 @@ type ResolverContextType = {
 
 const ResolverContext = createContext<ResolverContextType | null>(null);
 
-export const BalanceAndGasResolverProvider: React.FC<React.PropsWithChildren<{ walletProviders: WalletProvider[] }>> = ({
+export const ResolverProviders: React.FC<React.PropsWithChildren<{ walletProviders: WalletProvider[] }>> = ({
     children,
     walletProviders
 }) => {
@@ -27,8 +26,14 @@ export const BalanceAndGasResolverProvider: React.FC<React.PropsWithChildren<{ w
             .flat()
             .filter((provider): provider is GasProvider => Boolean(provider));
 
+        // Extract gas providers from wallet providers
+        const AddressUtilsProviders: AddressUtilsProvider[] = walletProviders
+            .map(provider => provider.addressUtilsProvider)
+            .flat()
+            .filter((provider): provider is AddressUtilsProvider => Boolean(provider));
+
         // Initialize the resolver service with the providers
-        resolverService.setProviders(balanceProviders, gasProviders);
+        resolverService.setProviders(balanceProviders, gasProviders, AddressUtilsProviders);
 
         return true;
     }, [walletProviders]);

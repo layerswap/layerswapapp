@@ -1,6 +1,7 @@
 export * from './wallet'
 export * from './balance'
 export * from './gas'
+export * from './addressUtils'
 export * from './transfer'
 export * from './multiStepTransfer'
 export * from '../Models'
