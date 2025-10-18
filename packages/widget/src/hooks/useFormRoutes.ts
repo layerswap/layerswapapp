@@ -1,4 +1,3 @@
-
 import useSWR from "swr";
 import { useEffect, useMemo, useState } from "react";
 import { ApiResponse } from "../Models/ApiResponse";
@@ -170,10 +169,10 @@ function sortRoutesByBalance(
 
     return routesWithBalances
         .sort((a, b) => {
-            if (b.totalBalanceUSD !== a.totalBalanceUSD) {
-                return b.totalBalanceUSD - a.totalBalanceUSD;
+            if (b?.totalBalanceUSD !== a?.totalBalanceUSD) {
+                return (b?.totalBalanceUSD || 0) - (a?.totalBalanceUSD || 0);
             }
-            return a.route.display_name.localeCompare(b.route.display_name);
+            return a?.route?.display_name?.localeCompare(b?.route?.display_name);
         })
         .map(item => item.route);
 }
