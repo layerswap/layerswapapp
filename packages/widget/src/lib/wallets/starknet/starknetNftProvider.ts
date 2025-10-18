@@ -1,7 +1,7 @@
 import { Contract, RpcProvider } from "starknet";
-import { Network } from "../../../Models/Network";
-import KnownInternalNames from "../../knownIds";
-import { Provider, NftBalanceProps } from "./types";
+import { Network } from "@/Models/Network";
+import KnownInternalNames from "@/lib/knownIds";
+import { NftBalanceProps, NftProvider } from "@/types";
 
 const NFT_ABI = [
     {
@@ -23,10 +23,9 @@ const NFT_ABI = [
     }
 ];
 
-export class StarknetNftProvider implements Provider {
+export class StarknetNftProvider implements NftProvider {
     supportsNetwork(network: Network): boolean {
-        return (KnownInternalNames.Networks.StarkNetMainnet.includes(network.name) 
-            || KnownInternalNames.Networks.StarkNetGoerli.includes(network.name) 
+        return (KnownInternalNames.Networks.StarkNetMainnet.includes(network.name)
             || KnownInternalNames.Networks.StarkNetSepolia.includes(network.name))
     }
 
@@ -42,7 +41,7 @@ export class StarknetNftProvider implements Provider {
         try {
             const contract = new Contract(NFT_ABI, contractAddress, provider);
             const response = await contract.balanceOf(address);
-            
+
             if (!response || typeof response.balance === 'undefined') {
                 throw new Error("Invalid response from NFT contract");
             }

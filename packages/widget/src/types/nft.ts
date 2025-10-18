@@ -1,4 +1,4 @@
-import { Network } from "../../../Models/Network";
+import { Network } from "@/Models";
 
 export interface NftBalanceProps {
     address: string;
@@ -6,7 +6,7 @@ export interface NftBalanceProps {
     contractAddress: string;
 }
 
-export interface Provider {
+export interface NftProvider {
     supportsNetwork(network: Network): boolean;
     getBalance(props: NftBalanceProps): Promise<number>;
 } 
