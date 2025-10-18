@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo } from "react";
-import { WalletProvider } from "@/types";
+import { NftProvider, WalletProvider } from "@/types";
 import { resolverService } from "@/lib/resolvers/resolverService";
 import { AddressUtilsProvider, GasProvider, BalanceProvider } from "@/types";
 
@@ -26,14 +26,18 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{ walletProvide
             .flat()
             .filter((provider): provider is GasProvider => Boolean(provider));
 
-        // Extract gas providers from wallet providers
-        const AddressUtilsProviders: AddressUtilsProvider[] = walletProviders
+        // Extract address utils providers from wallet providers
+        const addressUtilsProviders: AddressUtilsProvider[] = walletProviders
             .map(provider => provider.addressUtilsProvider)
             .flat()
             .filter((provider): provider is AddressUtilsProvider => Boolean(provider));
 
-        // Initialize the resolver service with the providers
-        resolverService.setProviders(balanceProviders, gasProviders, AddressUtilsProviders);
+        const nftProviders: NftProvider[] = walletProviders
+            .map(provider => provider.nftProvider)
+            .flat()
+            .filter((provider): provider is NftProvider => Boolean(provider));
+
+        resolverService.setProviders(balanceProviders, gasProviders, addressUtilsProviders, nftProviders)
 
         return true;
     }, [walletProviders]);

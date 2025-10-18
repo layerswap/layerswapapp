@@ -4,6 +4,7 @@ import { StarknetBalanceProvider } from "./starknetBalanceProvider";
 import { StarknetGasProvider } from "./starknetGasProvider";
 import { StarknetAddressUtilsProvider } from "./starknetAddressUtilsProvider";
 import { WalletProvider } from "@/types";
+import { StarknetNftProvider } from "./starknetNftProvider";
 
 export const useStarknet: WalletProvider = {
     id: "starknet",
@@ -12,4 +13,5 @@ export const useStarknet: WalletProvider = {
     addressUtilsProvider: new StarknetAddressUtilsProvider(),
     balanceProvider: new StarknetBalanceProvider(),
     gasProvider: new StarknetGasProvider(),
+    nftProvider: new StarknetNftProvider(),
 }

@@ -91,7 +91,7 @@ export const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuo
     const gasFeeInUsd = (gasData && gasTokenPriceInUsd) ? gasData.gas * gasTokenPriceInUsd : null;
     const averageCompletionTime = quote?.avg_completion_time;
 
-    const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && reward?.nft_contract_address;
+    const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && !!reward?.nft_contract_address;
     const { balance: nftBalance, isLoading, error } = useSWRNftBalance(
         destinationAddress || '',
         destination,
