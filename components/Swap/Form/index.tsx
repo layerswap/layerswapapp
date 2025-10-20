@@ -14,10 +14,10 @@ import { Partner } from "@/Models/Partner";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 
 export default function Form() {
-    const { from, appName } = useQueryState()
+    const { from, appName, defaultTab: defaultTabQueryParam } = useQueryState()
     const { sourceExchanges } = useSettingsState()
     const defaultTab = useMemo(() => {
-        return defaultTabResolver({ from, sourceExchanges })
+        return defaultTabResolver({ from, sourceExchanges, defaultTabQueryParam })
     }, [from, sourceExchanges])
 
     const layerswapApiClient = new LayerSwapApiClient()
@@ -60,7 +60,15 @@ export default function Form() {
     </Tabs>
 }
 
-const defaultTabResolver = ({ from, sourceExchanges }: { from: string | undefined, sourceExchanges: ReturnType<typeof useSettingsState>['sourceExchanges'] }) => {
+const defaultTabResolver = ({ from, sourceExchanges, defaultTabQueryParam }: { from: string | undefined, sourceExchanges: ReturnType<typeof useSettingsState>['sourceExchanges'], defaultTabQueryParam: string | undefined }) => {
+    if (defaultTabQueryParam) {
+        if (defaultTabQueryParam === "swap") {
+            return "cross-chain";
+        }
+        if (defaultTabQueryParam === "cex") {
+            return "exchange";
+        }
+    }
     if (from) {
         const isCex = sourceExchanges.some(exchange => exchange.name === from);
         if (isCex) {
