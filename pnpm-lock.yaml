@@ -296,9 +296,6 @@ importers:
 
   packages/wallets/evm:
     dependencies:
-      '@layerswap/widget':
-        specifier: workspace:*
-        version: link:../../widget
       '@walletconnect/ethereum-provider':
         specifier: 2.21.8
         version: 2.21.8(@react-native-async-storage/async-storage@1.24.0(react-native@0.82.0(@babel/core@7.28.4)(@types/react@18.3.26)(bufferutil@4.0.9)(react@18.3.1)(utf-8-validate@5.0.10)))(@types/react@18.3.26)(bufferutil@4.0.9)(react@18.3.1)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@3.22.4)
@@ -354,6 +351,9 @@ importers:
         specifier: 0.13.1
         version: 0.13.1(@ethersproject/logger@5.8.0)(ethers@5.7.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))
     devDependencies:
+      '@layerswap/widget':
+        specifier: workspace:*
+        version: link:../../widget
       '@tailwindcss/postcss':
         specifier: ^4.0.15
         version: 4.1.14
