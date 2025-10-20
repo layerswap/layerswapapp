@@ -1,13 +1,6 @@
 {
-    "projects": [
-        {
-            "name": "bridge-app",
-            "root": "apps/bridge",
-            "installCommand": "pnpm i",
-            "buildCommand": "pnpm run build",
-            "outputDirectory": "dist",
-            "framework": null
-        }
-    ],
+    "installCommand": "pnpm i",
+    "buildCommand": "pnpm -w run build",
+    "framework": null,
     "ignoreCommand": "git diff HEAD^ HEAD --quiet -- apps/bridge packages/widget"
 }
