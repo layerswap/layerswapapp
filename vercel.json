@@ -4,7 +4,7 @@
             "name": "bridge-app",
             "root": "apps/bridge",
             "installCommand": "pnpm i",
-            "buildCommand": "pnpm build",
+            "buildCommand": "pnpm run build",
             "outputDirectory": "dist",
             "framework": null
         }
