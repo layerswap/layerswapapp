@@ -1,5 +1,5 @@
 'use client'
-import Jazzicon from "./jazzicon";
+import Jazzicon from "./jazzicon.mjs";
 import { FC, useEffect, useRef } from "react";
 
 type Props = {

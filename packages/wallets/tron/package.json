@@ -42,7 +42,7 @@
     "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc"
   },
   "dependencies": {
-    "@layerswap/widget": "workspace:*",
+    "@layerswap/widget": "*",
     "@tronweb3/tronwallet-adapter-bitkeep": "^1.1.5",
     "@tronweb3/tronwallet-adapter-bybit": "^1.0.1",
     "@tronweb3/tronwallet-adapter-foxwallet": "^1.0.1",

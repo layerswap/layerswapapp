@@ -1,7 +1,6 @@
 import { FC, ReactNode, useEffect, useState } from "react";
 import { mainnet, sepolia } from "@starknet-react/chains"
 import { Connector, ConnectorNotConnectedError, UserNotConnectedError, StarknetConfig, publicProvider } from '@starknet-react/core';
-import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from "starknet-types-07";
 import { AppSettings } from "@layerswap/widget/internal";
 //@ts-ignore
 import { ArgentMobileConnector } from "starknetkit/argentMobile";
@@ -64,7 +63,7 @@ class DiscoveryConnector extends Connector {
     chainId(): Promise<bigint> {
         throw new Error("Method not implemented.");
     }
-    request<T extends RpcMessage["type"]>(call: RequestFnCall<T>): Promise<RpcTypeToMessageMap[T]["result"]> {
+    request<T>(call: T): Promise<any> {
         throw new Error("Method not implemented.");
     }
 

@@ -42,7 +42,7 @@
     "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc"
   },
   "dependencies": {
-    "@layerswap/widget": "workspace:*",
+    "@layerswap/widget": "*",
     "@ton/core": "^0.62.0",
     "@ton/ton": "^15.4.0",
     "@tonconnect/ui-react": "^2.3.1"

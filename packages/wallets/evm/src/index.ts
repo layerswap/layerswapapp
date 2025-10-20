@@ -1,10 +1,11 @@
+'use client'
 import { WalletProvider } from "@layerswap/widget/types";
 import { EVMBalanceProvider, HyperliquidBalanceProvider, LoopringBalanceProvider, ZkSyncBalanceProvider } from "./balanceProviders"
 import useEVMConnection from "./useEVMConnection"
 import EVMProvider from "./EVMProvider"
 import { EVMGasProvider, LoopringGasProvider, ZkSyncGasProvider } from "./gasProviders"
 
-export const useEVM: WalletProvider = {
+export const evmWalletProvider: WalletProvider = {
     id: "evm",
     wrapper: EVMProvider,
     walletConnectionProvider: useEVMConnection,

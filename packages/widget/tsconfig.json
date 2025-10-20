@@ -3,9 +3,11 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "emitDeclarationOnly": false,
-    "module": "NodeNext",
-    "moduleResolution": "nodenext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "preserveSymlinks": false,
+    "composite": true,
+    "rootDir": "src",
     "declaration": true,
     "noEmit": false,
     "declarationDir": "dist",

@@ -14,9 +14,15 @@
   },
   "dependencies": {
     "@badrap/bar-of-progress": "^0.2.2",
+    "@layerswap/widget": "workspace:*",
+    "@layerswap/wallet-evm": "workspace:*",
+    "@layerswap/wallet-bitcoin": "workspace:*",
+    "@layerswap/wallet-fuel": "workspace:*",
+    "@radix-ui/react-context-menu": "^1.0.0",
     "@tanstack/react-query": "^5.59.20",
     "@uidotdev/usehooks": "^2.4.1",
     "axios": "^0.21.4",
+    "clsx": "^2.1.1",
     "copy-to-clipboard": "^3.3.3",
     "framer-motion": "^10.16.15",
     "lodash": "^4.17.21",
@@ -26,11 +32,13 @@
     "posthog-js": "^1.261.0",
     "qrcode.react": "^3.1.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react-dom": "catalog:",
     "react-error-boundary": "^4.0.11",
+    "react-hot-toast": "^2.6.0",
     "react-use-intercom": "^2.0.0",
     "swr": "^2.2.5",
-    "uuid": "^9.0.0"
+    "uuid": "^9.0.0",
+    "wagmi": "catalog:"
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^13.5.4",
@@ -58,9 +66,6 @@
     "storybook-react-context": "^0.8.0",
     "tailwindcss": "^4.0.15",
     "typescript": "^5.9.2"
-  },
-  "resolutions": {
-    "@radix-ui/react-dismissable-layer": "1.1.1"
   },
   "engines": {
     "node": ">=20.9.0"

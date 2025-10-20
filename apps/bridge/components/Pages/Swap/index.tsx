@@ -3,18 +3,11 @@ import { useRouter } from "next/router"
 import { FC } from "react"
 import { updateFormBulk } from "../../utils/updateForm"
 import { removeSwapPath, setSwapPath } from "../../utils/updateSwapPath"
-// import { useEVM } from "@layerswap/wallet-evm";
-// import { useBitcoin } from "@layerswap/wallet-bitcoin";
-// import { useStarknet } from "@layerswap/wallet-starknet";
-// import { useTron } from "@layerswap/wallet-tron";
-// import { useTON } from "@layerswap/wallet-ton";
-// import { useFuel } from "@layerswap/wallet-fuel";
-// import { useImtblX } from "@layerswap/wallet-imtblX";
-// import { useSVM } from "@layerswap/wallet-svm";
+import { evmWalletProvider } from "@layerswap/wallet-evm";
+import { bitcoinProvider } from "@layerswap/wallet-bitcoin";
 
 const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string }> = ({ settings, themeData, apiKey }) => {
     const router = useRouter()
-
     const imtblPassportConfigs = typeof window !== 'undefined' ? {
         appBasePath: router.basePath,
         clientId: process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID || '',
@@ -42,7 +35,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
             }
         }}
         imtblPassport={imtblPassportConfigs}
-        // walletProviders={[useEVM]}
+        walletProviders={[evmWalletProvider, bitcoinProvider]}
     >
         <Swap />
     </LayerswapProvider>

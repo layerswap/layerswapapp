@@ -1,7 +1,6 @@
 import { useCallback, useEffect } from "react";
 import { useIntercom } from "react-use-intercom";
 import { Home, RotateCcw } from "lucide-react";
-import { useRouter } from "next/router";
 import posthog from "posthog-js";
 import MessageComponent from "./Common/MessageComponent";
 import NotFoundIcon from "./Icons/NotFoundIcon";
@@ -9,9 +8,7 @@ import SubmitButton from "./Buttons/submitButton";
 
 export default function ErrorFallback({ error, resetErrorBoundary }) {
 
-    const { boot, show, update } = useIntercom()
-    const { query } = useRouter()
-    const updateWithProps = () => update({ customAttributes: { swapId: query?.swapId } })
+    const { boot, show } = useIntercom()
 
     useEffect(() => {
         posthog.capture('$exception', {
@@ -25,8 +22,7 @@ export default function ErrorFallback({ error, resetErrorBoundary }) {
     const startIntercom = useCallback(() => {
         boot();
         show();
-        updateWithProps()
-    }, [boot, show, updateWithProps])
+    }, [boot, show])
 
     return (
         <div className="styled-scroll">

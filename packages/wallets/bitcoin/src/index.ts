@@ -4,7 +4,7 @@ import { BitcoinProvider } from "./BitcoinProvider";
 import { BitcoinGasProvider } from "./bitcoinGasProvider";
 import { BitcoinBalanceProvider } from "./bitcoinBalanceProvider";
 
-export const useBitcoin: WalletProvider = {
+export const bitcoinProvider: WalletProvider = {
     id: "bitcoin",
     wrapper: BitcoinProvider,
     walletConnectionProvider: useBitcoinConnection,

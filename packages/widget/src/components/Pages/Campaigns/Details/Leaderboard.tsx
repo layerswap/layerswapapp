@@ -5,7 +5,7 @@ import useSWR from "swr"
 import { ApiResponse } from "@/Models/ApiResponse"
 import ClickTooltip from "@/components/Common/ClickTooltip"
 import shortenAddress from "@/components/utils/ShortenAddress"
-import { useAccount } from "wagmi"
+// import { useAccount } from "wagmi"
 import { truncateDecimals } from "@/components/utils/RoundDecimals"
 import AddressIcon from "@/components/Common/AddressIcon";
 import Modal from "@/components/Modal/modal";
@@ -16,12 +16,12 @@ type Props = {
 }
 const Component: FC<Props> = ({ campaign }) => {
     const [openTopModal, setOpenTopModal] = useState(false)
-    const { address } = useAccount();
+    // const { address } = useAccount();
 
     const handleOpenTopModal = () => {
         setOpenTopModal(true)
     }
-
+    const address = '0x1234567890123456789012345678901234567890'
     const apiClient = new LayerSwapApiClient()
     const { data: leaderboardData, isLoading } = useSWR<ApiResponse<Leaderboard>>(`/campaigns/${campaign?.id}/leaderboard`, apiClient.fetcher, { dedupingInterval: 60000 })
     const { data: rewardsData } = useSWR<ApiResponse<Reward>>(`/campaigns/${campaign.id}/rewards/${address}`, apiClient.fetcher, { dedupingInterval: 60000 })

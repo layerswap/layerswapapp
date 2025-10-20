@@ -1,0 +1,12 @@
+packages:
+  - packages/*
+  - packages/wallets/evm
+  - packages/wallets/bitcoin
+  - packages/wallets/fuel
+  - apps/*
+
+catalog:
+  '@wagmi/connectors': 5.7.7
+  '@wagmi/core': 2.16.4
+  react-dom: 18.3.1
+  wagmi: 2.14.11

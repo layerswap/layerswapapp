@@ -3,8 +3,8 @@ import { Paperclip } from 'lucide-react'
 import * as ContextMenuPrimitive from '@radix-ui/react-context-menu';
 import { useGoHome } from "../../hooks/useGoHome";
 import clsx from "clsx";
-import LayerswapMobileLogo from "@/components/Icons/layerSwapMobileLogo";
-import LayerSwapLogo from "@/components/Icons/layerSwapLogo";
+// import LayerswapMobileLogo from "@/components/Icons/layerSwapMobileLogo";
+// import LayerSwapLogo from "@/components/Icons/layerSwapLogo";
 interface Props {
     className?: string;
     children?: JSX.Element | JSX.Element[] | string;
@@ -21,7 +21,7 @@ const GoHomeButton: FC<Props> = (({ className, children }) => {
                     <ContextMenuPrimitive.Root>
                         <ContextMenuPrimitive.Trigger asChild>
                             <div>
-                                <LayerswapMobileLogo
+                                {/* <LayerswapMobileLogo
                                     className={clsx(
                                         "block md:hidden h-4 w-auto text-logo fill-primary-text",
                                         className
@@ -34,7 +34,7 @@ const GoHomeButton: FC<Props> = (({ className, children }) => {
                                         className
                                     )}
                                     onClick={goHome}
-                                />
+                                /> */}
                             </div>
                         </ContextMenuPrimitive.Trigger>
                         <ContextMenuPrimitive.Content className="dialog-overlay absolute z-40 border h-fit text-secondary-text border-secondary-100 mt-2 w-fit rounded-md shadow-lg bg-secondary-700 ring-1 ring-black/5 focus:outline-hidden">

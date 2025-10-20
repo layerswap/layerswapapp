@@ -10,7 +10,7 @@ import { explicitInjectedProviderDetected } from "./connectors/explicitInjectedP
 import { useEvmConnectors } from "./EVMProvider/evmConnectorsContext"
 import { useActiveEvmAccount } from "./EVMProvider/ActiveEvmAccount"
 import { transactionBuilder } from "./services/transferService/transactionBuilder"
-import { LoopringMultiStepHandler, ZkSyncMultiStepHandler } from "./components"
+import { LoopringMultiStepHandler } from "./components"
 
 const ethereumNames = [KnownInternalNames.Networks.EthereumMainnet, KnownInternalNames.Networks.EthereumSepolia]
 const immutableZKEvm = [KnownInternalNames.Networks.ImmutableZkEVM]
@@ -303,10 +303,6 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
                 {
                     component: LoopringMultiStepHandler,
                     supportedNetworks: [KnownInternalNames.Networks.LoopringMainnet, KnownInternalNames.Networks.LoopringGoerli, KnownInternalNames.Networks.LoopringSepolia]
-                },
-                {
-                    component: ZkSyncMultiStepHandler,
-                    supportedNetworks: [KnownInternalNames.Networks.ZksyncMainnet]
                 }
             ]
         }
