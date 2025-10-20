@@ -51,7 +51,6 @@
     "@ton/crypto": "^3.3.0",
     "eslint": "8.49.0",
     "ton": "^13.9.0",
-    "tsc-alias": "^1.8.16",
     "typescript": "^5.9.2"
   },
   "engines": {

@@ -14,6 +14,8 @@
     "rimraf": "^5.0.0",
     "tailwindcss": "^4.0.15",
     "tailwindcss-animate": "^1.0.5",
+    "tsc-alias": "^1.8.16",
+    "tsc-watch": "^6.2.0",
     "typescript": "^5.1.6"
   },
   "packageManager": "pnpm@10.16.1",

@@ -71,7 +71,6 @@
     "@wagmi/core": "catalog:",
     "eslint": "8.49.0",
     "tailwindcss": "^4.0.15",
-    "tsc-alias": "^1.8.16",
     "tsup": "^8.4.0",
     "typescript": "^5.9.2",
     "viem": "^2.21.16",
