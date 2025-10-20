@@ -49,6 +49,7 @@ const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThre
         posthog.capture('$exception', {
             name: renderingError.name,
             message: renderingError.message,
+            $layerswap_exception_type: "Long Transaction Error",
             stack: renderingError.stack,
             cause: renderingError.cause,
             where: 'longTransactionError',

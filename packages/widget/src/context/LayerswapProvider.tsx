@@ -18,8 +18,8 @@ import WalletsProviders from "@/components/Wallet/WalletProviders";
 import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
 import { InitialSettings } from "../Models/InitialSettings";
 import { BalanceAccountsProvider } from "./balanceAccounts";
-import { BalanceAndGasResolverProvider } from "./resolverContext";
 import { WalletProvider } from "@/types";
+import { ResolverProviders } from "./resolverContext";
 
 export type LayerswapContextProps = {
     children?: ReactNode;
@@ -74,13 +74,13 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
                                 themeData={themeData}
                                 walletProviders={walletProviders}
                             >
-                                <BalanceAndGasResolverProvider walletProviders={walletProviders}>
+                                <ResolverProviders walletProviders={walletProviders}>
                                     <BalanceAccountsProvider>
                                         <AsyncModalProvider>
                                             {children}
                                         </AsyncModalProvider>
                                     </BalanceAccountsProvider>
-                                </BalanceAndGasResolverProvider>
+                                </ResolverProviders>
                             </WalletsProviders>
                         </ThemeWrapper>
                     </ErrorBoundary>

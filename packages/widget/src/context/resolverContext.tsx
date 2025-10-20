@@ -1,7 +1,5 @@
 import React, { createContext, useContext, useMemo } from "react";
-import { WalletProvider } from "@/types";
-import { BalanceProvider } from "@/types/balance";
-import { GasProvider } from "@/types/gas";
+import { WalletProvider, NftProvider, BalanceProvider, GasProvider, AddressUtilsProvider } from "@/types";
 import { resolverService } from "@/lib/resolvers/resolverService";
 
 type ResolverContextType = {
@@ -10,7 +8,7 @@ type ResolverContextType = {
 
 const ResolverContext = createContext<ResolverContextType | null>(null);
 
-export const BalanceAndGasResolverProvider: React.FC<React.PropsWithChildren<{ walletProviders: WalletProvider[] }>> = ({
+export const ResolverProviders: React.FC<React.PropsWithChildren<{ walletProviders: WalletProvider[] }>> = ({
     children,
     walletProviders
 }) => {
@@ -27,8 +25,18 @@ export const BalanceAndGasResolverProvider: React.FC<React.PropsWithChildren<{ w
             .flat()
             .filter((provider): provider is GasProvider => Boolean(provider));
 
-        // Initialize the resolver service with the providers
-        resolverService.setProviders(balanceProviders, gasProviders);
+        // Extract address utils providers from wallet providers
+        const addressUtilsProviders: AddressUtilsProvider[] = walletProviders
+            .map(provider => provider.addressUtilsProvider)
+            .flat()
+            .filter((provider): provider is AddressUtilsProvider => Boolean(provider));
+
+        const nftProviders: NftProvider[] = walletProviders
+            .map(provider => provider.nftProvider)
+            .flat()
+            .filter((provider): provider is NftProvider => Boolean(provider));
+
+        resolverService.setProviders(balanceProviders, gasProviders, addressUtilsProviders, nftProviders)
 
         return true;
     }, [walletProviders]);

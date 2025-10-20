@@ -37,8 +37,7 @@
     "react-hot-toast": "^2.6.0",
     "react-use-intercom": "^2.0.0",
     "swr": "^2.2.5",
-    "uuid": "^9.0.0",
-    "wagmi": "catalog:"
+    "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^13.5.4",

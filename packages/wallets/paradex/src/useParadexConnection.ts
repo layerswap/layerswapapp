@@ -10,8 +10,8 @@ import { switchChain, getChainId } from '@wagmi/core'
 import { shortenAddress, sleep, KnownInternalNames, useWalletStore, useConnectModal } from "@layerswap/widget/internal"
 import { useActiveParadexAccount } from "./ActiveParadexAccount"
 import ParadexMultiStepHandler from "./components/ParadexMultiStepHandler"
-// import { useEVM } from "@layerswap/wallet-evm";
-// import { useStarknet } from "@layerswap/wallet-starknet";
+import { useEVM } from "@layerswap/wallet-evm";
+import { useStarknet } from "@layerswap/wallet-starknet";
 
 export function useParadexConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
     const name = 'Paradex'
@@ -32,10 +32,12 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
         ...withdrawalSupportedNetworks
     ]
 
+    const { useEVMConnection } = useEVM()
+    const { useStarknetConnection } = useStarknet()
 
     const { setSelectedConnector } = useConnectModal()
-    const evmProvider = {} as any //useEVMConnection({ networks })
-    const starknetProvider = {} as any //useStarknetConnection({ networks })
+    const evmProvider = useEVMConnection({ networks })
+    const starknetProvider = useStarknetConnection({ networks })
 
     const config = useConfig()
 

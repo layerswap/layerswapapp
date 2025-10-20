@@ -8,6 +8,7 @@ const logError = (message: string) => {
     posthog.capture('$exception', {
         name: error.name,
         message: error.message,
+        $layerswap_exception_type: "Alert UI",
         stack: error.stack,
         cause: error.cause,
         where: 'alertUI',

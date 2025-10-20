@@ -5,6 +5,8 @@ import { TransferProps } from './transfer';
 import { NetworkWithTokens } from '@/Models/Network';
 import { BalanceProvider } from './balance';
 import { GasProvider } from './gas';
+import { AddressUtilsProvider } from './addressUtils';
+import { NftProvider } from './nft';
 
 export type InternalConnector = {
     name: string,
@@ -51,6 +53,8 @@ export type WalletProvider = {
     id: string,
     wrapper?: React.ComponentType<any>,
     walletConnectionProvider: (props: WalletConnectionProviderProps) => WalletConnectionProvider,
+    addressUtilsProvider?: AddressUtilsProvider | AddressUtilsProvider[],
+    nftProvider?: NftProvider | NftProvider[],
     gasProvider?: GasProvider | GasProvider[],
     balanceProvider?: BalanceProvider | BalanceProvider[],
 }
