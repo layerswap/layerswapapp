@@ -1,6 +1,5 @@
 {
     "installCommand": "pnpm i",
     "buildCommand": "pnpm -w run build",
-    "framework": null,
-    "ignoreCommand": "git diff HEAD^ HEAD --quiet -- apps/bridge packages/widget"
+    "framework": null
 }
