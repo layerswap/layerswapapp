@@ -3,8 +3,8 @@
         {
             "name": "bridge-app",
             "root": "apps/bridge",
-            "installCommand": "yarn",
-            "buildCommand": "yarn build",
+            "installCommand": "pnpm",
+            "buildCommand": "pnpm build",
             "outputDirectory": "dist",
             "framework": null
         }
