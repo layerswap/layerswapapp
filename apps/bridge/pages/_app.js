@@ -1,5 +1,5 @@
 import '../styles/globals.css'
-import '../styles/widget.css'
+import '@layerswap/widget/index.css'
 import { useRouter } from "next/router";
 import { IntercomProvider } from 'react-use-intercom';
 import { SWRConfig } from 'swr'
