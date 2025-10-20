@@ -1,8 +1,6 @@
 packages:
   - packages/*
-  - packages/wallets/evm
-  - packages/wallets/bitcoin
-  - packages/wallets/fuel
+  - packages/wallets/*
   - apps/*
 
 catalog:

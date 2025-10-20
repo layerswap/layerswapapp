@@ -1,13 +1,13 @@
 import { WalletProvider } from "@layerswap/widget/types";
 import useSVMConnection from "./useSVMConnection";
-import SVMProvider from "./SVMProvider";
+import SVMProviderWrapper from "./SVMProvider";
 import { SolanaBalanceProvider } from "./svmBalanceProvider";
 import { SolanaGasProvider } from "./svmGasProvider";
 import { SolanaAddressUtilsProvider } from "./svmAddressUtilsProvider";
 
-export const useSVM: WalletProvider = {
+export const SVMProvider: WalletProvider = {
     id: "solana",
-    wrapper: SVMProvider,
+    wrapper: SVMProviderWrapper,
     walletConnectionProvider: useSVMConnection,
     addressUtilsProvider: new SolanaAddressUtilsProvider(),
     balanceProvider: new SolanaBalanceProvider(),

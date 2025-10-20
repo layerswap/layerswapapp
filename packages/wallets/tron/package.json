@@ -2,12 +2,14 @@
   "name": "@layerswap/wallet-tron",
   "version": "1.0.0-alpha0.1",
   "description": "Tron Wallet Provider for Layerswap Widget",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "type": "module",
+  "main": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "typings": "dist/types/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/esm/index.js"
     }
   },
   "sideEffects": false,
@@ -16,13 +18,10 @@
     "dist/**/*"
   ],
   "scripts": {
-    "type-check": "tsc --noEmit",
-    "clean": "rimraf dist && rm -rf tsconfig.tsbuildinfo",
-    "build:js": "tsup",
-    "build:types": "tsc --outDir dist",
-    "build": "yarn clean && yarn build:js && yarn build:types",
-    "dev": "yarn tsc --build --watch",
-    "lint": "eslint src --ext .ts,.tsx --fix"
+    "build": "pnpm run clean && pnpm run build:esm+types",
+    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm",
+    "check:types": "tsc --noEmit",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo actions chains codegen experimental internal query"
   },
   "author": "Layerswap",
   "homepage": "https://github.com/layerswap/layerswapapp",
@@ -42,7 +41,7 @@
     "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc"
   },
   "dependencies": {
-    "@layerswap/widget": "*",
+    "@layerswap/widget": "workspace:*",
     "@tronweb3/tronwallet-adapter-bitkeep": "^1.1.5",
     "@tronweb3/tronwallet-adapter-bybit": "^1.0.1",
     "@tronweb3/tronwallet-adapter-foxwallet": "^1.0.1",
@@ -59,7 +58,7 @@
   "devDependencies": {
     "@types/node": "^22.13.13",
     "eslint": "8.49.0",
-    "tsup": "^8.4.0",
+    "tsc-alias": "^1.8.16",
     "typescript": "^5.9.2"
   },
   "engines": {

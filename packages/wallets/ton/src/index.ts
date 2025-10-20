@@ -1,13 +1,13 @@
 import { WalletProvider } from "@layerswap/widget/types";
 import { TonBalanceProvider } from "./tonBalanceProvider";
 import { TonGasProvider } from "./tonGasProvider";
-import TonProvider from "./TonProvider";
+import TonProviderWrapper from "./TonProvider";
 import useTONConnection from "./useTONConnection";
 import { TonAddressUtilsProvider } from "./tonAddressUtilsProvider";
 
-export const useTON: WalletProvider = {
+export const TonProvider: WalletProvider = {
     id: "ton",
-    wrapper: TonProvider,
+    wrapper: TonProviderWrapper,
     walletConnectionProvider: useTONConnection,
     addressUtilsProvider: new TonAddressUtilsProvider(),
     balanceProvider: new TonBalanceProvider(),
