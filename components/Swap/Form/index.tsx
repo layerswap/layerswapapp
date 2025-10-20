@@ -61,8 +61,13 @@ export default function Form() {
 }
 
 const defaultTabResolver = ({ from, sourceExchanges, defaultTabQueryParam }: { from: string | undefined, sourceExchanges: ReturnType<typeof useSettingsState>['sourceExchanges'], defaultTabQueryParam: string | undefined }) => {
-    if (defaultTabQueryParam && defaultTabQueryParam === "swap" || defaultTabQueryParam === "cex") {
-        return defaultTabQueryParam;
+    if (defaultTabQueryParam) {
+        if (defaultTabQueryParam === "swap") {
+            return "cross-chain";
+        }
+        if (defaultTabQueryParam === "cex") {
+            return "exchange";
+        }
     }
     if (from) {
         const isCex = sourceExchanges.some(exchange => exchange.name === from);
