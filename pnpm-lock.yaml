@@ -287,9 +287,6 @@ importers:
       eslint:
         specifier: 8.49.0
         version: 8.49.0
-      tsc-alias:
-        specifier: ^1.8.16
-        version: 1.8.16
       tsup:
         specifier: ^8.4.0
         version: 8.5.0(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)(yaml@2.8.1)
@@ -378,9 +375,6 @@ importers:
       tailwindcss:
         specifier: ^4.0.15
         version: 4.1.14
-      tsc-alias:
-        specifier: ^1.8.16
-        version: 1.8.16
       tsup:
         specifier: ^8.4.0
         version: 8.5.0(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)(yaml@2.8.1)
@@ -454,9 +448,6 @@ importers:
       eslint:
         specifier: 8.49.0
         version: 8.49.0
-      tsc-alias:
-        specifier: ^1.8.16
-        version: 1.8.16
       tsup:
         specifier: ^8.4.0
         version: 8.5.0(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)(yaml@2.8.1)
@@ -491,9 +482,6 @@ importers:
       eslint:
         specifier: 8.49.0
         version: 8.49.0
-      tsc-alias:
-        specifier: ^1.8.16
-        version: 1.8.16
       typescript:
         specifier: ^5.9.2
         version: 5.9.3
@@ -543,9 +531,6 @@ importers:
       eslint:
         specifier: 8.49.0
         version: 8.49.0
-      tsc-alias:
-        specifier: ^1.8.16
-        version: 1.8.16
       typescript:
         specifier: ^5.9.2
         version: 5.9.3
@@ -595,9 +580,6 @@ importers:
       eslint:
         specifier: 8.49.0
         version: 8.49.0
-      tsc-alias:
-        specifier: ^1.8.16
-        version: 1.8.16
       typescript:
         specifier: ^5.9.2
         version: 5.9.3
@@ -653,9 +635,6 @@ importers:
       eslint:
         specifier: 8.49.0
         version: 8.49.0
-      tsc-alias:
-        specifier: ^1.8.16
-        version: 1.8.16
       typescript:
         specifier: ^5.9.2
         version: 5.9.3
@@ -693,9 +672,6 @@ importers:
       ton:
         specifier: ^13.9.0
         version: 13.9.0(ton-core@0.53.0(ton-crypto@3.2.0))(ton-crypto@3.2.0)
-      tsc-alias:
-        specifier: ^1.8.16
-        version: 1.8.16
       typescript:
         specifier: ^5.9.2
         version: 5.9.3
@@ -754,9 +730,6 @@ importers:
       eslint:
         specifier: 8.49.0
         version: 8.49.0
-      tsc-alias:
-        specifier: ^1.8.16
-        version: 1.8.16
       typescript:
         specifier: ^5.9.2
         version: 5.9.3
