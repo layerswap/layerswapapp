@@ -1,4 +1,5 @@
-import { WalletAccount } from 'starknet';
+// import { WalletAccount } from 'starknet';
+// @ts-ignore
 import { StarknetWindowObject } from 'starknetkit';
 import { TransferProps } from './transfer';
 import { NetworkWithTokens } from '@/Models/Network';
@@ -31,7 +32,7 @@ export type Wallet = {
     icon: (props: any) => React.JSX.Element;
     //TODO: this is name of the connector, should be changed to connectorId
     metadata?: {
-        starknetAccount?: WalletAccount,
+        starknetAccount?: any,
         wallet?: StarknetWindowObject,
         l1Address?: string,
         deepLink?: string

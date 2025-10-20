@@ -1,0 +1,76 @@
+{
+  "name": "@layerswap/wallet-fuel",
+  "version": "1.0.0-alpha0.1",
+  "description": "Fuel Wallet Provider for Layerswap Widget",
+  "type": "module",
+  "main": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "typings": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/esm/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && pnpm run build:esm+types",
+    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm",
+    "check:types": "tsc --noEmit",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo actions chains codegen experimental internal query"
+  },
+  "author": "Layerswap",
+  "homepage": "https://github.com/layerswap/layerswapapp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/layerswap/layerswapapp.git",
+    "directory": "packages/wallets/fuel"
+  },
+  "keywords": [
+    "layerswap",
+    "fuel",
+    "wallet-provider"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc"
+  },
+  "dependencies": {
+    "@ethersproject/bytes": "^5.8.0",
+    "@fuel-ts/account": "^0.101.3",
+    "@fuel-ts/address": "^0.101.3",
+    "@fuels/react": "^0.43.2",
+    "@layerswap/widget": "workspace:*",
+    "@solana/web3.js": "1.66.0",
+    "@wagmi/core": "catalog:",
+    "bs58": "^6.0.0",
+    "fuels": "^0.101.3",
+    "json-rpc-2.0": "1.7.0",
+    "memoizee": "^0.4.17",
+    "socket.io-client": "^4.8.1",
+    "tweetnacl": "^1.0.3",
+    "viem": "^2.38.3",
+    "wagmi": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.13",
+    "eslint": "8.49.0",
+    "tsc-alias": "^1.8.16",
+    "tsup": "^8.4.0",
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "bugs": {
+    "url": "https://github.com/layerswap/layerswapapp/issues"
+  }
+}

@@ -60,7 +60,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                             requestedAmount &&
                             <p className="text-primary-text text-sm">{truncateDecimals(requestedAmount, sourceCurrency.precision)} {sourceCurrency.symbol}</p>
                         }
-                        <p className="text-secondary-text text-sm flex justify-end"><NumberFlow value={requestedAmountInUsd || 0} format={{ style: 'currency', currency: 'USD' }} trend={0} /></p>
+                        <p className="text-secondary-text text-sm flex justify-end"><NumberFlow value={Number(requestedAmountInUsd) || 0} format={{ style: 'currency', currency: 'USD' }} trend={0} /></p>
                     </div>
                 </div>
                 <div className="relative text-secondary-text">
@@ -80,7 +80,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                                 </p>
                                 <p className="text-secondary-text text-sm flex items-center gap-1">
                                     <PriceImpact className="text-sm" bridgeFee={swapQuote?.blockchain_fee} destinationTokenPriceUsd={swapQuote?.destination_token?.price_in_usd} receiveAmount={swapQuote?.receive_amount} requestedAmount={swapQuote?.requested_amount} serviceFee={swapQuote?.service_fee} sourceTokenPriceUsd={swapQuote?.source_token?.price_in_usd} />
-                                    <NumberFlow value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD' }} trend={0} />
+                                    <NumberFlow value={Number(receiveAmountInUsd) || 0} format={{ style: 'currency', currency: 'USD' }} trend={0} />
                                 </p>
                             </div>
                         )

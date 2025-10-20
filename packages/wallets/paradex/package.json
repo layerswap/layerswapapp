@@ -1,0 +1,74 @@
+{
+  "name": "@layerswap/wallet-paradex",
+  "version": "1.0.0-alpha0.1",
+  "description": "Paradex Wallet Provider for Layerswap Widget",
+  "type": "module",
+  "main": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "typings": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/esm/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && pnpm run build:esm+types",
+    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm",
+    "check:types": "tsc --noEmit",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo actions chains codegen experimental internal query"
+  },
+  "author": "Layerswap",
+  "homepage": "https://github.com/layerswap/layerswapapp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/layerswap/layerswapapp.git",
+    "directory": "packages/wallets/paradex"
+  },
+  "keywords": [
+    "layerswap",
+    "paradex",
+    "wallet-provider"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "viem": "^2.21.16",
+    "wagmi": "catalog:"
+  },
+  "dependencies": {
+    "@layerswap/wallet-evm": "workspace:*",
+    "@layerswap/wallet-starknet": "workspace:*",
+    "@layerswap/widget": "workspace:*",
+    "@paradex/sdk": "0.6.0",
+    "@starkware-industries/starkware-crypto-utils": "^0.2.1",
+    "@wagmi/core": "catalog:",
+    "bignumber.js": "^9.3.1",
+    "ethers": "5.7.2",
+    "lucide-react": "^0.379.0",
+    "starknet": "^7.6.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.13",
+    "eslint": "8.49.0",
+    "tsc-alias": "^1.8.16",
+    "typescript": "^5.9.2",
+    "viem": "^2.21.16",
+    "wagmi": "catalog:"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "bugs": {
+    "url": "https://github.com/layerswap/layerswapapp/issues"
+  }
+}

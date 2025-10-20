@@ -2,16 +2,10 @@
   "name": "layerswap-ui",
   "private": true,
   "version": "0.0.0",
-  "workspaces": {
-    "packages": [
-      "packages/*",
-      "apps/*"
-    ]
-  },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.0",
     "@tailwindcss/typography": "^0.5.2",
-    "@types/node": "^20.4.2",
+    "@types/node": "^24.5.1",
     "@types/react": "^18.0.28",
     "autoprefixer": "^10.4.21",
     "eslint": "^8.40.0",
@@ -21,9 +15,24 @@
     "tailwindcss-animate": "^1.0.5",
     "typescript": "^5.1.6"
   },
+  "packageManager": "pnpm@10.16.1",
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "^24.5.1",
+      "onFail": "download"
+    }
+  },
+  "resolutions": {
+    "@radix-ui/react-dismissable-layer": "1.1.1",
+    "rpc-websockets": "7.11.0",
+    "@solana/web3.js": "1.66.0",
+    "@walletconnect/universal-provider": "2.21.8",
+    "@walletconnect/ethereum-provider": "2.21.8"
+  },
   "scripts": {
-    "dev": "yarn workspace @layerswap/bridge dev",
-    "build": "yarn workspaces run build",
+    "dev": "pnpm --filter @layerswap/bridge dev",
+    "build": "pnpm -r run build",
     "lint": "eslint . --ext .ts,.tsx"
   }
 }

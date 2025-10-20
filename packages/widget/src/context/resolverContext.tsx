@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useMemo } from "react";
-import { NftProvider, WalletProvider } from "@/types";
+import { WalletProvider, NftProvider, BalanceProvider, GasProvider, AddressUtilsProvider } from "@/types";
 import { resolverService } from "@/lib/resolvers/resolverService";
-import { AddressUtilsProvider, GasProvider, BalanceProvider } from "@/types";
 
 type ResolverContextType = {
     isInitialized: boolean;

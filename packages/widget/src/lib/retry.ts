@@ -1,4 +1,4 @@
-export default async function retryWithExponentialBackoff(fn, maxAttempts = 3, baseDelayMs = 1000) {
+export async function retryWithExponentialBackoff(fn, maxAttempts = 3, baseDelayMs = 1000) {
     let attempt = 1
 
     const execute = async () => {

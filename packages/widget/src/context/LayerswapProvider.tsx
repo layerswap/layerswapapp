@@ -18,7 +18,6 @@ import WalletsProviders from "@/components/Wallet/WalletProviders";
 import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
 import { InitialSettings } from "../Models/InitialSettings";
 import { BalanceAccountsProvider } from "./balanceAccounts";
-import { useEVM, useStarknet, useTON, useTron, useFuel, useImtblX, useBitcoin, useSVM, useParadex } from "@/lib/wallets";
 import { WalletProvider } from "@/types";
 import { ResolverProviders } from "./resolverContext";
 
@@ -37,7 +36,7 @@ export type LayerswapContextProps = {
 }
 
 const INTERCOM_APP_ID = 'h5zisg78'
-const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, settings: _settings, themeData, apiKey, integrator, version, callbacks, initialValues, walletConnect, imtblPassport, walletProviders }) => {
+const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, settings: _settings, themeData, apiKey, integrator, version, callbacks, initialValues, walletConnect, imtblPassport, walletProviders = [] }) => {
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
 
     AppSettings.ApiVersion = version
@@ -62,8 +61,6 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
     let appSettings = new LayerSwapAppSettings(settings)
 
     themeData = { ...THEME_COLORS['default'], ...themeData }
-
-    walletProviders = [useEVM, useSVM, useStarknet, useTON, useTron, useFuel, useImtblX, useBitcoin, useParadex]
 
     return (
         <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
