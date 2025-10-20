@@ -61,18 +61,18 @@ module.exports = (phase, { defaultConfig }) => {
     },
     reactStrictMode: true,
     webpack: config => {
-      config.resolve.fallback = { fs: false, net: false, tls: false };    
+      config.resolve.fallback = { fs: false, net: false, tls: false };
       return config;
     },
     productionBrowserSourceMaps: true,
-    transpilePackages: ['@imtbl/sdk', '@fuels/connectors', '@fuels/react', "@radix-ui/react-dismissable-layer", '@layerswap/widget',
+    transpilePackages: [
+      '@imtbl/sdk',
+      '@fuels/connectors',
+      '@fuels/react',
+      "@radix-ui/react-dismissable-layer",
+      '@layerswap/widget',
       '@layerswap/wallet-evm',
-      '@layerswap/wallet-starknet',
-      '@layerswap/wallet-tron',
-      '@layerswap/wallet-ton',
-      '@layerswap/wallet-fuel',
-      '@layerswap/wallet-imtblX',
-      '@layerswap/wallet-svm',
+      '@layerswap/wallet-bitcoin'
     ]
   }
   if (process.env.APP_BASE_PATH) {

@@ -1,7 +1,7 @@
 import { createConnector } from 'wagmi'
 import { injected } from '@wagmi/connectors'
 
-export function browserInjected() {
+export function browserInjected(): ReturnType<typeof createConnector> {
     return createConnector((config) => {
         const injectedConnector = injected()(config)
 

@@ -1,13 +1,13 @@
 import useBitcoinConnection from "./useBitcoinConnection";
 import { WalletProvider } from "@layerswap/widget/types";
-import { BitcoinProvider } from "./BitcoinProvider";
+import { BitcoinProvider as BitcoinProviderWrapper } from "./BitcoinProvider";
 import { BitcoinGasProvider } from "./bitcoinGasProvider";
 import { BitcoinBalanceProvider } from "./bitcoinBalanceProvider";
 import { BitcoinAddressUtilsProvider } from "./bitcoinAddressUtilsProvider";
 
-export const useBitcoin: WalletProvider = {
+export const BitcoinProvider: WalletProvider = {
     id: "bitcoin",
-    wrapper: BitcoinProvider,
+    wrapper: BitcoinProviderWrapper,
     walletConnectionProvider: useBitcoinConnection,
     addressUtilsProvider: new BitcoinAddressUtilsProvider(),
     balanceProvider: new BitcoinBalanceProvider(),

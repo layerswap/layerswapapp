@@ -26,7 +26,6 @@ const Component: FC<Props> = ({ campaign }) => {
     const handleOpenTopModal = () => {
         setOpenTopModal(true)
     }
-
     const apiClient = new LayerSwapApiClient()
     const { data: leaderboardData, isLoading } = useSWR<ApiResponse<Leaderboard>>(`/campaigns/${campaign?.id}/leaderboard`, apiClient.fetcher, { dedupingInterval: 60000 })
     const { data: rewardsData } = useSWR<ApiResponse<Reward>>(`/campaigns/${campaign.id}/rewards/${address}`, apiClient.fetcher, { dedupingInterval: 60000 })

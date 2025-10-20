@@ -51,6 +51,7 @@ export class BitcoinBalanceProvider extends BalanceProvider {
 
 async function fetchUtxos(address: string, networkName: string, timeoutMs?: number): Promise<Utxo[]> {
     const url = `https://mempool.space${networkName.toLowerCase().includes('testnet') ? '/testnet' : ''}/api/address/${address}/utxo`;
+    //TODO: use fetch and unisntall axios
     const utxosData = await axios.get<Utxo[]>(url, { timeout: timeoutMs ?? 60000 })
     const utxos = utxosData.data;
     return utxos

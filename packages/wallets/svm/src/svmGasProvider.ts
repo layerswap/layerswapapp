@@ -1,7 +1,6 @@
-import { GasProps, Network, NetworkType } from "@layerswap/widget/types";
-import { formatUnits } from "viem";
-import { GasProvider } from "@layerswap/widget/types";
+import { GasProps, Network, NetworkType, GasProvider } from "@layerswap/widget/types";
 import { transactionBuilderForGas } from "./utils/transactionBuilderForGas";
+import { formatUnits } from "@layerswap/widget/internal";
 
 export class SolanaGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {

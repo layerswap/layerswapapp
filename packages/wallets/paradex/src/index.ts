@@ -3,7 +3,7 @@ import { ParadexBalanceProvider } from "./paradexBalanceProvider"
 import { useParadexConnection } from "./useParadexConnection"
 import { ActiveParadexAccountProvider } from "./ActiveParadexAccount"
 
-export const useParadex: WalletProvider = {
+export const ParadexProvider: WalletProvider = {
     id: "paradex",
     wrapper: ActiveParadexAccountProvider,
     walletConnectionProvider: useParadexConnection,

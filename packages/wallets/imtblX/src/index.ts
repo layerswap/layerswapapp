@@ -3,7 +3,7 @@ import { ImmutableXBalanceProvider } from "./immutableXBalanceProvider";
 import { ImmutableXGasProvider } from "./immutableXGasProvider";
 import useImtblXConnection from "./useImtblX";
 
-export const useImtblX: WalletProvider = {
+export const ImmutableXProvider: WalletProvider = {
     id: "imx",
     walletConnectionProvider: useImtblXConnection,
     balanceProvider: new ImmutableXBalanceProvider(),

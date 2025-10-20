@@ -5,6 +5,7 @@ import BalanceGetterAbi from "../jsons/BALANCEGETTERABI.json"
 import { KnownInternalNames } from "@layerswap/widget/internal";
 import { BalanceProvider, TokenBalance, NetworkType, NetworkWithTokens, Token, Network } from "@layerswap/widget/types"
 
+
 export class EVMBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return network.type === NetworkType.EVM && !!network.token
