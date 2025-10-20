@@ -5,18 +5,23 @@ import useSWR from "swr"
 import { ApiResponse } from "@/Models/ApiResponse"
 import ClickTooltip from "@/components/Common/ClickTooltip"
 import shortenAddress from "@/components/utils/ShortenAddress"
-import { useAccount } from "wagmi"
 import { truncateDecimals } from "@/components/utils/RoundDecimals"
 import AddressIcon from "@/components/Common/AddressIcon";
 import Modal from "@/components/Modal/modal";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback"
+import { useSelectedAccount } from "@/context/balanceAccounts"
+import { useWallet } from "@/exports"
 
 type Props = {
     campaign: Campaign
 }
 const Component: FC<Props> = ({ campaign }) => {
     const [openTopModal, setOpenTopModal] = useState(false)
-    const { address } = useAccount();
+
+    const selectedSourceAccount = useSelectedAccount("from", campaign.network?.name)
+    const { wallets } = useWallet(campaign.network, 'autofil')
+    const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
+    const address = wallet?.address
 
     const handleOpenTopModal = () => {
         setOpenTopModal(true)
@@ -68,7 +73,7 @@ const LeaderbordComponent: FC<{
     campaign: Campaign,
     leaderboardData: ApiResponse<Leaderboard> | undefined,
     rewardsData: ApiResponse<Reward> | undefined,
-    address: `0x${string}` | undefined,
+    address: string | undefined,
     lines?: number,
     className?: string,
 }> = ({ campaign, leaderboardData, rewardsData, address, lines, className }) => {

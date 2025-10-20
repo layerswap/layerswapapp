@@ -1,6 +1,6 @@
 import { KnownInternalNames, insertIfNotExists, formatUnits } from "@layerswap/widget/internal";
-import { TronWeb } from 'tronweb'
 import { BalanceProvider, Network, Token, TokenBalance } from "@layerswap/widget/types";
+import { TronWeb } from 'tronweb'
 
 export class TronBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {

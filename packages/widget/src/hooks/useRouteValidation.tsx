@@ -18,7 +18,7 @@ export function resolveRouteValidation(quoteError?: QuoteError) {
     const { to, from, destination_address } = values;
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
     const initialSettings = useInitialSettings();
-    const quoteMessage = quoteError?.response?.data?.error?.message || quoteError?.message
+    const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
 
     let validationMessage: string = '';
     let validationDetails: ValidationDetails = {};
@@ -34,12 +34,11 @@ export function resolveRouteValidation(quoteError?: QuoteError) {
             validationMessage = `Manually transferring between ${from?.display_name} and ${to?.display_name} networks is not supported.`;
             validationDetails = { title: 'Manual Transfer is not supported', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
         }
-
     }
 
-    if (quoteError) {
-        validationMessage = '';
-        validationDetails = { title: quoteMessage || 'Unable to retrieve quote', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
+    if (quoteErrorCode === "QUOTE_REQUIRES_NO_DEPOSIT_ADDRESS") {
+        validationDetails = { title: 'Manual swapping is not supported', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
+        validationMessage = `Swaps via manual transfer are not supported for this route. Please select a wallet to send from.`;
     }
 
     const value = useMemo(() => ({

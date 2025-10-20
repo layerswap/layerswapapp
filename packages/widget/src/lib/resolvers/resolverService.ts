@@ -1,15 +1,19 @@
 import { BalanceResolver } from "@/lib/balances/balanceResolver";
 import { GasResolver } from "@/lib/gases/gasResolver";
-import { BalanceProvider } from "@/types/balance";
-import { GasProvider } from "@/types/gas";
+import { AddressUtilsResolver } from '@/lib/address/addressUtilsResolver'
+import { AddressUtilsProvider, BalanceProvider, GasProvider, NftProvider } from "@/types";
+import { NftBalanceResolver } from "../nft/nftBalanceResolver";
 
-class BalanceAndGasResolverService {
+class UtilsResolverService {
     private balanceResolver: BalanceResolver | null = null;
     private gasResolver: GasResolver | null = null;
-
-    setProviders(balanceProviders: BalanceProvider[], gasProviders: GasProvider[]) {
+    private addressUtilsResolver: AddressUtilsResolver | null = null;
+    private nftResolver: NftBalanceResolver | null = null;
+    setProviders(balanceProviders: BalanceProvider[], gasProviders: GasProvider[], addressUtilsProviders: AddressUtilsProvider[], nftProviders: NftProvider[]) {
         this.balanceResolver = new BalanceResolver(balanceProviders);
         this.gasResolver = new GasResolver(gasProviders);
+        this.addressUtilsResolver = new AddressUtilsResolver(addressUtilsProviders);
+        this.nftResolver = new NftBalanceResolver(nftProviders);
     }
 
     getBalanceResolver(): BalanceResolver {
@@ -25,6 +29,20 @@ class BalanceAndGasResolverService {
         }
         return this.gasResolver;
     }
+
+    getAddressUtilsResolver(): AddressUtilsResolver {
+        if (!this.addressUtilsResolver) {
+            throw new Error('ResolverService not initialized. Make sure to call setProviders first.');
+        }
+        return this.addressUtilsResolver;
+    }
+
+    getNftResolver(): NftBalanceResolver {
+        if (!this.nftResolver) {
+            throw new Error('NftResolverService not initialized. Make sure to call setProviders first.');
+        }
+        return this.nftResolver;
+    }
 }
 
-export const resolverService = new BalanceAndGasResolverService();
+export const resolverService = new UtilsResolverService();
