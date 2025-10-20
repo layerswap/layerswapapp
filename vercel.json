@@ -1,5 +1,0 @@
-{
-    "installCommand": "pnpm i",
-    "buildCommand": "pnpm -w run build",
-    "framework": null
-}
