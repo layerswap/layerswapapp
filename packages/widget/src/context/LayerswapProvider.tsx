@@ -18,9 +18,8 @@ import WalletsProviders from "@/components/Wallet/WalletProviders";
 import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
 import { InitialSettings } from "../Models/InitialSettings";
 import { BalanceAccountsProvider } from "./balanceAccounts";
-import { useEVM, useStarknet, useTON, useTron, useFuel, useImtblX, useBitcoin, useSVM, useParadex } from "@/lib/wallets";
-import { BalanceAndGasResolverProvider } from "./resolverContext";
 import { WalletProvider } from "@/types";
+import { ResolverProviders } from "./resolverContext";
 
 export type LayerswapWidgetConfig = {
     theme?: ThemeData | null
@@ -36,9 +35,11 @@ export type LayerswapContextProps = {
     children?: ReactNode;
     settings?: LayerSwapSettings;
     apiKey?: string;
+    themeData?: ThemeData | null;
     integrator: string
     version?: 'mainnet' | 'testnet'
     callbacks?: CallbacksContextType
+    initialValues?: InitialSettings
     walletConnect?: typeof AppSettings.WalletConnectConfig
     imtblPassport?: typeof AppSettings.ImtblPassportConfig
     config?: LayerswapWidgetConfig
@@ -46,9 +47,9 @@ export type LayerswapContextProps = {
 }
 
 const INTERCOM_APP_ID = 'h5zisg78'
-const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, settings: _settings, apiKey, integrator, version, callbacks, imtblPassport, config, walletProviders }) => {
+const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, settings: _settings, themeData, apiKey, integrator, version, callbacks, initialValues, config, walletConnect, imtblPassport, walletProviders = [] }) => {
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
-    const themeData = { ...THEME_COLORS['default'], ...config?.theme }
+    themeData = { ...THEME_COLORS['default'], ...config?.theme }
 
     AppSettings.ApiVersion = version
     AppSettings.Integrator = integrator
@@ -72,7 +73,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
 
     let appSettings = new LayerSwapAppSettings(settings)
 
-    walletProviders = [useEVM, useSVM, useStarknet, useTON, useTron, useFuel, useImtblX, useBitcoin, useParadex]
+    themeData = { ...THEME_COLORS['default'], ...themeData }
 
     return (
         <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
@@ -86,13 +87,13 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
                                 themeData={themeData}
                                 walletProviders={walletProviders}
                             >
-                                <BalanceAndGasResolverProvider walletProviders={walletProviders}>
+                                <ResolverProviders walletProviders={walletProviders}>
                                     <BalanceAccountsProvider>
                                         <AsyncModalProvider>
                                             {children}
                                         </AsyncModalProvider>
                                     </BalanceAccountsProvider>
-                                </BalanceAndGasResolverProvider>
+                                </ResolverProviders>
                             </WalletsProviders>
                         </ThemeWrapper>
                     </ErrorBoundary>

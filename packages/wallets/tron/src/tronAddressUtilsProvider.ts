@@ -1,0 +1,21 @@
+import decodeBase58 from "./utils";
+import { Network, AddressUtilsProvider } from "@layerswap/widget/types";
+import { KnownInternalNames } from "@layerswap/widget/internal";
+
+export class TronAddressUtilsProvider implements AddressUtilsProvider {
+    supportsNetwork(network: Network): boolean {
+        return KnownInternalNames.Networks.TronMainnet.includes(network.name) || KnownInternalNames.Networks.TronTestnet.includes(network.name)
+    }
+
+    isValidAddress(address?: string) {
+        if (!address) {
+            return false
+        }
+        const decodedAddress = decodeBase58(address).toUpperCase();
+        return decodedAddress.startsWith('41') && decodedAddress.length == 42
+    }
+
+    addressFormat(address: string) {
+        return address;
+    }
+}

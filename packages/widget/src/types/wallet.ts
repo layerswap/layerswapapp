@@ -1,9 +1,12 @@
-import { WalletAccount } from 'starknet';
+// import { WalletAccount } from 'starknet';
+// @ts-ignore
 import { StarknetWindowObject } from 'starknetkit';
 import { TransferProps } from './transfer';
 import { NetworkWithTokens } from '@/Models/Network';
 import { BalanceProvider } from './balance';
 import { GasProvider } from './gas';
+import { AddressUtilsProvider } from './addressUtils';
+import { NftProvider } from './nft';
 
 export type InternalConnector = {
     name: string,
@@ -29,7 +32,7 @@ export type Wallet = {
     icon: (props: any) => React.JSX.Element;
     //TODO: this is name of the connector, should be changed to connectorId
     metadata?: {
-        starknetAccount?: WalletAccount,
+        starknetAccount?: any,
         wallet?: StarknetWindowObject,
         l1Address?: string,
         deepLink?: string
@@ -50,6 +53,8 @@ export type WalletProvider = {
     id: string,
     wrapper?: React.ComponentType<any>,
     walletConnectionProvider: (props: WalletConnectionProviderProps) => WalletConnectionProvider,
+    addressUtilsProvider?: AddressUtilsProvider | AddressUtilsProvider[],
+    nftProvider?: NftProvider | NftProvider[],
     gasProvider?: GasProvider | GasProvider[],
     balanceProvider?: BalanceProvider | BalanceProvider[],
 }
