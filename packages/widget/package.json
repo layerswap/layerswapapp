@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/widget",
-  "version": "1.0.0-alpha0.1",
+  "version": "1.0.0-alpha1.0",
   "description": "Streamline your asset transaction experience with Layerswap Widget across 60+ blockchains and 15+ exchanges.",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -31,7 +31,8 @@
     "build": "pnpm run clean && pnpm run build:esm+types",
     "build:esm+types": "tsc --project tsconfig.json --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm",
     "check:types": "tsc --noEmit",
-    "clean": "rimraf dist tsconfig.tsbuildinfo actions chains codegen experimental internal query"
+    "clean": "rimraf dist tsconfig.tsbuildinfo actions chains codegen experimental internal query",
+    "dev": "tsc-watch -p tsconfig.json --outDir ./dist/esm --onSuccess \"tsc-alias -p tsconfig.json --outDir ./dist/esm\""
   },
   "author": "Layerswap",
   "homepage": "https://github.com/layerswap/layerswapapp",
@@ -111,7 +112,6 @@
     "storybook-addon-mock": "^6.0.1",
     "storybook-react-context": "^0.8.0",
     "tailwindcss": "^4.0.15",
-    "tsc-alias": "^1.8.16",
     "tsup": "^8.4.0",
     "react-dom": "catalog:",
     "typescript": "^5.9.2"

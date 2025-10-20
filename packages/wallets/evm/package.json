@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/wallet-evm",
-  "version": "1.0.0-alpha0.1",
+  "version": "1.0.0-alpha1.0",
   "description": "EVM Wallet Provider for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -21,7 +21,7 @@
     "build": "pnpm run clean && pnpm run build:esm+types",
     "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm",
     "check:types": "tsc --noEmit",
-    "clean": "rm -rf dist tsconfig.tsbuildinfo actions chains codegen experimental internal query"
+    "clean": "rimraf dist tsconfig.tsbuildinfo actions chains codegen experimental internal query"
   },
   "author": "Layerswap",
   "homepage": "https://github.com/layerswap/layerswapapp",
@@ -42,10 +42,10 @@
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "viem": "^2.21.16",
-    "wagmi": "catalog:"
+    "wagmi": "catalog:",
+    "@layerswap/widget": "workspace:*"
   },
   "dependencies": {
-    "@layerswap/widget": "workspace:*",
     "@walletconnect/ethereum-provider": "2.21.8",
     "axios": "^0.21.4",
     "bignumber.js": "^9.3.1",
@@ -69,9 +69,9 @@
     "@types/node": "^22.13.13",
     "@wagmi/connectors": "catalog:",
     "@wagmi/core": "catalog:",
+    "@layerswap/widget": "workspace:*",
     "eslint": "8.49.0",
     "tailwindcss": "^4.0.15",
-    "tsc-alias": "^1.8.16",
     "tsup": "^8.4.0",
     "typescript": "^5.9.2",
     "viem": "^2.21.16",

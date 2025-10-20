@@ -16,7 +16,7 @@ import { classNames } from "@/components/utils/classNames";
 import FormButton from "./SecondaryComponents/FormButton";
 import { InitialSettings } from "@/Models/InitialSettings";
 import { WalletConnectionProvider } from "@/types/wallet";
-import { updateForm, updateFormBulk } from "./updateForm";
+import { updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
 import { useSwapDataState } from "@/context/swap";
