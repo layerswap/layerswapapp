@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useIntercom } from "react-use-intercom";
 import CardContainer from "../cardContainer";
-import { LayerswapLogo } from "../Icons/layerSwapLogo";
+import LayerswapLogo from "../Icons/layerSwapLogo";
 import TwitterLogo from "../Icons/TwitterLogo";
 
 function MaintananceContent(props) {
