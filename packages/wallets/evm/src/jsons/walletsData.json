@@ -1,5 +1,5 @@
 {
-  "count": 573,
+  "count": 574,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -942,6 +942,68 @@
       ],
       "slug": "life-defi",
       "updatedAt": "2024-05-27T13:20:35.938766+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "063c520962a445617ad3fc9ccb9744c81104dd11e34e3d61c6a6a42cc0a6beb3": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.dexari",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "https://apps.apple.com/app/dexari/id6741098169",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:56",
+        "eip155:8453"
+      ],
+      "description": "Mobile Wallet App for Hyperliquid",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://dexari.com",
+      "id": "063c520962a445617ad3fc9ccb9744c81104dd11e34e3d61c6a6a42cc0a6beb3",
+      "image_id": "b3902c20-364e-447d-5331-03d92f226d00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/b3902c20-364e-447d-5331-03d92f226d00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/b3902c20-364e-447d-5331-03d92f226d00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/b3902c20-364e-447d-5331-03d92f226d00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "dexari://",
+        "universal": "https://dexari.com/join"
+      },
+      "name": "Dexari",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "dexari",
+      "updatedAt": "2025-10-18T06:27:11.748059+00:00",
       "versions": [
         "1",
         "2"
@@ -18418,13 +18480,16 @@
       "app_type": "wallet",
       "category": null,
       "chains": [
+        "bip122:000000000019d6689c085ae165831e93",
+        "bip122:000000000933ea01ad0ee984209779ba",
         "eip155:1",
         "eip155:10",
         "eip155:137",
         "eip155:42161",
         "eip155:56",
         "eip155:8453",
-        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
       ],
       "description": "Trezor Suite is the companion app for the Trezor hardware wallet",
       "desktop": {
@@ -27444,18 +27509,18 @@
         "eip155:1",
         "eip155:137"
       ],
-      "description": "The HUMBL Wallet allows you to buy, sell, receive, store and exchange digital assets such as ETH, BLOCKS, USDC.",
+      "description": "The TAP Wallet allows you to buy, sell, receive, store and exchange digital assets such as ETH, USDC, BTC, SOL.",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
-      "homepage": "https://www.humbl.com",
+      "homepage": "https://tapwallet.com",
       "id": "a92d512c649e87a5acba5885ac03f62662cff1f647c20a63833eb45a71a6f877",
-      "image_id": "1ac55ba2-aa98-4ed0-59b3-b3155dea4200",
+      "image_id": "a1fe3361-d754-430e-f55e-72315af52700",
       "image_url": {
-        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/1ac55ba2-aa98-4ed0-59b3-b3155dea4200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "md": "https://explorer-api.walletconnect.com/v3/logo/md/1ac55ba2-aa98-4ed0-59b3-b3155dea4200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
-        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/1ac55ba2-aa98-4ed0-59b3-b3155dea4200?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/a1fe3361-d754-430e-f55e-72315af52700?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/a1fe3361-d754-430e-f55e-72315af52700?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/a1fe3361-d754-430e-f55e-72315af52700?projectId=34357d3c125c2bcf2ce2bc3309d98715"
       },
       "injected": null,
       "metadata": {
@@ -27469,7 +27534,7 @@
         "native": "humblwallet://",
         "universal": "https://wallet.search3.com"
       },
-      "name": "HUMBL WALLET",
+      "name": "TAP WALLET",
       "rdns": null,
       "sdks": [
         "sign_v1",
@@ -42186,5 +42251,5 @@
       ]
     }
   },
-  "total": 573
+  "total": 574
 }
