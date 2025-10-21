@@ -1,5 +1,5 @@
 "use client"
-import { LayerSwapAppSettings } from '@layerswap/widget/dist/Models/LayerSwapAppSettings';
+import { LayerSwapAppSettings } from '@layerswap/widget/types';
 import React, { Context, FC } from 'react'
 
 export const SettingsStateContext = React.createContext<LayerSwapAppSettings | undefined>(undefined);

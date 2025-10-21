@@ -7,7 +7,6 @@ import { EVMProvider } from "@layerswap/wallet-evm";
 import { BitcoinProvider } from "@layerswap/wallet-bitcoin";
 import { FuelProvider } from "@layerswap/wallet-fuel"
 import { ImmutableXProvider } from "@layerswap/wallet-imtblX"
-import { ParadexProvider } from "@layerswap/wallet-paradex"
 import { StarknetProvider } from "@layerswap/wallet-starknet"
 import { SVMProvider } from "@layerswap/wallet-svm"
 import { TonProvider } from "@layerswap/wallet-ton"

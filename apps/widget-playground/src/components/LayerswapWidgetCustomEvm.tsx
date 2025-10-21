@@ -1,6 +1,6 @@
 "use client";
-import { FC, ReactNode } from 'react';
-import { LayerswapProvider, Swap, WalletHooksProvider, WidgetLoading } from '@layerswap/widget';
+import { FC } from 'react';
+import { LayerswapProvider, Swap, WidgetLoading } from '@layerswap/widget';
 import { useWidgetContext } from '@/context/ConfigContext';
 import { useSettingsState } from '@/context/settings';
 import { DynamicContextProvider } from "@dynamic-labs/sdk-react-core";
@@ -9,6 +9,7 @@ import { createConfig, http, WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider, } from '@tanstack/react-query';
 import { mainnet } from 'viem/chains';
 import useCustomEvm from '@/hooks/useCustomEvm';
+import { EVMProvider } from '@layerswap/wallet-evm'
 
 const wagmiConfig = createConfig({
     chains: [mainnet],
@@ -24,6 +25,11 @@ const LayerswapWidgetCustomEvm: FC = () => {
     const { widgetRenderKey, showLoading, config } = useWidgetContext();
     const settings = useSettingsState();
 
+    const evmProvider: typeof EVMProvider = {
+        ...EVMProvider,
+        walletConnectionProvider: useCustomEvm
+    }
+
     return (
         <DynamicContextProvider
             settings={{
@@ -34,38 +40,31 @@ const LayerswapWidgetCustomEvm: FC = () => {
             <div
                 key={widgetRenderKey}
                 className="flex items-center justify-center min-h-screen w-full place-self-center">
-                <div className='w-full h-full max-w-lg border-2 border-secondary-700 rounded-xl'>
-                    <LayerswapProvider
-                        apiKey={process.env.NEXT_PUBLIC_LAYERSWAP_API_KEY as string}
-                        integrator="test"
-                        settings={settings}
-                        config={config}
-                    >
-                        <WagmiProvider config={wagmiConfig}>
-                            <QueryClientProvider client={queryClient}>
-                                <CutsomHooks>
-                                    {
-                                        showLoading
-                                            ? <WidgetLoading />
-                                            : <Swap />
-                                    }
-                                </CutsomHooks>
-                            </QueryClientProvider>
-                        </WagmiProvider>
-                    </LayerswapProvider>
+                <div className='w-full h-full rounded-xl'>
+                    <WagmiProvider config={wagmiConfig}>
+                        <QueryClientProvider client={queryClient}>
+                            <LayerswapProvider
+                                apiKey={process.env.NEXT_PUBLIC_LAYERSWAP_API_KEY as string}
+                                version={process.env.NEXT_PUBLIC_API_VERSION as 'mainnet' | 'testnet'}
+                                integrator="test"
+                                settings={settings}
+                                config={config}
+                                walletProviders={[evmProvider]}
+                            >
+
+                                {
+                                    showLoading
+                                        ? <WidgetLoading />
+                                        : <Swap />
+                                }
+
+                            </LayerswapProvider>
+                        </QueryClientProvider>
+                    </WagmiProvider>
                 </div>
             </div>
         </DynamicContextProvider>
     );
 };
-const CutsomHooks = ({ children }: { children: ReactNode }) => {
-    const { customEvmSwitch } = useWidgetContext();
-    const customEvmValue = useCustomEvm();
-    const customEvm = customEvmSwitch ? customEvmValue : undefined;
-
-    return (
-        <WalletHooksProvider overides={{ evm: customEvm }}>{children}</WalletHooksProvider>
-    );
-}
 
 export default LayerswapWidgetCustomEvm

@@ -73,7 +73,6 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
 
     let appSettings = new LayerSwapAppSettings(settings)
 
-    themeData = { ...THEME_COLORS['default'], ...themeData }
 
     return (
         <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>

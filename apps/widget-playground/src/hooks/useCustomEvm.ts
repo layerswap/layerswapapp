@@ -1,22 +1,10 @@
 import { useAccount, useSwitchAccount } from "wagmi";
 import { useCallback, useEffect, useMemo } from "react";
-import {
-    useUserWallets,
-    useDynamicContext,
-    dynamicEvents,
-    Wallet as DynamicWallet,
-} from "@dynamic-labs/sdk-react-core";
-import {
-    WalletProvider,
-    Wallet,
-    resolveWalletConnectorIcon,
-    useSettingsState,
-    NetworkWithTokens,
-    NetworkType,
-    InternalConnector,
-} from "@layerswap/widget";
+import { useUserWallets, useDynamicContext, dynamicEvents, Wallet as DynamicWallet, } from "@dynamic-labs/sdk-react-core";
+import { resolveWalletConnectorIcon, useSettingsState, NetworkWithTokens, NetworkType } from "@layerswap/widget";
+import { Wallet, InternalConnector, WalletConnectionProvider, } from "@layerswap/widget/types";
 
-export default function useEVM(): WalletProvider {
+export default function useEVM(): WalletConnectionProvider {
     const name = "EVM";
     const id = "evm";
 
@@ -34,7 +22,6 @@ export default function useEVM(): WalletProvider {
         () => networks.filter((n) => n.type === NetworkType.EVM).map((n) => n.name),
         [networks],
     );
-
     // Supported-networks
     const supportedNetworks = useMemo(
         () => ({
