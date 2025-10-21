@@ -126,7 +126,7 @@ export const useBalanceStore = create<BalanceStore>()(
       set({ initiatedBalances: null })
       // kick off every fetch
       pairs.forEach(({ address, network }) => {
-        get().fetchBalance(address, network, { dedupeInterval: 120_000, ignoreCache: true, timeoutMs: 4000, retryCount: 1 })
+        get().fetchBalance(address, network, { dedupeInterval: 120_000, ignoreCache: true, timeoutMs: 4000, retryCount: 0 })
       })
 
       // subscribe to balance map changes
