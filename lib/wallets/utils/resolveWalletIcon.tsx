@@ -1,6 +1,6 @@
-import AddressIcon from "../../../components/AddressIcon";
-import SVGWithImg from "../../../components/icons/SvgWithImg";
-import WalletIcon from "../../../components/icons/WalletIcon";
+import AddressIcon from "@/components/AddressIcon";
+import SVGWithImg from "@/components/icons/SvgWithImg";
+import WalletIcon from "@/components/icons/WalletIcon";
 import KnownEVMConnectors from "../evm/KnownEVMConnectors";
 import KnownFuelConnectors from "../fuel/KnownFuelConnectors";
 import KnownSolanaConnectors from "../solana/KnownSolanaConnectors";
@@ -14,7 +14,7 @@ const connectors = [
 ]
 
 export const resolveWalletConnectorIcon = ({ connector, address, iconUrl }: { connector?: string, address?: string, iconUrl?: string }) => {
-    const knownConnector = connectors.find(c => c.id === connector?.toLowerCase())
+    const knownConnector = connectors.find(c => c.id.toLowerCase() === connector?.toLowerCase())
 
     if (knownConnector && knownConnector.icon) return knownConnector.icon
     else if (iconUrl) return SVGIconWrapper(iconUrl)

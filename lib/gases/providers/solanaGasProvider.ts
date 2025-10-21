@@ -1,9 +1,9 @@
-import { GasProps } from "../../../Models/Balance";
-import { Network, NetworkType } from "../../../Models/Network";
-import formatAmount from "../../formatAmount";
-import { Provider } from "./types";
+import { GasProps } from "@/Models/Balance";
+import { Network, NetworkType } from "@/Models/Network";
+import { formatUnits } from "viem";
+import { GasProvider } from "./types";
 
-export class SolanaGasProvider implements Provider {
+export class SolanaGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
         return network.type === NetworkType.Solana
     }
@@ -32,9 +32,10 @@ export class SolanaGasProvider implements Provider {
             const message = transaction.compileMessage();
             const result = await connection.getFeeForMessage(message)
 
-            const formatedGas = formatAmount(result.value, network.token?.decimals)
+            const formatedGas = Number(formatUnits(BigInt(result.value), network.token?.decimals))
 
-            return formatedGas
+            if (formatedGas) return { gas: formatedGas, token: network.token }
+
         }
         catch (e) {
             console.log(e)

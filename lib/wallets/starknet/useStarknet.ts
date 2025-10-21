@@ -1,9 +1,9 @@
-import { useWalletStore } from "../../../stores/walletStore"
+import { useWalletStore } from "@/stores/walletStore"
 import KnownInternalNames from "../../knownIds"
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
-import { useSettingsState } from "../../../context/settings";
+import { useSettingsState } from "@/context/settings";
 import { useConnect, useDisconnect } from "@starknet-react/core";
-import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
+import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider";
 
 const starknetNames = [KnownInternalNames.Networks.StarkNetGoerli, KnownInternalNames.Networks.StarkNetMainnet, KnownInternalNames.Networks.StarkNetSepolia]
 export default function useStarknet(): WalletProvider {
@@ -41,6 +41,10 @@ export default function useStarknet(): WalletProvider {
 
     const connectWallet = async ({ connector }) => {
         try {
+            const wallet = getWallet()
+            if (wallet) {
+                await disconnectWallets()
+            }
             const starknetConnector = connectors.find(c => c.id === connector.id)
 
             const result = await starknetConnector?.connect({})
@@ -119,9 +123,14 @@ export default function useStarknet(): WalletProvider {
         }
     })
 
+    const switchAccount = async (wallet: Wallet, address: string) => {
+        // as we do not have multiple accounts management we will leave the method empty
+    }
+
     const provider: WalletProvider = {
         connectWallet,
         disconnectWallets,
+        switchAccount,
         connectedWallets: getWallet(),
         activeWallet: getWallet()?.[0],
         withdrawalSupportedNetworks,
@@ -130,7 +139,7 @@ export default function useStarknet(): WalletProvider {
         availableWalletsForConnect,
         name,
         id,
-        providerIcon: networks.find(n => starknetNames.some(name => name === n.name))?.logo
+        providerIcon: networks.find(n => starknetNames.some(name => name === n.name))?.logo,
     }
 
     return provider

@@ -1,18 +1,18 @@
-import { CommandGroup, CommandList, CommandWrapper } from "../../../shadcn/command";
-import { addressFormat } from "../../../../lib/address/formatter";
-import FilledCheck from "../../../icons/FilledCheck";
+import { CommandGroup, CommandList, CommandWrapper } from "@/components/shadcn/command";
+import { addressFormat } from "@/lib/address/formatter";
+import FilledCheck from "@/components/icons/FilledCheck";
 import { AddressGroup, AddressItem } from ".";
-import { RouteNetwork } from "../../../../Models/Network";
+import { NetworkRoute } from "@/Models/Network";
 import { FC } from "react";
 import AddressWithIcon from "./AddressWithIcon";
-import { Partner } from "../../../../Models/Partner";
-import { Wallet } from "../../../../Models/WalletProvider";
+import { Partner } from "@/Models/Partner";
+import { Wallet } from "@/Models/WalletProvider";
 import { BookOpen } from "lucide-react";
 
 type AddressBookProps = {
     addressBook: AddressItem[];
     onSelectAddress: (address: string, wallet: Wallet | undefined) => void;
-    destination: RouteNetwork;
+    destination: NetworkRoute;
     destination_address: string | undefined;
     partner?: Partner;
 }
@@ -20,7 +20,7 @@ type AddressBookProps = {
 const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, destination, destination_address, partner }) => {
 
     return (
-        <div className="text-left !mt-1">
+        <div className="text-left mt-1!">
             <CommandWrapper>
                 <CommandList>
                     <CommandGroup
@@ -30,15 +30,15 @@ const AddressBook: FC<AddressBookProps> = ({ addressBook, onSelectAddress, desti
                                 <p className="text-sm text-secondary-text">Address Book</p>
                             </div>
                         }
-                        className="[&_[cmdk-group-heading]]:!pb-1 [&_[cmdk-group-heading]]:!px-0 !py-0 !px-0"
+                        className="[&_[cmdk-group-heading]]:pb-1! [&_[cmdk-group-heading]]:px-0! py-0! px-0!"
                     >
-                        <div className="space-y-0 w-full flex flex-col items-stretch max-h-[200px] overflow-y-auto styled-scroll">
+                        <div className="w-full flex flex-col items-stretch max-h-[200px] overflow-y-auto styled-scroll gap-2">
                             {addressBook.sort(sortingByDate).map(item => {
                                 const isSelected = addressFormat(item.address, destination!) === addressFormat(destination_address!, destination!)
                                 return (
-                                    <button type="button" key={item.address} onClick={() => onSelectAddress(item.address, item.wallet)} className={`group/addressItem px-3 py-3 rounded-lg hover:bg-secondary-600 w-full transition duration-200 bg-secondary-700 ${isSelected && 'bg-secondary-800'}`}>
+                                    <button type="button" key={item.address} onClick={() => onSelectAddress(item.address, item.wallet)} className={`group/addressItem px-3 py-3 rounded-lg hover:bg-secondary-600 w-full transition duration-200 bg-secondary-500 ${isSelected && 'bg-secondary-400'}`}>
                                         <div className={`flex items-center justify-between w-full`}>
-                                            <AddressWithIcon addressItem={item} partner={partner} network={destination} connectedWallet={item.wallet} />
+                                            <AddressWithIcon addressItem={item} partner={partner} network={destination} />
                                             <div className="flex h-6 items-center px-1">
                                                 {
                                                     isSelected &&

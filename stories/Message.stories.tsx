@@ -1,11 +1,10 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/nextjs';
 import { THEME_COLORS } from '../Models/Theme';
 import { FC } from 'react';
 import { Widget } from '../components/Widget/Index';
 import ColorSchema from '../components/ColorSchema';
 import WalletMessage, { WalletMessageProps } from '../components/Swap/Withdraw/messages/Message';
 
-window.plausible = () => { }
 const Comp: FC<{ theme?: "default" | "light", header: string, status: 'pending' | 'error', details: string, showInModal?: boolean }> = ({ theme, status, details, header, showInModal }) => {
     const themeData = theme ? THEME_COLORS[theme] : THEME_COLORS["default"];
 

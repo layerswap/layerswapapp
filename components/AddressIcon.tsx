@@ -5,9 +5,10 @@ type Props = {
     address: string;
     size: number;
     className?: string;
+    rounded?: string;
 }
 
-const AddressIcon: FC<Props> = ({ address, size, className }) => {
+const AddressIcon: FC<Props> = ({ address, size, className, rounded }) => {
     const ref = useRef<HTMLDivElement>(null)
     useEffect(() => {
         if (address && ref.current) {
@@ -17,6 +18,7 @@ const AddressIcon: FC<Props> = ({ address, size, className }) => {
                 iconElement.style.display = 'block'
                 iconElement.style.width = "100%"
                 iconElement.style.height = "100%"
+                iconElement.style.borderRadius = rounded || "3px"
                 ref.current.appendChild(iconElement);
             }
         }

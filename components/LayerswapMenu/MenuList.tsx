@@ -1,8 +1,6 @@
 import { BookOpen, Gift, Map, Home, ScrollText, LibraryIcon, Shield, Users, MessageSquarePlus } from "lucide-react";
 import { useRouter } from "next/router";
-import { FC, useCallback, useEffect, useState } from "react";
-import { useAuthDataUpdate, useAuthState, UserType } from "../../context/authContext";
-import TokenService from "../../lib/TokenService";
+import { FC, useEffect, useState } from "react";
 import { useIntercom } from "react-use-intercom";
 import ChatIcon from "../icons/ChatIcon";
 import inIframe from "../utils/inIframe";
@@ -14,8 +12,6 @@ import Link from "next/link";
 import Popover from "../modal/popover";
 import SendFeedback from "../sendFeedback";
 import YoutubeLogo from "../icons/YoutubeLogo";
-import { shortenEmail } from '../utils/ShortenAddress';
-import { resolvePersistantQueryParams } from "../../helpers/querryHelper";
 import Menu from "./Menu";
 import dynamic from "next/dynamic";
 import { MenuStep } from "../../Models/Wizard";
@@ -25,8 +21,6 @@ const WalletsMenu = dynamic(() => import("../Wallet/ConnectedWallets").then((com
 })
 
 const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ goToStep }) => {
-    const { email, userId } = useAuthState()
-    const { setUserType } = useAuthDataUpdate()
     const router = useRouter();
     const { boot, show, update } = useIntercom()
     const [embedded, setEmbedded] = useState<boolean>()
@@ -36,25 +30,11 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
         setEmbedded(inIframe())
     }, [])
 
-    const updateWithProps = () => update({ userId, customAttributes: { email: email, } })
-
-    const handleLogout = useCallback(() => {
-        TokenService.removeAuthData()
-        if (router.pathname != '/') {
-            router.push({
-                pathname: '/',
-                query: resolvePersistantQueryParams(router.query)
-            })
-        } else {
-            router.reload()
-        }
-        setUserType(UserType.NotAuthenticatedUser)
-    }, [router.query])
-
     const handleCloseFeedback = () => {
         setOpenFeedbackModal(false)
     }
-    return <div className="text-sm font-medium focus:outline-none h-full">
+
+    return <div className="text-sm font-medium focus:outline-hidden h-full">
         <Menu>
 
             <WalletsMenu />
@@ -87,7 +67,7 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
                 <Menu.Item onClick={() => {
                     boot();
                     show();
-                    updateWithProps();
+                    update();
                 }} target="_blank" icon={<ChatIcon strokeWidth={2} className="h-5 w-5" />} >
                     Help
                 </Menu.Item>
@@ -129,12 +109,12 @@ const MenuList: FC<{ goToStep: (step: MenuStep, path: string) => void }> = ({ go
 
             <div className="space-y-3 w-full">
                 <hr className="border-secondary-500" />
-                <p className="text-primary-text-muted flex justify-center my-3">Media links & suggestions:</p>
+                <p className="text-primary-text-tertiary flex justify-center my-3">Media links & suggestions:</p>
             </div>
 
             <div className="grid grid-cols-2 gap-2 justify-center">
                 {navigation.social.map((item, index) => (
-                    <Link key={index} target="_blank" href={item.href} className={`flex relative bg-secondary-700 hover:bg-secondary-600 rounded-md cursor-pointer select-none items-center outline-none text-primary-text ${item.className}`}>
+                    <Link key={index} target="_blank" href={item.href} className={`flex relative bg-secondary-500 hover:bg-secondary-400 rounded-xl cursor-pointer select-none items-center outline-hidden text-primary-text ${item.className}`}>
                         <div className="p-2 w-full flex justify-center gap-1">
                             <item.icon className="h-5 w-5" aria-hidden="true" />
                             <p>{item.name}</p>

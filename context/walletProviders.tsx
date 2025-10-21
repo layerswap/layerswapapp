@@ -22,7 +22,7 @@ const WalletProvidersContext = createContext<WalletProvider[]>([]);
 export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     const { networks } = useSettingsState();
     const isMobilePlatform = isMobile();
-    const { goBack, onFinish, open, setOpen, selectedConnector } = useConnectModal()
+    const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector } = useConnectModal()
 
     const bitcoin = useBitcoin()
     const evm = useEVM();
@@ -36,7 +36,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
 
     const providers = useMemo(() => {
         const allProviders: WalletProvider[] = [
-            bitcoin, evm, starknet, svm, ton, fuel, tron, paradex, imtblX
+            evm, starknet, svm, bitcoin, ton, fuel, tron, paradex, imtblX
         ];
         const filteredProviders = allProviders.filter(provider => isMobilePlatform ? !provider.unsupportedPlatforms?.includes('mobile') : !provider.unsupportedPlatforms?.includes('desktop'));
 
@@ -60,15 +60,15 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
                 header={
                     <div className="flex items-center gap-1">
                         {
-                            selectedConnector &&
-                            <div className='-ml-2'>
+                            (selectedConnector || selectedMultiChainConnector) &&
+                            <div className="sm:-ml-2 -ml-0">
                                 <IconButton onClick={goBack} icon={
                                     <ChevronLeft className="h-6 w-6" />
                                 }>
                                 </IconButton>
                             </div>
                         }
-                        <p>Connect wallet</p>
+                        <p>{(selectedMultiChainConnector && !selectedConnector) ? "Select ecosystem" : "Connect wallet"}</p>
                     </div>
                 }>
                 <VaulDrawer.Snap id='item-1'>

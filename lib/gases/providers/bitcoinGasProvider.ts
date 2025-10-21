@@ -1,7 +1,7 @@
-import { buildPsbt } from "@/components/Swap/Withdraw/Wallet/BitcoinWalletWithdraw/transactionBuilder/buildPsbt";
-import { GasProps } from "../../../Models/Balance";
-import { Network } from "../../../Models/Network";
-import formatAmount from "../../formatAmount";
+import { buildPsbt } from "@/components/Swap/Withdraw/Wallet/WithdrawalProviders/BitcoinWalletWithdraw/transactionBuilder/buildPsbt";
+import { GasProps } from "@/Models/Balance";
+import { Network } from "@/Models/Network";
+import { formatUnits } from "viem";
 import KnownInternalNames from "../../knownIds";
 import { JsonRpcClient } from "@/lib/apiClients/jsonRpcClient";
 
@@ -31,7 +31,7 @@ export class BitcoinGasProvider {
                 amount: amountInSatoshi,
                 rpcClient: rpcClient
             })
-            const formattedGas = formatAmount(fee, network.token.decimals)
+            const formattedGas = Number(formatUnits(BigInt(fee), network.token.decimals))
             return formattedGas
 
         } catch (e) {

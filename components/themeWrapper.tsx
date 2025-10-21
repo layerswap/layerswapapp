@@ -1,39 +1,20 @@
-import { ArrowUpRight, X } from "lucide-react";
+import { X } from "lucide-react";
 import toast, { ToastBar, Toaster } from "react-hot-toast"
 import Navbar from "./navbar"
 import GlobalFooter from "./globalFooter";
-import { useEffect, useState } from "react";
-import inIframe from "./utils/inIframe";
-import { usePostHog } from "posthog-js/react";
-import Link from "next/link";
-
 type Props = {
     children: JSX.Element | JSX.Element[]
 }
 export default function ThemeWrapper({ children }: Props) {
-    const [embedded, setEmbedded] = useState<boolean>()
-
-    useEffect(() => {
-        setEmbedded(inIframe())
-    }, [])
-
-    const posthog = usePostHog();
-    const handleBetaClick = () => {
-        posthog.capture("beta_try_now_clicked", {
-            banner: "top-beta",
-            path: typeof window !== "undefined" ? window.location.pathname : undefined,
-        });
-    };
-
     return <div className='styled-scroll'>
-        <div className="invisible light"></div>
+        <div className="invisible light" />
         <main className="styled-scroll">
             <div className={`flex flex-col items-center min-h-screen overflow-hidden relative font-robo`}>
                 <Toaster position="top-center" toastOptions={{
                     duration: 5000,
                     style: {
-                        background: '#131E36',
-                        color: '#a4afc8'
+                        background: 'rgb(var(--ls-colors-secondary-600))',
+                        color: 'rgb(var(--ls-colors-secondary-text))'
                     },
                     position: 'top-center',
 
@@ -57,56 +38,10 @@ export default function ThemeWrapper({ children }: Props) {
                         </ToastBar>
                     )}
                 </Toaster>
-                <div className={`top-backdrop md:block hidden`} />
-                {
-                    !embedded ? (
-                        <div className="bg-[linear-gradient(90deg,#0C1527_1.9%,#251434_10.48%,#3E1240_51.44%,#201431_90.7%,#0C1527_100%)] text-white p-2 text-center text-base font-medium w-full">
-                            <span>New Design & Token Swaps in Beta</span>
-                            <button
-                                className="group bg-[#E1E3E6] hover:bg-[#C9BCCC] text-black px-3 py-1 font-bold rounded-[40px] ml-3"
-                                onClick={handleBetaClick}
-                            >
-                                <Link target="_blank" href="https://layerswap.io/beta?utm_source=twitter&utm_medium=social&utm_campaign=beta-launch" className="font-semibold flex items-center">
-                                    <span>Try now</span>
-                                    <ArrowUpRight
-                                        className="max-sm:hidden ml-0 w-0 opacity-0 overflow-hidden transition-all duration-300 group-hover:ml-2 group-hover:w-4 group-hover:opacity-100"
-                                        size={18}
-                                    />
-                                </Link>
-                            </button>
-                        </div>
-                    ) : null
-                }
-                <div>
-                    <svg
-                        className="absolute inset-0 -z-10 h-full w-full stroke-secondary-500/60 [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)]"
-                        aria-hidden="true"
-                    >
-                        <defs>
-                            <pattern
-                                id="983e3e4c-de6d-4c3f-8d64-b9761d1534cc"
-                                width={200}
-                                height={200}
-                                x="50%"
-                                y={-1}
-                                patternUnits="userSpaceOnUse"
-                            >
-                                <path d="M.5 200V.5H200" fill="none" />
-                            </pattern>
-                        </defs>
-                        <svg x="50%" y={-1} className="overflow-visible fill-secondary-800/60">
-                            <path
-                                d="M-200 0h201v201h-201Z M600 0h201v201h-201Z M-400 600h201v201h-201Z M200 800h201v201h-201Z"
-                                strokeWidth={0}
-                            />
-                        </svg>
-                        <rect width="100%" height="100%" strokeWidth={0} fill="url(#983e3e4c-de6d-4c3f-8d64-b9761d1534cc)" />
-                    </svg>
-                </div>
                 <Navbar />
                 <div className="w-full h-full max-w-lg z-[1] sm:mb-6">
-                    <div className="flex h-full content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-6 max-w-lg">
-                        <div className="flex h-full flex-col w-full text-primary-text">
+                    <div className="flex h-full content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-[20px] max-w-lg">
+                        <div className="h-full w-full text-primary-text">
                             {children}
                         </div>
                     </div>

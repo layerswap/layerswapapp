@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import GoHomeButton from "../utils/GoHome";
 import { useMeasure } from "@uidotdev/usehooks";
+import LayerSwapLogo from "../icons/layerSwapLogo";
 
 const variants = {
     enter: () => {
@@ -35,7 +36,7 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
 
     return (
         sticky ?
-            <>
+            <div className="w-full">
                 <motion.div
                     ref={footerRef}
                     transition={{
@@ -43,29 +44,32 @@ const Footer = ({ children, hidden, sticky = true }: FooterProps) => {
                     }}
                     custom={{ direction: -1, width: 100 }}
                     variants={variants}
-                    className={`text-primary-text text-base mt-3        
+                    className={`text-primary-text text-base sm:mt-3        
                         max-sm:fixed
                         max-sm:inset-x-0
                         max-sm:bottom-0 
                         max-sm:z-30
-                        max-sm:bg-secondary-900 
+                        max-sm:bg-secondary-700 
                         max-sm:shadow-widget-footer 
                         max-sm:p-4 
-                        max-sm:px-6 
+                        max-sm:px-4 
                         max-sm:w-full ${hidden ? 'animation-slide-out' : ''}`}>
                     {children}
-                    <div className="flex justify-center  text-primary-text-placeholder">
-                        <span className="text-xs content-center footerLogo mt-2.5">Powered by</span> <GoHomeButton className='footerLogo ml-1 mt-2.5 fill-primary-text-placeholder h-5 w-auto cursor-pointer' />
+                    <div className="flex justify-center items-center text-primary-text-tertiary">
+                        <span className="text-xs content-center footerLogo mt-2.5">Powered by</span>
+                        <div>
+                            <LayerSwapLogo className="footerLogo text-logo fill-secondary-text text-logo footerLogo ml-1 mt-2.5  h-5 w-auto cursor-pointer" />
+                        </div>
                     </div>
                 </motion.div>
 
                 <div style={{ height: `${height}px` }}
-                    className={`text-primary-text text-base mt-3        
+                    className={`text-primary-text text-base sm:mt-3        
                              max-sm:inset-x-0
                              max-sm:bottom-0 
                              max-sm:p-4 max-sm:w-full invisible sm:hidden`}>
                 </div>
-            </ >
+            </div>
             :
             <>
                 {children}

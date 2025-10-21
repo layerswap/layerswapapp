@@ -1,11 +1,11 @@
-import { GasProps } from "../../../Models/Balance";
-import { Network } from "../../../Models/Network";
-import formatAmount from "../../formatAmount";
+import { GasProps } from "@/Models/Balance";
+import { Network } from "@/Models/Network";
+import { formatUnits } from "viem";
 import KnownInternalNames from "../../knownIds";
 import ZkSyncLiteRPCClient from "../../balances/providers/zkSyncBalanceProvider";
-import { Provider } from "./types";
+import { GasProvider } from "./types";
 
-export class ZkSyncGasProvider implements Provider {
+export class ZkSyncGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
         return KnownInternalNames.Networks.ZksyncMainnet.includes(network.name)
     }
@@ -17,9 +17,9 @@ export class ZkSyncGasProvider implements Provider {
         try {
             const result = await client.getTransferFee(network.node_url, recipientAddress as `0x${string}`, token.symbol);
             const currencyDec = token.decimals;
-            const formatedGas = formatAmount(Number(result.totalFee) * 1.5, Number(currencyDec))
+            const formatedGas = Number(formatUnits(BigInt(Math.floor(Number(result.totalFee) * 1.5)), Number(currencyDec)))
 
-            return formatedGas
+            if (formatedGas) return { gas: formatedGas, token }
         }
         catch (e) {
             console.log(e)

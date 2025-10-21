@@ -1,16 +1,16 @@
-import { Balance } from "../../../Models/Balance";
-import { NetworkWithTokens } from "../../../Models/Network";
-import formatAmount from "../../formatAmount";
-import Erc20Abi from '../../abis/ERC20.json'
-import KnownInternalNames from "../../knownIds";
-import { insertIfNotExists } from "./helpers";
+import { TokenBalance } from "@/Models/Balance";
+import { formatUnits } from "viem";
+import Erc20Abi from '@/lib/abis/ERC20.json'
+import KnownInternalNames from "@/lib/knownIds";
+import { insertIfNotExists } from "../helpers";
+import { BalanceProvider } from "@/Models/BalanceProvider";
 
-export class StarknetBalanceProvider {
-    supportsNetwork(network: NetworkWithTokens): boolean {
+export class StarknetBalanceProvider extends BalanceProvider {
+    supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return (KnownInternalNames.Networks.StarkNetMainnet.includes(network.name) || KnownInternalNames.Networks.StarkNetGoerli.includes(network.name) || KnownInternalNames.Networks.StarkNetSepolia.includes(network.name))
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens) => {
+    fetchBalance: BalanceProvider['fetchBalance'] = async (address, network) => {
         const {
             Contract,
             RpcProvider,
@@ -18,7 +18,7 @@ export class StarknetBalanceProvider {
         } = await import("starknet");
         const { BigNumber } = await import("ethers");
 
-        let balances: Balance[] = []
+        let balances: TokenBalance[] = []
 
         if (!network?.tokens) return
 
@@ -38,19 +38,16 @@ export class StarknetBalanceProvider {
                 const balance = {
                     network: network.name,
                     token: token.symbol,
-                    amount: formatAmount(balanceInWei, token.decimals),
+                    amount: Number(formatUnits(BigInt(balanceInWei), token.decimals)),
                     request_time: new Date().toJSON(),
                     decimals: token.decimals,
                     isNativeCurrency: false,
                 }
-                balances = [
-                    ...balances,
-                    balance
-                ]
-                
+                balances.push(balance)
+
             }
             catch (e) {
-                console.log(e)
+                balances.push(this.resolveTokenBalanceFetchError(e, token, network))
             }
         }
         return balances

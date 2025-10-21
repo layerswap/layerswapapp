@@ -1,40 +1,45 @@
-import { Balance } from "../../../Models/Balance";
-import { NetworkWithTokens } from "../../../Models/Network";
-import formatAmount from "../../formatAmount";
-import KnownInternalNames from "../../knownIds";
+import { NetworkWithTokens } from "@/Models/Network";
+import { formatUnits } from "viem";
+import KnownInternalNames from "@/lib/knownIds";
 
-export class ZkSyncBalanceProvider {
-    supportsNetwork(network: NetworkWithTokens): boolean {
+export class ZkSyncBalanceProvider extends BalanceProvider {
+    supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return KnownInternalNames.Networks.ZksyncMainnet.includes(network.name)
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens) => {
+    fetchBalance: BalanceProvider['fetchBalance'] = async (address, network) => {
         const client = new ZkSyncLiteRPCClient();
         const tokens = insertIfNotExists(network.tokens || [], network.token)
 
         if (!network?.tokens) return
 
-        const result = await client.getAccountInfo(network.node_url, address);
-        const zkSyncBalances = tokens.map((currency) => {
-            const amount = currency && result.committed.balances[currency.symbol]
+        try {
+            const result = await client.getAccountInfo(network.node_url, address);
+            const zkSyncBalances = tokens.map((currency) => {
+                const amount = currency && result.committed.balances[currency.symbol]
+                return ({
+                    network: network.name,
+                    token: currency.symbol,
+                    amount: Number(formatUnits(BigInt(amount), Number(currency?.decimals))),
+                    request_time: new Date().toJSON(),
+                    decimals: Number(currency?.decimals),
+                    isNativeCurrency: true
+                })
+            });
 
-            return ({
-                network: network.name,
-                token: currency.symbol,
-                amount: formatAmount(amount, Number(currency?.decimals)),
-                request_time: new Date().toJSON(),
-                decimals: Number(currency?.decimals),
-                isNativeCurrency: true
-            })
-        });
-
-        return zkSyncBalances
+            return zkSyncBalances
+        }
+        catch (e) {
+            return tokens.map((currency) => (this.resolveTokenBalanceFetchError(e, currency, network)))
+        }
     }
+
 }
 
 
 import { PublicClient } from 'viem';
-import { insertIfNotExists } from "./helpers";
+import { insertIfNotExists } from "../helpers";
+import { BalanceProvider } from "@/Models/BalanceProvider";
 
 type Balances = {
     [currency: string]: string;

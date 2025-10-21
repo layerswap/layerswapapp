@@ -35,10 +35,11 @@ const Comp = () => {
 
     return <>
         <div className="text-secondary-text cursor-pointer relative">
-            <IconButton onClick={() => setOpenTopModal(true)} icon={
-                <MenuIcon strokeWidth="2" />
-            }>
-            </IconButton>
+            <div className="sm:-mr-2 -mr-0">
+                <IconButton className="inline-flex active:animate-press-down" onClick={() => setOpenTopModal(true)} icon={
+                    <MenuIcon strokeWidth="2" />
+                } />
+            </div>
             <Modal
                 modalId="menuModal"
                 show={openTopModal}
@@ -48,7 +49,7 @@ const Comp = () => {
                         {
                             goBack &&
                             <div className="-ml-2">
-                                <IconButton onClick={goBack} icon={
+                                <IconButton className="inline-flex" onClick={goBack} icon={
                                     <ChevronLeft strokeWidth="2" />
                                 }>
                                 </IconButton>
