@@ -11,20 +11,6 @@ type Props = {
     children: JSX.Element | JSX.Element[]
 }
 export default function ThemeWrapper({ children }: Props) {
-    const [embedded, setEmbedded] = useState<boolean>()
-
-    useEffect(() => {
-        setEmbedded(inIframe())
-    }, [])
-
-    const posthog = usePostHog();
-    const handleBetaClick = () => {
-        posthog?.capture("beta_try_now_clicked", {
-            banner: "top-beta",
-            path: typeof window !== "undefined" ? window.location.pathname : undefined,
-        });
-    };
-
     return <div className='styled-scroll'>
         <div className="invisible light"></div>
         <main className="styled-scroll">
@@ -58,25 +44,6 @@ export default function ThemeWrapper({ children }: Props) {
                     )}
                 </Toaster>
                 <div className={`top-backdrop md:block hidden`} />
-                {
-                    !embedded ? (
-                        <div className="bg-[linear-gradient(90deg,#0C1527_1.9%,#251434_10.48%,#3E1240_51.44%,#201431_90.7%,#0C1527_100%)] text-white p-2 text-center text-base font-medium w-full">
-                            <span>New Design & Token Swaps in Beta</span>
-                            <button
-                                className="group bg-[#E1E3E6] hover:bg-[#C9BCCC] text-black px-3 py-1 font-bold rounded-[40px] ml-3"
-                                onClick={handleBetaClick}
-                            >
-                                <Link target="_blank" href="https://layerswap.io/beta?utm_campaign=beta-launch" className="font-semibold flex items-center">
-                                    <span>Try now</span>
-                                    <ArrowUpRight
-                                        className="max-sm:hidden ml-0 w-0 opacity-0 overflow-hidden transition-all duration-300 group-hover:ml-2 group-hover:w-4 group-hover:opacity-100"
-                                        size={18}
-                                    />
-                                </Link>
-                            </button>
-                        </div>
-                    ) : null
-                }
                 <div>
                     <svg
                         className="absolute inset-0 -z-10 h-full w-full stroke-secondary-500/60 [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)]"
