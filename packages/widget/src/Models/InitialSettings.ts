@@ -32,6 +32,8 @@ export class PersistantQueryParams {
     sameAccountNetwork?: string = "";
     lockAddress?: boolean = false;
     clientId?: string = "";
+    defaultTab?: string = "";
+
 
     // Obsolate
     sourceExchangeName?: string = "";
