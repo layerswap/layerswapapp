@@ -25,7 +25,7 @@ export function HomeComponent() {
             )}
             <div
                 className={clsx(
-                    'flex-1 transition-all duration-300 ease-in-out',
+                    'flex-1 transition-all duration-300 flex items-center justify-center ease-in-out',
                     showPanel ? 'ml-[600px]' : 'ml-0'
                 )}
             >

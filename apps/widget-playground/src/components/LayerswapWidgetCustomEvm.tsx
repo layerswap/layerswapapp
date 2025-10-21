@@ -37,12 +37,12 @@ const LayerswapWidgetCustomEvm: FC = () => {
                 walletConnectors: [EthereumWalletConnectors],
             }}
         >
-            <div
-                key={widgetRenderKey}
-                className="flex items-center justify-center min-h-screen w-full place-self-center">
-                <div className='w-full h-full rounded-xl'>
-                    <WagmiProvider config={wagmiConfig}>
-                        <QueryClientProvider client={queryClient}>
+            <WagmiProvider config={wagmiConfig}>
+                <QueryClientProvider client={queryClient}>
+                    <div
+                        key={widgetRenderKey}
+                        className="flex items-center justify-center min-h-screen w-full place-self-center">
+                        <div className='w-full h-full rounded-xl'>
                             <LayerswapProvider
                                 apiKey={process.env.NEXT_PUBLIC_LAYERSWAP_API_KEY as string}
                                 version={process.env.NEXT_PUBLIC_API_VERSION as 'mainnet' | 'testnet'}
@@ -59,11 +59,11 @@ const LayerswapWidgetCustomEvm: FC = () => {
                                 }
 
                             </LayerswapProvider>
-                        </QueryClientProvider>
-                    </WagmiProvider>
-                </div>
-            </div>
-        </DynamicContextProvider>
+                        </div>
+                    </div>
+                </QueryClientProvider>
+            </WagmiProvider>
+        </DynamicContextProvider >
     );
 };
 

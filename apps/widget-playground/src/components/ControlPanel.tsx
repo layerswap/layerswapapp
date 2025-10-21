@@ -31,10 +31,10 @@ const accordionElements = {
         },
     ],
     "Widget configs": [
-        {
-            trigger: <NetworksButtonTrigger />,
-            content: <NetworksButton />
-        },
+        // {
+        //     trigger: <NetworksButtonTrigger />,
+        //     content: <NetworksButton />
+        // },
         {
             trigger: <ActionTextButtonTrigger />,
             content: <ActionTextButton />
