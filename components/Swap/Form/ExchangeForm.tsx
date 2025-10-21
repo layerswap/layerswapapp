@@ -23,6 +23,8 @@ import { useSwapDataState } from "@/context/swap";
 import { useClickOutside } from "@/hooks/useClickOutside";
 import { Network } from "@/Models/Network";
 import { Wallet } from "@/Models/WalletProvider";
+import { AddressGroup } from "@/components/Input/Address/AddressPicker";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 
 type Props = {
     partner?: Partner;
@@ -52,7 +54,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     const handleActionHover = (value: number | undefined) => {
         setActionTempValue(value)
     }
-
+   
     return (
         <>
             <DepositMethodComponent />
@@ -81,7 +83,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                             ({ addressItem }) => <>
                                                 {
                                                     addressItem ? <>
-                                                        <AddressButton address={addressItem.address} network={destination} wallet={wallet} />
+                                                        <AddressButton address={addressItem.address} network={destination} wallet={wallet} partnerLogo={partner?.is_wallet && addressItem.group === AddressGroup.FromQuery && partner?.logo ? partner.logo : undefined} />
                                                     </>
                                                         : destination_address ? <>
                                                             <AddressButton address={destination_address} />
@@ -154,14 +156,20 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
 
 export default ExchangeForm;
 
-const AddressButton = ({ address, network, wallet }: { address: string, network?: Network, wallet?: Wallet }) => {
+const AddressButton = ({ address, network, wallet, partnerLogo }: { address: string, network?: Network, wallet?: Wallet, partnerLogo?: string | undefined }) => {
     return <div className="justify-between w-full items-center flex font-light space-x-2 mx-auto rounded-lg focus-peer:ring-primary focus-peer:border-secondary-400 focus-peer:border focus-peer:ring-1 focus:outline-none disabled:cursor-not-allowed relative">
         <div className="flex items-center gap-2">
             <div className="flex bg-secondary-400 text-primary-text items-center justify-center rounded-md h-7 w-7 overflow-hidden">
                 {
                     wallet?.icon ? (
                         <wallet.icon className="h-7 w-7 object-contain" />
-                    ) : (
+                    ) : partnerLogo ? (<ImageWithFallback
+                        alt="Partner logo"
+                        className="rounded-md object-contain"
+                        src={partnerLogo}
+                        width="36"
+                        height="36"
+                    />) : (
                         <AddressIcon className="scale-150 h-9 w-9" address={address} size={36} />
                     )
                 }

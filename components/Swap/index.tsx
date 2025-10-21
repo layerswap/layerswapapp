@@ -8,13 +8,15 @@ import { SwapStatus } from '../../Models/SwapStatus';
 import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
 import SubmitButton from '../buttons/submitButton';
 import ManualWithdraw from './Withdraw/ManualWithdraw';
+import { Partner } from '@/Models/Partner';
 
 type Props = {
     type: "widget" | "contained",
     onWalletWithdrawalSuccess?: () => void,
+    partner?: Partner
 }
 
-const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess }) => {
+const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner }) => {
     const { swapDetails, swapBasicData, quote, refuel, depositActionsResponse } = useSwapDataState()
 
     const swapStatus = swapDetails?.status || SwapStatus.UserTransferPending;
@@ -46,7 +48,7 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess }) => {
                     && !(swapInputTransaction || storedWalletTransaction))) ?
                     (
                         swapBasicData?.use_deposit_address === true
-                            ? <ManualWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} />
+                            ? <ManualWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} partner={partner} />
                             : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} />
                     )
                     :

@@ -22,15 +22,17 @@ import { handleLimitsUpdate } from './QuoteUpdate'
 import SubmitButton from '@/components/buttons/submitButton'
 import { Widget } from '@/components/Widget/Index'
 import { truncateDecimals } from '@/components/utils/RoundDecimals'
+import { Partner } from '@/Models/Partner'
 
 interface Props {
     swapBasicData: SwapBasicData;
     quote: SwapQuote | undefined;
     depositActions: DepositAction[] | undefined;
     refuel?: Refuel | undefined
+    partner?: Partner;
 }
 
-const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refuel }) => {
+const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refuel, partner }) => {
     const { wallets } = useWallet();
     const { createSwap, setSwapId } = useSwapDataUpdate()
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -44,7 +46,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
     const [copied, copy] = useCopyClipboard()
     const query = useQueryState()
     const depositAddress = depositActions?.find(da => true)?.to_address;
-
+console.log(wallets, "partner in manual withdraw")
     const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == swapBasicData?.destination_address?.toLowerCase())?.icon;
 
     const handleCopy = () => {
