@@ -17,7 +17,7 @@ import { ApiResponse } from '@/Models/ApiResponse';
 import { useIntercom } from 'react-use-intercom';
 import logError from '@/lib/logError';
 import SubmitButton from '@/components/Buttons/submitButton';
-import { posthog } from 'posthog-js';
+// import { posthog } from 'posthog-js';
 import Steps from './StepsComponent';
 
 type Props = {
@@ -99,31 +99,31 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             const renderingError = new Error(`Swap:${swapDetails?.id} transaction:${transactionHash} failed`);
             renderingError.name = `TransactionFailed`;
             renderingError.cause = err;
-            posthog.capture('$exception', {
-                name: renderingError.name,
-                message: renderingError.message,
-                $layerswap_exception_type: "Transaction Error",
-                stack: renderingError.stack,
-                cause: renderingError.cause,
-                where: 'TransactionError',
-                severity: 'error',
-            });
+            // posthog.capture('$exception', {
+            //     name: renderingError.name,
+            //     message: renderingError.message,
+            //     $layerswap_exception_type: "Transaction Error",
+            //     stack: renderingError.stack,
+            //     cause: renderingError.cause,
+            //     where: 'TransactionError',
+            //     severity: 'error',
+            // });
         }
     }, [inputTxStatus, transactionHash, swapDetails?.id])
 
-    useEffect(() => {
-        if (
-            swapDetails?.status === SwapStatus.Completed ||
-            swapDetails?.status === SwapStatus.Failed ||
-            swapDetails?.status === SwapStatus.Expired ||
-            swapDetails?.status === SwapStatus.LsTransferPending
-        ) {
-            posthog?.capture(`${swapDetails?.status}`, {
-                swap_id: swapDetails?.id,
-                status: swapDetails?.status,
-            })
-        }
-    }, [swapDetails?.status, swapDetails?.id])
+    // useEffect(() => {
+    //     if (
+    //         swapDetails?.status === SwapStatus.Completed ||
+    //         swapDetails?.status === SwapStatus.Failed ||
+    //         swapDetails?.status === SwapStatus.Expired ||
+    //         swapDetails?.status === SwapStatus.LsTransferPending
+    //     ) {
+    //         posthog?.capture(`${swapDetails?.status}`, {
+    //             swap_id: swapDetails?.id,
+    //             status: swapDetails?.status,
+    //         })
+    //     }
+    // }, [swapDetails?.status, swapDetails?.id])
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 

@@ -2,7 +2,6 @@ import { LayerSwapSettings, THEME_COLORS, ThemeData } from "@layerswap/widget";
 import { useRouter } from 'next/router';
 import Head from "next/head";
 import AppWrapper from "./AppWrapper";
-import { posthog } from "posthog-js";
 import { useEffect } from "react";
 
 type Props = {
@@ -43,10 +42,6 @@ export default function Layout({ children, themeData }: Props) {
         'amount',
         'destAddress'
       ])
-
-      posthog.capture('$pageview', {
-        custom_url: customUrl,
-      })
     }
 
     trackPageview()

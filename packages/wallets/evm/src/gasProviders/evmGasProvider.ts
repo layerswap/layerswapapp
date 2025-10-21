@@ -2,7 +2,7 @@ import { GasProvider, GasProps, Network, Token, NetworkType } from "@layerswap/w
 import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, http, serializeTransaction, formatUnits, erc20Abi } from "viem";
 import { publicActionsL2 } from 'viem/op-stack'
 import resolveChain from "../evmUtils/resolveChain";
-import posthog from "posthog-js";
+// import posthog from "posthog-js";
 
 export class EVMGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
@@ -122,15 +122,15 @@ abstract class getEVMGas {
             const error = new Error(e)
             error.name = "GasPriceError"
             error.cause = e
-            posthog.capture('$exception', {
-                name: error.name,
-                message: error.message,
-                $layerswap_exception_type: "Gas Price Error",
-                stack: error.stack,
-                cause: error.cause,
-                where: 'getGasPrice',
-                severity: 'error',
-            })
+            // posthog.capture('$exception', {
+            //     name: error.name,
+            //     message: error.message,
+            //     $layerswap_exception_type: "Gas Price Error",
+            //     stack: error.stack,
+            //     cause: error.cause,
+            //     where: 'getGasPrice',
+            //     severity: 'error',
+            // })
         }
     }
     private async estimateFeesPerGas() {
@@ -141,15 +141,15 @@ abstract class getEVMGas {
             const error = new Error(e)
             error.name = "FeesPerGasError"
             error.cause = e
-            posthog.capture('$exception', {
-                name: error.name,
-                message: error.message,
-                $layerswap_exception_type: "Fees Per Gas Error",
-                stack: error.stack,
-                cause: error.cause,
-                where: 'feesPerGasError',
-                severity: 'error',
-            })
+            // posthog.capture('$exception', {
+            //     name: error.name,
+            //     message: error.message,
+            //     $layerswap_exception_type: "Fees Per Gas Error",
+            //     stack: error.stack,
+            //     cause: error.cause,
+            //     where: 'feesPerGasError',
+            //     severity: 'error',
+            // })
         }
     }
     private async estimateMaxPriorityFeePerGas() {
@@ -160,15 +160,15 @@ abstract class getEVMGas {
             const error = new Error(e)
             error.name = "MaxPriorityFeePerGasError"
             error.cause = e
-            posthog.capture('$exception', {
-                name: error.name,
-                message: error.message,
-                $layerswap_exception_type: "Max Priority Fee Per Gas Error",
-                stack: error.stack,
-                cause: error.cause,
-                where: 'maxPriorityFeePerGasError',
-                severity: 'error',
-            })
+            // posthog.capture('$exception', {
+            //     name: error.name,
+            //     message: error.message,
+            //     $layerswap_exception_type: "Max Priority Fee Per Gas Error",
+            //     stack: error.stack,
+            //     cause: error.cause,
+            //     where: 'maxPriorityFeePerGasError',
+            //     severity: 'error',
+            // })
         }
     }
 

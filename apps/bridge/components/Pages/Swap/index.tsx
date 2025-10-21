@@ -4,14 +4,7 @@ import { FC } from "react"
 import { updateFormBulk } from "../../utils/updateForm"
 import { removeSwapPath, setSwapPath } from "../../utils/updateSwapPath"
 import { EVMProvider } from "@layerswap/wallet-evm";
-import { BitcoinProvider } from "@layerswap/wallet-bitcoin";
-import { FuelProvider } from "@layerswap/wallet-fuel"
-import { ImmutableXProvider } from "@layerswap/wallet-imtblX"
-import { ParadexProvider } from "@layerswap/wallet-paradex"
-import { StarknetProvider } from "@layerswap/wallet-starknet"
-import { SVMProvider } from "@layerswap/wallet-svm"
-import { TonProvider } from "@layerswap/wallet-ton"
-import { TronProvider } from "@layerswap/wallet-tron"
+import { FuelProvider } from "@layerswap/wallet-fuel";
 
 const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string }> = ({ settings, themeData, apiKey }) => {
     const router = useRouter()
@@ -42,7 +35,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
             }
         }}
         imtblPassport={imtblPassportConfigs}
-        walletProviders={[EVMProvider, SVMProvider, BitcoinProvider, StarknetProvider, ImmutableXProvider, TonProvider, TronProvider]}
+        walletProviders={[EVMProvider, FuelProvider]}
     >
         <Swap />
     </LayerswapProvider>
