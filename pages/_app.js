@@ -5,10 +5,9 @@ import '../styles/vaul.css'
 import { useRouter } from "next/router";
 import { IntercomProvider } from 'react-use-intercom';
 import { SWRConfig } from 'swr'
-import DatadogInit from "../components/datadog-init";
 import ProgressBar from "@badrap/bar-of-progress";
 import Router from "next/router";
-import posthog from 'posthog-js';
+import posthog from "posthog-js";
 
 const progress = new ProgressBar({
   size: 2,
@@ -34,6 +33,7 @@ const INTERCOM_APP_ID = 'h5zisg78'
 
 function App({ Component, pageProps }) {
   const router = useRouter()
+
   return (
     <SWRConfig
       value={{
@@ -41,7 +41,6 @@ function App({ Component, pageProps }) {
         dedupingInterval: 5000,
       }}
     >
-      <DatadogInit />
       <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
         <Component key={router.asPath} {...pageProps} />
       </IntercomProvider>

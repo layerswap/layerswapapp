@@ -1,4 +1,4 @@
-import { BigNumber } from 'bignumber.js';
+import BigNumber from 'bignumber.js';
 import * as Starknet from 'starknet';
 
 import type { Account } from './account';
@@ -275,7 +275,6 @@ export async function withdraw(
         ? params.bridgeCall
         : [params.bridgeCall]),
     ],
-    undefined,
     { maxFee: maxFee.toString() },
   );
 

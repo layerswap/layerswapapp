@@ -23,13 +23,15 @@ const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isR
             <button
                 type="button"
                 disabled={!!connectingConnector}
-                className="w-full h-fit flex items-center justify-between bg-secondary-700 hover:bg-secondary-500 transition-colors duration-200 rounded-xl p-3"
+                className="w-full h-fit flex items-center justify-between bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl p-3"
                 onClick={onClick}
                 {...props}
             >
-                <div className="grid grid-cols-3 gap-3 items-center font-medium w-full">
-                    <Icon className="w-9 sm:w-11 h-auto p-0.5 rounded-[10px] bg-secondary-800" />
-                    <div className='flex flex-col items-start justify-center col-start-2 col-span-3 min-h-[40px]'>
+                <div className="flex gap-2.5 items-center font-medium w-full">
+                    <div className="w-11">
+                        <Icon className="w-11 h-auto p-0.5 rounded-[10px] bg-secondary-800" />
+                    </div>
+                    <div className='flex flex-col items-start justify-center col-start-2 col-span-3 min-h-[40px] truncate'>
 
                         <p className='text-base text-left truncate w-full'>{connectorName}</p>
                         {
@@ -38,7 +40,7 @@ const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isR
                         }
                         {
                             isRecent &&
-                            <p className='text-xs text-primary-text font-semibold bg-primary-700 px-1 py-0.5 rounded-md'>Recent</p>
+                            <p className='text-xs text-primary-buttonTextColor font-semibold bg-primary-700 px-1 py-0.5 rounded-md'>Recent</p>
                         }
                     </div>
                     {

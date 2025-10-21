@@ -1,5 +1,5 @@
 import { FC } from "react"
-import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip"
 import { Info, RouteOff } from "lucide-react"
 
 type Props = {
@@ -13,10 +13,10 @@ const RouteIcon: FC<Props> = (props) => {
     const { isAvailable, routeNotFound, direction, type } = props
 
     if (!isAvailable)
-        return <Tooltip delayDuration={200}>
+        return <Tooltip>
             <TooltipTrigger asChild >
                 <div className="absolute -left-1 top-0.5 z-50">
-                    <Info className="!w-4 text-primary-text-placeholder hover:text-primary-text icoooooooooon" />
+                    <Info className="w-4! text-primary-text-tertiary hover:text-primary-text" />
                 </div>
             </TooltipTrigger>
             <TooltipContent>
@@ -27,10 +27,10 @@ const RouteIcon: FC<Props> = (props) => {
         </Tooltip>
 
     if (routeNotFound)
-        return <Tooltip delayDuration={200}>
+        return <Tooltip>
             <TooltipTrigger asChild >
                 <div className="absolute -left-0.5 top-0.5 z-50">
-                    <RouteOff className="!w-3 text-primary-text-placeholder hover:text-primary-text icoooooooooon" />
+                    <RouteOff className="w-3! text-primary-text-tertiary hover:text-primary-text" />
                 </div>
             </TooltipTrigger>
             <TooltipContent>

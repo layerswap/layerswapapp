@@ -1,35 +1,30 @@
-import { datadogRum } from "@datadog/browser-rum";
-import { Balance } from "../../../Models/Balance";
+import { TokenBalance } from "../../../Models/Balance";
 import { Network, NetworkWithTokens, Token } from "../../../Models/Network";
-import formatAmount from "../../formatAmount";
+import { formatUnits } from "viem";
 import KnownInternalNames from "../../knownIds";
 import { TronWeb } from 'tronweb'
-import { insertIfNotExists } from "./helpers";
+import { insertIfNotExists } from "../helpers";
+import { BalanceProvider } from "@/Models/BalanceProvider";
 
-export class TronBalanceProvider {
-    supportsNetwork(network: NetworkWithTokens): boolean {
+export class TronBalanceProvider extends BalanceProvider {
+    supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return KnownInternalNames.Networks.TronMainnet.includes(network.name)
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens) => {
-        let balances: Balance[] = []
-        const provider = new TronWeb({ fullNode: network.node_url, solidityNode: network.node_url, privateKey: '01' });
+    fetchBalance: BalanceProvider['fetchBalance'] = async (address, network) => {
+        let balances: TokenBalance[] = []
+        const provider = new TronWeb({ fullNode: network.node_url, solidityNode: network.node_url, privateKey: '01', });
         const tokens = insertIfNotExists(network.tokens, network.token)
 
         for (const token of tokens) {
             try {
                 const balance = await resolveBalance({ network, address, token, provider })
 
-                if (!balance) return
-
-                balances = [
-                    ...balances,
-                    balance,
-                ]
+                balances.push(balance)
 
             }
             catch (e) {
-                console.log(e)
+                balances.push(this.resolveTokenBalanceFetchError(e, token, network))
             }
         }
 
@@ -57,54 +52,36 @@ export const resolveBalance = async ({ address, network, token, provider }: GetB
 }
 
 const getNativeAssetBalance = async ({ network, token, address, provider }: GetBalanceProps) => {
-    try {
 
-        const balance = await provider.trx.getBalance(address);
+    const balance = await provider.trx.getBalance(address);
 
-        return ({
-            network: network.name,
-            token: token.symbol,
-            amount: formatAmount(balance.toString(), Number(token?.decimals)),
-            request_time: new Date().toJSON(),
-            decimals: Number(token?.decimals),
-            isNativeCurrency: true,
-        })
-    }
-    catch (e) {
-        const error = new Error(e)
-        error.name = "TronNativeAssetBalanceError"
-        error.cause = e
-        datadogRum.addError(error);
-        return null;
-    }
+    return ({
+        network: network.name,
+        token: token.symbol,
+        amount: Number(formatUnits(BigInt(balance.toString()), Number(token?.decimals))),
+        request_time: new Date().toJSON(),
+        decimals: Number(token?.decimals),
+        isNativeCurrency: true,
+    })
+
 }
 
 const getTRC20Balance = async ({ network, token, address, provider }: GetBalanceProps) => {
-    try {
-        if (!token.contract) throw new Error("Token contract address is missing")
+    if (!token.contract) throw new Error("Token contract address is missing")
 
-        const tokenContractAddress = token.contract;
-        const contract = await provider.contract().at(tokenContractAddress);
+    const tokenContractAddress = token.contract;
+    const contract = await provider.contract().at(tokenContractAddress);
 
-        const balanceResponse = await contract.methods.balanceOf(address).call();
+    const balanceResponse = await contract.methods.balanceOf(address).call();
 
-        const balance = {
-            network: network.name,
-            token: token.symbol,
-            amount: formatAmount(BigInt(balanceResponse as any), token.decimals),
-            request_time: new Date().toJSON(),
-            decimals: token.decimals,
-            isNativeCurrency: false,
-        }
-
-        return balance
+    const balance = {
+        network: network.name,
+        token: token.symbol,
+        amount: Number(formatUnits(BigInt(balanceResponse as any), token.decimals)),
+        request_time: new Date().toJSON(),
+        decimals: token.decimals,
+        isNativeCurrency: false,
     }
-    catch (e) {
-        console.log(e)
-        const error = new Error(e)
-        error.name = "TronTRC20BalanceError"
-        error.cause = e
-        datadogRum.addError(error);
-        return null;
-    }
+
+    return balance
 }

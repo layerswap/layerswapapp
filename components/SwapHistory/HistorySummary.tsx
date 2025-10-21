@@ -1,20 +1,18 @@
 
 import useSWR from "swr"
-import LayerSwapApiClient, { SwapResponse, TransactionType } from "../../lib/apiClients/layerSwapApiClient"
-import { ApiResponse } from "../../Models/ApiResponse"
-import Image from 'next/image';
-import { useQueryState } from "../../context/query"
-import { Partner } from "../../Models/Partner"
+import LayerSwapApiClient, { SwapResponse, TransactionType } from "@/lib/apiClients/layerSwapApiClient"
+import { ApiResponse } from "@/Models/ApiResponse"
+import { useQueryState } from "@/context/query"
+import { Partner } from "@/Models/Partner"
 import { addressEnding, shortenEmail } from "../utils/ShortenAddress"
-import KnownInternalNames from "../../lib/knownIds"
+import KnownInternalNames from "@/lib/knownIds"
 import { ChevronRightIcon } from 'lucide-react'
 import StatusIcon from "./StatusIcons"
 import { FC } from "react"
-import { findIndexOfFirstNonZeroAfterComma, truncateDecimals, truncateDecimalsToFloor } from "../utils/RoundDecimals";
-import AddressIcon from "../AddressIcon";
-import { addressFormat } from "../../lib/address/formatter";
-import { SwapStatus } from "../../Models/SwapStatus";
-import { Wallet } from "../../Models/WalletProvider";
+import { SwapStatus } from "@/Models/SwapStatus";
+import { Wallet } from "@/Models/WalletProvider";
+import { ImageWithFallback } from "../Common/ImageWithFallback";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../shadcn/tooltip"
 
 type SwapInfoProps = {
     className?: string,
@@ -62,133 +60,110 @@ const HistorySummary: FC<SwapInfoProps> = ({
     }
 
     const destAddress = (hideAddress && hideTo && account) ? account : destination_address
-
-    const source_wallet = sourceAddressFromInput ? wallets.find(w => (addressFormat(w.address, source_network) === addressFormat(sourceAddressFromInput, source_network))) : null
-    const destination_wallet = wallets.find(w => addressFormat(w.address, destination_network) === addressFormat(destAddress, destination_network))
-
+    
     return (
         source_token && <>
-            <div className={`${className || ''} bg-secondary-700 z-10 p-3 w-full relative font-normal space-y-3 hover:bg-secondary-600 rounded-xl overflow-hidden cursor-pointer`}>
-                <div className="grid grid-cols-6 sm:grid-cols-8 gap-3 w-full items-center">
-                    {source?.display_name !== destination?.display_name ?
-                        <div className="col-span-1 h-11 w-11 relative min-w-11">
-                            {
-                                source &&
-                                <Image
+            <div className={`${className || ""} bg-secondary-500 relative z-10 w-full rounded-xl overflow-hidden hover:bg-secondary-400`}>
+                <div className="grid grid-cols-12 items-center gap-2 relative z-50">
+                    <div className="col-span-6 flex items-center gap-2 p-3">
+                        <div className="w-8 h-8 relative">
+                            <ImageWithFallback
+                                src={source_token.logo}
+                                alt={`${source_token.symbol} logo`}
+                                width={30}
+                                height={30}
+                                className="rounded-full"
+                            />
+                            {source?.logo && (
+                                <ImageWithFallback
                                     src={source.logo}
-                                    alt={source.display_name}
-                                    width={28}
-                                    height={28}
-                                    className="rounded" />
-                            }
-                            {
-                                destination &&
-                                <Image
+                                    alt={`${source.display_name} badge`}
+                                    width={18}
+                                    height={18}
+                                    className="absolute -bottom-1 -right-1 h-[18px] w-[18px] rounded-md"
+                                />
+                            )}
+                        </div>
+
+                        <div className="flex min-w-0 flex-col items-start space-y-0.5">
+                            <span className="text-white text-lg leading-5 flex min-w-0">
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span className="truncate overflow-hidden whitespace-nowrap max-w-[100px]">
+                                            {requested_amount.toLocaleString('en-US', { maximumFractionDigits: 20 })}
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        {requested_amount}
+                                    </TooltipContent>
+                                </Tooltip>
+
+                                &nbsp;{source_token.symbol}
+                            </span>
+
+                            <span className="text-secondary-text text-sm leading-[14px]">
+                                {source?.display_name || ""}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none -z-10">
+                        <div className="h-7 w-6 rounded-md bg-secondary-400 flex items-center justify-center">
+                            <ChevronRightIcon className="h-5 w-5 text-white" />
+                        </div>
+                    </div>
+
+                    <div className="col-span-6 flex items-center justify-end gap-2 bg-secondary-400 p-3 rounded-xl">
+                        <div className="flex min-w-0 flex-col items-end space-y-0.5">
+                            <span className="text-white text-lg leading-5 flex min-w-0">
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <span className="truncate overflow-hidden whitespace-nowrap max-w-[100px]">
+                                            {calculatedReceiveAmount.toLocaleString('en-US', { maximumFractionDigits: 20 })}
+                                        </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        {calculatedReceiveAmount}
+                                    </TooltipContent>
+                                </Tooltip>
+
+                                &nbsp;{destination_token.symbol}
+                            </span>
+
+                            <span className="text-secondary-text text-sm leading-[14px]">
+                                {destination?.display_name || ""}
+                            </span>
+                        </div>
+
+                        <div className="relative w-8 h-8">
+                            <ImageWithFallback
+                                src={destination_token.logo}
+                                alt={`${destination_token.symbol} logo`}
+                                width={30}
+                                height={30}
+                                className="rounded-full"
+                            />
+                            {destination?.logo && (
+                                <ImageWithFallback
                                     src={destination.logo}
-                                    alt={destination.display_name}
-                                    width={28}
-                                    height={28}
-                                    className="rounded absolute left-4 top-4" />
-                            }
-                        </div>
-                        :
-                        <div className="w-11 h-11 col-span-1">
-                            {
-                                source &&
-                                <Image
-                                    src={source.logo}
-                                    alt={source.display_name}
-                                    width={44}
-                                    height={44}
-                                    className="rounded-md" />
-                            }
-                        </div>
-                    }
-                    <div className="col-span-5 sm:col-span-7 flex flex-col gap-0.5 w-full">
-
-                        <div className="flex items-baseline justify-between w-full overflow-hidden">
-                            <p className="text-secondary-text text-sm sm:text-base truncate max-w-[55%]">
-                                {
-                                    source?.display_name === destination?.display_name ?
-                                        <>
-                                            <span>Swap in</span> <span>{source?.display_name}</span>
-                                        </>
-                                        :
-                                        <>
-                                            <span>{source?.display_name} </span> <span>to</span> <span>{destination?.display_name}</span>
-                                        </>
-                                }
-                            </p>
-
-                            <p className="font-light text-secondary-text text-xs sm:text-sm ">{smartDecimalTruncate(sourceTransaction?.amount || swap.requested_amount, source_token?.price_in_usd)} {source_token.symbol}</p>
-                        </div>
-                        <div className="flex w-full justify-between items-start text-end">
-                            <div className="flex items-center gap-0.5">
-                                {
-                                    sourceAccountAddress &&
-                                    <div className="inline-flex items-center gap-0.5 px-1 py-0.5 bg-secondary-950 rounded-md">
-                                        {
-                                            source_wallet?.icon ?
-                                                <source_wallet.icon className="h-3.5 w-3.5" />
-                                                :
-                                                (
-                                                    sourceAddressFromInput && !source_exchange ?
-                                                        <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded h-3.5 overflow-hidden w-3.5'>
-                                                            <AddressIcon className="scale-150 h-3.5 w-3.5" address={sourceAddressFromInput} size={14} />
-                                                        </div>
-                                                        :
-                                                        null
-                                                )
-                                        }
-                                        <p className="text-secondary-text text-xs">{sourceAccountAddress}</p>
-                                    </div>
-                                }
-                                {
-                                    addressFormat(destAddress, destination_network) !== (sourceAddressFromInput ? addressFormat(sourceAddressFromInput, source_network) : null) &&
-                                    <>
-                                        <ChevronRightIcon className="h-3 w-3" />
-                                        <div className="inline-flex items-center gap-0.5 px-1 py-0.5 bg-secondary-950 rounded-md">
-                                            {
-                                                destination_wallet?.icon ?
-                                                    <destination_wallet.icon className="h-3.5 w-3.5" />
-                                                    :
-                                                    !destination_exchange &&
-                                                    <div className='flex bg-secondary-400 text-primary-text  items-center justify-center rounded h-3.5 overflow-hidden w-3.5'>
-                                                        <AddressIcon className="scale-150 h-3.5 w-3.5" address={destAddress} size={14} />
-                                                    </div>
-                                            }
-                                            <p className="text-secondary-text text-xs">{destination_exchange ? 'Exchange' : addressEnding(destAddress)}</p>
-                                        </div>
-
-                                    </>
-                                }
-                            </div>
-                            <p className="font-medium text-primary-text text-sm sm:text-lg leading-5 sm:leading-5">{smartDecimalTruncate(calculatedReceiveAmount, destination_token?.price_in_usd)} {destination_token.symbol}</p>
+                                    alt={`${destination.display_name} badge`}
+                                    width={18}
+                                    height={18}
+                                    className="absolute -bottom-1 -right-1 h-[18px] w-[18px] rounded-md"
+                                />
+                            )}
                         </div>
                     </div>
                 </div>
-                {
-                    swap.status !== SwapStatus.Completed &&
-                    <StatusIcon swap={swap} withBg />
-                }
             </div>
+            {
+                swap.status !== SwapStatus.Completed &&
+                <div className="-mt-2 z-0 relative">
+                    <StatusIcon swap={swap} withBg />
+                </div>
+            }
         </>
     )
 }
-
-const smartDecimalTruncate = (value: number, price_in_usd: number) => {
-    let decimals = findIndexOfFirstNonZeroAfterComma((0.01 / Number(price_in_usd.toFixed()))) || 0
-    let truncatedAmount = truncateDecimals(value, decimals)
-
-    if (truncatedAmount === "0") {
-        while (truncatedAmount === "0") {
-            decimals += 1
-            truncatedAmount = truncateDecimals(value, decimals)
-        }
-    }
-
-    return truncateDecimals(value, decimals)
-}
-
 
 export default HistorySummary

@@ -10,9 +10,10 @@ type Props = {
    children: JSX.Element | JSX.Element[];
    className?: string;
    hideMenu?: boolean;
+   contextualMenu?: React.ReactNode;
 }
 
-const Widget = ({ children, className, hideMenu }: Props) => {
+const Widget = ({ children, hideMenu, contextualMenu }: Props) => {
    const router = useRouter()
    const wrapper = useRef(null);
 
@@ -28,37 +29,30 @@ const Widget = ({ children, className, hideMenu }: Props) => {
 
    const handleBack = router.pathname === "/" ? null : goBack
 
-   return <>
-      <div id="widget" className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative `}>
-         <div className="relative z-20">
-            {
-               AppSettings.ApiVersion === 'sandbox' &&
-               <div>
-                  <div className="h-0.5 bg-[#D95E1B]" />
-                  <div className="absolute -top-0.5 right-[calc(50%-68px)] bg-[#D95E1B] py-0.5 px-10 rounded-b-md text-xs scale-75">
-                     TESTNET
-                  </div>
+   return <div className="relative p-px">
+      <div className="invisible sm:visible absolute inset-0 rounded-[25px] bg-gradient-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
+      <div id="widget" className='md:shadow-lg sm:pb-4 rounded-3xl w-full sm:overflow-hidden relative bg-gradient-to-b from-secondary-700 to-secondary-700 max-sm:has-openpicker:min-h-svh max-sm:min-h-[99.8svh] sm:has-openpicker:min-h-[79svh] has-openwithdrawalmodal:min-h-[650px] h-full flex flex-col'>
+         {
+            AppSettings.ApiVersion === 'sandbox' &&
+            <div className="relative z-20">
+               <div className="absolute -top-1 right-[calc(50%-68px)] bg-[#D95E1B] py-0.5 px-10 rounded-b-md text-xs scale-75">
+                  TESTNET
                </div>
-            }
-         </div>
+            </div>
+         }
          {
             !hideMenu &&
-            <HeaderWithMenu goBack={handleBack} />
+            <HeaderWithMenu goBack={handleBack} contextualMenu={contextualMenu} />
          }
-         <div className='text-center text-xl text-secondary-100'>
-         </div>
-         <div className="relative px-6">
-            <div className="flex items-start" ref={wrapper}>
-               <div className={`flex flex-nowrap grow`}>
-                  <div className={`w-full pb-6 flex flex-col justify-between space-y-5 text-secondary-text h-full ${className}`}>
-                     {children}
-                  </div>
-               </div>
+
+         <div className="relative flex-col px-4 h-full min-h-0 flex flex-1">
+            <div className="flex flex-col flex-1 items-start h-full min-h-0 w-full" ref={wrapper}>
+               {children}
             </div>
          </div>
          <div id="widget_root" />
       </div>
-   </>
+   </div>
 }
 
 Widget.Content = Content
