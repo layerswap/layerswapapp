@@ -168,7 +168,7 @@ const AddressButton = ({ address, network, wallet, partnerLogo }: { address: str
                         <wallet.icon className="h-7 w-7 object-contain" />
                     ) : partnerLogo ? (<ImageWithFallback
                         alt="Partner logo"
-                        className="rounded-md object-contain"
+                        className="rounded-md object-contain h-7 w-7"
                         src={partnerLogo}
                         width="36"
                         height="36"
