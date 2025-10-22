@@ -2,13 +2,14 @@ packages:
   - packages/*
   - packages/wallets/evm
   - packages/wallets/fuel
+  - packages/wallets/paradex
+  - packages/wallets/starknet
   - apps/*
 
 catalog:
   '@wagmi/connectors': 5.7.7
   '@wagmi/core': 2.16.4
-  react: "18.3.1"
+  react: 18.3.1
   react-dom: 18.3.1
   wagmi: 2.14.11
-  zustand: "^4.5.1"
-
+  zustand: ^4.5.1

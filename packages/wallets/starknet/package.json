@@ -53,6 +53,7 @@
   "devDependencies": {
     "@types/node": "^22.13.13",
     "eslint": "8.49.0",
+    "react": "catalog:",
     "typescript": "^5.9.2"
   },
   "engines": {
