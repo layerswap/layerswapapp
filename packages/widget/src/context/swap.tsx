@@ -18,7 +18,7 @@ import { useSwapIdChangeCallback } from './callbackProvider';
 import { useInitialSettings } from './settings';
 import { addressFormat } from '@/lib/address/formatter';
 import { useSlippageStore } from '@/stores/slippageStore';
-import { posthog } from 'posthog-js';
+import { log } from './LogProvider';
 
 export const SwapDataStateContext = createContext<SwapContextData>({
     depositAddressIsFromAccount: false,
@@ -241,10 +241,13 @@ export function SwapDataProvider({ children }) {
             to: { network: to.name, token: toCurrency.symbol }
         });
 
-        posthog.capture('Swap initiated', {
-            name: 'Swap initiated',
-            swapId: swapDetails?.id ?? null,
-            path: typeof window !== 'undefined' ? window.location.pathname : undefined,
+        log({
+            type: "SwapInitiated",
+            props: {
+                name: "SwapInitiated",
+                swapId: swapDetails?.id ?? null,
+                path: typeof window !== "undefined" ? window.location.pathname : undefined,
+            },
         });
 
         return swap;

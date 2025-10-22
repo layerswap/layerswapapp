@@ -2,6 +2,7 @@ import posthog from "posthog-js";
 import { NetworkBalance } from "@/Models/Balance";
 import { BalanceProvider } from "@/types/balance";
 import { NetworkWithTokens } from "@/Models/Network";
+import { log } from "@/context/LogProvider";
 
 export class BalanceResolver {
 
@@ -27,15 +28,18 @@ export class BalanceResolver {
             const error = new Error(e)
             error.name = "BalanceError"
             error.cause = e
-            posthog.capture('$exception', {
-                name: error.name,
-                message: error.message,
-                $layerswap_exception_type: "Balance Error",
-                stack: error.stack,
-                cause: error.cause,
-                type: 'BalanceError',
-                where: 'BalanceProviderError',
-                severity: 'error',
+
+            log({
+                type: '$exception',
+                props: {
+                    name: error.name,
+                    message: error.message,
+                    $exception_type: "Balance Error",
+                    stack: error.stack,
+                    cause: (error as any)?.cause,
+                    where: 'BalanceProviderError',
+                    severity: 'error',
+                },
             });
 
             return { balances: [] }

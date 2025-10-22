@@ -14,12 +14,12 @@ import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { BackendTransactionStatus, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
-import posthog from "posthog-js";
 import { useWalletWithdrawalState } from "@/context/withdrawalContext";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import { SwapFormValues } from "../../../Form/SwapFormValues";
 import { useSwapCreateCallback } from "@/context/callbackProvider";
 import { TransferProps } from "@/types";
+import { log } from "@/context/LogProvider";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
@@ -216,7 +216,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             if (!depositAction.call_data) {
                 throw new Error('No deposit action call data')
             }
-           
+
             const transferProps: TransferProps = {
                 network: swapData.source_network,
                 token: swapData.source_token,
@@ -238,20 +238,22 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         catch (e) {
             setSwapId(undefined)
             console.log('Error in SendTransactionButton:', e)
-            
+
             const swapWithdrawalError = new Error(e);
             swapWithdrawalError.name = `SwapWithdrawalError`;
             swapWithdrawalError.cause = e;
-            posthog.capture('$exception', {
-                name: swapWithdrawalError.name,
-                cause: swapWithdrawalError.cause,
-                message: swapWithdrawalError.message,
-                $layerswap_exception_type: "Swap Withdrawal Error",
-                stack: swapWithdrawalError.stack,
-                where: 'TransactionError',
-                severity: 'error',
+            log({
+                type: '$exception',
+                props: {
+                    name: swapWithdrawalError.name,
+                    message: swapWithdrawalError.message,
+                    $exception_type: "Swap Withdrawal Error",
+                    stack: swapWithdrawalError.stack,
+                    cause: (swapWithdrawalError as any)?.cause,
+                    where: 'TransactionError',
+                    severity: 'error',
+                },
             });
-
         }
         finally {
             setLoading(false)

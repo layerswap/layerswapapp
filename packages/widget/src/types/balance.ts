@@ -1,20 +1,26 @@
-import posthog from "posthog-js";
 import { TokenBalance } from "@/Models/Balance";
 import { Network, NetworkWithTokens, Token } from "@/Models/Network";
+import { log } from "@/context/LogProvider";
 
 export abstract class BalanceProvider {
     abstract supportsNetwork: (network: NetworkWithTokens) => boolean
     abstract fetchBalance: (address: string, network: NetworkWithTokens, options?: { timeoutMs?: number, retryCount?: number }) => Promise<TokenBalance[] | null | undefined>
     protected resolveTokenBalanceFetchError = (err: Error, token: Token, network: Network, isNativeCurrency?: boolean) => {
         const errorMessage = `${err.message || err}`
-        posthog.captureException("balance_fetch_error", {
-            where: "BalanceProvider",
-            network: network.name,
-            $layerswap_exception_type: "Balance Fetch Error",
-            token: token.symbol ?? undefined,
-            message: `Could not fetch balance for ${token.symbol} in ${network.name}, err: ${errorMessage}`,
-            cause: err.cause,
-            timoutError: errorMessage.toLowerCase().includes("timeout") || errorMessage.toLowerCase().includes("took too long")
+
+        log({
+            type: 'balance_fetch_error',
+            props: {
+                where: "BalanceProvider",
+                network: network.name,
+                $exception_type: "Balance Fetch Error",
+                token: token.symbol ?? undefined,
+                message: `Could not fetch balance for ${token.symbol} in ${network.name}, err: ${errorMessage}`,
+                cause: (err as any)?.cause,
+                timeoutError:
+                    errorMessage.toLowerCase().includes("timeout") ||
+                    errorMessage.toLowerCase().includes("took too long"),
+            },
         });
 
         const tokenBalance: TokenBalance = {

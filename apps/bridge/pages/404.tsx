@@ -1,10 +1,11 @@
+import { posthog } from "posthog-js";
 import MessageComponent from "../components/MessageComponent"
 import Navbar from "../components/navbar"
 import GoHomeButton from "../components/utils/GoHome"
-import { posthog } from "posthog-js"
 import { useEffect } from "react"
 
 export default function Custom404() {
+
     useEffect(() => {
         posthog.capture("404", {
             name: "404",

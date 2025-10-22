@@ -1,24 +1,28 @@
 import { useCallback, useEffect } from "react";
 import { useIntercom } from "react-use-intercom";
 import { Home, RotateCcw } from "lucide-react";
-import posthog from "posthog-js";
 import MessageComponent from "./Common/MessageComponent";
 import NotFoundIcon from "./Icons/NotFoundIcon";
 import SubmitButton from "./Buttons/submitButton";
+import { useLog } from "@/context/LogProvider";
 
 export default function ErrorFallback({ error, resetErrorBoundary }) {
 
     const { boot, show } = useIntercom()
+    const { log } = useLog();
 
     useEffect(() => {
-        posthog.capture('$exception', {
-            name: error?.name,
-            $layerswap_exception_type: "Error Fallback",
-            message: error?.message,
-            where: 'ErrorFallback',
-            severity: 'error',
+        log({
+            type: "$exception",
+            props: {
+                name: error?.name,
+                message: error?.message,
+                where: "ErrorFallback",
+                severity: "error",
+                $exception_type: "Error Fallback",
+            },
         });
-    }, [])
+    }, []);
 
     const startIntercom = useCallback(() => {
         boot();

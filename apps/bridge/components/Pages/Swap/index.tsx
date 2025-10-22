@@ -1,4 +1,6 @@
 import { LayerswapProvider, LayerSwapSettings, Swap, ThemeData } from "@layerswap/widget"
+import { LogEvent } from "@layerswap/widget/types"
+
 import { useRouter } from "next/router"
 import { FC } from "react"
 import { updateFormBulk } from "../../utils/updateForm"
@@ -12,6 +14,7 @@ import { StarknetProvider } from "@layerswap/wallet-starknet"
 import { SVMProvider } from "@layerswap/wallet-svm"
 import { TonProvider } from "@layerswap/wallet-ton"
 import { TronProvider } from "@layerswap/wallet-tron"
+import posthog from "posthog-js"
 
 const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string }> = ({ settings, themeData, apiKey }) => {
     const router = useRouter()
@@ -41,6 +44,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
                 }
             }
         }}
+        onLogEvent={handleLogEvent}
         imtblPassport={imtblPassportConfigs}
         walletProviders={[EVMProvider, SVMProvider, BitcoinProvider, StarknetProvider, ImmutableXProvider, TonProvider, TronProvider]}
     >
@@ -49,3 +53,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
 }
 
 export default SwapPage
+
+const handleLogEvent = (event: LogEvent) => {
+    posthog?.capture(event.type, event.props ?? {});
+};
