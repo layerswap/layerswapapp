@@ -54,7 +54,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     const handleActionHover = (value: number | undefined) => {
         setActionTempValue(value)
     }
-   
+
     return (
         <>
             <DepositMethodComponent />
@@ -80,23 +80,26 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                     </div>
                                     <div className="hover:bg-secondary-300 bg-secondary-500 rounded-2xl p-3">
                                         <Address partner={partner} >{
-                                            ({ addressItem }) => <>
-                                                {
-                                                    addressItem ? <>
-                                                        <AddressButton address={addressItem.address} network={destination} wallet={wallet} partnerLogo={partner?.is_wallet && addressItem.group === AddressGroup.FromQuery && partner?.logo ? partner.logo : undefined} />
-                                                    </>
-                                                        : destination_address ? <>
-                                                            <AddressButton address={destination_address} />
+                                            ({ addressItem }) => {
+                                                const addressProviderIcon = (partner?.is_wallet && addressItem?.group === AddressGroup.FromQuery && partner?.logo) ? partner.logo : undefined
+                                                return <>
+                                                    {
+                                                        addressItem ? <>
+                                                            <AddressButton address={addressItem.address} network={destination} wallet={wallet} partnerLogo={addressProviderIcon} />
                                                         </>
-                                                            :
-                                                            <span className="flex items-center">
-                                                                <SelectedEchangePlaceholder placeholder='Enter destination address' />
-                                                                <span className="absolute right-0 px-1 pr-5 pointer-events-none text-primary-text">
-                                                                    <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
+                                                            : destination_address ? <>
+                                                                <AddressButton address={destination_address} />
+                                                            </>
+                                                                :
+                                                                <span className="flex items-center">
+                                                                    <SelectedEchangePlaceholder placeholder='Enter destination address' />
+                                                                    <span className="absolute right-0 px-1 pr-5 pointer-events-none text-primary-text">
+                                                                        <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
+                                                                    </span>
                                                                 </span>
-                                                            </span>
-                                                }
-                                            </>
+                                                    }
+                                                </>
+                                            }
                                         }</Address>
                                     </div>
                                 </div>
