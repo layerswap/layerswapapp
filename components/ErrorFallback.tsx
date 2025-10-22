@@ -2,7 +2,6 @@ import { useCallback, useEffect } from "react";
 import { useIntercom } from "react-use-intercom";
 import { Home, RotateCcw } from "lucide-react";
 import { useRouter } from "next/router";
-import { TrackEvent } from '../pages/_document';
 import MessageComponent from "./MessageComponent";
 import NotFoundIcon from "./icons/NotFoundIcon";
 import GoHomeButton from "./utils/GoHome";
