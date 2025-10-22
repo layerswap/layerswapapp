@@ -23,6 +23,7 @@ import SubmitButton from '@/components/buttons/submitButton'
 import { Widget } from '@/components/Widget/Index'
 import { truncateDecimals } from '@/components/utils/RoundDecimals'
 import { Partner } from '@/Models/Partner'
+import { addressFormat } from '@/lib/address/formatter'
 
 interface Props {
     swapBasicData: SwapBasicData;
@@ -46,8 +47,10 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
     const [copied, copy] = useCopyClipboard()
     const query = useQueryState()
     const depositAddress = depositActions?.find(da => true)?.to_address;
-console.log(wallets, "partner in manual withdraw")
+    const { destination_address: destinationAddressFromQuery } = query
+
     const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == swapBasicData?.destination_address?.toLowerCase())?.icon;
+    const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && addressFormat(destinationAddressFromQuery, swapBasicData?.destination_network) === addressFormat(swapBasicData?.destination_address, swapBasicData?.destination_network) && partner?.logo
 
     const handleCopy = () => {
         if (depositAddress) {
@@ -270,12 +273,20 @@ console.log(wallets, "partner in manual withdraw")
                                     </span>
                                 }
                                 value={
-                                    <span className="cursor-pointer hover:underline flex items-center gap-2">
-                                        {WalletIcon ?
+                                    <span className="cursor-pointer hover:underline flex items-center gap-1">
+                                        {WalletIcon ? (
                                             <WalletIcon className="w-4 h-4 p-0.5 bg-white rounded-sm" />
-                                            :
-                                            <AddressIcon className="h-4 w-4" address={swapBasicData.destination_address} size={36} rounded='4px' />
-                                        }
+                                        ) : addressProviderIcon ? (
+                                            <ImageWithFallback
+                                                alt="Partner logo"
+                                                className="h-4 w-4 rounded-md object-contain"
+                                                src={partner.logo}
+                                                width="36"
+                                                height="36"
+                                            />
+                                        ) : (
+                                            <AddressIcon className="h-4 w-4" address={swapBasicData.destination_address} size={36} rounded="4px" />
+                                        )}
                                         {shortenAddress(swapBasicData.destination_address)}
                                     </span>
                                 }
