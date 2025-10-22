@@ -49,7 +49,7 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner }) =>
                     (
                         swapBasicData?.use_deposit_address === true
                             ? <ManualWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} partner={partner} />
-                            : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} />
+                            : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} partner={partner} />
                     )
                     :
                     <div className='space-y-3 w-full h-full'>

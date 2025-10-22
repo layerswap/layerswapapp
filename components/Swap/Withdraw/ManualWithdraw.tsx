@@ -24,6 +24,8 @@ import { Widget } from '@/components/Widget/Index'
 import { truncateDecimals } from '@/components/utils/RoundDecimals'
 import { Partner } from '@/Models/Partner'
 import { addressFormat } from '@/lib/address/formatter'
+import { isValidAddress } from '@/lib/address/validator'
+import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
 
 interface Props {
     swapBasicData: SwapBasicData;
@@ -231,7 +233,14 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                                 }
                                 value={
                                     <span className="cursor-pointer hover:underline min-h-[20px] block">
-                                        {depositAddress ? shortenAddress(depositAddress) : <span className="inline-block w-28 bg-secondary-400 h-[20px] rounded animate-pulse"></span>}
+                                        {depositAddress ? (
+                                            <span className='flex items-center gap-1'>
+                                                {shortenAddress(depositAddress)}
+                                                <CopyButton toCopy={depositAddress || ''} className='flex' />
+                                            </span>
+                                        ) : (
+                                            <span className="inline-block w-28 bg-secondary-400 h-[20px] rounded animate-pulse"></span>
+                                        )}
                                     </span>
                                 }
                             />
@@ -287,7 +296,14 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                                         ) : (
                                             <AddressIcon className="h-4 w-4" address={swapBasicData.destination_address} size={36} rounded="4px" />
                                         )}
-                                        {shortenAddress(swapBasicData.destination_address)}
+                                        {
+                                            ((swapBasicData?.destination_network && isValidAddress(swapBasicData?.destination_address, swapBasicData?.destination_network)) ?
+                                                <div className="text-sm group/addressItem text-secondary-text">
+                                                    <ExtendedAddress address={addressFormat(swapBasicData?.destination_address, swapBasicData?.destination_network)} network={swapBasicData?.destination_network} shouldShowChevron={false} />
+                                                </div>
+                                                :
+                                                <p className="text-sm text-secondary-text">{shortenAddress(swapBasicData?.destination_address)}</p>)
+                                        }
                                     </span>
                                 }
                             />
