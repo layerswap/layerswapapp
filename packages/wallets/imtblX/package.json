@@ -38,18 +38,18 @@
   "license": "MIT",
   "peerDependencies": {
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
-    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc"
+    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "@layerswap/widget": "workspace:*"
   },
   "dependencies": {
     "@imtbl/imx-sdk": "2.1.1",
     "@imtbl/sdk": "1.45.10",
-    "@layerswap/widget": "workspace:*",
-    "axios": "^0.21.4"
+    "axios": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^22.13.13",
-    "eslint": "8.49.0",
-    "typescript": "^5.9.2"
+    "@layerswap/widget": "workspace:*",
+    "react": "catalog:",
+    "react-dom": "catalog:"
   },
   "engines": {
     "node": ">=22"

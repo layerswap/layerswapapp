@@ -12,7 +12,6 @@
     "noEmit": false,
     "declarationDir": "dist",
     "outDir": "dist",
-    "resolveJsonModule": true,
     "esModuleInterop": true,
     "paths": {
       "@/*": [

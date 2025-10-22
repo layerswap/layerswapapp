@@ -7,6 +7,10 @@ import { EVMProvider } from "@layerswap/wallet-evm";
 import { FuelProvider } from "@layerswap/wallet-fuel";
 import { ParadexProvider } from "@layerswap/wallet-paradex";
 import { StarknetProvider } from "@layerswap/wallet-starknet";
+import { BitcoinProvider } from "@layerswap/wallet-bitcoin";
+import { ImmutableXProvider } from "@layerswap/wallet-imtblX";
+import { TonProvider } from "@layerswap/wallet-ton";
+import { SVMProvider } from "@layerswap/wallet-svm";
 
 const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string }> = ({ settings, themeData, apiKey }) => {
     const router = useRouter()
@@ -37,7 +41,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
             }
         }}
         imtblPassport={imtblPassportConfigs}
-        walletProviders={[EVMProvider, StarknetProvider, FuelProvider, ParadexProvider]}
+        walletProviders={[EVMProvider, StarknetProvider, FuelProvider, ParadexProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider]}
     >
         <Swap />
     </LayerswapProvider>

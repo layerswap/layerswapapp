@@ -5,7 +5,6 @@
   "devDependencies": {
     "@types/node": "^24.5.1",
     "autoprefixer": "^10.4.21",
-    "eslint": "^8.40.0",
     "postcss": "^8.5.3",
     "prettier": "^3.0.0",
     "rimraf": "^5.0.0",
@@ -13,7 +12,7 @@
     "tailwindcss-animate": "^1.0.5",
     "tsc-alias": "^1.8.16",
     "tsc-watch": "^6.2.0",
-    "typescript": "^5.1.6"
+    "typescript": "^5.9.2"
   },
   "packageManager": "pnpm@10.16.1",
   "devEngines": {
@@ -33,6 +32,6 @@
   "scripts": {
     "dev": "pnpm --filter @layerswap/bridge dev",
     "build": "pnpm -r run build",
-    "lint": "eslint . --ext .ts,.tsx"
+    "clean": "find . -name 'node_modules' -type d -prune -exec rimraf {} +"
   }
 }
