@@ -53,7 +53,6 @@
   "peerDependencies": {
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
-    "wagmi": "catalog:",
     "zustand": "catalog:"
   },
   "dependencies": {
@@ -98,7 +97,6 @@
     "@types/react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "wagmi": "catalog:",
     "zustand": "catalog:"
   },
   "engines": {

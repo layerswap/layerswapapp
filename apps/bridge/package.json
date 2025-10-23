@@ -23,6 +23,7 @@
     "@layerswap/wallet-ton": "workspace:*",
     "@layerswap/wallet-tron": "workspace:*",
     "@layerswap/wallet-svm": "workspace:*",
+    "@layerswap/wallet-imtblPassport": "workspace:*",
     "@layerswap/widget": "workspace:*",
     "@radix-ui/react-context-menu": "^1.0.0",
     "@tanstack/react-query": "catalog:",

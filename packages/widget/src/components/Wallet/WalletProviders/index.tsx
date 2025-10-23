@@ -1,21 +1,18 @@
 'use client'
-import { FC, ReactNode, createElement } from "react"
+import { FC, ReactNode, createElement, useMemo } from "react"
 import { ThemeData } from "@/Models/Theme"
 import { WalletProvidersProvider } from "@/context/walletProviders";
 import { WalletModalProvider } from "../WalletModal";
-import AppSettings from "@/lib/AppSettings";
-import { WalletProvider } from "@/types"
+import { WalletProvider, WalletWrapper } from "@/types"
 
-// Dynamic wrapper component that renders provider wrappers
 const DynamicProviderWrapper: FC<{
-    providers: WalletProvider[],
+    providers: WalletWrapper[],
     children: ReactNode,
     basePath: string,
     themeData: ThemeData,
     appName: string | undefined
 }> = ({ providers, children, basePath, themeData, appName }) => {
-    // Create a nested structure of providers
-    const createNestedProviders = (providers: WalletProvider[], currentChildren: ReactNode): ReactNode => {
+    const createNestedProviders = (providers: WalletWrapper[], currentChildren: ReactNode): ReactNode => {
         if (providers.length === 0) return currentChildren;
 
         const [currentProvider, ...remainingProviders] = providers;
@@ -24,20 +21,7 @@ const DynamicProviderWrapper: FC<{
             return createNestedProviders(remainingProviders, currentChildren);
         }
 
-        // Handle special cases for providers that need specific props
-        let wrapperProps: any = { children: createNestedProviders(remainingProviders, currentChildren) };
-
-        if (currentProvider.id === 'ton') {
-            wrapperProps = { ...wrapperProps, basePath, themeData, appName };
-        } else if (currentProvider.id === 'imtbl') {
-            wrapperProps = {
-                ...wrapperProps,
-                client_id: AppSettings.ImtblPassportConfig?.clientId,
-                publishable_key: AppSettings.ImtblPassportConfig?.publishableKey,
-                redirect_uri: AppSettings.ImtblPassportConfig?.redirectUri,
-                base_path: AppSettings.ImtblPassportConfig?.appBasePath
-            };
-        }
+        const wrapperProps = { children: createNestedProviders(remainingProviders, currentChildren), basePath, themeData, appName };
 
         return createElement(currentProvider.wrapper, wrapperProps);
     };
@@ -70,8 +54,11 @@ const WalletsProviders: FC<{
     basePath: string,
     themeData: ThemeData,
     appName: string | undefined,
-    walletProviders: WalletProvider[]
+    walletProviders: (WalletProvider | WalletWrapper)[]
 }> = ({ children, basePath, themeData, appName, walletProviders }) => {
+
+    const providersWithWalletConnectionProvider = useMemo(() => walletProviders.filter(provider => typeof provider === 'object' && 'walletConnectionProvider' in provider), [walletProviders]);
+
     return (
         <DynamicProviderWrapper
             providers={walletProviders}
@@ -80,7 +67,7 @@ const WalletsProviders: FC<{
             appName={appName}
         >
             <WalletModalProvider>
-                <WalletProvidersProvider walletProviders={walletProviders}>
+                <WalletProvidersProvider walletProviders={providersWithWalletConnectionProvider}>
                     {children}
                 </WalletProvidersProvider>
             </WalletModalProvider>

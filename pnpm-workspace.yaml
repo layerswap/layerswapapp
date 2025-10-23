@@ -1,14 +1,6 @@
 packages:
   - packages/*
-  - packages/wallets/evm
-  - packages/wallets/fuel
-  - packages/wallets/paradex
-  - packages/wallets/starknet
-  - packages/wallets/bitcoin
-  - packages/wallets/imtblX
-  - packages/wallets/ton
-  - packages/wallets/tron
-  - packages/wallets/svm
+  - packages/wallets/*
   - apps/*
 
 catalog:
