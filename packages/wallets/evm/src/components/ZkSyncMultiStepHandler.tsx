@@ -8,9 +8,38 @@ import { TransferProps, TransactionMessageType, WithdrawPageProps } from '@layer
 import { formatUnits } from 'viem';
 import { useEthersSigner } from '../evmUtils/ethers';
 
+// Type definitions for zksync
+type ZkSyncWallet = {
+    cachedAddress: string;
+    isSigningKeySet(): Promise<boolean>;
+    setSigningKey(params: { ethAuthType: string; feeToken: number }): Promise<any>;
+    address(): string;
+    syncTransfer(params: {
+        to: string;
+        token: string;
+        amount: any;
+        validUntil: number;
+    }): Promise<{ txHash?: string }>;
+};
+
+type ZkSyncProvider = {
+    getTransactionFee(params: { ChangePubKey: string }, address: string, tokenId: number): Promise<{ totalFee: { toString(): string } }>;
+};
+
+type ZkSyncModule = {
+    getDefaultProvider(provider: string): Promise<ZkSyncProvider>;
+    Wallet: {
+        fromEthSigner(signer: any, provider: ZkSyncProvider): Promise<ZkSyncWallet>;
+    };
+    closestPackableTransactionAmount(amount: any): any;
+    utils: {
+        MAX_TIMESTAMP: number;
+    };
+};
+
 const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
-    const [syncWallet, setSyncWallet] = useState<any | null>(null);
+    const [syncWallet, setSyncWallet] = useState<ZkSyncWallet | null>();
     const [accountIsActivated, setAccountIsActivated] = useState(false);
     const [activationFee, setActivationFee] = useState<({ feeInAsset: number, feeInUsd: number } | undefined)>(undefined);
     const { source_network, source_token } = swapBasicData;
@@ -36,7 +65,7 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel
             return
         setLoading(true)
         try {
-            const zksync = await import('zksync');
+            const zksync = await import('zksync') as ZkSyncModule;
             const syncProvider = await zksync.getDefaultProvider(defaultProvider);
             const wallet = await zksync.Wallet.fromEthSigner(signer, syncProvider);
             setAccountIsActivated(await wallet.isSigningKeySet())
@@ -95,7 +124,7 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel
 
         setLoading(true)
         try {
-            const zksync = await import('zksync');
+            const zksync = await import('zksync') as ZkSyncModule;
             const tf = await syncWallet?.syncTransfer({
                 to: depositAddress,
                 token: source_token.symbol,

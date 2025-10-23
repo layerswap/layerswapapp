@@ -15,10 +15,10 @@ import { ApiResponse } from "@/Models/ApiResponse";
 import { Partner } from "@/Models/Partner";
 
 export default function Form({ formValues }: { formValues?: SwapFormValues }) {
-    const { from, appName } = useInitialSettings()
+    const { from, appName, defaultTab: defaultTabQueryParam } = useInitialSettings()
     const { sourceExchanges } = useSettingsState()
     const defaultTab = useMemo(() => {
-        return defaultTabResolver({ from, sourceExchanges })
+        return defaultTabResolver({ from, sourceExchanges, defaultTabQueryParam })
     }, [from, sourceExchanges])
 
     const layerswapApiClient = new LayerSwapApiClient()
@@ -61,7 +61,15 @@ export default function Form({ formValues }: { formValues?: SwapFormValues }) {
     </Tabs>
 }
 
-const defaultTabResolver = ({ from, sourceExchanges }: { from: string | undefined, sourceExchanges: ReturnType<typeof useSettingsState>['sourceExchanges'] }) => {
+const defaultTabResolver = ({ from, sourceExchanges, defaultTabQueryParam }: { from: string | undefined, sourceExchanges: ReturnType<typeof useSettingsState>['sourceExchanges'], defaultTabQueryParam: string | undefined }) => {
+    if (defaultTabQueryParam) {
+        if (defaultTabQueryParam === "swap") {
+            return "cross-chain";
+        }
+        if (defaultTabQueryParam === "cex") {
+            return "exchange";
+        }
+    }
     if (from) {
         const isCex = sourceExchanges.some(exchange => exchange.name === from);
         if (isCex) {

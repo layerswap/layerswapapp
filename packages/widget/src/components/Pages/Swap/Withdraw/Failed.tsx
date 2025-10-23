@@ -3,19 +3,19 @@ import { useSwapDataState } from '@/context/swap';
 import { useIntercom } from 'react-use-intercom';
 import { SwapStatus } from '@/Models/SwapStatus';
 import QuestionIcon from '@/components//Icons/Question';
-import { posthog } from 'posthog-js';
+// import { posthog } from 'posthog-js';
 
 const Failed: FC = () => {
     const { swapDetails } = useSwapDataState()
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ customAttributes: { swapId: swapDetails?.id } })
 
-    useEffect(() => {
-        posthog.capture('Swap failed', {
-            swapId: swapDetails?.id ?? null,
-            path: typeof window !== 'undefined' ? window.location.pathname : undefined,
-        });
-    }, []);
+    // useEffect(() => {
+    //     posthog.capture('Swap failed', {
+    //         swapId: swapDetails?.id ?? null,
+    //         path: typeof window !== 'undefined' ? window.location.pathname : undefined,
+    //     });
+    // }, []);
 
     const startIntercom = useCallback(() => {
         boot();

@@ -4,7 +4,7 @@ import { Home } from "lucide-react";
 import { useBackClickCallback } from "@/context/callbackProvider";
 import MessageComponent from "@/components/Common/MessageComponent";
 import NotFoundIcon from "@/components/Icons/NotFoundIcon";
-import posthog from "posthog-js";
+// import posthog from "posthog-js";
 
 const NotFound: FC<{ swapId?: string | undefined }> = ({ swapId }) => {
 
@@ -12,12 +12,12 @@ const NotFound: FC<{ swapId?: string | undefined }> = ({ swapId }) => {
     const updateWithProps = () => update({ customAttributes: { swapId: swapId } })
     const triggerBackClickCallback = useBackClickCallback()
 
-    useEffect(() => {
-        posthog.capture('Swap not found', {
-            swapId: swapId ?? null,
-            path: typeof window !== 'undefined' ? window.location.pathname : undefined,
-        });
-    }, []);
+    // useEffect(() => {
+    //     posthog.capture('Swap not found', {
+    //         swapId: swapId ?? null,
+    //         path: typeof window !== 'undefined' ? window.location.pathname : undefined,
+    //     });
+    // }, []);
 
     const startIntercom = useCallback(() => {
         boot();

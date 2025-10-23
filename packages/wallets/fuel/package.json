@@ -38,7 +38,9 @@
   "license": "MIT",
   "peerDependencies": {
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
-    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc"
+    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "@wagmi/core": "catalog:",
+    "wagmi": "catalog:"
   },
   "dependencies": {
     "@ethersproject/bytes": "^5.8.0",
@@ -46,22 +48,18 @@
     "@fuel-ts/address": "^0.101.3",
     "@fuels/react": "^0.43.2",
     "@layerswap/widget": "workspace:*",
-    "@solana/web3.js": "1.66.0",
-    "@wagmi/core": "catalog:",
     "bs58": "^6.0.0",
     "fuels": "^0.101.3",
     "json-rpc-2.0": "1.7.0",
     "memoizee": "^0.4.17",
     "socket.io-client": "^4.8.1",
     "tweetnacl": "^1.0.3",
-    "viem": "^2.38.3",
-    "wagmi": "catalog:"
+    "viem": "^2.38.3"
   },
   "devDependencies": {
-    "@types/node": "^22.13.13",
-    "eslint": "8.49.0",
-    "tsup": "^8.4.0",
-    "typescript": "^5.9.2"
+    "react": "catalog:",
+    "react-dom": "catalog:"
+
   },
   "engines": {
     "node": ">=22"

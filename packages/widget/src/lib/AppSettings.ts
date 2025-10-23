@@ -26,15 +26,15 @@ export default class AppSettings {
             tonApiKey: 'ac793ea74c19105d617dfbeedb827f1b267b4e91f1b15b2420d003ec49722c82',
         }
     static ImtblPassportConfig: {
-        appBasePath: string,
         publishableKey: string,
         clientId: string,
-        redirectUri: string
+        redirectUri: string,
+        logoutRedirectUri: string
     } | undefined = {
-            appBasePath: "",
             publishableKey: "",
             clientId: "",
-            redirectUri: ""
+            redirectUri: "",
+            logoutRedirectUri: ""
         }
     static DisableExchanges: boolean = false
     static FeaturedNetwork?: {

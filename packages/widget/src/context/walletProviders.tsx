@@ -8,6 +8,7 @@ import { ChevronLeft } from "lucide-react";
 import ConnectorsList from "@/components/Wallet/WalletModal/ConnectorsList";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { isMobile } from "@/lib/wallets/utils/isMobile";
+import { useAccount } from "wagmi";
 
 const WalletProvidersContext = createContext<WalletConnectionProvider[]>([]);
 
@@ -16,7 +17,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
     const isMobilePlatform = isMobile();
     const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector } = useConnectModal()
 
-    const allProviders = walletProviders.map(provider => provider.walletConnectionProvider({ networks }))
+    const allProviders = walletProviders.map(provider => provider.walletConnectionProvider ? provider.walletConnectionProvider({ networks }) : undefined).filter(provider => provider !== undefined) as WalletConnectionProvider[];
 
     const providers = useMemo(() => {
         const filteredProviders = allProviders.filter(provider => (isMobilePlatform ? !provider.unsupportedPlatforms?.includes('mobile') : !provider.unsupportedPlatforms?.includes('desktop')) &&
