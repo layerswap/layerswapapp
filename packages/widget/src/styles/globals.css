@@ -515,57 +515,12 @@ textarea:disabled::placeholder {
   animation-name: slideToBottom;
 }
 
-[data-vaul-drawer][data-vaul-snap-points='false'][data-vaul-drawer-direction='top'][data-state='open'] {
-  animation-name: slideFromTop;
-}
-[data-vaul-drawer][data-vaul-snap-points='false'][data-vaul-drawer-direction='top'][data-state='closed'] {
-  animation-name: slideToTop;
-}
-
-[data-vaul-drawer][data-vaul-snap-points='false'][data-vaul-drawer-direction='left'][data-state='open'] {
-  animation-name: slideFromLeft;
-}
-[data-vaul-drawer][data-vaul-snap-points='false'][data-vaul-drawer-direction='left'][data-state='closed'] {
-  animation-name: slideToLeft;
-}
-
-[data-vaul-drawer][data-vaul-snap-points='false'][data-vaul-drawer-direction='right'][data-state='open'] {
-  animation-name: slideFromRight;
-}
-[data-vaul-drawer][data-vaul-snap-points='false'][data-vaul-drawer-direction='right'][data-state='closed'] {
-  animation-name: slideToRight;
-}
-
 [data-vaul-drawer][data-vaul-snap-points='true'][data-vaul-drawer-direction='bottom'] {
   transform: translate3d(0, var(--initial-transform, 100%), 0);
 }
 
-[data-vaul-drawer][data-vaul-snap-points='true'][data-vaul-drawer-direction='top'] {
-  transform: translate3d(0, calc(var(--initial-transform, 100%) * -1), 0);
-}
-
-[data-vaul-drawer][data-vaul-snap-points='true'][data-vaul-drawer-direction='left'] {
-  transform: translate3d(calc(var(--initial-transform, 100%) * -1), 0, 0);
-}
-
-[data-vaul-drawer][data-vaul-snap-points='true'][data-vaul-drawer-direction='right'] {
-  transform: translate3d(var(--initial-transform, 100%), 0, 0);
-}
-
-[data-vaul-drawer][data-vaul-delayed-snap-points='true'][data-vaul-drawer-direction='top'] {
-  transform: translate3d(0, var(--snap-point-height, 0), 0);
-}
-
 [data-vaul-drawer][data-vaul-delayed-snap-points='true'][data-vaul-drawer-direction='bottom'] {
   transform: translate3d(0, var(--snap-point-height, 0), 0);
-}
-
-[data-vaul-drawer][data-vaul-delayed-snap-points='true'][data-vaul-drawer-direction='left'] {
-  transform: translate3d(var(--snap-point-height, 0), 0, 0);
-}
-
-[data-vaul-drawer][data-vaul-delayed-snap-points='true'][data-vaul-drawer-direction='right'] {
-  transform: translate3d(var(--snap-point-height, 0), 0, 0);
 }
 
 [data-vaul-overlay][data-vaul-snap-points='false'] {
@@ -598,15 +553,6 @@ textarea:disabled::placeholder {
   background: inherit;
   background-color: inherit;
 }
-
-[data-vaul-drawer][data-vaul-drawer-direction='top']::after {
-  top: initial;
-  bottom: 100%;
-  left: 0;
-  right: 0;
-  height: 200%;
-}
-
 [data-vaul-drawer][data-vaul-drawer-direction='bottom']::after {
   top: 100%;
   bottom: initial;
@@ -614,23 +560,6 @@ textarea:disabled::placeholder {
   right: 0;
   height: 200%;
 }
-
-[data-vaul-drawer][data-vaul-drawer-direction='left']::after {
-  left: initial;
-  right: 100%;
-  top: 0;
-  bottom: 0;
-  width: 200%;
-}
-
-[data-vaul-drawer][data-vaul-drawer-direction='right']::after {
-  left: 100%;
-  right: initial;
-  top: 0;
-  bottom: 0;
-  width: 200%;
-}
-
 [data-vaul-overlay][data-vaul-snap-points='true']:not([data-vaul-snap-points-overlay='true']):not(
     [data-state='closed']
   ) {
@@ -709,51 +638,6 @@ textarea:disabled::placeholder {
 @keyframes slideToBottom {
   to {
     transform: translate3d(0, var(--initial-transform, 100%), 0);
-  }
-}
-
-@keyframes slideFromTop {
-  from {
-    transform: translate3d(0, calc(var(--initial-transform, 100%) * -1), 0);
-  }
-  to {
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes slideToTop {
-  to {
-    transform: translate3d(0, calc(var(--initial-transform, 100%) * -1), 0);
-  }
-}
-
-@keyframes slideFromLeft {
-  from {
-    transform: translate3d(calc(var(--initial-transform, 100%) * -1), 0, 0);
-  }
-  to {
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes slideToLeft {
-  to {
-    transform: translate3d(calc(var(--initial-transform, 100%) * -1), 0, 0);
-  }
-}
-
-@keyframes slideFromRight {
-  from {
-    transform: translate3d(var(--initial-transform, 100%), 0, 0);
-  }
-  to {
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes slideToRight {
-  to {
-    transform: translate3d(var(--initial-transform, 100%), 0, 0);
   }
 }
 
