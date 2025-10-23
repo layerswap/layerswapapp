@@ -158,7 +158,7 @@ const SlippageInput = forwardRef<HTMLInputElement, SlippageInputProps>(function 
         setLocalPercent(valueDecimal !== undefined ? Math.round(valueDecimal * 10000) / 100 : undefined)
     }, [valueDecimal])
 
-    const invalid = localPercent !== undefined && (localPercent < 0.1 || localPercent > 80)
+    const invalid = localPercent !== undefined && (localPercent < 0.1 || localPercent > 5)
 
     useEffect(() => {
         const t = setTimeout(() => {
@@ -193,7 +193,7 @@ const SlippageInput = forwardRef<HTMLInputElement, SlippageInputProps>(function 
                 </div>
             </PopoverTrigger>
             <PopoverContent side="top" align="center" className="text-xs">
-                Slippage can not be out of 0.1% - 80% range.
+                Slippage can not be out of 0.1% - 5% range.
             </PopoverContent>
         </Popover>
     )
