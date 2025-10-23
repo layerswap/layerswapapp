@@ -37,14 +37,14 @@
   ],
   "license": "MIT",
   "peerDependencies": {
+    "@layerswap/wallet-evm": "workspace:*",
+    "@layerswap/wallet-starknet": "workspace:*",
+    "@layerswap/widget": "workspace:*",
+    "@wagmi/core": "catalog:",
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "viem": "^2.21.16",
-    "wagmi": "catalog:",
-    "@wagmi/core": "catalog:",
-    "@layerswap/wallet-evm": "workspace:*",
-    "@layerswap/wallet-starknet": "workspace:*",
-    "@layerswap/widget": "workspace:*"
+    "wagmi": "catalog:"
   },
   "dependencies": {
     "@paradex/sdk": "0.6.0",
@@ -58,12 +58,7 @@
     "@layerswap/wallet-evm": "workspace:*",
     "@layerswap/wallet-starknet": "workspace:*",
     "@layerswap/widget": "workspace:*",
-    "@types/node": "^22.13.13",
-    "eslint": "8.49.0",
-    "typescript": "^5.9.2",
-    "viem": "^2.21.16",
-    "@wagmi/core": "catalog:",
-    "wagmi": "catalog:"
+    "react": "catalog:"
   },
   "engines": {
     "node": ">=22"

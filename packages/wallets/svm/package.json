@@ -37,11 +37,11 @@
   ],
   "license": "MIT",
   "peerDependencies": {
+    "@layerswap/widget": "workspace:*",
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc"
   },
   "dependencies": {
-    "@layerswap/widget": "workspace:*",
     "@solana/spl-token": "^0.3.9",
     "@solana/wallet-adapter-base": "^0.9.26",
     "@solana/wallet-adapter-coinbase": "^0.1.22",
@@ -55,9 +55,9 @@
     "@solana/web3.js": "1.66.0"
   },
   "devDependencies": {
-    "@types/node": "^22.13.13",
-    "eslint": "8.49.0",
-    "typescript": "^5.9.2"
+    "@layerswap/widget": "workspace:*",
+    "react": "catalog:",
+    "react-dom": "catalog:"
   },
   "engines": {
     "node": ">=22"
