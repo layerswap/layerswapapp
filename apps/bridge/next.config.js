@@ -65,7 +65,23 @@ module.exports = (phase, { defaultConfig }) => {
       return config;
     },
     productionBrowserSourceMaps: true,
-    transpilePackages: ['@imtbl/sdk', '@fuels/connectors', '@fuels/react', "@radix-ui/react-dismissable-layer", '@layerswap/widget']
+    transpilePackages: [
+      '@imtbl/sdk',
+      '@fuels/connectors',
+      '@fuels/react',
+      "@radix-ui/react-dismissable-layer",
+      '@layerswap/widget',
+      '@layerswap/wallet-evm',
+      '@layerswap/wallet-bitcoin',
+      '@layerswap/wallet-fuel',
+      '@layerswap/wallet-starknet',
+      '@layerswap/wallet-ton',
+      '@layerswap/wallet-tron',
+      '@layerswap/wallet-imtblX',
+      '@layerswap/wallet-svm',
+      '@layerswap/wallet-paradex',
+      '@solana/web3.js'
+    ]
   }
   if (process.env.APP_BASE_PATH) {
     nextConfig.basePath = process.env.APP_BASE_PATH

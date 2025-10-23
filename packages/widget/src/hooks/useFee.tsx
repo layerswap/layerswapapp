@@ -2,11 +2,11 @@ import { useCallback, useEffect, useState } from 'react'
 import useSWR, { useSWRConfig } from 'swr'
 import LayerSwapApiClient, { Quote, SwapBasicData } from '../lib/apiClients/layerSwapApiClient'
 import { ApiResponse } from '../Models/ApiResponse'
-import { sleep } from 'fuels'
 import { create } from 'zustand';
 import { isDiffByPercent } from '@/components/utils/numbers'
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import { useSlippageStore } from '@/stores/slippageStore'
+import { sleep } from '@/lib/wallets/utils';
 
 type UseQuoteData = {
     minAllowedAmount?: number

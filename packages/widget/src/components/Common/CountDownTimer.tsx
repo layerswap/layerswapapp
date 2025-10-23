@@ -1,7 +1,7 @@
 import { FC, useEffect, useState } from "react";
 import { SwapStatus } from "../../Models/SwapStatus";
 import { SwapDetails, TransactionType } from "../../lib/apiClients/layerSwapApiClient";
-import posthog from "posthog-js";
+// import posthog from "posthog-js";
 
 const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThresholdChange?: (threshold: boolean) => void }> = ({ initialTime, swapDetails, onThresholdChange }) => {
     const [elapsedTimer, setElapsedTimer] = useState<number>(0);
@@ -46,14 +46,15 @@ const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThre
         renderingError.name = `LongTransactionError`;
         renderingError.cause = renderingError;
 
-        posthog.capture('$exception', {
-            name: renderingError.name,
-            message: renderingError.message,
-            stack: renderingError.stack,
-            cause: renderingError.cause,
-            where: 'longTransactionError',
-            severity: 'error',
-        });
+        // posthog.capture('$exception', {
+        //     name: renderingError.name,
+        //     message: renderingError.message,
+        //     $layerswap_exception_type: "Long Transaction Error",
+        //     stack: renderingError.stack,
+        //     cause: renderingError.cause,
+        //     where: 'longTransactionError',
+        //     severity: 'error',
+        // });
     }
 
     return (

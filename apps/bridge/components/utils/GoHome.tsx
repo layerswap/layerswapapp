@@ -3,8 +3,8 @@ import { Paperclip } from 'lucide-react'
 import * as ContextMenuPrimitive from '@radix-ui/react-context-menu';
 import { useGoHome } from "../../hooks/useGoHome";
 import clsx from "clsx";
-import LayerswapMobileLogo from "@/components/Icons/layerSwapMobileLogo";
-import LayerSwapLogo from "@/components/Icons/layerSwapLogo";
+import LayerswapMobileLogo from "../../components/Icons/layerSwapMobileLogo";
+import LayerSwapLogo from "../../components/Icons/layerSwapLogo";
 interface Props {
     className?: string;
     children?: JSX.Element | JSX.Element[] | string;

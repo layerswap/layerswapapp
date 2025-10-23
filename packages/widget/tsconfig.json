@@ -3,13 +3,15 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "emitDeclarationOnly": false,
-    "module": "esnext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "preserveSymlinks": false,
+    "composite": true,
+    "rootDir": "src",
     "declaration": true,
     "noEmit": false,
     "declarationDir": "dist",
     "outDir": "dist",
-    "resolveJsonModule": true,
     "esModuleInterop": true,
     "paths": {
       "@/*": [

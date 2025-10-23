@@ -1,0 +1,71 @@
+{
+  "name": "@layerswap/wallet-svm",
+  "version": "1.0.0-alpha0.1",
+  "description": "Solana Wallet Provider for Layerswap Widget",
+  "type": "module",
+  "main": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "typings": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/esm/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && pnpm run build:esm+types",
+    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm",
+    "check:types": "tsc --noEmit",
+    "clean": "rimraf dist tsconfig.tsbuildinfo actions chains codegen experimental internal query"
+  },
+  "author": "Layerswap",
+  "homepage": "https://github.com/layerswap/layerswapapp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/layerswap/layerswapapp.git",
+    "directory": "packages/wallets/svm"
+  },
+  "keywords": [
+    "layerswap",
+    "svm",
+    "wallet-provider"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "@layerswap/widget": "workspace:*",
+    "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc"
+  },
+  "dependencies": {
+    "@solana/spl-token": "^0.3.9",
+    "@solana/wallet-adapter-base": "^0.9.26",
+    "@solana/wallet-adapter-coinbase": "^0.1.22",
+    "@solana/wallet-adapter-glow": "^0.1.18",
+    "@solana/wallet-adapter-nightly": "^0.1.20",
+    "@solana/wallet-adapter-phantom": "^0.9.27",
+    "@solana/wallet-adapter-react": "^0.15.38",
+    "@solana/wallet-adapter-solflare": "^0.6.31",
+    "@solana/wallet-adapter-walletconnect": "^0.1.20",
+    "@solana/wallet-adapter-wallets": "^0.19.36",
+    "@solana/web3.js": "1.66.0"
+  },
+  "devDependencies": {
+    "@layerswap/widget": "workspace:*",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "bugs": {
+    "url": "https://github.com/layerswap/layerswapapp/issues"
+  }
+}

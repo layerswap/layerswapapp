@@ -23,5 +23,5 @@ export const resolveMaxAllowedAmount = (props: ResoleMaxAllowedAmountProps) => {
     if (!shouldPayGasWithTheToken)
         return walletBalance.amount
 
-    return Number(payableAmount.toFixed(fromCurrency?.decimals))
+    return Number(Number(payableAmount).toFixed(fromCurrency?.decimals))
 }

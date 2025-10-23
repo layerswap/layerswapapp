@@ -1,3 +1,5 @@
 {
-  "buildCommand": "yarn build"
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm -r build",
+  "framework": "nextjs"
 }

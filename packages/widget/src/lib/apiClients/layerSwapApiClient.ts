@@ -7,7 +7,7 @@ import { AuthRefreshFailedError } from "../Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse";
 import { NetworkWithTokens, Network, Token } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
-import posthog from "posthog-js";
+// import posthog from "posthog-js";
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;
@@ -69,7 +69,7 @@ export default class LayerSwapApiClient {
     }
 
     async GetTransactionStatus(network: string, tx_id: string): Promise<ApiResponse<any>> {
-        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/internal/networks/${network}/transaction_status`, { transaction_id: tx_id });
+        return await this.UnauthenticatedRequest<ApiResponse<any>>("GET", `/transaction_status?network=${network}&transaction_id=${tx_id}`);
     }
 
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
@@ -86,14 +86,15 @@ export default class LayerSwapApiClient {
                     const renderingError = new Error(`API request error with uri:${uri}`);
                     renderingError.name = `APIError`;
                     renderingError.cause = reason;
-                    posthog.capture('$exception', {
-                        name: renderingError.name,
-                        message: renderingError.message,
-                        stack: renderingError.stack,
-                        cause: renderingError.cause,
-                        where: 'apiClient',
-                        severity: 'error',
-                    });
+                    // posthog.capture('$exception', {
+                    //     name: renderingError.name,
+                    //     message: renderingError.message,
+                    //     $layerswap_exception_type: "API Error",
+                    //     stack: renderingError.stack,
+                    //     cause: renderingError.cause,
+                    //     where: 'apiClient',
+                    //     severity: 'error',
+                    // });
                     return Promise.reject(reason);
                 }
             });
