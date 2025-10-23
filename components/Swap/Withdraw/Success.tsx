@@ -1,15 +1,15 @@
 import { ExternalLink } from 'lucide-react';
 import { Home } from 'lucide-react';
 import { FC, useCallback } from 'react'
-import { useSettingsState } from '../../../context/settings';
-import { useSwapDataState } from '../../../context/swap';
-import MessageComponent from '../../MessageComponent';
-import { Widget } from '../../Widget/Index';
-import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
-import GoHomeButton from '../../utils/GoHome';
-import { TransactionType } from '../../../lib/apiClients/layerSwapApiClient';
-import AppSettings from '../../../lib/AppSettings';
-import { useQueryState } from '../../../context/query';
+import { useSettingsState } from '@/context/settings';
+import { useSwapDataState } from '@/context/swap';
+import MessageComponent from '@/components/MessageComponent';
+import { Widget } from '@/components/Widget/Index';
+import SubmitButton, { DoubleLineText } from '@/components/buttons/submitButton';
+import GoHomeButton from '@/components/utils/GoHome';
+import { TransactionType } from '@/lib/apiClients/layerSwapApiClient';
+import AppSettings from '@/lib/AppSettings';
+import { useQueryState } from '@/context/query';
 
 const Success: FC = () => {
     const { networks: layers } = useSettingsState()
