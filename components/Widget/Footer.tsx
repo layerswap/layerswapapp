@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import GoHomeButton from "../utils/GoHome";
 import { useMeasure } from "@uidotdev/usehooks";
 import LayerSwapLogo from "../icons/layerSwapLogo";
 
