@@ -65,6 +65,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.15",
     "@tanstack/react-query": "catalog:",
+    "@types/react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "@layerswap/widget": "workspace:*",
