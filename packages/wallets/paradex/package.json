@@ -58,10 +58,7 @@
     "@layerswap/wallet-evm": "workspace:*",
     "@layerswap/wallet-starknet": "workspace:*",
     "@layerswap/widget": "workspace:*",
-    "@wagmi/core": "catalog:",
-    "react": "catalog:",
-    "viem": "^2.21.16",
-    "wagmi": "catalog:"
+    "react": "catalog:"
   },
   "engines": {
     "node": ">=22"

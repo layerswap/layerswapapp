@@ -58,10 +58,8 @@
   },
   "devDependencies": {
     "react": "catalog:",
-    "react-dom": "catalog:",
-    "tsup": "^8.4.0",
-    "@wagmi/core": "catalog:",
-    "wagmi": "catalog:"
+    "react-dom": "catalog:"
+
   },
   "engines": {
     "node": ">=22"
