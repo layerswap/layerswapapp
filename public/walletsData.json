@@ -8687,8 +8687,10 @@
         "eip155:1",
         "eip155:10",
         "eip155:10143",
+        "eip155:1329",
         "eip155:137",
         "eip155:42161",
+        "eip155:56",
         "eip155:80084",
         "eip155:80085",
         "eip155:8453",
@@ -8699,7 +8701,7 @@
       "description": "Backpack Wallet",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://backpack.app",
       "id": "2bd8c14e035c2d48f184aaa168559e86b0e3433228d3c4075900a221785019b0",
