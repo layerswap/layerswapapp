@@ -23,11 +23,6 @@ import { ResolverProviders } from "./resolverContext";
 
 export type LayerswapWidgetConfig = {
     theme?: ThemeData | null
-    featuredNetwork?: {
-        initialDirection: 'from' | 'to',
-        network: string,
-        oppositeDirectionOverrides?: 'onlyNetworks' | 'onlyExchanges' | string[]
-    }
     initialValues?: InitialSettings
 }
 
@@ -55,7 +50,6 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
     AppSettings.Integrator = integrator
     AppSettings.ImtblPassportConfig = imtblPassport
     AppSettings.ThemeData = themeData
-    AppSettings.FeaturedNetwork = config?.featuredNetwork
     if (apiKey) LayerSwapApiClient.apiKey = apiKey
 
     useEffect(() => {

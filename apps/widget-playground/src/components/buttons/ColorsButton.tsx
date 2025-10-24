@@ -9,7 +9,6 @@ const getColors = (theme?: typeof THEME_COLORS['default']) => {
     if (!theme?.primary || !theme?.secondary) return undefined
 
     const additionalColors = [
-        { displayName: 'Backdrop', value: theme.backdrop, id: 'backdrop' },
         { displayName: 'Tertiary', value: theme.tertiary, id: 'tertiary' },
         { displayName: 'Button text color', value: theme.buttonTextColor, id: 'buttonTextColor' },
     ];

@@ -11,7 +11,6 @@ export const THEME_OPTIONS: { value: string, label: string }[] = [
 ]
 export const THEME_COLORS: { [key: string]: ThemeData } = {
     "default": {
-        backdrop: "62, 18, 64",
         tertiary: '118, 128, 147',
         buttonTextColor: '228, 229, 240',
         logo: '255, 0, 147',
@@ -77,7 +76,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     },
 
     "beige": {
-        backdrop: "255, 248, 240",
         buttonTextColor: "60, 50, 40",
         logo: "230, 200, 170",
         tertiary: "120, 100, 80",
@@ -112,7 +110,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     },
 
     "black": {
-        backdrop: "0, 0, 0",
         buttonTextColor: '255, 255, 255',
         logo: '255, 255, 255',
         borderRadius: 'medium',
@@ -146,7 +143,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     },
 
     "terminal": {
-        backdrop: "0, 0, 0",
         tertiary: '255, 180, 255',
         buttonTextColor: '255, 255, 255',
         logo: '0, 255, 0',
@@ -180,7 +176,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
     },
 
     "cyberpunk": {
-        backdrop: "10, 0, 20",
         tertiary: "180, 120, 180",
         buttonTextColor: "0, 255, 180",
         borderRadius: 'medium',
@@ -215,7 +210,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
 
     "void": {
         tertiary: "130, 130, 200",
-        backdrop: "5, 5, 10",
         buttonTextColor: "0, 255, 255",
         borderRadius: 'medium',
         logo: "80, 0, 255",
