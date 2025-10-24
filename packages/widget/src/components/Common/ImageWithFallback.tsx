@@ -1,15 +1,22 @@
 "use client";
 import React, { forwardRef, useEffect, useState } from "react";
-const fallbackImage = 'https://layerswap.io/app/images/logo_placeholder.png';
+import LogoPlaceholder from "../Icons/LogoPlaceholder";
+
 export const ImageWithFallback = forwardRef<HTMLImageElement, React.DetailedHTMLProps<React.ImgHTMLAttributes<HTMLImageElement>, HTMLImageElement>>(({ src, ...props }, ref) => {
     const [imgSrc, setImgSrc] = useState(src);
+    const [hasError, setHasError] = useState(false);
 
     useEffect(() => {
         setImgSrc(src);
+        setHasError(false);
     }, [src])
 
     const handleError = () => {
-        setImgSrc(fallbackImage)
+        setHasError(true);
+    }
+
+    if (hasError) {
+        return <LogoPlaceholder {...props} />;
     }
 
     return <img
