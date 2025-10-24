@@ -14,7 +14,7 @@ const GoHomeButton: FC<Props> = (({ className, children }) => {
     const goHome = useGoHome()
 
     return (
-        <div className="w-full">
+        <div className="w-full" onClick={children ? goHome : undefined}>
             {
                 children ??
                 <>
