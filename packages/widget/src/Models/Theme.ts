@@ -1,3 +1,4 @@
+import { HTMLAttributes } from "react";
 
 export type ThemeData = {
     backdrop?: string,
@@ -14,6 +15,13 @@ export type ThemeData = {
     success?: StatusColor,
     borderRadius?: 'none' | 'small' | 'medium' | 'large' | 'extraLarge' | 'default',
     enablePortal?: boolean,
+    enableWideVersion?: boolean,
+    header?: {
+        hideMenu?: boolean,
+        hideTabs?: boolean,
+        hideWallets?: boolean,
+    }
+    cardBackgroundStyle?: HTMLAttributes<HTMLDivElement>['style']
 }
 
 export type ThemeColor = {

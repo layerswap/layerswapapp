@@ -9,23 +9,29 @@ import clsx from "clsx";
 import LayerswapMobileLogo from "../Icons/layerSwapMobileLogo";
 interface Props {
     className?: string;
+    onlyFullVersion?: boolean;
 }
 
-const LogoWithDetails: FC<Props> = (({ className }) => {
+const LogoWithDetails: FC<Props> = (({ className, onlyFullVersion }) => {
 
     return (
         <ContextMenuPrimitive.Root>
             <ContextMenuPrimitive.Trigger asChild>
                 <div>
-                    <LayerswapMobileLogo
-                        className={clsx(
-                            "block md:hidden h-4 w-auto text-logo fill-primary-text",
-                            className
-                        )}
-                    />
+                    {
+                        onlyFullVersion !== true && <LayerswapMobileLogo
+                            className={clsx(
+                                "block md:hidden h-4 w-auto text-logo fill-primary-text",
+                                className
+                            )}
+                        />
+                    }
                     <LayerSwapLogo
                         className={clsx(
                             "hidden md:block h-8 w-auto text-logo fill-primary-text",
+                            {
+                                '!block': onlyFullVersion == true
+                            },
                             className
                         )}
                     />

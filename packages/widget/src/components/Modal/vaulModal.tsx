@@ -75,6 +75,29 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
         setLoaded(true);
     }, []);
 
+    // Inject theme styles into document head for mobile modals
+    useEffect(() => {
+        if (isMobile) {
+            const styleId = 'vaul-modal-theme-styles';
+            let styleElement = document.getElementById(styleId);
+
+            if (!styleElement) {
+                styleElement = document.createElement('style');
+                styleElement.id = styleId;
+                styleElement.textContent = vaulStyles;
+                document.head.appendChild(styleElement);
+            }
+        }
+
+        return () => {
+            // Clean up when component unmounts
+            const styleElement = document.getElementById('vaul-modal-theme-styles');
+            if (styleElement && !isMobile) {
+                styleElement.remove();
+            }
+        };
+    }, [isMobile]);
+
     if (!loaded) return null;
 
     const container = isMobile ? undefined : document.getElementById('widget');
@@ -116,7 +139,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
                 <Drawer.Content
                     data-testid="content"
-                    className={clsx('fixed sm:absolute flex flex-col bg-secondary-700 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-4 text-primary-text ring-0! outline-hidden! ', className, {
+                    className={clsx('absolute flex flex-col bg-secondary-700 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-4 text-primary-text ring-0! outline-hidden! ', className, {
                         'border-none! rounded-none!': snap === 1,
                         '!fixed sm:!absolute': AppSettings.ThemeData?.enablePortal == true,
                     })}
@@ -267,3 +290,94 @@ export const ModalFooterPortal: FC<Props> = ({ children, isWalletModalOpen }) =>
 };
 
 export default VaulDrawer;
+
+const vaulStyles = `
+[data-vaul-drawer] {
+    touch-action: none;
+    will-change: transform;
+    transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+    animation-duration: 0.5s;
+    animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+[data-vaul-drawer][data-vaul-snap-points='false'][data-vaul-drawer-direction='bottom'][data-state='open'] {
+    animation-name: slideFromBottom;
+}
+[data-vaul-drawer][data-vaul-snap-points='false'][data-vaul-drawer-direction='bottom'][data-state='closed'] {
+    animation-name: slideToBottom;
+}
+[data-vaul-drawer][data-vaul-snap-points='true'][data-vaul-drawer-direction='bottom'] {
+    transform: translate3d(0, var(--initial-transform, 100%), 0);
+}
+[data-vaul-drawer][data-vaul-delayed-snap-points='true'][data-vaul-drawer-direction='bottom'] {
+    transform: translate3d(0, var(--snap-point-height, 0), 0);
+}
+[data-vaul-overlay][data-vaul-snap-points='false'] {
+    animation-duration: 0.5s;
+    animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+[data-vaul-overlay][data-vaul-snap-points='false'][data-state='open'] {
+    animation-name: fadeIn;
+}
+[data-vaul-overlay][data-state='closed'] {
+    animation-name: fadeOut;
+}
+[data-vaul-overlay][data-vaul-snap-points='true'] {
+    opacity: 0;
+    transition: opacity 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+[data-vaul-overlay][data-vaul-snap-points='true'] {
+    opacity: 1;
+}
+[data-vaul-drawer]:not([data-vaul-custom-container='true'])::after {
+    content: '';
+    position: absolute;
+    background: inherit;
+    background-color: inherit;
+}
+[data-vaul-drawer][data-vaul-drawer-direction='bottom']::after {
+    top: 100%;
+    bottom: initial;
+    left: 0;
+    right: 0;
+    height: 200%;
+}
+[data-vaul-handle] {
+    display: block;
+    position: relative;
+    opacity: 0.7;
+    background: #e2e2e4;
+    margin-left: auto;
+    margin-right: auto;
+    height: 5px;
+    width: 32px;
+    border-radius: 1rem;
+    touch-action: pan-y;
+}
+[data-vaul-handle]:hover,
+[data-vaul-handle]:active {
+    opacity: 1;
+}
+[data-vaul-handle-hitarea] {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: max(100%, 2.75rem);
+    height: max(100%, 2.75rem);
+    touch-action: inherit;
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes fadeOut {
+    to { opacity: 0; }
+}
+@keyframes slideFromBottom {
+    from { transform: translate3d(0, var(--initial-transform, 100%), 0); }
+    to { transform: translate3d(0, 0, 0); }
+}
+@keyframes slideToBottom {
+    to { transform: translate3d(0, var(--initial-transform, 100%), 0); }
+}
+`

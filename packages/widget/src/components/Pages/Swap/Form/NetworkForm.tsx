@@ -140,7 +140,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                         <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                     </div>
                 </Widget.Content>
-                <Widget.Footer>
+                <Widget.Footer showPoweredBy>
                     <FormButton
                         shouldConnectWallet={shouldConnectWallet}
                         values={values}
