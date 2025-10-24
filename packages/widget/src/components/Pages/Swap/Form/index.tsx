@@ -1,3 +1,4 @@
+'use client'
 import { FC, useEffect } from 'react';
 import SwapForm from "./Form"
 import { SWRConfig, mutate } from 'swr';
