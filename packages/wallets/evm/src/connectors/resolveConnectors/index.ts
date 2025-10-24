@@ -1,7 +1,8 @@
 import { walletConnect } from "./walletConnect"
 import walletsData from "../../jsons/walletsData.json"
 import { InternalConnector } from "@layerswap/widget/types"
-import { resolveWalletConnectorIndex, AppSettings } from "@layerswap/widget/internal"
+import { AppSettings } from "@layerswap/widget/internal"
+import { resolveEVMWalletConnectorIndex } from "../../evmUtils"
 
 const projectId = AppSettings.WalletConnectConfig.projectId
 const wallets = Object.values(walletsData.listings)
@@ -66,7 +67,7 @@ const resolveWallet = (wallet: any) => {
         projectId,
         showQrModal: false,
         customStoragePrefix: wallet.slug,
-        order: resolveWalletConnectorIndex(wallet.slug),
+        order: resolveEVMWalletConnectorIndex(wallet.slug),
         type: "other",
         isMobileSupported: wallet.mobile.universal || wallet.mobile.native
     }
