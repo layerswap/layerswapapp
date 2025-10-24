@@ -1,3 +1,4 @@
+'use client'
 import { Network, Token } from "@/Models/Network"
 import { resolverService } from "../resolvers/resolverService"
 import { GasWithToken } from "@/types/gas"

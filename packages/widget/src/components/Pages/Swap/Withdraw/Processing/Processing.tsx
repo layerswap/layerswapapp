@@ -1,3 +1,4 @@
+'use client'
 import LinkWithIcon from '@/components/Common/LinkWithIcon';
 import React, { FC, useCallback, useEffect, useRef } from 'react'
 import { Widget } from '@/components/Widget/Index';

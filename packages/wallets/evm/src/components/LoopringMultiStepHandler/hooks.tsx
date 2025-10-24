@@ -1,3 +1,4 @@
+'use client'
 import useSWR from "swr";
 import { LoopringAPI } from "../../services/transferService/loopring/LoopringAPI";
 import { AccountInfo, LOOPRING_URLs, OffchainFeeReqType, TokenInfo, UserBalanceInfo } from "../../services/transferService/loopring/defs";

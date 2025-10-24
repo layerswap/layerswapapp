@@ -1,3 +1,4 @@
+'use client'
 import useSWR from "swr";
 import { useEffect, useMemo, useState } from "react";
 import { ApiResponse } from "../Models/ApiResponse";

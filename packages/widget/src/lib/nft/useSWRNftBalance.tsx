@@ -1,3 +1,4 @@
+'use client'
 import useSWR from "swr";
 import { Network } from "../../Models/Network";
 import { resolverService } from "../resolvers/resolverService";
