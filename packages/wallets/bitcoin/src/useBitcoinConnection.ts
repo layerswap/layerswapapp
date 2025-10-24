@@ -1,4 +1,4 @@
-import { useConnectModal, KnownInternalNames, convertSvgComponentToBase64, JsonRpcClient, resolveWalletConnectorHelper } from "@layerswap/widget/internal"
+import { useConnectModal, KnownInternalNames, convertSvgComponentToBase64, JsonRpcClient, walletIconResolver } from "@layerswap/widget/internal"
 import { TransactionMessageType, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps, NetworkType, NetworkWithTokens } from "@layerswap/widget/types";
 import { useConnect, useAccount, useConfig } from '@bigmi/react'
 import { disconnect } from "@bigmi/client"
@@ -230,7 +230,7 @@ const resolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
         addresses: [addresses[0]],
         displayName: walletname,
         providerName,
-        icon: resolveWalletConnectorHelper(addresses[0], connector.icon),
+        icon: walletIconResolver(addresses[0], connector.icon),
         disconnect: () => discconnect(connector.name),
         asSourceSupportedNetworks: supportedNetworks.asSource,
         autofillSupportedNetworks: supportedNetworks.autofill,

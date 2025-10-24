@@ -1,4 +1,4 @@
-import { resolveWalletConnectorHelper } from "@layerswap/widget/internal"
+import { walletIconResolver } from "@layerswap/widget/internal"
 import KnownFuelConnectors from "./KnownFuelConnectors"
 
 export const resolveFuelWalletConnectorIcon = ({ connector, address, iconUrl }: { connector?: string, address?: string, iconUrl?: string }) => {
@@ -7,5 +7,5 @@ export const resolveFuelWalletConnectorIcon = ({ connector, address, iconUrl }: 
     if (knownConnector && knownConnector.icon)
         return knownConnector.icon
     else
-        return resolveWalletConnectorHelper(address, iconUrl)
+        return walletIconResolver(address, iconUrl)
 }

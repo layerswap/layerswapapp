@@ -1,4 +1,4 @@
-import { resolveWalletConnectorHelper } from "@layerswap/widget/internal"
+import { walletIconResolver } from "@layerswap/widget/internal"
 import KnownEVMConnectors from "./KnownEVMConnectors"
 
 export const resolveEVMWalletConnectorIndex = (id: string) => {
@@ -11,5 +11,5 @@ export const resolveEVMWalletConnectorIcon = ({ connector, address, iconUrl }: {
     if (knownConnector && knownConnector.icon)
         return knownConnector.icon
     else
-        return resolveWalletConnectorHelper(address, iconUrl)
+        return walletIconResolver(address, iconUrl)
 }

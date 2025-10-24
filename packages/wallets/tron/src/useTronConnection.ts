@@ -1,5 +1,5 @@
 import { useWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
-import { KnownInternalNames, resolveWalletConnectorHelper } from "@layerswap/widget/internal";
+import { KnownInternalNames, walletIconResolver } from "@layerswap/widget/internal";
 import { GasWithToken, TransactionMessageType, WalletConnectionProviderProps, InternalConnector, Wallet, WalletConnectionProvider } from "@layerswap/widget/types";
 import { buildInitialTransaction } from "./services/transferService/transactionBuilder";
 import { useMemo } from "react";
@@ -29,7 +29,7 @@ export default function useTronConnection({ networks }: WalletConnectionProvider
         networkIcon: network?.logo,
         providerName: id,
         isActive: true,
-        icon: resolveWalletConnectorHelper(address, tronWallet.adapter.icon),
+        icon: walletIconResolver(address, tronWallet.adapter.icon),
         disconnect: () => disconnectWallet(),
         autofillSupportedNetworks: commonSupportedNetworks,
         withdrawalSupportedNetworks: commonSupportedNetworks,
@@ -59,7 +59,7 @@ export default function useTronConnection({ networks }: WalletConnectionProvider
                 id: connectedWallet?.adapter.name,
                 displayName: `${connectedWallet.adapter.name} - Tron`,
                 networkIcon: network?.logo,
-                icon: resolveWalletConnectorHelper(connectedAddress, connectedWallet?.adapter.icon),
+                icon: walletIconResolver(connectedAddress, connectedWallet?.adapter.icon),
                 disconnect,
                 isActive: true,
                 addresses: [connectedAddress],

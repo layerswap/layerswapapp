@@ -17,14 +17,14 @@ export const resolveWalletConnectorIcon = ({ connector, address, iconUrl }: { co
     // console.log("gago", connector?.name, connector?.icon)
     if (connector && connector.icon) return SVGIconWrapper(connector.icon)
     else
-        return resolveWalletConnectorHelper(address, iconUrl)
+        return walletIconResolver(address, iconUrl)
 }
 
 export const resolveWalletConnectorIndex = (id: string) => {
     return connectors.findIndex(c => (c as any).id === id?.toLowerCase())
 }
 
-export const resolveWalletConnectorHelper = (address: string | undefined, iconUrl: string | undefined) => {
+export const walletIconResolver = (address: string | undefined, iconUrl: string | undefined) => {
     if (iconUrl) return SVGIconWrapper(iconUrl)
 
     if (address) return AddressIconWrapper(address)
