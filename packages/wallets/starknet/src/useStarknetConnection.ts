@@ -1,6 +1,7 @@
 import { useConnect, useDisconnect } from "@starknet-react/core";
 import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType, WalletConnectionProviderProps } from "@layerswap/widget/types";
-import { KnownInternalNames, useWalletStore, resolveWalletConnectorIcon } from "@layerswap/widget/internal";
+import { KnownInternalNames, useWalletStore } from "@layerswap/widget/internal";
+import { resolveStarknetWalletConnectorIcon } from "./utils";
 
 const starknetNames = [KnownInternalNames.Networks.StarkNetGoerli, KnownInternalNames.Networks.StarkNetMainnet, KnownInternalNames.Networks.StarkNetSepolia]
 export default function useStarknetConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
@@ -69,7 +70,7 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
                     address: result?.account,
                     addresses: [result?.account],
                     chainId: walletChain,
-                    icon: resolveWalletConnectorIcon({ connector: connector.name, address: result?.account }),
+                    icon: resolveStarknetWalletConnectorIcon({ connector: connector.name, address: result?.account }),
                     providerName: name,
                     metadata: {
                         starknetAccount: starknetWalletAccount,

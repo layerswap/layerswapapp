@@ -1,4 +1,4 @@
-import { validateAndParseAddress } from "./utils/starkNetAddressValidator";
+import { validateAndParseAddress } from "./utils";
 import { Network, AddressUtilsProvider } from "@layerswap/widget/types";
 import { KnownInternalNames } from "@layerswap/widget/internal";
 

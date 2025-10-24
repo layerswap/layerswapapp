@@ -3,8 +3,8 @@ import { CreateConnectorFn, getAccount, getConnections, sendTransaction } from '
 import { BaseError } from "viem"
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import { TransactionMessageType, NetworkType, NetworkWithTokens, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types"
-import { resolveWalletConnectorIcon, resolveWalletConnectorIndex, isMobile, sleep, convertSvgComponentToBase64, useConnectModal, KnownInternalNames } from "@layerswap/widget/internal"
-import { evmConnectorNameResolver, resolveError } from "./evmUtils"
+import { isMobile, sleep, convertSvgComponentToBase64, useConnectModal, KnownInternalNames } from "@layerswap/widget/internal"
+import { evmConnectorNameResolver, resolveError, resolveEVMWalletConnectorIcon, resolveEVMWalletConnectorIndex } from "./evmUtils"
 import { LSConnector } from "./connectors/types"
 import { explicitInjectedProviderDetected } from "./connectors/explicitInjectedProviderDetected"
 import { useEvmConnectors } from "./EVMProvider/evmConnectorsContext"
@@ -85,10 +85,12 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
 
         return dedupePreferInjected(allConnectors.filter(filterConnectors))
             .map(w => {
-                const isWalletConnectSupported = walletConnectConnectors.some(w2 => w2.name.toLowerCase().includes(w.name.toLowerCase()) && (w2.mobile.universal || w2.mobile.native || w2?.desktop?.native || w2?.desktop?.universal)) || w.name === "WalletConnect"
+                const _walletConnectConnector = walletConnectConnectors.find(w2 => (w2.name.toLowerCase().includes(w.name.toLowerCase()) || w2.shortName?.toLowerCase().includes(w.name?.toLowerCase()) || w2.id?.toLowerCase().includes(w.name?.toLowerCase())))
+                const isWalletConnectSupported = !!_walletConnectConnector || w.name === "WalletConnect"
                 return {
                     ...w,
-                    order: resolveWalletConnectorIndex(w.id),
+                    icon: w.icon || _walletConnectConnector?.icon,
+                    order: resolveEVMWalletConnectorIndex(w.id),
                     type: (w.type == 'injected' && w.id !== 'com.immutable.passport') ? w.type : "other",
                     isMobileSupported: isWalletConnectSupported
                 }
@@ -117,7 +119,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
                 })
 
             }
-            const Icon = connector.icon || resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
+            const Icon = connector.icon || resolveEVMWalletConnectorIcon({ connector: evmConnectorNameResolver(connector) })
             const base64Icon = typeof Icon == 'string' ? Icon : convertSvgComponentToBase64(Icon)
             setSelectedConnector({ ...connector, icon: base64Icon })
             if (connector.id !== "coinbaseWalletSDK") {
@@ -383,7 +385,7 @@ const ResolveWallet = (props: ResolveWalletProps): Wallet | undefined => {
         addresses: addresses || [address],
         displayName: walletname,
         providerName,
-        icon: resolveWalletConnectorIcon({ connector: evmConnectorNameResolver(connector), address, iconUrl: connector.icon }),
+        icon: resolveEVMWalletConnectorIcon({ connector: evmConnectorNameResolver(connector), address, iconUrl: connector.icon }),
         disconnect: () => discconnect(connector.name),
         asSourceSupportedNetworks: resolveSupportedNetworks(supportedNetworks.asSource, connector.id),
         autofillSupportedNetworks: resolveSupportedNetworks(supportedNetworks.autofill, connector.id),

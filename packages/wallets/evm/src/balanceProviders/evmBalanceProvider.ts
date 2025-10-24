@@ -138,7 +138,7 @@ export class EVMBalanceProvider extends BalanceProvider {
     resolveERC20Balances = (
         multicallRes: ERC20ContractRes[],
         network: NetworkWithTokens,
-    ) => {
+    ): TokenBalance[] | null => {
         const assets = network?.tokens?.filter(a => a.contract)
         if (!assets)
             return null

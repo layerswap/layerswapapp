@@ -7,7 +7,6 @@ import { ChevronLeft } from "lucide-react";
 import ConnectorsList from "@/components/Wallet/WalletModal/ConnectorsList";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { isMobile } from "@/lib/wallets/utils/isMobile";
-import { useAccount } from "wagmi";
 
 const WalletProvidersContext = createContext<WalletConnectionProvider[]>([]);
 

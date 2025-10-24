@@ -1,7 +1,8 @@
 import { walletConnect } from "./walletConnect"
 import walletsData from "../../jsons/walletsData.json"
 import { InternalConnector } from "@layerswap/widget/types"
-import { resolveWalletConnectorIndex, AppSettings } from "@layerswap/widget/internal"
+import { AppSettings } from "@layerswap/widget/internal"
+import { resolveEVMWalletConnectorIndex } from "../../evmUtils"
 
 const projectId = AppSettings.WalletConnectConfig.projectId
 const wallets = Object.values(walletsData.listings)
@@ -23,6 +24,7 @@ export type WalletConnectWallet = {
     projectId: string;
     showQrModal: boolean;
     customStoragePrefix: string;
+    shortName: string
 } & InternalConnector
 
 const walletsToFilter = [
@@ -34,7 +36,7 @@ export const resolveWallets: () => WalletConnectWallet[] = () => {
     const resolvedWallets = pickLatestBy(
         wallets,
         c => c.slug
-    ).filter(w => w.mobile.native || w.mobile.universal && w.name && w.slug && !walletsToFilter.some(wtf => wtf == w.id)).map(wallet => {
+    ).filter(w => w.name && w.slug && !walletsToFilter.some(wtf => wtf == w.id)).map(wallet => {
         const w = resolveWallet(wallet)
         return w
     })
@@ -57,6 +59,7 @@ const resolveWallet = (wallet: any) => {
 
     const w: WalletConnectWallet = {
         id: wallet.slug,
+        shortName: wallet.metadata.shortName,
         name: wallet.name,
         mobile: wallet.mobile,
         rdns: wallet.rdns ? `${wallet.rdns}.wc` : undefined,
@@ -64,7 +67,7 @@ const resolveWallet = (wallet: any) => {
         projectId,
         showQrModal: false,
         customStoragePrefix: wallet.slug,
-        order: resolveWalletConnectorIndex(wallet.slug),
+        order: resolveEVMWalletConnectorIndex(wallet.slug),
         type: "other",
         isMobileSupported: wallet.mobile.universal || wallet.mobile.native
     }

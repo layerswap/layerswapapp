@@ -9,7 +9,7 @@ export { type ThemeData, THEME_COLORS, type ThemeColor } from '../Models/Theme'
 export { getSettings } from '../helpers/getSettings'
 export { LayerswapProvider } from '../context/LayerswapProvider';
 export { useSettingsState } from '../context/settings'
-export { resolveWalletConnectorIcon } from '../lib/wallets/utils/resolveWalletIcon'
+export { resolveWalletConnectorIcon, walletIconResolver } from '../lib/wallets/utils/resolveWalletIcon'
 export { NetworkWithTokens, NetworkType } from '../Models/Network'
 export { default as useWallet } from '../hooks/useWallet'
 export type { SwapFormValues, SwapDirection } from '../components/Pages/Swap/Form/SwapFormValues'

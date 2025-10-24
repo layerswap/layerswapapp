@@ -1,5 +1,5 @@
 import { GasProps, Network, NetworkType, GasProvider } from "@layerswap/widget/types";
-import { transactionBuilderForGas } from "./utils/transactionBuilderForGas";
+import { transactionBuilderForGas } from "./utils";
 import { formatUnits } from "@layerswap/widget/internal";
 
 export class SolanaGasProvider implements GasProvider {
