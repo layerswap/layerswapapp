@@ -259,9 +259,27 @@ importers:
       '@dynamic-labs/wagmi-connector':
         specifier: ^4.19.7
         version: 4.40.1(f81fd4784a46ffa00055cb4391f3d7e7)
+      '@layerswap/wallet-bitcoin':
+        specifier: workspace:*
+        version: link:../../packages/wallets/bitcoin
       '@layerswap/wallet-evm':
         specifier: workspace:*
         version: link:../../packages/wallets/evm
+      '@layerswap/wallet-fuel':
+        specifier: workspace:*
+        version: link:../../packages/wallets/fuel
+      '@layerswap/wallet-starknet':
+        specifier: workspace:*
+        version: link:../../packages/wallets/starknet
+      '@layerswap/wallet-svm':
+        specifier: workspace:*
+        version: link:../../packages/wallets/svm
+      '@layerswap/wallet-ton':
+        specifier: workspace:*
+        version: link:../../packages/wallets/ton
+      '@layerswap/wallet-tron':
+        specifier: workspace:*
+        version: link:../../packages/wallets/tron
       '@layerswap/widget':
         specifier: workspace:*
         version: link:../../packages/widget
