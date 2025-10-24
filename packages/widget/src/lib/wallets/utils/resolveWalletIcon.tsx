@@ -3,7 +3,6 @@ import SVGWithImg from "@/components/Icons/SvgWithImg";
 import WalletIcon from "@/components/Icons/WalletIcon";
 import { InternalConnector } from "@/types";
 export const resolveWalletConnectorIcon = ({ connector, address, iconUrl }: { connector?: InternalConnector, address?: string, iconUrl?: string }) => {
-    // console.log("gago", connector?.name, connector?.icon)
     if (connector && connector.icon) return SVGIconWrapper(connector.icon)
     else
         return walletIconResolver(address, iconUrl)
