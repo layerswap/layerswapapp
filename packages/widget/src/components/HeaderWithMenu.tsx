@@ -4,6 +4,8 @@ import LogoWithDetails from "./Common/LogoWithDetails"
 import { ArrowLeft } from 'lucide-react'
 import { WalletsHeader } from "./Wallet/WalletComponents/ConnectedWallets"
 import LayerswapMenu from "./Menu"
+import AppSettings from "@/lib/AppSettings"
+import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient"
 
 type Props = {
    goBack: (() => void) | undefined | null
@@ -12,8 +14,12 @@ type Props = {
 
 function HeaderWithMenu({ goBack, contextualMenu }: Props) {
    const initialSettings = useInitialSettings()
+   const isHeaderLogoVisible = LayerSwapApiClient.apiKey !== AppSettings.LayerswapApiKeys['mainnet'] &&
+      LayerSwapApiClient.apiKey !== AppSettings.LayerswapApiKeys['testnet']
+
+      const headerConfigs = AppSettings.ThemeData?.header
    return (
-      <div className="items-center justify-between sm:flex sm:items-center grid grid-cols-5 w-full sm:grid-cols-none sm:grid-none mt-2 pb-2 max-sm:px-4 px-6">
+      <div className="items-center justify-between sm:flex sm:items-center grid grid-cols-5 w-full sm:grid-cols-none sm:grid-none mt-2 pb-2 px-4">
          <div className="self-center col-start-1 md:col-start-2 md:col-span-3 justify-self-start md:justify-self-center flex items-center gap-2">
             {
                goBack ?
@@ -25,15 +31,18 @@ function HeaderWithMenu({ goBack, contextualMenu }: Props) {
                      }>
                   </IconButton>
                   :
-                  !initialSettings.hideLogo ?
-                     <LogoWithDetails className="md:hidden" />
-                     : null
+                  headerConfigs?.hideTabs ? null :
+                  AppSettings.ThemeData?.enableWideVersion == true ?
+                     (!initialSettings.hideLogo && isHeaderLogoVisible) ?
+                        <LogoWithDetails className="md:hidden" />
+                        : null
+                     : <>{contextualMenu}</>
             }
          </div>
-         <div className="col-start-5 justify-self-end self-center flex items-center gap-x-2 sm:gap-x-1">
-            <WalletsHeader />
-            {contextualMenu}
-            <LayerswapMenu />
+         <div className="col-start-5 justify-self-end self-center flex items-center gap-x-2 sm:gap-x-1 sm:mr-2">
+            {headerConfigs?.hideWallets ? null : <WalletsHeader />}
+            {AppSettings.ThemeData?.enableWideVersion == true ? contextualMenu : null}
+            {headerConfigs?.hideMenu ? null : <LayerswapMenu />}
          </div>
       </div>
    )

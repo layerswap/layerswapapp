@@ -4,6 +4,7 @@ import AppSettings from "../../lib/AppSettings";
 import { ReactNode } from "react";
 import LogoWithDetails from "../Common/LogoWithDetails";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
+import clsx from "clsx";
 
 const variants = {
     enter: () => {
@@ -31,6 +32,7 @@ type FooterProps = {
     hidden?: boolean,
     children?: ReactNode;
     sticky?: boolean
+    showPoweredBy?: boolean
 }
 
 const Comp = ({ children, hidden, sticky = true }: FooterProps) => {
@@ -71,9 +73,9 @@ const Comp = ({ children, hidden, sticky = true }: FooterProps) => {
     )
 }
 
-const Footer = ({ children, hidden, sticky }: FooterProps) => {
+const Footer = ({ children, hidden, sticky, showPoweredBy }: FooterProps) => {
     const isFooterVisible = LayerSwapApiClient.apiKey !== AppSettings.LayerswapApiKeys['mainnet'] &&
-        LayerSwapApiClient.apiKey !== AppSettings.LayerswapApiKeys['testnet']
+        LayerSwapApiClient.apiKey !== AppSettings.LayerswapApiKeys['testnet'] && showPoweredBy
 
     const isFooterSticky = (AppSettings.ThemeData?.enablePortal && AppSettings.ThemeData?.enablePortal == true) ?? false
 
@@ -82,9 +84,14 @@ const Footer = ({ children, hidden, sticky }: FooterProps) => {
             {children}
             {
                 isFooterVisible &&
-                <a target="_blank" href='https://layerswap.io/' className="flex justify-center text-primary-text-placeholder mt-3 -mb-1.5 sm:-mb-3">
-                    <span className="text-xs content-center">Powered by</span> <LogoWithDetails className='ml-1 fill-primary-text-placeholder h-5 w-auto cursor-pointer' />
-                </a>
+                <div className={clsx("flex justify-center text-secondary-text", {
+                    'mt-3 sm:!mb-0': isFooterSticky,
+                    'mb-3 sm:!mb-0': !isFooterSticky,
+                })}>
+                    <a target="_blank" href='https://layerswap.io/' className="flex items-center gap-1.5 w-fit">
+                        <span className="text-xs content-center">Powered by</span> <LogoWithDetails onlyFullVersion className='fill-secondary-text cursor-pointer !h-5 w-auto' />
+                    </a>
+                </div>
             }
         </Comp>
     )
