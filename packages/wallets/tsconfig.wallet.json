@@ -10,6 +10,7 @@
     "declaration": true,
     "noEmit": false,
     "resolveJsonModule": true,
+    "skipLibCheck": true,
     "esModuleInterop": true
   }
 }

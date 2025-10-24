@@ -1,12 +1,13 @@
 import { useCallback, useEffect } from "react";
 import { useIntercom } from "react-use-intercom";
 import { Home, RotateCcw } from "lucide-react";
+import { useLog } from "@/context/LogProvider";
 import MessageComponent from "./Common/MessageComponent";
 import NotFoundIcon from "./Icons/NotFoundIcon";
 import SubmitButton from "./Buttons/submitButton";
-import { useLog } from "@/context/LogProvider";
+import { FallbackProps } from "react-error-boundary";
 
-export default function ErrorFallback({ error, resetErrorBoundary }) {
+export default function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
 
     const { boot, show } = useIntercom()
     const { log } = useLog();

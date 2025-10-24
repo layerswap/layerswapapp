@@ -8,21 +8,22 @@ import { removeSwapPath, setSwapPath } from "../../utils/updateSwapPath"
 import { EVMProvider } from "@layerswap/wallet-evm";
 import { BitcoinProvider } from "@layerswap/wallet-bitcoin";
 import { FuelProvider } from "@layerswap/wallet-fuel"
-import { ImmutableXProvider } from "@layerswap/wallet-imtblX"
 import { ParadexProvider } from "@layerswap/wallet-paradex"
 import { StarknetProvider } from "@layerswap/wallet-starknet"
-import { SVMProvider } from "@layerswap/wallet-svm"
-import { TonProvider } from "@layerswap/wallet-ton"
 import { TronProvider } from "@layerswap/wallet-tron"
 import posthog from "posthog-js"
+import { ImmutableXProvider } from "@layerswap/wallet-imtblX";
+import { TonProvider } from "@layerswap/wallet-ton";
+import { SVMProvider } from "@layerswap/wallet-svm";
+import { ImtblPassportProvider } from "@layerswap/wallet-imtblPassport";
 
 const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string }> = ({ settings, themeData, apiKey }) => {
     const router = useRouter()
     const imtblPassportConfigs = typeof window !== 'undefined' ? {
-        appBasePath: router.basePath,
         clientId: process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID || '',
         publishableKey: process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY || '',
-        redirectUri: router.basePath ? `${window.location.origin}${router.basePath}/imtblRedirect` : `${window.location.origin}/imtblRedirect`
+        redirectUri: router.basePath ? `${window.location.origin}${router.basePath}/imtblRedirect` : `${window.location.origin}/imtblRedirect`,
+        logoutRedirectUri: router.basePath ? `${window.location.origin}${router.basePath}/` : `${window.location.origin}/`
     } : undefined
 
     return <LayerswapProvider
@@ -46,7 +47,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
         }}
         onLogEvent={handleLogEvent}
         imtblPassport={imtblPassportConfigs}
-        walletProviders={[EVMProvider, SVMProvider, BitcoinProvider, StarknetProvider, ImmutableXProvider, TonProvider, TronProvider]}
+        walletProviders={[EVMProvider, StarknetProvider, FuelProvider, ParadexProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider]}
     >
         <Swap />
     </LayerswapProvider>

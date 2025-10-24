@@ -49,14 +49,17 @@ export type Wallet = {
     networkIcon?: string,
 }
 
-export type WalletProvider = {
-    id: string,
-    wrapper?: React.ComponentType<any>,
+export type WalletProvider = WalletWrapper & {
     walletConnectionProvider: (props: WalletConnectionProviderProps) => WalletConnectionProvider,
     addressUtilsProvider?: AddressUtilsProvider | AddressUtilsProvider[],
     nftProvider?: NftProvider | NftProvider[],
     gasProvider?: GasProvider | GasProvider[],
     balanceProvider?: BalanceProvider | BalanceProvider[],
+}
+
+export type WalletWrapper = {
+    id: string,
+    wrapper?: React.ComponentType<any>,
 }
 
 export type WalletConnectionProviderProps = {

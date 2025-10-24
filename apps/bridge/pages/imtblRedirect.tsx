@@ -1,30 +1,37 @@
-// import { ImtblPassportRedirect, LayerswapProvider } from "@layerswap/widget";
+import { LayerswapProvider } from "@layerswap/widget";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useState } from "react";
+import { ImtblRedirect } from "@layerswap/wallet-imtblPassport";
 
-const ImtblRedirect = () => {
+const ImtblRedirectPage = () => {
     const [loaded, setLoaded] = useState(false)
     const router = useRouter()
 
     useEffect(() => {
         setLoaded(true)
-    },[])
+    }, [])
 
-    if(!loaded) return <div>Loading...</div>
+    if (!loaded) return <div>Loading...</div>
 
     const client_id = process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID
     const publishable_key = process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY
     const redirect_uri = router.basePath ? `${window.location.hostname}${router.basePath}/imtblRedirect` : `${window.location.hostname}/imtblRedirect`
+    const logout_redirect_uri = router.basePath ? `${window.location.hostname}${router.basePath}/` : `${window.location.hostname}/`
 
-    return <div>not yet...</div>
-    // return (
-    //     <LayerswapProvider
-    //         integrator='layerswap'
-    //     >
-    //         <ImtblPassportRedirect client_id={client_id} publishable_key={publishable_key} redirect_uri={redirect_uri} base_path={router.basePath} />
-    //     </LayerswapProvider>
-    // );
+    return (
+        <LayerswapProvider
+            integrator='layerswap'
+            imtblPassport={{
+                clientId: client_id,
+                publishableKey: publishable_key,
+                redirectUri: redirect_uri,
+                logoutRedirectUri: logout_redirect_uri
+            }}
+        >
+            <ImtblRedirect />
+        </LayerswapProvider>
+    );
 }
 
-export default ImtblRedirect;
+export default ImtblRedirectPage;

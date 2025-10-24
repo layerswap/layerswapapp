@@ -6,8 +6,8 @@ import { AxiosInstance, Method } from "axios";
 import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse";
 import { NetworkWithTokens, Network, Token } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
-import posthog from "posthog-js";
 import { AuthRefreshFailedError } from "../Errors/AuthRefreshFailedError";
+import posthog from "posthog-js";
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;

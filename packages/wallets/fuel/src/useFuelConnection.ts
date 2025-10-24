@@ -1,8 +1,7 @@
 import { useConnectors, useFuel as useGlobalFuel, } from '@fuels/react';
-import { Connector, useAccount } from "wagmi";
-import { FuelConnector, FuelConnectorEventTypes, Predicate, Provider, getPredicateRoot, } from '@fuel-ts/account';
+import { FuelConnector, FuelConnectorEventTypes, Provider, } from '@fuel-ts/account';
 import { Address } from '@fuel-ts/address';
-import { shortenAddress, useWalletStore, resolveWalletConnectorIcon, sleep, KnownInternalNames } from "@layerswap/widget/internal";
+import { useWalletStore, resolveWalletConnectorIcon, sleep, KnownInternalNames } from "@layerswap/widget/internal";
 import { useEffect, useMemo } from "react";
 import { transactionBuilder } from "./services/transferService/transactionBuilder";
 import { BAKO_STATE } from "./connectors/bako-safe/Bako";
@@ -17,7 +16,6 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
     const name = 'Fuel'
     const id = 'fuel'
 
-    const { address: evmAddress, connector: evmConnector } = useAccount()
     const { connectors } = useConnectors()
     const { fuel } = useGlobalFuel()
 
@@ -44,8 +42,6 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
                         address: addresses[0],
                         addresses: addresses,
                         connector: fuelConnector,
-                        evmAddress,
-                        evmConnector,
                         disconnectWallet,
                         name,
                         commonSupportedNetworks,
@@ -180,8 +176,6 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
                         address: addresses?.[0],
                         addresses,
                         connector,
-                        evmAddress,
-                        evmConnector,
                         disconnectWallet,
                         name,
                         commonSupportedNetworks: commonSupportedNetworks,
@@ -248,36 +242,17 @@ type ResolveWalletProps = {
     address: string,
     addresses: string[],
     connector: FuelConnector,
-    evmAddress: `0x${string}` | undefined,
-    evmConnector: Connector | undefined,
     disconnectWallet: (connectorName: string) => Promise<void>,
     name: string,
     commonSupportedNetworks: string[],
     networkIcon?: string,
 }
 
-const resolveFuelWallet = async ({ address, addresses, commonSupportedNetworks, connector, disconnectWallet, evmAddress, evmConnector, name, networkIcon }: ResolveWalletProps) => {
+const resolveFuelWallet = async ({ address, addresses, commonSupportedNetworks, connector, disconnectWallet, name, networkIcon }: ResolveWalletProps) => {
     let fuelCurrentConnector: string | undefined = undefined
 
     let customConnectorname: string | undefined = undefined
-    const fuelEvmConnector = connector.name === 'Ethereum Wallets' ? connector : undefined
-    // const fuelSolanaConnector = connector.name === 'Solana Wallets' ? connector : undefined
 
-    if (fuelEvmConnector && evmAddress && fuelEvmConnector.connected && evmConnector) {
-        // @ts-expect-error processPredicateData is only available in the Predicate class
-        const { predicateBytes } = Predicate.processPredicateData(
-            (fuelEvmConnector as any)?.predicateAccount?.bytecode,
-            (fuelEvmConnector as any)?.predicateAccount?.abi,
-            {
-                SIGNER: (fuelEvmConnector as any)?.predicateAccount?.adapter?.convertAddress(evmAddress),
-            },
-        );
-        const convertedAddress = Address.fromB256(getPredicateRoot(predicateBytes)).toString();
-        if (convertedAddress.toLowerCase() === address.toLowerCase()) {
-            fuelCurrentConnector = `${evmConnector.name} (${shortenAddress(evmAddress)})`
-            customConnectorname = evmConnector.name
-        }
-    }
     const network = await connector.currentNetwork()
     const chainId = network.chainId || network.url.toLowerCase().includes('testnet') ? 0 : 9889
 

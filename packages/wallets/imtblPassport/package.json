@@ -1,7 +1,7 @@
 {
-  "name": "@layerswap/wallet-svm",
+  "name": "@layerswap/wallet-imtblPassport",
   "version": "1.0.0-alpha0.1",
-  "description": "Solana Wallet Provider for Layerswap Widget",
+  "description": "ImmutablePassport Wallet Provider for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",
   "types": "dist/types/index.d.ts",
@@ -28,34 +28,26 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/layerswap/layerswapapp.git",
-    "directory": "packages/wallets/svm"
+    "directory": "packages/wallets/imtblPassport"
   },
   "keywords": [
     "layerswap",
-    "svm",
+    "imtblPassport",
     "wallet-provider"
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@layerswap/widget": "workspace:*",
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
-    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc"
+    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "@layerswap/widget": "workspace:*"
   },
   "dependencies": {
-    "@solana/spl-token": "^0.3.9",
-    "@solana/wallet-adapter-base": "^0.9.26",
-    "@solana/wallet-adapter-coinbase": "^0.1.22",
-    "@solana/wallet-adapter-glow": "^0.1.18",
-    "@solana/wallet-adapter-nightly": "^0.1.20",
-    "@solana/wallet-adapter-phantom": "^0.9.27",
-    "@solana/wallet-adapter-react": "^0.15.38",
-    "@solana/wallet-adapter-solflare": "^0.6.31",
-    "@solana/wallet-adapter-walletconnect": "^0.1.20",
-    "@solana/wallet-adapter-wallets": "^0.19.36",
-    "@solana/web3.js": "1.66.0"
+    "@imtbl/sdk": "1.45.10",
+    "axios": "catalog:"
   },
   "devDependencies": {
     "@layerswap/widget": "workspace:*",
+    "@types/react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
