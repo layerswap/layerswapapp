@@ -19,6 +19,7 @@ type PriceImpactRelevant = {
     service_fee: number;
     source_token: { price_in_usd: number };
     destination_token: { price_in_usd: number };
+    refuelInUsd?: number;
 };
 
 const Comp: FC<{ quote: PriceImpactRelevant; theme?: 'default' | 'light' }> = ({ quote, theme }) => {
@@ -40,6 +41,7 @@ const Comp: FC<{ quote: PriceImpactRelevant; theme?: 'default' | 'light' }> = ({
                                     requestedAmount={quote.requested_amount}
                                     serviceFee={quote.service_fee}
                                     sourceTokenPriceUsd={quote.source_token.price_in_usd}
+                                    refuelInUsd={quote.refuelInUsd}
                                 />
                             </WalletsProviders>
                         </TimerProvider>
@@ -58,6 +60,7 @@ type Args = {
     receiveAmount: number;
     sourceTokenPriceUsd: number;
     destinationTokenPriceUsd: number;
+    refuelInUsd?: number;
 };
 
 const StoryWrapper: FC<Args> = ({
@@ -68,6 +71,7 @@ const StoryWrapper: FC<Args> = ({
     receiveAmount,
     sourceTokenPriceUsd,
     destinationTokenPriceUsd,
+    refuelInUsd,
 }) => {
     const minimalQuote: PriceImpactRelevant = {
         requested_amount: requestedAmount,
@@ -76,6 +80,7 @@ const StoryWrapper: FC<Args> = ({
         service_fee: serviceFee,
         source_token: { price_in_usd: sourceTokenPriceUsd },
         destination_token: { price_in_usd: destinationTokenPriceUsd },
+        refuelInUsd: refuelInUsd,
     };
 
     const themeForComp: 'default' | 'light' = theme === 'light' ? 'light' : 'default';
@@ -90,12 +95,13 @@ const meta: Meta<Args> = {
     },
     args: {
         theme: 'default',
-        bridgeFee: initialQuote.blockchain_fee,
-        serviceFee: initialQuote.service_fee,
-        requestedAmount: initialQuote.requested_amount,
-        receiveAmount: initialQuote.receive_amount,
-        sourceTokenPriceUsd: initialQuote?.source_token?.price_in_usd,
-        destinationTokenPriceUsd: initialQuote?.destination_token?.price_in_usd,
+        bridgeFee: initialQuote.quote.blockchain_fee,
+        serviceFee: initialQuote.quote.service_fee,
+        requestedAmount: initialQuote.quote.requested_amount,
+        receiveAmount: initialQuote.quote.receive_amount,
+        sourceTokenPriceUsd: initialQuote?.quote.source_token?.price_in_usd,
+        destinationTokenPriceUsd: initialQuote?.quote.destination_token?.price_in_usd,
+        refuelInUsd: initialQuote?.refuel?.amount_in_usd,
     },
     argTypes: {
         theme: {

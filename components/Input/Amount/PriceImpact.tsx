@@ -10,6 +10,7 @@ type PriceImpactProps = {
     destinationTokenPriceUsd?: number;
     serviceFee?: number;
     bridgeFee?: number;
+    refuelInUsd?: number;
     className?: string;
 };
 
@@ -20,6 +21,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({
     destinationTokenPriceUsd,
     serviceFee,
     bridgeFee,
+    refuelInUsd,
     className,
 }) => {
     const toAmountUSD = useMemo(() => {
@@ -49,7 +51,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({
 
     const marketImpact = useMemo(() => {
         if (priceImpact === undefined || layerswapFees === undefined || bridgeExpenses === undefined) return undefined;
-        return (priceImpact + Number(layerswapFees) + Number(bridgeExpenses));
+        return (priceImpact + Number(layerswapFees) + Number(bridgeExpenses) + Number(refuelInUsd || 0));
     }, [priceImpact, layerswapFees, bridgeExpenses]);
 
     const priceImpactPercentage = useMemo(() => {
@@ -104,6 +106,15 @@ export const PriceImpact: FC<PriceImpactProps> = ({
                                 {layerswapFees?.toFixed(2) !== (0).toFixed(2) ? "-$" : "$"}
                             </span>
                             <span>{Math.abs(Number(layerswapFees)).toFixed(2)}</span>
+                        </span>
+                    </li>
+                    <li className="list-none flex justify-between">
+                        <span>Refuel</span>
+                        <span className="text-primary-text">
+                            <span>
+                                {refuelInUsd?.toFixed(2) !== (0).toFixed(2) ? "-$" : "$"}
+                            </span>
+                            <span>{Math.abs(Number(refuelInUsd)).toFixed(2)}</span>
                         </span>
                     </li>
                 </ul>
