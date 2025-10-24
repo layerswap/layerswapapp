@@ -1,17 +1,20 @@
 import { LayerswapProvider, LayerSwapSettings, Swap, ThemeData } from "@layerswap/widget"
+import { LogEvent } from "@layerswap/widget/types"
+
 import { useRouter } from "next/router"
 import { FC } from "react"
 import { updateFormBulk } from "../../utils/updateForm"
 import { removeSwapPath, setSwapPath } from "../../utils/updateSwapPath"
 import { EVMProvider } from "@layerswap/wallet-evm";
-import { FuelProvider } from "@layerswap/wallet-fuel";
-import { ParadexProvider } from "@layerswap/wallet-paradex";
-import { StarknetProvider } from "@layerswap/wallet-starknet";
 import { BitcoinProvider } from "@layerswap/wallet-bitcoin";
+import { FuelProvider } from "@layerswap/wallet-fuel"
+import { ParadexProvider } from "@layerswap/wallet-paradex"
+import { StarknetProvider } from "@layerswap/wallet-starknet"
+import { TronProvider } from "@layerswap/wallet-tron"
+import posthog from "posthog-js"
 import { ImmutableXProvider } from "@layerswap/wallet-imtblX";
 import { TonProvider } from "@layerswap/wallet-ton";
 import { SVMProvider } from "@layerswap/wallet-svm";
-import { TronProvider } from "@layerswap/wallet-tron";
 import { ImtblPassportProvider } from "@layerswap/wallet-imtblPassport";
 
 const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string }> = ({ settings, themeData, apiKey }) => {
@@ -42,6 +45,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
                 }
             }
         }}
+        onLogEvent={handleLogEvent}
         imtblPassport={imtblPassportConfigs}
         walletProviders={[EVMProvider, StarknetProvider, FuelProvider, ParadexProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider]}
     >
@@ -50,3 +54,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
 }
 
 export default SwapPage
+
+const handleLogEvent = (event: LogEvent) => {
+    posthog?.capture(event.type, event.props ?? {});
+};

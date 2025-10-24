@@ -1,4 +1,5 @@
 export * from './wallet'
+export * from './logEvents'
 export * from './balance'
 export * from './gas'
 export * from './addressUtils'

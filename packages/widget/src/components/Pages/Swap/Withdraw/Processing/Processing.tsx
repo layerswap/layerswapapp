@@ -17,8 +17,8 @@ import { ApiResponse } from '@/Models/ApiResponse';
 import { useIntercom } from 'react-use-intercom';
 import logError from '@/lib/logError';
 import SubmitButton from '@/components/Buttons/submitButton';
-// import { posthog } from 'posthog-js';
 import Steps from './StepsComponent';
+import { useLog } from '@/context/LogProvider';
 
 type Props = {
     swapBasicData: SwapBasicData;
@@ -31,7 +31,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     const { boot, show, update, showNewMessages } = useIntercom();
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
     const [showSupportButton, setShowSupportButton] = React.useState(false);
-
+    const { log } = useLog();
     const {
         source_network,
         destination_network,
@@ -99,15 +99,18 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             const renderingError = new Error(`Swap:${swapDetails?.id} transaction:${transactionHash} failed`);
             renderingError.name = `TransactionFailed`;
             renderingError.cause = err;
-            // posthog.capture('$exception', {
-            //     name: renderingError.name,
-            //     message: renderingError.message,
-            //     $layerswap_exception_type: "Transaction Error",
-            //     stack: renderingError.stack,
-            //     cause: renderingError.cause,
-            //     where: 'TransactionError',
-            //     severity: 'error',
-            // });
+            log({
+                type: "$exception",
+                props: {
+                    name: renderingError.name,
+                    message: renderingError.message,
+                    $exception_type: "Transaction Error",
+                    stack: renderingError.stack,
+                    cause: renderingError.cause,
+                    severity: "error",
+                    where: 'TransactionError',
+                },
+            });
         }
     }, [inputTxStatus, transactionHash, swapDetails?.id])
 

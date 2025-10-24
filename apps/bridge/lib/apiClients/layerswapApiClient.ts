@@ -7,6 +7,7 @@ import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse";
 import { NetworkWithTokens, Network, Token } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
 import { AuthRefreshFailedError } from "../Errors/AuthRefreshFailedError";
+import posthog from "posthog-js";
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;
@@ -89,14 +90,16 @@ export default class LayerSwapApiClient {
                     const renderingError = new Error(`API request error with uri:${uri}`);
                     renderingError.name = `APIError`;
                     renderingError.cause = reason;
-                    // posthog.capture('$exception', {
-                    //     name: renderingError.name,
-                    //     message: renderingError.message,
-                    //     stack: renderingError.stack,
-                    //     cause: renderingError.cause,
-                    //     where: 'apiClient',
-                    //     severity: 'error',
-                    // });
+                    posthog.capture('$exception', {
+                        name: renderingError.name,
+                        message: renderingError.message,
+                        $exception_type: "API Error",
+                        stack: renderingError.stack,
+                        cause: renderingError.cause,
+                        where: 'apiClient',
+                        severity: 'error',
+                    });
+
                     return Promise.reject(reason);
                 }
             });

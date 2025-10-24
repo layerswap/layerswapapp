@@ -18,8 +18,9 @@ import WalletsProviders from "@/components/Wallet/WalletProviders";
 import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
 import { InitialSettings } from "../Models/InitialSettings";
 import { BalanceAccountsProvider } from "./balanceAccounts";
-import { WalletProvider } from "@/types";
+import { LogEvent, WalletProvider } from "@/types";
 import { ResolverProviders } from "./resolverContext";
+import { LogProvider } from "./LogProvider";
 
 export type LayerswapContextProps = {
     children?: ReactNode;
@@ -33,10 +34,11 @@ export type LayerswapContextProps = {
     walletConnect?: typeof AppSettings.WalletConnectConfig
     imtblPassport?: typeof AppSettings.ImtblPassportConfig
     walletProviders?: WalletProvider[]
+    onLogEvent?: (event: LogEvent) => void;
 }
 
 const INTERCOM_APP_ID = 'h5zisg78'
-const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, settings: _settings, themeData, apiKey, integrator, version, callbacks, initialValues, walletConnect, imtblPassport, walletProviders = [] }) => {
+const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, settings: _settings, themeData, apiKey, integrator, version, callbacks, initialValues, walletConnect, imtblPassport, walletProviders = [], onLogEvent }) => {
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
 
     AppSettings.ApiVersion = version
@@ -66,24 +68,26 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, setti
         <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
             <SettingsProvider initialLayerswapData={appSettings} initialSettings={initialValues}>
                 <CallbackProvider callbacks={callbacks}>
-                    <ErrorBoundary FallbackComponent={ErrorFallback} >
-                        <ThemeWrapper>
-                            <WalletsProviders
-                                appName={integrator}
-                                basePath="/"
-                                themeData={themeData}
-                                walletProviders={walletProviders}
-                            >
-                                <ResolverProviders walletProviders={walletProviders}>
-                                    <BalanceAccountsProvider>
-                                        <AsyncModalProvider>
-                                            {children}
-                                        </AsyncModalProvider>
-                                    </BalanceAccountsProvider>
-                                </ResolverProviders>
-                            </WalletsProviders>
-                        </ThemeWrapper>
-                    </ErrorBoundary>
+                    <LogProvider onLogEvent={onLogEvent}>
+                        <ErrorBoundary FallbackComponent={ErrorFallback} >
+                            <ThemeWrapper>
+                                <WalletsProviders
+                                    appName={integrator}
+                                    basePath="/"
+                                    themeData={themeData}
+                                    walletProviders={walletProviders}
+                                >
+                                    <ResolverProviders walletProviders={walletProviders}>
+                                        <BalanceAccountsProvider>
+                                            <AsyncModalProvider>
+                                                {children}
+                                            </AsyncModalProvider>
+                                        </BalanceAccountsProvider>
+                                    </ResolverProviders>
+                                </WalletsProviders>
+                            </ThemeWrapper>
+                        </ErrorBoundary>
+                    </LogProvider>
                 </CallbackProvider>
             </SettingsProvider >
         </IntercomProvider>
@@ -100,7 +104,7 @@ export const LayerswapProvider: typeof LayerswapProviderComponent = (props) => {
                 <LayerswapProviderComponent  {...props}>
                     {props.children}
                 </LayerswapProviderComponent>
-            </div>
+            </div >
         </>
 
     )
