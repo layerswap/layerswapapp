@@ -106,7 +106,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const allConnectors: InternalConnector[] = useMemo(() => removeDuplicatesWithKey(([...allFeaturedConnectors, ...(searchValue ? allHiddenConnectors : [])] as InternalConnector[]).sort((a, b) => sortRecentConnectors(a, b, recentConnectors)), 'name'), [allFeaturedConnectors, allHiddenConnectors, searchValue])
 
     if (selectedConnector?.qr?.state) {
-        const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
+        const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector, iconUrl: selectedConnector.icon });
 
         return <div className="flex flex-col justify-start space-y-2">
             <p className="text-secondary-text">
@@ -217,7 +217,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
 }
 
 const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalConnector, connectionError: string | undefined }> = ({ onRetry, selectedConnector, connectionError }) => {
-    const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
+    const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector, iconUrl: selectedConnector.icon });
     const { isMobile: isMobileSize } = useWindowDimensions()
     const isMobilePlatform = isMobile();
 
@@ -357,7 +357,7 @@ type MultichainConnectorModalProps = {
 }
 
 const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ selectedConnector, allConnectors, providers, connect }) => {
-    const Icon = resolveWalletConnectorIcon({ connector: selectedConnector.id, iconUrl: selectedConnector.icon })
+    const Icon = resolveWalletConnectorIcon({ connector: selectedConnector, iconUrl: selectedConnector.icon })
     return (
         <div>
             <div className="flex flex-col gap-4 py-15">

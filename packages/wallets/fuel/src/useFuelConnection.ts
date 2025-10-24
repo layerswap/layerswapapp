@@ -1,11 +1,12 @@
 import { useConnectors, useFuel as useGlobalFuel, } from '@fuels/react';
 import { FuelConnector, FuelConnectorEventTypes, Provider, } from '@fuel-ts/account';
 import { Address } from '@fuel-ts/address';
-import { useWalletStore, resolveWalletConnectorIcon, sleep, KnownInternalNames } from "@layerswap/widget/internal";
+import { useWalletStore, sleep, KnownInternalNames } from "@layerswap/widget/internal";
 import { useEffect, useMemo } from "react";
 import { transactionBuilder } from "./services/transferService/transactionBuilder";
 import { BAKO_STATE } from "./connectors/bako-safe/Bako";
 import { TransactionMessageType, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types";
+import { resolveFuelWalletConnectorIcon } from './utils';
 
 export default function useFuelConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
     const commonSupportedNetworks = [
@@ -212,6 +213,7 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
         return {
             name: c.name,
             id: c.name,
+            icon: typeof c.metadata.image === 'string' ? c.metadata.image : (c.metadata.image?.dark.startsWith('data:') ? c.metadata.image.dark : `data:image/svg+xml;base64,${c.metadata.image && btoa(c.metadata.image.dark)}`),
             type: isInstalled ? 'injected' : 'other',
             installUrl: c.installed ? undefined : c.metadata.install.link,
         }
@@ -265,7 +267,7 @@ const resolveFuelWallet = async ({ address, addresses, commonSupportedNetworks, 
         disconnect: () => disconnectWallet(connector.name),
         displayName: `${fuelCurrentConnector || connector.name} - Fuel`,
         providerName: name,
-        icon: resolveWalletConnectorIcon({ connector: customConnectorname || connector.name, address: address, iconUrl: typeof connector.metadata.image === 'string' ? connector.metadata.image : (connector.metadata.image?.light.startsWith('data:') ? connector.metadata.image.light : `data:image/svg+xml;base64,${connector.metadata.image && btoa(connector.metadata.image.light)}`) }),
+        icon: resolveFuelWalletConnectorIcon({ connector: customConnectorname || connector.name, address: address, iconUrl: typeof connector.metadata.image === 'string' ? connector.metadata.image : (connector.metadata.image?.dark.startsWith('data:') ? connector.metadata.image.dark : `data:image/svg+xml;base64,${connector.metadata.image && btoa(connector.metadata.image.dark)}`) }),
         autofillSupportedNetworks: commonSupportedNetworks,
         withdrawalSupportedNetworks: commonSupportedNetworks,
         asSourceSupportedNetworks: commonSupportedNetworks,

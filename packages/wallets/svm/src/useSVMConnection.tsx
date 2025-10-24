@@ -1,8 +1,9 @@
 import { useWallet } from "@solana/wallet-adapter-react"
-import { resolveWalletConnectorIcon, KnownInternalNames } from "@layerswap/widget/internal"
+import { KnownInternalNames } from "@layerswap/widget/internal"
 import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType, NetworkType, WalletConnectionProviderProps } from "@layerswap/widget/types"
 import { useMemo } from "react"
 import { configureAndSendCurrentTransaction } from "./services/transferService/transactionSender"
+import { resolveSolanaWalletConnectorIcon } from "./utils"
 
 const solanaNames = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet, KnownInternalNames.Networks.SolanaTestnet]
 
@@ -26,7 +27,7 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
             address: connectedAddress,
             displayName: `${connectedWallet?.adapter.name} - Solana`,
             providerName: name,
-            icon: resolveWalletConnectorIcon({ connector: String(connectedAdapterName), address: connectedAddress, iconUrl: connectedWallet?.adapter.icon }),
+            icon: resolveSolanaWalletConnectorIcon({ connector: String(connectedAdapterName), address: connectedAddress, iconUrl: connectedWallet?.adapter.icon }),
             disconnect,
             isActive: true,
             addresses: [connectedAddress],
@@ -61,7 +62,7 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
             address: connectedAddress,
             displayName: `${newConnectedWallet?.adapter.name} - Solana`,
             providerName: name,
-            icon: resolveWalletConnectorIcon({ connector: String(newConnectedWallet?.adapter.name), address: connectedAddress, iconUrl: newConnectedWallet?.adapter.icon }),
+            icon: resolveSolanaWalletConnectorIcon({ connector: String(newConnectedWallet?.adapter.name), address: connectedAddress, iconUrl: newConnectedWallet?.adapter.icon }),
             disconnect,
             isActive: true,
             addresses: [connectedAddress],

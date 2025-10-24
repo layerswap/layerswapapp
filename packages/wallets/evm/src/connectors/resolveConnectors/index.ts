@@ -23,6 +23,7 @@ export type WalletConnectWallet = {
     projectId: string;
     showQrModal: boolean;
     customStoragePrefix: string;
+    shortName: string
 } & InternalConnector
 
 const walletsToFilter = [
@@ -34,7 +35,7 @@ export const resolveWallets: () => WalletConnectWallet[] = () => {
     const resolvedWallets = pickLatestBy(
         wallets,
         c => c.slug
-    ).filter(w => w.mobile.native || w.mobile.universal && w.name && w.slug && !walletsToFilter.some(wtf => wtf == w.id)).map(wallet => {
+    ).filter(w => w.name && w.slug && !walletsToFilter.some(wtf => wtf == w.id)).map(wallet => {
         const w = resolveWallet(wallet)
         return w
     })
@@ -57,6 +58,7 @@ const resolveWallet = (wallet: any) => {
 
     const w: WalletConnectWallet = {
         id: wallet.slug,
+        shortName: wallet.metadata.shortName,
         name: wallet.name,
         mobile: wallet.mobile,
         rdns: wallet.rdns ? `${wallet.rdns}.wc` : undefined,
