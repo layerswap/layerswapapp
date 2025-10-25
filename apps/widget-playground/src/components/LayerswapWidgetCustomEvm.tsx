@@ -44,11 +44,12 @@ const LayerswapWidgetCustomEvm: FC = () => {
                         className="flex items-center justify-center min-h-screen w-full place-self-center">
                         <div className='w-full h-full rounded-xl'>
                             <LayerswapProvider
-                                apiKey={process.env.NEXT_PUBLIC_LAYERSWAP_API_KEY as string}
-                                version={process.env.NEXT_PUBLIC_API_VERSION as 'mainnet' | 'testnet'}
-                                integrator="test"
-                                settings={settings}
-                                config={config}
+                                config={{
+                                    ...config,
+                                    apiKey: process.env.NEXT_PUBLIC_LAYERSWAP_API_KEY as string,
+                                    version: process.env.NEXT_PUBLIC_API_VERSION as 'mainnet' | 'testnet',
+                                    settings
+                                }}
                                 walletProviders={[evmProvider]}
                             >
 
