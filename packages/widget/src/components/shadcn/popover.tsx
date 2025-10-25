@@ -32,7 +32,7 @@ function PopoverContent({
         sideOffset={sideOffset}
         onOpenAutoFocus={(e) => e.preventDefault()}
         className={clsx(
-          "z-50 w-fit max-w-72 rounded-xl bg-secondary-600 p-2 text-secondary-text shadow-md outline-hidden animate-in data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+          "z-[60] w-fit max-w-72 rounded-xl bg-secondary-600 p-2 text-secondary-text shadow-md outline-hidden animate-in data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
           className
         )}
         {...props}

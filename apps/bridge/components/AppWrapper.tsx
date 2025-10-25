@@ -39,7 +39,7 @@ export default function ThemeWrapper({ children }: Props) {
                 )}
             </Toaster>
             <Navbar />
-            <div className="w-full h-full z-[1] flex flex-col items-center justify-center sm:mb-6">
+            <div className="w-full h-full z-auto flex flex-col items-center justify-center sm:mb-6">
                 <div className="h-full w-full text-primary-text">
                     {children}
                 </div>
