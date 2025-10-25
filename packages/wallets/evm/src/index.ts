@@ -10,7 +10,7 @@ export const EVMProvider: WalletProvider = {
     id: "evm",
     wrapper: EVMProviderWrapper,
     walletConnectionProvider: useEVMConnection,
-    addressUtilsProvider: [new EVMAddressUtilsProvider],
+    addressUtilsProvider: [new EVMAddressUtilsProvider()],
     gasProvider: [new EVMGasProvider(), new LoopringGasProvider(), new ZkSyncGasProvider()],
     balanceProvider: [new EVMBalanceProvider(), new HyperliquidBalanceProvider(), new LoopringBalanceProvider(), new ZkSyncBalanceProvider()],
 }
