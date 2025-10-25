@@ -43,7 +43,7 @@
     "@wagmi/core": "catalog:",
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
-    "viem": "^2.21.16",
+    "viem": "catalog:",
     "wagmi": "catalog:"
   },
   "dependencies": {
@@ -58,7 +58,11 @@
     "@layerswap/wallet-evm": "workspace:*",
     "@layerswap/wallet-starknet": "workspace:*",
     "@layerswap/widget": "workspace:*",
-    "react": "catalog:"
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "viem": "catalog:",
+    "wagmi": "catalog:",
+    "@wagmi/core": "catalog:"
   },
   "engines": {
     "node": ">=22"
