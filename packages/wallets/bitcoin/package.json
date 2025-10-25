@@ -1,0 +1,68 @@
+{
+  "name": "@layerswap/wallet-bitcoin",
+  "version": "1.0.0-alpha0.1",
+  "description": "Bitcoin Wallet Provider for Layerswap Widget",
+  "type": "module",
+  "main": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "typings": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/esm/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && pnpm run build:esm+types",
+    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm",
+    "check:types": "tsc --noEmit",
+    "clean": "rimraf dist tsconfig.tsbuildinfo actions chains codegen experimental internal query"
+  },
+  "author": "Layerswap",
+  "homepage": "https://github.com/layerswap/layerswapapp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/layerswap/layerswapapp.git",
+    "directory": "packages/wallets/bitcoin"
+  },
+  "keywords": [
+    "layerswap",
+    "bitcoin",
+    "wallet-provider"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "@layerswap/widget": "workspace:*"
+  },
+  "dependencies": {
+    "@bigmi/client": "^0.3.1",
+    "@bigmi/core": "^0.3.1",
+    "@bigmi/react": "^0.3.1",
+    "@bitcoinerlab/secp256k1": "^1.2.0",
+    "axios": "catalog:",
+    "bitcoin-address-validation": "^3.0.0",
+    "bitcoinjs-lib": "^7.0.0"
+  },
+  "devDependencies": {
+    "@layerswap/widget": "workspace:*",
+    "tsup": "^8.4.0",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "directories": {
+    "lib": "lib"
+  },
+  "bugs": {
+    "url": "https://github.com/layerswap/layerswapapp/issues"
+  }
+}
