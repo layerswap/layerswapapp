@@ -11,6 +11,7 @@ export type InternalConnector = {
     providerName?: string,
     installUrl?: string,
     isMobileSupported?: boolean,
+    isHidden?: boolean,
 }
 
 export type Wallet = {
