@@ -1,3 +1,4 @@
+'use client'
 import { Gift } from "lucide-react";
 import { FC } from "react";
 import { ApiResponse } from "@/Models/ApiResponse";

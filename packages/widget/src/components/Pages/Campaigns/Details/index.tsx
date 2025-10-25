@@ -1,3 +1,4 @@
+'use client'
 import { FC, useCallback } from "react"
 import { Gift } from "lucide-react"
 import LayerSwapApiClient, { Campaign } from "@/lib/apiClients/layerSwapApiClient"

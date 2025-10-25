@@ -1,4 +1,5 @@
-import { Check, Copy } from 'lucide-react'
+"use client"
+import { Check } from 'lucide-react'
 import { classNames } from '../utils/classNames'
 import useCopyClipboard from '../../hooks/useCopyClipboard'
 import React, { FC, useState } from 'react'

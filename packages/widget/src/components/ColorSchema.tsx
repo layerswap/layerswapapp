@@ -6,10 +6,12 @@ type Props = {
 }
 
 const BORDER_RADIUS_VALUES = {
-    small: 6,
-    medium: 8,
-    large: 12,
-    extraLarge: 16
+    small: 4,
+    medium: 6,
+    large: 8,
+    extraLarge: 12,
+    extraLarge2: 16,
+    extraLarge3: 24
 };
 
 const mergeWithFallback = (themeData: ThemeData | null | undefined, fallbackTheme: ThemeData): ThemeData => {
@@ -33,24 +35,24 @@ const mergeWithFallback = (themeData: ThemeData | null | undefined, fallbackThem
     return deepMerge(fallbackTheme, themeData);
 };
 
-const adjustBorderRadius = (key: string, borderRadiusType: string | undefined) => {
+export const adjustBorderRadius = (key: string, borderRadiusType: string | undefined) => {
     if (borderRadiusType === 'none') return '0';
 
     const values = {
-        small: { small: 4, medium: 6, large: 8, extraLarge: 10 },
-        medium: { small: 6, medium: 8, large: 10, extraLarge: 12 },
-        large: { small: 8, medium: 10, large: 12, extraLarge: 14 },
-        extraLarge: { small: 10, medium: 12, large: 14, extraLarge: 16 },
+        small: { small: 2, medium: 4, large: 6, extraLarge: 8, extraLarge2: 12, extraLarge3: 16 },
+        medium: { small: 4, medium: 6, large: 8, extraLarge: 12, extraLarge2: 16, extraLarge3: 24 },
+        large: { small: 6, medium: 8, large: 12, extraLarge: 16, extraLarge2: 24, extraLarge3: 24 },
+        extraLarge: { small: 8, medium: 12, large: 16, extraLarge: 24, extraLarge2: 24, extraLarge3: 24 },
     };
 
     const selected = values[borderRadiusType as keyof typeof values];
-
     if (!selected) {
         return `${BORDER_RADIUS_VALUES[key]}px`;
     }
 
     return `${selected[key]}px`;
 };
+
 
 const ColorSchema: FC<Props> = ({ themeData }) => {
     const fallbackTheme = THEME_COLORS.default;
@@ -65,6 +67,8 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
                     --ls-border-radius-md: ${adjustBorderRadius('medium', mergedTheme.borderRadius)};
                     --ls-border-radius-lg: ${adjustBorderRadius('large', mergedTheme.borderRadius)};
                     --ls-border-radius-xl: ${adjustBorderRadius('extraLarge', mergedTheme.borderRadius)};
+                    --ls-border-radius-2xl: ${adjustBorderRadius("extraLarge2", mergedTheme.borderRadius)};
+                    --ls-border-radius-3xl: ${adjustBorderRadius("extraLarge3", mergedTheme.borderRadius)};
                     --ls-border-radius-full: 9999px;
                     --ls-border-radius-default: ${adjustBorderRadius('small', mergedTheme.borderRadius)};
 
@@ -97,12 +101,12 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
                     --ls-colors-secondary-900: ${mergedTheme.secondary?.[900]};
                     --ls-colors-secondary-text: ${mergedTheme.secondary?.text};
 
-                    --ls-color-warning-foreground: ${mergedTheme.warning?.Foreground}
-                    --ls-colors-warning-background: ${mergedTheme.warning?.Background}
-                    --ls-color-error-foreground: ${mergedTheme.error?.Foreground}
-                    --ls-colors-error-background: ${mergedTheme.error?.Background}
-                    --ls-color-success-foreground: ${mergedTheme.success?.Foreground}
-                    --ls-colors-success-background: ${mergedTheme.success?.Background}
+                    --ls-color-warning-foreground: ${mergedTheme.warning?.Foreground};
+                    --ls-colors-warning-background: ${mergedTheme.warning?.Background};
+                    --ls-color-error-foreground: ${mergedTheme.error?.Foreground};
+                    --ls-colors-error-background: ${mergedTheme.error?.Background};
+                    --ls-color-success-foreground: ${mergedTheme.success?.Foreground};
+                    --ls-colors-success-background: ${mergedTheme.success?.Background};
                 }
                 .headerLogo {
                     display: ${mergedTheme.headerLogo};

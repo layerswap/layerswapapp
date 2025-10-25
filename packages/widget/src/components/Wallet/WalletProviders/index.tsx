@@ -8,10 +8,9 @@ import { WalletProvider, WalletWrapper } from "@/types"
 const DynamicProviderWrapper: FC<{
     providers: WalletWrapper[],
     children: ReactNode,
-    basePath: string,
     themeData: ThemeData,
     appName: string | undefined
-}> = ({ providers, children, basePath, themeData, appName }) => {
+}> = ({ providers, children, themeData, appName }) => {
     const createNestedProviders = (providers: WalletWrapper[], currentChildren: ReactNode): ReactNode => {
         if (providers.length === 0) return currentChildren;
 
@@ -21,7 +20,7 @@ const DynamicProviderWrapper: FC<{
             return createNestedProviders(remainingProviders, currentChildren);
         }
 
-        const wrapperProps = { children: createNestedProviders(remainingProviders, currentChildren), basePath, themeData, appName };
+        const wrapperProps = { children: createNestedProviders(remainingProviders, currentChildren), themeData, appName };
 
         return createElement(currentProvider.wrapper, wrapperProps);
     };
@@ -51,18 +50,16 @@ const DynamicProviderWrapper: FC<{
  */
 const WalletsProviders: FC<{
     children: ReactNode,
-    basePath: string,
     themeData: ThemeData,
     appName: string | undefined,
     walletProviders: (WalletProvider | WalletWrapper)[]
-}> = ({ children, basePath, themeData, appName, walletProviders }) => {
+}> = ({ children, themeData, appName, walletProviders }) => {
 
     const providersWithWalletConnectionProvider = useMemo(() => walletProviders.filter(provider => typeof provider === 'object' && 'walletConnectionProvider' in provider), [walletProviders]);
 
     return (
         <DynamicProviderWrapper
             providers={walletProviders}
-            basePath={basePath}
             themeData={themeData}
             appName={appName}
         >

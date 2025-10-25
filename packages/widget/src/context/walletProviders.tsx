@@ -1,3 +1,4 @@
+"use client";
 import React, { createContext, useContext, useMemo } from "react";
 import { WalletConnectionProvider, WalletProvider } from "@/types";
 import { useSettingsState } from "./settings";

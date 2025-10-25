@@ -1,3 +1,4 @@
+'use client'
 import useSWR from "swr";
 import { resolveExchangeHistoricalNetworksURL } from "@/helpers/routes";
 import { ApiResponse } from "@/Models/ApiResponse";

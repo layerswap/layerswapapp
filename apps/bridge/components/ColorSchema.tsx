@@ -1,5 +1,5 @@
+import { THEME_COLORS, ThemeData } from "@layerswap/widget/types";
 import { FC } from "react";
-import { THEME_COLORS, ThemeData } from "../Models/Theme";
 
 type Props = {
     themeData?: ThemeData | null

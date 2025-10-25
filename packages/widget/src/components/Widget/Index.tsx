@@ -1,3 +1,4 @@
+"use client";
 import HeaderWithMenu from "../HeaderWithMenu"
 import { default as Content } from './Content';
 import { default as Footer } from './Footer';

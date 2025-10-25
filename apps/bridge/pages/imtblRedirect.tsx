@@ -2,7 +2,8 @@ import { LayerswapProvider } from "@layerswap/widget";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useState } from "react";
-import { ImtblRedirect } from "@layerswap/wallet-imtblPassport";
+import { ImtblPassportProvider, ImtblRedirect } from "@layerswap/wallet-imtblPassport";
+import { EVMProvider } from "@layerswap/wallet-evm";
 
 const ImtblRedirectPage = () => {
     const [loaded, setLoaded] = useState(false)
@@ -21,12 +22,14 @@ const ImtblRedirectPage = () => {
 
     return (
         <LayerswapProvider
-            integrator='layerswap'
-            imtblPassport={{
+            walletProviders={[EVMProvider, ImtblPassportProvider]}
+            config={{
+                imtblPassport: {
                 clientId: client_id,
                 publishableKey: publishable_key,
-                redirectUri: redirect_uri,
-                logoutRedirectUri: logout_redirect_uri
+                    redirectUri: redirect_uri,
+                    logoutRedirectUri: logout_redirect_uri
+                }
             }}
         >
             <ImtblRedirect />

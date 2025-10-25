@@ -1,3 +1,4 @@
+"use client";
 import React, { forwardRef, useEffect, useState } from "react";
 import LogoPlaceholder from "../Icons/LogoPlaceholder";
 

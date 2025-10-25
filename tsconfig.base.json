@@ -19,6 +19,10 @@
         "isolatedModules": true,
         "jsx": "preserve"
     },
-    "exclude": ["**/.*/", "**/build", "**/dist", "node_modules"]
+    "exclude": [
+        "**/.*/",
+        "**/build",
+        "**/dist",
+        "node_modules"
+    ]
 }
-

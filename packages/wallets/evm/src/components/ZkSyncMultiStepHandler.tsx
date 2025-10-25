@@ -1,3 +1,4 @@
+"use client";
 import { ArrowLeftRight, Info } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { utils } from 'ethers';

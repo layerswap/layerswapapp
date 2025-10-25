@@ -1,3 +1,4 @@
+'use client'
 import { SwapDataProvider } from "@/context/swap";
 import { useMemo } from "react";
 import { NetworkExchangeTabs, Tabs, TabsContent } from "./NetworkExchangeTabs";
