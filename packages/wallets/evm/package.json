@@ -69,10 +69,7 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "@layerswap/widget": "workspace:*",
-    "tailwindcss": "^4.0.15",
-    "viem": "catalog:",
-    "wagmi": "catalog:",
-    "@wagmi/core": "catalog:"
+    "tailwindcss": "^4.0.15"
   },
   "engines": {
     "node": ">=22"

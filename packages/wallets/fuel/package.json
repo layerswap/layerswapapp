@@ -58,10 +58,7 @@
   },
   "devDependencies": {
     "react": "catalog:",
-    "react-dom": "catalog:",
-    "viem": "catalog:",
-    "wagmi": "catalog:",
-    "@wagmi/core": "catalog:"
+    "react-dom": "catalog:"
   },
   "engines": {
     "node": ">=22"
