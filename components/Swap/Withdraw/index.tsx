@@ -11,8 +11,9 @@ import { useBalance } from '@/lib/balances/useBalance';
 import { useSettingsState } from '@/context/settings';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import { ErrorDisplay } from '@/components/validationError/ErrorDisplay';
+import { Partner } from '@/Models/Partner';
 
-const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void }> = ({ type, onWalletWithdrawalSuccess }) => {
+const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, partner }) => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
 
     const { appName, signature } = useQueryState()
@@ -56,7 +57,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
                 <div className="w-full flex flex-col justify-between  text-secondary-text">
                     <div className='grid grid-cols-1 gap-3 '>
                         <SwapSummary />
-                        <SwapQuoteDetails swapBasicData={swapBasicData} quote={quote} refuel={refuel} quoteIsLoading={quoteIsLoading} quoteError={quoteError} />
+                        <SwapQuoteDetails swapBasicData={swapBasicData} quote={quote} refuel={refuel} quoteIsLoading={quoteIsLoading} quoteError={quoteError} partner={partner} />
                         {withdraw?.content}
                     </div>
                 </div>

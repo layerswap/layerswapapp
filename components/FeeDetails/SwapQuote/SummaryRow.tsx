@@ -14,6 +14,9 @@ import clsx from 'clsx'
 import { Slippage } from '../Slippage'
 import { GasFee } from './DetailedEstimates'
 import NumberFlow from '@number-flow/react'
+import { Partner } from '@/Models/Partner'
+import { useQueryState } from '@/context/query'
+import { ImageWithFallback } from '@/components/Common/ImageWithFallback'
 
 export const SummaryRow: FC<{
     destination?: Network
@@ -25,7 +28,12 @@ export const SummaryRow: FC<{
     isOpen?: boolean
     sourceAddress?: string
     quoteData: Quote
-}> = ({ quoteData, isQuoteLoading, values, wallet, onOpen, sourceAddress, isOpen, destination, destinationAddress }) => {
+    partner?: Partner
+}> = ({ quoteData, isQuoteLoading, values, wallet, onOpen, sourceAddress, isOpen, destination, destinationAddress, partner }) => {
+    const query = useQueryState()
+    const { destination_address: destinationAddressFromQuery } = query
+    const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && addressFormat(destinationAddressFromQuery, values?.to!) === addressFormat(values?.destination_address!, values?.to!) && partner?.logo
+
     return (
         <div className={clsx("flex flex-col w-full p-2", { "pb-0 -mb-1": isOpen })}>
             {values.destination_address && sourceAddress?.toLowerCase() !== values.destination_address?.toLowerCase() && (
@@ -37,7 +45,14 @@ export const SummaryRow: FC<{
                         <span className="cursor-pointer hover:underline flex items-center gap-2">
                             {wallet?.icon ? (
                                 <wallet.icon className="w-4 h-4 p-0.5 bg-white rounded-sm" />
-                            ) : (
+                            ) : addressProviderIcon ? (
+                                <ImageWithFallback
+                                    alt="Partner logo"
+                                    className="rounded-md object-contain h-4 w-4"
+                                    src={addressProviderIcon}
+                                    width="36"
+                                    height="36"
+                                />) : (
                                 <AddressIcon className="h-4 w-4" address={values.destination_address} size={36} rounded="4px" />
                             )}
                             {
