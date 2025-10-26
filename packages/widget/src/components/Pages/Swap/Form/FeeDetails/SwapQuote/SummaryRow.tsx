@@ -15,8 +15,8 @@ import { Slippage } from '../Slippage'
 import { GasFee } from './DetailedEstimates'
 import NumberFlow from '@number-flow/react'
 import { Partner } from '@/Models/Partner'
-import { useQueryState } from '@/context/query'
 import { ImageWithFallback } from '@/components/Common/ImageWithFallback'
+import { useInitialSettings } from '@/context/settings'
 
 export const SummaryRow: FC<{
     destination?: Network
@@ -30,8 +30,7 @@ export const SummaryRow: FC<{
     quoteData: Quote
     partner?: Partner
 }> = ({ quoteData, isQuoteLoading, values, wallet, onOpen, sourceAddress, isOpen, destination, destinationAddress, partner }) => {
-    const query = useQueryState()
-    const { destination_address: destinationAddressFromQuery } = query
+    const { destination_address: destinationAddressFromQuery }  = useInitialSettings()
     const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && addressFormat(destinationAddressFromQuery, values?.to!) === addressFormat(values?.destination_address!, values?.to!) && partner?.logo
 
     return (

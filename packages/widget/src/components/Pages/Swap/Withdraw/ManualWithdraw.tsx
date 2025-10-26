@@ -51,7 +51,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
     const [copied, copy] = useCopyClipboard()
     const initialSettings = useInitialSettings()
     const depositAddress = depositActions?.find(da => true)?.to_address;
-    const { destination_address: destinationAddressFromQuery } = query
+    const { destination_address: destinationAddressFromQuery } = initialSettings
 
     const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == swapBasicData?.destination_address?.toLowerCase())?.icon;
     const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && addressFormat(destinationAddressFromQuery, swapBasicData?.destination_network) === addressFormat(swapBasicData?.destination_address, swapBasicData?.destination_network) && partner?.logo
