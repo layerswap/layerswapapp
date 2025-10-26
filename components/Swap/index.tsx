@@ -46,7 +46,7 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess }) => {
                     && !(swapInputTransaction || storedWalletTransaction))) ?
                     (
                         swapBasicData?.use_deposit_address === true
-                            ? <ManualWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} />
+                            ? <ManualWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} type={type} />
                             : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} />
                     )
                     :
