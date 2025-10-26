@@ -33,9 +33,11 @@ interface Props {
     depositActions: DepositAction[] | undefined;
     refuel?: Refuel | undefined
     partner?: Partner;
+    type: 'widget' | 'contained'
+
 }
 
-const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refuel, partner }) => {
+const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refuel, partner, type }) => {
     const { wallets } = useWallet();
     const { createSwap, setSwapId } = useSwapDataUpdate()
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -311,7 +313,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                     )}
                 </div>
             </Widget.Content>
-            <Widget.Footer>
+            <Widget.Footer sticky={type == 'widget'}>
                 <SubmitButton onClick={handleCopy}>
                     {copied ? 'Copied!' : 'Copy deposit address'}
                 </SubmitButton>
