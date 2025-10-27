@@ -125,14 +125,14 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
 
     const selectedAccount = balanceAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(item.name));
     const networkBalances = useBalance(selectedAccount?.address, item)
-    const totalInUSD = useMemo(() => networkBalances && getTotalBalanceInUSD(networkBalances, item), [networkBalances.balances, item])
+    const totalInUSD = useMemo(() => networkBalances ? getTotalBalanceInUSD(networkBalances, item) : undefined, [networkBalances.balances, item])
     const tokensWithBalance = networkBalances.balances?.filter(b => b.amount && b.amount > 0)
         ?.map(b => b.token);
     const filteredNetworkTokens = item?.tokens?.filter(token =>
         tokensWithBalance?.includes(token.symbol)
     );
 
-    const hasLoadedBalances = allbalancesLoaded && Number(totalInUSD) >= 0;
+    const hasLoadedBalances = allbalancesLoaded && totalInUSD !== null && Number(totalInUSD) > 0;
     const showTokenLogos = hasLoadedBalances && filteredNetworkTokens?.length;
 
     return (

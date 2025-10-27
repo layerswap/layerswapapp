@@ -5,7 +5,6 @@ import MessageComponent from "../components/MessageComponent"
 import Navbar from "../components/navbar"
 import GoHomeButton from "../components/utils/GoHome"
 import { posthog } from "posthog-js"
-import { name } from "@bigmi/core/dist/esm/version"
 
 export default function Custom404() {
     useEffect(() => {

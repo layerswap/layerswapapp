@@ -172,7 +172,7 @@ function sortRoutesByBalance(
     return routesWithBalances
         .sort((a, b) => {
             if (b.totalBalanceUSD !== a.totalBalanceUSD) {
-                return b.totalBalanceUSD - a.totalBalanceUSD;
+                return (b.totalBalanceUSD || 0) - (a.totalBalanceUSD || 0);
             }
             return a.route.display_name.localeCompare(b.route.display_name);
         })

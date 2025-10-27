@@ -60,11 +60,7 @@ const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThre
     return (
         <div className='flex items-center justify-center space-x-1'>
             {
-                thresholdElapsed && swapDetails.status !== SwapStatus.UserTransferPending ? (
-                    <div>
-                        <span>Transaction is taking longer than expected</span>
-                    </div>
-                ) : swapDetails.status === SwapStatus.Completed ? (
+                swapDetails.status === SwapStatus.Completed ? (
                     ""
                 ) : (
                     <div className='text-secondary-text flex items-center'>
