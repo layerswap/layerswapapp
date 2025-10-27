@@ -254,6 +254,8 @@ export function SwapDataProvider({ children }) {
         posthog.capture(TrackEvent.SwapInitiated, {
             name: TrackEvent.SwapInitiated,
             swapId: swapDetails?.id ?? null,
+            $fromAddress: selectedSourceAccount?.address,
+            $toAddress: destination_address,
             path: typeof window !== 'undefined' ? window.location.pathname : undefined,
         });
 

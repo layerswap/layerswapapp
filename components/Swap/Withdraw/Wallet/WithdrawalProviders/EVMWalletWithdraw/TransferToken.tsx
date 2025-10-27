@@ -13,6 +13,7 @@ import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import useWallet from "@/hooks/useWallet";
 import { useSwapDataState } from "@/context/swap";
+import resolveChain from "@/lib/resolveChain";
 
 type Props = {
     savedTransactionHash?: string;
@@ -35,6 +36,7 @@ const TransferTokenButton: FC<Props> = ({
     const selectedSourceAccount = useSelectedAccount("from", swapData.source_network.name);
     const { wallets } = useWallet(swapData.source_network, 'withdrawal')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
+    const chain = resolveChain(swapData?.source_network)
 
     const clickHandler = useCallback(async ({ amount, callData, depositAddress }: TransferProps) => {
         setButtonClicked(true)
