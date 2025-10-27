@@ -1,6 +1,7 @@
 packages:
   - packages/**
   - apps/bridge
+  - examples/*
 
 catalog:
   '@wagmi/connectors': 5.7.7

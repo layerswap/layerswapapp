@@ -10,12 +10,12 @@ import { BitcoinProvider } from "@layerswap/wallet-bitcoin";
 import { FuelProvider } from "@layerswap/wallet-fuel"
 import { ParadexProvider } from "@layerswap/wallet-paradex"
 import { StarknetProvider } from "@layerswap/wallet-starknet"
-import { TronProvider } from "@layerswap/wallet-tron"
 import posthog from "posthog-js"
 import { ImmutableXProvider } from "@layerswap/wallet-imtblX";
 import { TonProvider } from "@layerswap/wallet-ton";
 import { SVMProvider } from "@layerswap/wallet-svm";
-import { ImtblPassportProvider } from "@layerswap/wallet-imtblPassport";
+import { TronProvider } from "@layerswap/wallet-tron";
+import { ImtblPassportProvider } from "@layerswap/wallet-imtbl-passport";
 
 const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string }> = ({ settings, themeData, apiKey }) => {
     const router = useRouter()

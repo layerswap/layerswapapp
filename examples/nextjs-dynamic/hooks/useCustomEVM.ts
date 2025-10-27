@@ -7,15 +7,14 @@ import {
   Wallet as DynamicWallet,
 } from "@dynamic-labs/sdk-react-core";
 import {
-  WalletProvider,
-  Wallet,
   resolveWalletConnectorIcon,
   useSettingsState,
   NetworkWithTokens,
   NetworkType,
+  LayerSwapSettings,
 } from "@layerswap/widget";
 
-export default function useEVM(): WalletProvider {
+export default function useEVM(settings: LayerSwapSettings) {
   const name = "EVM";
   const id = "evm";
 
@@ -26,7 +25,7 @@ export default function useEVM(): WalletProvider {
   const { setShowAuthFlow, handleLogOut } = useDynamicContext();
   const userWallets = useUserWallets();
   // Layerswap settings
-  const { networks } = useSettingsState();
+  const { networks } = settings;
 
   // Gather the EVM‐type network names
   const evmNetworkNames = useMemo(
@@ -52,8 +51,12 @@ export default function useEVM(): WalletProvider {
     };
   }, []);
 
+  const switchAccount = () => {
+
+  }
+
   // connectWallet: log out existing, show authFlow, wait for event, then resolve
-  const connectWallet = useCallback(async (): Promise<Wallet | undefined> => {
+  const connectWallet = useCallback(async (): Promise<any | undefined> => {
     if (userWallets.length) {
       await handleLogOut();
     }
@@ -95,7 +98,7 @@ export default function useEVM(): WalletProvider {
   }, [handleLogOut]);
 
   // Map wagmi connectors → Dynamic SDK wallets → our Wallet shape
-  const connectedWallets: Wallet[] = useMemo(
+  const connectedWallets: any[] = useMemo(
     () =>
       activeConnectors
         .map(() => {
@@ -111,16 +114,23 @@ export default function useEVM(): WalletProvider {
             providerName: name,
           });
         })
-        .filter(Boolean) as Wallet[],
+        .filter(Boolean) as any[],
     [activeConnectors, userWallets, activeConnector, activeAddress, networks, supportedNetworks, disconnectWallets],
   );
 
-  const logo = networks.find((n) => n.name.toLowerCase().includes("linea"))?.logo;
+  const logo = networks.find((n) => n.name.toLowerCase().includes("immutable"))?.logo;
+  const availableWalletsForConnect = [{
+      id: id,
+      name: name,
+      icon: logo,
+  }]
 
   return {
     connectWallet,
     connectConnector: connectWallet,
+    switchAccount,
     activeWallet: connectedWallets.find((w) => w.isActive),
+    availableWalletsForConnect,
     connectedWallets,
     asSourceSupportedNetworks: supportedNetworks.asSource,
     autofillSupportedNetworks: supportedNetworks.autofill,
@@ -143,7 +153,7 @@ function resolveWallet(props: {
   };
   disconnect: () => Promise<void>;
   providerName: string;
-}): Wallet | undefined {
+}): any | undefined {
   const { connection, activeConnection, networks, supportedNetworks, disconnect, providerName } = props;
 
   const connectorName = connection.connector.name;

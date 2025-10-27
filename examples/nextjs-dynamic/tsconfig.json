@@ -1,14 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "paths": {
-      "@layerswap/widget": [
-        "../../packages/widget/src"
-      ],
-      "@/*": [
-        "../../packages/widget/src/*"
-      ]
-    },
     "incremental": true
   },
   "include": [

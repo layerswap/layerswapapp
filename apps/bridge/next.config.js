@@ -77,7 +77,7 @@ module.exports = (phase, { defaultConfig }) => {
       '@layerswap/wallet-starknet',
       '@layerswap/wallet-ton',
       '@layerswap/wallet-tron',
-      '@layerswap/wallet-imtblX',
+      '@layerswap/wallet-imtbl-x',
       '@layerswap/wallet-svm',
       '@layerswap/wallet-paradex',
       '@solana/web3.js'

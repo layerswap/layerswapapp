@@ -23,7 +23,7 @@
 @layer base {
 
   body {
-    @apply bg-white;
+    @apply bg-slate-700;
   }
 
   /* On iOS disabled inputs have default opacitiy */
