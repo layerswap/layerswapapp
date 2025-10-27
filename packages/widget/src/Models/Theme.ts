@@ -1,3 +1,4 @@
+import { HTMLAttributes } from "react";
 
 export type ThemeData = {
     backdrop?: string,
@@ -14,6 +15,13 @@ export type ThemeData = {
     success?: StatusColor,
     borderRadius?: 'none' | 'small' | 'medium' | 'large' | 'extraLarge' | 'default',
     enablePortal?: boolean,
+    enableWideVersion?: boolean,
+    header?: {
+        hideMenu?: boolean,
+        hideTabs?: boolean,
+        hideWallets?: boolean,
+    }
+    cardBackgroundStyle?: HTMLAttributes<HTMLDivElement>['style']
 }
 
 export type ThemeColor = {
@@ -107,7 +115,7 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         buttonTextColor: '228, 229, 240',
         logo: '255, 0, 147',
         footerLogo: 'none',
-        borderRadius: 'small',
+        borderRadius: 'medium',
         warning: {
             Foreground: '255, 201, 74',
             Background: '47, 43, 29',

@@ -1,4 +1,5 @@
 
+'use client'
 import useSWR from "swr"
 import LayerSwapApiClient, { SwapResponse, TransactionType } from "@/lib/apiClients/layerSwapApiClient"
 import { ApiResponse } from "@/Models/ApiResponse"

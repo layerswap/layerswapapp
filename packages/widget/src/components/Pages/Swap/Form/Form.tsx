@@ -1,3 +1,4 @@
+'use client'
 import { SwapDataProvider } from "@/context/swap";
 import { useMemo } from "react";
 import { NetworkExchangeTabs, Tabs, TabsContent } from "./NetworkExchangeTabs";
@@ -8,13 +9,14 @@ import { Widget } from "@/components/Widget/Index";
 import { ValidationProvider } from "@/context/validationContext";
 import { useInitialSettings } from "@/context/settings";
 import { useSettingsState } from "@/context/settings";
-import { SwapFormValues } from "./SwapFormValues";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 import useSWR from "swr";
 import { ApiResponse } from "@/Models/ApiResponse";
 import { Partner } from "@/Models/Partner";
+import AppSettings from "@/lib/AppSettings";
+import clsx from "clsx";
 
-export default function Form({ formValues }: { formValues?: SwapFormValues }) {
+export default function Form() {
     const { from, appName, defaultTab: defaultTabQueryParam } = useInitialSettings()
     const { sourceExchanges } = useSettingsState()
     const defaultTab = useMemo(() => {
@@ -26,16 +28,18 @@ export default function Form({ formValues }: { formValues?: SwapFormValues }) {
     const partner = appName && partnerData?.data?.client_id?.toLowerCase() === (appName as string)?.toLowerCase() ? partnerData?.data : undefined
 
     return <Tabs defaultValue={defaultTab}>
-        <div className="hidden sm:block">
+        <div className={clsx("hidden sm:block", { 'sm:hidden': AppSettings.ThemeData?.enableWideVersion !== true })}>
             <NetworkExchangeTabs />
         </div>
 
         <TabsContent value="cross-chain">
             <SwapDataProvider>
                 <FormWrapper type="cross-chain" partner={partner}>
-                    <Widget contextualMenu={<div className="block sm:hidden">
-                        <NetworkExchangeTabs />
-                    </div>}>
+                    <Widget contextualMenu={
+                        <div className={clsx("block w-full", { 'sm:hidden': AppSettings.ThemeData?.enableWideVersion == true })}>
+                            <NetworkExchangeTabs />
+                        </div>
+                    }>
                         <ValidationProvider>
                             <NetworkForm partner={partner} />
                         </ValidationProvider>
@@ -47,9 +51,11 @@ export default function Form({ formValues }: { formValues?: SwapFormValues }) {
         <TabsContent value="exchange">
             <SwapDataProvider>
                 <FormWrapper type="exchange" partner={partner}>
-                    <Widget contextualMenu={<div className="block sm:hidden">
-                        <NetworkExchangeTabs />
-                    </div>}>
+                    <Widget contextualMenu={
+                        <div className={clsx("block w-full", { 'sm:hidden': AppSettings.ThemeData?.enableWideVersion == true })}>
+                            <NetworkExchangeTabs />
+                        </div>
+                    }>
                         <ValidationProvider>
                             <ExchangeForm partner={partner} />
                         </ValidationProvider>

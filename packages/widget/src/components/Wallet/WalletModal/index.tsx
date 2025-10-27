@@ -1,3 +1,4 @@
+"use client";
 import { Context, createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { InternalConnector, Wallet, WalletConnectionProvider } from '@/types/wallet';
 

@@ -1,6 +1,6 @@
 import { ConnectedWallet, useTonConnectUI, useTonWallet } from "@tonconnect/ui-react"
 import { Address } from "@ton/core";
-import { KnownInternalNames, resolveWalletConnectorIcon } from "@layerswap/widget/internal";
+import { KnownInternalNames, walletIconResolver } from "@layerswap/widget/internal";
 import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType, WalletConnectionProviderProps } from "@layerswap/widget/types";
 import { transactionBuilder } from "./services/transferService/transactionBuilder";
 
@@ -27,7 +27,7 @@ export default function useTONConnection({ networks }: WalletConnectionProviderP
         address,
         providerName: id,
         isActive: true,
-        icon: resolveWalletConnectorIcon({ connector: name, address, iconUrl }),
+        icon: walletIconResolver(name, iconUrl),
         disconnect: () => disconnectWallets(),
         withdrawalSupportedNetworks: commonSupportedNetworks,
         autofillSupportedNetworks: commonSupportedNetworks,
@@ -83,7 +83,7 @@ export default function useTONConnection({ networks }: WalletConnectionProviderP
                     address: connectedAddress,
                     providerName: id,
                     isActive: true,
-                    icon: resolveWalletConnectorIcon({ connector: connectedName, address: connectedAddress }),
+                    icon: walletIconResolver(connectedName, connectedAddress),
                     disconnect: () => disconnectWallets(),
                     connect: () => connectWallet(),
                     withdrawalSupportedNetworks: commonSupportedNetworks,

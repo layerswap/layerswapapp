@@ -1,7 +1,7 @@
-import { Network } from "../Models/Network"
+import { Network } from "@/Models/Network"
 import { Wallet, WalletConnectionProvider } from "@/types/wallet";
 import { useCallback, useMemo } from "react";
-import { useWalletProviders } from "../context/walletProviders";
+import { useWalletProviders } from "@/context/walletProviders";
 
 export type WalletPurpose = "autofil" | "withdrawal" | "asSource"
 
@@ -84,24 +84,24 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletCo
 
 const resolveWallet = (wallet: Wallet, network: Network | undefined, provider: WalletConnectionProvider, purpose?: WalletPurpose) => {
 
-    if(provider.isNotAvailableCondition && network?.name && wallet.internalId) {
+    if (provider.isNotAvailableCondition && network?.name && wallet.internalId) {
         return {
             ...wallet,
             isNotAvailable: provider.isNotAvailableCondition(wallet.internalId, network?.name),
         }
     }
 
-    if(purpose === "autofil") {
+    if (purpose === "autofil") {
         return {
             ...wallet,
             isNotAvailable: !wallet.autofillSupportedNetworks?.some(n => n.toLowerCase() === network?.name.toLowerCase()),
         }
-    } else if(purpose === "withdrawal") {
+    } else if (purpose === "withdrawal") {
         return {
             ...wallet,
             isNotAvailable: !wallet.withdrawalSupportedNetworks?.some(n => n.toLowerCase() === network?.name.toLowerCase()),
         }
-    } else if(purpose === "asSource") {
+    } else if (purpose === "asSource") {
         return {
             ...wallet,
             isNotAvailable: !wallet.asSourceSupportedNetworks?.some(n => n.toLowerCase() === network?.name.toLowerCase()),

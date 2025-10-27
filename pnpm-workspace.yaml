@@ -1,7 +1,6 @@
 packages:
-  - packages/*
-  - packages/wallets/*
-  - apps/*
+  - packages/**
+  - apps/bridge
 
 catalog:
   '@wagmi/connectors': 5.7.7
@@ -11,5 +10,7 @@ catalog:
   react: 18.3.1
   react-dom: 18.3.1
   wagmi: 2.14.11
+  viem: ^2.21.16
   zustand: ^4.5.1
   "@tanstack/react-query": "^5.90.5"
+  swr: "^2.2.5"

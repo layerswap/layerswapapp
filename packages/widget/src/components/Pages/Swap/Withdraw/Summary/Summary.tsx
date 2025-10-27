@@ -1,3 +1,4 @@
+'use client'
 import { ArrowDown, Fuel } from "lucide-react";
 import { FC } from "react";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";

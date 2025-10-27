@@ -1,4 +1,4 @@
-import { THEME_COLORS } from "../Models/Theme";
+import { THEME_COLORS } from "@layerswap/widget/types";
 
 export const getThemeData = async (query: any) => {
     try {

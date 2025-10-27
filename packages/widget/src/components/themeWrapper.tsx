@@ -37,7 +37,7 @@ export default function ThemeWrapper({ children }: Props) {
                         </ToastBar>
                     )}
                 </Toaster>
-                <div className="w-full h-full max-w-lg z-[1] sm:mb-6">
+                <div className="w-full h-full max-w-lg z-auto sm:mb-6">
                     <div className="flex h-full content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-[20px] max-w-lg">
                         <div className="h-full w-full text-primary-text">
                             {children}

@@ -40,7 +40,8 @@
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "@wagmi/core": "catalog:",
-    "wagmi": "catalog:"
+    "wagmi": "catalog:",
+    "viem": "catalog:"
   },
   "dependencies": {
     "@ethersproject/bytes": "^5.8.0",
@@ -53,13 +54,11 @@
     "json-rpc-2.0": "1.7.0",
     "memoizee": "^0.4.17",
     "socket.io-client": "^4.8.1",
-    "tweetnacl": "^1.0.3",
-    "viem": "^2.38.3"
+    "tweetnacl": "^1.0.3"
   },
   "devDependencies": {
     "react": "catalog:",
     "react-dom": "catalog:"
-
   },
   "engines": {
     "node": ">=22"

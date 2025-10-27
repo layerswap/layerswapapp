@@ -1,3 +1,4 @@
+'use client'
 import { FC } from "react"
 import BackgroundField from "@/components/Common/backgroundField";
 import { Clock } from "lucide-react"

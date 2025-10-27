@@ -1,7 +1,7 @@
-import { FormSourceWalletButton } from "../../../../Input/SourceWalletPicker";
-import SubmitButton from "../../../../Buttons/submitButton";
+import { FormSourceWalletButton } from "@/components/Input/SourceWalletPicker";
+import SubmitButton from "@/components/Buttons/submitButton";
 import { useInitialSettings } from "@/context/settings";
-import Address from "../../../../Input/Address";
+import Address from "@/components/Input/Address";
 import { SwapFormValues } from "../SwapFormValues";
 import { Partner } from "@/Models/Partner";
 

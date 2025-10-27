@@ -1,4 +1,4 @@
-import { ButtonHTMLAttributes, DetailedHTMLProps, FC, useState } from "react";
+import { ButtonHTMLAttributes, DetailedHTMLProps, FC } from "react";
 import { WalletModalConnector } from ".";
 import { InternalConnector } from "@/types/wallet";
 import { Loader } from "lucide-react";
@@ -13,9 +13,8 @@ type Connector = DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTML
 
 const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isRecent, ...props }) => {
     const connectorName = connector?.name
-    const connectorId = connector?.id
 
-    const Icon = resolveWalletConnectorIcon({ connector: connectorId, iconUrl: connector.icon })
+    const Icon = resolveWalletConnectorIcon({ connector: connector, iconUrl: connector.icon })
     const isLoading = connectingConnector?.name === connectorName
 
     return (

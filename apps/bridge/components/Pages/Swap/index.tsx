@@ -27,11 +27,13 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
     } : undefined
 
     return <LayerswapProvider
-        integrator='layerswap'
-        apiKey={apiKey}
-        version={process.env.NEXT_PUBLIC_API_VERSION as 'mainnet' | 'testnet'}
-        settings={settings}
-        themeData={{ ...themeData as any, borderRadius: 'default', enablePortal: true }}
+        config={{
+            apiKey,
+            version: process.env.NEXT_PUBLIC_API_VERSION as 'mainnet' | 'testnet',
+            settings,
+            theme: { ...themeData as any, borderRadius: 'default', enablePortal: true, enableWideVersion: true },
+            imtblPassport: imtblPassportConfigs
+        }}
         callbacks={{
             onFormChange(formData) {
                 updateFormBulk(formData);
@@ -46,7 +48,6 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
             },
             onLogEvent: handleLogEvent,
         }}
-        imtblPassport={imtblPassportConfigs}
         walletProviders={[EVMProvider, StarknetProvider, FuelProvider, ParadexProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider]}
     >
         <Swap />

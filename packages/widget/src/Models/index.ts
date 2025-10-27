@@ -1,6 +1,7 @@
 export * from './Balance'
 export * from './Network'
 export * from './LayerSwapSettings'
+export * from './LayerSwapAppSettings'
 export * from './ApiResponse'
 export * from './Exchange'
 export * from './ApiError'

@@ -57,6 +57,17 @@
   --color-success-foreground: rgb(var(--ls-colors-success-foreground, 89, 224, 125));
   --color-success-background: rgb(var(--ls-colors-success-background, 14, 43, 22));
 
+  --radius-none: var(--ls-border-radius-none, 0px);
+  --radius-xs: var(--ls-border-radius-xs, 2px);
+  --radius-sm: var(--ls-border-radius-sm, 4px);
+  --radius-md: var(--ls-border-radius-md, 6px);
+  --radius-lg: var(--ls-border-radius-lg, 8px);
+  --radius-xl: var(--ls-border-radius-xl, 12px);
+  --radius-2xl: var(--ls-border-radius-2xl, 16px);
+  --radius-3xl: var(--ls-border-radius-3xl, 24px);
+  --radius-full: var(--ls-border-radius-full, 9999px);
+
+  --radius: var(--ls-border-radius-default, var(--ls-border-radius-sm, 8px));
 }
 
 @layer base {
