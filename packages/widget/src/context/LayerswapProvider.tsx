@@ -18,7 +18,7 @@ import WalletsProviders from "@/components/Wallet/WalletProviders";
 import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
 import { InitialSettings } from "../Models/InitialSettings";
 import { BalanceAccountsProvider } from "./balanceAccounts";
-import { LogEvent, WalletProvider } from "@/types";
+import { WalletProvider } from "@/types";
 import { ResolverProviders } from "./resolverContext";
 import { LogProvider } from "./LogProvider";
 
@@ -37,11 +37,10 @@ export type LayerswapContextProps = {
     callbacks?: CallbacksContextType
     config?: LayerswapWidgetConfig
     walletProviders?: WalletProvider[]
-    onLogEvent?: (event: LogEvent) => void;
 }
 
 const INTERCOM_APP_ID = 'h5zisg78'
-const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callbacks, config, walletProviders = [], onLogEvent }) => {
+const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callbacks, config, walletProviders = [] }) => {
     let { apiKey, version, settings: _settings, theme: themeData, imtblPassport, initialValues } = config || {}
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
     themeData = { ...THEME_COLORS['default'], ...config?.theme }
@@ -70,7 +69,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
         <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
             <SettingsProvider initialLayerswapData={appSettings} initialSettings={config?.initialValues}>
                 <CallbackProvider callbacks={callbacks}>
-                    <LogProvider onLogEvent={onLogEvent}>
+                    <LogProvider>
                         <ErrorBoundary FallbackComponent={ErrorFallback} >
                             <ThemeWrapper>
                                 <WalletsProviders
