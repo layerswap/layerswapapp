@@ -5,7 +5,7 @@ const nextConfig = {
     config.externals.push('pino-pretty', 'lokijs', 'encoding')
     return config
   },
-  transpilePackages: ['@layerswap/widget'],
+  transpilePackages: ['@layerswap/widget', '@layerswap/wallet-evm', '@layerswap/wallet-imtbl-passport', '@layerswap/wallet-imtbl-x'],
   reactStrictMode: true,
 }
 

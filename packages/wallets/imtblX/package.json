@@ -1,6 +1,6 @@
 {
-  "name": "@layerswap/wallet-imtblX",
-  "version": "1.0.0-alpha0.1",
+  "name": "@layerswap/wallet-imtbl-x",
+  "version": "1.0.0-alpha1.1",
   "description": "ImmutableX Wallet Provider for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",
