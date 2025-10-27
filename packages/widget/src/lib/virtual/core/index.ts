@@ -466,7 +466,7 @@ export class Virtualizer<
             this.notify(isScrolling)
         },
         {
-            key: process.env.NODE_ENV !== 'production' && 'maybeNotify',
+            key: 'maybeNotify',
             debug: () => this.options.debug,
             initialDeps: [
                 this.isScrolling,
@@ -700,7 +700,7 @@ export class Virtualizer<
             return measurements
         },
         {
-            key: process.env.NODE_ENV !== 'production' && 'getMeasurements',
+            key: 'getMeasurements',
             debug: () => this.options.debug,
         },
     )
@@ -724,7 +724,7 @@ export class Virtualizer<
                     : null)
         },
         {
-            key: process.env.NODE_ENV !== 'production' && 'calculateRange',
+            key: 'calculateRange',
             debug: () => this.options.debug,
         },
     )
@@ -758,7 +758,7 @@ export class Virtualizer<
                 })
         },
         {
-            key: process.env.NODE_ENV !== 'production' && 'getVirtualIndexes',
+            key: 'getVirtualIndexes',
             debug: () => this.options.debug,
         },
     )
@@ -811,7 +811,7 @@ export class Virtualizer<
         const delta = size - itemSize
 
         if (delta !== 0) {
-        
+
 
             this.pendingMeasuredCacheIndexes.push(item.index)
             this.itemSizeCache = new Map(this.itemSizeCache.set(item.key, size))
@@ -849,7 +849,7 @@ export class Virtualizer<
             return virtualItems
         },
         {
-            key: process.env.NODE_ENV !== 'production' && 'getVirtualItems',
+            key: 'getVirtualItems',
             debug: () => this.options.debug,
         },
     )

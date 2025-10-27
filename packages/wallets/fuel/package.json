@@ -48,7 +48,7 @@
     "@fuel-ts/account": "^0.101.3",
     "@fuel-ts/address": "^0.101.3",
     "@fuels/react": "^0.43.2",
-    "@layerswap/widget": "workspace:*",
+    "@layerswap/widget": "workspace:^",
     "bs58": "^6.0.0",
     "fuels": "^0.101.3",
     "json-rpc-2.0": "1.7.0",

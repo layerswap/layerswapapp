@@ -4,8 +4,13 @@ export default class AppSettings {
     static ApiVersion?: string = "mainnet"
     static ExplorerURl: string = `https://www.layerswap.io/explorer/`
     static LayerswapApiUri?: string = 'https://api.layerswap.io'
-    static IdentitiyApiUri?: string = 'https://identity-api.layerswap.io'
     static ResourseStorageUrl: string = 'https://prodlslayerswapbridgesa.blob.core.windows.net/'
+    static TelegramLogConfigs = {
+        feedback_token: '',
+        feedback_chat_id: '',
+        error_token: '',
+        error_chat_id: ''
+    }
     static WalletConnectConfig: {
         projectId: string
         name: string

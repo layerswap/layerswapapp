@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/wallet-imtbl-x",
-  "version": "1.0.0-alpha1.1",
+  "version": "1.0.0-alpha1.3",
   "description": "ImmutableX Wallet Provider for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -39,7 +39,7 @@
   "peerDependencies": {
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
-    "@layerswap/widget": "workspace:*"
+    "@layerswap/widget": "workspace:^"
   },
   "dependencies": {
     "@imtbl/imx-sdk": "2.1.1",
@@ -47,7 +47,7 @@
     "axios": "catalog:"
   },
   "devDependencies": {
-    "@layerswap/widget": "workspace:*",
+    "@layerswap/widget": "workspace:^",
     "react": "catalog:",
     "react-dom": "catalog:"
   },

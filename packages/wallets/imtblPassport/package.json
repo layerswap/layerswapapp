@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/wallet-imtbl-passport",
-  "version": "1.0.0-alpha1.1",
+  "version": "1.0.0-alpha1.3",
   "description": "ImmutablePassport Wallet Provider for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -39,14 +39,14 @@
   "peerDependencies": {
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
-    "@layerswap/widget": "workspace:*"
+    "@layerswap/widget": "workspace:^"
   },
   "dependencies": {
     "@imtbl/sdk": "1.45.10",
     "axios": "catalog:"
   },
   "devDependencies": {
-    "@layerswap/widget": "workspace:*",
+    "@layerswap/widget": "workspace:^",
     "@types/react": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:"
