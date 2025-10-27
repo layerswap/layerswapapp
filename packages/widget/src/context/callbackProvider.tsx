@@ -1,5 +1,6 @@
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
+import { LogEvent } from '@/types'
 import { createContext, useContext, ReactNode, useCallback } from 'react'
 
 export interface CallbacksContextType {
@@ -10,6 +11,7 @@ export interface CallbacksContextType {
     onSwapIdChange?: (swapId: string | undefined) => void
     onBackClick?: () => void
     onError?: (error: any) => void
+    onLogEvent?: (event: LogEvent) => void;
 }
 
 export interface CallbackProviderProps {

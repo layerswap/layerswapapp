@@ -43,9 +43,9 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
                 if (!open) {
                     removeSwapPath(router)
                 }
-            }
+            },
+            onLogEvent: handleLogEvent,
         }}
-        onLogEvent={handleLogEvent}
         imtblPassport={imtblPassportConfigs}
         walletProviders={[EVMProvider, StarknetProvider, FuelProvider, ParadexProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider]}
     >

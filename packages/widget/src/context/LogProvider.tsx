@@ -4,7 +4,7 @@ import { ExceptionEvent, LogEvent } from "@/types/logEvents";
 type LogFn = (event: LogEvent) => void;
 
 const defaultHandler: LogFn = (e) => {
-    console.debug('[layerswap:log]', e.type, e.props);
+    console.log('[layerswap:log]', e?.type, e?.props);
 };
 
 let currentLogger: LogFn = defaultHandler;
