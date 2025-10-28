@@ -126,6 +126,7 @@ const WalletsMenuWalletsList = ({ wallets }: { wallets: Wallet[] }) => {
             setShow={setOpenModal}
             header={`Connected wallets`}
             modalId="connectedWallets"
+            className="expandContainerHeight"
         >
             <VaulDrawer.Snap id="item-1">
                 <WalletsList wallets={wallets} />

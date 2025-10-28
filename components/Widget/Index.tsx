@@ -31,7 +31,7 @@ const Widget = ({ children, hideMenu, contextualMenu }: Props) => {
 
    return <div className="relative p-px">
       <div className="invisible sm:visible absolute inset-0 rounded-[25px] bg-gradient-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
-      <div id="widget" className='md:shadow-lg sm:pb-4 rounded-3xl w-full sm:overflow-hidden relative bg-gradient-to-b from-secondary-700 to-secondary-700 max-sm:has-openpicker:min-h-svh max-sm:min-h-[99.8svh] sm:has-openpicker:min-h-[79svh] has-openwithdrawalmodal:min-h-[650px] h-full flex flex-col'>
+      <div id="widget" className='md:shadow-lg sm:pb-4 rounded-3xl w-full sm:overflow-hidden relative bg-gradient-to-b from-secondary-700 to-secondary-700 max-sm:has-openpicker:min-h-svh max-sm:min-h-[99.8svh] sm:has-openpicker:min-h-[79svh] has-expandContainerHeight:min-h-[650px] h-full flex flex-col'>
          {
             AppSettings.ApiVersion === 'sandbox' &&
             <div className="relative z-20">

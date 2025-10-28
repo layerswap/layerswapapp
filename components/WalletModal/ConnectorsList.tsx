@@ -17,6 +17,7 @@ import { Checkbox } from "../shadcn/checkbox";
 import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
 import { SearchComponent } from "../Input/Search";
+import { featuredWalletsIds } from "@/context/evmConnectorsContext";
 
 const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();
@@ -99,11 +100,17 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const featuredProviders = selectedProvider ? [selectedProvider] : filteredProviders
 
     const allFeaturedConnectors = useMemo(() => featuredProviders.filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0).map((provider) =>
-        provider.availableWalletsForConnect?.filter(v => searchValue ? (searchValue ? v.name.toLowerCase().includes(searchValue?.toLowerCase()) : false) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat(), [featuredProviders, searchValue])
-    const allHiddenConnectors = useMemo(() => featuredProviders.filter(g => g.availableHiddenWalletsForConnect && g.availableHiddenWalletsForConnect?.length > 0).map((provider) =>
-        provider.availableHiddenWalletsForConnect?.filter(v => searchValue ? (searchValue ? v.name.toLowerCase().includes(searchValue?.toLowerCase()) : false) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat(), [featuredProviders, searchValue])
+        provider.availableWalletsForConnect?.filter(v => searchValue ? (v.name.toLowerCase().includes(searchValue?.toLowerCase())) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat(), [featuredProviders, searchValue])
+    const allHiddenConnectors = useMemo(() =>
+        featuredProviders
+            .filter(g => g.availableHiddenWalletsForConnect && g.availableHiddenWalletsForConnect?.length > 0)
+            .map((provider) =>
+                provider.availableHiddenWalletsForConnect
+                    ?.filter(v => (searchValue ? (v.name.toLowerCase().includes(searchValue?.toLowerCase())) : true) && !featuredWalletsIds.includes(v.id.toLowerCase()))
+                    .map((connector) => ({ ...connector, providerName: provider.name, isHidden: true })))
+            .flat(), [featuredProviders, searchValue])
 
-    const allConnectors: InternalConnector[] = useMemo(() => removeDuplicatesWithKey(([...allFeaturedConnectors, ...(searchValue ? allHiddenConnectors : [])] as InternalConnector[]).sort((a, b) => sortRecentConnectors(a, b, recentConnectors)), 'name'), [allFeaturedConnectors, allHiddenConnectors, searchValue])
+    const allConnectors: InternalConnector[] = useMemo(() => removeDuplicatesWithKey(([...allFeaturedConnectors, ...allHiddenConnectors] as InternalConnector[]).filter(c => searchValue?.length ? true : !c.isHidden).sort((a, b) => sortRecentConnectors(a, b, recentConnectors)), 'name'), [allFeaturedConnectors, allHiddenConnectors, searchValue?.length])
 
     if (selectedConnector?.qr?.state) {
         const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
@@ -140,7 +147,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                             </div>
                     }
                     <div className='bg-secondary-400 text-secondary-text w-full px-2 py-1.5 rounded-md mt-3 flex justify-center items-center'>
-                        <CopyButton toCopy={selectedConnector?.qr.value || ''}>Copy QR URL</CopyButton>
+                        <CopyButton disabled={!selectedConnector?.qr.value} toCopy={selectedConnector?.qr.value || ''}>Copy QR URL</CopyButton>
                     </div>
                 </div>
             </div>
@@ -160,7 +167,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     if (selectedMultiChainConnector) {
         return <MultichainConnectorPicker
             selectedConnector={selectedMultiChainConnector}
-            allConnectors={allFeaturedConnectors as InternalConnector[]}
+            allConnectors={[...allFeaturedConnectors, ...allHiddenConnectors] as InternalConnector[]}
             providers={featuredProviders}
             connect={connect}
         />
@@ -188,8 +195,8 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 <div
                     onScroll={handleScroll}
                     className={clsx('overflow-y-scroll -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar-thumb:bg-transparent', {
-                        'h-[55vh]': isMobileSize,
-                        'h-[265px]': !isMobileSize,
+                        'h-[55svh]': isMobileSize,
+                        'h-[450px]': !isMobileSize,
                         'styled-scroll': isScrolling
                     })}
                 >
@@ -372,7 +379,18 @@ const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ selected
 
             <div className="flex flex-col gap-2 w-full">
                 {
-                    allConnectors.filter(c => c?.name === selectedConnector.name)?.map((connector, index) => {
+                    Array.from(
+                        allConnectors
+                            .filter(c => c?.name === selectedConnector.name)
+                            .reduce((map, connector) => {
+                                if (!connector?.providerName) return map;
+                                if (!map.has(connector.providerName)) {
+                                    map.set(connector.providerName, connector);
+                                }
+                                return map;
+                            }, new Map<string, typeof allConnectors[0]>())
+                            .values()
+                    ).map((connector, index) => {
                         const provider = providers.find(p => p.name === connector?.providerName)
                         return (
                             <button
