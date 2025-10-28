@@ -3,16 +3,7 @@ import { useRouter } from "next/router"
 import { FC } from "react"
 import { updateFormBulk } from "../../utils/updateForm"
 import { removeSwapPath, setSwapPath } from "../../utils/updateSwapPath"
-import { EVMProvider } from "@layerswap/wallet-evm";
-import { FuelProvider } from "@layerswap/wallet-fuel";
-import { ParadexProvider } from "@layerswap/wallet-paradex";
-import { StarknetProvider } from "@layerswap/wallet-starknet";
-import { BitcoinProvider } from "@layerswap/wallet-bitcoin";
-import { ImmutableXProvider } from "@layerswap/wallet-imtbl-x";
-import { TonProvider } from "@layerswap/wallet-ton";
-import { SVMProvider } from "@layerswap/wallet-svm";
-import { TronProvider } from "@layerswap/wallet-tron";
-import { ImtblPassportProvider } from "@layerswap/wallet-imtbl-passport";
+import { EVMProvider, FuelProvider, ParadexProvider, StarknetProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider } from "@layerswap/wallets";
 
 const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string }> = ({ settings, themeData, apiKey }) => {
     const router = useRouter()

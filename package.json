@@ -3,6 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "devDependencies": {
+    "@changesets/cli": "^2.29.7",
     "@types/node": "^24.5.1",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.3",
@@ -33,6 +34,9 @@
     "dev": "pnpm --filter @layerswap/bridge dev",
     "build": "pnpm -r run build",
     "build:packages": "pnpm --filter './packages/**' run build",
-    "clean": "find . -name 'node_modules' -type d -prune -exec rimraf {} +"
+    "clean": "find . -name 'node_modules' -type d -prune -exec rimraf {} +",
+    "changeset": "changeset",
+    "version": "changeset version",
+    "prepublishOnly": "pnpm run build"
   }
 }
