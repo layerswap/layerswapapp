@@ -74,7 +74,7 @@ const TransferTokenButton: FC<Props> = ({
             }
         })()
     }, [selectedSourceAccount?.address, callData, swapData?.destination_address])
-console.log('estimatedGas', estimatedGas);
+
     const clickHandler = useCallback(async ({ amount, callData, depositAddress }: TransferProps) => {
         setButtonClicked(true)
         setError(undefined)
