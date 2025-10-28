@@ -46,6 +46,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
 
     AppSettings.ApiVersion = version
     AppSettings.ImtblPassportConfig = imtblPassport
+    AppSettings.WalletConnectConfig = config?.walletConnect || AppSettings.WalletConnectConfig
     AppSettings.ThemeData = themeData
     if (apiKey) LayerSwapApiClient.apiKey = apiKey
 
