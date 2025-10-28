@@ -1,18 +1,19 @@
-import { FC, useCallback, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useState } from "react";
 import {
     useConfig,
 } from "wagmi";
-import { parseEther } from 'viem'
-import WalletIcon from "@/components/icons/WalletIcon";
+import { createPublicClient, http, parseEther, parseGwei } from 'viem'
 import { ActionData, TransferProps } from "../../Common/sharedTypes";
 import TransactionMessage from "./transactionMessage";
 import { SendTransactionButton } from "../../Common/buttons";
 import { isMobile } from "@/lib/openLink";
-import { sendTransaction } from '@wagmi/core'
+import { getConnections, sendTransaction } from '@wagmi/core'
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import useWallet from "@/hooks/useWallet";
 import { useSwapDataState } from "@/context/swap";
+import resolveChain from "@/lib/resolveChain";
+import { posthog } from "posthog-js";
 
 type Props = {
     savedTransactionHash?: string;
@@ -31,11 +32,49 @@ const TransferTokenButton: FC<Props> = ({
     const [error, setError] = useState<any | undefined>()
     const [loading, setLoading] = useState(false)
     const { swapError } = useSwapDataState()
+    const [estimatedGas, setEstimatedGas] = useState<bigint>()
 
+    const { depositActionsResponse } = useSwapDataState()
     const selectedSourceAccount = useSelectedAccount("from", swapData.source_network.name);
     const { wallets } = useWallet(swapData.source_network, 'withdrawal')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
+    const callData = depositActionsResponse?.find(da => true)?.call_data as `0x${string}` | undefined
 
+    const chain = resolveChain(swapData.source_network)
+    const publicClient = createPublicClient({
+        chain,
+        transport: http()
+    })
+
+    useEffect(() => {
+        (async () => {
+            if (selectedSourceAccount?.address && swapData?.destination_address) {
+                try {
+                    const gasEstimate = await publicClient.estimateGas({
+                        account: selectedSourceAccount.address as `0x${string}`,
+                        to: swapData?.destination_address as `0x${string}`,
+                        data: callData,
+                    })
+                    setEstimatedGas(gasEstimate)
+                }
+                catch (e) {
+                    const error = e;
+                    error.name = `EstimateGasError`;
+                    error.cause = error;
+
+                    posthog.capture('$exception', {
+                        name: error?.name,
+                        $layerswap_exception_type: "EstimateGasError",
+                        message: error?.message,
+                        where: 'TransferToken',
+                        cause: error?.cause,
+                        severity: 'error',
+                    });
+                }
+            }
+        })()
+    }, [selectedSourceAccount?.address, callData, swapData?.destination_address])
+console.log('estimatedGas', estimatedGas);
     const clickHandler = useCallback(async ({ amount, callData, depositAddress }: TransferProps) => {
         setButtonClicked(true)
         setError(undefined)
@@ -47,14 +86,16 @@ const TransferTokenButton: FC<Props> = ({
                 throw new Error('Missing amount')
             if (!selectedSourceAccount?.address)
                 throw new Error('No selected account')
+
             const tx = {
                 chainId,
                 to: depositAddress as `0x${string}`,
                 value: parseEther(amount?.toString()),
-                gas: undefined,
+                gas: estimatedGas,
                 data: callData as `0x${string}`,
                 account: selectedSourceAccount.address as `0x${string}`
             }
+           
             if (isMobile() && wallet?.metadata?.deepLink) {
                 window.location.href = wallet.metadata?.deepLink
                 await new Promise(resolve => setTimeout(resolve, 100))
@@ -71,7 +112,7 @@ const TransferTokenButton: FC<Props> = ({
 
             throw e
         }
-    }, [config, chainId, selectedSourceAccount?.address])
+    }, [config, chainId, selectedSourceAccount?.address, estimatedGas])
 
     const transaction: ActionData = {
         error: error,
