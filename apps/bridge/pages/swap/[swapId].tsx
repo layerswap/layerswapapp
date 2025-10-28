@@ -19,7 +19,7 @@ const SwapDetails = ({ settings, themeData, apiKey }: InferGetServerSidePropsTyp
   return (<>
     <Layout settings={settings} themeData={themeData}>
       <SwapWithdrawal
-        config={{ theme: themeData, apiKey, settings }}
+        config={{ theme: { ...themeData, borderRadius: 'default', enablePortal: true, enableWideVersion: true, hidePoweredBy: true }, apiKey, settings }}
         walletProviders={[EVMProvider, StarknetProvider, FuelProvider, ParadexProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider]}
       />
     </Layout>

@@ -2,10 +2,10 @@ import { HTMLAttributes } from "react";
 
 export type ThemeData = {
     backdrop?: string,
-    buttonTextColor: string,
-    logo: string,
-    tertiary: string,
-    primary: ThemeColor,
+    buttonTextColor?: string,
+    logo?: string,
+    tertiary?: string,
+    primary?: ThemeColor,
     secondary?: ThemeColor,
     headerLogo?: string,
     footerLogo?: string,
@@ -22,6 +22,7 @@ export type ThemeData = {
         hideWallets?: boolean,
     }
     cardBackgroundStyle?: HTMLAttributes<HTMLDivElement>['style']
+    hidePoweredBy?: boolean
 }
 
 export type ThemeColor = {
