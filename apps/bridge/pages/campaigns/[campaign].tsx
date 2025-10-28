@@ -3,16 +3,7 @@ import { getServerSideProps } from '../../helpers/getSettings'
 import { CampaignDetails } from '@layerswap/widget'
 import { useRouter } from 'next/router';
 import Layout from '../../components/layout';
-import { EVMProvider } from '@layerswap/wallet-evm';
-import { StarknetProvider } from '@layerswap/wallet-starknet';
-import { FuelProvider } from '@layerswap/wallet-fuel';
-import { ParadexProvider } from '@layerswap/wallet-paradex';
-import { BitcoinProvider } from '@layerswap/wallet-bitcoin';
-import { ImmutableXProvider } from '@layerswap/wallet-imtbl-x';
-import { TonProvider } from '@layerswap/wallet-ton';
-import { SVMProvider } from '@layerswap/wallet-svm';
-import { TronProvider } from '@layerswap/wallet-tron';
-import { ImtblPassportProvider } from '@layerswap/wallet-imtbl-passport';
+import { EVMProvider, FuelProvider, ParadexProvider, StarknetProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider } from "@layerswap/wallets";
 
 export default function RewardsPage({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     const router = useRouter();
