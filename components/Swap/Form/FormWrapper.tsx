@@ -103,6 +103,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const handleShowSwapModal = useCallback((value: boolean) => {
         setSwapModalOpen(value)
         if (!value) {
+            setSwapId(undefined)
             removeSwapPath(router)
             if (walletWihdrawDone) {
                 mutateBalances()

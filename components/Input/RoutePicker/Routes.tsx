@@ -84,22 +84,16 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
         }
         secondaryLogoSrc={route.logo}
     >
-        {(allbalancesLoaded && tokenbalance && Number(tokenbalance?.amount) >= 0) ? (
+        {(allbalancesLoaded && tokenbalance && Number(tokenbalance?.amount) > 0) ? (
             <span className="text-sm text-secondary-text text-right my-auto leading-4 font-medium">
-                {Number(usdAmount) >= 0 && (
+                {Number(usdAmount) > 0 && (
                     <div
-                        className={clsx("text-primary-text",
-                            {
-                                'text-lg leading-[22px]': type === 'suggested_token',
-                            }
+                        className={clsx("text-primary-text text-base",
+                            { '!text-lg !leading-[22px]': type === 'suggested_token' }
                         )}
                     >{formatUsd(usdAmount)}</div>
                 )}
-                <div
-                    className={clsx({
-                        'text-xs leading-4': type == 'suggested_token',
-                    })}
-                >
+                <div className='text-xs leading-4'>
                     {formatted_balance_amount}
                 </div>
             </span>
