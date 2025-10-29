@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/wallet-paradex",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Paradex Wallet Provider for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",

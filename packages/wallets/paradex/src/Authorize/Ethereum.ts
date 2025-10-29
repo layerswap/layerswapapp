@@ -4,7 +4,7 @@ import { TypedData } from '../lib/types';
 import { AppSettings } from '@layerswap/widget/internal';
 
 export default async function AuhorizeEthereum(ethersSigner: providers.JsonRpcSigner) {
-    const environment = AppSettings.ApiVersion === 'sandbox' ? 'testnet' : 'prod'
+    const environment = AppSettings.ApiVersion === 'testnet' ? 'testnet' : 'prod'
     const config = await Paradex.Config.fetchConfig(environment);
 
     const paraclearProvider = new Paradex.ParaclearProvider.DefaultProvider(config);

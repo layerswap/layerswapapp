@@ -50,6 +50,7 @@
     "react-use-intercom": "^2.0.0",
     "swr": "catalog:",
     "uuid": "^9.0.0",
+    "zustand": "catalog:",
     "wagmi": "catalog:"
   },
   "devDependencies": {
