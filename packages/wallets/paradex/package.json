@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/wallet-paradex",
-  "version": "1.0.0-alpha0.1",
+  "version": "1.0.0",
   "description": "Paradex Wallet Provider for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -39,7 +39,7 @@
   "peerDependencies": {
     "@layerswap/wallet-evm": "workspace:*",
     "@layerswap/wallet-starknet": "workspace:*",
-    "@layerswap/widget": "workspace:*",
+    "@layerswap/widget": "workspace:^",
     "@wagmi/core": "catalog:",
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
@@ -57,7 +57,7 @@
   "devDependencies": {
     "@layerswap/wallet-evm": "workspace:*",
     "@layerswap/wallet-starknet": "workspace:*",
-    "@layerswap/widget": "workspace:*",
+    "@layerswap/widget": "workspace:^",
     "react": "catalog:"
   },
   "engines": {

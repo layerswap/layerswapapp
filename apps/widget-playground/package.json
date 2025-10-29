@@ -12,7 +12,7 @@
     "@dynamic-labs/ethereum": "^4.19.7",
     "@dynamic-labs/sdk-react-core": "^4.19.7",
     "@dynamic-labs/wagmi-connector": "^4.19.7",
-    "@layerswap/widget": "workspace:*",
+    "@layerswap/widget": "workspace:^",
     "@layerswap/wallet-evm": "workspace:*",
     "@layerswap/wallet-fuel": "workspace:*",
     "@layerswap/wallet-bitcoin": "workspace:*",

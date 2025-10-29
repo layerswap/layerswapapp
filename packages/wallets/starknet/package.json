@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/wallet-starknet",
-  "version": "1.0.0-alpha0.1",
+  "version": "1.0.0",
   "description": "Starknet Wallet Provider for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -39,7 +39,7 @@
   "peerDependencies": {
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
-    "@layerswap/widget": "workspace:*"
+    "@layerswap/widget": "workspace:^"
   },
   "dependencies": {
     "@starknet-react/chains": "^3.1.0",
@@ -51,7 +51,7 @@
     "starknetkit": "^3.0.3"
   },
   "devDependencies": {
-    "@layerswap/widget": "workspace:*",
+    "@layerswap/widget": "workspace:^",
     "react": "catalog:"
   },
   "engines": {

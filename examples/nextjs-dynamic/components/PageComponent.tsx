@@ -38,15 +38,15 @@ const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
         walletConnectionProvider: useCustomEVM
     }
     return (
-        <WagmiProvider config={config}>
-            <QueryClientProvider client={queryClient}>
-                <DynamicContextProvider
-                    settings={{
-                        // Find your environment id at https://app.dynamic.xyz/dashboard/developer
-                        environmentId: "63a881b4-4008-45d7-9697-4a9e743f51d9",
-                        walletConnectors: [EthereumWalletConnectors],
-                    }}
-                >
+        <DynamicContextProvider
+            settings={{
+                // Find your environment id at https://app.dynamic.xyz/dashboard/developer
+                environmentId: "63a881b4-4008-45d7-9697-4a9e743f51d9",
+                walletConnectors: [EthereumWalletConnectors],
+            }}
+        >
+            <WagmiProvider config={config}>
+                <QueryClientProvider client={queryClient}>
                     <div className="w-[600px] mx-auto flex flex-col justify-center place-self-center h-screen rounded-lg">
                         <LayerswapProvider
                             config={{
@@ -67,9 +67,9 @@ const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
                             <Swap />
                         </LayerswapProvider>
                     </div>
-                </DynamicContextProvider>
-            </QueryClientProvider>
-        </WagmiProvider>
+                </QueryClientProvider>
+            </WagmiProvider>
+        </DynamicContextProvider>
     )
 }
 

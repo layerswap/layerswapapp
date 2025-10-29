@@ -8,7 +8,6 @@ import {
 } from "@dynamic-labs/sdk-react-core";
 import {
   resolveWalletConnectorIcon,
-  useSettingsState,
   NetworkWithTokens,
   NetworkType,
   LayerSwapSettings,

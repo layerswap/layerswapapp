@@ -70,7 +70,7 @@ export const ModalContent = (props: ModalContentProps) => {
         <div className={clsx("absolute inset-0 z-50 bg-secondary-700 rounded-t-3xl sm:rounded-3xl flex flex-col", className)}>
             {(header || showCloseButton) && (
                 <div className="w-full relative">
-                    <div className="flex items-center w-full text-left justify-between px-4 pt-2 pb-2 gap-x-1">
+                    <div className="flex items-center w-full text-left justify-between px-4 pt-2 pb-2 gap-x-2">
                         <div className="flex-1 text-lg text-secondary-text font-semibold w-full flex justify-end">
                             {header}
                         </div>
