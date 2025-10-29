@@ -23,7 +23,7 @@ export type VaulDrawerProps = {
 }
 
 const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className }) => {
-    const { isMobileWithPortal: isMobile } = useWindowDimensions();
+    const { isMobileWithPortal: isMobile, isMobile: isMobileWithoutPortal } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
     const expandRef = useRef<HTMLDivElement>(null);
@@ -100,7 +100,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
     if (!loaded) return null;
 
-    const container = isMobile ? undefined : document.getElementById('widget');
+    const container = (isMobile && AppSettings.ThemeData?.enablePortal) ? undefined : document.getElementById('widget');
 
     return (
         <Drawer.Root
@@ -148,7 +148,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         ref={headerRef}
                         className='w-full relative'>
                         {
-                            isMobile &&
+                            isMobileWithoutPortal &&
                             <div className="flex justify-center w-full mt-2 mb-[6px]" >
                                 <Drawer.Handle className='!w-12 !bg-primary-text-tertiary' />
                             </div>
