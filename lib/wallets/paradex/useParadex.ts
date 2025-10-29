@@ -118,7 +118,7 @@ export default function useParadex(): WalletProvider {
                     if (!snAccount) {
                         throw Error("Starknet account not found")
                     }
-                    const paradexAccount = await AuthorizeStarknet(snAccount)
+                    const paradexAccount = await AuthorizeStarknet(snAccount as any)
                     addParadexAccount({ l1Address: connectionResult.address, paradexAddress: paradexAccount.address })
                     accounts = { [connectionResult.address.toLowerCase()]: paradexAccount.address }
                 }
