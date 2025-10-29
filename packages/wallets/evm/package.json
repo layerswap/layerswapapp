@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/wallet-evm",
-  "version": "1.0.0-alpha1.4",
+  "version": "1.0.0",
   "description": "EVM Wallet Provider for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",
