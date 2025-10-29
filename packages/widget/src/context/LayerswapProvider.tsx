@@ -53,7 +53,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
     useEffect(() => {
         if (!_settings) {
             (async () => {
-                const fetchedSettings = await getSettings(version || AppSettings.ApiVersion)
+                const fetchedSettings = await getSettings(apiKey || AppSettings.LayerswapApiKeys[version || AppSettings.ApiVersion])
                 if (!fetchedSettings) throw new Error('Failed to fetch settings')
                 setFetchedSettings(fetchedSettings)
             })()
