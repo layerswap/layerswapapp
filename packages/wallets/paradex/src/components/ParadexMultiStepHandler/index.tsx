@@ -4,7 +4,7 @@ import Starknet from './Starknet';
 import { WalletIcon } from 'lucide-react';
 import { useActiveParadexAccount } from '../../ActiveParadexAccount';
 import { useWallet, KnownInternalNames, SubmitButton, useSettingsState, useSwapDataState, useSelectedAccount, useUpdateBalanceAccount, useConnectModal, } from "@layerswap/widget/internal"
-import {WithdrawPageProps} from "@layerswap/widget/types"
+import { WithdrawPageProps } from "@layerswap/widget/types"
 
 const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ refuel, swapBasicData, swapId }) => {
 

@@ -1,6 +1,6 @@
 "use client";
 import React, { createContext, useContext, useMemo } from "react";
-import { WalletConnectionProvider, WalletProvider } from "@/types";
+import { WalletConnectionProvider, WalletProvider, WalletProviderModule } from "@/types";
 import { useSettingsState } from "./settings";
 import VaulDrawer from "@/components/Modal/vaulModal";
 import IconButton from "@/components/Buttons/iconButton";
@@ -9,9 +9,16 @@ import ConnectorsList from "@/components/Wallet/WalletModal/ConnectorsList";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { isMobile } from "@/lib/wallets/utils/isMobile";
 
-const WalletProvidersContext = createContext<WalletConnectionProvider[]>([]);
+type WalletProvidersContextValue = {
+    providers: WalletConnectionProvider[];
+    providerModules: WalletProviderModule[];
+}
+const WalletProvidersContext = createContext<WalletProvidersContextValue>({
+    providers: [],
+    providerModules: [],
+});
 
-export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walletProviders: WalletProvider[] }> = ({ children, walletProviders }) => {
+export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walletProviders: WalletProvider[], walletProviderModules: WalletProviderModule[] }> = ({ children, walletProviders, walletProviderModules }) => {
     const { networks } = useSettingsState();
     const isMobilePlatform = isMobile();
     const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector } = useConnectModal()
@@ -30,8 +37,13 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
         return filteredProviders
     }, [networks, isMobilePlatform, allProviders]);
 
+    const providerModules = useMemo(() => {
+        const filteredModules = walletProviderModules.filter(module => networks.some(net => module.multiStepHandler?.supportedNetworks.includes(net.name)));
+        return filteredModules
+    }, [networks, walletProviderModules]);
+
     return (
-        <WalletProvidersContext.Provider value={providers}>
+        <WalletProvidersContext.Provider value={{ providers, providerModules }}>
             {children}
             <VaulDrawer
                 show={open}

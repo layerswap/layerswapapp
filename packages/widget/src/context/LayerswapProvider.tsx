@@ -1,24 +1,24 @@
 'use client'
 import { FC, ReactNode, useEffect, useState } from "react"
-import ThemeWrapper from "../components/themeWrapper";
+import ThemeWrapper from "@/components/themeWrapper";
 import { ErrorBoundary } from "react-error-boundary";
 import { SettingsProvider } from "./settings";
-import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
-import { LayerSwapSettings } from "../Models/LayerSwapSettings";
-import ErrorFallback from "../components/ErrorFallback";
-import { THEME_COLORS, ThemeData } from "../Models/Theme";
+import { LayerSwapAppSettings } from "@/Models/LayerSwapAppSettings";
+import { LayerSwapSettings } from "@/Models/LayerSwapSettings";
+import ErrorFallback from "@/components/ErrorFallback";
+import { THEME_COLORS, ThemeData } from "@/Models/Theme";
 import { AsyncModalProvider } from "./asyncModal";
 import { IntercomProvider } from 'react-use-intercom';
-import AppSettings from "../lib/AppSettings";
-import { getSettings } from "../helpers/getSettings";
+import AppSettings from "@/lib/AppSettings";
+import { getSettings } from "@/helpers/getSettings";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 import ColorSchema from "@/components/ColorSchema";
 import { WidgetLoading } from "@/components/WidgetLoading";
 import WalletsProviders from "@/components/Wallet/WalletProviders";
 import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
-import { InitialSettings } from "../Models/InitialSettings";
+import { InitialSettings } from "@/Models/InitialSettings";
 import { BalanceAccountsProvider } from "./balanceAccounts";
-import { WalletProvider } from "@/types";
+import { WalletProvider, WalletProviderModule } from "@/types";
 import { ResolverProviders } from "./resolverContext";
 
 export type LayerswapWidgetConfig = {
@@ -36,10 +36,11 @@ export type LayerswapContextProps = {
     callbacks?: CallbacksContextType
     config?: LayerswapWidgetConfig
     walletProviders?: WalletProvider[]
+    walletProviderModules?: WalletProviderModule[]
 }
 
 const INTERCOM_APP_ID = 'h5zisg78'
-const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callbacks, config, walletProviders = [] }) => {
+const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callbacks, config, walletProviders = [], walletProviderModules = [] }) => {
     let { apiKey, version, settings: _settings, theme: themeData, imtblPassport, initialValues } = config || {}
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
     themeData = { ...THEME_COLORS['default'], ...config?.theme }
@@ -75,8 +76,9 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
                                 appName={initialValues?.appName}
                                 themeData={themeData}
                                 walletProviders={walletProviders}
+                                walletProviderModules={walletProviderModules}
                             >
-                                <ResolverProviders walletProviders={walletProviders}>
+                                <ResolverProviders walletProviders={walletProviders} walletProviderModules={walletProviderModules}>
                                     <BalanceAccountsProvider>
                                         <AsyncModalProvider>
                                             {children}

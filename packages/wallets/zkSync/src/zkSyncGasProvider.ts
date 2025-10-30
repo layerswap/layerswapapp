@@ -1,6 +1,6 @@
 import { GasProps, Network, GasProvider } from "@layerswap/widget/types";
 import { KnownInternalNames, formatUnits } from "@layerswap/widget/internal";
-import ZkSyncLiteRPCClient from "../balanceProviders/zkSyncBalanceProvider";
+import ZkSyncLiteRPCClient from "./zkSyncBalanceProvider";
 
 export class ZkSyncGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {

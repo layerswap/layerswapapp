@@ -2,8 +2,8 @@ import axios from "axios";
 import { formatUnits } from "viem";
 import { KnownInternalNames, retry, insertIfNotExists } from "@layerswap/widget/internal";
 import { TokenBalance, BalanceProvider } from "@layerswap/widget/types";
-import { LoopringAPI } from "../services/transferService/loopring/LoopringAPI";
-import { LOOPRING_URLs } from "../services/transferService/loopring/defs";
+import { LoopringAPI } from "./services/LoopringAPI";
+import { LOOPRING_URLs } from "./services/defs";
 
 export class LoopringBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
