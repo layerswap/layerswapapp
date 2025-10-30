@@ -20,6 +20,7 @@ import logError from '@/lib/logError';
 import SubmitButton from '@/components/Buttons/submitButton';
 import Steps from './StepsComponent';
 import { useLog } from '@/context/LogProvider';
+import { LogEventType } from '@/types';
 
 type Props = {
     swapBasicData: SwapBasicData;
@@ -115,19 +116,24 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
         }
     }, [inputTxStatus, transactionHash, swapDetails?.id])
 
-    // useEffect(() => {
-    //     if (
-    //         swapDetails?.status === SwapStatus.Completed ||
-    //         swapDetails?.status === SwapStatus.Failed ||
-    //         swapDetails?.status === SwapStatus.Expired ||
-    //         swapDetails?.status === SwapStatus.LsTransferPending
-    //     ) {
-    //         posthog?.capture(`${swapDetails?.status}`, {
-    //             swap_id: swapDetails?.id,
-    //             status: swapDetails?.status,
-    //         })
-    //     }
-    // }, [swapDetails?.status, swapDetails?.id])
+    useEffect(() => {
+        const status = swapDetails?.status as SwapStatus | undefined;
+        if (
+            status === SwapStatus.Completed ||
+            status === SwapStatus.Failed ||
+            status === SwapStatus.Expired ||
+            status === SwapStatus.LsTransferPending
+        ) {
+            log({
+                type: status as LogEventType,
+                props: {
+                    swap_id: swapDetails?.id,
+                    status: swapDetails?.status,
+                    where: 'Processing',
+                },
+            });
+        }
+    }, [swapDetails?.status, swapDetails?.id])
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 

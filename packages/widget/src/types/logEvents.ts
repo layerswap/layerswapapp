@@ -1,3 +1,5 @@
+import { SwapStatus } from "@/Models/SwapStatus";
+
 export type LogEventType =
     | 'ErrorFallback'
     | 'BalanceResolverError'
@@ -12,7 +14,8 @@ export type LogEventType =
     | 'APIError'
     | 'SwapFailed'
     | 'SwapInitiated'
-    | 'NotFound';
+    | 'NotFound'
+    | SwapStatus;
 
 export type LogGroup =
     | 'widgetError'
@@ -28,19 +31,19 @@ export type LogEvent = {
 };
 
 export const GROUP_MAP: Partial<Record<LogEventType, LogGroup>> = {
-  ErrorFallback: 'widgetError',
+    ErrorFallback: 'widgetError',
 
-  BalanceResolverError: 'balanceError',
-  BalanceProviderError: 'balanceError',
+    BalanceResolverError: 'balanceError',
+    BalanceProviderError: 'balanceError',
 
-  MaxPriorityFeePerGasError: 'gasFeeError',
-  FeesPerGasError: 'gasFeeError',
-  GasPriceError: 'gasFeeError',
+    MaxPriorityFeePerGasError: 'gasFeeError',
+    FeesPerGasError: 'gasFeeError',
+    GasPriceError: 'gasFeeError',
 
-  AlertUI: 'transactionNotDetected',
+    AlertUI: 'transactionNotDetected',
 
-  SwapWithdrawalError: 'walletWithdrawalError',
-  TransactionFailed: 'walletWithdrawalError',
+    SwapWithdrawalError: 'walletWithdrawalError',
+    TransactionFailed: 'walletWithdrawalError',
 
-  LongTransactionWarning: 'longTransactionWarning',
+    LongTransactionWarning: 'longTransactionWarning',
 };

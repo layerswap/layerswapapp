@@ -42,6 +42,10 @@ export default function Layout({ children, themeData }: Props) {
         'amount',
         'destAddress'
       ])
+
+      posthog.capture('$pageview', {
+        custom_url: customUrl,
+      })
     }
 
     trackPageview()
