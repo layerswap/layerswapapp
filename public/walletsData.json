@@ -12244,22 +12244,20 @@
     "4457c130df49fb3cb1f8b99574b97b35208bd3d0d13b8d25d2b5884ed2cad13a": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.shapeshift.droid_shapeshift&hl=en_US&gl=US&pli=1",
-        "browser": "https://app.shapeshift.com",
+        "browser": "https://app.shapeshift.com/#",
         "chrome": null,
         "edge": null,
         "firefox": null,
         "ios": "https://apps.apple.com/us/app/shapeshift-crypto-platform/id996569075",
-        "linux": null,
+        "linux": "",
         "mac": "https://apps.apple.com/us/app/shapeshift-crypto-platform/id996569075",
         "opera": null,
         "safari": null,
-        "windows": null
+        "windows": ""
       },
       "app_type": "wallet",
       "category": "Web App Wallets",
       "chains": [
-        "cosmos:cosmoshub-4",
-        "cosmos:thorchain-mainnet-v1",
         "eip155:1",
         "eip155:10",
         "eip155:100",
@@ -12269,10 +12267,10 @@
         "eip155:56",
         "eip155:8453"
       ],
-      "description": "ShapeShift is an open-source, community-owned wallet supporting 15 chains. Create or import a wallet on web, desktop, or mobile.",
+      "description": "ShapeShift is an open-source, community-owned wallet supporting 15+ chains. Create or import a wallet on web, desktop, or mobile.",
       "desktop": {
         "native": "",
-        "universal": "https://app.shapeshift.com"
+        "universal": "https://app.shapeshift.com/#"
       },
       "homepage": "https://shapeshift.com",
       "id": "4457c130df49fb3cb1f8b99574b97b35208bd3d0d13b8d25d2b5884ed2cad13a",
@@ -36756,7 +36754,8 @@
         "eip155:59144",
         "eip155:80094",
         "eip155:8453",
-        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "sui:mainnet"
       ],
       "description": "Friendly Crypto Wallet.",
       "desktop": {
