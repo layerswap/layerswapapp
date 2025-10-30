@@ -3,7 +3,7 @@ import { FC, ReactNode, createElement, useMemo } from "react"
 import { ThemeData } from "@/Models/Theme"
 import { WalletProvidersProvider } from "@/context/walletProviders";
 import { WalletModalProvider } from "../WalletModal";
-import { WalletProvider, WalletWrapper } from "@/types"
+import { WalletProvider, WalletProviderModule, WalletWrapper } from "@/types"
 
 const DynamicProviderWrapper: FC<{
     providers: WalletWrapper[],
@@ -52,8 +52,9 @@ const WalletsProviders: FC<{
     children: ReactNode,
     themeData: ThemeData,
     appName: string | undefined,
-    walletProviders: (WalletProvider | WalletWrapper)[]
-}> = ({ children, themeData, appName, walletProviders }) => {
+    walletProviders: (WalletProvider | WalletWrapper)[],
+    walletProviderModules: WalletProviderModule[]
+}> = ({ children, themeData, appName, walletProviders, walletProviderModules }) => {
 
     const providersWithWalletConnectionProvider = useMemo(() => walletProviders.filter(provider => typeof provider === 'object' && 'walletConnectionProvider' in provider), [walletProviders]);
 
@@ -64,7 +65,7 @@ const WalletsProviders: FC<{
             appName={appName}
         >
             <WalletModalProvider>
-                <WalletProvidersProvider walletProviders={providersWithWalletConnectionProvider}>
+                <WalletProvidersProvider walletProviders={providersWithWalletConnectionProvider} walletProviderModules={walletProviderModules}>
                     {children}
                 </WalletProvidersProvider>
             </WalletModalProvider>

@@ -62,6 +62,13 @@ export type WalletWrapper = {
     wrapper?: React.ComponentType<any>,
 }
 
+export type WalletProviderModule = {
+    id: string,
+    balanceProvider?: BalanceProvider,
+    gasProvider?: GasProvider,
+    multiStepHandler?: MultiStepHandler,
+}
+
 export type WalletConnectionProviderProps = {
     networks: NetworkWithTokens[]
 }
@@ -91,7 +98,7 @@ export type WalletConnectionProvider = {
     multiStepHandlers?: MultiStepHandler[],
 }
 
-type MultiStepHandler = {
+export type MultiStepHandler = {
     component: React.ComponentType<any>,
     supportedNetworks: string[]
 }

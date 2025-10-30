@@ -13,6 +13,8 @@ import { TonProvider } from "@layerswap/wallet-ton";
 import { SVMProvider } from "@layerswap/wallet-svm";
 import { TronProvider } from "@layerswap/wallet-tron";
 import { ImtblPassportProvider } from "@layerswap/wallet-imtbl-passport";
+import { ZKsyncProvider } from "@layerswap/wallet-zksync"
+import { LoopringProvider } from "@layerswap/wallet-loopring"
 
 const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string }> = ({ settings, themeData, apiKey }) => {
     const router = useRouter()
@@ -46,6 +48,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
             }
         }}
         walletProviders={[EVMProvider, StarknetProvider, FuelProvider, ParadexProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider]}
+        walletProviderModules={[ZKsyncProvider, LoopringProvider]}
     >
         <Swap />
     </LayerswapProvider>

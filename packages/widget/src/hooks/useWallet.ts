@@ -6,7 +6,7 @@ import { useWalletProviders } from "@/context/walletProviders";
 export type WalletPurpose = "autofil" | "withdrawal" | "asSource"
 
 export default function useWallet(network?: Network | undefined, purpose?: WalletPurpose) {
-    const walletProviders = useWalletProviders()
+    const { providers: walletProviders, providerModules } = useWalletProviders()
 
     const provider = useMemo(() => network && resolveProvider(network, walletProviders, purpose), [network, purpose, walletProviders])
 
@@ -38,8 +38,9 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
         unAvailableWallets,
         provider,
         providers: walletProviders,
+        providerModules,
         getProvider
-    }), [wallets, provider, walletProviders, getProvider])
+    }), [wallets, provider, walletProviders, providerModules, getProvider])
 
     return res
 }

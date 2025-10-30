@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo } from "react";
-import { WalletProvider, NftProvider, BalanceProvider, GasProvider, AddressUtilsProvider } from "@/types";
+import { WalletProvider, NftProvider, BalanceProvider, GasProvider, AddressUtilsProvider, WalletProviderModule } from "@/types";
 import { resolverService } from "@/lib/resolvers/resolverService";
 
 type ResolverContextType = {
@@ -8,19 +8,24 @@ type ResolverContextType = {
 
 const ResolverContext = createContext<ResolverContextType | null>(null);
 
-export const ResolverProviders: React.FC<React.PropsWithChildren<{ walletProviders: WalletProvider[] }>> = ({
+export const ResolverProviders: React.FC<React.PropsWithChildren<{ walletProviders: WalletProvider[], walletProviderModules: WalletProviderModule[] }>> = ({
     children,
-    walletProviders
+    walletProviders,
+    walletProviderModules
 }) => {
+    const combinedWalletProviders = useMemo(() => {
+        return [...walletProviders, ...walletProviderModules];
+    }, [walletProviders, walletProviderModules]);
+
     const isInitialized = useMemo(() => {
         // Extract balance providers from wallet providers
-        const balanceProviders: BalanceProvider[] = walletProviders
+        const balanceProviders: BalanceProvider[] = combinedWalletProviders
             .map(provider => provider.balanceProvider)
             .flat()
             .filter((provider): provider is BalanceProvider => Boolean(provider));
 
         // Extract gas providers from wallet providers
-        const gasProviders: GasProvider[] = walletProviders
+        const gasProviders: GasProvider[] = combinedWalletProviders
             .map(provider => provider.gasProvider)
             .flat()
             .filter((provider): provider is GasProvider => Boolean(provider));
@@ -39,7 +44,7 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{ walletProvide
         resolverService.setProviders(balanceProviders, gasProviders, addressUtilsProviders, nftProviders)
 
         return true;
-    }, [walletProviders]);
+    }, [combinedWalletProviders, walletProviders]);
 
     return (
         <ResolverContext.Provider value={{ isInitialized }}>
