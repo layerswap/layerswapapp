@@ -10,7 +10,7 @@ import { useInitialSettings, useSettingsState } from "@/context/settings";
 import WalletIcon from "@/components/Icons/WalletIcon";
 import { useBalance } from "@/lib/balances/useBalance";
 import { TransferProps } from "@/types";
-// import { posthog } from "posthog-js";
+import { useLog } from "@/context/LogProvider";
 
 type Props = {
     swapData: SwapBasicData
@@ -200,6 +200,8 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
 }
 
 const TransactionMessage: FC<{ error: Error, isLoading: boolean }> = ({ error, isLoading }) => {
+    const { log } = useLog();
+
     if (isLoading) {
         return <TransactionMessages.ConfirmTransactionMessage />
     }
@@ -222,15 +224,18 @@ const TransactionMessage: FC<{ error: Error, isLoading: boolean }> = ({ error, i
         const swapWithdrawalError = new Error(error.message);
         swapWithdrawalError.name = `SwapWithdrawalError`;
         swapWithdrawalError.cause = error;
-        // posthog.captureException('$exception', {
-        //     name: swapWithdrawalError.name,
-        //     message: swapWithdrawalError.message,
-        //     $layerswap_exception_type: "Swap Withdrawal Error",
-        //     stack: swapWithdrawalError.stack,
-        //     cause: swapWithdrawalError.cause,
-        //     where: 'swapWithdrawalError',
-        //     severity: 'error',
-        // });
+        log({
+            type: "SwapWithdrawalError",
+            props: {
+                name: swapWithdrawalError.name,
+                message: swapWithdrawalError.message,
+                $exception_type: "Swap Withdrawal Error",
+                stack: swapWithdrawalError.stack,
+                cause: swapWithdrawalError.cause,
+                where: 'swapWithdrawalError',
+                severity: "error",
+            },
+        });
         return <TransactionMessages.UexpectedErrorMessage message={error.message} />
     }
     else return <></>

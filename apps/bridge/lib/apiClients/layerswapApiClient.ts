@@ -4,6 +4,7 @@ import { InitializeUnauthInstance, InitializeAuthInstance } from "../axiosInterc
 import { v4 as uuidv4 } from 'uuid';
 import { AxiosInstance, Method } from "axios";
 import { AuthRefreshFailedError } from "../Errors/AuthRefreshFailedError";
+import posthog from "posthog-js";
 import { ApiResponse, EmptyApiResponse, Exchange, Network, NetworkWithTokens, Token } from "@layerswap/widget/types";
 
 export default class LayerSwapApiClient {
@@ -87,14 +88,16 @@ export default class LayerSwapApiClient {
                     const renderingError = new Error(`API request error with uri:${uri}`);
                     renderingError.name = `APIError`;
                     renderingError.cause = reason;
-                    // posthog.capture('$exception', {
-                    //     name: renderingError.name,
-                    //     message: renderingError.message,
-                    //     stack: renderingError.stack,
-                    //     cause: renderingError.cause,
-                    //     where: 'apiClient',
-                    //     severity: 'error',
-                    // });
+                    posthog.capture('$exception', {
+                        name: renderingError.name,
+                        message: renderingError.message,
+                        $exception_type: "API Error",
+                        stack: renderingError.stack,
+                        cause: renderingError.cause,
+                        where: 'apiClient',
+                        severity: 'error',
+                    });
+
                     return Promise.reject(reason);
                 }
             });

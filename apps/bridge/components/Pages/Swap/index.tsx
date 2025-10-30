@@ -1,13 +1,16 @@
 import { LayerswapProvider, LayerSwapSettings, Swap, ThemeData } from "@layerswap/widget"
+import { LogEvent, LogGroup } from "@layerswap/widget/types"
+
 import { useRouter } from "next/router"
 import { FC } from "react"
 import { updateFormBulk } from "../../utils/updateForm"
 import { removeSwapPath, setSwapPath } from "../../utils/updateSwapPath"
 import { EVMProvider } from "@layerswap/wallet-evm";
-import { FuelProvider } from "@layerswap/wallet-fuel";
-import { ParadexProvider } from "@layerswap/wallet-paradex";
-import { StarknetProvider } from "@layerswap/wallet-starknet";
 import { BitcoinProvider } from "@layerswap/wallet-bitcoin";
+import { FuelProvider } from "@layerswap/wallet-fuel"
+import { ParadexProvider } from "@layerswap/wallet-paradex"
+import { StarknetProvider } from "@layerswap/wallet-starknet"
+import posthog from "posthog-js"
 import { ImmutableXProvider } from "@layerswap/wallet-imtbl-x";
 import { TonProvider } from "@layerswap/wallet-ton";
 import { SVMProvider } from "@layerswap/wallet-svm";
@@ -43,7 +46,16 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
                 if (!open) {
                     removeSwapPath(router)
                 }
-            }
+            },
+            onLogEvent: handleLogEvent,
+            onLogGroup: {
+                widgetError: (e) => posthog?.capture('widgetError', e.props ?? {}),
+                balanceError: (e) => posthog?.capture('balanceError', e.props ?? {}),
+                gasFeeError: (e) => posthog?.capture('gasFeeError', e.props ?? {}),
+                transactionNotDetected: (e) => posthog?.capture('transactionNotDetected', e.props ?? {}),
+                walletWithdrawalError: (e) => posthog?.capture('walletWithdrawalError', e.props ?? {}),
+                longTransactionWarning: (e) => posthog?.capture('longTransactionWarning', e.props ?? {}),
+            },
         }}
         walletProviders={[EVMProvider, StarknetProvider, FuelProvider, ParadexProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider]}
     >
@@ -52,3 +64,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
 }
 
 export default SwapPage
+
+const handleLogEvent = (event: LogEvent, group?: LogGroup) => {
+    posthog?.capture(`${event.type}`, { group, ...(event.props ?? {}) });
+};

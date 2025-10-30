@@ -2,7 +2,7 @@ import { GasProvider, GasProps, Network, Token, NetworkType } from "@layerswap/w
 import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, http, serializeTransaction, formatUnits, erc20Abi } from "viem";
 import { publicActionsL2 } from 'viem/op-stack'
 import resolveChain from "../evmUtils/resolveChain";
-// import posthog from "posthog-js";
+import { logException } from "../../../../widget/src/context/LogProvider";
 
 export class EVMGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
@@ -119,18 +119,22 @@ abstract class getEVMGas {
             return await this.publicClient.getGasPrice()
 
         } catch (e) {
-            const error = new Error(e)
-            error.name = "GasPriceError"
-            error.cause = e
-            // posthog.capture('$exception', {
-            //     name: error.name,
-            //     message: error.message,
-            //     $layerswap_exception_type: "Gas Price Error",
-            //     stack: error.stack,
-            //     cause: error.cause,
-            //     where: 'getGasPrice',
-            //     severity: 'error',
-            // })
+            const error = new Error(e);
+            error.name = 'GasPriceError';
+            error.cause = e;
+
+            logException({
+                type: 'GasPriceError',
+                props: {
+                    message: error.message,
+                    stack: error.stack,
+                    cause: String(error.cause),
+                    where: 'getGasPrice',
+                    severity: 'error',
+                    chainId: this.chainId,
+                    account: this.account,
+                },
+            });
         }
     }
     private async estimateFeesPerGas() {
@@ -141,15 +145,19 @@ abstract class getEVMGas {
             const error = new Error(e)
             error.name = "FeesPerGasError"
             error.cause = e
-            // posthog.capture('$exception', {
-            //     name: error.name,
-            //     message: error.message,
-            //     $layerswap_exception_type: "Fees Per Gas Error",
-            //     stack: error.stack,
-            //     cause: error.cause,
-            //     where: 'feesPerGasError',
-            //     severity: 'error',
-            // })
+
+            logException({
+                type: 'FeesPerGasError',
+                props: {
+                    name: error.name,
+                    message: error.message,
+                    $exception_type: "Fees Per Gas Error",
+                    stack: error.stack,
+                    cause: error.cause,
+                    where: 'feesPerGasError',
+                    severity: 'error',
+                },
+            });
         }
     }
     private async estimateMaxPriorityFeePerGas() {
@@ -160,15 +168,19 @@ abstract class getEVMGas {
             const error = new Error(e)
             error.name = "MaxPriorityFeePerGasError"
             error.cause = e
-            // posthog.capture('$exception', {
-            //     name: error.name,
-            //     message: error.message,
-            //     $layerswap_exception_type: "Max Priority Fee Per Gas Error",
-            //     stack: error.stack,
-            //     cause: error.cause,
-            //     where: 'maxPriorityFeePerGasError',
-            //     severity: 'error',
-            // })
+
+            logException({
+                type: 'MaxPriorityFeePerGasError',
+                props: {
+                    name: error.name,
+                    message: error.message,
+                    $exception_type: "Max Priority Fee Per Gas Error",
+                    stack: error.stack,
+                    cause: error.cause,
+                    where: 'maxPriorityFeePerGasError',
+                    severity: 'error',
+                },
+            });
         }
     }
 
@@ -245,7 +257,7 @@ export default class getOptimismGas extends getEVMGas {
 
     resolveGas = async () => {
         const feeData = await this.resolveFeeData()
-        
+
         const estimatedGasLimit = this.contract_address ?
             await this.estimateERC20GasLimit()
             : await this.estimateNativeGasLimit()

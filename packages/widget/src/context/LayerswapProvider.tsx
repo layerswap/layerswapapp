@@ -20,6 +20,7 @@ import { InitialSettings } from "../Models/InitialSettings";
 import { BalanceAccountsProvider } from "./balanceAccounts";
 import { WalletProvider } from "@/types";
 import { ResolverProviders } from "./resolverContext";
+import { LogProvider } from "./LogProvider";
 
 export type LayerswapWidgetConfig = {
     apiKey?: string;
@@ -69,23 +70,25 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
         <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
             <SettingsProvider initialLayerswapData={appSettings} initialSettings={config?.initialValues}>
                 <CallbackProvider callbacks={callbacks}>
-                    <ErrorBoundary FallbackComponent={ErrorFallback} >
-                        <ThemeWrapper>
-                            <WalletsProviders
-                                appName={initialValues?.appName}
-                                themeData={themeData}
-                                walletProviders={walletProviders}
-                            >
-                                <ResolverProviders walletProviders={walletProviders}>
-                                    <BalanceAccountsProvider>
-                                        <AsyncModalProvider>
-                                            {children}
-                                        </AsyncModalProvider>
-                                    </BalanceAccountsProvider>
-                                </ResolverProviders>
-                            </WalletsProviders>
-                        </ThemeWrapper>
-                    </ErrorBoundary>
+                    <LogProvider>
+                        <ErrorBoundary FallbackComponent={ErrorFallback} >
+                            <ThemeWrapper>
+                                <WalletsProviders
+                                    appName={initialValues?.appName}
+                                    themeData={themeData}
+                                    walletProviders={walletProviders}
+                                >
+                                    <ResolverProviders walletProviders={walletProviders}>
+                                        <BalanceAccountsProvider>
+                                            <AsyncModalProvider>
+                                                {children}
+                                            </AsyncModalProvider>
+                                        </BalanceAccountsProvider>
+                                    </ResolverProviders>
+                                </WalletsProviders>
+                            </ThemeWrapper>
+                        </ErrorBoundary>
+                    </LogProvider>
                 </CallbackProvider>
             </SettingsProvider >
         </IntercomProvider>
@@ -102,7 +105,7 @@ export const LayerswapProvider: typeof LayerswapProviderComponent = (props) => {
                 <LayerswapProviderComponent  {...props}>
                     {props.children}
                 </LayerswapProviderComponent>
-            </div>
+            </div >
         </>
 
     )
