@@ -25,7 +25,7 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
     const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
 
     useEffect(() => {
-        const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id && w.withdrawalSupportedNetworks?.includes(source_network?.name))
+        const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id && w.addresses.some(a => a.toLowerCase() === selectedSourceAccount.address.toLowerCase()))
         if (selectedSourceAccount && selectedWallet) {
             provider?.switchAccount(selectedWallet, selectedSourceAccount.address)
         }

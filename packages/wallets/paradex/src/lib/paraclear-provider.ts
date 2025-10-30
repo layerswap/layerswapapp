@@ -1,4 +1,4 @@
-import * as Starknet from 'starknet';
+import * as Starknet from 'starknet-old';
 
 import type { ParadexConfig } from './config';
 
