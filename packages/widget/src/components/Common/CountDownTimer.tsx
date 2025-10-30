@@ -43,19 +43,19 @@ const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThre
 
     if (thresholdElapsed && swapDetails.status !== SwapStatus.Completed) {
         const renderingError = new Error("Transaction is taking longer than expected");
-        renderingError.name = `LongTransactionError`;
+        renderingError.name = `LongTransactionWarning`;
         renderingError.cause = renderingError;
 
         log({
-            type: "$exception",
+            type: "LongTransactionWarning",
             props: {
                 name: renderingError?.name,
                 message: renderingError?.message,
-                $exception_type: "Long Transaction Error",
+                $exception_type: "Long Transaction Warning",
                 stack: renderingError.stack,
                 cause: renderingError.cause,
-                where: 'longTransactionError',
-                severity: "error",
+                where: 'Countdown timer',
+                severity: "warning",
             },
         });
 

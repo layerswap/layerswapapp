@@ -225,7 +225,7 @@ const TransactionMessage: FC<{ error: Error, isLoading: boolean }> = ({ error, i
         swapWithdrawalError.name = `SwapWithdrawalError`;
         swapWithdrawalError.cause = error;
         log({
-            type: "$exception",
+            type: "SwapWithdrawalError",
             props: {
                 name: swapWithdrawalError.name,
                 message: swapWithdrawalError.message,

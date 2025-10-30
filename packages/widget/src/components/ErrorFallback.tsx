@@ -14,7 +14,7 @@ export default function ErrorFallback({ error, resetErrorBoundary }: FallbackPro
 
     useEffect(() => {
         log({
-            type: "$exception",
+            type: "ErrorFallback",
             props: {
                 name: error?.name,
                 message: error?.message,

@@ -8,7 +8,7 @@ const logError = (message: string) => {
     error.cause = error;
 
     log({
-        type: "$exception",
+        type: "AlertUI",
         props: {
             name: error.name,
             message: error.message,

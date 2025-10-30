@@ -14,7 +14,7 @@ const NotFound: FC<{ swapId?: string | undefined }> = ({ swapId }) => {
 
     useEffect(() => {
         log({
-            type: "404",
+            type: "NotFound",
             props: {
                 severity: "error",
                 path: typeof window !== "undefined" ? window.location.pathname : undefined,

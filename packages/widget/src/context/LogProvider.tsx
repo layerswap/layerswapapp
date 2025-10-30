@@ -1,6 +1,7 @@
 // log/LogProvider.tsx
+import { GROUP_MAP, LogEvent, LogGroup } from '@/types';
 import React, { createContext, useContext, useMemo } from 'react';
-import { LogEvent, ExceptionEvent } from '@/types/logEvents';
+import { useCallbacks } from './callbackProvider';
 
 type LogFn = (event: LogEvent) => void;
 
@@ -14,18 +15,35 @@ export function setGlobalLogger(logger: LogFn | undefined) {
   currentLogger = logger ?? defaultHandler;
 }
 
-export function log(event: LogEvent) {
-  currentLogger(event);
+function resolveGroup(event: LogEvent): LogGroup | undefined {
+  return GROUP_MAP[event.type];
 }
 
-export function logException(event: ExceptionEvent) {
+export function log(event: LogEvent) {
+  currentLogger(event);
+
+  const { onLogEvent, onLogGroup } = _callbacksAccessor?.() ?? {};
+  const group = resolveGroup(event);
+  if (!group) return;
+
+  onLogEvent?.(event, group);
+  onLogGroup?.[group]?.(event);
+}
+
+export function logException(event: LogEvent) {
   log(event);
 }
 
 type LogContextValue = { log: LogFn };
 const LogContext = createContext<LogContextValue | null>(null);
 
+// This indirection lets `log()` access callbacks even when called outside React handlers.
+let _callbacksAccessor: (() => ReturnType<typeof useCallbacks>) | null = null;
+
 export const LogProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
+  const callbacks = useCallbacks();
+  _callbacksAccessor = () => callbacks;
+
   const value = useMemo<LogContextValue>(() => ({ log }), []);
   return <LogContext.Provider value={value}>{children}</LogContext.Provider>;
 };

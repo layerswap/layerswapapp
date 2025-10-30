@@ -29,14 +29,14 @@ export class BalanceResolver {
             error.cause = e
 
             log({
-                type: '$exception',
+                type: 'BalanceResolverError',
                 props: {
                     name: error.name,
                     message: error.message,
                     $exception_type: "Balance Error",
                     stack: error.stack,
                     cause: (error as any)?.cause,
-                    where: 'BalanceProviderError',
+                    where: 'Balance resolver',
                     severity: 'error',
                 },
             });

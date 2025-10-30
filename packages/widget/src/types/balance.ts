@@ -9,7 +9,7 @@ export abstract class BalanceProvider {
         const errorMessage = `${err.message || err}`
 
         log({
-            type: 'balance_fetch_error',
+            type: 'BalanceProviderError',
             props: {
                 where: "BalanceProvider",
                 network: network.name,

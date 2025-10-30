@@ -101,7 +101,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             renderingError.name = `TransactionFailed`;
             renderingError.cause = err;
             log({
-                type: "$exception",
+                type: "TransactionFailed",
                 props: {
                     name: renderingError.name,
                     message: renderingError.message,

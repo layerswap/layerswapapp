@@ -243,7 +243,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             swapWithdrawalError.name = `SwapWithdrawalError`;
             swapWithdrawalError.cause = e;
             log({
-                type: '$exception',
+                type: 'SwapWithdrawalError',
                 props: {
                     name: swapWithdrawalError.name,
                     message: swapWithdrawalError.message,

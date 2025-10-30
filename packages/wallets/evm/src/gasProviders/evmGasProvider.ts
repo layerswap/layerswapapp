@@ -2,7 +2,6 @@ import { GasProvider, GasProps, Network, Token, NetworkType } from "@layerswap/w
 import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, http, serializeTransaction, formatUnits, erc20Abi } from "viem";
 import { publicActionsL2 } from 'viem/op-stack'
 import resolveChain from "../evmUtils/resolveChain";
-import posthog from "posthog-js";
 
 export class EVMGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
@@ -119,18 +118,7 @@ abstract class getEVMGas {
             return await this.publicClient.getGasPrice()
 
         } catch (e) {
-            const error = new Error(e)
-            error.name = "GasPriceError"
-            error.cause = e
-            posthog.capture('$exception', {
-                name: error.name,
-                message: error.message,
-                $exception_type: "Gas Price Error",
-                stack: error.stack,
-                cause: error.cause,
-                where: 'getGasPrice',
-                severity: 'error',
-            })
+            console.log(e)
         }
     }
     private async estimateFeesPerGas() {
@@ -138,18 +126,8 @@ abstract class getEVMGas {
             return await this.publicClient.estimateFeesPerGas()
 
         } catch (e) {
-            const error = new Error(e)
-            error.name = "FeesPerGasError"
-            error.cause = e
-            posthog.capture('$exception', {
-                name: error.name,
-                message: error.message,
-                $exception_type: "Fees Per Gas Error",
-                stack: error.stack,
-                cause: error.cause,
-                where: 'feesPerGasError',
-                severity: 'error',
-            })
+            console.log(e)
+
         }
     }
     private async estimateMaxPriorityFeePerGas() {
@@ -157,18 +135,8 @@ abstract class getEVMGas {
             return await this.publicClient.estimateMaxPriorityFeePerGas()
 
         } catch (e) {
-            const error = new Error(e)
-            error.name = "MaxPriorityFeePerGasError"
-            error.cause = e
-            posthog.capture('$exception', {
-                name: error.name,
-                message: error.message,
-                $exception_type: "Max Priority Fee Per Gas Error",
-                stack: error.stack,
-                cause: error.cause,
-                where: 'maxPriorityFeePerGasError',
-                severity: 'error',
-            })
+            console.log(e)
+
         }
     }
 
