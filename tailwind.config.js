@@ -196,8 +196,6 @@ module.exports = {
     },
   },
   plugins: [
-    require("@tailwindcss/forms"),
-    require("@tailwindcss/typography"),
     require("tailwindcss-animate"),
     plugin(function ({ addVariant }) {
       // Add a `third` variant, ie. `third:pb-0`

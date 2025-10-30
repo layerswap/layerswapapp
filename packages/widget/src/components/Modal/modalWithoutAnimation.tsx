@@ -76,7 +76,7 @@ export const ModalContent = (props: ModalContentProps) => {
                         </div>
                         {showCloseButton && (
                             <IconButton onClick={closeModal} className="active:animate-press-down" icon={
-                                <X strokeWidth={3} />
+                                <X strokeWidth={2} />
                             }>
                             </IconButton>
                         )}
@@ -119,7 +119,7 @@ export const ModalTrigger = (props: ModalTriggerProps) => {
     }
 
     return (
-        <div className="shadow-sm/30 rounded-2xl flex items-center relative w-full z-10 self-end">
+        <div className="rounded-2xl flex items-center relative w-full self-end">
             <button
                 type="button"
                 onClick={openModal}

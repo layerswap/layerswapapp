@@ -97,7 +97,7 @@ export const LayerswapProvider: typeof LayerswapProviderComponent = (props) => {
         <>
             <ColorSchema themeData={props.config?.theme} />
             <div
-                style={{ backgroundColor: 'transparent' }}
+                style={{ backgroundColor: 'transparent', height: '100%' }}
                 className="layerswap-styles">
                 <LayerswapProviderComponent  {...props}>
                     {props.children}

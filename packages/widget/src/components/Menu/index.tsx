@@ -7,7 +7,6 @@ import MenuList from "./MenuList";
 import Wizard from "../Wizard/Wizard";
 import WizardItem from "../Wizard/WizardItem";
 import HistoryList from "../Pages/SwapHistory/History";
-import Modal from "../Modal/modal";
 import { CampaignsComponent } from "../Pages/Campaigns";
 import { CampaignDetailsComponent } from "../Pages/Campaigns/Details";
 import VaulDrawer from "../Modal/vaulModal";

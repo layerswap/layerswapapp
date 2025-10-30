@@ -31,7 +31,7 @@ export function CodeSegment() {
         <div className="relative w-full overflow-hidden rounded-tl-xl rounded-md border bg-secondary-700  border-secondary-500 ">
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <Files className="absolute right-4 top-4 z-10 rounded-full bg-secondary-500  text-base text-white transition hover:bg-primary-500 p-1.5 h-8 w-auto hover:cursor-pointer" onClick={handleCopy} />
+                    <Files className="absolute right-4 top-4 z-10 rounded-full bg-secondary-500  text-base text-primary-text transition hover:bg-primary-500 p-1.5 h-8 w-auto hover:cursor-pointer" onClick={handleCopy} />
                 </TooltipTrigger>
                 <TooltipContent >
                     <p>{copied ? "Copied!" : "Copy"}</p>

@@ -23,7 +23,7 @@ const NotFound: FC<{ swapId?: string | undefined }> = ({ swapId }) => {
                 <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-600/20">
                     <NotFoundIcon />
                 </div>
-                <h1 className="text-center text-2xl font-semibold text-white">
+                <h1 className="text-center text-2xl font-semibold text-primary-text">
                     Swap not found
                 </h1>
             </MessageComponent.Header>

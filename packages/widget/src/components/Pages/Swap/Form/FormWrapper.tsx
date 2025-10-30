@@ -6,7 +6,6 @@ import React from "react";
 import ConnectNetwork from "@/components/Pages/Swap/Form/SecondaryComponents/ConnectNetwork";
 import toast from "react-hot-toast";
 import { generateSwapInitialValues, generateSwapInitialValuesFromSwap } from "@/lib/generateSwapInitialValues";
-import Modal from "@/components/Modal/modal";
 import { Partner } from "@/Models/Partner";
 import { ApiError, LSAPIKnownErrorCode } from "@/Models/ApiError";
 import { useInitialSettings } from "@/context/settings";
@@ -128,18 +127,19 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             onSubmit={handleSubmit}
         >
             <>
-                <Modal
-                    height="fit"
+                <VaulDrawer
                     show={showConnectNetworkModal}
                     setShow={setShowConnectNetworkModal}
                     header={`${networkToConnect?.DisplayName} connect`}
                     modalId="showNetwork"
                 >
-                    {
-                        networkToConnect &&
-                        <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
-                    }
-                </Modal>
+                    <VaulDrawer.Snap id="item-1">
+                        {
+                            networkToConnect &&
+                            <ConnectNetwork NetworkDisplayName={networkToConnect?.DisplayName} AppURL={networkToConnect?.AppURL} />
+                        }
+                    </VaulDrawer.Snap>
+                </VaulDrawer>
                 <VaulDrawer
                     show={swapModalOpen}
                     setShow={handleShowSwapModal}

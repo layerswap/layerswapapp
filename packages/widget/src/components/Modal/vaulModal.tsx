@@ -161,7 +161,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                             <Drawer.Close asChild>
                                 <div>
                                     <IconButton className='inline-flex active:animate-press-down' icon={
-                                        <X strokeWidth={3} />
+                                        <X strokeWidth={2} />
                                     }>
                                     </IconButton>
                                 </div>

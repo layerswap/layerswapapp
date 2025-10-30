@@ -8,10 +8,10 @@ import ClickTooltip from "@/components/Common/ClickTooltip"
 import shortenAddress from "@/components/utils/ShortenAddress"
 import { truncateDecimals } from "@/components/utils/RoundDecimals"
 import AddressIcon from "@/components/Common/AddressIcon";
-import Modal from "@/components/Modal/modal";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback"
 import { useSelectedAccount } from "@/context/balanceAccounts"
 import { useWallet } from "@/exports"
+import VaulDrawer from "@/components/Modal/vaulModal";
 
 type Props = {
     campaign: Campaign
@@ -57,15 +57,17 @@ const Component: FC<Props> = ({ campaign }) => {
             address={address}
             lines={3}
         />
-        <Modal height="full" header='Leaderboard' show={openTopModal} setShow={setOpenTopModal} modalId="leaderBoard">
-            <LeaderbordComponent
-                campaign={campaign}
-                leaderboardData={leaderboardData}
-                rewardsData={rewardsData}
-                address={address}
-                className="text-secondary-text"
-            />
-        </Modal >
+        <VaulDrawer header='Leaderboard' show={openTopModal} setShow={setOpenTopModal} modalId="leaderBoard">
+            <VaulDrawer.Snap id="item-1">
+                <LeaderbordComponent
+                    campaign={campaign}
+                    leaderboardData={leaderboardData}
+                    rewardsData={rewardsData}
+                    address={address}
+                    className="text-secondary-text"
+                />
+            </VaulDrawer.Snap>
+        </VaulDrawer >
     </div >
 }
 

@@ -210,7 +210,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                                                 <PopoverTrigger asChild>
                                                     <div className="relative">
                                                         <QRIcon
-                                                            className="bg-secondary-300 p-1 rounded-lg cursor-pointer hover:opacity-80"
+                                                            className="bg-secondary-300 p-1 rounded-lg cursor-pointer hover:opacity-80 fill-primary-text text-primary-text"
                                                         />
                                                     </div>
                                                 </PopoverTrigger>
