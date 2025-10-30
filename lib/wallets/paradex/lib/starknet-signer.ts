@@ -86,8 +86,7 @@ export async function getAccountSupport(
 }
 
 const RPC_NODES_MAINNET: readonly string[] = [
-  'https://starknet-mainnet.public.blastapi.io',
-  'https://free-rpc.nethermind.io/mainnet-juno',
+  'https://starknet-mainnet.public.blastapi.io'
 ];
 const RPC_NODES_TESTNET: readonly string[] = [
   'https://starknet-sepolia.public.blastapi.io',
