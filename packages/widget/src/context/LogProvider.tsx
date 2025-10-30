@@ -1,4 +1,3 @@
-// log/LogProvider.tsx
 import { GROUP_MAP, LogEvent, LogGroup } from '@/types';
 import React, { createContext, useContext, useMemo } from 'react';
 import { useCallbacks } from './callbackProvider';
