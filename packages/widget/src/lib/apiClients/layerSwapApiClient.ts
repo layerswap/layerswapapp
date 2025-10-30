@@ -88,7 +88,7 @@ export default class LayerSwapApiClient {
                     renderingError.cause = reason;
 
                     logException({
-                        type: '$exception',
+                        type: 'APIError',
                         props: {
                             name: renderingError.name,
                             message: renderingError.message,
