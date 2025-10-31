@@ -10,7 +10,7 @@ import { useInitialSettings, useSettingsState } from "@/context/settings";
 import WalletIcon from "@/components/Icons/WalletIcon";
 import { useBalance } from "@/lib/balances/useBalance";
 import { TransferProps } from "@/types";
-import { useLog } from "@/context/LogProvider";
+import { useLog } from "@/context/ErrorProvider";
 
 type Props = {
     swapData: SwapBasicData

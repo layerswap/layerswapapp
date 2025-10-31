@@ -1,6 +1,6 @@
 import { TokenBalance } from "@/Models/Balance";
 import { Network, NetworkWithTokens, Token } from "@/Models/Network";
-import { log } from "@/context/LogProvider";
+import { log } from "@/context/ErrorProvider";
 
 export abstract class BalanceProvider {
     abstract supportsNetwork: (network: NetworkWithTokens) => boolean

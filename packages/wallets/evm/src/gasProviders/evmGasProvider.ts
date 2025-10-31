@@ -2,8 +2,7 @@ import { GasProvider, GasProps, Network, Token, NetworkType } from "@layerswap/w
 import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, http, serializeTransaction, formatUnits, erc20Abi } from "viem";
 import { publicActionsL2 } from 'viem/op-stack'
 import resolveChain from "../evmUtils/resolveChain";
-import { logException } from "../../../../widget/src/context/LogProvider";
-
+import { logException } from '@layerswap/widget/internal';
 export class EVMGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
         return network.type === NetworkType.EVM && !!network.token

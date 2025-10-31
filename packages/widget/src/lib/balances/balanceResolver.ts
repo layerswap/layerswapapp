@@ -1,7 +1,7 @@
 import { NetworkBalance } from "@/Models/Balance";
 import { BalanceProvider } from "@/types/balance";
 import { NetworkWithTokens } from "@/Models/Network";
-import { log } from "@/context/LogProvider";
+import { log } from "@/context/ErrorProvider";
 
 export class BalanceResolver {
 

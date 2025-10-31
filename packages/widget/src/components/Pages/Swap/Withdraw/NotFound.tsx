@@ -4,7 +4,7 @@ import { Home } from "lucide-react";
 import { useBackClickCallback } from "@/context/callbackProvider";
 import MessageComponent from "@/components/Common/MessageComponent";
 import NotFoundIcon from "@/components/Icons/NotFoundIcon";
-import { log } from "@/context/LogProvider";
+import { log } from "@/context/ErrorProvider";
 
 const NotFound: FC<{ swapId?: string | undefined }> = ({ swapId }) => {
 

@@ -1,5 +1,5 @@
 import { LayerswapProvider, LayerSwapSettings, Swap, ThemeData } from "@layerswap/widget"
-import { LogEvent, LogGroup } from "@layerswap/widget/types"
+import { BalanceError, GasFeeError, WalletWithdrawalError, WidgetError, OnLongTransactionWarning } from "@layerswap/widget/types"
 
 import { useRouter } from "next/router"
 import { FC } from "react"
@@ -47,14 +47,67 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
                     removeSwapPath(router)
                 }
             },
-            onLogEvent: handleLogEvent,
-            onLogGroup: {
-                widgetError: (e) => posthog?.capture('widgetError', e.props ?? {}),
-                balanceError: (e) => posthog?.capture('balanceError', e.props ?? {}),
-                gasFeeError: (e) => posthog?.capture('gasFeeError', e.props ?? {}),
-                transactionNotDetected: (e) => posthog?.capture('transactionNotDetected', e.props ?? {}),
-                walletWithdrawalError: (e) => posthog?.capture('walletWithdrawalError', e.props ?? {}),
-                longTransactionWarning: (e) => posthog?.capture('longTransactionWarning', e.props ?? {}),
+            onLogError: {
+                onWidgetError: (e: WidgetError) => {
+                    posthog.capture(e.type, {
+                        name: e.name,
+                        message: e.message,
+                        stack: e.stack,
+                        cause: e.cause,
+                        where: e.where,
+                        severity: e.severity,
+                    });
+                },
+                onBalanceError: (e: BalanceError) => {
+                    posthog.capture(e.type, {
+                        name: e.name,
+                        message: e.message,
+                        stack: e.stack,
+                        cause: e.cause,
+                        where: e.where,
+                        severity: e.severity,
+                    });
+                },
+                onGasFeeError: (e: GasFeeError) => {
+                    posthog.capture(e.type, {
+                        name: e.name,
+                        message: e.message,
+                        stack: e.stack,
+                        cause: e.cause,
+                        where: e.where,
+                        severity: e.severity,
+                    });
+                },
+                onTransactionNotDetected: (e: WalletWithdrawalError) => {
+                    posthog.capture(e.type, {
+                        name: e.name,
+                        message: e.message,
+                        stack: e.stack,
+                        cause: e.cause,
+                        where: e.where,
+                        severity: e.severity,
+                    });
+                },
+                onWalletWithdrawalError: (e: WalletWithdrawalError) => {
+                    posthog.capture(e.type, {
+                        name: e.name,
+                        message: e.message,
+                        stack: e.stack,
+                        cause: e.cause,
+                        where: e.where,
+                        severity: e.severity,
+                    });
+                },
+                onLongTransactionWarning: (e: OnLongTransactionWarning) => {
+                    posthog.capture(e.type, {
+                        name: e.name,
+                        message: e.message,
+                        stack: e.stack,
+                        cause: e.cause,
+                        where: e.where,
+                        severity: e.severity,
+                    });
+                },
             },
         }}
         walletProviders={[EVMProvider, StarknetProvider, FuelProvider, ParadexProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider]}
@@ -64,7 +117,3 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
 }
 
 export default SwapPage
-
-const handleLogEvent = (event: LogEvent, group?: LogGroup) => {
-    posthog?.capture(`${event.type}`, { group, ...(event.props ?? {}) });
-};

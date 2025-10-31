@@ -18,7 +18,7 @@ import { useSwapIdChangeCallback } from './callbackProvider';
 import { useInitialSettings } from './settings';
 import { addressFormat } from '@/lib/address/formatter';
 import { useSlippageStore } from '@/stores/slippageStore';
-import { log } from './LogProvider';
+import { log } from './ErrorProvider';
 
 export const SwapDataStateContext = createContext<SwapContextData>({
     depositAddressIsFromAccount: false,

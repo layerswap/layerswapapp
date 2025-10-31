@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from "react";
 import { useIntercom } from "react-use-intercom";
 import { Home, RotateCcw } from "lucide-react";
-import { useLog } from "@/context/LogProvider";
+import { useLog } from "@/context/ErrorProvider";
 import MessageComponent from "./Common/MessageComponent";
 import NotFoundIcon from "./Icons/NotFoundIcon";
 import SubmitButton from "./Buttons/submitButton";

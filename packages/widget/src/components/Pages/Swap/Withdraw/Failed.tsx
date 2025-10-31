@@ -3,7 +3,7 @@ import { useSwapDataState } from '@/context/swap';
 import { useIntercom } from 'react-use-intercom';
 import { SwapStatus } from '@/Models/SwapStatus';
 import QuestionIcon from '@/components//Icons/Question';
-import { log } from '@/context/LogProvider';
+import { log } from '@/context/ErrorProvider';
 
 const Failed: FC = () => {
     const { swapDetails } = useSwapDataState()

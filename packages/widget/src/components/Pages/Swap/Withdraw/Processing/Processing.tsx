@@ -18,8 +18,8 @@ import { ApiResponse } from '@/Models/ApiResponse';
 import { useIntercom } from 'react-use-intercom';
 import logError from '@/lib/logError';
 import Steps from './StepsComponent';
-import { useLog } from '@/context/LogProvider';
-import { LogEventType } from '@/types';
+import { useLog } from '@/context/ErrorProvider';
+import { useSwapStatusChangeCallback } from '@/context/callbackProvider';
 
 type Props = {
     swapBasicData: SwapBasicData;
@@ -29,7 +29,7 @@ type Props = {
 }
 
 const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) => {
-    const { boot, show, update, showNewMessages } = useIntercom();
+    const { boot, show, update } = useIntercom();
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
     const { log } = useLog();
     const {
@@ -38,6 +38,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
         destination_token,
     } = swapBasicData
     const { fail_reason } = swapDetails
+    const swapStatusChanged = useSwapStatusChangeCallback()
 
     const updateWithProps = () => update({ customAttributes: { swapId: swapDetails.id } });
     const startIntercom = useCallback(() => {
@@ -102,21 +103,18 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     }, [inputTxStatus, transactionHash, swapDetails?.id])
 
     useEffect(() => {
-        const status = swapDetails?.status as SwapStatus | undefined;
+        const status = swapDetails?.status as SwapStatus | undefined
         if (
             status === SwapStatus.Completed ||
             status === SwapStatus.Failed ||
             status === SwapStatus.Expired ||
             status === SwapStatus.LsTransferPending
         ) {
-            log({
-                type: status as LogEventType,
-                props: {
-                    swap_id: swapDetails?.id,
-                    status: swapDetails?.status,
-                    where: 'Processing',
-                },
-            });
+            swapStatusChanged({
+                type: status,
+                swapId: swapDetails?.id!,
+                path: 'Processing',
+            })
         }
     }, [swapDetails?.status, swapDetails?.id])
 

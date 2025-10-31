@@ -1,5 +1,5 @@
 import AppSettings from "./AppSettings";
-import { useLog } from "@/context/LogProvider";
+import { useLog } from "@/context/ErrorProvider";
 
 const logError = (message: string) => {
     const { log } = useLog();

@@ -1,22 +1,5 @@
 import { SwapStatus } from "@/Models/SwapStatus";
 
-export type LogEventType =
-    | 'ErrorFallback'
-    | 'BalanceResolverError'
-    | 'BalanceProviderError'
-    | 'MaxPriorityFeePerGasError'
-    | 'FeesPerGasError'
-    | 'GasPriceError'
-    | 'AlertUI'
-    | 'SwapWithdrawalError'
-    | 'TransactionFailed'
-    | 'LongTransactionWarning'
-    | 'APIError'
-    | 'SwapFailed'
-    | 'SwapInitiated'
-    | 'NotFound'
-    | SwapStatus;
-
 export type LogGroup =
     | 'widgetError'
     | 'balanceError'
@@ -25,25 +8,31 @@ export type LogGroup =
     | 'walletWithdrawalError'
     | 'longTransactionWarning';
 
-export type LogEvent = {
-    type: LogEventType;
-    props?: Record<string, unknown>;
-};
+export type Severity = "error" | "warning";
 
-export const GROUP_MAP: Partial<Record<LogEventType, LogGroup>> = {
-    ErrorFallback: 'widgetError',
+export interface BaseErrorProps {
+    name?: string;
+    message: string;
+    stack?: string;
+    cause?: unknown;
+    where?: string;
+    severity?: Severity;
+}
 
-    BalanceResolverError: 'balanceError',
-    BalanceProviderError: 'balanceError',
+export type AlertUIEvent = ({ type: 'AlertUI' } & BaseErrorProps) & BaseErrorProps;
 
-    MaxPriorityFeePerGasError: 'gasFeeError',
-    FeesPerGasError: 'gasFeeError',
-    GasPriceError: 'gasFeeError',
+export type WidgetError = ({ type: 'APIError' | 'ErrorFallback' | 'NotFound' | 'SwapFailed' } & BaseErrorProps)
 
-    AlertUI: 'transactionNotDetected',
+export type BalanceError = ({ type: 'BalanceResolverError' | 'BalanceProviderError' } & BaseErrorProps)
 
-    SwapWithdrawalError: 'walletWithdrawalError',
-    TransactionFailed: 'walletWithdrawalError',
+export type GasFeeError = ({ type: 'MaxPriorityFeePerGasError' | 'FeesPerGasError' | 'GasPriceError' } & BaseErrorProps)
 
-    LongTransactionWarning: 'longTransactionWarning',
+export type WalletWithdrawalError = ({ type: 'SwapWithdrawalError' | 'TransactionFailed' } & BaseErrorProps)
+
+export type OnLongTransactionWarning = ({ type: 'LongTransactionWarning' } & BaseErrorProps)
+
+export type SwapStatusEvent = {
+    type: SwapStatus;
+    swapId: string;
+    path?: string;
 };

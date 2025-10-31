@@ -20,7 +20,7 @@ import { InitialSettings } from "../Models/InitialSettings";
 import { BalanceAccountsProvider } from "./balanceAccounts";
 import { WalletProvider } from "@/types";
 import { ResolverProviders } from "./resolverContext";
-import { LogProvider } from "./LogProvider";
+import { ErrorProvider } from "./ErrorProvider";
 
 export type LayerswapWidgetConfig = {
     apiKey?: string;
@@ -70,7 +70,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
         <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
             <SettingsProvider initialLayerswapData={appSettings} initialSettings={config?.initialValues}>
                 <CallbackProvider callbacks={callbacks}>
-                    <LogProvider>
+                    <ErrorProvider>
                         <ErrorBoundary FallbackComponent={ErrorFallback} >
                             <ThemeWrapper>
                                 <WalletsProviders
@@ -88,7 +88,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
                                 </WalletsProviders>
                             </ThemeWrapper>
                         </ErrorBoundary>
-                    </LogProvider>
+                    </ErrorProvider>
                 </CallbackProvider>
             </SettingsProvider >
         </IntercomProvider>

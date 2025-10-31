@@ -19,7 +19,7 @@ import { useSelectedAccount } from "@/context/balanceAccounts";
 import { SwapFormValues } from "../../../Form/SwapFormValues";
 import { useSwapCreateCallback } from "@/context/callbackProvider";
 import { TransferProps } from "@/types";
-import { log } from "@/context/LogProvider";
+import { log } from "@/context/ErrorProvider";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
