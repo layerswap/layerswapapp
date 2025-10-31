@@ -1,4 +1,4 @@
-import LayerSwapApiClient from "../lib/apiClients/layerswapApiClient";
+import { LayerswapApiClient } from "@layerswap/widget/internal";
 import { getThemeData } from "./settingsHelper";
 
 export async function getServerSideProps(context) {
@@ -11,8 +11,8 @@ export async function getServerSideProps(context) {
 
     const app = context.query?.appName || context.query?.addressSource
     const apiKey = JSON.parse(process.env.API_KEYS || "{}")?.[app] || process.env.NEXT_PUBLIC_API_KEY
-    LayerSwapApiClient.apiKey = apiKey
-    const apiClient = new LayerSwapApiClient()
+    LayerswapApiClient.apiKey = apiKey
+    const apiClient = new LayerswapApiClient()
 
     const { data: networkData } = await apiClient.GetLSNetworksAsync()
     const { data: sourceExchangesData } = await apiClient.GetSourceExchangesAsync()

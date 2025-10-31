@@ -3,11 +3,11 @@ import React, { useEffect } from 'react'
 import { useRouter } from 'next/router';
 import { InferGetServerSidePropsType } from 'next';
 import { getServerSideProps } from '../helpers/getSettings';
-import LayerSwapApiClient from '../lib/apiClients/layerswapApiClient';
 import { clearTempData, getTempData } from '../lib/openLink';
+import { LayerswapApiClient } from '@layerswap/widget/internal';
 
 export default function Salon({ settings, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
-    LayerSwapApiClient.apiKey = apiKey
+    LayerswapApiClient.apiKey = apiKey
     const router = useRouter();
 
 
