@@ -41,7 +41,7 @@ export default function ErrorFallback({ error, resetErrorBoundary }: FallbackPro
                                     <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-600/20">
                                         <NotFoundIcon />
                                     </div>
-                                    <h1 className="text-center text-2xl font-semibold text-white">
+                                    <h1 className="text-center text-2xl font-semibold text-primary-text">
                                         Unable to complete the request
                                     </h1>
                                 </MessageComponent.Header>

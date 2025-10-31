@@ -45,7 +45,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
     themeData = { ...THEME_COLORS['default'], ...config?.theme }
 
-    AppSettings.ApiVersion = version
+    AppSettings.ApiVersion = version || AppSettings.ApiVersion
     AppSettings.ImtblPassportConfig = imtblPassport
     AppSettings.WalletConnectConfig = config?.walletConnect || AppSettings.WalletConnectConfig
     AppSettings.ThemeData = themeData
@@ -54,7 +54,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
     useEffect(() => {
         if (!_settings) {
             (async () => {
-                const fetchedSettings = await getSettings()
+                const fetchedSettings = await getSettings(apiKey || AppSettings.LayerswapApiKeys[version || AppSettings.ApiVersion])
                 if (!fetchedSettings) throw new Error('Failed to fetch settings')
                 setFetchedSettings(fetchedSettings)
             })()
@@ -100,7 +100,7 @@ export const LayerswapProvider: typeof LayerswapProviderComponent = (props) => {
         <>
             <ColorSchema themeData={props.config?.theme} />
             <div
-                style={{ backgroundColor: 'transparent' }}
+                style={{ backgroundColor: 'transparent', height: '100%' }}
                 className="layerswap-styles">
                 <LayerswapProviderComponent  {...props}>
                     {props.children}

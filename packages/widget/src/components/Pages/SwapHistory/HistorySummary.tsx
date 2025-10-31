@@ -87,7 +87,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
                         </div>
 
                         <div className="flex min-w-0 flex-col items-start space-y-0.5">
-                            <span className="text-white text-lg leading-5 flex min-w-0">
+                            <span className="text-primary-text text-lg leading-5 flex min-w-0">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <span className="truncate overflow-hidden whitespace-nowrap max-w-[100px]">
@@ -110,13 +110,13 @@ const HistorySummary: FC<SwapInfoProps> = ({
 
                     <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none -z-10">
                         <div className="h-7 w-6 rounded-md bg-secondary-400 flex items-center justify-center">
-                            <ChevronRightIcon className="h-5 w-5 text-white" />
+                            <ChevronRightIcon className="h-5 w-5 text-primary-text" />
                         </div>
                     </div>
 
                     <div className="col-span-6 flex items-center justify-end gap-2 bg-secondary-400 p-3 rounded-xl">
                         <div className="flex min-w-0 flex-col items-end space-y-0.5">
-                            <span className="text-white text-lg leading-5 flex min-w-0">
+                            <span className="text-primary-text text-lg leading-5 flex min-w-0">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <span className="truncate overflow-hidden whitespace-nowrap max-w-[100px]">

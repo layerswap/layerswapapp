@@ -47,8 +47,8 @@ const IconComponentWrapper = ({ children, withBg, classNames }: { children: Reac
 
 const GreenComponent = ({ text, withBg, short }: IconComponentProps) => {
   return (
-    <IconComponentWrapper withBg={withBg} classNames="bg-[#54b487]/20 text-[#569735] text-sm">
-      <CheckIcon />
+    <IconComponentWrapper withBg={withBg} classNames="bg-success-background text-success-foreground text-sm">
+      <CheckIcon className="fill-success-foreground text-success-foreground" />
       {!short && <p>{text}</p>}
     </IconComponentWrapper>
   )
@@ -83,7 +83,7 @@ const SecondaryComponent = ({ text, withBg, short }: IconComponentProps) => {
 
 const YellowComponent = ({ text, withBg, short }: IconComponentProps) => {
   return (
-    <IconComponentWrapper withBg={withBg} classNames="bg-[#614713] text-[#D69A22] text-sm">
+    <IconComponentWrapper withBg={withBg} classNames="bg-warning-background text-warning-foreground text-sm">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 60 60" fill="none">
         <circle cx="30" cy="30" r="30" fill="#DF8B16" />
       </svg>
@@ -94,9 +94,9 @@ const YellowComponent = ({ text, withBg, short }: IconComponentProps) => {
 
 const RedComponenet = ({ text, withBg, short }: IconComponentProps) => {
   return (
-    <IconComponentWrapper withBg={withBg} classNames="bg-red-950/40 text-red-600 text-sm">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 60 60" fill="none">
-        <circle cx="30" cy="30" r="30" fill="#E43636" />
+    <IconComponentWrapper withBg={withBg} classNames="bg-error-background text-error-foreground text-sm">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 60 60" fill="none" className="fill-error-foreground">
+        <circle cx="30" cy="30" r="30" fill="currentColor" />
       </svg>
       {!short && <p>{text}</p>}
     </IconComponentWrapper>

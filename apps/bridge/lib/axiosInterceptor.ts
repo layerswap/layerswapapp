@@ -45,7 +45,7 @@ export const InitializeUnauthInstance = (baseURL?: string) => {
             if (apiKey) {
                 config.headers["X-LS-APIKEY"] = apiKey
             } else {
-                throw new Error("NEXT_PUBLIC_API_KEY is not set up in env vars")
+                throw new Error("Api key is not provided")
             }
             return config;
         },

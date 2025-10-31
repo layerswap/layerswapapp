@@ -201,7 +201,7 @@ const SwapDetails: FC<Props> = ({ swapResponse }) => {
                             onClick={handleRepeatSwap}
                             isLoading={isRepeatLoading}
                         >
-                            <p>
+                            <p className='text-primary-text'>
                                 {isRepeatLoading ? 'Creating Swap...' : 'Repeat Swap'}
                             </p>
                         </SecondaryButton>

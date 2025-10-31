@@ -1,7 +1,7 @@
 import { ThemeData } from "../Models/Theme"
 
 export default class AppSettings {
-    static ApiVersion?: string = "mainnet"
+    static ApiVersion: string = "mainnet"
     static ExplorerURl: string = `https://www.layerswap.io/explorer/`
     static LayerswapApiUri?: string = 'https://api.layerswap.io'
     static ResourseStorageUrl: string = 'https://prodlslayerswapbridgesa.blob.core.windows.net/'

@@ -70,7 +70,7 @@ const Delay: FC = () => {
     return (
         <div>
             <p className='text-md '><span>This usually means that the exchange needs additional verification.</span>
-                <a target='_blank' href="https://docs.layerswap.io/user-docs/why-is-coinbase-transfer-taking-so-long/"
+                <a target='_blank' href="https://learn.layerswap.io/user-docs/why-is-coinbase-transfer-taking-so-long/"
                     className='disabled:text-primary-text/40 disabled:bg-primary-900 disabled:cursor-not-allowed ml-1 underline hover:no-underline cursor-pointer' rel="noopener noreferrer">Learn More</a></p>
             <ul className="list-inside list-decimal font-light space-y-1 mt-2 text-left text-primary-text ">
                 <li>Check your email for details from Coinbase</li>

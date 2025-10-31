@@ -19,6 +19,7 @@ import { ImtblPassportProvider } from "@layerswap/wallet-imtbl-passport";
 
 const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string }> = ({ settings, themeData, apiKey }) => {
     const router = useRouter()
+
     const imtblPassportConfigs = typeof window !== 'undefined' ? {
         clientId: process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID || '',
         publishableKey: process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY || '',
@@ -31,7 +32,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
             apiKey,
             version: process.env.NEXT_PUBLIC_API_VERSION as 'mainnet' | 'testnet',
             settings,
-            theme: { ...themeData, borderRadius: 'default', enablePortal: true, enableWideVersion: false, hidePoweredBy: true },
+            theme: { ...themeData, borderRadius: 'default', enablePortal: true, enableWideVersion: true, hidePoweredBy: true },
             imtblPassport: imtblPassportConfigs
         }}
         callbacks={{

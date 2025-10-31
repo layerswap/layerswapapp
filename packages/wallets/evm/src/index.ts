@@ -14,3 +14,5 @@ export const EVMProvider: WalletProvider = {
     gasProvider: [new EVMGasProvider(), new LoopringGasProvider(), new ZkSyncGasProvider()],
     balanceProvider: [new EVMBalanceProvider(), new HyperliquidBalanceProvider(), new LoopringBalanceProvider(), new ZkSyncBalanceProvider()],
 }
+
+export { useChainConfigs } from "./evmUtils/chainConfigs";

@@ -1,6 +1,6 @@
 'use client'
 import LinkWithIcon from '@/components/Common/LinkWithIcon';
-import React, { FC, useCallback, useEffect, useRef } from 'react'
+import { FC, useCallback, useEffect, useRef } from 'react'
 import { Widget } from '@/components/Widget/Index';
 import SwapSummary from '../Summary';
 import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, Transaction, SwapBasicData, SwapDetails, SwapQuote, Refuel } from '@/lib/apiClients/layerSwapApiClient';
@@ -17,7 +17,6 @@ import useSWR from 'swr';
 import { ApiResponse } from '@/Models/ApiResponse';
 import { useIntercom } from 'react-use-intercom';
 import logError from '@/lib/logError';
-import SubmitButton from '@/components/Buttons/submitButton';
 import Steps from './StepsComponent';
 import { useLog } from '@/context/LogProvider';
 import { LogEventType } from '@/types';
@@ -32,7 +31,6 @@ type Props = {
 const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) => {
     const { boot, show, update, showNewMessages } = useIntercom();
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
-    const [showSupportButton, setShowSupportButton] = React.useState(false);
     const { log } = useLog();
     const {
         source_network,
@@ -65,19 +63,6 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     const inputTxStatus = swapInputTransaction ? swapInputTransaction.status : inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus
 
     const loggedNotDetectedTxAt = useRef<number | null>(null);
-
-    const handleSupportClick = useCallback(() => {
-        const transactionHash = swapInputTransaction?.transaction_hash || storedWalletTransaction?.hash;
-        const message = `Hi! My transaction (Swap ID: ${swapDetails.id}) has been processing for longer than expected. ${transactionHash ? `Transaction hash: ${transactionHash}` : ''} Could you please help me check the status?`;
-
-        boot();
-        update({
-            customAttributes: {
-                swapId: swapDetails.id,
-            }
-        });
-        showNewMessages(message)
-    }, [boot, show, update, swapDetails.id, swapInputTransaction, storedWalletTransaction]);
 
     useEffect(() => {
         if (inputTxStatus === TransactionStatus.Completed || inputTxStatus === TransactionStatus.Pending) {
@@ -144,7 +129,6 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
         <CountdownTimer
             initialTime={String(quote?.avg_completion_time)}
             swapDetails={swapDetails}
-            onThresholdChange={setShowSupportButton}
         />
     </div>
 
@@ -414,17 +398,6 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                             ([SwapStatus.Expired, SwapStatus.Cancelled, SwapStatus.UserTransferDelayed].includes(swapStatus)) &&
                             <Failed />
                         }
-                        {
-                            showSupportButton && swapDetails.status !== SwapStatus.Completed && inputTxStatus !== TransactionStatus.Failed && swapDetails.status !== SwapStatus.PendingRefund && swapDetails.status !== SwapStatus.Refunded && (
-                                <div className='flex justify-center mt-6'>
-                                    <SubmitButton
-                                        onClick={handleSupportClick}
-                                        className="w-full max-w-xs"
-                                    >
-                                        Contact Support
-                                    </SubmitButton>
-                                </div>
-                            )}
                     </div>
                 </div>
             </div>

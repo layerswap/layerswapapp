@@ -8,7 +8,7 @@ export class ParadexBalanceProvider extends BalanceProvider {
     }
 
     fetchBalance: BalanceProvider['fetchBalance'] = async (address, network) => {
-        const environment = AppSettings.ApiVersion === 'sandbox' ? 'testnet' : 'prod'
+        const environment = AppSettings.ApiVersion === 'testnet' ? 'testnet' : 'prod'
         const config = await Paradex.Config.fetchConfig(environment);
         const tokens = insertIfNotExists(network.tokens || [], network.token)
 

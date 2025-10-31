@@ -19,14 +19,13 @@ export interface LeafletProps {
     height?: LeafletHeight;
     position: LeafletPosition;
     onClose?: () => void;
-    walletComp?: React.ReactNode;
 }
 // TODO handle overflow when height is set to 'fit'
-export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(function Leaflet({ show, setShow, children, title, className, height, position, onClose, walletComp }, topmostRef) {
+export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps>>(function Leaflet({ show, setShow, children, title, className, height, position, onClose }, topmostRef) {
     const mobileModalRef = useRef<HTMLDivElement>(null);
     const controls = useAnimation();
     const transitionProps = { type: "spring", stiffness: 500, damping: 40 };
-    const { isMobile } = useWindowDimensions()
+    const { isMobileWithPortal: isMobile } = useWindowDimensions()
 
     const handleDragEnd = useCallback(async (_, info) => {
         const offset = info.offset.y;
@@ -96,7 +95,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 key="mobile-modal"
                 ref={mobileModalRef}
                 animate={controls}
-                className={`max-h-full overflow-y-hidden group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'rounded-t-2xl' : ''}  bg-secondary-700 ${wrapperHeightClass} ${className} shadow-lg`}
+                className={`max-h-full overflow-y-hidden group ${position} inset-x-0 bottom-0 z-40 w-full ${height != 'full' ? 'rounded-t-xl' : ''}  bg-secondary-900 ${wrapperHeightClass} ${className} shadow-lg`}
                 initial={{ y: "20%" }}
                 exit={{ y: "100%" }}
                 transition={transitionProps}
@@ -106,13 +105,12 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                 dragElastic={{ top: 0, bottom: 1 }}
                 dragConstraints={{ top: 0, bottom: 0 }}
             >
-                <div className={`py-2 overflow-y-auto flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-700 rounded-t-2xl ' : ''} pb-4`}>
-                    <div className={`px-4 pb-2 flex justify-between items-center ${height != 'full' && 'hover:cursor-grab'}`}>
-                        <div className="text-lg text-secondary-text font-semibold w-full">
+                <div className={`py-3 overflow-y-auto flex flex-col h-full z-40 ${height != 'full' ? 'bg-secondary-900 rounded-t-2xl ' : ''} pb-6`}>
+                    <div className={`px-6 pb-2 flex justify-between items-center ${height != 'full' && 'hover:cursor-grab'}`}>
+                        <div className="text-lg text-secondary-text font-semibold">
                             <div>{title}</div>
                         </div>
-                        <div className='flex space-x-1 active:animate-press-down'>
-                            {walletComp && <div>{walletComp}</div>}
+                        <div className='-mr-2'>
                             <IconButton onClick={handleCloseModal} icon={
                                 <X strokeWidth={3} />
                             }>
@@ -120,7 +118,7 @@ export const Leaflet = forwardRef<HTMLDivElement, PropsWithChildren<LeafletProps
                         </div>
                     </div>
                     <div
-                        className='select-text max-h-full in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll px-4 h-full' id="virtualListContainer">
+                        className='select-text max-h-full overflow-y-auto overflow-x-hidden styled-scroll px-6 h-full' id="virtualListContainer">
                         {children}
                     </div>
                 </div>

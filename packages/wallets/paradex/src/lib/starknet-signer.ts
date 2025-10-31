@@ -1,6 +1,6 @@
 import { keyDerivation } from '@starkware-industries/starkware-crypto-utils';
-import type { Signature, SignerInterface, TypedData } from 'starknet';
-import * as Starknet from 'starknet';
+import type { Signature, SignerInterface, TypedData } from 'starknet-old';
+import * as Starknet from 'starknet-old';
 
 import { STARKNET_MAINNET_CHAIN_ID } from './constants';
 import { AccountSupport } from './starknet-account-support';
@@ -86,8 +86,7 @@ export async function getAccountSupport(
 }
 
 const RPC_NODES_MAINNET: readonly string[] = [
-  'https://starknet-mainnet.public.blastapi.io',
-  'https://free-rpc.nethermind.io/mainnet-juno',
+  'https://starknet-mainnet.public.blastapi.io'
 ];
 const RPC_NODES_TESTNET: readonly string[] = [
   'https://starknet-sepolia.public.blastapi.io',
