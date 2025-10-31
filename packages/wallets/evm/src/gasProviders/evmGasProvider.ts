@@ -132,7 +132,6 @@ abstract class getEVMGas {
                     where: 'getGasPrice',
                     severity: 'error',
                     chainId: this.chainId,
-                    account: this.account,
                 },
             });
         }
