@@ -102,6 +102,8 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 name: renderingError.name,
                 message: renderingError.message,
                 $layerswap_exception_type: "Transaction Error",
+                $fromAddress: swapInputTransaction?.from,
+                $toAddress: swapBasicData?.destination_address,
                 stack: renderingError.stack,
                 cause: renderingError.cause,
                 where: 'TransactionError',

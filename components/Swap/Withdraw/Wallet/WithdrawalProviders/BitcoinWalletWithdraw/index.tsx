@@ -83,7 +83,7 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData
         <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
             {
                 transactionErrorMessage &&
-                <TransactionMessage isLoading={loading} error={transactionErrorMessage} />
+                <TransactionMessage isLoading={loading} error={transactionErrorMessage} sourceAddress={selectedSourceAccount?.address} destAddress={swapBasicData?.destination_address} />
             }
             <SendTransactionButton
                 isDisabled={!!loading || dataLoading}
@@ -96,7 +96,7 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData
     )
 }
 
-const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> = ({ isLoading, error }) => {
+const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined, sourceAddress: string | undefined, destAddress: string | undefined }> = ({ isLoading, error, sourceAddress, destAddress }) => {
     if (isLoading) {
         return <ActionMessages.ConfirmTransactionMessage />
     }
@@ -114,6 +114,8 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
             name: swapWithdrawalError.name,
             message: swapWithdrawalError.message,
             $layerswap_exception_type: "Swap Withdrawal Error",
+            $fromAddress: sourceAddress,
+            $toAddress: destAddress,
             stack: swapWithdrawalError.stack,
             cause: swapWithdrawalError.cause,
             where: 'swapWithdrawalError',

@@ -233,6 +233,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 cause: swapWithdrawalError.cause,
                 message: swapWithdrawalError.message,
                 $layerswap_exception_type: "Swap Withdrawal Error",
+                $fromAddress: selectedSourceAccount?.address,
+                $toAddress: swapData?.destination_address,
                 stack: swapWithdrawalError.stack,
                 where: 'TransactionError',
                 severity: 'error',
