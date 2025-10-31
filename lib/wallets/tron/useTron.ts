@@ -84,7 +84,7 @@ export default function useTron(): WalletProvider {
     }
 
     const availableWalletsForConnect: InternalConnector[] = useMemo(() => wallets.map(wallet => {
-        const isNotInstalled = wallet.state == 'NotFound' || wallet.adapter.name == "TronLink"
+        const isNotInstalled = wallet.state == 'NotFound'
         return {
             id: wallet.adapter.name,
             name: wallet.adapter.name,
