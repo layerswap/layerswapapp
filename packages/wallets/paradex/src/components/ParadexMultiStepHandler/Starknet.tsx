@@ -48,7 +48,7 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
         }
         catch (error) {
             setLoading(false)
-            error.name = TransactionMessageType.UexpectedErrorMessage
+            error.name = TransactionMessageType.UnxpectedErrorMessage
             error.message = error
             throw new Error(error)
         }

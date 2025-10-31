@@ -80,7 +80,7 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel
             setSyncWallet(wallet)
         }
         catch (error) {
-            error.name = TransactionMessageType.UexpectedErrorMessage
+            error.name = TransactionMessageType.UnxpectedErrorMessage
             error.message = error
             throw new Error(error)
         }
@@ -109,7 +109,7 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel
                 throw new Error("Activation failed")
         }
         catch (error) {
-            error.name = TransactionMessageType.UexpectedErrorMessage
+            error.name = TransactionMessageType.UnxpectedErrorMessage
             error.message = error
             throw new Error(error)
         }
@@ -139,7 +139,7 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel
         }
         catch (error) {
             setLoading(false)
-            error.name = TransactionMessageType.UexpectedErrorMessage
+            error.name = TransactionMessageType.UnxpectedErrorMessage
             error.message = error
             throw new Error(error)
         }

@@ -68,7 +68,7 @@ export async function buildPsbt({
   let psbt: Psbt | undefined = undefined
   let fee = MIN_FEE
   let totalSelected: bigint
-  let error = undefined
+  let error: unknown = undefined;
 
   try {
     // 4️⃣ iterate until selection covers amount + fee

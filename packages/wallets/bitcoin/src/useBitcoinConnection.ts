@@ -19,7 +19,7 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
         ...networks.filter(network => network.type === NetworkType.Bitcoin).map(l => l.name),
     ]
 
-    const account = useAccount()
+    const { account, connector } = useAccount()
     const { connectAsync, connectors } = useConnect()
     const config = useConfig()
     const { setSelectedConnector } = useConnectModal()
@@ -66,7 +66,7 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
 
             if (!result.accounts) throw new Error("No result from connector")
 
-            const address = result.accounts[0]
+            const address = result.accounts[0].address
             const network = networks.find(n => commonSupportedNetworks.includes(n.name))
             if (!network) throw new Error("Network not found")
             const wrongChanin = !isBitcoinAddressValid(address, network)
@@ -106,7 +106,7 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
     const transfer: WalletConnectionProvider['transfer'] = async (params) => {
         const { amount, callData, depositAddress, selectedWallet, network } = params
 
-        if (!account.connector) {
+        if (!connector) {
             throw new Error("Connector not found");
         }
         if (!depositAddress) {
@@ -125,37 +125,37 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
                 isTestnet,
                 rpcClient,
                 callData,
-                connector: account.connector,
+                connector: connector,
                 publicClient
             });
             return txHash;
         } catch (error) {
-            const e = new Error()
-            e.message = error.message
-            if (error && error.includes('User rejected the request.')) {
+            const message = typeof error === 'string' ? error : error.message
+            const e = new Error(message)
+            e.message = message
+            if (error && message.includes('User rejected the request.')) {
                 e.name = TransactionMessageType.TransactionRejected
                 throw e
             }
-            else if (error && error.includes('Insufficient balance.')) {
+            else if (error && (message.includes('Insufficient balance.') || message.includes('Insufficient funds'))) {
                 e.name = TransactionMessageType.InsufficientFunds
                 throw e
             }
             else {
-                e.name = TransactionMessageType.UexpectedErrorMessage
+                e.name = TransactionMessageType.UnxpectedErrorMessage
                 throw e
             }
         }
     }
 
     const resolvedWallet = useMemo(() => {
-        const connector = account.connector
 
         if (!account || !connector) return undefined
 
         const wallet = resolveWallet({
-            activeConnection: { address: account.address || '', id: connector.id },
+            activeConnection: { address: account?.address || '', id: connector.id },
             connector,
-            addresses: account.address ? [account.address] : [],
+            addresses: account?.address ? [account.address] : [],
             networks,
             discconnect: disconnectWallet,
             supportedNetworks: {

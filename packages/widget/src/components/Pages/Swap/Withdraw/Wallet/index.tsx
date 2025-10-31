@@ -231,7 +231,7 @@ const TransactionMessage: FC<{ error: Error, isLoading: boolean }> = ({ error, i
         //     where: 'swapWithdrawalError',
         //     severity: 'error',
         // });
-        return <TransactionMessages.UexpectedErrorMessage message={error.message} />
+        return <TransactionMessages.UnxpectedErrorMessage message={error.message} />
     }
     else return <></>
 }
