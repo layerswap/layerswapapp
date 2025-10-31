@@ -157,14 +157,13 @@ export const useBalanceStore = create<BalanceStore>()(
 
             const startedAt = get().startTimeOfInit ?? 0
             const elapsed = Date.now() - startedAt
-            if (!get().partialPublished && elapsed >= 4500) {
+            if (!get().partialPublished && elapsed >= 3000) {
               const partial: Record<string, string> = {}
               keysArray.forEach(([networkName, key]) => {
                 if (balances[key]?.data) {
                   partial[networkName] = key
                 }
               })
-              console.log("**partial", partial)
               set({ balanceKeysForSorting: partial })
               set({ partialPublished: true })
               set({ sortingDataIsLoading: false })
