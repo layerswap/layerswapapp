@@ -1,5 +1,5 @@
 {
-  "count": 575,
+  "count": 576,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -36660,6 +36660,89 @@
         "1"
       ]
     },
+    "d64f041c77e248e6c24b791616f9bcd652fd2183dd590a1156e13ebfa0d15f74": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=net.token13.wallet&hl=en",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:10001",
+        "eip155:10003",
+        "eip155:101",
+        "eip155:111",
+        "eip155:11155111",
+        "eip155:128123",
+        "eip155:1313114",
+        "eip155:17000",
+        "eip155:1987",
+        "eip155:20",
+        "eip155:21",
+        "eip155:2888",
+        "eip155:3",
+        "eip155:31102",
+        "eip155:4",
+        "eip155:420",
+        "eip155:42793",
+        "eip155:5",
+        "eip155:6",
+        "eip155:61",
+        "eip155:62",
+        "eip155:63",
+        "eip155:69",
+        "eip155:777",
+        "solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z"
+      ],
+      "description": "TokenB is the simplest and most secure way to store, purchase, and exchange on the Algorand blockchain. It can discover and connect decentralized applications (DApps) on any device.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://tokenb.com/",
+      "id": "d64f041c77e248e6c24b791616f9bcd652fd2183dd590a1156e13ebfa0d15f74",
+      "image_id": "5b3fc2c1-923f-46a3-5e20-195b7f92cb00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/5b3fc2c1-923f-46a3-5e20-195b7f92cb00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/5b3fc2c1-923f-46a3-5e20-195b7f92cb00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/5b3fc2c1-923f-46a3-5e20-195b7f92cb00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "tokenb-web3wallet://",
+        "universal": "https://tokenb.com/"
+      },
+      "name": "TokenB",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "tokenb",
+      "updatedAt": "2025-10-31T07:22:08.803302+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "d69877e50c4aa2360d723065716609f1e2698e45fc210438da8c325b65922735": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.mpcvault.mobileapp.android",
@@ -43317,5 +43400,5 @@
       ]
     }
   },
-  "total": 575
+  "total": 576
 }
