@@ -1,4 +1,4 @@
-import { FC, useMemo, useState } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import ValidationError from "@/components/validationError";
 import CexPicker, { SelectedEchangePlaceholder } from "@/components/Input/CexPicker";
 import QuoteDetails from "@/components/FeeDetails";
@@ -10,7 +10,7 @@ import { Partner } from "@/Models/Partner";
 import RoutePicker from "@/components/Input/RoutePicker";
 import AmountField from "@/components/Input/Amount";
 import Address from "@/components/Input/Address";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, X } from "lucide-react";
 import AddressIcon from "@/components/AddressIcon";
 import { ExtendedAddress } from "@/components/Input/Address/AddressPicker/AddressWithIcon";
 import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
@@ -25,6 +25,7 @@ import { Network } from "@/Models/Network";
 import { Wallet } from "@/Models/WalletProvider";
 import { AddressGroup } from "@/components/Input/Address/AddressPicker";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
+import { ReceiveAmount } from "@/components/Input/Amount/ReceiveAmount";
 
 type Props = {
     partner?: Partner;
@@ -35,7 +36,36 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
         values, isSubmitting
     } = useFormikContext<SwapFormValues>();
 
-    const { fromAsset: fromCurrency, from, to: destination, destination_address, amount } = values || {};
+    const [showBanner, setShowBanner] = useState(false);
+
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+
+        const sessionCountKey = "exchange_banner_session_count";
+        const closedKey = "exchange_banner_closed";
+        const seenKey = "exchange_banner_seen";
+
+        // Skip if user closed it this session
+        if (sessionStorage.getItem(closedKey) === "1") return;
+
+        // Increment session count once per session
+        if (!sessionStorage.getItem(seenKey)) {
+            sessionStorage.setItem(seenKey, "1");
+            const next = (parseInt(localStorage.getItem(sessionCountKey) || "0") || 0) + 1;
+            localStorage.setItem(sessionCountKey, String(next));
+            if (next <= 3) setShowBanner(true);
+        } else {
+            const count = parseInt(localStorage.getItem(sessionCountKey) || "0") || 0;
+            if (count <= 3) setShowBanner(true);
+        }
+    }, []);
+
+    const dismissBanner = () => {
+        setShowBanner(false);
+        if (typeof window !== "undefined") sessionStorage.setItem("exchange_banner_closed", "1");
+    };
+
+    const { fromAsset: fromCurrency, from, to: destination, destination_address, amount, toAsset: toCurrency } = values || {};
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
     const [actionTempValue, setActionTempValue] = useState<number | undefined>(undefined)
 
@@ -54,9 +84,27 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     const handleActionHover = (value: number | undefined) => {
         setActionTempValue(value)
     }
-
+   
     return (
         <>
+            {showBanner && (
+                <div className="mb-3 rounded-2xl border border-secondary-400 bg-secondary-500 p-2.5 text-sm flex items-start justify-between">
+                    <div>
+                        <p className="text-sm text-primary-text mb-0.5">Deposit from CEX</p>
+                        <p className="text-secondary-text text-xs">
+                            Easily move crypto from your exchange account to the network of your choice.
+                        </p>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={dismissBanner}
+                        className="p-1 hover:bg-secondary-400 rounded-md text-secondary-text"
+                    >
+                        <X className="h-4 w-4" />
+                    </button>
+                </div>
+            )}
+
             <DepositMethodComponent />
             <Form className="h-full grow flex flex-col flex-1 justify-between w-full">
                 <Widget.Content>
@@ -128,6 +176,17 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                             usdPosition="right"
                                             actionValue={actionTempValue}
                                         />
+                                        {quote &&
+                                        <div className="mt-3 ml-2">
+                                            <span className="text-base leading-5 text-secondary-text">You will receive</span>
+                                            <ReceiveAmount
+                                                source_token={fromCurrency}
+                                                destination_token={toCurrency}
+                                                fee={quote}
+                                                isFeeLoading={isQuoteLoading}
+                                            />
+                                        </div>
+                                        }
                                     </div>
                                 </div>
                             </div>

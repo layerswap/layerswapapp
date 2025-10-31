@@ -26,6 +26,7 @@ import { Partner } from '@/Models/Partner'
 import { addressFormat } from '@/lib/address/formatter'
 import { isValidAddress } from '@/lib/address/validator'
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
+import QuoteDetails from '@/components/FeeDetails'
 
 interface Props {
     swapBasicData: SwapBasicData;
@@ -42,6 +43,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
     const { createSwap, setSwapId } = useSwapDataUpdate()
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [newNetwork, setNewNetwork] = useState<Network | null>(null);
+    const [values, setValues] = useState<SwapFormValues>({})
 
     const [loading, setLoading] = useState(false)
     const { getConfirmation } = useAsyncModal();
@@ -74,6 +76,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
             fromExchange: swapBasicData?.source_exchange,
             depositMethod: 'deposit_address',
         };
+        setValues(swapValues)
 
         try {
             setLoading(true);
@@ -309,6 +312,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                                     </span>
                                 }
                             />
+                            <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                         </>
                     )}
                 </div>
