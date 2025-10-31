@@ -36,12 +36,13 @@ interface BalanceStore {
   ) => Promise<NetworkBalance>
 
   initiatedBalances: Record<string, string> | null
-  isLoading: boolean
-  initAllBalances: (
+  balanceKeysForSorting: Record<string, string> | null
+  sortingDataIsLoading: boolean
+  partialPublished: boolean
+  startTimeOfInit?: number
+  initSortingBalances: (
     pairs: Array<{ address: string; network: NetworkWithTokens }>
   ) => void
-
-  getResolvedInitiatedBalances: () => Record<string, NetworkBalance> | null
 }
 
 const balanceFetcher = new BalanceResolver()
@@ -60,8 +61,11 @@ export const useBalanceStore = create<BalanceStore>()(
   subscribeWithSelector((set, get, api) => ({
     balances: {},
     lastFetchMap: {},
+    balanceKeysForSorting: {},
     initiatedBalances: null,
-    isLoading: false,
+    sortingDataIsLoading: false,
+    partialPublished: false,
+    startTimeOfInit: undefined,
     fetchBalance: (address, network, options) => {
       const key = getKey(address, network)
       const entry = get().balances[key]
@@ -105,7 +109,6 @@ export const useBalanceStore = create<BalanceStore>()(
               processQueue()
             })
         }
-
         queue.push(job)
         processQueue()
       })
@@ -120,60 +123,69 @@ export const useBalanceStore = create<BalanceStore>()(
       return queuedPromise
     },
 
-    initAllBalances: pairs => {
-      if (pairs.length > 0)
-        set({ isLoading: true })
-      set({ initiatedBalances: null })
-      // kick off every fetch
-      pairs.forEach(({ address, network }) => {
-        get().fetchBalance(address, network, { dedupeInterval: 120_000, ignoreCache: true, timeoutMs: 4000, retryCount: 0 })
+    initSortingBalances: pairs => {
+      const initiatedBalances = pairs.reduce<Record<string, string>>(
+        (acc, { address, network }) => {
+          const key = getKey(address, network)
+          acc[network.name] = key
+          return acc
+        }, {})
+      const sortedpairs = pairs.sort((a, b) => Number(a.network.source_rank) - Number(b.network.source_rank))
+      sortedpairs.forEach(({ address, network }) => {
+        get().fetchBalance(address, network, { dedupeInterval: 120_000, ignoreCache: false, timeoutMs: 4500, retryCount: 0 })
       })
 
-      // subscribe to balance map changes
-      const unsub = api.subscribe(
+      set({ sortingDataIsLoading: true })
+      set({ initiatedBalances })
+      set({ startTimeOfInit: Date.now() })
+      set({ partialPublished: false })
+
+      api.subscribe(
         state => state.balances,
         balances => {
-          const done = pairs.every(
-            ({ address, network }) =>
-              balances[getKey(address, network)]?.status !== 'loading'
+
+          const keysArray = Object.entries(get().initiatedBalances || {})
+          const done = keysArray.every(
+            ([_, key]) =>
+              balances[key].data
           )
           if (done) {
-            const finalMap = pairs.reduce<Record<string, string>>(
-              (acc, { address, network }) => {
-                const key = getKey(address, network)
-                const entry = balances[key]
-                if (entry) acc[network.name] = key
-                return acc
-              },
-              {}
-            )
-            set({ initiatedBalances: finalMap })
-            set({ isLoading: false })
-            unsub()  // cleanup subscription
-          }
-        }
-      )
-    },
+            set({ sortingDataIsLoading: false })
+            set({ balanceKeysForSorting: get().initiatedBalances })
+            set({ partialPublished: false })
+          } else {
 
-    getResolvedInitiatedBalances: () => {
-      const keys = get().initiatedBalances
-      if (!keys) return null
-      const balances = get().balances
-      return Object.entries(keys).reduce<Record<string, NetworkBalance>>((acc, [networkName, key]) => {
-        const entry = balances[key]
-        if (entry?.data) acc[networkName] = entry.data
-        return acc
-      }, {})
+            const startedAt = get().startTimeOfInit ?? 0
+            const elapsed = Date.now() - startedAt
+            if (!get().partialPublished && elapsed >= 3000) {
+              const partial: Record<string, string> = {}
+              keysArray.forEach(([networkName, key]) => {
+                if (balances[key]?.data) {
+                  partial[networkName] = key
+                }
+              })
+              set({ balanceKeysForSorting: partial })
+              set({ partialPublished: true })
+              set({ sortingDataIsLoading: false })
+            }
+          }
+        },
+        { fireImmediately: true }
+      )
     }
   }))
 )
 
-export const selectResolvedInitiatedBalances = (state: BalanceStore) => {
-  const keys = state.initiatedBalances
+export const selectResolvedSortingBalances = (state: BalanceStore) => {
+  const keys = state.balanceKeysForSorting
   if (!keys) return null
-  return Object.entries(keys).reduce<Record<string, NetworkBalance>>((acc, [networkName, key]) => {
+  const keysArray = Object.entries(keys)
+
+  const balanceData = keysArray.reduce<Record<string, NetworkBalance>>((acc, [networkName, key]) => {
     const entry = state.balances[key]
     if (entry?.data) acc[networkName] = entry.data
     return acc
   }, {})
+
+  return balanceData
 }
