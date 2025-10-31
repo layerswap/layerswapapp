@@ -24,11 +24,11 @@ module.exports = (phase, { defaultConfig }) => {
       remotePatterns: [
         {
           protocol: 'https',
-          hostname: 'stagelslayerswapbridgesa.blob.core.windows.net',
+          hostname: 'cdn.layerswap.io',
         },
         {
           protocol: 'https',
-          hostname: 'bransferstorage.blob.core.windows.net',
+          hostname: 'cdn.layerswap.cloud',
         },
         {
           protocol: 'https',
