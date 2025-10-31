@@ -29,7 +29,7 @@ type Props = {
 
 export default function Layout({ children, settings, themeData }: Props) {
   const router = useRouter();
-
+  
   useEffect(() => {
     function prepareUrl(params) {
       const url = new URL(location.href)
@@ -93,11 +93,9 @@ export default function Layout({ children, settings, themeData }: Props) {
     }
   }
 
-  themeData = themeData || THEME_COLORS.default
 
   const basePath = router?.basePath ?? ""
   const isCanonical = (router.pathname === "/app" || router.pathname === "/") && Object.keys(router.query).length === 0;
-
   return (<>
     <Head>
       <title>Layerswap App</title>
@@ -106,7 +104,7 @@ export default function Layout({ children, settings, themeData }: Props) {
       <link rel="icon" type="image/png" sizes="16x16" href={`${basePath}/favicon/favicon-16x16.png`} />
       <link rel="manifest" href={`${basePath}/favicon/site.webmanifest`} />
       <meta name="msapplication-TileColor" content="#ffffff" />
-      <meta name="theme-color" content={`rgb(${themeData.secondary?.[900]})`} />
+      <meta name="theme-color" content={`rgb(${themeData?.secondary?.[900] || THEME_COLORS.default.secondary?.[900]})`} />
       <meta name="description" content="Streamline your asset transaction experience with Layerswap across 50+ blockchains and 15+ exchanges. Fast, affordable and secure." />
       {isCanonical && <link rel="canonical" href="https://layerswap.io/app/" />}
 
@@ -126,14 +124,13 @@ export default function Layout({ children, settings, themeData }: Props) {
       <meta name="twitter:image" content={`https://layerswap.io/${basePath}/opengraphtw.jpg`} />
     </Head>
     {
-      themeData &&
       <ColorSchema themeData={themeData} />
     }
     <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
       <TooltipProvider delayDuration={400}>
         <QueryProvider query={query}>
           <SettingsProvider data={appSettings}>
-            <WalletsProviders basePath={basePath} themeData={themeData} appName={router.query.appName?.toString()}>
+            <WalletsProviders basePath={basePath} themeData={themeData || THEME_COLORS.default} appName={router.query.appName?.toString()}>
               <BalanceAccountsProvider>
                 <ThemeWrapper>
                   <AsyncModalProvider>
