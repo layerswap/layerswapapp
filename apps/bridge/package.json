@@ -44,8 +44,9 @@
     "react-hot-toast": "^2.6.0",
     "react-use-intercom": "^2.0.0",
     "swr": "catalog:",
-    "zustand": "catalog:",
-    "wagmi": "catalog:"
+    "viem": "catalog:",
+    "wagmi": "catalog:",
+    "zustand": "catalog:"
   },
   "devDependencies": {
     "@next/bundle-analyzer": "^13.5.4",

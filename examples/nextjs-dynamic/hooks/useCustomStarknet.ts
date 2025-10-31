@@ -1,4 +1,3 @@
-import { useAccount, useSwitchAccount } from "wagmi";
 import { useCallback, useEffect, useMemo } from "react";
 import {
   useUserWallets,
@@ -9,37 +8,31 @@ import {
 import {
   resolveWalletConnectorIcon,
   NetworkWithTokens,
-  NetworkType,
-  LayerSwapSettings,
 } from "@layerswap/widget";
+import { WalletConnectionProvider, Wallet, WalletConnectionProviderProps } from "@layerswap/widget/types"
 
-export default function useEVM(settings: LayerSwapSettings) {
-  const name = "EVM";
-  const id = "evm";
+export default function useStarknet({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
+  const name = "Starknet";
+  const id = "starknet";
 
-  // wagmi
-  const { connectors: activeConnectors } = useSwitchAccount();
-  const { connector: activeConnector, address: activeAddress } = useAccount();
   // Dynamic SDK
   const { setShowAuthFlow, handleLogOut } = useDynamicContext();
   const userWallets = useUserWallets();
-  // Layerswap settings
-  const { networks } = settings;
 
-  // Gather the EVM‐type network names
-  const evmNetworkNames = useMemo(
-    () => networks.filter((n) => n.type === NetworkType.EVM).map((n) => n.name),
-    [networks],
-  );
+  // Starknet network names
+  const starknetNetworkNames = [
+    "STARKNET_MAINNET",
+    "STARKNET_SEPOLIA",
+  ]
 
   // Supported-networks
   const supportedNetworks = useMemo(
     () => ({
-      asSource: evmNetworkNames,
-      autofill: evmNetworkNames,
-      withdrawal: evmNetworkNames,
+      asSource: starknetNetworkNames,
+      autofill: starknetNetworkNames,
+      withdrawal: starknetNetworkNames,
     }),
-    [evmNetworkNames],
+    [starknetNetworkNames],
   );
 
   // Clean up dynamicEvents listeners on unmount
@@ -49,13 +42,8 @@ export default function useEVM(settings: LayerSwapSettings) {
       dynamicEvents.removeAllListeners("authFlowCancelled");
     };
   }, []);
-
-  const switchAccount = () => {
-
-  }
-
   // connectWallet: log out existing, show authFlow, wait for event, then resolve
-  const connectWallet = useCallback(async (): Promise<any | undefined> => {
+  const connectWallet = useCallback(async (): Promise<Wallet | undefined> => {
     if (userWallets.length) {
       await handleLogOut();
     }
@@ -82,14 +70,12 @@ export default function useEVM(settings: LayerSwapSettings) {
 
     return resolveWallet({
       connection: newDynWallet,
-      activeConnection:
-        activeConnector && activeAddress ? { id: activeConnector.id, address: activeAddress } : undefined,
       networks,
       supportedNetworks,
       disconnect: handleLogOut,
       providerName: name,
     });
-  }, [userWallets, handleLogOut, setShowAuthFlow, activeConnector, activeAddress, networks, supportedNetworks]);
+  }, [userWallets, handleLogOut, setShowAuthFlow, networks, supportedNetworks]);
 
   // Logout
   const disconnectWallets = useCallback(async () => {
@@ -97,39 +83,38 @@ export default function useEVM(settings: LayerSwapSettings) {
   }, [handleLogOut]);
 
   // Map wagmi connectors → Dynamic SDK wallets → our Wallet shape
-  const connectedWallets: any[] = useMemo(
+  const connectedWallets: Wallet[] = useMemo(
     () =>
-      activeConnectors
-        .map(() => {
-          const dyn = userWallets.find(() => true);
+      userWallets
+        .map((dyn) => {
           if (!dyn) return;
           return resolveWallet({
             connection: dyn,
-            activeConnection:
-              activeConnector && activeAddress ? { id: activeConnector.id, address: activeAddress } : undefined,
             networks,
             supportedNetworks,
             disconnect: disconnectWallets,
             providerName: name,
           });
         })
-        .filter(Boolean) as any[],
-    [activeConnectors, userWallets, activeConnector, activeAddress, networks, supportedNetworks, disconnectWallets],
+        .filter(Boolean) as Wallet[],
+    [userWallets, networks, supportedNetworks, disconnectWallets],
   );
 
-  const logo = networks.find((n) => n.name.toLowerCase().includes("immutable"))?.logo;
-  const availableWalletsForConnect = [{
-      id: id,
-      name: name,
-      icon: logo,
+  const logo = networks.find((n) => n.name.toLowerCase().includes("starknet"))?.logo;
+
+  const availableConnectors = [{
+    id: id,
+    name: name,
+    icon: logo,
   }]
 
   return {
     connectWallet,
-    connectConnector: connectWallet,
-    switchAccount,
+    switchAccount: async (connector: Wallet, address: string) => {
+      throw new Error("Not implemented");
+    },
+    availableWalletsForConnect: availableConnectors,
     activeWallet: connectedWallets.find((w) => w.isActive),
-    availableWalletsForConnect,
     connectedWallets,
     asSourceSupportedNetworks: supportedNetworks.asSource,
     autofillSupportedNetworks: supportedNetworks.autofill,
@@ -143,7 +128,6 @@ export default function useEVM(settings: LayerSwapSettings) {
 /** Reusable helper to turn a DynamicWallet + context into our `Wallet` shape */
 function resolveWallet(props: {
   connection: DynamicWallet;
-  activeConnection?: { id: string; address: string };
   networks: NetworkWithTokens[];
   supportedNetworks: {
     asSource: string[];
@@ -152,25 +136,24 @@ function resolveWallet(props: {
   };
   disconnect: () => Promise<void>;
   providerName: string;
-}): any | undefined {
-  const { connection, activeConnection, networks, supportedNetworks, disconnect, providerName } = props;
+}): Wallet | undefined {
+  const { connection, networks, supportedNetworks, disconnect, providerName } = props;
 
   const connectorName = connection.connector.name;
   const address = connection.address;
   if (!connectorName || !address) return;
 
-  const isActive = activeConnection?.address === address;
   const displayName = `${connectorName} – ${providerName}`;
-  const networkIcon = networks.find((n) => n.name.toLowerCase().includes("linea"))?.logo;
+  const networkIcon = networks.find((n) => n.name.toLowerCase().includes("starknet"))?.logo;
 
   return {
     id: connectorName,
-    isActive,
+    isActive: true,
     address,
     addresses: [address],
     displayName,
     providerName,
-    icon: resolveWalletConnectorIcon({ connector: connectorName, address }),
+    icon: resolveWalletConnectorIcon({ iconUrl: connection.connector.metadata.icon }),
     disconnect: () => disconnect(),
     asSourceSupportedNetworks: supportedNetworks.asSource,
     autofillSupportedNetworks: supportedNetworks.autofill,

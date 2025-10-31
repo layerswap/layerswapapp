@@ -2,34 +2,16 @@ const { PHASE_PRODUCTION_SERVER } = require('next/constants');
 const { withPostHogConfig } = require('@posthog/nextjs-config');
 
 const securityHeaders = [
-  {
-    key: 'X-Frame-Options',
-    value: 'SAMEORIGIN'
-  },
-  {
-    key: 'Content-Security-Policy',
-    value: 'frame-ancestors *.immutable.com'
-  },
+  { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+  { key: 'Content-Security-Policy', value: 'frame-ancestors *.immutable.com' },
 ]
 
 const REMOTE_PATTERNS = [
-  {
-    protocol: 'https',
-    hostname: 'stagelslayerswapbridgesa.blob.core.windows.net',
-  },
-  {
-    protocol: 'https',
-    hostname: 'bransferstorage.blob.core.windows.net',
-  },
-  {
-    protocol: 'https',
-    hostname: 'devlslayerswapbridgesa.blob.core.windows.net',
-  },
-  {
-    protocol: 'https',
-    hostname: 'prodlslayerswapbridgesa.blob.core.windows.net',
-  },
-];
+  { protocol: 'https', hostname: 'stagelslayerswapbridgesa.blob.core.windows.net' },
+  { protocol: 'https', hostname: 'bransferstorage.blob.core.windows.net' },
+  { protocol: 'https', hostname: 'devlslayerswapbridgesa.blob.core.windows.net' },
+  { protocol: 'https', hostname: 'prodlslayerswapbridgesa.blob.core.windows.net' },
+]
 
 module.exports = (phase, { defaultConfig }) => {
   /**

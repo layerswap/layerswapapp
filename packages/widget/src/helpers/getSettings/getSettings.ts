@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
-import LayerSwapApiClient from "../lib/apiClients/layerSwapApiClient";
-import { LayerSwapSettings } from "@/types";
+import LayerSwapApiClient from "../../lib/apiClients/layerSwapApiClient";
 
 export async function getSettings(apiKey: string) {
 
@@ -23,20 +21,4 @@ export async function getSettings(apiKey: string) {
     }
 
     return settings
-}
-
-export function useSettings(apiKey: string) {
-    const [loading, setLoading] = useState(true)
-    const [settings, setSettings] = useState<LayerSwapSettings | null>(null)
-
-    useEffect(() => {
-        (async () => {
-            const settings = await getSettings(apiKey)
-            if (!settings) throw new Error('Failed to fetch settings')
-            setSettings(settings)
-            setLoading(false)
-        })()
-    }, [])
-
-    return { settings, loading }
 }
