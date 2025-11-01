@@ -1,5 +1,6 @@
 import { THEME, TonConnectUIProvider } from "@tonconnect/ui-react"
 import { ThemeData } from "@layerswap/widget/types";
+import { AppSettings } from "@layerswap/widget/internal";
 
 const TonConnectProvider = ({ children, themeData, appName }: { children: JSX.Element | JSX.Element[], themeData: ThemeData, appName: string | undefined }) => {
 
@@ -15,7 +16,7 @@ const TonConnectProvider = ({ children, themeData, appName }: { children: JSX.El
         return "#" + componentToHex(Number(rgbArray[0])) + componentToHex(Number(rgbArray[1])) + componentToHex(Number(rgbArray[2]));
     }
 
-    const manifestUrl = `https://layerswap.io/app/tonconnect-manifest.json`
+    const manifestUrl = AppSettings.TonClientConfig.manifestUrl
     //TODO add dynamic url 
     //const manifestUrl = `https://${process.env.NEXT_PUBLIC_VERCEL_URL ? `${process.env.NEXT_PUBLIC_VERCEL_URL}${basePath ? `${basePath}` : ''}` : 'layerswap.io/app'}/tonconnect-manifest.json`
 

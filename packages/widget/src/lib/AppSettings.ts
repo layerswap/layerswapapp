@@ -26,8 +26,10 @@ export default class AppSettings {
         }
     static TonClientConfig: {
         tonApiKey: string
+        manifestUrl: string
     } = {
             tonApiKey: 'ac793ea74c19105d617dfbeedb827f1b267b4e91f1b15b2420d003ec49722c82',
+            manifestUrl: `https://layerswap.io/app/tonconnect-manifest.json`
         }
     static ImtblPassportConfig: {
         publishableKey: string,
