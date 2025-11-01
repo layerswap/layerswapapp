@@ -58,7 +58,7 @@ const SwapErrorMessage: FC<{ message: string }> = ({ message }) => {
         details={message} />
 }
 
-const UexpectedErrorMessage: FC<{ message: string }> = ({ message }) => {
+const UnexpectedErrorMessage: FC<{ message: string }> = ({ message }) => {
     return <WalletMessage
         status="error"
         header='Unexpected error'
@@ -74,7 +74,7 @@ const ActionMessages = {
     WaletMismatchMessage,
     TransactionFailedMessage,
     SwapErrorMessage,
-    UexpectedErrorMessage,
+    UnexpectedErrorMessage,
     DifferentAccountsNotAllowedError
 }
 
@@ -85,7 +85,7 @@ export enum TransactionMessageType {
     TransactionRejected = 'TransactionRejected',
     WaletMismatch = 'WaletMismatch',
     TransactionFailed = 'TransactionFailed',
-    UexpectedErrorMessage = 'UexpectedErrorMessage',
+    UnexpectedErrorMessage = 'UnexpectedErrorMessage',
     DifferentAccountsNotAllowedError = 'DifferentAccountsNotAllowedError',
 }
 
