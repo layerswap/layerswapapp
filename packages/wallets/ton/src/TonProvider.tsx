@@ -17,8 +17,6 @@ const TonConnectProvider = ({ children, themeData, appName }: { children: JSX.El
     }
 
     const manifestUrl = AppSettings.TonClientConfig.manifestUrl
-    //TODO add dynamic url 
-    //const manifestUrl = `https://${process.env.NEXT_PUBLIC_VERCEL_URL ? `${process.env.NEXT_PUBLIC_VERCEL_URL}${basePath ? `${basePath}` : ''}` : 'layerswap.io/app'}/tonconnect-manifest.json`
 
     return (
         <TonConnectUIProvider
@@ -60,9 +58,6 @@ const TonConnectProvider = ({ children, themeData, appName }: { children: JSX.El
                 }
             }
             manifestUrl={manifestUrl}
-            actionsConfiguration={{
-                twaReturnUrl: appName === '4233c46e96e44017afae91537841cb46' ? 'https://t.me/layerswap_bridge_bot/bridge' : undefined
-            }}
         >
             {children}
         </TonConnectUIProvider>
