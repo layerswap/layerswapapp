@@ -7,11 +7,23 @@ const securityHeaders = [
 ]
 
 const REMOTE_PATTERNS = [
-  { protocol: 'https', hostname: 'stagelslayerswapbridgesa.blob.core.windows.net' },
-  { protocol: 'https', hostname: 'bransferstorage.blob.core.windows.net' },
-  { protocol: 'https', hostname: 'devlslayerswapbridgesa.blob.core.windows.net' },
-  { protocol: 'https', hostname: 'prodlslayerswapbridgesa.blob.core.windows.net' },
-]
+  {
+    protocol: 'https',
+    hostname: 'cdn.layerswap.io',
+  },
+  {
+    protocol: 'https',
+    hostname: 'cdn.layerswap.cloud',
+  },
+  {
+    protocol: 'https',
+    hostname: 'devlslayerswapbridgesa.blob.core.windows.net',
+  },
+  {
+    protocol: 'https',
+    hostname: 'prodlslayerswapbridgesa.blob.core.windows.net',
+  },
+];
 
 module.exports = (phase, { defaultConfig }) => {
   /**
