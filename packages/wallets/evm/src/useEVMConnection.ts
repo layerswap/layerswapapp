@@ -262,7 +262,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
                 throw e
             }
             else {
-                e.name = TransactionMessageType.UnxpectedErrorMessage
+                e.name = TransactionMessageType.UnexpectedErrorMessage
                 throw e
             }
         }

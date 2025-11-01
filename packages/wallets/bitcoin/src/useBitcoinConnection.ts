@@ -142,7 +142,7 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
                 throw e
             }
             else {
-                e.name = TransactionMessageType.UnxpectedErrorMessage
+                e.name = TransactionMessageType.UnexpectedErrorMessage
                 throw e
             }
         }

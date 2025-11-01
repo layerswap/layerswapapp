@@ -38,7 +38,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
             setUnlockedAccount(res)
         }
         catch (error) {
-            error.name = TransactionMessageType.UnxpectedErrorMessage
+            error.name = TransactionMessageType.UnexpectedErrorMessage
             error.message = error
             throw new Error(error)
         }
@@ -62,7 +62,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
             await refetchAccount()
         }
         catch (error) {
-            error.name = TransactionMessageType.UnxpectedErrorMessage
+            error.name = TransactionMessageType.UnexpectedErrorMessage
             error.message = error
             throw new Error(error)
         }
@@ -100,7 +100,7 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
                 throw error
             }
             else {
-                error.name = TransactionMessageType.UnxpectedErrorMessage
+                error.name = TransactionMessageType.UnexpectedErrorMessage
                 error.message = error
                 throw new Error(error)
             }

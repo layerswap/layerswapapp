@@ -74,7 +74,7 @@ const ActionMessages = {
     WaletMismatchMessage,
     TransactionFailedMessage,
     SwapErrorMessage,
-    UnxpectedErrorMessage: UnexpectedErrorMessage,
+    UnexpectedErrorMessage,
     DifferentAccountsNotAllowedError
 }
 
@@ -85,7 +85,7 @@ export enum TransactionMessageType {
     TransactionRejected = 'TransactionRejected',
     WaletMismatch = 'WaletMismatch',
     TransactionFailed = 'TransactionFailed',
-    UnxpectedErrorMessage = 'UnxpectedErrorMessage',
+    UnexpectedErrorMessage = 'UnexpectedErrorMessage',
     DifferentAccountsNotAllowedError = 'DifferentAccountsNotAllowedError',
 }
 

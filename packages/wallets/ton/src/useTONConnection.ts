@@ -139,7 +139,7 @@ export default function useTONConnection({ networks }: WalletConnectionProviderP
                 throw e
             }
             else {
-                e.name = TransactionMessageType.UnxpectedErrorMessage
+                e.name = TransactionMessageType.UnexpectedErrorMessage
                 throw e
             }
         }
