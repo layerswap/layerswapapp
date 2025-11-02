@@ -36,7 +36,7 @@ export class HyperliquidBalanceProvider extends BalanceProvider {
 
             if (usdcToken) {
                 const withdrawableAmount = parseFloat(clearinghouseState.withdrawable);
-                if (withdrawableAmount > 0) {
+                if (withdrawableAmount >= 0) {
                     balances.push({
                         network: network.name,
                         amount: withdrawableAmount,

@@ -1,5 +1,5 @@
 import { useSettingsState } from "../context/settings"
-import { selectResolvedInitiatedBalances, useBalanceStore } from "../stores/balanceStore"
+import { selectResolvedSortingBalances, useBalanceStore } from "../stores/balanceStore"
 import { useEffect, useMemo, useRef } from "react"
 import { NetworkWithTokens } from "../Models/Network"
 import { NetworkBalance } from "@/Models/Balance"
@@ -31,12 +31,12 @@ export default function useAllWithdrawalBalances() {
 
     useEffect(() => {
         if (walletNetworks)
-            useBalanceStore.getState().initAllBalances(walletNetworks)
+            useBalanceStore.getState().initSortingBalances(walletNetworks)
     }, [walletNetwokrsString])
 
     const lastBalancesRef = useRef<Record<string, NetworkBalance> | null>(null)
-    const resolvedBalances = useBalanceStore(selectResolvedInitiatedBalances)
-    const isLoading = useBalanceStore(s => s.isLoading)
+    const resolvedBalances = useBalanceStore(selectResolvedSortingBalances)
+    const isLoading = useBalanceStore(s => s.sortingDataIsLoading)
 
     if (resolvedBalances != null && Object.keys(resolvedBalances).length > 0) {
         lastBalancesRef.current = resolvedBalances

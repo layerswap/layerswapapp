@@ -60,7 +60,7 @@ export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
                         <span className='flex-none'>
                             Learn how to send from
                         </span>
-                        <GuideLink text={source_network?.display_name} userGuideUrl='https://docs.layerswap.io/user-docs/your-first-swap/off-ramp/send-assets-from-immutablex/' />
+                        <GuideLink text={source_network?.display_name} userGuideUrl='https://learn.layerswap.io/user-docs/your-first-swap/off-ramp/send-assets-from-immutablex/' />
                     </WarningMessage>
                     {
                         imxAccount &&

@@ -1,5 +1,5 @@
 import { keyDerivation } from '@starkware-industries/starkware-crypto-utils';
-import * as Starknet from 'starknet';
+import * as Starknet from 'starknet-old';
 
 import type { ParadexConfig } from './config';
 import * as ethereumSigner from './ethereum-signer';

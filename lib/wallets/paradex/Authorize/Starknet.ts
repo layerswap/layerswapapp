@@ -1,4 +1,4 @@
-import { AccountInterface } from 'starknet';
+import { AccountInterface } from 'starknet-old';
 import * as Paradex from "../lib";
 
 export async function AuthorizeStarknet(starknetAccount: AccountInterface) {

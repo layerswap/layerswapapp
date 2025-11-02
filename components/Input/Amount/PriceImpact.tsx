@@ -1,6 +1,6 @@
 import { FC, useMemo } from "react";
 import { Triangle } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
+import { Tooltip, TooltipArrow, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import clsx from 'clsx';
 
 type PriceImpactProps = {
@@ -73,7 +73,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({
                     </span>
                 </span>
             </TooltipTrigger>
-            <TooltipContent arrowClasses="!bg-secondary-500 !fill-secondary-500" side="top" align="center" className="!bg-secondary-500 !border-secondary-500 !text-secondary-text text-xs font-normal rounded-xl !p-4 shadow-2xl">
+            <TooltipContent arrowClasses="!bg-secondary-500 !fill-secondary-500" side="top" align="center" className="!bg-secondary-500 !border-secondary-500 !text-secondary-text text-xs font-normal rounded-xl !p-4 shadow-card">
                 <p className="text-primary-text font-medium text-sm flex items-baseline space-x-0.5 mb-1">
                     <span>Price impact:</span>
                     <span>{formatCurrency(priceImpact)}</span>
@@ -107,6 +107,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({
                         </span>
                     </li>
                 </ul>
+                <TooltipArrow className="!bg-secondary-500 !fill-secondary-500" />
             </TooltipContent>
         </Tooltip>
     </>)

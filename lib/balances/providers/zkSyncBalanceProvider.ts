@@ -20,7 +20,7 @@ export class ZkSyncBalanceProvider extends BalanceProvider {
                 return ({
                     network: network.name,
                     token: currency.symbol,
-                    amount: Number(formatUnits(BigInt(amount), Number(currency?.decimals))),
+                    amount: amount ? Number(formatUnits(BigInt(amount), Number(currency?.decimals))) : 0,
                     request_time: new Date().toJSON(),
                     decimals: Number(currency?.decimals),
                     isNativeCurrency: true
