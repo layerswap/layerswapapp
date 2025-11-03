@@ -90,7 +90,7 @@ export default function useImtblXConnection({ networks }: WalletConnectionProvid
                 throw e
             }
             else {
-                e.name = TransactionMessageType.UexpectedErrorMessage
+                e.name = TransactionMessageType.UnexpectedErrorMessage
                 throw e
             }
         }

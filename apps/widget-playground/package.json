@@ -27,7 +27,7 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tabs": "^1.1.12",
     "@radix-ui/react-tooltip": "^1.2.7",
-    "@tanstack/react-query": "^5.77.2",
+    "@tanstack/react-query": "catalog:",
     "@uiw/react-color-sketch": "^2.5.5",
     "axios": "catalog:",
     "class-variance-authority": "^0.7.1",
@@ -36,13 +36,13 @@
     "lucide-react": "^0.379.0",
     "next": "15.3.2",
     "posthog-js": "^1.276.0",
-    "react": "18",
-    "react-dom": "18",
+    "react": "catalog:",
+    "react-dom": "catalog:",
     "tailwind-merge": "^3.3.0",
     "tinycolor2": "^1.6.0",
     "viem": "catalog:",
     "wagmi": "catalog:",
-    "zustand": "^5.0.5"
+    "zustand": "catalog:"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "4.0.15",

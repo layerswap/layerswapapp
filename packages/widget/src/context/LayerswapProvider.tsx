@@ -30,6 +30,7 @@ export type LayerswapWidgetConfig = {
     initialValues?: InitialSettings,
     walletConnect?: typeof AppSettings.WalletConnectConfig
     imtblPassport?: typeof AppSettings.ImtblPassportConfig
+    tonConfigs?: typeof AppSettings.TonClientConfig
 }
 
 export type LayerswapContextProps = {
@@ -47,6 +48,7 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
 
     AppSettings.ApiVersion = version || AppSettings.ApiVersion
     AppSettings.ImtblPassportConfig = imtblPassport
+    AppSettings.TonClientConfig = config?.tonConfigs || AppSettings.TonClientConfig
     AppSettings.WalletConnectConfig = config?.walletConnect || AppSettings.WalletConnectConfig
     AppSettings.ThemeData = themeData
     if (apiKey) LayerSwapApiClient.apiKey = apiKey

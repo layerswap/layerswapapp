@@ -184,7 +184,7 @@ export function useNetworkBalanceKey(direction: SwapDirection, networkName: stri
 
 export function useNetworkBalance(direction: SwapDirection, networkName: string | undefined): BalanceEntry | undefined {
     const balanceKey = useNetworkBalanceKey(direction, networkName);
-    const balance = useBalanceStore((s) => (s.isLoading ? undefined : s.balances[balanceKey || "unknown"]));
+    const balance = useBalanceStore((s) => (s.balances[balanceKey || "unknown"]));
     return balance;
 }
 

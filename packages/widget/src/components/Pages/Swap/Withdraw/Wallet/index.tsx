@@ -236,7 +236,7 @@ const TransactionMessage: FC<{ error: Error, isLoading: boolean }> = ({ error, i
                 severity: "error",
             },
         });
-        return <TransactionMessages.UexpectedErrorMessage message={error.message} />
+        return <TransactionMessages.UnexpectedErrorMessage message={error.message} />
     }
     else return <></>
 }

@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/wallet-bitcoin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Bitcoin Wallet Provider for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -40,9 +40,9 @@
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
     "@layerswap/widget": "workspace:^",
-    "@bigmi/client": "^0.3.1",
-    "@bigmi/core": "^0.3.1",
-    "@bigmi/react": "^0.3.1"
+    "@bigmi/client": "^0.6.1",
+    "@bigmi/core": "^0.6.1",
+    "@bigmi/react": "^0.6.1"
   },
   "dependencies": {
     "@bitcoinerlab/secp256k1": "^1.2.0",
@@ -51,9 +51,9 @@
     "bitcoinjs-lib": "^7.0.0"
   },
   "devDependencies": {
-    "@bigmi/client": "^0.3.1",
-    "@bigmi/core": "^0.3.1",
-    "@bigmi/react": "^0.3.1",
+    "@bigmi/client": "^0.6.1",
+    "@bigmi/core": "^0.6.1",
+    "@bigmi/react": "^0.6.1",
     "@layerswap/widget": "workspace:^",
     "react": "catalog:",
     "react-dom": "catalog:"

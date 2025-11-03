@@ -8,7 +8,7 @@ export function browserInjected(): ReturnType<typeof createConnector> {
         return {
             ...injectedConnector,
             connect(...params) {
-                if (!window.ethereum) {
+                if (typeof window !== 'undefined' && !window.ethereum) {
                     window.open('https://metamask.io/', 'inst_metamask')
                 }
                 return injectedConnector.connect(...params)
