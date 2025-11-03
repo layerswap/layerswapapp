@@ -30,7 +30,11 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
             version: process.env.NEXT_PUBLIC_API_VERSION as 'mainnet' | 'testnet',
             settings,
             theme: { ...themeData, borderRadius: 'default', enablePortal: true, enableWideVersion: true, hidePoweredBy: true },
-            imtblPassport: imtblPassportConfigs
+            imtblPassport: imtblPassportConfigs,
+            tonConfigs: {
+                'manifestUrl': 'https://layerswap.io/app/tonconnect-manifest.json',
+                'tonApiKey': process.env.NEXT_PUBLIC_TON_API_KEY || ''
+            }
         }}
         callbacks={{
             onFormChange(formData) {
