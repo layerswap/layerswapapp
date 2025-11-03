@@ -3,7 +3,7 @@ packages:
   - apps/bridge
 
 catalog:
-  '@tanstack/react-query': ^5.90.5
+  '@tanstack/react-query': 5.90.5
   '@types/react': 18.3.1
   '@wagmi/connectors': 5.7.7
   '@wagmi/core': 2.16.4
