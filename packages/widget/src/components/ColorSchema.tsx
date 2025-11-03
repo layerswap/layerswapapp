@@ -72,7 +72,6 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
                     --ls-border-radius-full: 9999px;
                     --ls-border-radius-default: ${adjustBorderRadius('small', mergedTheme.borderRadius)};
 
-                    --ls-colors-backdrop: ${mergedTheme.backdrop};
                     --ls-colors-logo: ${mergedTheme.logo};
                     --ls-colors-primary: ${mergedTheme.primary?.DEFAULT};
                     --ls-colors-primary-100: ${mergedTheme.primary?.[100]};

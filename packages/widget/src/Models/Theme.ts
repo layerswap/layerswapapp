@@ -1,7 +1,6 @@
 import { HTMLAttributes } from "react";
 
 export type ThemeData = {
-    backdrop?: string,
     buttonTextColor?: string,
     logo?: string,
     tertiary?: string,
@@ -46,7 +45,6 @@ export type StatusColor = {
 
 export const THEME_COLORS: { [key: string]: ThemeData } = {
     "imxMarketplace": {
-        backdrop: "0, 121, 133",
         buttonTextColor: '255, 255, 255',
         tertiary: '140, 152, 192',
         logo: '255, 255, 255',
@@ -111,7 +109,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         },
     },
     "default": {
-        backdrop: "62, 18, 64",
         tertiary: '118, 128, 147',
         buttonTextColor: '228, 229, 240',
         logo: '255, 0, 147',
@@ -157,7 +154,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         },
     },
     "halloween": {
-        backdrop: "20, 10, 25",
         tertiary: "110, 80, 140",
         buttonTextColor: "255, 240, 200",
         logo: '255, 0, 147',

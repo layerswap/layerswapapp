@@ -27,7 +27,7 @@ const Widget = ({ children, hideMenu, goBack, contextualMenu }: Props) => {
          style={AppSettings.ThemeData?.cardBackgroundStyle}
          className={clsx("sm:pb-4 rounded-3xl w-full sm:overflow-hidden relative bg-secondary-700 h-full flex flex-col", {
             "max-sm:has-openpicker:min-h-svh max-sm:min-h-[99.8svh] sm:has-openpicker:min-h-[79svh]": AppSettings.ThemeData?.enableWideVersion,
-            "sm:has-openpicker:min-h-[650px]": !AppSettings.ThemeData?.enableWideVersion,
+            "has-openpicker:min-h-[650px]": !AppSettings.ThemeData?.enableWideVersion,
             "pb-4 overflow-hidden": AppSettings.ThemeData?.enablePortal == false,
          })}
       >
