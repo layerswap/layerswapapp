@@ -29,7 +29,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
             apiKey,
             version: process.env.NEXT_PUBLIC_API_VERSION as 'mainnet' | 'testnet',
             settings,
-            theme: { ...themeData, borderRadius: 'default', enablePortal: false, enableWideVersion: false, hidePoweredBy: true },
+            theme: { ...themeData, borderRadius: 'default', enablePortal: true, enableWideVersion: true, hidePoweredBy: true },
             imtblPassport: imtblPassportConfigs
         }}
         callbacks={{
