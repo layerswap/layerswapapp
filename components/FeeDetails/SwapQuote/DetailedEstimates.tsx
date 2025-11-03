@@ -13,6 +13,8 @@ import useSWRNftBalance from '@/lib/nft/useSWRNftBalance'
 import { useSelectedAccount } from '@/context/balanceAccounts'
 import { Slippage } from '../Slippage'
 import { truncateDecimals } from '@/components/utils/RoundDecimals'
+import { Network, NetworkRouteToken } from '@/Models/Network'
+import shortenAddress from '@/components/utils/ShortenAddress'
 
 type DetailedEstimatesProps = {
     quote: SwapQuote | undefined,
@@ -38,7 +40,8 @@ export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
     return <div className="flex flex-col w-full px-2">
         {variant === "extended" && <GasFee values={values} quote={quote} />}
         <Fees quote={quote} values={values} />
-        <Rate fromAsset={values?.fromAsset} toAsset={values?.toAsset} requestAmount={quote?.requested_amount} receiveAmount={quote?.receive_amount} />
+        {values.depositMethod !== "deposit_address" &&<Rate fromAsset={values?.fromAsset} toAsset={values?.toAsset} requestAmount={quote?.requested_amount} receiveAmount={quote?.receive_amount} />}
+        {values.depositMethod === "deposit_address" && variant === "extended" && values?.fromAsset?.contract && <ExchangeTokenContract fromAsset={values?.fromAsset} network={values?.from} />}
         {variant === "extended" && values.depositMethod === "wallet" && <Slippage quoteData={quote} values={values} />}
         <Estimates quote={quote} />
         {showReward && <Reward reward={reward} />}
@@ -124,7 +127,7 @@ const Fees = ({ quote, values }: { quote: SwapQuote | undefined, values: SwapVal
     </RowWrapper>
 }
 const Estimates = ({ quote }: { quote: SwapQuote | undefined }) => {
-    return <RowWrapper title="Estimates">
+    return <RowWrapper title="Est. time">
         <AverageCompletionTime avgCompletionTime={quote?.avg_completion_time} />
     </RowWrapper>
 }
@@ -151,6 +154,14 @@ const Rate = ({ fromAsset, toAsset, requestAmount, receiveAmount }) => {
     return <RowWrapper title="Rate">
         <RateElement fromAsset={fromAsset} toAsset={toAsset} requestAmount={requestAmount} receiveAmount={receiveAmount} />
     </RowWrapper>
+}
+
+const ExchangeTokenContract = ({ fromAsset, network }: { fromAsset: NetworkRouteToken | undefined, network: Network | undefined }) => {
+    return <RowWrapper title={`${network?.display_name} - ${fromAsset?.symbol}`}>
+        {
+            fromAsset?.contract ? <span>{shortenAddress(fromAsset?.contract)}</span> : '-'
+        }
+    </RowWrapper >
 }
 
 const LoadingBar = () => (<div className='h-[10px] w-16 inline-flex bg-gray-500 rounded-xs animate-pulse' />);
