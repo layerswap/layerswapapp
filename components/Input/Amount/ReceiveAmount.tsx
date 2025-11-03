@@ -20,7 +20,7 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ source_token, destinatio
         <div className="flex-col w-full flex min-w-0 font-normal border-0 text-[28px] leading-7 text-primary-text relative truncate group-[.exchange-amount-field]:items-center group-[.exchange-amount-field]:flex-row">
             <div className="w-full flex items-center justify-start relative group-[.exchange-amount-field]:w-fit">
                 <div className={clsx(
-                    "w-full flex items-center py-[3px] pr-3 receiveAmount",
+                    "w-full flex items-center py-[3px] pr-3 group-[.exchange-amount-field]:pr-2 receiveAmount",
                     { "animate-pulse-stronger": isFeeLoading },
                     { "text-secondary-text": !receive_amount }
                 )}>

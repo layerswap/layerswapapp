@@ -15,20 +15,18 @@ import { Slippage } from '../Slippage'
 import { truncateDecimals } from '@/components/utils/RoundDecimals'
 
 type DetailedEstimatesProps = {
-    quote: Quote | undefined
+    quote: SwapQuote | undefined,
+    reward?: QuoteReward,
     swapValues: SwapValues
     variant?: "base" | "extended"
 }
 
 export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
-    quote: quoteData,
+    quote,
+    reward,
     swapValues: values,
     variant
 }) => {
-
-    const quote = quoteData?.quote
-    const reward = quoteData?.reward
-
     const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && reward?.nft_contract_address;
     const { balance: nftBalance, isLoading, error } = useSWRNftBalance(
         values.destination_address || '',

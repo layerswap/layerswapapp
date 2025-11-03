@@ -64,7 +64,8 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
                 <AccordionContent className="rounded-2xl">
                     <DetailedEstimates
                         swapValues={values}
-                        quote={quoteData}
+                        quote={quoteData?.quote}
+                        reward={quoteData?.reward}
                         variant='base'
                     />
                 </AccordionContent>

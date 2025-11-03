@@ -200,7 +200,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                 ? <ValidationError />
                                 : null
                         }
-                        <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                        <QuoteDetails swapValues={values} quote={quote?.quote} isQuoteLoading={isQuoteLoading} reward={quote?.reward} />
                     </div>
                     <FormButton
                         shouldConnectWallet={false}

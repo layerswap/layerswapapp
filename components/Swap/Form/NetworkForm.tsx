@@ -127,7 +127,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 ? <ValidationError />
                                 : null
                         }
-                        <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                        <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} />
                     </div>
                 </Widget.Content>
                 <Widget.Footer>
