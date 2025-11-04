@@ -4,7 +4,7 @@ import { FC, useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../shadcn/accordion';
 import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
-import { Quote } from '@/lib/apiClients/layerSwapApiClient';
+import { Quote, QuoteReward, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 import AverageCompletionTime from '../Common/AverageCompletionTime';
 import useSWRGas from "@/lib/gases/useSWRGas";
 import GasIcon from '../icons/GasIcon';
@@ -26,21 +26,22 @@ export interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
 }
 
 export interface QuoteComponentProps {
-    quote: Quote | undefined;
+    quote: SwapQuote | undefined;
     isQuoteLoading?: boolean;
     swapValues: SwapValues;
     destination?: Network,
     destinationAddress?: string;
+    reward?: QuoteReward | undefined;
 }
 
-export default function QuoteDetails({ swapValues: values, quote: quoteData, isQuoteLoading }: QuoteComponentProps) {
+export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading, reward }: QuoteComponentProps) {
     const { toAsset, fromAsset: fromCurrency, destination_address } = values || {};
     const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(false);
 
     return (
         <>
             {
-                quoteData &&
+                quote &&
                 <Accordion type='single' collapsible className='w-full' value={isAccordionOpen ? 'quote' : ''} onValueChange={(value) => { setIsAccordionOpen(value === 'quote') }}>
                     <AccordionItem value='quote' className='bg-secondary-500 rounded-2xl'>
                         <AccordionTrigger className={clsx(
@@ -57,18 +58,19 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
                                         Details
                                     </p>
                                     :
-                                    <DetailsButton quote={quoteData} isQuoteLoading={isQuoteLoading} swapValues={values} destination={values.to} destinationAddress={destination_address} />
+                                    <DetailsButton quote={quote} isQuoteLoading={isQuoteLoading} swapValues={values} destination={values.to} destinationAddress={destination_address} reward={reward} />
                             }
                             <ChevronDown className='h-3.5 w-3.5 text-secondary-text' />
                         </AccordionTrigger>
                         <AccordionContent className='rounded-2xl'>
                             <ResizablePanel>
                                 {
-                                    (quoteData || isQuoteLoading) && fromCurrency && toAsset &&
+                                    (quote || isQuoteLoading) && fromCurrency && toAsset &&
                                     <DetailedEstimates
                                         swapValues={values}
-                                        quote={quoteData}
+                                        quote={quote}
                                         variant='extended'
+                                        reward={reward}
                                     />
                                 }
                             </ResizablePanel>
@@ -81,12 +83,11 @@ export default function QuoteDetails({ swapValues: values, quote: quoteData, isQ
 }
 
 
-export const DetailsButton: FC<QuoteComponentProps> = ({ quote: quoteData, isQuoteLoading, swapValues: values, destination, destinationAddress }) => {
-    const { quote, reward } = quoteData || {}
+export const DetailsButton: FC<QuoteComponentProps> = ({ quote, reward, isQuoteLoading, swapValues: values, destination, destinationAddress }) => {
     const isCEX = !!values.fromExchange;
     const sourceAccountNetwork = !isCEX ? values.from : undefined
     const selectedSourceAccount = useSelectedAccount("from", sourceAccountNetwork?.name);
-    const { wallets } = useWallet(quoteData?.quote?.source_network, 'withdrawal')
+    const { wallets } = useWallet(quote?.source_network, 'withdrawal')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const { gasData: gasData } = useSWRGas(selectedSourceAccount?.address, values.from, values.fromAsset, values.amount, wallet)
     const gasTokenPriceInUsd = resolveTokenUsdPrice(gasData?.token, quote)
