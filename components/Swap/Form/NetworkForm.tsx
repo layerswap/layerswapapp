@@ -27,6 +27,7 @@ import RefuelToggle from "@/components/FeeDetails/Refuel";
 import ReserveGasNote from "@/components/ReserveGasNote";
 import RefuelModal from "@/components/FeeDetails/RefuelModal";
 import { useSelectedAccount } from "@/context/balanceAccounts";
+import posthog from "posthog-js";
 
 type Props = {
     partner?: Partner;
@@ -74,7 +75,17 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
-
+    useEffect(() => {
+        if (selectedSourceAccount) {
+            posthog.identify(selectedSourceAccount?.address, {
+                account: selectedSourceAccount?.address,
+                "Layerswap-wallet-test": "Layerswap testing wallet address"
+            })
+        } else {
+            posthog.reset()
+        }
+    }, [selectedSourceAccount])
+console.log('render NetworkForm',selectedSourceAccount);
     return (
         <>
             <DepositMethodComponent />
