@@ -2,6 +2,7 @@ import { Check, X } from "lucide-react";
 import { classNames } from "../utils/classNames";
 import { Gauge } from "../gauge";
 import { ProgressStatus, StatusStep } from "./Withdraw/Processing/types";
+import clsx from "clsx";
 
 function renderStepIcon(step: StatusStep) {
     switch (step.status) {
@@ -44,16 +45,31 @@ function Step({ step, isLastStep }: { step: StatusStep, isLastStep: boolean }) {
         <li className={classNames(isLastStep ? '' : 'pb-10', 'relative')} key={step?.name}>
             <div className="flex items-center justify-between w-full">
                 {!isLastStep && (
-                    <div className={`absolute top-1/2 left-4 -ml-px mt-0.5 h-[40%] w-0.5 ${step.status === "complete" ? "bg-primary" : "bg-primary/20"} `} aria-hidden="true" />
+                    <div className={clsx(`absolute top-1/2 left-4 -ml-px mt-0.5 h-[40%] w-0.5 `, {
+                        "bg-primary/20": step.status !== "complete" && step.status !== "failed",
+                        "bg-primary": step.status === "complete" || step.status === "failed"
+                    })}
+                        aria-hidden="true" />
                 )}
-                <div className={`group relative flex ${step?.description ? "items-start" : "items-center"}`}>
+                <div className={clsx(`group relative flex `, {
+                    "items-start": step?.description,
+                    "items-center": !step?.description
+                })}>
                     <span className="flex h-9 items-center text-primary-text" aria-hidden="true">
                         {renderStepIcon(step)}
                     </span>
                     <span className="ml-3 flex min-w-0 flex-col">
-                        <span className={`text-sm font-medium ${step.status === "current" ? "text-primary" : step.status === "upcoming" ? "text-secondary-text/70" : "text-primary-text"}`}>{step.name}</span>
-                        {step?.description &&
-                            <span className="text-sm text-secondary-text">{step?.description}</span>}
+                        <span className={clsx(`text-sm font-medium`, {
+                            "text-primary": step.status === "current",
+                            "text-secondary-text/70": step.status === "upcoming",
+                            "text-primary-text": step.status !== "current" && step.status !== "upcoming"
+                        })}>
+                            {step.name}
+                        </span>
+                        {
+                            step?.description &&
+                            <span className="text-sm text-secondary-text">{step?.description}</span>
+                        }
                     </span>
                 </div>
             </div>

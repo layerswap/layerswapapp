@@ -151,7 +151,19 @@ export default class NetworkSettings {
             isFeatured: true,
             AccountExplorerTemplate: 'https://optimistic.etherscan.io/address/{0}',
             GasCalculationType: GasCalculation.OptimismType,
-            BaseFeeMultiplier: 1.7,
+            BaseFeeMultiplier: 1.5,
+            DefaultPriorityFee: 1
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.ScrollMainnet] = {
+            ChainId: 534352,
+            GasCalculationType: GasCalculation.OptimismType,
+            BaseFeeMultiplier: 1.5,
+            DefaultPriorityFee: 1
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.ZircuitMainnet] = {
+            ChainId: 48900,
+            GasCalculationType: GasCalculation.OptimismType,
+            BaseFeeMultiplier: 1.5,
             DefaultPriorityFee: 1
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.OptimismGoerli] = {
@@ -170,6 +182,10 @@ export default class NetworkSettings {
             AccountExplorerTemplate: 'https://etherscan.io/address/{0}',
             DefaultPriorityFee: 0.3,
             BaseFeeMultiplier: 1.7
+        };
+        NetworkSettings.KnownSettings[KnownInternalNames.Networks.AbstractMainnet] = {
+            ChainId: 1,
+            BaseFeeMultiplier: 1.9
         };
         NetworkSettings.KnownSettings[KnownInternalNames.Networks.EthereumSepolia] = {
             ChainOrder: 1

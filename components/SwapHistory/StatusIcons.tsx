@@ -1,5 +1,6 @@
 import { SwapStatus } from "../../Models/SwapStatus"
-import { PublishedSwapTransactions, SwapItem, TransactionType } from "../../lib/layerSwapApiClient"
+import { PublishedSwapTransactions, SwapItem, TransactionType } from "../../lib/apiClients/layerSwapApiClient"
+import CheckIcon from "../icons/CheckIcon";
 
 export default function StatusIcon({ swap, withBg, short }: { swap: SwapItem, withBg?: boolean, short?: boolean }) {
   const status = swap.status;
@@ -27,6 +28,10 @@ export default function StatusIcon({ swap, withBg, short }: { swap: SwapItem, wi
       return <YellowComponent text="Delayed" withBg={withBg} short={short} />
     case SwapStatus.Created:
       return <YellowComponent text="Incomplete" withBg={withBg} short={short} />
+    case SwapStatus.PendingRefund:
+      return <YellowComponent text="Refund Pending" withBg={withBg} short={short} />
+    case SwapStatus.Refunded:
+      return <GreenComponent text="Refund Completed" withBg={withBg} short={short} />
     default:
       return <></>
   }
@@ -34,7 +39,7 @@ export default function StatusIcon({ swap, withBg, short }: { swap: SwapItem, wi
 
 const IconComponentWrapper = ({ children, withBg, classNames }: { children: React.ReactNode, withBg?: boolean, classNames?: string }) => {
   return (
-    <div className={`inline-flex items-center gap-2 font-bold ${classNames} ${withBg ? 'py-1 w-full justify-center rounded-lg' : '!bg-transparent'}`}>
+    <div className={`inline-flex items-center gap-1 font-bold ${classNames} ${withBg ? 'pt-3.5 py-1.5 w-full justify-center rounded-b-2xl' : 'bg-transparent!'}`}>
       {children}
     </div>
   )
@@ -42,10 +47,8 @@ const IconComponentWrapper = ({ children, withBg, classNames }: { children: Reac
 
 const GreenComponent = ({ text, withBg, short }: IconComponentProps) => {
   return (
-    <IconComponentWrapper withBg={withBg} classNames="bg-[#54b487]/20 text-[#54b487]">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 60 60" fill="none">
-        <circle cx="30" cy="30" r="30" fill="#54b487" />
-      </svg>
+    <IconComponentWrapper withBg={withBg} classNames="bg-[#54b487]/20 text-[#569735] text-sm">
+      <CheckIcon />
       {!short && <p>{text}</p>}
     </IconComponentWrapper>
   )
@@ -53,7 +56,7 @@ const GreenComponent = ({ text, withBg, short }: IconComponentProps) => {
 
 const PrimaryComponent = ({ text, withBg, short }: IconComponentProps) => {
   return (
-    <IconComponentWrapper withBg={withBg} classNames="bg-primary-900/30 text-primary-500">
+    <IconComponentWrapper withBg={withBg} classNames="bg-primary-900 text-primary-500 text-sm">
       <div className='relative'>
         <div className='absolute top-0.5 left-0.5 w-3 h-3 opacity-40 bg bg-primary rounded-full animate-ping'></div>
         <div className='relative top-0 left-0 w-4 h-4 scale-75 bg bg-primary rounded-full'></div>
@@ -65,10 +68,10 @@ const PrimaryComponent = ({ text, withBg, short }: IconComponentProps) => {
 
 const SecondaryComponent = ({ text, withBg, short }: IconComponentProps) => {
   return (
-    <IconComponentWrapper withBg={withBg} classNames="text-primary-text-muted bg-secondary-900">
+    <IconComponentWrapper withBg={withBg} classNames="text-primary-text-tertiary bg-secondary-700 text-sm">
       {
         short ?
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 60 60" fill="currentColor" className="text-primary-text-muted">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 60 60" fill="currentColor" className="text-primary-text-tertiary">
             <circle cx="30" cy="30" r="30" fill="currentColor" />
           </svg>
           :
@@ -80,18 +83,18 @@ const SecondaryComponent = ({ text, withBg, short }: IconComponentProps) => {
 
 const YellowComponent = ({ text, withBg, short }: IconComponentProps) => {
   return (
-    <IconComponentWrapper withBg={withBg} classNames="bg-yellow-950/40 text-yellow-600">
+    <IconComponentWrapper withBg={withBg} classNames="bg-[#614713] text-[#D69A22] text-sm">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 60 60" fill="none">
         <circle cx="30" cy="30" r="30" fill="#DF8B16" />
       </svg>
-      {!short && <p>{text}</p>}
+      {!short && <p className="text-sm font-bold">{text}</p>}
     </IconComponentWrapper>
   )
 }
 
 const RedComponenet = ({ text, withBg, short }: IconComponentProps) => {
   return (
-    <IconComponentWrapper withBg={withBg} classNames="bg-red-950/40 text-red-600">
+    <IconComponentWrapper withBg={withBg} classNames="bg-red-950/40 text-red-600 text-sm">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 60 60" fill="none">
         <circle cx="30" cy="30" r="30" fill="#E43636" />
       </svg>

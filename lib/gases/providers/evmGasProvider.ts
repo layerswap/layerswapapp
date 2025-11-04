@@ -1,15 +1,15 @@
 
 import { GasProps } from "../../../Models/Balance"
 import { NetworkType, Network, Token } from "../../../Models/Network"
-import { Provider } from "./types"
+import { GasProvider } from "./types"
 import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, http, parseEther, serializeTransaction } from "viem";
 import { erc20Abi } from "viem";
-import { datadogRum } from "@datadog/browser-rum";
-import formatAmount from "../../formatAmount";
+import { formatUnits } from "viem";
 import { publicActionsL2 } from 'viem/op-stack'
 import resolveChain from "../../resolveChain";
+import posthog from "posthog-js";
 
-export class EVMGasProvider implements Provider {
+export class EVMGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
         return network.type === NetworkType.EVM && !!network.token
     }
@@ -18,15 +18,13 @@ export class EVMGasProvider implements Provider {
 
         const chainId = Number(network?.chain_id)
 
-        if (!network || !address || !chainId || !recipientAddress) {
+        if (!network || !address || !chainId || !recipientAddress || !network.token) {
             return
         }
 
         const contract_address = token.contract as `0x${string}`
 
         try {
-
-            if (network.metadata.zks_paymaster_contract) return 0
 
             const { createPublicClient, http } = await import("viem")
             const resolveNetworkChain = (await import("../../resolveChain")).default
@@ -42,17 +40,19 @@ export class EVMGasProvider implements Provider {
                     publicClient,
                     chainId,
                     contract_address,
-                    account: address,
+                    account: address as `0x${string}`,
                     from: network,
                     currency: token,
                     destination: recipientAddress as `0x${string}`,
-                    nativeToken: token
+                    nativeToken: network.token
                 }
             )
 
             const gas = await gasProvider.resolveGas()
 
-            return gas
+            if (gas) {
+                return { gas, token: network.token }
+            }
         }
         catch (e) {
             console.log(e)
@@ -128,7 +128,15 @@ abstract class getEVMGas {
             const error = new Error(e)
             error.name = "GasPriceError"
             error.cause = e
-            datadogRum.addError(error);
+            posthog.capture('$exception', {
+                name: error.name,
+                message: error.message,
+                $layerswap_exception_type: "Gas Price Error",
+                stack: error.stack,
+                cause: error.cause,
+                where: 'getGasPrice',
+                severity: 'error',
+            })
         }
     }
     private async estimateFeesPerGas() {
@@ -139,7 +147,15 @@ abstract class getEVMGas {
             const error = new Error(e)
             error.name = "FeesPerGasError"
             error.cause = e
-            datadogRum.addError(error);
+            posthog.capture('$exception', {
+                name: error.name,
+                message: error.message,
+                $layerswap_exception_type: "Fees Per Gas Error",
+                stack: error.stack,
+                cause: error.cause,
+                where: 'feesPerGasError',
+                severity: 'error',
+            })
         }
     }
     private async estimateMaxPriorityFeePerGas() {
@@ -150,7 +166,15 @@ abstract class getEVMGas {
             const error = new Error(e)
             error.name = "MaxPriorityFeePerGasError"
             error.cause = e
-            datadogRum.addError(error);
+            posthog.capture('$exception', {
+                name: error.name,
+                message: error.message,
+                $layerswap_exception_type: "Max Priority Fee Per Gas Error",
+                stack: error.stack,
+                cause: error.cause,
+                where: 'maxPriorityFeePerGasError',
+                severity: 'error',
+            })
         }
     }
 
@@ -209,7 +233,7 @@ class getEthereumGas extends getEVMGas {
 
         const totalGas = multiplier * estimatedGasLimit
 
-        const formattedGas = formatAmount(totalGas, this.nativeToken?.decimals)
+        const formattedGas = Number(formatUnits(BigInt(totalGas), this.nativeToken?.decimals))
         return formattedGas
     }
 
@@ -227,24 +251,26 @@ export default class getOptimismGas extends getEVMGas {
 
     resolveGas = async () => {
         const feeData = await this.resolveFeeData()
-
+        
         const estimatedGasLimit = this.contract_address ?
             await this.estimateERC20GasLimit()
             : await this.estimateNativeGasLimit()
 
         const multiplier = feeData.maxFeePerGas || feeData.gasPrice
 
-        if (!multiplier)
+        if (!multiplier || !feeData.gasPrice)
             return undefined
 
-        let totalGas = (multiplier * estimatedGasLimit) + await this.GetOpL1Fee(feeData.gasPrice!)
+        const l1OpFee = await this.GetOpL1Fee(feeData.gasPrice)
 
-        const formattedGas = formatAmount(totalGas, this.nativeToken?.decimals)
+        let totalGas = (multiplier * estimatedGasLimit) + l1OpFee
+
+        const formattedGas = Number(formatUnits(BigInt(totalGas), this.nativeToken?.decimals))
         return formattedGas
     }
 
     private GetOpL1Fee = async (gasPrice: bigint): Promise<bigint> => {
-        const amount = BigInt(1000)
+        const amount = BigInt(1000000000000)
         let serializedTransaction: TransactionSerializedEIP1559
 
         if (this.contract_address) {
@@ -283,9 +309,9 @@ export default class getOptimismGas extends getEVMGas {
             data: serializedTransaction,
             to: this.destination,
             account: this.account,
-            gasPriceOracleAddress: this.from.metadata.evm_oracle_contract as `0x${string}`,
+            gasPriceOracleAddress: this.from.metadata?.evm_oracle_contract as `0x${string}`,
             gasPrice: gasPrice as any
-        }) 
+        })
 
         return fee;
     }

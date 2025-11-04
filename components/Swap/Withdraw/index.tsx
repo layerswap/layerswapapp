@@ -1,45 +1,51 @@
 import { FC } from 'react'
-import WalletTransfer from './Wallet';
-import ManualTransfer from './ManualTransfer';
-import { useSwapDataState } from '../../../context/swap';
-import KnownInternalNames from '../../../lib/knownIds';
+import { useSwapDataState } from '@/context/swap';
+import KnownInternalNames from '@/lib/knownIds';
 import SwapSummary from '../Summary';
 import External from './External';
-import { useQueryState } from '../../../context/query';
+import { useQueryState } from '@/context/query';
 import { Widget } from '../../Widget/Index';
-import WalletTransferContent from './WalletTransferContent';
+import { SwapQuoteDetails } from './SwapQuoteDetails';
+import WalletTransferButton from './WalletTransferButton';
+import { useBalance } from '@/lib/balances/useBalance';
+import { useSettingsState } from '@/context/settings';
+import { useSelectedAccount } from '@/context/balanceAccounts';
+import { ErrorDisplay } from '@/components/validationError/ErrorDisplay';
+import { Partner } from '@/Models/Partner';
 
-const Withdraw: FC = () => {
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
+const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, partner }) => {
+    const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
+
     const { appName, signature } = useQueryState()
-
-    const sourceIsImmutableX = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
-        || swap?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
-    const sourceIsArbitrumOne = swap?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
-        || swap?.source_network.name === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
-
+    const sourceIsImmutableX = swapBasicData?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
+        || swapBasicData?.source_network.name === KnownInternalNames.Networks.ImmutableXGoerli?.toUpperCase()
     const isImtblMarketplace = (signature && appName === "imxMarketplace" && sourceIsImmutableX)
-    const sourceIsSynquote = appName === "ea7df14a1597407f9f755f05e25bab42" && sourceIsArbitrumOne
+
+    const { networks } = useSettingsState()
+    const source_network = swapBasicData?.source_network && networks.find(n => n.name === swapBasicData?.source_network?.name)
+    const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
+
+    const { balances } = useBalance(selectedSourceAccount?.address, source_network)
+    const walletBalance = source_network && balances?.find(b => b?.network === source_network?.name && b?.token === swapBasicData?.source_token?.symbol)
+    const walletBalanceAmount = walletBalance?.amount
 
     let withdraw: {
         content?: JSX.Element | JSX.Element[],
         footer?: JSX.Element | JSX.Element[],
     } = {}
+    
+    const showInsufficientBalanceWarning = swapBasicData?.use_deposit_address === false
+        && swapBasicData?.requested_amount
+        && Number(swapBasicData?.requested_amount)
+        && Number(walletBalanceAmount) < Number(swapBasicData?.requested_amount)
 
-    if (swap?.use_deposit_address === false) {
+    if (swapBasicData?.use_deposit_address === false) {
         withdraw = {
-            content: <WalletTransferContent />,
-            footer: <WalletTransfer />
-        }
-    } else if (swap?.use_deposit_address === true) {
-        withdraw = {
-            footer: <ManualTransfer />,
-            content: <></>
+            footer: <WalletTransferButton swapBasicData={swapBasicData} swapId={swapDetails?.id} refuel={!!refuel} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} balanceWarning={showInsufficientBalanceWarning ? <ErrorDisplay errorName='insufficientFunds' /> : null} />
         }
     }
 
-    if (isImtblMarketplace || sourceIsSynquote) {
+    if (isImtblMarketplace) {
         withdraw = {
             content: <External />
         }
@@ -49,19 +55,16 @@ const Withdraw: FC = () => {
         <>
             <Widget.Content>
                 <div className="w-full flex flex-col justify-between  text-secondary-text">
-                    <div className='grid grid-cols-1 gap-4 '>
-                        <div className="bg-secondary-700 rounded-lg px-3 py-4 border border-secondary-500 w-full relative z-10 space-y-4">
-                            <SwapSummary />
-                        </div>
-                        <span>
-                            {withdraw?.content}
-                        </span>
+                    <div className='grid grid-cols-1 gap-3 '>
+                        <SwapSummary />
+                        <SwapQuoteDetails swapBasicData={swapBasicData} quote={quote} refuel={refuel} quoteIsLoading={quoteIsLoading} quoteError={quoteError} partner={partner} />
+                        {withdraw?.content}
                     </div>
                 </div>
             </Widget.Content>
             {
                 withdraw?.footer &&
-                <Widget.Footer sticky={true}>
+                <Widget.Footer sticky={type == 'widget'}>
                     {withdraw?.footer}
                 </Widget.Footer>
             }

@@ -1,4 +1,4 @@
-import { AccountInterface } from 'starknet';
+import { AccountInterface, WalletAccount } from 'starknet';
 import { StarknetWindowObject } from 'starknetkit';
 
 export type InternalConnector = {
@@ -25,14 +25,14 @@ export type Wallet = {
     icon: (props: any) => React.JSX.Element;
     //TODO: this is name of the connector, should be changed to connectorId
     metadata?: {
-        starknetAccount?: AccountInterface,
+        starknetAccount?: WalletAccount,
         wallet?: StarknetWindowObject,
         l1Address?: string,
         deepLink?: string
     }
     chainId?: string | number,
     isLoading?: boolean,
-    disconnect: () => Promise<void> | undefined | void;
+    disconnect?: () => Promise<void> | undefined | void;
     connect?: () => Promise<Wallet | undefined>;
     isNotAvailable?: boolean;
     //TODO: refactor
@@ -47,9 +47,11 @@ export type WalletProvider = {
     hideFromList?: boolean,
     connectWallet: (props?: { connector?: InternalConnector }) => Promise<Wallet | undefined> | undefined,
     disconnectWallets?: () => Promise<void> | undefined | void,
-    switchAccount?: (connector: Wallet, address: string) => Promise<void>,
+    switchAccount: (connector: Wallet, address: string) => Promise<void>,
+    switchChain?: (connector: Wallet, chainId: string | number) => Promise<void>
     isNotAvailableCondition?: (connector: string, network: string) => boolean,
     availableWalletsForConnect?: InternalConnector[],
+    availableHiddenWalletsForConnect?: InternalConnector[],
     connectedWallets: Wallet[] | undefined,
     activeWallet: Wallet | undefined,
     autofillSupportedNetworks?: string[],
@@ -58,4 +60,12 @@ export type WalletProvider = {
     name: string,
     id: string,
     providerIcon?: string,
+    unsupportedPlatforms?: string[],
+}
+
+
+export type SelectAccountProps = {
+    walletId: string;
+    address: string;
+    providerName: string;
 }

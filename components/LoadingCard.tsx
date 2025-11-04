@@ -5,11 +5,11 @@ type Props = {
 }
 const LoadingCard: FC<Props> = ({ name }) => {
     return <div
-        className={`bg-secondary-900 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}
+        className={`bg-secondary-700 md:shadow-card rounded-lg w-full sm:overflow-hidden relative`}
     >
         <div className='text-center text-xl text-secondary-100'>
         </div>
-        <div className="relative px-6">
+        <div className="relative px-4">
             <div className="flex items-start">
                 <div className={`flex flex-nowrap grow`}>
                     <div className="w-full pb-6 flex flex-col justify-between space-y-5 text-secondary-text h-full">

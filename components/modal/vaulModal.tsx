@@ -1,15 +1,15 @@
-import { clsx } from 'clsx';
 import { Dispatch, FC, ReactNode, SetStateAction, useEffect, useRef, useState } from 'react';
-import useWindowDimensions from '../../hooks/useWindowDimensions';
+import { createPortal } from 'react-dom';
+import { clsx } from 'clsx';
+import useWindowDimensions from '@/hooks/useWindowDimensions';
 import IconButton from '../buttons/iconButton';
 import { ChevronUp, X } from 'lucide-react';
 import { useMeasure } from '@uidotdev/usehooks';
-import { SnapElement, SnapPointsProvider, useSnapPoints } from '../../context/snapPointsContext';
+import { SnapElement, SnapPointsProvider, useSnapPoints } from '@/context/snapPointsContext';
 import { AnimatePresence, motion } from 'framer-motion';
-import { createPortal } from 'react-dom';
 import { Drawer } from './vaul';
 
-type VaulDrawerProps = {
+export type VaulDrawerProps = {
     children: ReactNode;
     show: boolean;
     setShow: Dispatch<SetStateAction<boolean>>;
@@ -18,9 +18,10 @@ type VaulDrawerProps = {
     modalId: string;
     onClose?: () => void;
     onAnimationEnd?: (open: boolean) => void;
+    className?: string;
 }
 
-const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd }) => {
+const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className }) => {
     const { isMobile } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
@@ -75,11 +76,13 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
     if (!loaded) return null;
 
+    const container = isMobile ? undefined : document.getElementById('widget');
+
     return (
         <Drawer.Root
             open={show}
             onOpenChange={handleOpenChange}
-            container={isMobile ? undefined : document.getElementById('widget')}
+            container={container}
             snapPoints={snapPointsHeight}
             activeSnapPoint={snap}
             setActiveSnapPoint={setSnap}
@@ -89,9 +92,10 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             }}
             modal={isMobile ? true : false}
             repositionInputs={false}
-            onAnimationEnd={onAnimationEnd}
+            onAnimationEnd={(e) => { onAnimationEnd && onAnimationEnd(e) }}
             handleOnly={isMobile}
         >
+
             <Drawer.Portal>
                 <Drawer.Close asChild>
                     {
@@ -102,7 +106,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                             : <motion.div
                                 key="backdrop"
                                 className='absolute inset-0 z-50 bg-black/50 block'
-                                initial={{ opacity: 0 }}
+                                initial={{ opacity: 0.5 }}
                                 animate={{ opacity: 1 }}
                                 exit={{ opacity: 0 }}
                             />
@@ -111,8 +115,8 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
                 <Drawer.Content
                     data-testid="content"
-                    className={clsx('fixed sm:absolute flex flex-col bg-secondary-900 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-6 text-primary-text !ring-0 !outline-none ', {
-                        '!border-none !rounded-none': snap === 1,
+                    className={clsx('fixed sm:absolute flex flex-col bg-secondary-700 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-4 text-primary-text ring-0! outline-hidden! ', className, {
+                        'border-none! rounded-none!': snap === 1,
                     })}
                 >
                     <div
@@ -120,18 +124,18 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         className='w-full relative'>
                         {
                             isMobile &&
-                            <div className="absolute top-2 left-[calc(50%-24px)]" >
-                                <Drawer.Handle className='!w-12 bg-primary-text-muted'/>
+                            <div className="flex justify-center w-full mt-2 mb-[6px]" >
+                                <Drawer.Handle className='!w-12 !bg-primary-text-tertiary' />
                             </div>
                         }
 
-                        <div className='flex items-center w-full text-left justify-between px-6 pt-3 pb-2'>
-                            <Drawer.Title className="text-lg text-secondary-text font-semibold">
+                        <div className='flex items-center w-full text-left justify-between px-4 sm:pt-2 pb-2'>
+                            <Drawer.Title className="text-lg text-secondary-text font-semibold w-full">
                                 {header}
                             </Drawer.Title>
                             <Drawer.Close asChild>
-                                <div className='-mr-2'>
-                                    <IconButton icon={
+                                <div>
+                                    <IconButton className='inline-flex active:animate-press-down' icon={
                                         <X strokeWidth={3} />
                                     }>
                                     </IconButton>
@@ -140,14 +144,14 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         </div>
                         {
                             description &&
-                            <Drawer.Description className="text-sm mt-2 text-secondary-text px-6">
+                            <Drawer.Description className="text-sm mt-2 text-secondary-text px-4">
                                 {description}
                             </Drawer.Description>
                         }
                     </div>
                     <div
-                        className={clsx('flex flex-col w-full h-fit max-h-[90dvh] px-6 styled-scroll overflow-x-hidden relative ', {
-                            'overflow-y-auto': snap === 1,
+                        className={clsx('flex flex-col w-full h-fit max-h-[90dvh] px-4 styled-scroll overflow-x-hidden relative', {
+                            'overflow-y-auto h-full': snap === 1,
                             'overflow-hidden': snap !== 1,
                         })}
                         id="virtualListContainer"
@@ -163,7 +167,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                                     transition={{ duration: 0.15 }}
                                     ref={expandRef}
                                     style={{ top: `${Number(snapElement.height?.toString().replace('px', '')) - 88}px` }} className='w-full fixed left-0 z-50'>
-                                    <button type='button' onClick={goToNextSnap} className="w-full px-6 pt-10 pb-6 justify-center from-secondary-900 bg-gradient-to-t items-center gap-2 inline-flex text-secondary-text">
+                                    <button type='button' onClick={goToNextSnap} className="w-full px-4 pt-10 pb-4 justify-center from-secondary-700 bg-gradient-to-t items-center gap-2 inline-flex text-secondary-text">
                                         <ChevronUp className="w-6 h-6 relative" />
                                         <div className="text-sm font-medium">Expand</div>
                                     </button>
@@ -199,7 +203,8 @@ const VaulFooter: FC<{ snapElement: SnapElement | null }> = ({ snapElement }) =>
     )
 }
 
-const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement> & { id: `item-${number}`, fullheight?: boolean }> = (props) => {
+const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement> & { id: `item-${number}`, openFullHeight?: boolean }> = (props) => {
+    const { openFullHeight, ...domProps } = props;
 
     let [ref, { height }] = useMeasure();
     const { setSnapElemenetsHeight } = useSnapPoints()
@@ -209,13 +214,13 @@ const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement> & { id: `item-${nu
 
         setSnapElemenetsHeight((prev) => {
             const id = Number(props.id?.replace('item-', ''));
-            return [{ id, height: height as number, fullHeight: props.fullheight }, ...prev.filter((item) => item.id !== id)]
+            return [{ id, height: height as number, fullHeight: openFullHeight }, ...prev.filter((item) => item.id !== id)]
         })
 
     }, [height])
 
     return (
-        <div {...props} className={props.className ?? 'pb-6'} id={props.id} ref={ref}>
+        <div {...domProps} className={props.className ?? 'pb-4'} id={props.id} ref={ref}>
             {props.children}
         </div>
     )
@@ -242,7 +247,7 @@ type Props = {
     isWalletModalOpen?: boolean
 }
 
-export const WalletFooterPortal: FC<Props> = ({ children, isWalletModalOpen }) => {
+export const ModalFooterPortal: FC<Props> = ({ children, isWalletModalOpen }) => {
     const ref = useRef<Element | null>(null);
     const [mounted, setMounted] = useState(false)
 
@@ -258,6 +263,5 @@ export const WalletFooterPortal: FC<Props> = ({ children, isWalletModalOpen }) =
 
     return ref.current && mounted ? createPortal(children, ref.current) : null;
 };
-
 
 export default VaulDrawer;

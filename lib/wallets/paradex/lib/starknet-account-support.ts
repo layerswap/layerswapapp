@@ -1,4 +1,4 @@
-import * as Starknet from 'starknet';
+import * as Starknet from 'starknet-old';
 
 type SignatureFormat =
   | 'argent-v0.3.0'

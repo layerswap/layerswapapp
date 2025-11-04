@@ -1,15 +1,14 @@
 import { useField, useFormikContext } from "formik";
 import { ChangeEvent, FC, forwardRef } from "react";
-import { SwapFormValues } from "../DTOs/SwapFormValues";
-import { classNames } from '../utils/classNames'
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
+import { classNames } from '@/components/utils/classNames'
+import { isScientific } from "@/components/utils/RoundDecimals";
 
 type Input = {
+    tempValue?: number;
     label?: JSX.Element | JSX.Element[]
-    pattern?: string;
     disabled?: boolean;
     placeholder: string;
-    min?: number;
-    max?: number;
     minLength?: number;
     maxLength?: number;
     precision?: number;
@@ -25,9 +24,13 @@ type Input = {
 
 // Use with Formik
 const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    function NumericInput({ label, pattern, disabled, placeholder, min, max, minLength, maxLength, precision, step, name, className, children, onChange, onFocus, onBlur }, ref) {
+    function NumericInput({ label, tempValue, disabled, placeholder, minLength, maxLength, precision, step, name, className, children, onChange, onFocus, onBlur }, ref) {
         const { handleChange } = useFormikContext<SwapFormValues>();
         const [field] = useField(name)
+
+        const formattedTempValue = isScientific(tempValue)
+            ? tempValue?.toFixed(precision ?? 0).replace(/\.?0+$/, '')
+            : tempValue?.toString();
 
         return <div>
             {label &&
@@ -36,34 +39,44 @@ const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
                 </label>
             }
             <div className="flex relative w-full">
-                <input
-                    {...field}
-                    pattern={pattern ? pattern : "^[0-9]*[.,]?[0-9]*$"}
-                    inputMode="decimal"
-                    autoComplete="off"
-                    disabled={disabled}
-                    placeholder={placeholder}
-                    autoCorrect="off"
-                    min={min}
-                    max={max}
-                    minLength={minLength}
-                    maxLength={maxLength}
-                    onInput={(event: React.ChangeEvent<HTMLInputElement>) => { replaceComma(event); limitDecimalPlaces(event, precision) }}
-                    onFocus={onFocus}
-                    onBlur={onBlur}
-                    type="text"
-                    step={step}
-                    name={name}
-                    id={name}
-                    ref={ref}
-                    className={classNames(
-                        'disabled:cursor-not-allowed h-12 leading-4 shadow-sm border-secondary-500 placeholder:text-primary-text-placeholder bg-secondary-700 focus:ring-primary focus:border-primary block min-w-0 rounded-lg font-semibold border-0',
+                {
+                    Number(tempValue) > 0 &&
+                    <span className={classNames(
+                        'py-2 flex text-secondary-text/45 items-center h-12 leading-4 bg-secondary-700 min-w-0 rounded-lg font-semibold border-0 ',
                         className
                     )}
-                    onChange={onChange ? onChange : e => {
-                        /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
-                    }}
-                />
+                        ref={ref}
+                    >
+                        <span>{formattedTempValue}</span>
+                    </span>
+                }
+                {
+                    !tempValue &&
+                    <input
+                        {...field}
+                        inputMode="decimal"
+                        autoComplete="off"
+                        disabled={disabled}
+                        placeholder={placeholder}
+                        autoCorrect="off"
+                        minLength={minLength}
+                        maxLength={maxLength}
+                        onInput={(event: React.ChangeEvent<HTMLInputElement>) => { replaceComma(event); limitDecimalPlaces(event, precision) }}
+                        onFocus={onFocus}
+                        onBlur={onBlur}
+                        type="text"
+                        step={step}
+                        name={name}
+                        id={name}
+                        ref={ref}
+                        className={classNames(
+                            'disabled:cursor-not-allowed h-12 leading-4 border-secondary-500 placeholder:text-secondary-text bg-secondary-700 focus:ring-primary focus:border-primary block min-w-0 rounded-lg font-semibold border-0',
+                            className
+                        )}
+                        onChange={onChange ? onChange : e => {
+                            /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
+                        }}
+                    />}
                 {<>{children}</>}
             </div>
         </div>;

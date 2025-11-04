@@ -1,18 +1,26 @@
-import { NetworkWithTokens } from "../../Models/Network";
-import { EVMBalanceProvider } from "./providers/evmBalanceProvider";
-import { FuelBalanceProvider } from "./providers/fuelBalanceProvider";
-import { ImmutableXBalanceProvider } from "./providers/immutableXBalanceProvider";
-import { LoopringBalanceProvider } from "./providers/loopringBalanceProvider";
-import { ParadexBalanceProvider } from "./providers/paradexBalanceProvider";
-import { QueryBalanceProvider } from "./providers/queryBalanceProvider";
-import { SolanaBalanceProvider } from "./providers/solanaBalanceProvider";
-import { StarknetBalanceProvider } from "./providers/starknetBalanceProvider";
-import { TonBalanceProvider } from "./providers/tonBalanceProvider";
-import { TronBalanceProvider } from "./providers/tronBalanceResolver";
-import { ZkSyncBalanceProvider } from "./providers/zkSyncBalanceProvider";
+import posthog from "posthog-js";
+import { NetworkBalance } from "@/Models/Balance";
+import { BalanceProvider } from "@/Models/BalanceProvider";
+import { NetworkWithTokens } from "@/Models/Network";
+import {
+    BitcoinBalanceProvider,
+    EVMBalanceProvider,
+    FuelBalanceProvider,
+    ImmutableXBalanceProvider,
+    LoopringBalanceProvider,
+    ParadexBalanceProvider,
+    QueryBalanceProvider,
+    SolanaBalanceProvider,
+    StarknetBalanceProvider,
+    TonBalanceProvider,
+    TronBalanceProvider,
+    ZkSyncBalanceProvider,
+    HyperliquidBalanceProvider
+} from "./providers";
 
 export class BalanceResolver {
-    private providers = [
+
+    private providers: BalanceProvider[] = [
         new QueryBalanceProvider(),
         new StarknetBalanceProvider(),
         new EVMBalanceProvider(),
@@ -23,15 +31,39 @@ export class BalanceResolver {
         new TonBalanceProvider(),
         new ZkSyncBalanceProvider(),
         new TronBalanceProvider(),
-        new ParadexBalanceProvider()
+        new ParadexBalanceProvider(),
+        new BitcoinBalanceProvider(),
+        new HyperliquidBalanceProvider()
     ];
 
-    getBalance(address: string, network: NetworkWithTokens) {
-        const provider = this.providers.find(p => p.supportsNetwork(network));
-        //TODO: create interface for balance providers in case of empty state they shoudl throw error 
-        //never return undefined as SWR does not set loading state if undefined is returned
-        if (!provider) throw new Error(`No balance provider found for network ${network.name}`);
+    async getBalance(network: NetworkWithTokens, address?: string, options?: { timeoutMs?: number, retryCount?: number }): Promise<NetworkBalance> {
+        try {
+            if (!address)
+                throw new Error(`No address provided for network ${network.name}`)
+            const provider = this.providers.find(p => p.supportsNetwork(network))
+            //TODO: create interface for balance providers in case of empty state they shoudl throw error 
+            //never return undefined as SWR does not set loading state if undefined is returned
+            if (!provider) throw new Error(`No balance provider found for network ${network.name}`)
+            const balances = await provider.fetchBalance(address, network, { timeoutMs: options?.timeoutMs, retryCount: options?.retryCount })
 
-        return provider.fetchBalance(address, network);
+            return { balances };
+        }
+        catch (e) {
+            const error = new Error(e)
+            error.name = "BalanceError"
+            error.cause = e
+            posthog.capture('$exception', {
+                name: error.name,
+                message: error.message,
+                $layerswap_exception_type: "Balance Error",
+                stack: error.stack,
+                cause: error.cause,
+                type: 'BalanceError',
+                where: 'BalanceProviderError',
+                severity: 'error',
+            });
+
+            return { balances: [] }
+        }
     }
 }

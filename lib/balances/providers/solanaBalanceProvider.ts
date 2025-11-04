@@ -1,29 +1,35 @@
-import { Balance } from "../../../Models/Balance";
-import { NetworkType, NetworkWithTokens } from "../../../Models/Network";
-import formatAmount from "../../formatAmount";
-import { insertIfNotExists } from "./helpers";
+import { BalanceProvider } from "@/Models/BalanceProvider";
+import { TokenBalance } from "@/Models/Balance";
+import { NetworkType } from "@/Models/Network";
+import { formatUnits } from "viem";
+import { insertIfNotExists } from "../helpers";
+import fetchWithTimeout from "@/lib/fetchWithTimeout";
 
-export class SolanaBalanceProvider {
-    supportsNetwork(network: NetworkWithTokens): boolean {
+export class SolanaBalanceProvider extends BalanceProvider {
+    supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return network.type === NetworkType.Solana
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens) => {
+    fetchBalance: BalanceProvider['fetchBalance'] = async (address, network, _options) => {
         if (!address) return
 
         const tokens = insertIfNotExists(network.tokens || [], network.token)
-        const SolanaWeb3 = await import("@solana/web3.js");
-        const { PublicKey, Connection } = SolanaWeb3
+        const { PublicKey, Connection } = await import("@solana/web3.js")
         class SolanaConnection extends Connection { }
         const { getAssociatedTokenAddress } = await import('@solana/spl-token');
         const walletPublicKey = new PublicKey(address)
-        let balances: Balance[] = []
+        let balances: TokenBalance[] = []
 
         if (!network?.tokens || !walletPublicKey) return
 
         const connection = new SolanaConnection(
             `${network.node_url}`,
-            "confirmed"
+            {
+                commitment: "confirmed",
+                fetch(input, init) {
+                    return fetchWithTimeout(input, { ...init, timeoutMs: _options?.timeoutMs ?? 60000 })
+                },
+            }
         );
 
         async function getTokenBalanceWeb3(connection: SolanaConnection, tokenAccount) {
@@ -51,7 +57,7 @@ export class SolanaBalanceProvider {
                     result = await getTokenBalanceWeb3(connection, associatedTokenFrom)
                 } else {
                     const res = await connection.getBalance(walletPublicKey)
-                    result = res ? formatAmount(Number(res), token.decimals) : 0
+                    if (res) result = Number(formatUnits(BigInt(Number(res)), token.decimals))
                 }
 
                 if (result != null && !isNaN(result)) {
@@ -64,15 +70,12 @@ export class SolanaBalanceProvider {
                         isNativeCurrency: false
                     }
 
-                    balances = [
-                        ...balances,
-                        balance
-                    ]
+                    balances.push(balance)
                 }
 
             }
             catch (e) {
-                console.log(e)
+                balances.push(this.resolveTokenBalanceFetchError(e, token, network))
             }
         }
 

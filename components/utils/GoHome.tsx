@@ -1,12 +1,13 @@
 import { FC } from "react";
-import CopyButton from "../buttons/copyButton";
-import LayerSwapLogo from "../icons/layerSwapLogo";
+import CopyButton from "@/components/buttons/copyButton";
+import LayerSwapLogo from "@/components/icons/layerSwapLogo";
 import { Paperclip } from 'lucide-react'
 import { renderToString } from 'react-dom/server'
-import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
+import LayerSwapLogoSmall from "@/components/icons/layerSwapLogoSmall";
 import * as ContextMenuPrimitive from '@radix-ui/react-context-menu';
-import { useGoHome } from "../../hooks/useGoHome";
-
+import { useGoHome } from "@/hooks/useGoHome";
+import clsx from "clsx";
+import LayerswapMobileLogo from "@/components/icons/layerSwapMobileLogo";
 interface Props {
     className?: string;
     children?: JSX.Element | JSX.Element[] | string;
@@ -16,15 +17,30 @@ const GoHomeButton: FC<Props> = (({ className, children }) => {
     const goHome = useGoHome()
 
     return (
-        <div onClick={goHome}>
+        <div className="w-full" onClick={children ? goHome : undefined}>
             {
                 children ??
                 <>
                     <ContextMenuPrimitive.Root>
-                        <ContextMenuPrimitive.Trigger>
-                            <LayerSwapLogo className={className ?? "h-8 w-auto text-primary-logoColor fill-primary-text"} />
+                        <ContextMenuPrimitive.Trigger asChild>
+                            <div>
+                                <LayerswapMobileLogo
+                                    className={clsx(
+                                        "block md:hidden h-4 w-auto text-logo fill-primary-text",
+                                        className
+                                    )}
+                                    onClick={goHome}
+                                />
+                                <LayerSwapLogo
+                                    className={clsx(
+                                        "hidden md:block h-8 w-auto text-logo fill-primary-text",
+                                        className
+                                    )}
+                                    onClick={goHome}
+                                />
+                            </div>
                         </ContextMenuPrimitive.Trigger>
-                        <ContextMenuPrimitive.Content className="dialog-overlay absolute z-40 border h-fit text-secondary-text border-secondary-100 mt-2 w-fit rounded-md shadow-lg bg-secondary-900 ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <ContextMenuPrimitive.Content className="dialog-overlay absolute z-40 border h-fit text-secondary-text border-secondary-100 mt-2 w-fit rounded-md shadow-lg bg-secondary-700 ring-1 ring-black/5 focus:outline-hidden">
                             <ContextMenuPrimitive.ContextMenuItem className="dialog-content px-4 py-2 text-sm text-left w-full rounded-t hover:bg-secondary-400 whitespace-nowrap">
                                 <CopyButton toCopy={renderToString(<LayerSwapLogo />)}>Copy logo as SVG</CopyButton>
                             </ContextMenuPrimitive.ContextMenuItem >

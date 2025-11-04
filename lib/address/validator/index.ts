@@ -3,6 +3,7 @@ import KnownInternalNames from "../../knownIds";
 import { validateAndParseAddress } from "./starkNetAddressValidator";
 import { PublicKey } from '@solana/web3.js'
 import { Address } from "@ton/core";
+import { validate, Network } from 'bitcoin-address-validation';
 
 export function isValidAddress(address?: string, network?: { name: string } | null): boolean {
     if (!address || isBlacklistedAddress(address)) {
@@ -16,6 +17,10 @@ export function isValidAddress(address?: string, network?: { name: string } | nu
     }
     else if (network?.name.toLowerCase().startsWith("STARKNET".toLowerCase()) || network?.name.toLowerCase().startsWith("PARADEX".toLowerCase())) {
         return validateAndParseAddress(address);
+    }
+    else if (network?.name.toLowerCase().startsWith("BITCOIN".toLowerCase())) {
+        const isTestnet = network?.name.toLowerCase().includes("testnet");
+        return validate(address, isTestnet ? Network.testnet : Network.mainnet);
     }
     else if (network?.name.toLowerCase().startsWith("TON".toLowerCase())) {
         try {

@@ -1,15 +1,10 @@
 import { useFormikContext } from "formik";
-import React, { FC, useCallback, useEffect, useRef } from "react";
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
-import { Network } from "../../../Models/Network";
-import { Popover, PopoverContent, PopoverTrigger } from "../../shadcn/popover";
-import WalletIcon from "../../icons/WalletIcon";
-import { AlignLeft, ChevronDown } from "lucide-react"
-import { motion } from "framer-motion";
-import { useDepositMethod } from "../../../context/depositMethodContext";
-import { useQueryState } from "../../../context/query";
-import KnownInternalNames from "../../../lib/knownIds";
-import { useSwapDataUpdate } from "../../../context/swap";
+import React, { FC, useEffect, useRef } from "react";
+import { Network } from "@/Models/Network";
+import { useQueryState } from "@/context/query";
+import useWallet from "@/hooks/useWallet";
+import { WalletProvider } from "@/Models/WalletProvider";
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 
 const variants = {
     open: { rotate: 180 },
@@ -27,18 +22,17 @@ const depositMethods = [
     }
 ]
 
-
 const DepositMethodComponent: FC = () => {
     const {
         values,
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
-    const { setShowModal, showModal } = useDepositMethod()
-    const { depositMethod: defaultDepositMethod, hideDepositMethod, appName } = useQueryState()
-    const { from, depositMethod, fromExchange } = values
+    const { depositMethod: defaultDepositMethod, hideDepositMethod } = useQueryState()
+    const { from, depositMethod, fromExchange, fromAsset } = values
+    const { provider } = useWallet(from, 'withdrawal')
     const name = 'depositMethod'
 
-    const menuItems = from && GenerateDepositMethodMenuItems(from, depositMethods, appName)
+    const menuItems = from && GenerateDepositMethodMenuItems(from, depositMethods, provider)
 
     const defaultMethod = menuItems?.find(i => i.id === defaultDepositMethod)
     const menuItemsRef = useRef<DepositMethod[] | undefined>()
@@ -58,15 +52,7 @@ const DepositMethodComponent: FC = () => {
             setFieldValue(name, first, true)
             return
         }
-    }, [from, appName, fromExchange])
-
-
-    const handleSelect = useCallback((item: string) => {
-        setFieldValue(name, item, true)
-        setShowModal(false)
-    }, [name, depositMethod, menuItems])
-
-    const selectedMethod = menuItems?.find(i => i.id === depositMethod)?.display_name
+    }, [from, fromExchange, fromAsset])
 
     const hasOptions = Number(menuItems?.length) > 1 && !fromExchange
 
@@ -74,37 +60,38 @@ const DepositMethodComponent: FC = () => {
         return null
 
     return (
-        <div className="relative w-full mb-1">
-            <Popover open={showModal} onOpenChange={setShowModal}>
-                <PopoverTrigger className="font-semibold text-secondary-text text-xs flex items-center space-x-1 p-2">
-                    <span> Transfer via </span> <span>{selectedMethod?.toLowerCase()}</span> <motion.div
-                        animate={showModal ? "open" : "closed"}
-                        variants={variants}
-                    >
-                        <ChevronDown className=" w-4 h-4 " />
-                    </motion.div>
-                </PopoverTrigger>
-                <PopoverContent className='ml-2 mt-1 space-y-1 text-sm p-2 max-w border-none rounded-xl bg-secondary-800 max-w-72 md:max-w-96' align="start">
-                    <DepositMethod
-                        onselect={handleSelect}
-                        value="wallet"
-                        icon={<WalletIcon
-                            strokeWidth={2} className="w-6 h-6" />}
-                        description="Connect your wallet and transfer instantly"
-                        title="Wallet"
-                        selectedValue={depositMethod}
-                    />
-                    <DepositMethod
-                        onselect={handleSelect}
-                        value="deposit_address"
-                        icon={<AlignLeft strokeWidth={2} className="w-6 h-6" />}
-                        description="Manually transfer to a Deposit Address generated specifically for you"
-                        title="Deposit address"
-                        selectedValue={depositMethod}
-                    />
-                </PopoverContent>
-            </Popover>
-        </div>
+        <></>
+        // <div className="relative w-full mb-1">
+        //     <Popover open={showModal} onOpenChange={setShowModal}>
+        //         <PopoverTrigger className="font-semibold text-secondary-text text-xs flex items-center space-x-1 p-2">
+        //             <span> Transfer via </span> <span>{selectedMethod?.toLowerCase()}</span> <motion.div
+        //                 animate={showModal ? "open" : "closed"}
+        //                 variants={variants}
+        //             >
+        //                 <ChevronDown className="w-4 h-4" />
+        //             </motion.div>
+        //         </PopoverTrigger>
+        //         <PopoverContent className='ml-2 mt-1 space-y-1 text-sm p-2 max-w border-none rounded-xl bg-secondary-800 max-w-72 md:max-w-96' align="start">
+        //             <DepositMethod
+        //                 onselect={handleSelect}
+        //                 value="wallet"
+        //                 icon={<WalletIcon
+        //                     strokeWidth={2} className="w-6 h-6" />}
+        //                 description="Connect your wallet and transfer instantly"
+        //                 title="Wallet"
+        //                 selectedValue={depositMethod}
+        //             />
+        //             <DepositMethod
+        //                 onselect={handleSelect}
+        //                 value="deposit_address"
+        //                 icon={<AlignLeft strokeWidth={2} className="w-6 h-6" />}
+        //                 description="Manually transfer to a Deposit Address generated specifically for you"
+        //                 title="Deposit address"
+        //                 selectedValue={depositMethod}
+        //             />
+        //         </PopoverContent>
+        //     </Popover>
+        // </div>
     )
 };
 
@@ -152,7 +139,6 @@ const DepositMethod: FC<DespositMethodItemProps> = ({
                     }
                 </div>
             </div>
-
         </div>
     )
 }
@@ -163,12 +149,9 @@ type DepositMethod = {
     display_name: string
 }
 
-function GenerateDepositMethodMenuItems(network: Network, depositMethods: DepositMethod[], appName?: string): DepositMethod[] {
+function GenerateDepositMethodMenuItems(network: Network, depositMethods: DepositMethod[], walletProvider?: WalletProvider): DepositMethod[] {
 
-    const sourceIsArbitrumOne = network.name?.toUpperCase() === KnownInternalNames.Networks.ArbitrumMainnet?.toUpperCase()
-        || network.name === KnownInternalNames.Networks.ArbitrumGoerli?.toUpperCase()
-    const sourceIsSynquoteArbitrumOne = appName === "ea7df14a1597407f9f755f05e25bab42" && sourceIsArbitrumOne
-    if (sourceIsSynquoteArbitrumOne) {
+    if (!walletProvider) {
         return depositMethods.filter(m => m.id === 'deposit_address')
     }
 

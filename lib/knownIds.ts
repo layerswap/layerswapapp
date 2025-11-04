@@ -194,6 +194,69 @@ export default class KnownInternalNames {
 
         public static readonly SoneiumMainnet: string = "SONEIUM_MAINNET"
 
+        public static readonly RariMainnet: string = "RARI_MAINNET";
+
+        public static readonly LightlinkMainnet: string = "LIGHTLINK_MAINNET";
+
+        public static readonly ZetachainMainnet: string = "ZETACHAIN_MAINNET";
+
+        public static readonly AvaxMainnet: string = "AVAX_TESTNET";
+
+        public static readonly XaiMainnet: string = "XAI_MAINNET";
+
+        public static readonly UnichainMainnet: string = "UNICHAIN_MAINNET";
+
+        public static readonly XlayerMainnet: string = "XLAYER_MAINNET";
+
+        public static readonly FraxtalMainnet: string = "FRAXTAL_MAINNET";
+
+        public static readonly WorldchainMainnet: string = "WORLDCHAIN_MAINNET";
+
+        public static readonly AbstractMainnet: string = "ABSTRACT_MAINNET";
+
+        public static readonly CeloMainnet: string = "CELO_MAINNET";
+
+        public static readonly KromaMainnet: string = "KROMA_MAINNET";
+
+        public static readonly ShapeMainnet: string = "SHAPE_MAINNET";
+
+        public static readonly GnosisMainnet: string = "GNOSIS_MAINNET";
+
+        public static readonly TaikoMainnet: string = "TAIKO_MAINNET";
+
+        public static readonly InkMainnet: string = "INK_MAINNET";
+
+        public static readonly MintMainnet: string = "MINT_MAINNET";
+
+        public static readonly Ancient8Mainnet: string = "ANCIENT8_MAINNET";
+
+        public static readonly BobMainnet: string = "BOB_MAINNET";
+
+        public static readonly FuseMainnet: string = "FUSE_MAINNET";
+
+        public static readonly SonicMainnet: string = "SONIC_MAINNET";
+
+        public static readonly ZeroMainnet: string = "ZERO_MAINNET";
+
+        public static readonly ZircuitMainnet: string = "ZIRCUIT_MAINNET";
+
+        public static readonly SuperseedMainnet: string = "SUPERSEED_MAINNET";
+
+        public static readonly LiskMainnet: string = "LISK_MAINNET";
+
+        public static readonly MorphMainnet: string = "MORPH_MAINNET";
+
+        public static readonly SeiMainnet: string = "SEI_MAINNET";
+        
+        public static readonly GravityMainnet: string = "GRAVITY_MAINNET";
+        public static readonly BitcoinMainnet: string = "BITCOIN_MAINNET"
+
+        public static readonly BitcoinTestnet: string = "BITCOIN_TESTNET"
+
+        public static readonly HyperliquidMainnet: string = "HYPERLIQUID_MAINNET"
+
+        public static readonly HyperliquidTestnet: string = "HYPERLIQUID_TESTNET"
+
     }
 
     static Currencies = class {

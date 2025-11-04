@@ -4,19 +4,22 @@ import SubmitButton from "../components/buttons/submitButton"
 import MessageComponent from "../components/MessageComponent"
 import Navbar from "../components/navbar"
 import GoHomeButton from "../components/utils/GoHome"
+import { posthog } from "posthog-js"
 
 export default function Custom404() {
-
     useEffect(() => {
-        plausible("404", { props: { path: document.location.pathname } })
-    }, [])
+        posthog.capture("404", {
+            name: "404",
+            path: typeof window !== 'undefined' ? window.location.pathname : undefined,
+        });
+    }, []);
 
     return (
         <div className="styled-scroll">
             <main className="styled-scroll">
                 <div className="min-h-screen overflow-hidden relative font-robo">
                     <Navbar />
-                    <div className="mx-auto max-w-xl bg-darkblue-900 md:shadow-card rounded-lg w-full overflow-hidden relative px-6 py-6 h-[500px] min-h-[550px]">
+                    <div className="mx-auto max-w-xl bg-darkblue-900 md:shadow-card rounded-lg w-full overflow-hidden relative px-4 py-6 h-[500px] min-h-[550px]">
                         <MessageComponent>
                             <MessageComponent.Content icon="red">
                                 <div className="text-center">

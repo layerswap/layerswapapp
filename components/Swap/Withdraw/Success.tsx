@@ -1,24 +1,23 @@
 import { ExternalLink } from 'lucide-react';
 import { Home } from 'lucide-react';
 import { FC, useCallback } from 'react'
-import { useSettingsState } from '../../../context/settings';
-import { useSwapDataState } from '../../../context/swap';
-import MessageComponent from '../../MessageComponent';
-import { Widget } from '../../Widget/Index';
-import SubmitButton, { DoubleLineText } from '../../buttons/submitButton';
-import GoHomeButton from '../../utils/GoHome';
-import { TransactionType } from '../../../lib/layerSwapApiClient';
-import AppSettings from '../../../lib/AppSettings';
-import { useQueryState } from '../../../context/query';
+import { useSettingsState } from '@/context/settings';
+import { useSwapDataState } from '@/context/swap';
+import MessageComponent from '@/components/MessageComponent';
+import { Widget } from '@/components/Widget/Index';
+import SubmitButton, { DoubleLineText } from '@/components/buttons/submitButton';
+import GoHomeButton from '@/components/utils/GoHome';
+import { TransactionType } from '@/lib/apiClients/layerSwapApiClient';
+import AppSettings from '@/lib/AppSettings';
+import { useQueryState } from '@/context/query';
 
 const Success: FC = () => {
     const { networks: layers } = useSettingsState()
-    const { swapResponse } = useSwapDataState()
-    const { swap } = swapResponse || {}
+    const { swapDetails, swapBasicData } = useSwapDataState()
     const { externalId } = useQueryState()
-    const destination_network = layers.find(n => n.name === swap?.destination_network.name)
+    const destination_network = layers.find(n => n.name === swapBasicData?.destination_network.name)
     const transaction_explorer_template = destination_network?.transaction_explorer_template
-    const swapOutputTransaction = swap?.transactions?.find(t => t.type === TransactionType.Output)
+    const swapOutputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Output)
 
     const handleViewInExplorer = useCallback(() => {
         if (!transaction_explorer_template)

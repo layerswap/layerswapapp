@@ -1,92 +1,110 @@
 import { useFormikContext } from "formik";
-import { forwardRef, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { forwardRef, useEffect, useMemo, useRef } from "react";
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import NumericInput from "../NumericInput";
-import { useFee } from "../../../context/feeContext";
-import dynamic from "next/dynamic";
-import { useQueryState } from "../../../context/query";
-import useSWRGas from "../../../lib/gases/useSWRGas";
-import useSWRBalance from "../../../lib/balances/useSWRBalance";
-import { useSwapDataState } from "../../../context/swap";
-import MinMax from "./MinMax";
-import { resolveMacAllowedAmount } from "./helpers";
+import { useQuoteData } from "@/hooks/useFee";
+import { formatUsd } from "@/components/utils/formatUsdAmount";
+import clsx from "clsx";
+import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
 
+interface AmountFieldProps {
+    usdPosition?: "right" | "bottom";
+    fee: ReturnType<typeof useQuoteData>['quote'];
+    actionValue?: number;
+    className?: string;
+}
 
-const AmountField = forwardRef(function AmountField(_, ref: any) {
-
+const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", actionValue, fee, className }: AmountFieldProps, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
-    const [requestedAmountInUsd, setRequestedAmountInUsd] = useState<string>();
-    const { fromCurrency, from, to, amount, toCurrency, fromExchange, toExchange } = values || {};
-    const { minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fee, isFeeLoading } = useFee()
-    const [isFocused, setIsFocused] = useState(false);
-    const { selectedSourceAccount } = useSwapDataState()
-    const sourceAddress = selectedSourceAccount?.address
-
-    const { balance, isBalanceLoading } = useSWRBalance(sourceAddress, from)
-    const { gas, isGasLoading } = useSWRGas(sourceAddress, from, fromCurrency)
-    const gasAmount = gas || 0;
-    const native_currency = from?.token
-
+    const { fromAsset: fromCurrency, amount, toAsset: toCurrency, fromExchange } = values || {};
     const name = "amount"
-    const walletBalance = balance?.find(b => b?.network === from?.name && b?.token === fromCurrency?.symbol)
-    let maxAllowedAmount: number = useMemo(() => {
-        if (!fromCurrency || !minAllowedAmount || !maxAmountFromApi) return 0
-        return resolveMacAllowedAmount({ fromCurrency, limitsMinAmount: minAllowedAmount, limitsMaxAmount: maxAmountFromApi, walletBalance, gasAmount, native_currency })
-    }, [fromCurrency, minAllowedAmount, maxAmountFromApi, walletBalance, gasAmount, native_currency])
-
-    const placeholder = (fromCurrency && toCurrency && from && to && minAllowedAmount && !isBalanceLoading && !isGasLoading) ? `${minAllowedAmount} - ${maxAmountFromApi}` : '0.0'
-    const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
     const amountRef = useRef(ref)
+    const suffixRef = useRef<HTMLDivElement>(null);
 
-    const diasbled = Boolean((fromExchange && !toCurrency) || (toExchange && !fromCurrency))
+    const sourceCurrencyPriceInUsd = resolveTokenUsdPrice(fromCurrency, fee?.quote)
 
-    const updateRequestedAmountInUsd = useCallback((requestedAmount: number, fee) => {
-        if (fee?.quote.source_token?.price_in_usd && !isNaN(requestedAmount)) {
-            setRequestedAmountInUsd((fee?.quote.source_token?.price_in_usd * requestedAmount).toFixed(2));
-        } else {
-            setRequestedAmountInUsd(undefined);
-        }
-    }, [requestedAmountInUsd, fee]);
+    const requestedAmountInUsd = useMemo(() => {
+        const amountNumber = Number(amount);
+        if (isNaN(amountNumber) || amountNumber <= 0 || !sourceCurrencyPriceInUsd)
+            return undefined;
+        return formatUsd(sourceCurrencyPriceInUsd * amountNumber)
+    }, [amount, sourceCurrencyPriceInUsd]);
+
+    const actionValueInUsd = useMemo(() => {
+        const amountNumber = Number(actionValue);
+        if (isNaN(amountNumber) || amountNumber <= 0 || !sourceCurrencyPriceInUsd)
+            return undefined;
+        return formatUsd(sourceCurrencyPriceInUsd * amountNumber)
+    }, [actionValue, sourceCurrencyPriceInUsd]);
 
     useEffect(() => {
-        if (isFeeLoading) setRequestedAmountInUsd(undefined)
-        else if (fee && amount) updateRequestedAmountInUsd(Number(amount), fee)
-    }, [amount, fromCurrency, fee, isFeeLoading])
+        const input = amountRef.current;
+        const suffix = suffixRef.current;
+
+        if (!input || !suffix) return;
+
+        const font = getFontFromElement(input);
+        const width = getTextWidth(actionValue?.toString() || amount || "0", font);
+        suffix.style.left = `${width + 16}px`;
+    }, [amount, requestedAmountInUsd, actionValue]);
+
+    const placeholder = '0'
+
+    const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
+
+    const disabled = Boolean(fromExchange && !toCurrency)
 
     return (<>
-        <p className="block font-semibold text-secondary-text text-xs mb-1 p-2">Amount</p>
-        <div className="flex w-full justify-between bg-secondary-700 rounded-lg">
-            <div className="relative w-full">
-                <NumericInput
-                    disabled={diasbled}
-                    placeholder={placeholder}
-                    min={minAllowedAmount}
-                    max={maxAllowedAmount || 0}
-                    step={isNaN(step) ? 0.01 : step}
-                    name={name}
-                    ref={amountRef}
-                    precision={fromCurrency?.precision}
-                    onFocus={() => setIsFocused(true)}
-                    onBlur={() => setIsFocused(false)}
-                    className="text-primary-text pr-0 w-full"
-                    onChange={e => {
-                        /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
-                        updateRequestedAmountInUsd(parseFloat(e.target.value), fee);
-                    }}
-                >
-                    {requestedAmountInUsd && Number(requestedAmountInUsd) > 0 && !isFocused ? (
-                        <span className="absolute text-xs right-1 bottom-[16px]">
-                            (${requestedAmountInUsd})
-                        </span>
-                    ) : null}
-                </NumericInput>
-            </div>
+        <div className={clsx("flex flex-col bg-secondary-500 space-y-0.5 relative w-full group",
+            className,
             {
-                from && to && fromCurrency && minAllowedAmount && maxAmountFromApi &&
-                <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} />
+                'focus-within:[&_.usd-suffix]:invisible': usdPosition === "right"
             }
-        </div >
+        )}
+        >
+            <NumericInput
+                disabled={disabled}
+                placeholder={placeholder}
+                step={isNaN(step) ? 0.01 : step}
+                name={name}
+                ref={amountRef}
+                precision={fromCurrency?.precision}
+                tempValue={actionValue}
+                className="w-full text-[28px] leading-[34px] rounded-xl text-primary-text focus:outline-none focus:border-none focus:ring-0 duration-300 ease-in-out !bg-secondary-500 !font-normal group-[.exchange-amount-field]:px-2.5 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! pl-0"
+                onChange={e => {
+                    /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
+                }}
+            />
+            <div className={clsx(
+                "usd-suffix text-base leading-5 font-medium text-secondary-text pointer-events-none",
+                {
+                    "absolute bottom-3": usdPosition === "right",
+                    "h-5": usdPosition !== "right",
+                    "text-secondary-text/45": !!actionValueInUsd
+                },
+                "group-hover:block"
+            )} ref={suffixRef}>
+                {`${actionValueInUsd ?? requestedAmountInUsd ?? '$0'}`}
+            </div>
+        </div>
     </>)
 });
 
 export default AmountField
+
+function getTextWidth(text: string = '', font: string): number {
+    if (typeof document === "undefined") return 0;
+
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    if (!context) return 0;
+
+    context.font = font;
+    return context.measureText(text).width;
+}
+
+function getFontFromElement(el: HTMLElement | null): string {
+    if (!el) return '28px sans-serif';
+    const style = window.getComputedStyle(el);
+    return `${style.fontSize} ${style.fontFamily}`;
+}

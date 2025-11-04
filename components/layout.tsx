@@ -4,7 +4,6 @@ import { useRouter } from "next/router";
 import ThemeWrapper from "./themeWrapper";
 import { ErrorBoundary } from "react-error-boundary";
 import MaintananceContent from "./maintanance/maintanance";
-import { AuthProvider } from "../context/authContext";
 import { SettingsProvider } from "../context/settings";
 import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
 import { LayerSwapSettings } from "../Models/LayerSwapSettings";
@@ -18,7 +17,8 @@ import ColorSchema from "./ColorSchema";
 import { IsExtensionError } from "../helpers/errorHelper";
 import { AsyncModalProvider } from "../context/asyncModal";
 import WalletsProviders from "./WalletProviders";
-// import { datadogRum } from '@datadog/browser-rum';
+import { BalanceAccountsProvider } from "@/context/balanceAccounts";
+import posthog from "posthog-js";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
@@ -29,7 +29,7 @@ type Props = {
 
 export default function Layout({ children, settings, themeData }: Props) {
   const router = useRouter();
-
+  
   useEffect(() => {
     function prepareUrl(params) {
       const url = new URL(location.href)
@@ -41,11 +41,11 @@ export default function Layout({ children, settings, themeData }: Props) {
       }
       return customUrl
     }
-    plausible('pageview', {
-      u: prepareUrl([
-        'destNetwork', //opsolate
-        'sourceExchangeName', //opsolate
-        'addressSource', //opsolate
+    const trackPageview = () => {
+      const customUrl = prepareUrl([
+        'destNetwork', // obsolete
+        'sourceExchangeName', // obsolete
+        'addressSource', // obsolete
         'from',
         'to',
         'appName',
@@ -53,7 +53,13 @@ export default function Layout({ children, settings, themeData }: Props) {
         'amount',
         'destAddress'
       ])
-    })
+
+      posthog.capture('$pageview', {
+        custom_url: customUrl,
+      })
+    }
+
+    trackPageview()
   }, [])
 
   if (!settings)
@@ -85,18 +91,11 @@ export default function Layout({ children, settings, themeData }: Props) {
     if (process.env.NEXT_PUBLIC_VERCEL_ENV && !extension_error) {
       SendErrorMessage("UI error", `env: ${process.env.NEXT_PUBLIC_VERCEL_ENV} %0A url: ${process.env.NEXT_PUBLIC_VERCEL_URL} %0A message: ${error?.message} %0A errorInfo: ${info?.componentStack} %0A stack: ${error?.stack ?? error.stack} %0A`)
     }
-    // const renderingError = new Error(error.message);
-    // renderingError.name = `ReactRenderingError`;
-    // renderingError.stack = info.componentStack;
-    // renderingError.cause = error;
-    // datadogRum.addError(renderingError);
   }
 
-  themeData = themeData || THEME_COLORS.default
 
   const basePath = router?.basePath ?? ""
   const isCanonical = (router.pathname === "/app" || router.pathname === "/") && Object.keys(router.query).length === 0;
-
   return (<>
     <Head>
       <title>Layerswap App</title>
@@ -105,7 +104,7 @@ export default function Layout({ children, settings, themeData }: Props) {
       <link rel="icon" type="image/png" sizes="16x16" href={`${basePath}/favicon/favicon-16x16.png`} />
       <link rel="manifest" href={`${basePath}/favicon/site.webmanifest`} />
       <meta name="msapplication-TileColor" content="#ffffff" />
-      <meta name="theme-color" content={`rgb(${themeData.secondary?.[900]})`} />
+      <meta name="theme-color" content={`rgb(${themeData?.secondary?.[900] || THEME_COLORS.default.secondary?.[900]})`} />
       <meta name="description" content="Streamline your asset transaction experience with Layerswap across 50+ blockchains and 15+ exchanges. Fast, affordable and secure." />
       {isCanonical && <link rel="canonical" href="https://layerswap.io/app/" />}
 
@@ -125,15 +124,14 @@ export default function Layout({ children, settings, themeData }: Props) {
       <meta name="twitter:image" content={`https://layerswap.io/${basePath}/opengraphtw.jpg`} />
     </Head>
     {
-      themeData &&
       <ColorSchema themeData={themeData} />
     }
-    <QueryProvider query={query}>
-      <SettingsProvider data={appSettings}>
-        <WalletsProviders basePath={basePath} themeData={themeData} appName={router.query.appName?.toString()}>
-          <AuthProvider>
-            <TooltipProvider delayDuration={500}>
-              <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
+    <ErrorBoundary FallbackComponent={ErrorFallback} onError={logErrorToService}>
+      <TooltipProvider delayDuration={400}>
+        <QueryProvider query={query}>
+          <SettingsProvider data={appSettings}>
+            <WalletsProviders basePath={basePath} themeData={themeData || THEME_COLORS.default} appName={router.query.appName?.toString()}>
+              <BalanceAccountsProvider>
                 <ThemeWrapper>
                   <AsyncModalProvider>
                     {process.env.NEXT_PUBLIC_IN_MAINTANANCE === 'true' ?
@@ -141,11 +139,11 @@ export default function Layout({ children, settings, themeData }: Props) {
                       : children}
                   </AsyncModalProvider>
                 </ThemeWrapper>
-              </ErrorBoundary>
-            </TooltipProvider>
-          </AuthProvider>
-        </WalletsProviders>
-      </SettingsProvider >
-    </QueryProvider >
+              </BalanceAccountsProvider>
+            </WalletsProviders>
+          </SettingsProvider >
+        </QueryProvider >
+      </TooltipProvider>
+    </ErrorBoundary>
   </>)
 }

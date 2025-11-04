@@ -1,8 +1,9 @@
 import KnownInternalNames from "../../knownIds";
 import { useWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
-import { InternalConnector, Wallet, WalletProvider } from "../../../Models/WalletProvider";
+import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
-import { useSettingsState } from "../../../context/settings";
+import { useSettingsState } from "@/context/settings";
+import { useMemo } from "react";
 
 export default function useTron(): WalletProvider {
     const commonSupportedNetworks = [
@@ -17,7 +18,9 @@ export default function useTron(): WalletProvider {
     const { wallets, wallet: tronWallet, disconnect, select } = useWallet();
 
     const address = tronWallet?.adapter.address
-
+    const switchAccount = async (wallet: Wallet, address: string) => {
+        // as we do not have multiple accounts management we will leave the method empty
+    }
     const wallet: Wallet | undefined = address ? {
         id: tronWallet.adapter.name,
         addresses: [address],
@@ -80,21 +83,21 @@ export default function useTron(): WalletProvider {
         }
     }
 
-    const availableWalletsForConnect: InternalConnector[] = wallets.map(wallet => {
+    const availableWalletsForConnect: InternalConnector[] = useMemo(() => wallets.map(wallet => {
+        const isNotInstalled = wallet.state == 'NotFound'
         return {
             id: wallet.adapter.name,
             name: wallet.adapter.name,
             icon: wallet.adapter.icon,
-            type: wallet.state !== 'NotFound' ? 'injected' : 'other',
-            installUrl: wallet.state !== 'NotFound' ? undefined : wallet.adapter?.url,
+            type: isNotInstalled ? 'other' : 'injected',
+            installUrl: isNotInstalled ? wallet.adapter?.url : undefined,
         }
-    })
+    }), [wallets])
 
-    const provider = {
+    const provider: WalletProvider = {
         connectWallet,
         disconnectWallets: disconnectWallet,
         availableWalletsForConnect,
-        activeAccountAddress: wallet?.address,
         connectedWallets: getWallet(),
         activeWallet: wallet,
         autofillSupportedNetworks: commonSupportedNetworks,
@@ -102,7 +105,8 @@ export default function useTron(): WalletProvider {
         asSourceSupportedNetworks: commonSupportedNetworks,
         name,
         id,
-        providerIcon: network?.logo
+        providerIcon: network?.logo,
+        switchAccount
     }
 
     return provider
