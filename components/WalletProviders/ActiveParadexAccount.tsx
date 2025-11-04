@@ -1,6 +1,6 @@
 import useEVM from '@/lib/wallets/evm/useEVM';
 import useStarknet from '@/lib/wallets/starknet/useStarknet';
-import { useWalletStore } from '@/stores/walletStore';
+import { useWalletStore } from '@/stores/paradexWalletStore';
 import { Context, FC, createContext, useCallback, useContext, useMemo, useState } from 'react';
 
 type ActiveAccountState = {
