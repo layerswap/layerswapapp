@@ -10,12 +10,12 @@ import { BitcoinProvider } from "@layerswap/wallet-bitcoin";
 import { FuelProvider } from "@layerswap/wallet-fuel"
 import { ParadexProvider } from "@layerswap/wallet-paradex"
 import { StarknetProvider } from "@layerswap/wallet-starknet"
-import posthog from "posthog-js"
 import { ImmutableXProvider } from "@layerswap/wallet-imtbl-x";
 import { TonProvider } from "@layerswap/wallet-ton";
 import { SVMProvider } from "@layerswap/wallet-svm";
 import { TronProvider } from "@layerswap/wallet-tron";
 import { ImtblPassportProvider } from "@layerswap/wallet-imtbl-passport";
+import { logError } from "../../utils/logError"
 
 const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string }> = ({ settings, themeData, apiKey }) => {
     const router = useRouter()
@@ -48,66 +48,12 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
                 }
             },
             onLogError: {
-                onWidgetError: (e: WidgetError) => {
-                    posthog.capture(e.type, {
-                        name: e.name,
-                        message: e.message,
-                        stack: e.stack,
-                        cause: e.cause,
-                        where: e.where,
-                        severity: e.severity,
-                    });
-                },
-                onBalanceError: (e: BalanceError) => {
-                    posthog.capture(e.type, {
-                        name: e.name,
-                        message: e.message,
-                        stack: e.stack,
-                        cause: e.cause,
-                        where: e.where,
-                        severity: e.severity,
-                    });
-                },
-                onGasFeeError: (e: GasFeeError) => {
-                    posthog.capture(e.type, {
-                        name: e.name,
-                        message: e.message,
-                        stack: e.stack,
-                        cause: e.cause,
-                        where: e.where,
-                        severity: e.severity,
-                    });
-                },
-                onTransactionNotDetected: (e: WalletWithdrawalError) => {
-                    posthog.capture(e.type, {
-                        name: e.name,
-                        message: e.message,
-                        stack: e.stack,
-                        cause: e.cause,
-                        where: e.where,
-                        severity: e.severity,
-                    });
-                },
-                onWalletWithdrawalError: (e: WalletWithdrawalError) => {
-                    posthog.capture(e.type, {
-                        name: e.name,
-                        message: e.message,
-                        stack: e.stack,
-                        cause: e.cause,
-                        where: e.where,
-                        severity: e.severity,
-                    });
-                },
-                onLongTransactionWarning: (e: OnLongTransactionWarning) => {
-                    posthog.capture(e.type, {
-                        name: e.name,
-                        message: e.message,
-                        stack: e.stack,
-                        cause: e.cause,
-                        where: e.where,
-                        severity: e.severity,
-                    });
-                },
+                onWidgetError: logError,
+                onBalanceError: logError,
+                onGasFeeError: logError,
+                onTransactionNotDetected: logError,
+                onWalletWithdrawalError: logError,
+                onLongTransactionWarning: logError,
             },
         }}
         walletProviders={[EVMProvider, StarknetProvider, FuelProvider, ParadexProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider]}
