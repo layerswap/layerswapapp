@@ -364,7 +364,7 @@ type MultichainConnectorModalProps = {
 const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ selectedConnector, allConnectors, providers, connect }) => {
     const Icon = resolveWalletConnectorIcon({ connector: selectedConnector.id, iconUrl: selectedConnector.icon })
     return (
-        <div>
+        <div className="flex flex-col justify-between h-full">
             <div className="flex flex-col gap-4 py-15">
                 <div className="flex justify-center gap-1">
                     <Icon className="w-14 h-auto rounded-lg" />
