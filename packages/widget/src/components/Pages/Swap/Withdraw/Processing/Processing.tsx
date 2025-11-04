@@ -1,6 +1,6 @@
 'use client'
 import LinkWithIcon from '@/components/Common/LinkWithIcon';
-import React, { FC, useCallback, useEffect, useRef } from 'react'
+import { FC, useCallback, useEffect, useRef } from 'react'
 import { Widget } from '@/components/Widget/Index';
 import SwapSummary from '../Summary';
 import LayerSwapApiClient, { BackendTransactionStatus, TransactionType, TransactionStatus, Transaction, SwapBasicData, SwapDetails, SwapQuote, Refuel } from '@/lib/apiClients/layerSwapApiClient';
@@ -17,9 +17,9 @@ import useSWR from 'swr';
 import { ApiResponse } from '@/Models/ApiResponse';
 import { useIntercom } from 'react-use-intercom';
 import logError from '@/lib/logError';
-import SubmitButton from '@/components/Buttons/submitButton';
-// import { posthog } from 'posthog-js';
 import Steps from './StepsComponent';
+import { useLog } from '@/context/ErrorProvider';
+import { useSwapStatusChangeCallback } from '@/context/callbackProvider';
 
 type Props = {
     swapBasicData: SwapBasicData;
@@ -29,15 +29,16 @@ type Props = {
 }
 
 const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) => {
-    const { boot, show, update, showNewMessages } = useIntercom();
+    const { boot, show, update } = useIntercom();
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
-
+    const { log } = useLog();
     const {
         source_network,
         destination_network,
         destination_token,
     } = swapBasicData
     const { fail_reason } = swapDetails
+    const swapStatusChanged = useSwapStatusChangeCallback()
 
     const updateWithProps = () => update({ customAttributes: { swapId: swapDetails.id } });
     const startIntercom = useCallback(() => {
@@ -64,19 +65,6 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
 
     const loggedNotDetectedTxAt = useRef<number | null>(null);
 
-    const handleSupportClick = useCallback(() => {
-        const transactionHash = swapInputTransaction?.transaction_hash || storedWalletTransaction?.hash;
-        const message = `Hi! My transaction (Swap ID: ${swapDetails.id}) has been processing for longer than expected. ${transactionHash ? `Transaction hash: ${transactionHash}` : ''} Could you please help me check the status?`;
-
-        boot();
-        update({
-            customAttributes: {
-                swapId: swapDetails.id,
-            }
-        });
-        showNewMessages(message)
-    }, [boot, show, update, swapDetails.id, swapInputTransaction, storedWalletTransaction]);
-
     useEffect(() => {
         if (inputTxStatus === TransactionStatus.Completed || inputTxStatus === TransactionStatus.Pending) {
             if (swapDetails?.transactions?.find(t => t.type === TransactionType.Input) || !swapDetails) {
@@ -99,31 +87,36 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             const renderingError = new Error(`Swap:${swapDetails?.id} transaction:${transactionHash} failed`);
             renderingError.name = `TransactionFailed`;
             renderingError.cause = err;
-            // posthog.capture('$exception', {
-            //     name: renderingError.name,
-            //     message: renderingError.message,
-            //     $layerswap_exception_type: "Transaction Error",
-            //     stack: renderingError.stack,
-            //     cause: renderingError.cause,
-            //     where: 'TransactionError',
-            //     severity: 'error',
-            // });
+            log({
+                type: "TransactionFailed",
+                props: {
+                    name: renderingError.name,
+                    message: renderingError.message,
+                    $exception_type: "Transaction Error",
+                    stack: renderingError.stack,
+                    cause: renderingError.cause,
+                    severity: "error",
+                    where: 'TransactionError',
+                },
+            });
         }
     }, [inputTxStatus, transactionHash, swapDetails?.id])
 
-    // useEffect(() => {
-    //     if (
-    //         swapDetails?.status === SwapStatus.Completed ||
-    //         swapDetails?.status === SwapStatus.Failed ||
-    //         swapDetails?.status === SwapStatus.Expired ||
-    //         swapDetails?.status === SwapStatus.LsTransferPending
-    //     ) {
-    //         posthog?.capture(`${swapDetails?.status}`, {
-    //             swap_id: swapDetails?.id,
-    //             status: swapDetails?.status,
-    //         })
-    //     }
-    // }, [swapDetails?.status, swapDetails?.id])
+    useEffect(() => {
+        const status = swapDetails?.status as SwapStatus | undefined
+        if (
+            status === SwapStatus.Completed ||
+            status === SwapStatus.Failed ||
+            status === SwapStatus.Expired ||
+            status === SwapStatus.LsTransferPending
+        ) {
+            swapStatusChanged({
+                type: status,
+                swapId: swapDetails?.id!,
+                path: 'Processing',
+            })
+        }
+    }, [swapDetails?.status, swapDetails?.id])
 
     const truncatedRefuelAmount = refuel && truncateDecimals(refuel.amount, refuel.token?.precision)
 

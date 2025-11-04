@@ -1,5 +1,6 @@
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues'
 import { SwapResponse } from '@/lib/apiClients/layerSwapApiClient'
+import { BalanceError, GasFeeError, OnLongTransactionWarning, SwapStatusEvent, WalletWithdrawalError, WidgetError } from '@/types'
 import { createContext, useContext, ReactNode, useCallback } from 'react'
 
 export interface CallbacksContextType {
@@ -10,6 +11,15 @@ export interface CallbacksContextType {
     onSwapIdChange?: (swapId: string | undefined) => void
     onBackClick?: () => void
     onError?: (error: any) => void
+    onLogError?: {
+        onWidgetError: (event: WidgetError) => void;
+        onBalanceError: (event: BalanceError) => void;
+        onGasFeeError: (event: GasFeeError) => void;
+        onTransactionNotDetected: (event: WalletWithdrawalError) => void;
+        onWalletWithdrawalError: (event: WalletWithdrawalError) => void;
+        onLongTransactionWarning: (event: OnLongTransactionWarning) => void;
+    },
+    onSwapStatusChange?: (event: SwapStatusEvent) => void
 }
 
 export interface CallbackProviderProps {
@@ -100,4 +110,14 @@ export function useErrorCallback() {
             onError(error)
         }
     }, [onError])
+}
+
+export function useSwapStatusChangeCallback() {
+    const { onSwapStatusChange } = useCallbacks()
+
+    return useCallback((event: SwapStatusEvent) => {
+        if (onSwapStatusChange) {
+            onSwapStatusChange(event)
+        }
+    }, [onSwapStatusChange])
 }

@@ -1,18 +1,21 @@
 import { LayerswapProvider, LayerSwapSettings, Swap, ThemeData } from "@layerswap/widget"
+import { BalanceError, GasFeeError, WalletWithdrawalError, WidgetError, OnLongTransactionWarning } from "@layerswap/widget/types"
+
 import { useRouter } from "next/router"
 import { FC } from "react"
 import { updateFormBulk } from "../../utils/updateForm"
 import { removeSwapPath, setSwapPath } from "../../utils/updateSwapPath"
 import { EVMProvider } from "@layerswap/wallet-evm";
-import { FuelProvider } from "@layerswap/wallet-fuel";
-import { ParadexProvider } from "@layerswap/wallet-paradex";
-import { StarknetProvider } from "@layerswap/wallet-starknet";
 import { BitcoinProvider } from "@layerswap/wallet-bitcoin";
+import { FuelProvider } from "@layerswap/wallet-fuel"
+import { ParadexProvider } from "@layerswap/wallet-paradex"
+import { StarknetProvider } from "@layerswap/wallet-starknet"
 import { ImmutableXProvider } from "@layerswap/wallet-imtbl-x";
 import { TonProvider } from "@layerswap/wallet-ton";
 import { SVMProvider } from "@layerswap/wallet-svm";
 import { TronProvider } from "@layerswap/wallet-tron";
 import { ImtblPassportProvider } from "@layerswap/wallet-imtbl-passport";
+import { logError } from "../../utils/logError"
 
 const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string }> = ({ settings, themeData, apiKey }) => {
     const router = useRouter()
@@ -47,7 +50,15 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
                 if (!open) {
                     removeSwapPath(router)
                 }
-            }
+            },
+            onLogError: {
+                onWidgetError: logError,
+                onBalanceError: logError,
+                onGasFeeError: logError,
+                onTransactionNotDetected: logError,
+                onWalletWithdrawalError: logError,
+                onLongTransactionWarning: logError,
+            },
         }}
         walletProviders={[EVMProvider, StarknetProvider, FuelProvider, ParadexProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider]}
     >

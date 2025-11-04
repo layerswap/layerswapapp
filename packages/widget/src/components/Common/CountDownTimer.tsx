@@ -1,11 +1,11 @@
 import { FC, useEffect, useState } from "react";
 import { SwapStatus } from "../../Models/SwapStatus";
 import { SwapDetails, TransactionType } from "../../lib/apiClients/layerSwapApiClient";
-// import posthog from "posthog-js";
+import { useLog } from "@/context/ErrorProvider";
 
 const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThresholdChange?: (threshold: boolean) => void }> = ({ initialTime, swapDetails, onThresholdChange }) => {
     const [elapsedTimer, setElapsedTimer] = useState<number>(0);
-
+    const { log } = useLog();
     const [thresholdElapsed, setThresholdElapsed] = useState<boolean>(false);
     const swapInputTransaction = swapDetails?.transactions?.find(t => t.type === TransactionType.Input)
 
@@ -43,18 +43,22 @@ const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThre
 
     if (thresholdElapsed && swapDetails.status !== SwapStatus.Completed) {
         const renderingError = new Error("Transaction is taking longer than expected");
-        renderingError.name = `LongTransactionError`;
+        renderingError.name = `LongTransactionWarning`;
         renderingError.cause = renderingError;
 
-        // posthog.capture('$exception', {
-        //     name: renderingError.name,
-        //     message: renderingError.message,
-        //     $layerswap_exception_type: "Long Transaction Error",
-        //     stack: renderingError.stack,
-        //     cause: renderingError.cause,
-        //     where: 'longTransactionError',
-        //     severity: 'error',
-        // });
+        log({
+            type: "LongTransactionWarning",
+            props: {
+                name: renderingError?.name,
+                message: renderingError?.message,
+                $exception_type: "Long Transaction Warning",
+                stack: renderingError.stack,
+                cause: renderingError.cause,
+                where: 'Countdown timer',
+                severity: "warning",
+            },
+        });
+
     }
 
     return (

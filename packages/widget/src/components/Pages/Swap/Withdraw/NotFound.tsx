@@ -1,15 +1,26 @@
-import { FC, useCallback } from "react";
+import { FC, useCallback, useEffect } from "react";
 import { useIntercom } from "react-use-intercom";
 import { Home } from "lucide-react";
 import { useBackClickCallback } from "@/context/callbackProvider";
 import MessageComponent from "@/components/Common/MessageComponent";
 import NotFoundIcon from "@/components/Icons/NotFoundIcon";
+import { log } from "@/context/ErrorProvider";
 
 const NotFound: FC<{ swapId?: string | undefined }> = ({ swapId }) => {
 
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ customAttributes: { swapId: swapId } })
     const triggerBackClickCallback = useBackClickCallback()
+
+    useEffect(() => {
+        log({
+            type: "NotFound",
+            props: {
+                severity: "error",
+                path: typeof window !== "undefined" ? window.location.pathname : undefined,
+            },
+        });
+    }, []);
 
     const startIntercom = useCallback(() => {
         boot();
