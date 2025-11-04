@@ -196,7 +196,6 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                     onScroll={handleScroll}
                     className={clsx('overflow-y-scroll -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar-thumb:bg-transparent', {
                         'h-[55svh]': isMobileSize,
-                        'h-[450px]': !isMobileSize,
                         'styled-scroll': isScrolling
                     })}
                 >
@@ -232,7 +231,6 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
         return <div
             className={clsx('w-full flex flex-col justify-center items-center font-semibold relative', {
                 'h-[60vh]': isMobileSize,
-                'h-[360px]': !isMobileSize,
             })}
         >
             <div className="flex flex-col gap-4 items-center justify-end row-start-2 row-span-1">

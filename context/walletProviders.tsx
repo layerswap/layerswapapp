@@ -57,7 +57,6 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
                 setShow={setOpen}
                 onClose={onFinish}
                 modalId={"connectNewWallet"}
-                className="expandContainerHeight"
                 header={
                     <div className="flex items-center gap-1">
                         {

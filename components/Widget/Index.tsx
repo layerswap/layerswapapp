@@ -44,7 +44,7 @@ const Widget = ({ children, hideMenu, contextualMenu }: Props) => {
       <div
          style={theme?.cardBackgroundStyle}
          id="widget"
-         className={clsx('md:shadow-lg sm:pb-4 rounded-3xl w-full sm:overflow-hidden relative bg-secondary-700 max-sm:has-openpicker:min-h-svh max-sm:min-h-[99.8svh] sm:has-openpicker:min-h-[79svh] has-expandContainerHeight:min-h-[650px] h-full flex flex-col',
+         className={clsx('md:shadow-lg sm:pb-4 rounded-3xl w-full sm:overflow-hidden relative bg-secondary-700 has-expandContainerHeight:min-h-[650px] max-sm:has-openpicker:min-h-svh max-sm:min-h-[99.8svh] sm:has-openpicker:min-h-[79svh] h-full flex flex-col',
             { "max-sm:min-h-[99svh]!": embedded }
          )}
       >
