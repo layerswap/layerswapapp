@@ -1,10 +1,10 @@
+import { HTMLAttributes } from "react"
 
 export type ThemeData = {
-    backdrop?: string,
-    buttonTextColor: string,
-    logo: string,
-    tertiary: string,
-    primary: ThemeColor,
+    buttonTextColor?: string,
+    logo?: string,
+    tertiary?: string,
+    primary?: ThemeColor,
     secondary?: ThemeColor,
     headerLogo?: string,
     footerLogo?: string,
@@ -12,6 +12,12 @@ export type ThemeData = {
     warning?: StatusColor,
     error?: StatusColor,
     success?: StatusColor,
+    header?: {
+        hideMenu?: boolean,
+        hideTabs?: boolean,
+        hideWallets?: boolean,
+    }
+    cardBackgroundStyle?: HTMLAttributes<HTMLDivElement>['style']
 }
 
 export type ThemeColor = {
@@ -35,7 +41,6 @@ export type StatusColor = {
 
 export const THEME_COLORS: { [key: string]: ThemeData } = {
     "imxMarketplace": {
-        backdrop: "0, 121, 133",
         buttonTextColor: '255, 255, 255',
         tertiary: '140, 152, 192',
         logo: '255, 255, 255',
@@ -100,7 +105,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         },
     },
     "default": {
-        backdrop: "62, 18, 64",
         tertiary: '118, 128, 147',
         buttonTextColor: '228, 229, 240',
         logo: '255, 0, 147',
@@ -145,7 +149,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         },
     },
     "halloween": {
-        backdrop: "20, 10, 25",
         tertiary: "110, 80, 140",
         buttonTextColor: "255, 240, 200",
         logo: '255, 0, 147',
@@ -228,6 +231,11 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         headerLogo: 'none',
         footerLogo: 'block',
         footerLogoHeight: '20px',
+        header: {
+            hideMenu: true,
+            hideTabs: true,
+            hideWallets: true,
+        },
         primary: {
             DEFAULT: '243, 243, 243',
             '100': '255, 255, 255',

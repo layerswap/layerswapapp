@@ -134,7 +134,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                         </div>
                     </div>
                 </Widget.Content>
-                <Widget.Footer>
+                <Widget.Footer showPoweredBy>
                     <div className="space-y-3 mb-3">
                         {
                             routeValidation.message

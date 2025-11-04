@@ -1,5 +1,5 @@
 {
-  "count": 576,
+  "count": 578,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -9203,6 +9203,7 @@
       "category": "Mobile Wallets",
       "chains": [
         "eip155:1",
+        "eip155:10081",
         "eip155:11155111",
         "eip155:137",
         "eip155:56",
@@ -9212,7 +9213,9 @@
         "eip155:84531",
         "eip155:97",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+        "stellar:pubnet",
+        "stellar:testnet"
       ],
       "description": "User-friendly crypto wallet for Android with One UI 6, supporting Bitcoin, Ethereum, Solana, BNB Chain, Polygon, ZetaChain, Base and more.",
       "desktop": {
@@ -25592,7 +25595,7 @@
     "95b58bd89109b2bd9989c9956a8e3f5822003126bae800d9f77455c4009db5ba": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.hackenai.hackenaiapp&hl=en_US",
-        "browser": "https://hacken.ai",
+        "browser": "",
         "chrome": null,
         "edge": null,
         "firefox": null,
@@ -25606,17 +25609,17 @@
       "app_type": "wallet",
       "category": "Mobile Wallets",
       "chains": [
-        "eip155:11155111",
+        "eip155:1",
+        "eip155:56",
         "eip155:8453",
-        "eip155:97",
         "vechain:b1ac3413d346d43539627e6be7ec1b4a"
       ],
       "description": "hAI is the updated gateway to the Hacken ecosystem and a wallet platform for your digital assets.",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
-      "homepage": "https://hacken.ai",
+      "homepage": "https://hai.hacken.io",
       "id": "95b58bd89109b2bd9989c9956a8e3f5822003126bae800d9f77455c4009db5ba",
       "image_id": "d2ff6baf-5051-4bf2-edec-32450b451000",
       "image_url": {
@@ -28172,6 +28175,115 @@
       ],
       "slug": "thirdweb",
       "updatedAt": "2023-09-22T12:52:47.597945+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "a5f729636bd307a509e8814d8553d224550e4c35fee2b4e2f71bb1ade63ee4a9": {
+      "app": {
+        "android": "",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "https://apps.apple.com/il/app/gk8-by-galaxy/id1591020248",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "bip122:000000000019d6689c085ae165831e93",
+        "bip122:000000000933ea01ad0ee984209779ba",
+        "bip122:Bitcoin Cash Mainnet",
+        "casper:casper",
+        "casper:casper-test",
+        "cip-34:1-764824073",
+        "cosmos:cosmoshub-4",
+        "eip155:1",
+        "eip155:10001",
+        "eip155:10003",
+        "eip155:1001",
+        "eip155:1073",
+        "eip155:1075",
+        "eip155:1101",
+        "eip155:11155111",
+        "eip155:1284",
+        "eip155:1285",
+        "eip155:1313161554",
+        "eip155:1313161555",
+        "eip155:137",
+        "eip155:1442",
+        "eip155:148",
+        "eip155:200",
+        "eip155:250",
+        "eip155:295",
+        "eip155:296",
+        "eip155:40",
+        "eip155:4002",
+        "eip155:41",
+        "eip155:421614",
+        "eip155:42220",
+        "eip155:43113",
+        "eip155:43114",
+        "eip155:56",
+        "eip155:80001",
+        "eip155:8217",
+        "eip155:8453",
+        "eip155:84532",
+        "eip155:8822",
+        "eip155:97",
+        "hedera:mainnet",
+        "hedera:testnet",
+        "near:mainnet",
+        "near:testnet",
+        "polkadot:91b171bb158e2d3848fa23a9f1c25182",
+        "solana:4uhcVJyU9pJkvQyS88uRDiswHXSCkY3z",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "stellar:pubnet",
+        "stellar:testnet",
+        "tezos:ghostnet",
+        "tezos:mainnet",
+        "xrpl:0",
+        "xrpl:1"
+      ],
+      "description": "GK8, a Galaxy company and the sole provider of Impenetrable Custody, safeguards the most valuable asset a financial institution has—trust—by enabling financial institutions to provide digital assets that are 100% unstealable.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://www.gk8.io/",
+      "id": "a5f729636bd307a509e8814d8553d224550e4c35fee2b4e2f71bb1ade63ee4a9",
+      "image_id": "48bfe152-7f96-4e9b-3f94-8c6b6b484b00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/48bfe152-7f96-4e9b-3f94-8c6b6b484b00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/48bfe152-7f96-4e9b-3f94-8c6b6b484b00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/48bfe152-7f96-4e9b-3f94-8c6b6b484b00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "gk8://main",
+        "universal": ""
+      },
+      "name": "GK8",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "gk8",
+      "updatedAt": "2025-11-03T08:44:14.963713+00:00",
       "versions": [
         "1",
         "2"
@@ -39486,6 +39598,65 @@
         "2"
       ]
     },
+    "e6005646c187fc5e5141247933253346168242dd5ed8f46480f3b5f73a4d1ac9": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.onyx.walletprod&pcampaignid=web_share",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "https://apps.apple.com/in/app/onyx-xcn-wallet/id6748654539",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:56",
+        "eip155:8453"
+      ],
+      "description": "Onyx Wallet is a non-custodial gas-free wallet powered by Onyxcoin (XCN) and supports Onyx, Ethereum, BNB Chain, and Base.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://onyx.org",
+      "id": "e6005646c187fc5e5141247933253346168242dd5ed8f46480f3b5f73a4d1ac9",
+      "image_id": "f9d19561-adb3-4526-b852-77ba3d534400",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/f9d19561-adb3-4526-b852-77ba3d534400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/f9d19561-adb3-4526-b852-77ba3d534400?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/f9d19561-adb3-4526-b852-77ba3d534400?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "onyxwallet:///",
+        "universal": "https://wallet.onyx.org"
+      },
+      "name": "Onyx Wallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "onyx-wallet",
+      "updatedAt": "2025-11-02T09:09:12.623015+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "e68038c32de4ff04d7cb1747e1d83aab5d59892bba23e1e47d01ca3ee7b505b4": {
       "app": {
         "android": null,
@@ -43400,5 +43571,5 @@
       ]
     }
   },
-  "total": 576
+  "total": 578
 }
