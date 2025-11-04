@@ -30,6 +30,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
     const [loaded, setLoaded] = useState(false);
     const [snap, setSnap] = useState<number | string | null>(null);
     const [snapElement, setSnapElement] = useState<SnapElement | null>(null);
+    const [containerHeight, setContainerHeight] = useState<number>(0);
 
     const { snapPoints } = useSnapPoints()
     const snapPointsHeight = snapPoints.map((item) => item.height);
@@ -74,6 +75,33 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
         setLoaded(true);
     }, []);
 
+    // Monitor widget container height changes and trigger snap point recalculation
+    useEffect(() => {
+        if (!show || isMobile) return;
+
+        const container = document.getElementById('widget');
+        if (!container) return;
+
+        const observer = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const newHeight = entry.contentRect.height;
+                if (newHeight !== containerHeight) {
+                    setContainerHeight(newHeight);
+                    // Force snap point recalculation by resetting to first snap point
+                    if (snapPoints.length > 0 && snapElement) {
+                        setSnapElement(snapPoints.find((item) => item.id === snapElement.id) || snapPoints[0]);
+                    }
+                }
+            }
+        });
+
+        observer.observe(container);
+
+        return () => {
+            observer.disconnect();
+        };
+    }, [show, isMobile, containerHeight, snapPoints, snapElement]);
+
     if (!loaded) return null;
 
     const container = isMobile ? undefined : document.getElementById('widget');
@@ -115,7 +143,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
                 <Drawer.Content
                     data-testid="content"
-                    className={clsx('fixed sm:absolute flex flex-col bg-secondary-700 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-4 text-primary-text ring-0! outline-hidden! expandContainerHeight', className, {
+                    className={clsx('fixed sm:absolute flex flex-col bg-secondary-700 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-4 text-primary-text ring-0! outline-hidden!', className, {
                         'border-none! rounded-none!': snap === 1,
                     })}
                 >
