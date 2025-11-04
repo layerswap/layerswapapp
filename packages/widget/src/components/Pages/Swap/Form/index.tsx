@@ -6,7 +6,7 @@ import { SwapStatus } from '@/Models/SwapStatus';
 
 export const Swap: FC = () => {
   return (
-    <div className="text-primary-text">
+    <div className="text-primary-text h-full">
       <SWRConfig value={{ use: [updatePendingCount] }}>
         <SwapForm />
       </SWRConfig>

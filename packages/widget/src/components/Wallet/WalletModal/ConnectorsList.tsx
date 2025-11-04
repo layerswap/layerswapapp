@@ -17,6 +17,7 @@ import { Checkbox } from "@/components/shadcn/checkbox";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { SearchComponent } from "@/components/Input/Search";
 import { isMobile } from "@/lib/wallets/utils/isMobile";
+import AppSettings from "@/lib/AppSettings";
 
 const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();
@@ -188,8 +189,8 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 <div
                     onScroll={handleScroll}
                     className={clsx('overflow-y-scroll -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar-thumb:bg-transparent', {
-                        'h-[55vh]': isMobileSize,
-                        'h-[265px]': !isMobileSize,
+                        'h-[55vh]': isMobileSize && AppSettings.ThemeData?.enablePortal,
+                        'h-[265px]': !isMobileSize || !AppSettings.ThemeData?.enablePortal,
                         'styled-scroll': isScrolling
                     })}
                 >
@@ -224,8 +225,8 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
     if (selectedConnector.installUrl) {
         return <div
             className={clsx('w-full flex flex-col justify-center items-center font-semibold relative', {
-                'h-[60vh]': isMobileSize,
-                'h-[360px]': !isMobileSize,
+                'h-[60vh]': isMobileSize && AppSettings.ThemeData?.enablePortal,
+                'h-[300px]': !isMobileSize || !AppSettings.ThemeData?.enablePortal,
             })}
         >
             <div className="flex flex-col gap-4 items-center justify-end row-start-2 row-span-1">
@@ -249,8 +250,8 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
     return (
         <div
             className={clsx('w-full flex flex-col justify-center items-center font-semibold relative', {
-                'h-[60vh]': isMobileSize,
-                'h-[360px]': !isMobileSize,
+                'h-[60vh]': isMobileSize && AppSettings.ThemeData?.enablePortal,
+                'h-[300px]': !isMobileSize || !AppSettings.ThemeData?.enablePortal,
                 'pb-20': connectionError
             })}
         >
@@ -266,7 +267,7 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
                                 connectionError ?
                                     <Link2Off className="w-auto h-auto place-self-center" />
                                     :
-                                    <div className="loader !text-[3px] place-self-center" />
+                                    <div className="loader text-[3px]! place-self-center" />
                             }
                             <div className="p-3 bg-secondary-700 rounded-lg z-10">
                                 <ConnectorIcon className="w-11 h-auto" />
@@ -288,7 +289,7 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
                     <div className="flex w-full gap-1 text-sm text-secondary-text justify-start">
                         <CircleX className="w-5 h-5 stroke-primary-500 mr-1 mt-0.5 flex-shrink-0" />
                         <div className='flex flex-col gap-1'>
-                            <p className='text-base text-white'>Failed to connect</p>
+                            <p className='text-base text-primary-text'>Failed to connect</p>
                             <p className="text-sm font-normal">
                                 {connectionError}
                             </p>
@@ -360,7 +361,7 @@ const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ selected
     const Icon = resolveWalletConnectorIcon({ connector: selectedConnector, iconUrl: selectedConnector.icon })
     return (
         <div>
-            <div className="flex flex-col gap-4 py-15">
+            <div className="flex flex-col gap-4 py-10">
                 <div className="flex justify-center gap-1">
                     <Icon className="w-14 h-auto rounded-lg" />
                 </div>

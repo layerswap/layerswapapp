@@ -34,6 +34,8 @@ npm install @layerswap/widget zustand
 yarn add @layerswap/widget zustand
 ```
 
+- [**Zustand**](https://zustand.docs.pmnd.rs/getting-started/introduction) is a lightweight state management library for React applications.
+
 ## Getting started with Layerswap Widget
 
 Here is an example of a basic app using Layerswap Widget:
@@ -45,31 +47,6 @@ export const WidgetPage = () => {
   return (
     <LayerswapProvider>
       <Swap />
-    </LayerswapProvider>
-  );
-};
-```
-
-You can create your custom wallet provider if you want to use RainbowKit, Dynamic, etc.
-
-```tsx
-import { LayerswapProvider, Swap, WalletHooksProvider } from '@layerswap/widget';
-import useCustomEVM from "../hooks/useCustomEvm";
-
-function CustomHooks ({ children }: { children: ReactNode }) {
-    const customEvm = useCustomEVM()
-    return <WalletHooksProvider overides={{ evm: customEvm }}>
-        {children}
-    </WalletHooksProvider>
-}
-
-export const WidgetPage = () => {
-
-  return (
-    <LayerswapProvider>
-      <CustomHooks>
-        <Swap />
-      <CustomHooks>
     </LayerswapProvider>
   );
 };

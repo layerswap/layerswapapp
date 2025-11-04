@@ -7,9 +7,9 @@ import MenuList from "./MenuList";
 import Wizard from "../Wizard/Wizard";
 import WizardItem from "../Wizard/WizardItem";
 import HistoryList from "../Pages/SwapHistory/History";
-import Modal from "../Modal/modal";
 import { CampaignsComponent } from "../Pages/Campaigns";
 import { CampaignDetailsComponent } from "../Pages/Campaigns/Details";
+import VaulDrawer from "../Modal/vaulModal";
 
 const Comp = () => {
 
@@ -38,7 +38,7 @@ const Comp = () => {
                     <MenuIcon strokeWidth="2" />
                 } />
             </div>
-            <Modal
+            <VaulDrawer
                 modalId="menuModal"
                 show={openTopModal}
                 setShow={handleModalOpenStateChange}
@@ -55,21 +55,23 @@ const Comp = () => {
                     </div>
                 }
             >
-                <Wizard wizardId='menuWizard' >
-                    <WizardItem StepName={MenuStep.Menu} inModal>
-                        <MenuList goToStep={handleGoToStep} />
-                    </WizardItem>
-                    <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full" inModal>
-                        <HistoryList onNewTransferClick={() => handleModalOpenStateChange(false)} />
-                    </WizardItem>
-                    <WizardItem StepName={MenuStep.Campaigns} GoBack={goBackToMenuStep} className="h-full" inModal>
-                        <CampaignsComponent onCampaignSelect={(campaign) => {handleGoToStep(MenuStep.CampaignDetails); setSelectedCampaign(campaign.name)}} />
-                    </WizardItem>
-                    <WizardItem StepName={MenuStep.CampaignDetails} GoBack={() => goToStep(MenuStep.Campaigns, "back")} className="h-full" inModal>
-                        <CampaignDetailsComponent campaignName={selectedCampaign} />
-                    </WizardItem>
-                </Wizard>
-            </Modal>
+                <VaulDrawer.Snap openFullHeight id="item-1">
+                    <Wizard wizardId='menuWizard' >
+                        <WizardItem StepName={MenuStep.Menu} inModal>
+                            <MenuList goToStep={handleGoToStep} />
+                        </WizardItem>
+                        <WizardItem StepName={MenuStep.Transactions} GoBack={goBackToMenuStep} className="h-full" inModal>
+                            <HistoryList onNewTransferClick={() => handleModalOpenStateChange(false)} />
+                        </WizardItem>
+                        <WizardItem StepName={MenuStep.Campaigns} GoBack={goBackToMenuStep} className="h-full" inModal>
+                            <CampaignsComponent onCampaignSelect={(campaign) => { handleGoToStep(MenuStep.CampaignDetails); setSelectedCampaign(campaign.name) }} />
+                        </WizardItem>
+                        <WizardItem StepName={MenuStep.CampaignDetails} GoBack={() => goToStep(MenuStep.Campaigns, "back")} className="h-full" inModal>
+                            <CampaignDetailsComponent campaignName={selectedCampaign} />
+                        </WizardItem>
+                    </Wizard>
+                </VaulDrawer.Snap>
+            </VaulDrawer>
         </div >
     </>
 }

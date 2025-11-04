@@ -72,22 +72,21 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
                     --ls-border-radius-full: 9999px;
                     --ls-border-radius-default: ${adjustBorderRadius('small', mergedTheme.borderRadius)};
 
-                    --ls-colors-backdrop: ${mergedTheme.backdrop};
                     --ls-colors-logo: ${mergedTheme.logo};
-                    --ls-colors-primary: ${mergedTheme.primary.DEFAULT};
-                    --ls-colors-primary-100: ${mergedTheme.primary[100]};
-                    --ls-colors-primary-200: ${mergedTheme.primary[200]};
-                    --ls-colors-primary-300: ${mergedTheme.primary[300]};
-                    --ls-colors-primary-400: ${mergedTheme.primary[400]};
-                    --ls-colors-primary-500: ${mergedTheme.primary[500]};
-                    --ls-colors-primary-600: ${mergedTheme.primary[600]};
-                    --ls-colors-primary-700: ${mergedTheme.primary[700]};
-                    --ls-colors-primary-800: ${mergedTheme.primary[800]};
-                    --ls-colors-primary-900: ${mergedTheme.primary[900]};
+                    --ls-colors-primary: ${mergedTheme.primary?.DEFAULT};
+                    --ls-colors-primary-100: ${mergedTheme.primary?.[100]};
+                    --ls-colors-primary-200: ${mergedTheme.primary?.[200]};
+                    --ls-colors-primary-300: ${mergedTheme.primary?.[300]};
+                    --ls-colors-primary-400: ${mergedTheme.primary?.[400]};
+                    --ls-colors-primary-500: ${mergedTheme.primary?.[500]};
+                    --ls-colors-primary-600: ${mergedTheme.primary?.[600]};
+                    --ls-colors-primary-700: ${mergedTheme.primary?.[700]};
+                    --ls-colors-primary-800: ${mergedTheme.primary?.[800]};
+                    --ls-colors-primary-900: ${mergedTheme.primary?.[900]};
 
                     --ls-colors-buttonTextColor: ${mergedTheme.buttonTextColor};
                     --ls-colors-text-tertiary: ${mergedTheme.tertiary};
-                    --ls-colors-primary-text: ${mergedTheme.primary.text};
+                    --ls-colors-primary-text: ${mergedTheme.primary?.text};
 
                     --ls-colors-secondary: ${mergedTheme.secondary?.DEFAULT};
                     --ls-colors-secondary-100: ${mergedTheme.secondary?.[100]};

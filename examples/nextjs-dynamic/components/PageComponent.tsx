@@ -1,76 +1,81 @@
-import { FC, ReactNode } from "react";
-import { Swap, LayerswapProvider, LayerSwapSettings } from '@layerswap/widget'
-import "@layerswap/widget/index.css"
-import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
-import {
-    DynamicContextProvider,
-} from "@dynamic-labs/sdk-react-core";
-import { createConfig, http, WagmiProvider } from "wagmi";
-import { mainnet, sepolia } from "viem/chains";
+import { FC } from "react";
+import { Swap, LayerswapProvider, LayerSwapSettings, ThemeData } from '@layerswap/widget'
+import { StarknetWalletConnectors } from "@dynamic-labs/starknet";
+import { DynamicContextProvider } from "@dynamic-labs/sdk-react-core";
 import { EVMProvider } from "@layerswap/wallet-evm"
-import { ImtblPassportProvider } from "@layerswap/wallet-imtbl-passport"
-import { ImmutableXProvider } from '@layerswap/wallet-imtbl-x'
-import useCustomEVM from "../hooks/useCustomEVM";
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-
-
-const config = createConfig({
-    chains: [mainnet, sepolia],
-    transports: {
-        [mainnet.id]: http(),
-        [sepolia.id]: http(),
-    },
-})
-
-const queryClient = new QueryClient()
+import { StarknetProvider } from "@layerswap/wallet-starknet"
+import { SVMProvider } from "@layerswap/wallet-svm"
+import { BitcoinProvider } from "@layerswap/wallet-bitcoin"
+import useCustomStarknet from "../hooks/useCustomStarknet";
+import { WalletProvider } from "@layerswap/widget/types";
+import "@layerswap/widget/index.css"
 
 const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
 
-    const imtblPassportConfigs = typeof window !== 'undefined' ? {
-        clientId: process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID || '',
-        publishableKey: process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY || '',
-        redirectUri: `${window.location.origin}/imtblRedirect`,
-        logoutRedirectUri: `${window.location.origin}/`
-    } : undefined
-
-    const evmProvider: typeof EVMProvider = {
-        ...EVMProvider,
-        walletConnectionProvider: useCustomEVM
+    const starknetProvider: WalletProvider = {
+        ...StarknetProvider,
+        walletConnectionProvider: useCustomStarknet
     }
+
     return (
-        <WagmiProvider config={config}>
-            <QueryClientProvider client={queryClient}>
-                <DynamicContextProvider
-                    settings={{
-                        // Find your environment id at https://app.dynamic.xyz/dashboard/developer
-                        environmentId: "63a881b4-4008-45d7-9697-4a9e743f51d9",
-                        walletConnectors: [EthereumWalletConnectors],
+        <DynamicContextProvider
+            settings={{
+                // Find your environment id at https://app.dynamic.xyz/dashboard/developer
+                environmentId: "63a881b4-4008-45d7-9697-4a9e743f51d9",
+                walletConnectors: [StarknetWalletConnectors],
+            }}
+        >
+            <div className="w-[600px] mx-auto flex flex-col justify-center place-self-center h- rounded-lg">
+                <LayerswapProvider
+                    config={{
+                        settings,
+                        theme: theme,
+                        apiKey: 'm1jz5JMmndWbMmYLm5vcsHtpxQ35xGT2Z4xa+rp/i98GXVc1vhH7lvY0zbLMTdkD9BXw+HLUTku4H6VumEDogQ',
+                        version: 'mainnet',
+                        initialValues: {
+                            toAsset: 'USDC',
+                            lockTo: true,
+                            lockAsset: true
+                        },
                     }}
+                    walletProviders={[EVMProvider, starknetProvider, SVMProvider, BitcoinProvider]}
                 >
-                    <div className="w-[600px] mx-auto flex flex-col justify-center place-self-center h-screen rounded-lg">
-                        <LayerswapProvider
-                            config={{
-                                settings,
-                                theme: { enablePortal: false, header: { hideMenu: true, hideTabs: true, hideWallets: true }, cardBackgroundStyle: { background: 'transparent' } } as any,
-                                apiKey: 'm1jz5JMmndWbMmYLm5vcsHtpxQ35xGT2Z4xa+rp/i98GXVc1vhH7lvY0zbLMTdkD9BXw+HLUTku4H6VumEDogQ',
-                                version: 'mainnet',
-                                initialValues: {
-                                    to: 'IMMUTABLEZK_MAINNET',
-                                    toAsset: 'USDC',
-                                    lockTo: true,
-                                    lockAsset: true
-                                },
-                                imtblPassport: imtblPassportConfigs
-                            }}
-                            walletProviders={[evmProvider, ImmutableXProvider, ImtblPassportProvider]}
-                        >
-                            <Swap />
-                        </LayerswapProvider>
-                    </div>
-                </DynamicContextProvider>
-            </QueryClientProvider>
-        </WagmiProvider>
+                    <Swap />
+                </LayerswapProvider>
+            </div>
+        </DynamicContextProvider>
     )
+}
+
+const theme: ThemeData = {
+    buttonTextColor: '25, 22, 25',
+    tertiary: '71, 71, 82',
+    primary: {
+        DEFAULT: '55, 207, 211',
+        100: '189, 239, 240',
+        200: '155, 231, 233',
+        300: '122, 223, 226',
+        400: '88, 215, 218',
+        500: '55, 207, 211',
+        600: '38, 169, 172',
+        700: '28, 124, 126',
+        800: '18, 78, 80',
+        900: '8, 33, 34',
+        text: '248, 250, 252',
+    },
+    secondary: {
+        DEFAULT: '29, 29, 33',
+        100: '105, 105, 120',
+        200: '86, 86, 98',
+        300: '67, 67, 76',
+        400: '48, 48, 55',
+        500: '29, 29, 33',
+        600: '22, 22, 25',
+        700: '19, 19, 21',
+        800: '0, 0, 0',
+        900: '0, 0, 0',
+        text: '128, 128, 143',
+    }
 }
 
 export default PageComponent

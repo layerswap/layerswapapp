@@ -1,11 +1,10 @@
 import { HTMLAttributes } from "react";
 
 export type ThemeData = {
-    backdrop?: string,
-    buttonTextColor: string,
-    logo: string,
-    tertiary: string,
-    primary: ThemeColor,
+    buttonTextColor?: string,
+    logo?: string,
+    tertiary?: string,
+    primary?: ThemeColor,
     secondary?: ThemeColor,
     headerLogo?: string,
     footerLogo?: string,
@@ -22,6 +21,7 @@ export type ThemeData = {
         hideWallets?: boolean,
     }
     cardBackgroundStyle?: HTMLAttributes<HTMLDivElement>['style']
+    hidePoweredBy?: boolean
 }
 
 export type ThemeColor = {
@@ -45,7 +45,6 @@ export type StatusColor = {
 
 export const THEME_COLORS: { [key: string]: ThemeData } = {
     "imxMarketplace": {
-        backdrop: "0, 121, 133",
         buttonTextColor: '255, 255, 255',
         tertiary: '140, 152, 192',
         logo: '255, 255, 255',
@@ -110,7 +109,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         },
     },
     "default": {
-        backdrop: "62, 18, 64",
         tertiary: '118, 128, 147',
         buttonTextColor: '228, 229, 240',
         logo: '255, 0, 147',
@@ -153,6 +151,50 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             '800': '11, 17, 31',
             '900': '7, 12, 23',
             'text': '163, 173, 194',
+        },
+    },
+    "halloween": {
+        tertiary: "110, 80, 140",
+        buttonTextColor: "255, 240, 200",
+        logo: '255, 0, 147',
+        footerLogo: "none",
+        warning: {
+            Foreground: "255, 180, 70",
+            Background: "45, 30, 10",
+        },
+        error: {
+            Foreground: "255, 90, 90",
+            Background: "40, 15, 15",
+        },
+        success: {
+            Foreground: "150, 255, 180",
+            Background: "20, 40, 25",
+        },
+        primary: {
+            DEFAULT: "230, 80, 25",
+            "100": "255, 180, 120",
+            "200": "255, 150, 70",
+            "300": "255, 120, 50",
+            "400": "255, 100, 30",
+            "500": "230, 80, 25",
+            "600": "190, 60, 20",
+            "700": "150, 45, 15",
+            "800": "100, 30, 10",
+            "900": "50, 15, 5",
+            "text": "255, 240, 200",
+        },
+        secondary: {
+            DEFAULT: "35, 25, 60",
+            "100": "90, 75, 130",
+            "200": "75, 60, 120",
+            "300": "60, 50, 110",
+            "400": "50, 40, 90",
+            "500": "40, 30, 75",
+            "600": "30, 25, 65",
+            "700": "25, 20, 55",
+            "800": "18, 15, 45",
+            "900": "12, 10, 35",
+            "text": "220, 210, 250",
         },
     },
     "ton": {

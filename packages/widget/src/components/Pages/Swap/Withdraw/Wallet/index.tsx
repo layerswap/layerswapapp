@@ -25,8 +25,8 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
     const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
 
     useEffect(() => {
-        const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id && w.withdrawalSupportedNetworks?.includes(source_network?.name))
-        if (selectedSourceAccount && selectedWallet) {
+        const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id && w.addresses.some(a => a.toLowerCase() === selectedSourceAccount.address.toLowerCase()))
+        if (selectedSourceAccount && selectedWallet && provider?.switchAccount) {
             provider?.switchAccount(selectedWallet, selectedSourceAccount.address)
         }
     }, [selectedSourceAccount?.address, source_network?.name])
@@ -231,7 +231,7 @@ const TransactionMessage: FC<{ error: Error, isLoading: boolean }> = ({ error, i
         //     where: 'swapWithdrawalError',
         //     severity: 'error',
         // });
-        return <TransactionMessages.UexpectedErrorMessage message={error.message} />
+        return <TransactionMessages.UnexpectedErrorMessage message={error.message} />
     }
     else return <></>
 }

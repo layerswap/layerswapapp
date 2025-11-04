@@ -19,7 +19,7 @@ const SecondaryButton: FC<ButtonHTMLAttributes<HTMLButtonElement> & SecondaryBut
             {...buttonProps}
             type="button"
             disabled={props.disabled || isLoading}
-            className={clsx('rounded-md duration-200 break-keep transition bg-secondary-500 hover:bg-secondary-400 border border-secondary-400 hover:border-secondary-200 font-semibold text-primary-buttonTextColor shadow-xs cursor-pointer disabled:bg-secondary-300 disabled:text-secondary-text/50 disabled:cursor-not-allowed relative flex items-center justify-center space-x-2', className, {
+            className={clsx('rounded-md duration-200 break-keep transition bg-secondary-500 hover:bg-secondary-400 border border-secondary-400 hover:border-secondary-200 font-semibold text-primary-text shadow-xs cursor-pointer disabled:bg-secondary-300 disabled:text-secondary-text/50 disabled:cursor-not-allowed relative flex items-center justify-center space-x-2', className, {
                 'px-2 py-1 text-xs': size === 'xs',
                 'px-2 py-1 text-sm': size === 'sm',
                 'px-2.5 py-1.5 text-sm': size === 'md',

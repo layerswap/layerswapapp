@@ -8,6 +8,7 @@ import { ArgentMobileConnector } from "starknetkit/argentMobile";
 import { InjectedConnector } from "starknetkit/injected"
 // @ts-ignore
 import { WebWalletConnector } from "starknetkit/webwallet"
+import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from "@starknet-io/types-js";
 
 
 const WALLETCONNECT_PROJECT_ID = AppSettings.WalletConnectConfig.projectId
@@ -63,7 +64,7 @@ class DiscoveryConnector extends Connector {
     chainId(): Promise<bigint> {
         throw new Error("Method not implemented.");
     }
-    request<T>(call: T): Promise<any> {
+    request<T extends RpcMessage["type"]>(call: RequestFnCall<T>) : Promise<RpcTypeToMessageMap[T]["result"]> {
         throw new Error("Method not implemented.");
     }
 

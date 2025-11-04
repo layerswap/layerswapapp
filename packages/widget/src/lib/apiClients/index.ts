@@ -1,2 +1,3 @@
 export * from './jsonRpcClient'
-export * from './layerSwapApiClient'
+import LayerswapApiClient from './layerSwapApiClient'
+export { LayerswapApiClient }

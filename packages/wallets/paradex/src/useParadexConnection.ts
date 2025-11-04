@@ -91,7 +91,7 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
                     accounts = { [connectionResult.address.toLowerCase()]: paradexAccounts[connectionResult.address.toLowerCase()] }
                 }
                 setActiveAddress({
-                    address: connectionResult.address,
+                    l1Address: connectionResult.address,
                     id: connectionResult.id,
                     providerName: "EVM"
                 })
@@ -113,7 +113,7 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
                     if (!snAccount) {
                         throw Error("Starknet account not found")
                     }
-                    const paradexAccount = await AuthorizeStarknet(snAccount)
+                    const paradexAccount = await AuthorizeStarknet(snAccount as any)
                     addParadexAccount({ l1Address: connectionResult.address, paradexAddress: paradexAccount.address })
                     accounts = { [connectionResult.address.toLowerCase()]: paradexAccount.address }
                 }
@@ -121,7 +121,7 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
                     accounts = { [connectionResult.address.toLowerCase()]: paradexAccounts[connectionResult.address.toLowerCase()] }
                 }
                 setActiveAddress({
-                    address: connectionResult.address,
+                    l1Address: connectionResult.address,
                     id: connectionResult.id,
                     providerName: "Starknet"
                 })
@@ -166,9 +166,9 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
         const providers = [evmProvider, starknetProvider]
         const paradexProvider = providers.find(p => p?.connectedWallets?.find(w => w.id === wallet.id))
 
-        if (paradexProvider?.name)
+        if (paradexProvider?.name && wallet.metadata?.l1Address)
             setActiveAddress({
-                address: address,
+                l1Address: wallet.metadata.l1Address,
                 id: wallet.id,
                 providerName: paradexProvider.name as "Starknet" | "EVM"
             })
@@ -180,7 +180,7 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
         return resolveSingleWallet({
             provider,
             walletId: activeConnection?.id,
-            l1Account: activeConnection?.address,
+            l1Account: activeConnection?.l1Address,
             name,
             paradexAccounts,
             disconnect: removeParadexAccount,

@@ -10,7 +10,14 @@ export default function Transactions({ settings, themeData, apiKey }: InferGetSe
   return (
     <>
       <Layout settings={settings} themeData={themeData}>
-        <LayerswapProvider config={{ theme: themeData, apiKey, settings }} walletProviders={walletProviders}>
+        <LayerswapProvider
+          config={{
+            theme: { ...themeData, borderRadius: 'default', enablePortal: true, enableWideVersion: true, hidePoweredBy: true },
+            apiKey,
+            settings
+          }}
+          walletProviders={walletProviders}
+        >
           <TransactionsHistory />
         </LayerswapProvider>
       </Layout>

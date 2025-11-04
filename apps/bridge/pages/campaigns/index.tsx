@@ -11,7 +11,11 @@ export default function CampaignsPage({ settings, themeData, apiKey }: InferGetS
     return (<>
         <Layout settings={settings} themeData={themeData}>
             <Campaigns
-                config={{ theme: themeData, apiKey, settings }}
+                config={{ 
+                    theme: { ...themeData, borderRadius: 'default', enablePortal: true, enableWideVersion: true, hidePoweredBy: true },
+                    apiKey,
+                    settings
+                }}
                 goBack={router.back}
                 onCampaignSelect={(campaign) => router.push({ pathname: `/campaign/${campaign.name}`, query: { ...resolvePersistantQueryParams(router.query) } })}
                 walletProviders={[EVMProvider, StarknetProvider, FuelProvider, ParadexProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider]}

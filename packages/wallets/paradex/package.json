@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/wallet-paradex",
-  "version": "1.0.0-alpha0.1",
+  "version": "1.0.2",
   "description": "Paradex Wallet Provider for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -52,7 +52,7 @@
     "bignumber.js": "^9.3.1",
     "ethers": "5.7.2",
     "lucide-react": "^0.379.0",
-    "starknet": "^7.6.4"
+    "starknet-old": "npm:starknet@6.8.0"
   },
   "devDependencies": {
     "@layerswap/wallet-evm": "workspace:*",

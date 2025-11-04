@@ -32,7 +32,7 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
                 if (!snAccount) {
                     throw Error("Starknet account not found")
                 }
-                const paradexAccount = await AuthorizeStarknet(snAccount)
+                const paradexAccount = await AuthorizeStarknet(snAccount as any)
 
                 const parsedCallData = JSON.parse(callData || "")
 
@@ -48,7 +48,7 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
         }
         catch (error) {
             setLoading(false)
-            error.name = TransactionMessageType.UexpectedErrorMessage
+            error.name = TransactionMessageType.UnexpectedErrorMessage
             error.message = error
             throw new Error(error)
         }

@@ -1,5 +1,6 @@
 import { THEME, TonConnectUIProvider } from "@tonconnect/ui-react"
 import { ThemeData } from "@layerswap/widget/types";
+import { AppSettings } from "@layerswap/widget/internal";
 
 const TonConnectProvider = ({ children, themeData, appName }: { children: JSX.Element | JSX.Element[], themeData: ThemeData, appName: string | undefined }) => {
 
@@ -15,9 +16,7 @@ const TonConnectProvider = ({ children, themeData, appName }: { children: JSX.El
         return "#" + componentToHex(Number(rgbArray[0])) + componentToHex(Number(rgbArray[1])) + componentToHex(Number(rgbArray[2]));
     }
 
-    const manifestUrl = `https://layerswap.io/app/tonconnect-manifest.json`
-    //TODO add dynamic url 
-    //const manifestUrl = `https://${process.env.NEXT_PUBLIC_VERCEL_URL ? `${process.env.NEXT_PUBLIC_VERCEL_URL}${basePath ? `${basePath}` : ''}` : 'layerswap.io/app'}/tonconnect-manifest.json`
+    const manifestUrl = AppSettings.TonClientConfig.manifestUrl
 
     return (
         <TonConnectUIProvider
@@ -32,16 +31,16 @@ const TonConnectProvider = ({ children, themeData, appName }: { children: JSX.El
                                 white: '#f1f1f1f1',
                             },
                             connectButton: {
-                                background: rgbToHex(themeData.primary?.[500]),
+                                background: rgbToHex(themeData?.primary?.[500] || ''),
                                 foreground: rgbToHex(themeData?.secondary?.[800] || ''),
                             },
-                            accent: rgbToHex(themeData.primary?.[500]),
-                            telegramButton: rgbToHex(themeData.primary?.[500]),
+                            accent: rgbToHex(themeData?.primary?.[500] || ''),
+                            telegramButton: rgbToHex(themeData?.primary?.[500] || ''),
                             icon: {
-                                primary: rgbToHex(themeData.primary?.[500]),
+                                primary: rgbToHex(themeData?.primary?.[500] || ''),
                                 secondary: rgbToHex(themeData?.secondary?.text || ''),
                                 tertiary: rgbToHex(themeData.secondary?.[400] || ''),
-                                success: rgbToHex(themeData.primary?.[500]),
+                                success: rgbToHex(themeData?.primary?.[500] || ''),
                             },
                             background: {
                                 primary: rgbToHex(themeData.secondary?.[900] || ''),
@@ -51,7 +50,7 @@ const TonConnectProvider = ({ children, themeData, appName }: { children: JSX.El
                                 qr: '#f1f1f1f1',
                             },
                             text: {
-                                primary: rgbToHex(themeData.primary.text),
+                                primary: rgbToHex(themeData?.primary?.text || ''),
                                 secondary: rgbToHex(themeData?.secondary?.text || ''),
                             }
                         }
@@ -59,9 +58,6 @@ const TonConnectProvider = ({ children, themeData, appName }: { children: JSX.El
                 }
             }
             manifestUrl={manifestUrl}
-            actionsConfiguration={{
-                twaReturnUrl: appName === '4233c46e96e44017afae91537841cb46' ? 'https://t.me/layerswap_bridge_bot/bridge' : undefined
-            }}
         >
             {children}
         </TonConnectUIProvider>

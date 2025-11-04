@@ -9,7 +9,7 @@ type Props = {
 export default function ThemeWrapper({ children }: Props) {
     return <main className="styled-scroll h-full w-full">
         <div className="invisible light" />
-        <div className="flex flex-col items-center min-h-screen overflow-hidden relative font-robo">
+        <div className="flex flex-col items-center min-h-screen relative font-robo">
             <Toaster position="top-center" toastOptions={{
                 duration: 5000,
                 style: {
@@ -39,7 +39,7 @@ export default function ThemeWrapper({ children }: Props) {
                 )}
             </Toaster>
             <Navbar />
-            <div className="w-full h-full z-auto flex flex-col items-center justify-center sm:mb-6">
+            <div className="w-full h-full z-auto flex flex-col items-center justify-center">
                 <div className="h-full w-full text-primary-text">
                     {children}
                 </div>

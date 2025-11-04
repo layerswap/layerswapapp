@@ -7,8 +7,8 @@ type Props = {
 }
 export default function ThemeWrapper({ children }: Props) {
     return <TooltipProvider delayDuration={400}>
-        <main className="styled-scroll">
-            <div className={`flex flex-col items-center overflow-hidden relative font-robo`}>
+        <main className="styled-scroll h-full">
+            <div className={`flex flex-col items-center overflow-hidden relative font-robo h-full`}>
                 <Toaster position="top-center" toastOptions={{
                     duration: 5000,
                     style: {
@@ -37,8 +37,8 @@ export default function ThemeWrapper({ children }: Props) {
                         </ToastBar>
                     )}
                 </Toaster>
-                <div className="w-full h-full max-w-lg z-auto sm:mb-6">
-                    <div className="flex h-full content-center items-center justify-center space-y-5 flex-col container mx-auto sm:px-[20px] max-w-lg">
+                <div className="w-full h-full max-w-[472px] z-auto">
+                    <div className="flex h-full content-center items-center justify-center flex-col container">
                         <div className="h-full w-full text-primary-text">
                             {children}
                         </div>

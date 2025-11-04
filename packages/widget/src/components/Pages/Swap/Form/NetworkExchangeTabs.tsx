@@ -68,10 +68,10 @@ export const TabsTrigger: FC<TabsTriggerProps> = ({ value, isHovered, label, Ico
             onClick={() => ctx.setActiveId(value)}
             className={clsx(
                 'w-full flex items-center justify-start max-sm:!p-1 sm:p-1 hover:bg-secondary-100 text-secondary-text hover:text-primary-text overflow-hidden rounded-md max-sm:justify-center max-sm:px-0 gap-1.5',
-                { 
+                {
                     'bg-secondary-300 !text-primary-text': isActive,
                     'sm:!p-0.5': AppSettings.ThemeData?.enableWideVersion == false
-                 }
+                }
             )}
         >
             <div className={clsx("h-5 w-5", { 'sm:!h-6 sm:!w-6': AppSettings.ThemeData?.enableWideVersion == true })}>
@@ -89,9 +89,7 @@ export const TabsContent: FC<TabsContentProps> = ({ value, children }) => {
     if (!ctx) throw new Error('TabsContent must be used within <Tabs>')
     return <>
         {value === ctx.activeId && (
-            <div className="transition-all duration-200">
-                {children}
-            </div>
+            <>{ children }</>
         )}
     </>
 }

@@ -1,8 +1,9 @@
-import LayerSwapApiClient from "../lib/apiClients/layerSwapApiClient";
+import LayerSwapApiClient from "../../lib/apiClients/layerSwapApiClient";
 
-export async function getSettings() {
+export async function getSettings(apiKey: string) {
 
     const apiClient = new LayerSwapApiClient()
+    LayerSwapApiClient.apiKey = apiKey
 
     const { data: networkData } = await apiClient.GetLSNetworksAsync()
     const { data: sourceExchangesData } = await apiClient.GetSourceExchangesAsync()

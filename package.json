@@ -15,7 +15,7 @@
     "tsc-watch": "^6.2.0",
     "typescript": "^5.9.2"
   },
-  "packageManager": "pnpm@10.16.1",
+  "packageManager": "pnpm@10.20.0",
   "devEngines": {
     "runtime": {
       "name": "node",

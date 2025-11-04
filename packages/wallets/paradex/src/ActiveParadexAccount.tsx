@@ -13,7 +13,7 @@ export const ActiveParadexAccountContext = createContext<ActiveAccountState | un
 
 type Account = {
     id: string
-    address: string,
+    l1Address: string,
     providerName: "Starknet" | "EVM"
 }
 
@@ -29,12 +29,11 @@ export const ActiveParadexAccountProvider: FC<Props> = ({ children }) => {
     const evmProvider = useEVMConnection({ networks })
     const starknetProvider = useStarknetConnection({ networks })
     const paradexAccounts = useWalletStore((state) => state.paradexAccounts)
-
     const activeConnection: Account | undefined = useMemo(() => {
         if (!paradexAccounts) return undefined
         const l1Addresses = Object.keys(paradexAccounts || {})
         const selectedProvider = selectedAccount && (selectedAccount.providerName === "EVM" ? evmProvider : starknetProvider);
-        const selectedAccountIsAvailable = selectedAccount && selectedProvider?.connectedWallets?.some(w => w.id === selectedAccount.id && w.addresses.some(wa => wa.toLowerCase() === selectedAccount.address.toLowerCase()));
+        const selectedAccountIsAvailable = selectedAccount && selectedProvider?.connectedWallets?.some(w => w.id === selectedAccount.id && w.addresses.some(wa => wa.toLowerCase() === selectedAccount.l1Address.toLowerCase()));
         if (selectedAccountIsAvailable) {
             return selectedAccount;
         }
@@ -46,10 +45,10 @@ export const ActiveParadexAccountProvider: FC<Props> = ({ children }) => {
             return {
                 id: defaultWallet.id,
                 providerName: defaultWallet.providerName as "Starknet" | "EVM",
-                address: defaultWallet.addresses.find(wa => l1Addresses.some(pa => pa.toLowerCase() === wa.toLowerCase()))!
+                l1Address: defaultWallet.addresses.find(wa => l1Addresses.some(pa => pa.toLowerCase() === wa.toLowerCase()))!
             }
         }
-    }, [evmProvider, starknetProvider, paradexAccounts])
+    }, [evmProvider, starknetProvider, paradexAccounts, selectedAccount])
 
     const setActiveAddress = useCallback((account: Account) => {
         setSelectedAccount(account)

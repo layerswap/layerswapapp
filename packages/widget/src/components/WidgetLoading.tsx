@@ -9,10 +9,15 @@ export const WidgetLoading: FC = () => {
         <>
             <ColorSchema themeData={AppSettings.ThemeData} />
             <div className="relative w-fit h-fit max-w-lg mx-auto p-px">
-                <div className="absolute left-0 top-24 -translate-x-[100%] z-20 w-12 h-22 rounded-l-xl">
-                    <div className="flex flex-col bg-secondary-400 h-full p-1.5 sm:p-2 w-full space-y-2 animate-pulse rounded-l-xl" />
-                </div>
-                <div className="invisible sm:visible absolute inset-0 rounded-[25px] sm:pb-4 bg-gradient-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
+                {
+                    AppSettings.ThemeData?.enableWideVersion &&
+                    <>
+                        <div className="absolute left-0 top-24 -translate-x-[100%] z-20 w-12 h-22 rounded-l-xl">
+                            <div className="flex flex-col bg-secondary-400 h-full p-1.5 sm:p-2 w-full space-y-2 animate-pulse rounded-l-xl" />
+                        </div>
+                        <div className="invisible sm:visible absolute inset-0 rounded-[25px] sm:pb-4 bg-gradient-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
+                    </>
+                }
                 <div className="layerswap-styles w-full sm:pb-4 z-[1] mx-auto rounded-3xl md:shadow-lg  relative bg-gradient-to-b from-secondary-700 to-secondary-700 ">
                     <div className="flex h-full content-center items-center justify-center flex-col container mx-auto">
                         <div className="flex h-full flex-col w-wit">
@@ -24,12 +29,16 @@ export const WidgetLoading: FC = () => {
                                                 <div className="flex flex-col">
                                                     <div className="w-full grid grid-cols-5 px-6 mt-2 pb-2">
                                                         <div className="col-start-5 justify-self-end self-center flex items-center gap-x-1 -mr-2">
-                                                            <div className="space-y-1 py-1.5">
-                                                                <WalletIcon className="w-6 h-6" strokeWidth="2" />
-                                                            </div>
-                                                            <div className="mx-2 space-y-1 py-1.5">
-                                                                <MenuIcon className="w-6 h-6" strokeWidth="2" />
-                                                            </div>
+                                                            {
+                                                                !AppSettings.ThemeData?.header?.hideWallets && <div className="space-y-1 py-1.5">
+                                                                    <WalletIcon className="w-6 h-6" strokeWidth="2" />
+                                                                </div>
+                                                            }
+                                                            {
+                                                                !AppSettings.ThemeData?.header?.hideMenu && <div className="mx-2 space-y-1 py-1.5">
+                                                                    <MenuIcon className="w-6 h-6" strokeWidth="2" />
+                                                                </div>
+                                                            }
                                                         </div>
                                                     </div>
                                                     <div className="px-4 h-full grow flex flex-col flex-1 justify-between w-full gap-3">

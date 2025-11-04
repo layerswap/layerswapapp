@@ -139,9 +139,9 @@ const RouteTokenPair: FC<RouteTokenPairProps> = ({ route, token }) => {
                 />
             </div>
             <div className="flex flex-col font-medium text-primary-text overflow-hidden">
-                <span className="leading-4 text-sm ">{token.symbol}</span>
+                <span className="leading-4 text-sm p-[1.75px]">{token.symbol}</span>
                 <div className="flex items-center gap-1 leading-3 text-sm sm:text-base">
-                    <p className="text-secondary-text text-sm truncate whitespace-nowrap">
+                    <p className="text-secondary-text text-sm truncate whitespace-nowrap p-[1.75px]">
                         {route.display_name}
                     </p>
                 </div>

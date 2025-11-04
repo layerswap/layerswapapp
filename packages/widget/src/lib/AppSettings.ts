@@ -1,7 +1,7 @@
 import { ThemeData } from "../Models/Theme"
 
 export default class AppSettings {
-    static ApiVersion?: string = "mainnet"
+    static ApiVersion: string = "mainnet"
     static ExplorerURl: string = `https://www.layerswap.io/explorer/`
     static LayerswapApiUri?: string = 'https://api.layerswap.io'
     static ResourseStorageUrl: string = 'https://prodlslayerswapbridgesa.blob.core.windows.net/'
@@ -26,8 +26,10 @@ export default class AppSettings {
         }
     static TonClientConfig: {
         tonApiKey: string
+        manifestUrl: string
     } = {
             tonApiKey: 'ac793ea74c19105d617dfbeedb827f1b267b4e91f1b15b2420d003ec49722c82',
+            manifestUrl: `https://layerswap.io/app/tonconnect-manifest.json`
         }
     static ImtblPassportConfig: {
         publishableKey: string,

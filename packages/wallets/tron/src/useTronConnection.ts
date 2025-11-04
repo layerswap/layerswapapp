@@ -124,7 +124,7 @@ export default function useTronConnection({ networks }: WalletConnectionProvider
                 throw e
             }
             else {
-                e.name = TransactionMessageType.UexpectedErrorMessage
+                e.name = TransactionMessageType.UnexpectedErrorMessage
                 throw e
             }
         }
@@ -132,7 +132,7 @@ export default function useTronConnection({ networks }: WalletConnectionProvider
     }
 
     const availableWalletsForConnect: InternalConnector[] = useMemo(() => wallets.map(wallet => {
-        const isNotInstalled = wallet.state == 'NotFound' || wallet.adapter.name == "TronLink"
+        const isNotInstalled = wallet.state == 'NotFound'
         return {
             id: wallet.adapter.name,
             name: wallet.adapter.name,

@@ -7,6 +7,7 @@ import { EVMProvider, FuelProvider, ParadexProvider, StarknetProvider, BitcoinPr
 
 const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string }> = ({ settings, themeData, apiKey }) => {
     const router = useRouter()
+
     const imtblPassportConfigs = typeof window !== 'undefined' ? {
         clientId: process.env.NEXT_PUBLIC_IMMUTABLE_CLIENT_ID || '',
         publishableKey: process.env.NEXT_PUBLIC_IMMUTABLE_PUBLISHABLE_KEY || '',
@@ -19,8 +20,12 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
             apiKey,
             version: process.env.NEXT_PUBLIC_API_VERSION as 'mainnet' | 'testnet',
             settings,
-            theme: { ...themeData as any, borderRadius: 'default', enablePortal: true, enableWideVersion: true },
-            imtblPassport: imtblPassportConfigs
+            theme: { ...themeData, borderRadius: 'default', enablePortal: true, enableWideVersion: true, hidePoweredBy: true },
+            imtblPassport: imtblPassportConfigs,
+            tonConfigs: {
+                'manifestUrl': 'https://layerswap.io/app/tonconnect-manifest.json',
+                'tonApiKey': process.env.NEXT_PUBLIC_TON_API_KEY || ''
+            }
         }}
         callbacks={{
             onFormChange(formData) {

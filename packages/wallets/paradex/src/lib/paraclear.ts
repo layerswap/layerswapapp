@@ -1,5 +1,5 @@
 import BigNumber from 'bignumber.js';
-import * as Starknet from 'starknet';
+import * as Starknet from 'starknet-old';
 
 import type { Account } from './account';
 import type { ParadexConfig } from './config';

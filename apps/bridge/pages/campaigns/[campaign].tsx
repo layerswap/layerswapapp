@@ -10,7 +10,11 @@ export default function RewardsPage({ settings, themeData, apiKey }: InferGetSer
     return (<>
         <Layout settings={settings} themeData={themeData}>
             <CampaignDetails
-                config={{ theme: themeData, apiKey, settings }}
+                config={{
+                    theme: { ...themeData, borderRadius: 'default', enablePortal: true, enableWideVersion: true, hidePoweredBy: true },
+                    apiKey,
+                    settings
+                }}
                 campaignName={router.query.campaign?.toString()!}
                 goBack={router.back}
                 walletProviders={[EVMProvider, StarknetProvider, FuelProvider, ParadexProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider]}

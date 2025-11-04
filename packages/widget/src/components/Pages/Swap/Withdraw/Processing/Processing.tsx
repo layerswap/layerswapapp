@@ -31,7 +31,6 @@ type Props = {
 const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) => {
     const { boot, show, update, showNewMessages } = useIntercom();
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
-    const [showSupportButton, setShowSupportButton] = React.useState(false);
 
     const {
         source_network,
@@ -135,7 +134,6 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
         <CountdownTimer
             initialTime={String(quote?.avg_completion_time)}
             swapDetails={swapDetails}
-            onThresholdChange={setShowSupportButton}
         />
     </div>
 
@@ -405,17 +403,6 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                             ([SwapStatus.Expired, SwapStatus.Cancelled, SwapStatus.UserTransferDelayed].includes(swapStatus)) &&
                             <Failed />
                         }
-                        {
-                            showSupportButton && swapDetails.status !== SwapStatus.Completed && inputTxStatus !== TransactionStatus.Failed && swapDetails.status !== SwapStatus.PendingRefund && swapDetails.status !== SwapStatus.Refunded && (
-                                <div className='flex justify-center mt-6'>
-                                    <SubmitButton
-                                        onClick={handleSupportClick}
-                                        className="w-full max-w-xs"
-                                    >
-                                        Contact Support
-                                    </SubmitButton>
-                                </div>
-                            )}
                     </div>
                 </div>
             </div>
