@@ -4,7 +4,7 @@ import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { useVirtualizer } from "@/lib/virtual";
 import { Accordion } from "@/components/shadcn/accordion";
 import Row from "./Rows";
-import { LayoutGroup, motion } from "framer-motion";
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { useSelectorState } from "@/components/Select/Selector/Index";
 import useWallet from "@/hooks/useWallet";
@@ -19,9 +19,9 @@ type ContentProps = {
     selectedRoute: string | undefined;
     selectedToken: string | undefined;
     direction: SwapDirection;
-    allbalancesLoaded?: boolean;
+    partialPublished?: boolean;
 }
-export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, allbalancesLoaded }: ContentProps) => {
+export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, partialPublished }: ContentProps) => {
     const parentRef = useRef<HTMLDivElement>(null)
     const [openValues, setOpenValues] = useState<string[]>(selectedRoute ? [selectedRoute] : [])
     const { shouldFocus } = useSelectorState();
@@ -43,7 +43,6 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
     useEffect(() => {
         return () => setSearchQuery('')
     }, [])
-
     return <div className="overflow-y-auto flex flex-col h-full z-40 openpicker" >
         <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={shouldFocus} />
         <LayoutGroup>
@@ -78,12 +77,12 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                                         const data = rowElements?.[virtualRow.index]
                                         const key = ((data as any)?.route as any)?.name || virtualRow.key;
                                         return <div
-                                            className="py-1 box-border w-full overflow-hidden"
+                                            className="py-1 box-border w-full overflow-hidden select-none"
                                             key={key}
                                             data-index={virtualRow.index}
                                             ref={virtualizer.measureElement}>
                                             <Row
-                                                allbalancesLoaded={allbalancesLoaded}
+                                                index={virtualRow.index}
                                                 scrollContainerRef={parentRef}
                                                 openValues={openValues}
                                                 onSelect={onSelect}
@@ -99,7 +98,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                                 </div>
                             </div>
                         </div>
-                    </Accordion >
+                    </Accordion>
                 </div>
             </motion.div>
         </LayoutGroup>

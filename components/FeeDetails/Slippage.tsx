@@ -188,6 +188,12 @@ const SlippageInput = forwardRef<HTMLInputElement, SlippageInputProps>(function 
                                 setLocalPercent(next)
                             }
                         }}
+                        onKeyDown={(e) => {
+                            if (e.key == "Enter") {
+                                e.preventDefault();
+                                return false;
+                            }
+                        }}
                     />
                     <span>%</span>
                 </div>

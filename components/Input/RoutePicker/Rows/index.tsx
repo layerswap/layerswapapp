@@ -1,4 +1,4 @@
-import { RefObject } from "react";
+import { RefObject, useEffect, useMemo, useState } from "react";
 import { RowElement } from "@/Models/Route";
 import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { CurrencySelectItemDisplay } from "../Routes";
@@ -7,6 +7,7 @@ import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import RouteTokenSwitch from "../RouteTokenSwitch";
 import clsx from "clsx";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";
+import { useBalanceStore } from "@/stores/balanceStore";
 
 type Props = {
     item: RowElement;
@@ -18,7 +19,7 @@ type Props = {
     onSelect: (route: NetworkRoute, token: NetworkRouteToken) => void;
     openValues: string[];
     scrollContainerRef: RefObject<HTMLDivElement>;
-    allbalancesLoaded?: boolean;
+    index: number;
 };
 
 export default function Row({
@@ -30,15 +31,16 @@ export default function Row({
     toggleContent,
     onSelect,
     openValues,
-    allbalancesLoaded,
     scrollContainerRef,
+    index,
 }: Props) {
-
+    
     switch (item.type) {
         case "network":
         case "grouped_token":
             return (
                 <CollapsibleRow
+                    index={index}
                     item={item}
                     direction={direction}
                     selectedRoute={selectedRoute}
@@ -48,7 +50,6 @@ export default function Row({
                     onSelect={onSelect}
                     openValues={openValues}
                     scrollContainerRef={scrollContainerRef}
-                    allbalancesLoaded={allbalancesLoaded}
                 />
             );
         case "network_token":
@@ -60,7 +61,6 @@ export default function Row({
             return (
                 <div className={clsx("cursor-pointer hover:bg-secondary-500 outline-none disabled:cursor-not-allowed rounded-xl")} onClick={() => onSelect(route, token)} >
                     <CurrencySelectItemDisplay
-                        allbalancesLoaded={allbalancesLoaded}
                         item={token}
                         selected={isSelected}
                         route={route}
@@ -71,8 +71,11 @@ export default function Row({
             );
         }
         case "group_title":
+            if (item.text.toLowerCase().includes("suggestions")) {
+                return <SuggestionsTitle />
+            }
             return (
-                <div className="text-primary-text-tertiary text-base font-normal leading-5 pl-1 sticky top-0 z-50 flex items-baseline" style={{ position: "sticky", top: 0, transform: "none" }} >
+                <div className="text-primary-text-tertiary text-base font-normal leading-5 pl-1 sticky top-0 z-50 flex items-baseline" >
                     <p>
                         {item.text}
                     </p>
@@ -109,4 +112,41 @@ export default function Row({
         default:
             return null
     }
+}
+
+const randomWords = [
+    'Marinading',
+    "Fermenting",
+    "Steeping",
+    "Infusing",
+    "Polishing",
+    "Spicing",
+    "Compiling",
+    "Brewing",
+    "Spinning",
+    "Booting",
+    "Rendering",
+    "Synthesizing",
+    "Inferring",
+    "Neuralizing",
+    "Augmenting",
+    "Finalizing",
+    "Cooking"
+]
+
+const SuggestionsTitle = () => {
+    const isLoading = useBalanceStore(s => s.sortingDataIsLoading)
+    const partialPublished = useBalanceStore(s => s.partialPublished)
+
+    const suggestionsTitle = useMemo(() => isLoading ? `${randomWords[Math.floor(Math.random() * randomWords.length)]} Suggestions` : 'Suggestions', [isLoading, partialPublished])
+
+    if (!isLoading) {
+        return <div className="text-primary-text-tertiary text-base font-normal leading-5 pl-1 sticky top-0 z-50 flex items-baseline">Suggestions</div>
+    }
+    return <div className=" text-transparent text-base font-normal leading-5 pl-1 sticky top-0 z-50 flex items-baseline bg-[linear-gradient(120deg,var(--color-primary-text-tertiary)_40%,var(--color-primary-text),var(--color-primary-text-tertiary)_60%)]
+         bg-[length:200%_100%]
+         bg-clip-text
+         animate-shine">
+        <p>{suggestionsTitle}</p>
+    </div >
 }
