@@ -1,8 +1,8 @@
 import { keyDerivation } from '@starkware-industries/starkware-crypto-utils';
 import type { Signature, SignerInterface, TypedData } from 'starknet-old';
-import * as Starknet from 'starknet-old';
+import * as Starknet from 'starknet';
 
-import { STARKNET_MAINNET_CHAIN_ID } from './constants';
+import { STARKNET_MAINNET_CHAIN_ID } from '../constants';
 import { AccountSupport } from './starknet-account-support';
 
 export type { SignerInterface as Signer, TypedData, Signature };
@@ -101,6 +101,7 @@ export function getPublicProvider(chainId: string): Starknet.ProviderInterface {
   const randIdx = Math.floor(Math.random() * nodes.length);
   const node = nodes[randIdx];
   if (node == null) throw new Error('No public provider defined');
+  //// *** TODO: STRK
   const provider = new Starknet.RpcProvider({ nodeUrl: node });
   return provider;
 }

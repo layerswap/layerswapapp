@@ -1,6 +1,6 @@
 import * as Starknet from 'starknet-old';
 
-import type { ParadexConfig } from './config';
+import type { ParadexConfig } from '../config';
 
 export class DefaultProvider extends Starknet.RpcProvider {
   constructor(config: ParadexConfig) {
