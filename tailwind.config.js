@@ -200,7 +200,7 @@ module.exports = {
       addVariant('focus-peer', '.focus-peer &')
       addVariant('wide-page', '.wide-page &')
       addVariant('has-openpicker', '&:has(.openpicker)')
-      addVariant('has-openwithdrawalmodal', '&:has(.openwithdrawalmodal):has([data-state="open"])')
+      addVariant('has-expandContainerHeight', '&:has(.expandContainerHeight):has([data-state="open"])')
     })
   ],
 };

@@ -17,6 +17,7 @@ import { Checkbox } from "../shadcn/checkbox";
 import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
 import { SearchComponent } from "../Input/Search";
+import { featuredWalletsIds } from "@/context/evmConnectorsContext";
 
 const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();
@@ -99,11 +100,17 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const featuredProviders = selectedProvider ? [selectedProvider] : filteredProviders
 
     const allFeaturedConnectors = useMemo(() => featuredProviders.filter(g => g.availableWalletsForConnect && g.availableWalletsForConnect?.length > 0).map((provider) =>
-        provider.availableWalletsForConnect?.filter(v => searchValue ? (searchValue ? v.name.toLowerCase().includes(searchValue?.toLowerCase()) : false) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat(), [featuredProviders, searchValue])
-    const allHiddenConnectors = useMemo(() => featuredProviders.filter(g => g.availableHiddenWalletsForConnect && g.availableHiddenWalletsForConnect?.length > 0).map((provider) =>
-        provider.availableHiddenWalletsForConnect?.filter(v => searchValue ? (searchValue ? v.name.toLowerCase().includes(searchValue?.toLowerCase()) : false) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat(), [featuredProviders, searchValue])
+        provider.availableWalletsForConnect?.filter(v => searchValue ? (v.name.toLowerCase().includes(searchValue?.toLowerCase())) : true).map((connector) => ({ ...connector, providerName: provider.name }))).flat(), [featuredProviders, searchValue])
+    const allHiddenConnectors = useMemo(() =>
+        featuredProviders
+            .filter(g => g.availableHiddenWalletsForConnect && g.availableHiddenWalletsForConnect?.length > 0)
+            .map((provider) =>
+                provider.availableHiddenWalletsForConnect
+                    ?.filter(v => (searchValue ? (v.name.toLowerCase().includes(searchValue?.toLowerCase())) : true) && !featuredWalletsIds.includes(v.id.toLowerCase()))
+                    .map((connector) => ({ ...connector, providerName: provider.name, isHidden: true })))
+            .flat(), [featuredProviders, searchValue])
 
-    const allConnectors: InternalConnector[] = useMemo(() => removeDuplicatesWithKey(([...allFeaturedConnectors, ...(searchValue ? allHiddenConnectors : [])] as InternalConnector[]).sort((a, b) => sortRecentConnectors(a, b, recentConnectors)), 'name'), [allFeaturedConnectors, allHiddenConnectors, searchValue])
+    const allConnectors: InternalConnector[] = useMemo(() => removeDuplicatesWithKey(([...allFeaturedConnectors, ...allHiddenConnectors] as InternalConnector[]).filter(c => searchValue?.length ? true : !c.isHidden).sort((a, b) => sortRecentConnectors(a, b, recentConnectors)), 'name'), [allFeaturedConnectors, allHiddenConnectors, searchValue?.length])
 
     if (selectedConnector?.qr?.state) {
         const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
@@ -140,7 +147,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                             </div>
                     }
                     <div className='bg-secondary-400 text-secondary-text w-full px-2 py-1.5 rounded-md mt-3 flex justify-center items-center'>
-                        <CopyButton toCopy={selectedConnector?.qr.value || ''}>Copy QR URL</CopyButton>
+                        <CopyButton disabled={!selectedConnector?.qr.value} toCopy={selectedConnector?.qr.value || ''}>Copy QR URL</CopyButton>
                     </div>
                 </div>
             </div>
@@ -160,7 +167,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     if (selectedMultiChainConnector) {
         return <MultichainConnectorPicker
             selectedConnector={selectedMultiChainConnector}
-            allConnectors={allFeaturedConnectors as InternalConnector[]}
+            allConnectors={[...allFeaturedConnectors, ...allHiddenConnectors] as InternalConnector[]}
             providers={featuredProviders}
             connect={connect}
         />
@@ -188,8 +195,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 <div
                     onScroll={handleScroll}
                     className={clsx('overflow-y-scroll -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar-thumb:bg-transparent', {
-                        'h-[55vh]': isMobileSize,
-                        'h-[265px]': !isMobileSize,
+                        'h-[55svh]': isMobileSize,
                         'styled-scroll': isScrolling
                     })}
                 >
@@ -225,7 +231,6 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
         return <div
             className={clsx('w-full flex flex-col justify-center items-center font-semibold relative', {
                 'h-[60vh]': isMobileSize,
-                'h-[360px]': !isMobileSize,
             })}
         >
             <div className="flex flex-col gap-4 items-center justify-end row-start-2 row-span-1">
@@ -359,20 +364,32 @@ type MultichainConnectorModalProps = {
 const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ selectedConnector, allConnectors, providers, connect }) => {
     const Icon = resolveWalletConnectorIcon({ connector: selectedConnector.id, iconUrl: selectedConnector.icon })
     return (
-        <div>
-            <div className="flex flex-col gap-4 py-15">
-                <div className="flex justify-center gap-1">
-                    <Icon className="w-14 h-auto rounded-lg" />
+        <div className="flex flex-col justify-between h-full">
+            <div className="flex grow py-4">
+                <div className="flex flex-col gap-2 grow items-center justify-center">
+                    <div className="flex justify-center gap-1">
+                        <Icon className="w-14 h-auto rounded-lg" />
+                    </div>
+                    <p className="text-base text-center text-primary-text">
+                        <span>{selectedConnector.name}</span> <span>supports multiple network types. Please select the one you&apos;d like to use.</span>
+                    </p>
                 </div>
-                <p className="text-base text-center text-primary-text">
-                    <span>{selectedConnector.name}</span> <span>supports multiple network types. Please select the one you&apos;d like to use.</span>
-                </p>
-
             </div>
 
             <div className="flex flex-col gap-2 w-full">
                 {
-                    allConnectors.filter(c => c?.name === selectedConnector.name)?.map((connector, index) => {
+                    Array.from(
+                        allConnectors
+                            .filter(c => c?.name === selectedConnector.name)
+                            .reduce((map, connector) => {
+                                if (!connector?.providerName) return map;
+                                if (!map.has(connector.providerName)) {
+                                    map.set(connector.providerName, connector);
+                                }
+                                return map;
+                            }, new Map<string, typeof allConnectors[0]>())
+                            .values()
+                    ).map((connector, index) => {
                         const provider = providers.find(p => p.name === connector?.providerName)
                         return (
                             <button
