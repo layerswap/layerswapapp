@@ -107,58 +107,33 @@ export function SettingsCard({ cardId, prefillKey, usedKeys = [], onParamKeyChan
         onRemove?.(cardId, selectedKey);
     };
 
-    const renderRouteSelect = (items: Array<{ display_name: string; logo: string; name: string }>, placeholder: string, disabled = false) => (
-        <Select value={(currentValue as string | undefined) ?? undefined} onValueChange={handleSelectChange} disabled={disabled}        >
+    const resolveSelectItem = (item: any) => {
+        const value = item.value ?? item.name ?? item.symbol;
+        const label = item.label ?? item.display_name ?? item.symbol;
+        const logo = item.logo;
+
+        const content = logo ? (
+            <div className="flex items-center space-x-1.5">
+                <img src={logo} alt={label} className="rounded-sm w-5 h-5" />
+                <p>{label}</p>
+            </div>
+        ) : (label);
+        return { value, content };
+    };
+
+    const renderSelect = (items: any[], placeholder: string, disabled = false) => (
+        <Select value={(currentValue as string | undefined) ?? undefined} onValueChange={handleSelectChange} disabled={disabled}>
             <SelectTrigger className="w-full border-none bg-secondary-600 hover:bg-secondary-500 transition-colors h-full">
                 <SelectValue placeholder={placeholder} />
             </SelectTrigger>
             <SelectContent className="max-h-[300px] overflow-y-auto">
                 <SelectGroup>
-                    {items.map(({ display_name, logo, name }, idx) => (
-                        <SelectItem key={idx} value={name as string}>
-                            <div className="flex items-center space-x-1.5">
-                                <img src={logo} alt={display_name} className="rounded-sm w-5 h-5" />
-                                <p>{display_name}</p>
-                            </div>
-                        </SelectItem>
-                    ))}
-                </SelectGroup>
-            </SelectContent>
-        </Select>
-    );
-
-    const renderTokenSelect = (tokens: Array<{ symbol: string; logo: string }>, placeholder: string, disabled = false) => (
-        <Select value={(currentValue as string | undefined) ?? undefined} onValueChange={handleSelectChange} disabled={disabled}        >
-            <SelectTrigger className="w-full border-none bg-secondary-600 hover:bg-secondary-500 transition-colors h-full">
-                <SelectValue placeholder={placeholder} />
-            </SelectTrigger>
-            <SelectContent className="max-h-[300px] overflow-y-auto">
-                <SelectGroup>
-                    {tokens.map((token, idx) => (
-                        <SelectItem key={idx} value={token.symbol}>
-                            <div className="flex items-center space-x-1.5">
-                                <img src={token.logo} alt={token.symbol} className="rounded-sm w-5 h-5" />
-                                <p>{token.symbol}</p>
-                            </div>
-                        </SelectItem>
-                    ))}
-                </SelectGroup>
-            </SelectContent>
-        </Select>
-    );
-
-    const renderSimpleSelect = (options: Array<{ value: string; label: string }>, placeholder: string) => (
-        <Select value={(currentValue as string | undefined) ?? undefined} onValueChange={handleSelectChange}>
-            <SelectTrigger className="w-full border-none bg-secondary-600 hover:bg-secondary-500 transition-colors h-full">
-                <SelectValue placeholder={placeholder} />
-            </SelectTrigger>
-            <SelectContent>
-                <SelectGroup>
-                    {options.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                        </SelectItem>
-                    ))}
+                    {items.map((item, idx) => {
+                        const { value, content } = resolveSelectItem(item);
+                        return (<SelectItem key={idx} value={value}>
+                            {content}
+                        </SelectItem>);
+                    })}
                 </SelectGroup>
             </SelectContent>
         </Select>
@@ -175,25 +150,25 @@ export function SettingsCard({ cardId, prefillKey, usedKeys = [], onParamKeyChan
         }
         if (isSelectField(selectedKey)) {
             if (selectedKey === "from") {
-                return renderRouteSelect(sourceRoutes, "Select from network");
+                return renderSelect(sourceRoutes, "Select from network");
             }
             if (selectedKey === "to") {
-                return renderRouteSelect(destinationRoutes, "Select to network");
+                return renderSelect(destinationRoutes, "Select to network");
             }
             if (selectedKey === "fromExchange") {
-                return renderRouteSelect(sourceExchanges, "Select exchange");
+                return renderSelect(sourceExchanges, "Select exchange");
             }
             if (selectedKey === "fromAsset") {
                 const networkSelected = !!initialValues.from;
-                return renderTokenSelect(fromTokens, networkSelected ? "Select asset" : "Pick a from network first", !networkSelected);
+                return renderSelect(fromTokens, networkSelected ? "Select asset" : "Pick a from network first", !networkSelected);
             }
             if (selectedKey === "toAsset") {
                 const networkSelected = !!initialValues.to;
-                return renderTokenSelect(toTokens, networkSelected ? "Select asset" : "Pick a to network first", !networkSelected);
+                return renderSelect(toTokens, networkSelected ? "Select asset" : "Pick a to network first", !networkSelected);
             }
             // Default tab select
             if (selectedKey === "defaultTab") {
-                return renderSimpleSelect([{ value: "swap", label: "Swap" }, { value: "cex", label: "CEX" },], "Select default tab");
+                return renderSelect([{ value: "swap", label: "Swap" }, { value: "cex", label: "CEX" }], "Select default tab");
             }
         }
         if (isBooleanField(selectedKey)) {
