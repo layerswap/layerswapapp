@@ -49,13 +49,11 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
     useEffect(() => {
         if (!snapElement || snapElement.height === snap) return;
-
         setSnap(snapElement.height)
     }, [snapElement])
 
     useEffect(() => {
         if (!snap || snap === snapElement?.height) return
-
         setSnapElement(snapPoints.find((item) => item.height === snap) || null)
     }, [snap])
 
@@ -150,9 +148,10 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         }
                     </div>
                     <div
-                        className={clsx('flex flex-col w-full h-fit max-h-[90dvh] px-4 styled-scroll overflow-x-hidden relative', {
+                        className={clsx('flex flex-col w-full h-full max-h-[90dvh] px-4 styled-scroll overflow-x-hidden relative ', {
                             'overflow-y-auto h-full': snap === 1,
-                            'overflow-hidden': snap !== 1,
+                            'overflow-hidden h-fit': snap && snap !== 1,
+                            'overflow-hidden': !snap, 
                         })}
                         id="virtualListContainer"
                     >
