@@ -100,7 +100,7 @@ export async function updateFormBulk(
     // 1) update the form in one shot
     await setValues(values, shouldValidate);
 
-    const queryUpdates = ["from", "to", "fromAsset", "toAsset", "fromExchange", "toExchange"]
+    const queryUpdates = ["from", "to", "fromAsset", "toAsset", "fromExchange"]
 
 
     // 2) build our “updates” map (string or null)
