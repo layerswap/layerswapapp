@@ -100,19 +100,22 @@ export async function updateFormBulk(
     // 1) update the form in one shot
     await setValues(values, shouldValidate);
 
+    const queryUpdates = ["from", "to", "fromAsset", "toAsset", "fromExchange"]
+
+
     // 2) build our “updates” map (string or null)
     const updates: Record<string, string | null> = {};
-    for (const [key, value] of Object.entries(values)) {
-        if (value == null) {
+    for (const key of queryUpdates) {
+        if (values[key] == null) {
             // explicit removal
             updates[key] = null;
         } else {
             const mapKey = fieldMapping[key] ?? key;
             const str =
-                typeof value === "object"
+                typeof values[key] === "object"
                     ? // @ts-ignore
-                    String(value[mapKey])
-                    : String(value);
+                    String(values[key][mapKey])
+                    : String(values[key]);
             updates[key] = str;
         }
     }
