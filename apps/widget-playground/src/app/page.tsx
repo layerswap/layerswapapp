@@ -6,8 +6,8 @@ import { SettingsProvider } from '@/context/settings';
 import { getSettings } from '@layerswap/widget';
 
 export default async function Home() {
-    const settings = await getSettings();
-
+    const apiKey = process.env.NEXT_PUBLIC_API_KEY
+    const settings = await getSettings(apiKey)
     return (
         <ConfigProvider>
             <SettingsProvider data={settings}>

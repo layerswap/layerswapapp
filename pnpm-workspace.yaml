@@ -1,6 +1,7 @@
 packages:
   - packages/**
   - apps/bridge
+  - apps/widget-playground
 
 catalog:
   '@tanstack/react-query': 5.90.5

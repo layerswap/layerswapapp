@@ -21,7 +21,7 @@ const LayerswapWidgetCustomEvm = dynamic(
 );
 
 const LayerswapWidget: FC = () => {
-    const { widgetRenderKey, showLoading, config, customEvmSwitch } = useWidgetContext();
+    const { widgetRenderKey, showLoading, config, customEvmSwitch, initialValues } = useWidgetContext();
     const settings = useSettingsState();
 
     if (customEvmSwitch) {
@@ -40,6 +40,7 @@ const LayerswapWidget: FC = () => {
                         version: process.env.NEXT_PUBLIC_API_VERSION as 'mainnet' | 'testnet',
                         settings,
                         theme: config.theme,
+                        initialValues
                     }}
                 >
                     {
