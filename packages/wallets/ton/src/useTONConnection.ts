@@ -3,6 +3,7 @@ import { Address } from "@ton/core";
 import { KnownInternalNames, walletIconResolver } from "@layerswap/widget/internal";
 import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType, WalletConnectionProviderProps } from "@layerswap/widget/types";
 import { transactionBuilder } from "./services/transferService/transactionBuilder";
+import { useTonConfig } from "./index";
 
 export default function useTONConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
 
@@ -13,6 +14,7 @@ export default function useTONConnection({ networks }: WalletConnectionProviderP
 
     const name = 'TON'
     const id = 'ton'
+    const tonConfig = useTonConfig();
 
     const tonWallet = useTonWallet();
     const [tonConnectUI] = useTonConnectUI();
@@ -34,9 +36,7 @@ export default function useTONConnection({ networks }: WalletConnectionProviderP
         asSourceSupportedNetworks: commonSupportedNetworks,
         networkIcon: networks.find(n => commonSupportedNetworks.some(name => name === n.name))?.logo
     } : undefined
-    const switchAccount = async (wallet: Wallet, address: string) => {
-        // as we do not have multiple accounts management we will leave the method empty
-    }
+
     const getWallet = () => {
         if (wallet) {
             return [wallet]
@@ -122,7 +122,7 @@ export default function useTONConnection({ networks }: WalletConnectionProviderP
             throw new Error('Deposit address not found')
         }
         try {
-            const transaction = await transactionBuilder(amount, token, depositAddress, wallet?.address, callData)
+            const transaction = await transactionBuilder(amount, token, depositAddress, wallet?.address, callData, tonConfig?.tonApiKey)
             const res = await tonConnectUI.sendTransaction(transaction)
             if (res) {
                 return res.boc
@@ -155,7 +155,6 @@ export default function useTONConnection({ networks }: WalletConnectionProviderP
     const provider: WalletConnectionProvider = {
         connectWallet,
         disconnectWallets,
-        switchAccount,
 
         transfer,
 

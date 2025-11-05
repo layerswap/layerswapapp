@@ -101,3 +101,10 @@ export type SelectAccountProps = {
     address: string;
     providerName: string;
 }
+
+export type BaseWalletProviderConfig = {
+    customHook?: (props: WalletConnectionProviderProps) => WalletConnectionProvider
+    balanceProviders?: BalanceProvider | BalanceProvider[]
+    gasProviders?: GasProvider | GasProvider[]
+    addressUtilsProviders?: AddressUtilsProvider | AddressUtilsProvider[]
+}

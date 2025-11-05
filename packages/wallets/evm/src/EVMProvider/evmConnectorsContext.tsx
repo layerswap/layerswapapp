@@ -1,9 +1,10 @@
 import { createContext, useContext, useMemo, useState } from 'react'
-import { resolveConnector, walletConnectWallets as _walletConnectWallets, WalletConnectWallet } from '../connectors/resolveConnectors';
+import { resolveConnector, resolveWallets, WalletConnectWallet } from '../connectors/resolveConnectors';
 import { CreateConnectorFn } from 'wagmi';
 import { coinbaseWallet, walletConnect } from '@wagmi/connectors'
 import { browserInjected } from '../connectors/browserInjected';
 import { isMobile, AppSettings, usePersistedState } from '@layerswap/widget/internal';
+import { WalletConnectConfig } from '..';
 
 type ContextType = {
     connectors: CreateConnectorFn[],
@@ -25,13 +26,26 @@ const resolveFeaturedWallets = (wallets: WalletConnectWallet[]) => {
     return wallets.filter(wallet => featuredWalletsIds.includes(wallet.id.toLowerCase()))
 }
 
-const WALLETCONNECT_PROJECT_ID = AppSettings.WalletConnectConfig.projectId
-const wltcnnct_inited = walletConnect({ projectId: WALLETCONNECT_PROJECT_ID, showQrModal: isMobile(), customStoragePrefix: 'walletConnect' })
-const featuredWallets = resolveFeaturedWallets(_walletConnectWallets)
+type EvmConnectorsProviderProps = {
+    children: React.ReactNode
+    walletConnectConfigs?: WalletConnectConfig
+}
 
-export function EvmConnectorsProvider({ children }) {
+export function EvmConnectorsProvider({ children, walletConnectConfigs }: EvmConnectorsProviderProps) {
     let [recentConnectors, _] = usePersistedState<({ providerName?: string, connectorName?: string }[])>([], 'recentConnectors', 'localStorage');
     const [walletConnectWallets, setWalletConnectWallets] = useState<WalletConnectWallet[]>([])
+
+    const walletConnectConfig = walletConnectConfigs
+    const WALLETCONNECT_PROJECT_ID = walletConnectConfig?.projectId || ''
+    const wltcnnct_inited = useMemo(() => walletConnect({ 
+        projectId: WALLETCONNECT_PROJECT_ID, 
+        showQrModal: isMobile(), 
+        customStoragePrefix: 'walletConnect' 
+    }), [WALLETCONNECT_PROJECT_ID])
+
+    // Resolve wallet list with projectId
+    const _walletConnectWallets = useMemo(() => resolveWallets(WALLETCONNECT_PROJECT_ID), [WALLETCONNECT_PROJECT_ID])
+    const featuredWallets = useMemo(() => resolveFeaturedWallets(_walletConnectWallets), [_walletConnectWallets])
 
     const addWalletConnectWallet = async (connector: WalletConnectWallet) => {
         setWalletConnectWallets((prev) => [...prev.filter(v => v.name !== connector.name), connector])
@@ -47,43 +61,43 @@ export function EvmConnectorsProvider({ children }) {
             const connector = _walletConnectWallets.find(w => w.name.toLowerCase() === c?.connectorName?.toLowerCase())
             return connector!
         })
-    }, [recentConnectors]);
+    }, [recentConnectors, _walletConnectWallets]);
 
     const resolvedFeaturedWallets = useMemo(() => {
         return featuredWallets.map(wallet => {
-            return resolveConnector(wallet.name)
+            return resolveConnector(wallet.name, WALLETCONNECT_PROJECT_ID)
         })
-    }, [featuredWallets]);
+    }, [featuredWallets, WALLETCONNECT_PROJECT_ID]);
 
     const resolvedWalletConnectWallets = useMemo(() => {
         const resolvedInitialRecentConnectors = initialRecentConnectors.map(wallet => {
-            return resolveConnector(wallet.name)
+            return resolveConnector(wallet.name, WALLETCONNECT_PROJECT_ID)
         })
         const resolvedWalletConnectConnectors = walletConnectWallets.map(wallet => {
-            return resolveConnector(wallet.name)
+            return resolveConnector(wallet.name, WALLETCONNECT_PROJECT_ID)
         })
         return [
             ...resolvedInitialRecentConnectors,
             ...resolvedWalletConnectConnectors
         ]
-    }, [walletConnectWallets, initialRecentConnectors]);
+    }, [walletConnectWallets, initialRecentConnectors, WALLETCONNECT_PROJECT_ID]);
 
-    const defaultConnectors: CreateConnectorFn[] = [
+    const defaultConnectors: CreateConnectorFn[] = useMemo(() => [
         coinbaseWallet({
-            appName: 'Layerswap',
-            appLogoUrl: 'https://layerswap.io/app/symbol.png',
+            appName: walletConnectConfig?.name || 'Layerswap',
+            appLogoUrl: walletConnectConfig?.icons?.[0] || 'https://layerswap.io/app/symbol.png',
         }),
         wltcnnct_inited,
         ...resolvedFeaturedWallets,
         browserInjected()
-    ]
+    ], [wltcnnct_inited, resolvedFeaturedWallets, walletConnectConfig]);
 
     const connectors = useMemo(() => {
         return [
             ...defaultConnectors,
             ...resolvedWalletConnectWallets
         ]
-    }, [defaultConnectors, walletConnectWallets]);
+    }, [defaultConnectors, resolvedWalletConnectWallets]);
 
     return (
         <EvmConnectorsContext.Provider value={{

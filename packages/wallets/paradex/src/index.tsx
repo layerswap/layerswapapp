@@ -1,11 +1,11 @@
-import { WalletProvider, BaseWalletProviderConfig } from "@layerswap/widget/types";
-import { ImmutableXBalanceProvider } from "./immutableXBalanceProvider";
-import { ImmutableXGasProvider } from "./immutableXGasProvider";
-import useImtblXConnection from "./useImtblX";
+import { WalletProvider, BaseWalletProviderConfig } from "@layerswap/widget/types"
+import { ParadexBalanceProvider } from "./paradexBalanceProvider"
+import { useParadexConnection } from "./useParadexConnection"
+import { ActiveParadexAccountProvider } from "./ActiveParadexAccount"
 
-export type ImmutableXProviderConfig = BaseWalletProviderConfig
+export type ParadexProviderConfig = BaseWalletProviderConfig
 
-export function createImmutableXProvider(config: ImmutableXProviderConfig = {}): WalletProvider {
+export function createParadexProvider(config: ParadexProviderConfig = {}): WalletProvider {
     const {
         customHook,
         balanceProviders,
@@ -13,28 +13,29 @@ export function createImmutableXProvider(config: ImmutableXProviderConfig = {}):
         addressUtilsProviders
     } = config;
 
-    const walletConnectionProvider = customHook || useImtblXConnection;
+    const walletConnectionProvider = customHook || useParadexConnection;
 
-    const defaultBalanceProviders = [new ImmutableXBalanceProvider()];
+    const defaultBalanceProviders = [new ParadexBalanceProvider()];
     const finalBalanceProviders = balanceProviders !== undefined
         ? (Array.isArray(balanceProviders) ? balanceProviders : [balanceProviders])
         : defaultBalanceProviders;
 
-    const defaultGasProviders = [new ImmutableXGasProvider()];
     const finalGasProviders = gasProviders !== undefined
         ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
-        : defaultGasProviders;
+        : undefined;
 
     const finalAddressUtilsProviders = addressUtilsProviders !== undefined
         ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
         : undefined;
 
     return {
-        id: "imx",
-        wrapper: undefined,
+        id: "paradex",
+        wrapper: ActiveParadexAccountProvider,
         walletConnectionProvider,
         addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
     };
 }
+
+export { default as ParadexMultiStepHandler } from "./components/ParadexMultiStepHandler"

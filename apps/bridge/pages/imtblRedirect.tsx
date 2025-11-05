@@ -2,7 +2,7 @@ import { LayerswapProvider, THEME_COLORS } from "@layerswap/widget";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useState } from "react";
-import { EVMProvider, ImtblPassportProvider, ImtblRedirect } from "@layerswap/wallets";
+import { createEVMProvider, createImmutablePassportProvider, ImtblRedirect } from "@layerswap/wallets";
 
 const ImtblRedirectPage = () => {
     const [loaded, setLoaded] = useState(false)
@@ -21,18 +21,32 @@ const ImtblRedirectPage = () => {
 
     const themeData = THEME_COLORS['default']
 
+    const walletProviders = [
+        createEVMProvider({
+            walletConnectConfigs: {
+                projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '',
+                name: 'Layerswap',
+                description: 'Layerswap App',
+                url: 'https://layerswap.io/app/',
+                icons: ['https://www.layerswap.io/app/symbol.png']
+            }
+        }),
+        createImmutablePassportProvider({
+            imtblPassportConfig: {
+                clientId: client_id,
+                publishableKey: publishable_key,
+                redirectUri: redirect_uri,
+                logoutRedirectUri: logout_redirect_uri
+            }
+        })
+    ]
+
     return (
         <LayerswapProvider
             config={{
-                theme: { ...themeData, borderRadius: 'default', enablePortal: true, enableWideVersion: true, hidePoweredBy: true },
-                imtblPassport: {
-                    clientId: client_id,
-                    publishableKey: publishable_key,
-                    redirectUri: redirect_uri,
-                    logoutRedirectUri: logout_redirect_uri
-                }
+                theme: { ...themeData, borderRadius: 'default', enablePortal: true, enableWideVersion: true, hidePoweredBy: true }
             }}
-            walletProviders={[EVMProvider, ImtblPassportProvider]}
+            walletProviders={walletProviders}
         >
             <ImtblRedirect />
         </LayerswapProvider>

@@ -9,6 +9,7 @@ import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import SubmitButton from '@/components/Buttons/submitButton';
 import ManualWithdraw from './ManualWithdraw';
 import { Partner } from '@/Models';
+import { useBackClickCallback } from '@/context/callbackProvider';
 
 type Props = {
     type: "widget" | "contained",
@@ -18,7 +19,7 @@ type Props = {
 
 const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner }) => {
     const { swapDetails, swapBasicData, quote, refuel, depositActionsResponse } = useSwapDataState()
-
+    const triggerOnBackClickCallback = useBackClickCallback()
     const swapStatus = swapDetails?.status || SwapStatus.UserTransferPending;
     const storedWalletTransactions = useSwapTransactionStore()
 
@@ -42,7 +43,7 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner }) =>
     </>
 
     return (
-        <Container type={type}>
+        <Container type={type} goBack={triggerOnBackClickCallback}>
             {
                 ((swapStatus === SwapStatus.UserTransferPending
                     && !(swapInputTransaction || storedWalletTransaction))) ?
@@ -66,11 +67,12 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner }) =>
     )
 }
 
-const Container = ({ type, children }: Props & {
-    children: JSX.Element | JSX.Element[]
+const Container = ({ type, children, goBack }: Props & {
+    children: JSX.Element | JSX.Element[],
+    goBack: () => void
 }) => {
     if (type === "widget")
-        return <Widget><>{children}</></Widget>
+        return <Widget goBack={goBack}><>{children}</></Widget>
     else
         return <div className="w-full flex flex-col justify-between h-full space-y-3 text-secondary-text">
             {children}
