@@ -365,14 +365,15 @@ const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ selected
     const Icon = resolveWalletConnectorIcon({ connector: selectedConnector.id, iconUrl: selectedConnector.icon })
     return (
         <div className="flex flex-col justify-between h-full">
-            <div className="flex flex-col gap-4 py-15">
-                <div className="flex justify-center gap-1">
-                    <Icon className="w-14 h-auto rounded-lg" />
+            <div className="flex grow py-4">
+                <div className="flex flex-col gap-2 grow items-center justify-center">
+                    <div className="flex justify-center gap-1">
+                        <Icon className="w-14 h-auto rounded-lg" />
+                    </div>
+                    <p className="text-base text-center text-primary-text">
+                        <span>{selectedConnector.name}</span> <span>supports multiple network types. Please select the one you&apos;d like to use.</span>
+                    </p>
                 </div>
-                <p className="text-base text-center text-primary-text">
-                    <span>{selectedConnector.name}</span> <span>supports multiple network types. Please select the one you&apos;d like to use.</span>
-                </p>
-
             </div>
 
             <div className="flex flex-col gap-2 w-full">
