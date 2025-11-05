@@ -21,7 +21,7 @@ export type VaulDrawerProps = {
     className?: string;
 }
 
-const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className }) => {
+const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className, modalId }) => {
     const { isMobile } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
@@ -95,21 +95,27 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
         >
 
             <Drawer.Portal>
-                <Drawer.Close asChild>
-                    {
-                        isMobile
-                            ? <Drawer.Overlay
-                                className='fixed inset-0 z-50 bg-black/50 block'
-                            />
-                            : <motion.div
-                                key="backdrop"
-                                className='absolute inset-0 z-50 bg-black/50 block'
-                                initial={{ opacity: 0.5 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                            />
-                    }
-                </Drawer.Close>
+                {isMobile ? (
+                    <Drawer.Close asChild>
+                        <Drawer.Overlay
+                            className='fixed inset-0 z-50 bg-black/50 block'
+                        />
+                    </Drawer.Close>
+                ) : (
+                    <AnimatePresence>
+                        {show && (
+                            <Drawer.Close asChild key={`backdrop-${modalId}`}>
+                                <motion.div
+                                    className='absolute inset-0 z-40 bg-black/50 block pointer-events-auto'
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                />
+                            </Drawer.Close>
+                        )}
+                    </AnimatePresence>
+                )}
 
                 <Drawer.Content
                     data-testid="content"
@@ -151,7 +157,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         className={clsx('flex flex-col w-full h-full max-h-[90dvh] px-4 styled-scroll overflow-x-hidden relative ', {
                             'overflow-y-auto h-full': snap === 1,
                             'overflow-hidden h-fit': snap && snap !== 1,
-                            'overflow-hidden': !snap, 
+                            'overflow-hidden': !snap,
                         })}
                         id="virtualListContainer"
                     >
