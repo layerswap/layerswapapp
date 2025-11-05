@@ -115,7 +115,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
                 <Drawer.Content
                     data-testid="content"
-                    className={clsx('fixed sm:absolute flex flex-col bg-secondary-700 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-4 text-primary-text ring-0! outline-hidden! ', className, {
+                    className={clsx('fixed sm:absolute flex flex-col bg-secondary-700 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-4 text-primary-text ring-0! outline-hidden!', className, {
                         'border-none! rounded-none!': snap === 1,
                     })}
                 >
@@ -174,8 +174,8 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                                 </motion.div>
                             }
                         </AnimatePresence>
-                        <VaulFooter snapElement={snapElement} />
                     </div>
+                    <VaulFooter snapElement={snapElement} />
                 </Drawer.Content>
             </Drawer.Portal>
         </Drawer.Root >
@@ -190,17 +190,15 @@ const VaulFooter: FC<{ snapElement: SnapElement | null }> = ({ snapElement }) =>
         setFooterHeight(height || 0);
     }, [height])
 
-    return (
-        <div
-            ref={ref}
-            id='walletModalFooter'
-            style={{
-                top: snapElement?.height !== 1 ? `${Number(snapElement?.height?.toString().replace('px', '')) - 50}px` : undefined,
-                bottom: snapElement?.height === 1 ? '12px' : undefined
-            }}
-            className='w-full fixed left-0 z-50'
-        />
-    )
+    return <div
+        ref={ref}
+        id='walletModalFooter'
+        style={{
+            top: snapElement?.height !== 1 ? `${Number(snapElement?.height?.toString().replace('px', '')) - 50}px` : undefined,
+            bottom: snapElement?.height === 1 ? '12px' : undefined
+        }}
+        className='w-full left-0 z-50'
+    />
 }
 
 const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement> & { id: `item-${number}`, openFullHeight?: boolean }> = (props) => {
