@@ -19,7 +19,7 @@ import FormButton from "../FormButton";
 import { QueryParams } from "@/Models/QueryParams";
 import { WalletProvider } from "@/Models/WalletProvider";
 import DepositMethodComponent from "@/components/FeeDetails/DepositMethod";
-import { updateForm, updateFormBulk } from "./updateForm";
+import { updateFormBulk } from "./updateForm";
 import { transformFormValuesToQuoteArgs, useQuoteData } from "@/hooks/useFee";
 import { useValidationContext } from "@/context/validationContext";
 import { useSwapDataState } from "@/context/swap";
