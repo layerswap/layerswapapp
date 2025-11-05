@@ -107,13 +107,6 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
                     --ls-color-success-foreground: ${mergedTheme.success?.Foreground};
                     --ls-colors-success-background: ${mergedTheme.success?.Background};
                 }
-                .headerLogo {
-                    display: ${mergedTheme.headerLogo};
-                }
-                .footerLogo {
-                    display: ${mergedTheme.footerLogo};
-                    height: ${mergedTheme.footerLogoHeight};
-                }
             `}
             </style>
         </>
