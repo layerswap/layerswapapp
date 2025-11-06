@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { useCallbacks } from './callbackProvider';
 import { LogGroup } from '@/types';
+import { CallbacksShape, logStore, useLogStore } from '@/stores/logStore';
 
 type LogFn = (event: any) => void;
 
@@ -8,16 +9,14 @@ export const defaultHandler: LogFn = (e) => {
   console.log('[layerswap:log]', e?.type, e?.props);
 };
 
-let currentLogger: LogFn = defaultHandler;
-export function setGlobalLogger(logger?: LogFn) {
-  currentLogger = logger || defaultHandler;
-}
-
-// This indirection lets `log()` access callbacks even when called outside React handlers.
-let _callbacksAccessor: (() => ReturnType<typeof useCallbacks>) | null = null;
-
-const handlerKeyByGroup: Record<LogGroup,
-  'onWidgetError' | 'onBalanceError' | 'onGasFeeError' | 'onTransactionNotDetected' | 'onWalletWithdrawalError' | 'onLongTransactionWarning'
+const handlerKeyByGroup: Record<
+  LogGroup,
+  | 'onWidgetError'
+  | 'onBalanceError'
+  | 'onGasFeeError'
+  | 'onTransactionNotDetected'
+  | 'onWalletWithdrawalError'
+  | 'onLongTransactionWarning'
 > = {
   widgetError: 'onWidgetError',
   balanceError: 'onBalanceError',
@@ -28,19 +27,14 @@ const handlerKeyByGroup: Record<LogGroup,
 };
 
 export function log(event: any) {
-  currentLogger(event);
-
-  const c = _callbacksAccessor && _callbacksAccessor();
-  if (!c) return;
+  const { logger, callbacks } = useLogStore.getState();
+  logger?.(event);
 
   const group = resolveGroup(event);
   if (!group) return;
 
-  const handlers = c.onLogError;
-  if (!handlers) return;
-
-  const handler = handlers[handlerKeyByGroup[group]];
-  if (handler) handler(event);
+  const key = handlerKeyByGroup[group];
+  callbacks?.onLogError?.[key]?.(event);
 }
 
 export const logException = log;
@@ -48,10 +42,13 @@ export const logException = log;
 type LogContextValue = { log: LogFn };
 const LogContext = createContext<LogContextValue | null>(null);
 
-
 export const ErrorProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
   const callbacks = useCallbacks();
-  _callbacksAccessor = () => callbacks;
+  useEffect(() => {
+    // If useCallbacks() returns more than { onLogError }, adapt here:
+    const mapped: CallbacksShape = { onLogError: callbacks?.onLogError };
+    logStore.setCallbacks(mapped);
+  }, [callbacks]);
 
   const value = useMemo<LogContextValue>(() => ({ log }), []);
   return <LogContext.Provider value={value}>{children}</LogContext.Provider>;
