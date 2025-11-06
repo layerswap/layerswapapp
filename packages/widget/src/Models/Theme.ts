@@ -6,9 +6,6 @@ export type ThemeData = {
     tertiary?: string,
     primary?: ThemeColor,
     secondary?: ThemeColor,
-    headerLogo?: string,
-    footerLogo?: string,
-    footerLogoHeight?: string,
     warning?: StatusColor,
     error?: StatusColor,
     success?: StatusColor,
@@ -48,7 +45,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         buttonTextColor: '255, 255, 255',
         tertiary: '140, 152, 192',
         logo: '255, 255, 255',
-        footerLogo: 'none',
         primary: {
             DEFAULT: '46, 236, 255',
             '100': '209, 251, 255',
@@ -80,7 +76,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         tertiary: '134, 134, 134',
         buttonTextColor: '17, 17, 17',
         logo: '255, 0, 147',
-        footerLogo: 'none',
         primary: {
             DEFAULT: '228, 37, 117',
             '100': '246, 182, 209',
@@ -112,7 +107,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         tertiary: '118, 128, 147',
         buttonTextColor: '228, 229, 240',
         logo: '255, 0, 147',
-        footerLogo: 'none',
         borderRadius: 'medium',
         warning: {
             Foreground: '255, 201, 74',
@@ -157,7 +151,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         tertiary: "110, 80, 140",
         buttonTextColor: "255, 240, 200",
         logo: '255, 0, 147',
-        footerLogo: "none",
         warning: {
             Foreground: "255, 180, 70",
             Background: "45, 30, 10",
@@ -201,7 +194,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         tertiary: '134, 134, 134',
         buttonTextColor: '15, 15, 15',
         logo: '15, 15, 15',
-        footerLogo: 'none',
         primary: {
             DEFAULT: '51, 144, 236',
             '100': '246, 182, 209',
@@ -233,9 +225,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         tertiary: '182, 182, 182',
         buttonTextColor: '19, 19, 19',
         logo: '187, 187, 187',
-        headerLogo: 'none',
-        footerLogo: 'block',
-        footerLogoHeight: '20px',
         primary: {
             DEFAULT: '243, 243, 243',
             '100': '255, 255, 255',

@@ -1,0 +1,67 @@
+{
+  "name": "@layerswap/wallets",
+  "version": "0.0.0",
+  "description": "All Layerswap Wallet Providers bundled together",
+  "type": "module",
+  "main": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "typings": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "default": "./dist/esm/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "dist/**/*"
+  ],
+  "scripts": {
+    "build": "pnpm run clean && pnpm run build:esm+types",
+    "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm",
+    "check:types": "tsc --noEmit",
+    "clean": "rimraf dist tsconfig.tsbuildinfo"
+  },
+  "author": "Layerswap",
+  "homepage": "https://github.com/layerswap/layerswapapp",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/layerswap/layerswapapp.git",
+    "directory": "packages/wallets/all"
+  },
+  "keywords": [
+    "layerswap",
+    "wallets",
+    "wallet-providers",
+    "aggregator"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@layerswap/wallet-bitcoin": "workspace:^",
+    "@layerswap/wallet-evm": "workspace:^",
+    "@layerswap/wallet-fuel": "workspace:^",
+    "@layerswap/wallet-imtbl-x": "workspace:^",
+    "@layerswap/wallet-imtbl-passport": "workspace:^",
+    "@layerswap/wallet-paradex": "workspace:^",
+    "@layerswap/wallet-starknet": "workspace:^",
+    "@layerswap/wallet-svm": "workspace:^",
+    "@layerswap/wallet-ton": "workspace:^",
+    "@layerswap/wallet-tron": "workspace:^"
+  },
+  "peerDependencies": {
+    "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "@layerswap/widget": "workspace:^",
+    "wagmi": "catalog:",
+    "viem": "catalog:",
+    "@tanstack/react-query": "catalog:"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "bugs": {
+    "url": "https://github.com/layerswap/layerswapapp/issues"
+  }
+}
+
