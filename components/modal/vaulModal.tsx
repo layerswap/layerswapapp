@@ -154,11 +154,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         }
                     </div>
                     <div
-                        className={clsx('flex flex-col w-full h-full max-h-[90dvh] px-4 styled-scroll overflow-x-hidden relative ', {
-                            'overflow-y-auto h-full': snap === 1,
-                            'overflow-hidden h-fit': snap && snap !== 1,
-                            'overflow-hidden': !snap,
-                        })}
+                        className='flex flex-col w-full h-full max-h-[90dvh] px-4 styled-scroll overflow-x-hidden relative'
                         id="virtualListContainer"
                     >
                         {children}
