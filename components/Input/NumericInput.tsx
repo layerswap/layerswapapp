@@ -24,12 +24,15 @@ type Input = {
 
 // Use with Formik
 const NumericInput: FC<Input> = forwardRef<HTMLInputElement, Input>(
-    function NumericInput({ label, tempValue, disabled, placeholder, minLength, maxLength, precision, step, name, className, children, onChange, onFocus, onBlur }, ref) {
+    function NumericInput({ label, disabled, placeholder, minLength, maxLength, precision, step, name, className, children, onChange, onFocus, onBlur }, ref) {
         const { handleChange } = useFormikContext<SwapFormValues>();
         const [field] = useField(name)
+        const tempValue = 4.5e-10
 
         const formattedTempValue = isScientific(tempValue)
-            ? tempValue?.toFixed(precision ?? 0).replace(/\.?0+$/, '')
+            ? (!isNaN(Number(tempValue))
+                ? tempValue?.toFixed(precision ?? 0).replace(/\.?0+$/, '')
+                : '')
             : tempValue?.toString();
 
         return <div>

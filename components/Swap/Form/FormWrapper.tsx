@@ -196,7 +196,18 @@ const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, crea
             const time = data.metadata.RemainingLimitPeriod?.split(':');
             const hours = Number(time[0])
             const minutes = Number(time[1])
-            const remainingTime = `${hours > 0 ? `${hours.toFixed()} ${(hours > 1 ? 'hours' : 'hour')}` : ''} ${minutes > 0 ? `${minutes.toFixed()} ${(minutes > 1 ? 'minutes' : 'minute')}` : ''}`
+
+            const hoursText =
+                !isNaN(hours) && hours > 0
+                    ? `${hours} ${hours === 1 ? 'hour' : 'hours'}`
+                    : '';
+
+            const minutesText =
+                !isNaN(minutes) && minutes > 0
+                    ? `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`
+                    : '';
+
+            const remainingTime = [hoursText, minutesText].filter(Boolean).join(' ');
 
             if (data.metadata.AvailableTransactionAmount) {
                 throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromAsset?.symbol} or retry in ${remainingTime}.`)
