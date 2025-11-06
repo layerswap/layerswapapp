@@ -25,7 +25,6 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     let [recentConnectors, setRecentConnectors] = usePersistedState<({ providerName?: string, connectorName?: string }[])>([], 'recentConnectors', 'localStorage');
     const [connectionError, setConnectionError] = useState<string | undefined>(undefined);
     const [searchValue, setSearchValue] = useState<string | undefined>(undefined)
-    const { isMobile: isMobileSize } = useWindowDimensions()
     const [isScrolling, setIsScrolling] = useState(false);
     const scrollTimeout = useRef<any>(null);
 
@@ -175,7 +174,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
 
     return (
         <>
-            <div className="text-primary-text space-y-3">
+            <div className="text-primary-text space-y-3 flex flex-col w-full styled-scroll relative h-full">
                 <div className="flex items-center gap-3">
                     <SearchComponent
                         searchQuery={searchValue || ""}
@@ -194,8 +193,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 </div>
                 <div
                     onScroll={handleScroll}
-                    className={clsx('overflow-y-scroll -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 scrollbar-thumb:bg-transparent', {
-                        'h-[55svh]': isMobileSize,
+                    className={clsx('overflow-y-scroll max-sm:h-[55svh] -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 overflow-x-hidden scrollbar-thumb:bg-transparent hover:styled-scroll', {
                         'styled-scroll': isScrolling
                     })}
                 >
@@ -228,12 +226,7 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
     const isMobilePlatform = isMobile();
 
     if (selectedConnector.installUrl) {
-        return <div
-            className={clsx('w-full flex flex-col justify-center items-center font-semibold relative', {
-                'h-[60vh]': isMobileSize,
-                'h-full': !isMobileSize,
-            })}
-        >
+        return <div className='w-full h-[60vh] sm:h-full flex flex-col justify-center items-center font-semibold relative'>
             <div className="flex grow items-center">
                 <div className="flex flex-col gap-4 items-center justify-end row-start-2 row-span-1">
                     <div className="flex-col flex items-center gap-1">
@@ -368,7 +361,7 @@ type MultichainConnectorModalProps = {
 const MultichainConnectorPicker: FC<MultichainConnectorModalProps> = ({ selectedConnector, allConnectors, providers, connect }) => {
     const Icon = resolveWalletConnectorIcon({ connector: selectedConnector.id, iconUrl: selectedConnector.icon })
     return (
-        <div className="flex flex-col justify-between h-full">
+        <div className="flex flex-col justify-between h-full min-h-80">
             <div className="flex grow py-4">
                 <div className="flex flex-col gap-2 grow items-center justify-center">
                     <div className="flex justify-center gap-1">
