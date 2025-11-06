@@ -76,16 +76,14 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
     useEffect(() => {
-        if (selectedSourceAccount) {
-            posthog.identify(selectedSourceAccount?.address, {
-                account: selectedSourceAccount?.address,
-                "Layerswap-wallet-test": "Layerswap testing wallet address"
-            })
-        } else {
-            posthog.reset()
+        if (wallets?.length) {
+            const allWalletAddresses = wallets.flatMap(w => w.addresses).filter(Boolean);
+            posthog.setPersonProperties({
+                accounts: allWalletAddresses,
+            });
         }
-    }, [selectedSourceAccount])
-console.log('render NetworkForm',selectedSourceAccount);
+    }, [wallets]);
+
     return (
         <>
             <DepositMethodComponent />
