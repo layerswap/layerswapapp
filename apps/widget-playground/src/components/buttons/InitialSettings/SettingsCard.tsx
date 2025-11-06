@@ -18,6 +18,38 @@ type SettingsCardProps = {
     onRemove?: (id: string, key?: keyof InitialSettings) => void;
 };
 
+const resolveSelectItem = (item: any) => {
+    const value = item.value ?? item.name ?? item.symbol;
+    const label = item.label ?? item.display_name ?? item.symbol;
+    const logo = item.logo;
+
+    const content = logo ? (
+        <div className="flex items-center space-x-1.5">
+            <img src={logo} alt={label} className="rounded-sm w-5 h-5" />
+            <p>{label}</p>
+        </div>
+    ) : (label);
+    return { value, content };
+};
+
+const renderSelect = (items: any[], placeholder: string, disabled: boolean, currentValue: string | undefined, onValueChange: (value: string) => void) => (
+    <Select value={currentValue} onValueChange={onValueChange} disabled={disabled}>
+        <SelectTrigger className="w-full border-none bg-secondary-600 hover:bg-secondary-500 transition-colors h-full">
+            <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent className="max-h-[300px] overflow-y-auto">
+            <SelectGroup>
+                {items.map((item, idx) => {
+                    const { value, content } = resolveSelectItem(item);
+                    return (<SelectItem key={idx} value={value}>
+                        {content}
+                    </SelectItem>);
+                })}
+            </SelectGroup>
+        </SelectContent>
+    </Select>
+);
+
 export function SettingsCard({ cardId, prefillKey, usedKeys = [], onParamKeyChange, onRemove, }: SettingsCardProps) {
     const { initialValues, updateInitialValues } = useWidgetContext();
     const { sourceExchanges, sourceRoutes, destinationRoutes } = useSettingsState();
@@ -42,7 +74,7 @@ export function SettingsCard({ cardId, prefillKey, usedKeys = [], onParamKeyChan
             if (requiredField && !initialValues[requiredField])
                 return false;
             // Check if already used by another card
-            if (usedKeys.includes(option.value) && option.value !== selectedKey)
+            if (usedKeys.includes(option.value as keyof InitialSettings) && option.value !== selectedKey)
                 return false;
 
             return true;
@@ -106,39 +138,8 @@ export function SettingsCard({ cardId, prefillKey, usedKeys = [], onParamKeyChan
     const handleRemove = () => {
         onRemove?.(cardId, selectedKey);
     };
-
-    const resolveSelectItem = (item: any) => {
-        const value = item.value ?? item.name ?? item.symbol;
-        const label = item.label ?? item.display_name ?? item.symbol;
-        const logo = item.logo;
-
-        const content = logo ? (
-            <div className="flex items-center space-x-1.5">
-                <img src={logo} alt={label} className="rounded-sm w-5 h-5" />
-                <p>{label}</p>
-            </div>
-        ) : (label);
-        return { value, content };
-    };
-
-    const renderSelect = (items: any[], placeholder: string, disabled = false) => (
-        <Select value={(currentValue as string | undefined) ?? undefined} onValueChange={handleSelectChange} disabled={disabled}>
-            <SelectTrigger className="w-full border-none bg-secondary-600 hover:bg-secondary-500 transition-colors h-full">
-                <SelectValue placeholder={placeholder} />
-            </SelectTrigger>
-            <SelectContent className="max-h-[300px] overflow-y-auto">
-                <SelectGroup>
-                    {items.map((item, idx) => {
-                        const { value, content } = resolveSelectItem(item);
-                        return (<SelectItem key={idx} value={value}>
-                            {content}
-                        </SelectItem>);
-                    })}
-                </SelectGroup>
-            </SelectContent>
-        </Select>
-    );
-
+    const select = (items: any[], placeholder: string, disabled = false) =>
+        renderSelect(items, placeholder, disabled, currentValue as string | undefined, handleSelectChange)
     // Render the appropriate input based on field type
     const renderValueEditor = () => {
         if (!selectedKey) {
@@ -149,26 +150,23 @@ export function SettingsCard({ cardId, prefillKey, usedKeys = [], onParamKeyChan
             );
         }
         if (isSelectField(selectedKey)) {
-            if (selectedKey === "from") {
-                return renderSelect(sourceRoutes, "Select from network");
-            }
-            if (selectedKey === "to") {
-                return renderSelect(destinationRoutes, "Select to network");
-            }
-            if (selectedKey === "fromExchange") {
-                return renderSelect(sourceExchanges, "Select exchange");
-            }
-            if (selectedKey === "fromAsset") {
-                const networkSelected = !!initialValues.from;
-                return renderSelect(fromTokens, networkSelected ? "Select asset" : "Pick a from network first", !networkSelected);
-            }
-            if (selectedKey === "toAsset") {
-                const networkSelected = !!initialValues.to;
-                return renderSelect(toTokens, networkSelected ? "Select asset" : "Pick a to network first", !networkSelected);
-            }
-            // Default tab select
-            if (selectedKey === "defaultTab") {
-                return renderSelect([{ value: "swap", label: "Swap" }, { value: "cex", label: "CEX" }], "Select default tab");
+            switch (selectedKey) {
+                case "from":
+                    return select(sourceRoutes, "Select from network");
+                case "to":
+                    return select(destinationRoutes, "Select to network");
+                case "fromExchange":
+                    return select(sourceExchanges, "Select exchange");
+                case "fromAsset": {
+                    const networkSelected = !!initialValues.from;
+                    return select(fromTokens, networkSelected ? "Select asset" : "Pick a from network first", !networkSelected);
+                }
+                case "toAsset": {
+                    const networkSelected = !!initialValues.to;
+                    return select(toTokens, networkSelected ? "Select asset" : "Pick a to network first", !networkSelected);
+                }
+                case "defaultTab":
+                    return select([{ value: "swap", label: "Swap" }, { value: "cex", label: "CEX" }], "Select default tab");
             }
         }
         if (isBooleanField(selectedKey)) {
