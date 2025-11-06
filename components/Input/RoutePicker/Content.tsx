@@ -34,10 +34,28 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
     }
     const virtualizer = useVirtualizer({
         count: rowElements.length,
-        estimateSize: () => 50,
+        estimateSize: (index) => {
+            const item = rowElements[index];
+            const key = (item as any)?.route?.name || (item as any)?.symbol;
+            const isOpen = openValues.includes(key);
+            // Better size estimation based on open state
+            if (isOpen && (item.type === 'network' || item.type === 'grouped_token')) {
+                const tokenCount = item.type === 'network'
+                    ? item.route.tokens.length
+                    : item.items.length;
+                // Base header (52) + tokens (each ~52px) + padding
+                return 52 + (tokenCount * 52) + 20;
+            }
+            return 52;
+        },
         getScrollElement: () => parentRef.current,
         overscan: 15
     })
+
+    useEffect(() => {
+        virtualizer.measure();
+    }, [openValues])
+
     const items = virtualizer.getVirtualItems()
 
     useEffect(() => {
