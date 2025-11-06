@@ -158,7 +158,7 @@ export function SwapDataProvider({ children }) {
     }, [formDataQuoteError, data, swapId]);
 
     const refuel = useMemo(() => {
-        if (swapId) {
+        if (swapId && data?.data) {
             return data?.data?.refuel
         }
         return formDataQuote?.refuel
