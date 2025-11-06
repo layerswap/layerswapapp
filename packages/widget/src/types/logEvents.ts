@@ -1,15 +1,6 @@
 import { SwapStatus } from "@/Models/SwapStatus";
 
-export type LogGroup =
-    | 'widgetError'
-    | 'balanceError'
-    | 'gasFeeError'
-    | 'transactionNotDetected'
-    | 'walletWithdrawalError'
-    | 'longTransactionWarning';
-
 export type Severity = "error" | "warning";
-
 export interface BaseErrorProps {
     name?: string;
     message: string;

@@ -1,5 +1,5 @@
 import { BalanceError, GasFeeError, OnLongTransactionWarning, WalletWithdrawalError, WidgetError } from '@/types';
-import { create } from 'zustand';
+import { createStore, useStore } from 'zustand';
 
 type LogFn = (event: any) => void;
 
@@ -16,10 +16,6 @@ export type CallbacksShape = {
     onLogError?: LogHandlers;
 };
 
-const defaultHandler: LogFn = (e) => {
-    console.log('[layerswap:log]', e?.type, e?.props);
-};
-
 type LogState = {
     logger: LogFn;
     callbacks?: CallbacksShape;
@@ -27,17 +23,22 @@ type LogState = {
     setCallbacks: (callbacks?: CallbacksShape) => void;
 };
 
-export const useLogStore = create<LogState>((set) => ({
-    logger: defaultHandler,
-    callbacks: undefined,
-    setLogger: (logger) => set({ logger: logger ?? defaultHandler }),
-    setCallbacks: (callbacks) => set({ callbacks }),
-}));
+const createLogStore = (init?: Partial<Pick<LogState, 'logger' | 'callbacks'>>) => {
+    const DEFAULTS: Pick<LogState, 'logger' | 'callbacks'> = {
+        logger: (e) => {
+            console.log('[layerswap:log]', e?.type, e?.props)
+        },
+        callbacks: undefined,
+    }
 
-// Convenient statics for non-React usage:
-export const logStore = {
-    get: () => useLogStore.getState(),
-    setLogger: (logger?: LogFn) => useLogStore.getState().setLogger(logger),
-    setCallbacks: (c?: CallbacksShape) => useLogStore.getState().setCallbacks(c),
-    defaultHandler,
-};
+    return createStore<LogState>()((set) => ({
+        ...DEFAULTS,
+        ...init,
+        setLogger: (logger) =>
+            set({ logger: logger ?? DEFAULTS.logger }),
+        setCallbacks: (callbacks) =>
+            set({ callbacks }),
+    }))
+}
+
+export const logStore = createLogStore()

@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { useCallbacks } from './callbackProvider';
-import { LogGroup } from '@/types';
-import { CallbacksShape, logStore, useLogStore } from '@/stores/logStore';
+import { CallbacksShape, logStore } from '@/stores/logStore';
 
 type LogFn = (event: any) => void;
 
@@ -9,32 +8,54 @@ export const defaultHandler: LogFn = (e) => {
   console.log('[layerswap:log]', e?.type, e?.props);
 };
 
-const handlerKeyByGroup: Record<
-  LogGroup,
-  | 'onWidgetError'
-  | 'onBalanceError'
-  | 'onGasFeeError'
-  | 'onTransactionNotDetected'
-  | 'onWalletWithdrawalError'
-  | 'onLongTransactionWarning'
-> = {
-  widgetError: 'onWidgetError',
-  balanceError: 'onBalanceError',
-  gasFeeError: 'onGasFeeError',
-  transactionNotDetected: 'onTransactionNotDetected',
-  walletWithdrawalError: 'onWalletWithdrawalError',
-  longTransactionWarning: 'onLongTransactionWarning',
-};
-
 export function log(event: any) {
-  const { logger, callbacks } = useLogStore.getState();
-  logger?.(event);
+  const { logger, callbacks } = logStore.getState();;
+  const onLogError = callbacks?.onLogError;
 
-  const group = resolveGroup(event);
-  if (!group) return;
+  const enriched = { ...event };
 
-  const key = handlerKeyByGroup[group];
-  callbacks?.onLogError?.[key]?.(event);
+  switch (event?.type) {
+    case 'APIError':
+    case 'ErrorFallback':
+    case 'NotFound':
+    case 'SwapFailed':
+      enriched.group = 'widgetError';
+      logger?.(enriched);
+      return onLogError?.onWidgetError?.(enriched);
+
+    case 'BalanceResolverError':
+    case 'BalanceProviderError':
+      enriched.group = 'balanceError';
+      logger?.(enriched);
+      return onLogError?.onBalanceError?.(enriched);
+
+    case 'MaxPriorityFeePerGasError':
+    case 'FeesPerGasError':
+    case 'GasPriceError':
+      enriched.group = 'gasFeeError';
+      logger?.(enriched);
+      return onLogError?.onGasFeeError?.(enriched);
+
+    case 'TransactionNotDetected':
+      enriched.group = 'transactionNotDetected';
+      logger?.(enriched);
+      return onLogError?.onTransactionNotDetected?.(enriched);
+
+    case 'SwapWithdrawalError':
+    case 'TransactionFailed':
+      enriched.group = 'walletWithdrawalError';
+      logger?.(enriched);
+      return onLogError?.onWalletWithdrawalError?.(enriched);
+
+    case 'LongTransactionWarning':
+      enriched.group = 'longTransactionWarning';
+      logger?.(enriched);
+      return onLogError?.onLongTransactionWarning?.(enriched);
+
+    default:
+      logger?.(enriched);
+      return;
+  }
 }
 
 export const logException = log;
@@ -47,7 +68,7 @@ export const ErrorProvider: React.FC<React.PropsWithChildren> = ({ children }) =
   useEffect(() => {
     // If useCallbacks() returns more than { onLogError }, adapt here:
     const mapped: CallbacksShape = { onLogError: callbacks?.onLogError };
-    logStore.setCallbacks(mapped);
+    logStore.getState().setCallbacks(mapped);
   }, [callbacks]);
 
   const value = useMemo<LogContextValue>(() => ({ log }), []);
@@ -59,30 +80,3 @@ export const useLog = () => {
   if (!ctx) throw new Error('useLog must be used within a ErrorProvider');
   return ctx;
 };
-
-
-function resolveGroup(e: any): LogGroup | undefined {
-  switch (e?.type) {
-    case 'APIError':
-    case 'ErrorFallback':
-    case 'NotFound':
-    case 'SwapFailed':
-      return 'widgetError';
-    case 'BalanceResolverError':
-    case 'BalanceProviderError':
-      return 'balanceError';
-    case 'MaxPriorityFeePerGasError':
-    case 'FeesPerGasError':
-    case 'GasPriceError':
-      return 'gasFeeError';
-    case 'TransactionNotDetected':
-      return 'transactionNotDetected';
-    case 'SwapWithdrawalError':
-    case 'TransactionFailed':
-      return 'walletWithdrawalError';
-    case 'LongTransactionWarning':
-      return 'longTransactionWarning';
-    default:
-      return;
-  }
-}
