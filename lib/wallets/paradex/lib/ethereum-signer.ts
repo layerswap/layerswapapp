@@ -1,5 +1,7 @@
 import type { ethers, providers } from 'ethers';
 
+export type Hex = `0x${string}`;
+
 export interface TypedData {
     readonly domain: {
         readonly name: string;
