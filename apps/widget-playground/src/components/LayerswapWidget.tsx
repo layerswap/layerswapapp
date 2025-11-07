@@ -4,13 +4,7 @@ import { LayerswapProvider, Swap, WidgetLoading } from '@layerswap/widget';
 import { useWidgetContext } from '@/context/ConfigContext';
 import { useSettingsState } from '@/context/settings';
 import dynamic from 'next/dynamic';
-import { EVMProvider } from '@layerswap/wallet-evm';
-import { StarknetProvider } from '@layerswap/wallet-starknet';
-import { FuelProvider } from '@layerswap/wallet-fuel';
-import { BitcoinProvider } from '@layerswap/wallet-bitcoin';
-import { TonProvider } from '@layerswap/wallet-ton';
-import { SVMProvider } from '@layerswap/wallet-svm';
-import { TronProvider } from '@layerswap/wallet-tron';
+import { EVMProvider, StarknetProvider, FuelProvider, BitcoinProvider, TonProvider, SVMProvider, TronProvider } from '@layerswap/wallets';
 
 const LayerswapWidgetCustomEvm = dynamic(
     () => import('./LayerswapWidgetCustomEvm'),
