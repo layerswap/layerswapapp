@@ -1,5 +1,5 @@
 import { keyDerivation } from '@starkware-industries/starkware-crypto-utils';
-import type { Signature, SignerInterface, TypedData } from 'starknet-old';
+import type { Signature, SignerInterface, TypedData } from 'starknet';
 import * as Starknet from 'starknet';
 
 import { STARKNET_MAINNET_CHAIN_ID } from '../constants';
