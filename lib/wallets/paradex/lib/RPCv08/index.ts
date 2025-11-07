@@ -15,7 +15,6 @@ export const Signer = { ethersSignerAdapter: _Signer.ethersSignerAdapter };
 
 export const ParaclearProvider = {
   DefaultProvider: _ParaclearProvider.DefaultProvider,
-  getProvider: _ParaclearProvider.getProvider,
 };
 
 export const Paraclear = {
