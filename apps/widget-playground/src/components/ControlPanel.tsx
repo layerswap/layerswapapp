@@ -36,12 +36,12 @@ const accordionElements = {
             content: <InitialSettingsButton />
         },
     ],
-    "Wallet configs": [
-        {
-            trigger: <ManageExternallyTriger />,
-            content: <ManageExternallyButton />
-        },
-    ],
+    // "Wallet configs": [
+    //     {
+    //         trigger: <ManageExternallyTriger />,
+    //         content: <ManageExternallyButton />
+    //     },
+    // ],
     "Other": [
         {
             trigger: <LoadingButtonTrigger />,
