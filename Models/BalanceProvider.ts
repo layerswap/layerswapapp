@@ -16,7 +16,7 @@ export abstract class BalanceProvider {
             cause: err.cause,
             timoutError: errorMessage.toLowerCase().includes("timeout") || errorMessage.toLowerCase().includes("took too long")
         });
-
+        console.error("balance_fetch_error", network.name, err)
         const tokenBalance: TokenBalance = {
             network: network.name,
             token: token.symbol,
