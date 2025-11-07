@@ -41,22 +41,6 @@ const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThre
     };
     const formatted = formatTime(elapsedTimer);
 
-    if (thresholdElapsed && swapDetails.status !== SwapStatus.Completed) {
-        const renderingError = new Error("Transaction is taking longer than expected");
-        renderingError.name = `LongTransactionError`;
-        renderingError.cause = renderingError;
-
-        posthog.capture('$exception', {
-            name: renderingError.name,
-            message: renderingError.message,
-            $layerswap_exception_type: "Long Transaction Error",
-            stack: renderingError.stack,
-            cause: renderingError.cause,
-            where: 'longTransactionError',
-            severity: 'error',
-        });
-    }
-
     return (
         <div className='flex items-center justify-center space-x-1'>
             {
