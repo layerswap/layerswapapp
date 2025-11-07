@@ -1,6 +1,6 @@
 packages:
   - packages/**
-  - apps/bridge
+  - apps/*
 
 catalog:
   '@tanstack/react-query': 5.90.5
