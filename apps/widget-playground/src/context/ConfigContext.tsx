@@ -29,7 +29,18 @@ interface ContextType {
 const WidgetContext = createContext<ContextType | undefined>(undefined);
 
 export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
-    const [themeData, setThemeData] = useState<{ theme: ThemeData | undefined, themeName?: string | undefined } | undefined>({ theme: THEME_COLORS['default'], themeName: 'default' });
+    const [themeData, setThemeData] = useState<{ theme: ThemeData | undefined, themeName?: string | undefined } | undefined>({
+        theme: {
+            ...THEME_COLORS['default'],
+            header: {
+                hideMenu: false,
+                hideTabs: false,
+                hideWallets: false,
+            },
+            hidePoweredBy: false,
+        },
+        themeName: 'default'
+    });
     const [widgetRenderKey, setWidgetRenderKey] = useState(0);
     const [customEvmSwitch, setCustomEvmSwitch] = useState(false);
     const [showLoading, setShowLoading] = useState(false);
@@ -45,7 +56,18 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
     }, [customEvmSwitch, showLoading, initialValues])
 
     const resetData = () => {
-        setThemeData({ theme: THEME_COLORS['default'], themeName: 'default' });
+        setThemeData({
+            theme: {
+                ...THEME_COLORS['default'],
+                header: {
+                    hideMenu: false,
+                    hideTabs: false,
+                    hideWallets: false,
+                },
+                hidePoweredBy: false,
+            },
+            themeName: 'default'
+        });
         setInitialSettings({});
         setCustomEvmSwitch(false);
         setShowLoading(false);

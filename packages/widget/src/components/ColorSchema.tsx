@@ -23,7 +23,9 @@ const mergeWithFallback = (themeData: ThemeData | null | undefined, fallbackThem
 
         if (typeof source === 'object' && typeof target === 'object') {
             const result = { ...target };
-            for (const key in source) {
+            // Iterate over both target and source keys to ensure all properties are merged
+            const allKeys = new Set([...Object.keys(target), ...Object.keys(source)]);
+            for (const key of allKeys) {
                 result[key] = source[key] !== undefined ? deepMerge(target[key], source[key]) : target[key];
             }
             return result;
@@ -100,11 +102,11 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
                     --ls-colors-secondary-900: ${mergedTheme.secondary?.[900]};
                     --ls-colors-secondary-text: ${mergedTheme.secondary?.text};
 
-                    --ls-color-warning-foreground: ${mergedTheme.warning?.Foreground};
+                    --ls-colors-warning-foreground: ${mergedTheme.warning?.Foreground};
                     --ls-colors-warning-background: ${mergedTheme.warning?.Background};
-                    --ls-color-error-foreground: ${mergedTheme.error?.Foreground};
+                    --ls-colors-error-foreground: ${mergedTheme.error?.Foreground};
                     --ls-colors-error-background: ${mergedTheme.error?.Background};
-                    --ls-color-success-foreground: ${mergedTheme.success?.Foreground};
+                    --ls-colors-success-foreground: ${mergedTheme.success?.Foreground};
                     --ls-colors-success-background: ${mergedTheme.success?.Background};
                 }
             `}
