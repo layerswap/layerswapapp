@@ -22,7 +22,7 @@ export type VaulDrawerProps = {
     className?: string;
 }
 
-const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className }) => {
+const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className, modalId }) => {
     const { isMobileWithPortal: isMobile, isMobile: isMobileWithoutPortal } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
@@ -50,13 +50,11 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
     useEffect(() => {
         if (!snapElement || snapElement.height === snap) return;
-
         setSnap(snapElement.height)
     }, [snapElement])
 
     useEffect(() => {
         if (!snap || snap === snapElement?.height) return
-
         setSnapElement(snapPoints.find((item) => item.height === snap) || null)
     }, [snap])
 
@@ -121,21 +119,27 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
         >
 
             <Drawer.Portal>
-                <Drawer.Close asChild>
-                    {
-                        isMobile
-                            ? <Drawer.Overlay
-                                className='fixed inset-0 z-50 bg-black/50 block'
-                            />
-                            : <motion.div
-                                key="backdrop"
-                                className='absolute inset-0 z-50 bg-black/50 block'
-                                initial={{ opacity: 0.5 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                            />
-                    }
-                </Drawer.Close>
+                {isMobile ? (
+                    <Drawer.Close asChild>
+                        <Drawer.Overlay
+                            className='fixed inset-0 z-50 bg-black/50 block'
+                        />
+                    </Drawer.Close>
+                ) : (
+                    <AnimatePresence>
+                        {show && (
+                            <Drawer.Close asChild key={`backdrop-${modalId}`}>
+                                <motion.div
+                                    className='absolute inset-0 z-40 bg-black/50 block pointer-events-auto'
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                />
+                            </Drawer.Close>
+                        )}
+                    </AnimatePresence>
+                )}
 
                 <Drawer.Content
                     data-testid="content"
@@ -175,10 +179,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         }
                     </div>
                     <div
-                        className={clsx('flex flex-col w-full h-fit max-h-[90dvh] px-4 styled-scroll overflow-x-hidden relative', {
-                            'overflow-y-auto h-full': snap === 1,
-                            'overflow-hidden': snap !== 1,
-                        })}
+                        className='flex flex-col w-full h-full max-h-[90dvh] px-4 styled-scroll overflow-x-hidden relative'
                         id="virtualListContainer"
                     >
                         {children}
@@ -222,7 +223,7 @@ const VaulFooter: FC<{ snapElement: SnapElement | null }> = ({ snapElement }) =>
             top: snapElement?.height !== 1 ? `${Number(snapElement?.height?.toString().replace('px', '')) - 50}px` : undefined,
             bottom: snapElement?.height === 1 ? '12px' : undefined
         }}
-        className='w-full left-0 z-50'
+        className='w-full left-0 z-50 max-sm:absolute'
     />
 }
 

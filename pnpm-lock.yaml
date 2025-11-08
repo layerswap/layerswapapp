@@ -27,6 +27,9 @@ catalogs:
     react-dom:
       specifier: 18.3.1
       version: 18.3.1
+    starknet:
+      specifier: ^7.6.4
+      version: 7.6.4
     swr:
       specifier: ^2.2.5
       version: 2.3.6
@@ -589,6 +592,9 @@ importers:
       lucide-react:
         specifier: ^0.379.0
         version: 0.379.0(react@18.3.1)
+      starknet:
+        specifier: 'catalog:'
+        version: 7.6.4
       starknet-old:
         specifier: npm:starknet@6.8.0
         version: starknet@6.8.0
@@ -627,7 +633,7 @@ importers:
         specifier: ^3.3.4
         version: 3.3.5(starknet@7.6.4)
       starknet:
-        specifier: ^7.6.4
+        specifier: 'catalog:'
         version: 7.6.4
       starknetkit:
         specifier: ^3.0.3

@@ -52,7 +52,8 @@
     "bignumber.js": "^9.3.1",
     "ethers": "5.7.2",
     "lucide-react": "^0.379.0",
-    "starknet-old": "npm:starknet@6.8.0"
+    "starknet-old": "npm:starknet@6.8.0",
+    "starknet": "catalog:"
   },
   "devDependencies": {
     "@layerswap/wallet-evm": "workspace:^",

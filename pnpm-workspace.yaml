@@ -14,3 +14,4 @@ catalog:
   viem: ^2.21.16
   wagmi: 2.14.11
   zustand: 4.5.7
+  starknet: ^7.6.4

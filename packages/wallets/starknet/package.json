@@ -48,7 +48,7 @@
     "bn.js": "^5.2.2",
     "ethers": "5.7.2",
     "get-starknet-core": "^3.3.4",
-    "starknet": "^7.6.4",
+    "starknet": "catalog:",
     "starknetkit": "^3.0.3"
   },
   "devDependencies": {

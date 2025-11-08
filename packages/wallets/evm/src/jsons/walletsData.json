@@ -1,5 +1,5 @@
 {
-  "count": 579,
+  "count": 580,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -19148,12 +19148,12 @@
     },
     "67f1ec404dbf3bddc509b5fcf615850e05b28c287ccd7167b4fe81b4293ac9df": {
       "app": {
-        "android": "https://www.kucoin.com/download",
+        "android": "https://play.google.com/store/apps/details?id=com.kubi.kucoin&referrer=af_tranid%3DJvLSXmUCnydvsyYUD8ryGQ%26c%3D%E5%AE%98%E7%BD%91%E4%B8%8B%E8%BD%BD%E9%A1%B5%E9%9D%A2GP%26pid%3D%E5%AE%98%E7%BD%91%E4%B8%8B%E8%BD%BD%E9%A1%B5%E9%9D%A2GP",
         "browser": null,
         "chrome": null,
         "edge": null,
         "firefox": null,
-        "ios": "https://www.kucoin.com/download",
+        "ios": "https://apps.apple.com/ca/app/kucoin-buy-bitcoin-crypto/id1378956601",
         "linux": null,
         "mac": null,
         "opera": null,
@@ -19176,7 +19176,7 @@
       "description": "Find the Next Crypto Gem",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://www.kucoin.com/Web3",
       "id": "67f1ec404dbf3bddc509b5fcf615850e05b28c287ccd7167b4fe81b4293ac9df",
@@ -19196,7 +19196,7 @@
       },
       "mobile": {
         "native": "kucoin:///wallet/walletConnect",
-        "universal": null
+        "universal": ""
       },
       "name": "KuCoin Web3 Wallet",
       "rdns": null,
@@ -37553,6 +37553,72 @@
         "2"
       ]
     },
+    "d757db40fd0987092673c8c4f33398ac48bb52aa12abb027a652fb4c50b2dce0": {
+      "app": {
+        "android": null,
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": null,
+        "linux": "",
+        "mac": "https://api.bron.org/apps/desktop/platforms/mac-universal/downloads/latest",
+        "opera": null,
+        "safari": null,
+        "windows": "https://api.bron.org/apps/desktop/platforms/win-universal/downloads/latest"
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:10",
+        "eip155:11155111",
+        "eip155:137",
+        "eip155:42161",
+        "eip155:56",
+        "eip155:560048",
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+      ],
+      "description": "Bron Wallet — calm ownership without fear.",
+      "desktop": {
+        "native": "bron://wallet-connect",
+        "universal": ""
+      },
+      "homepage": "https://bron.org",
+      "id": "d757db40fd0987092673c8c4f33398ac48bb52aa12abb027a652fb4c50b2dce0",
+      "image_id": "b848f936-918c-4e1a-0a01-aaf9dd011600",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/b848f936-918c-4e1a-0a01-aaf9dd011600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/b848f936-918c-4e1a-0a01-aaf9dd011600?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/b848f936-918c-4e1a-0a01-aaf9dd011600?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "",
+        "universal": ""
+      },
+      "name": "Bron",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "bron",
+      "updatedAt": "2025-11-05T22:45:05.366232+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "d99d67379a0af80a39ef8fa79ad477debfe5abb71bd7cf92d12f30d6ffa69506": {
       "app": {
         "android": null,
@@ -44142,5 +44208,5 @@
       ]
     }
   },
-  "total": 579
+  "total": 580
 }

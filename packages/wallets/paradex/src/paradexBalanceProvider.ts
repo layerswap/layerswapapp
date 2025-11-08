@@ -1,6 +1,6 @@
 import { AppSettings, KnownInternalNames, insertIfNotExists } from "@layerswap/widget/internal";
 import { BalanceProvider, TokenBalance } from "@layerswap/widget/types";
-import * as Paradex from "./lib";
+import { Config, getParadex } from "./lib";
 
 export class ParadexBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
@@ -9,16 +9,17 @@ export class ParadexBalanceProvider extends BalanceProvider {
 
     fetchBalance: BalanceProvider['fetchBalance'] = async (address, network) => {
         const environment = AppSettings.ApiVersion === 'testnet' ? 'testnet' : 'prod'
-        const config = await Paradex.Config.fetchConfig(environment);
-        const tokens = insertIfNotExists(network.tokens || [], network.token)
+        const config = await Config.fetchConfig(environment);
+        const paradex = getParadex(config);
+        const paraclearProvider = new paradex.ParaclearProvider.DefaultProvider(config);
 
-        const paraclearProvider = new Paradex.ParaclearProvider.DefaultProvider(config);
+        const tokens = insertIfNotExists(network.tokens || [], network.token)
 
         const balances: TokenBalance[] = []
 
         for (const token of tokens) {
             try {
-                const getBalanceResult = await Paradex.Paraclear.getTokenBalance({
+                const getBalanceResult = await paradex.Paraclear.getTokenBalance({
                     provider: paraclearProvider, //account can be passed as the provider
                     config,
                     account: { address },

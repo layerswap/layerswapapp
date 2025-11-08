@@ -54,9 +54,16 @@ const NetworkIssue: FC<{ network: NetworkRoute | undefined }> = ({ network }) =>
                     <InfoIcon className='w-4 h-4 text-warning-foreground' />
                 </div>
                 <p className="text-sm">
-                    <span>We are currently unable to retrieve balance information for the </span>
-                    <span className="font-semibold">{network?.display_name}</span>
-                    <span> network. This may affect your ability to view your funds.</span>
+                    <span>
+                        <span>We are currently unable to retrieve balance information for </span>
+                        <span>
+                            {network?.display_name ?
+                                <span>{network?.display_name}</span>
+                                :
+                                <span>the network</span>
+                            }
+                        </span>
+                    </span>
                 </p>
             </div>
         </TooltipContent>

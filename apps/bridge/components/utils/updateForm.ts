@@ -108,10 +108,10 @@ export async function updateFormBulk(
         } else {
             const mapKey = fieldMapping[key] ?? key;
             const str =
-                typeof value === "object"
+                typeof values[key] === "object"
                     ? // @ts-ignore
-                    String(value[mapKey])
-                    : String(value);
+                    String(values[key][mapKey])
+                    : String(values[key]);
             updates[key] = str;
         }
     }
