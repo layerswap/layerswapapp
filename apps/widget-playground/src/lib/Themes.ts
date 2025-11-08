@@ -15,6 +15,18 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         buttonTextColor: '228, 229, 240',
         logo: '255, 0, 147',
         borderRadius: 'medium',
+        warning: {
+            Foreground: '255, 201, 74',
+            Background: '47, 43, 29',
+        },
+        error: {
+            Foreground: '255, 97, 97',
+            Background: '46, 27, 27',
+        },
+        success: {
+            Foreground: '89, 224, 125',
+            Background: '14, 43, 22',
+        },
         primary: {
             DEFAULT: '204, 45, 93',
             '100': '255, 148, 176',
@@ -47,6 +59,18 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         buttonTextColor: '17, 17, 17',
         logo: '255, 0, 147',
         borderRadius: 'medium',
+        warning: {
+            Foreground: '200, 130, 0',
+            Background: '255, 250, 230',
+        },
+        error: {
+            Foreground: '220, 50, 50',
+            Background: '255, 240, 240',
+        },
+        success: {
+            Foreground: '40, 180, 80',
+            Background: '235, 255, 240',
+        },
         primary: {
             DEFAULT: '228, 37, 117',
             '100': '246, 182, 209',
@@ -80,6 +104,18 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         logo: "230, 200, 170",
         tertiary: "120, 100, 80",
         borderRadius: 'medium',
+        warning: {
+            Foreground: "180, 100, 0",
+            Background: "255, 245, 220",
+        },
+        error: {
+            Foreground: "200, 60, 50",
+            Background: "255, 235, 230",
+        },
+        success: {
+            Foreground: "60, 150, 70",
+            Background: "240, 255, 240",
+        },
         primary: {
             DEFAULT: "230, 200, 170",
             '100': "250, 235, 210",
@@ -114,6 +150,18 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         logo: '255, 255, 255',
         borderRadius: 'medium',
         tertiary: '160, 160, 160',
+        warning: {
+            Foreground: '255, 200, 80',
+            Background: '50, 45, 25',
+        },
+        error: {
+            Foreground: '255, 100, 100',
+            Background: '50, 25, 25',
+        },
+        success: {
+            Foreground: '100, 220, 140',
+            Background: '20, 45, 28',
+        },
         primary: {
             DEFAULT: '255, 255, 255',
             '100': '224, 224, 224',
@@ -147,6 +195,18 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         buttonTextColor: '255, 255, 255',
         logo: '0, 255, 0',
         borderRadius: 'medium',
+        warning: {
+            Foreground: '255, 255, 0',
+            Background: '40, 40, 0',
+        },
+        error: {
+            Foreground: '255, 0, 0',
+            Background: '40, 0, 0',
+        },
+        success: {
+            Foreground: '0, 255, 0',
+            Background: '0, 40, 0',
+        },
         primary: {
             DEFAULT: '0, 255, 0',
             '100': '153, 255, 153',
@@ -180,6 +240,18 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         buttonTextColor: "0, 255, 180",
         borderRadius: 'medium',
         logo: "255, 45, 200",
+        warning: {
+            Foreground: "255, 220, 0",
+            Background: "40, 30, 10",
+        },
+        error: {
+            Foreground: "255, 50, 100",
+            Background: "45, 10, 25",
+        },
+        success: {
+            Foreground: "0, 255, 180",
+            Background: "10, 40, 35",
+        },
         primary: {
             DEFAULT: "255, 45, 200",
             '100': "255, 210, 240",
@@ -213,6 +285,18 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         buttonTextColor: "0, 255, 255",
         borderRadius: 'medium',
         logo: "80, 0, 255",
+        warning: {
+            Foreground: "255, 180, 255",
+            Background: "35, 15, 40",
+        },
+        error: {
+            Foreground: "255, 80, 200",
+            Background: "40, 10, 30",
+        },
+        success: {
+            Foreground: "80, 255, 200",
+            Background: "10, 35, 30",
+        },
         primary: {
             DEFAULT: "80, 0, 255",
             '100': "180, 160, 255",

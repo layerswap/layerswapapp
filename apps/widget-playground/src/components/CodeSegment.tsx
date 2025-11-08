@@ -5,10 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { Files } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { InitialSettings } from "@layerswap/widget/types";
+import type { ThemeData } from "@layerswap/widget";
 
-/**
- * Stringify helpers
- */
 function isPlainObject(v: unknown): v is Record<string, any> {
     return typeof v === "object" && v !== null && !Array.isArray(v);
 }
@@ -60,7 +58,6 @@ function buildConfigSnippet(
     theme: Record<string, any> | undefined,
     actionText: string | undefined,
     initialValues: InitialSettings | undefined,
-    featuredNetwork?: Record<string, any> | undefined
 ): string {
     const configObj: Record<string, any> = {};
 
@@ -75,60 +72,164 @@ function buildConfigSnippet(
         configObj.initialValues = prunedInitial;
     }
 
-    const prunedFeatured = pruneUndefinedDeep(featuredNetwork ?? {});
-    if (isPlainObject(prunedFeatured) && Object.keys(prunedFeatured).length > 0) {
-        configObj.featuredNetwork = prunedFeatured;
-    }
-
     const header = `const config = `;
     return `${header}${formatJS(configObj, 2, 0)};`;
 }
 
 export function CodeSegment() {
     const ctx = useWidgetContext();
-    const { themeData, actionText, initialValues } = ctx;
+    const { themeData, actionText, initialValues, updateWholeTheme, updateActionText, updateInitialValues, resetData } = ctx;
 
-    // If your context exposes featuredNetwork, read it; otherwise it'll be undefined and simply omitted.
-    const featuredNetwork = (ctx as any)?.featuredNetwork as Record<string, any> | undefined;
-
-    const code = buildConfigSnippet(themeData, actionText, initialValues, featuredNetwork);
+    const generatedCode = buildConfigSnippet(themeData, actionText, initialValues);
 
     const [copied, setCopied] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [isUserEdited, setIsUserEdited] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
     const codeRef = useRef<HTMLElement>(null);
+    const preRef = useRef<HTMLPreElement>(null);
 
     useEffect(() => {
-        if (codeRef.current) {
-            codeRef.current.textContent = code;
+        if (codeRef.current && !isUserEdited && !isEditing) {
+            codeRef.current.textContent = generatedCode;
             codeRef.current.removeAttribute("data-highlighted");
             hljs.highlightElement(codeRef.current);
         }
-    }, [code]);
+    }, [generatedCode, isUserEdited, isEditing]);
 
     const handleCopy = async () => {
-        await navigator.clipboard.writeText(code);
+        const text = codeRef.current?.textContent || generatedCode;
+        await navigator.clipboard.writeText(text);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
 
-    return (
-        <div className="relative w-full overflow-hidden rounded-tl-xl rounded-md border bg-secondary-700 border-secondary-500">
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <Files
-                        className="absolute right-4 top-4 z-10 rounded-full bg-secondary-500 text-base text-primary-text transition hover:bg-primary-500 p-1.5 h-8 w-auto hover:cursor-pointer"
-                        onClick={handleCopy}
-                    />
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p>{copied ? "Copied!" : "Copy"}</p>
-                </TooltipContent>
-            </Tooltip>
+    const parseConfig = (code: string): Record<string, any> | null => {
+        try {
+            let configStr = code.trim();
+            configStr = configStr.replace(/^\s*const\s+config\s*=\s*/, "");
+            configStr = configStr.replace(/;?\s*$/, "");
+            const jsonStr = configStr.replace(/(\w+):/g, '"$1":');
+
+            const config = JSON.parse(jsonStr);
+            return config;
+        } catch (e) {
+            return null;
+        }
+    };
+
+    const applyConfig = () => {
+        setError(null);
+        const code = codeRef.current?.textContent || "";
+        const config = parseConfig(code);
+
+        if (!config) {
+            setError("Invalid config format. Please check your syntax.");
+            return;
+        }
+
+        try {
+            if (config.theme) {
+                updateWholeTheme({ theme: config.theme as ThemeData, themeName: 'custom' });
+            }
+            if (config.actionText !== undefined) {
+                updateActionText(config.actionText);
+            }
+            if (config.initialValues) {
+                const newInitialValues = config.initialValues as InitialSettings;
+                Object.keys(newInitialValues).forEach((key) => {
+                    updateInitialValues(key as keyof InitialSettings, newInitialValues[key as keyof InitialSettings]);
+                });
+            }
+            setIsUserEdited(false);
+        } catch (e) {
+            setError(`Failed to apply config: ${e instanceof Error ? e.message : String(e)}`);
+        }
+    };
+
+    const handleInput = () => {
+        setIsUserEdited(true);
+        setError(null);
+    };
+
+    const handleFocus = () => {
+        setIsEditing(true);
+    };
+
+    const handleBlur = () => {
+        setIsEditing(false);
+        // Re-highlight after editing is done
+        if (codeRef.current) {
+            const text = codeRef.current.textContent || "";
+            codeRef.current.textContent = text;
+            codeRef.current.removeAttribute("data-highlighted");
+            hljs.highlightElement(codeRef.current);
+        }
+    };
+
+    const handleReset = () => {
+        resetData();
+        if (codeRef.current) {
+            codeRef.current.textContent = generatedCode;
+            codeRef.current.removeAttribute("data-highlighted");
+            hljs.highlightElement(codeRef.current);
+        }
+        setIsUserEdited(false);
+        setError(null);
+    };
+
+    return (<>
+        {error && (
+            <div className="mb-4 rounded-md bg-red-500/10 border border-red-500/20 px-4 py-2 text-sm text-red-400">
+                {error}
+            </div>
+        )}
+        <div className="relative w-full overflow-hidden rounded-tl-xl rounded-md border bg-secondary-700 border-secondary-500 focus-within:border-primary transition-colors">
+
+            <div className="absolute right-4 top-4 z-10 flex gap-2">
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Files
+                            className="rounded-full bg-secondary-500 text-base text-primary-text transition hover:bg-primary p-1.5 h-8 w-auto hover:cursor-pointer"
+                            onClick={handleCopy}
+                        />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>{copied ? "Copied!" : "Copy"}</p>
+                    </TooltipContent>
+                </Tooltip>
+                {isUserEdited && (
+                    <>
+                        <button
+                            className="rounded-full bg-secondary-500 text-xs text-primary-text transition hover:bg-primary px-3 py-1.5 hover:cursor-pointer"
+                            onClick={handleReset}
+                        >
+                            Reset
+                        </button>
+                        <button
+                            className="rounded-full bg-primary text-xs text-primary-text transition hover:bg-primary-600 px-3 py-1.5 hover:cursor-pointer"
+                            onClick={applyConfig}
+                        >
+                            Apply
+                        </button>
+                    </>
+                )}
+            </div>
 
             <div className="px-6 pb-14 pt-6">
-                <pre>
-                    <code ref={codeRef} className="language-typescript styled-scroll" />
+                <pre ref={preRef}>
+                    <code
+                        ref={codeRef}
+                        className="language-typescript styled-scroll focus:outline-none text-sm"
+                        contentEditable
+                        onInput={handleInput}
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
+                        suppressContentEditableWarning
+                    />
                 </pre>
             </div>
         </div>
+    </>
     );
 }
