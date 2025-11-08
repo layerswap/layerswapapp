@@ -174,13 +174,13 @@ export function CodeSegment() {
                 {error}
             </div>
         )}
-        <div className="relative w-full overflow-hidden rounded-tl-xl rounded-md border bg-secondary-700 border-secondary-500">
+        <div className="relative w-full overflow-hidden rounded-tl-xl rounded-md border bg-secondary-700 border-secondary-500 focus-within:border-primary transition-colors">
 
             <div className="absolute right-4 top-4 z-10 flex gap-2">
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Files
-                            className="rounded-full bg-secondary-500 text-base text-primary-text transition hover:bg-primary-500 p-1.5 h-8 w-auto hover:cursor-pointer"
+                            className="rounded-full bg-secondary-500 text-base text-primary-text transition hover:bg-primary p-1.5 h-8 w-auto hover:cursor-pointer"
                             onClick={handleCopy}
                         />
                     </TooltipTrigger>
@@ -191,13 +191,13 @@ export function CodeSegment() {
                 {isUserEdited && (
                     <>
                         <button
-                            className="rounded-full bg-secondary-500 text-xs text-primary-text transition hover:bg-primary-500 px-3 py-1.5 hover:cursor-pointer"
+                            className="rounded-full bg-secondary-500 text-xs text-primary-text transition hover:bg-primary px-3 py-1.5 hover:cursor-pointer"
                             onClick={handleReset}
                         >
                             Reset
                         </button>
                         <button
-                            className="rounded-full bg-primary-500 text-xs text-primary-text transition hover:bg-primary-600 px-3 py-1.5 hover:cursor-pointer"
+                            className="rounded-full bg-primary text-xs text-primary-text transition hover:bg-primary-600 px-3 py-1.5 hover:cursor-pointer"
                             onClick={applyConfig}
                         >
                             Apply
@@ -210,7 +210,7 @@ export function CodeSegment() {
                 <pre ref={preRef}>
                     <code
                         ref={codeRef}
-                        className="language-typescript styled-scroll"
+                        className="language-typescript styled-scroll focus:outline-none text-sm"
                         contentEditable
                         onInput={handleInput}
                         suppressContentEditableWarning
