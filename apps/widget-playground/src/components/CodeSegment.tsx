@@ -85,16 +85,17 @@ export function CodeSegment() {
     const [copied, setCopied] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isUserEdited, setIsUserEdited] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
     const codeRef = useRef<HTMLElement>(null);
     const preRef = useRef<HTMLPreElement>(null);
 
     useEffect(() => {
-        if (codeRef.current && !isUserEdited) {
+        if (codeRef.current && !isUserEdited && !isEditing) {
             codeRef.current.textContent = generatedCode;
             codeRef.current.removeAttribute("data-highlighted");
             hljs.highlightElement(codeRef.current);
         }
-    }, [generatedCode, isUserEdited]);
+    }, [generatedCode, isUserEdited, isEditing]);
 
     const handleCopy = async () => {
         const text = codeRef.current?.textContent || generatedCode;
@@ -147,9 +148,18 @@ export function CodeSegment() {
     };
 
     const handleInput = () => {
+        setIsUserEdited(true);
+        setError(null);
+    };
+
+    const handleFocus = () => {
+        setIsEditing(true);
+    };
+
+    const handleBlur = () => {
+        setIsEditing(false);
+        // Re-highlight after editing is done
         if (codeRef.current) {
-            setIsUserEdited(true);
-            setError(null);
             const text = codeRef.current.textContent || "";
             codeRef.current.textContent = text;
             codeRef.current.removeAttribute("data-highlighted");
@@ -213,6 +223,8 @@ export function CodeSegment() {
                         className="language-typescript styled-scroll focus:outline-none text-sm"
                         contentEditable
                         onInput={handleInput}
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
                         suppressContentEditableWarning
                     />
                 </pre>
