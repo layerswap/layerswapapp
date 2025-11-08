@@ -32,12 +32,6 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
     const [themeData, setThemeData] = useState<{ theme: ThemeData | undefined, themeName?: string | undefined } | undefined>({
         theme: {
             ...THEME_COLORS['default'],
-            header: {
-                hideMenu: false,
-                hideTabs: false,
-                hideWallets: false,
-            },
-            hidePoweredBy: false,
         },
         themeName: 'default'
     });
@@ -59,19 +53,13 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
         setThemeData({
             theme: {
                 ...THEME_COLORS['default'],
-                header: {
-                    hideMenu: false,
-                    hideTabs: false,
-                    hideWallets: false,
-                },
-                hidePoweredBy: false,
             },
             themeName: 'default'
         });
         setInitialSettings({});
         setCustomEvmSwitch(false);
         setShowLoading(false);
-        setActionText('Next');
+        setActionText('');
     };
 
     function updateTheme<K extends keyof ThemeData>(prop: K, value: ThemeData[K]) {

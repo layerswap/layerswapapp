@@ -2,8 +2,8 @@
 import {
     CardRadiusButton, InitialSettingsButton, ResetButton, CloseButton, ColorsContent, ThemeButton, ManageExternallyButton, LoadingButton,
     ColorsTrigger, CardRadiusButtonTrigger, ThemeButtonTrigger, InitialSettingsButtonTrigger, ManageExternallyTriger, LoadingButtonTrigger,
-    CustomizationButton,
-    CustomizationButtonTrigger,
+    ConfigurationButton,
+    ConfigurationButtonTrigger,
 } from "./buttons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import clsx from "clsx";
@@ -32,8 +32,8 @@ const accordionElements = {
             content: <ThemeButton />
         },
         {
-            trigger: <CustomizationButtonTrigger />,
-            content: <CustomizationButton />
+            trigger: <ConfigurationButtonTrigger />,
+            content: <ConfigurationButton />
         }
     ],
     "Widget configs": [

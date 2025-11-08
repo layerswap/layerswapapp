@@ -11,7 +11,7 @@ const ToggleRow = ({ label, checked, onCheckedChange }: { label: string, checked
     );
 };
 
-export function CustomizationButton() {
+export function ConfigurationButton() {
     const { themeData, updateTheme } = useWidgetContext();
 
     const handleHeaderChange = (key: 'hideMenu' | 'hideTabs' | 'hideWallets', value: boolean) => {
@@ -26,7 +26,7 @@ export function CustomizationButton() {
     };
 
     return (
-        <div className="my-1 rounded-xl p-1 bg-secondary-600">
+        <div className="my-1 rounded-xl py-1 px-2 bg-secondary-600">
             <ToggleRow
                 label="Hide Menu"
                 checked={themeData?.header?.hideMenu ?? false}
@@ -51,11 +51,11 @@ export function CustomizationButton() {
     );
 }
 
-export const CustomizationButtonTrigger = () => {
+export const ConfigurationButtonTrigger = () => {
     return (
         <div className="flex justify-between w-full">
             <label>
-                Customization
+                Configuration
             </label>
         </div>
     );

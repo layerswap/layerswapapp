@@ -23,9 +23,7 @@ const mergeWithFallback = (themeData: ThemeData | null | undefined, fallbackThem
 
         if (typeof source === 'object' && typeof target === 'object') {
             const result = { ...target };
-            // Iterate over both target and source keys to ensure all properties are merged
-            const allKeys = new Set([...Object.keys(target), ...Object.keys(source)]);
-            for (const key of allKeys) {
+            for (const key in source) {
                 result[key] = source[key] !== undefined ? deepMerge(target[key], source[key]) : target[key];
             }
             return result;
