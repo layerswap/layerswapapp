@@ -4,7 +4,7 @@ import { getServerSideProps } from '../helpers/getSettings'
 import SwapPage from '../components/Pages/Swap'
 import { LayerswapApiClient } from '@layerswap/widget/internal'
 
-export default function Home({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
+export default function Home({ settings, themeData, apiKey, initialValues }: InferGetServerSidePropsType<typeof getServerSideProps>) {
   LayerswapApiClient.apiKey = apiKey
   return (
     <Layout settings={settings} themeData={themeData}>
@@ -12,6 +12,7 @@ export default function Home({ settings, themeData, apiKey }: InferGetServerSide
         apiKey={apiKey}
         settings={settings}
         themeData={themeData}
+        initialValues={initialValues}
       />
     </Layout>
   )

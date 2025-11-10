@@ -130,7 +130,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         {show && (
                             <Drawer.Close asChild key={`backdrop-${modalId}`}>
                                 <motion.div
-                                    className='absolute inset-0 z-40 bg-black/50 block pointer-events-auto'
+                                    className='absolute inset-0 z-50 bg-black/50 block pointer-events-auto'
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
@@ -145,7 +145,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                     data-testid="content"
                     className={clsx('absolute flex flex-col bg-secondary-700 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-4 text-primary-text ring-0! outline-hidden! ', className, {
                         'border-none! rounded-none!': snap === 1,
-                        '!fixed sm:!absolute': AppSettings.ThemeData?.enablePortal == true,
+                        'fixed! sm:absolute!': AppSettings.ThemeData?.enablePortal == true,
                     })}
                 >
                     <div

@@ -4,8 +4,9 @@ import { FC } from "react"
 import { updateFormBulk } from "../../utils/updateForm"
 import { removeSwapPath, setSwapPath } from "../../utils/updateSwapPath"
 import { EVMProvider, FuelProvider, ParadexProvider, StarknetProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider } from "@layerswap/wallets";
+import { ParsedUrlQuery } from "querystring"
 
-const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string }> = ({ settings, themeData, apiKey }) => {
+const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string, initialValues: ParsedUrlQuery }> = ({ settings, themeData, apiKey, initialValues }) => {
     const router = useRouter()
 
     const imtblPassportConfigs = typeof window !== 'undefined' ? {
@@ -25,7 +26,8 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
             tonConfigs: {
                 'manifestUrl': 'https://layerswap.io/app/tonconnect-manifest.json',
                 'tonApiKey': process.env.NEXT_PUBLIC_TON_API_KEY || ''
-            }
+            },
+            initialValues
         }}
         callbacks={{
             onFormChange(formData) {
