@@ -15,6 +15,9 @@ import { Slippage } from '../Slippage'
 import { truncateDecimals } from '@/components/utils/RoundDecimals'
 import { Network, NetworkRouteToken } from '@/Models/Network'
 import shortenAddress from '@/components/utils/ShortenAddress'
+import { isValidAddress } from '@/lib/address/validator'
+import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
+import { addressFormat } from '@/lib/address/formatter'
 
 type DetailedEstimatesProps = {
     quote: SwapQuote | undefined,
@@ -40,7 +43,7 @@ export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
     return <div className="flex flex-col w-full px-2">
         {variant === "extended" && <GasFee values={values} quote={quote} />}
         <Fees quote={quote} values={values} />
-        {values.depositMethod !== "deposit_address" &&<Rate fromAsset={values?.fromAsset} toAsset={values?.toAsset} requestAmount={quote?.requested_amount} receiveAmount={quote?.receive_amount} />}
+        {values.depositMethod !== "deposit_address" && <Rate fromAsset={values?.fromAsset} toAsset={values?.toAsset} requestAmount={quote?.requested_amount} receiveAmount={quote?.receive_amount} />}
         {values.depositMethod === "deposit_address" && variant === "extended" && values?.fromAsset?.contract && <ExchangeTokenContract fromAsset={values?.fromAsset} network={values?.from} />}
         {variant === "extended" && values.depositMethod === "wallet" && <Slippage quoteData={quote} values={values} />}
         <Estimates quote={quote} />
@@ -159,7 +162,12 @@ const Rate = ({ fromAsset, toAsset, requestAmount, receiveAmount }) => {
 const ExchangeTokenContract = ({ fromAsset, network }: { fromAsset: NetworkRouteToken | undefined, network: Network | undefined }) => {
     return <RowWrapper title={`${network?.display_name} - ${fromAsset?.symbol}`}>
         {
-            fromAsset?.contract ? <span>{shortenAddress(fromAsset?.contract)}</span> : '-'
+            (fromAsset?.contract && network && (isValidAddress(fromAsset?.contract, network)) ?
+                <div className="text-sm group/addressItem text-secondary-text">
+                    <ExtendedAddress address={addressFormat(fromAsset?.contract, network)} network={network} showDetails={false} shouldShowChevron={false} />
+                </div>
+                :
+                <p className="text-sm text-secondary-text">{fromAsset?.contract ? shortenAddress(fromAsset.contract) : ''}</p>)
         }
     </RowWrapper >
 }
