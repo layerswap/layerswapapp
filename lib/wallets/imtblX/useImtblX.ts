@@ -1,4 +1,4 @@
-import { useWalletStore } from "../../../stores/paradexWalletStore"
+import { useWalletStore } from "../../../stores/walletStore"
 import ImtblClient from "../../imtbl"
 import KnownInternalNames from "../../knownIds"
 import IMX from "../../../components/icons/Wallets/IMX"

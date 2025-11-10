@@ -5,7 +5,7 @@ import { useConnectModal } from "../../../components/WalletModal"
 import { type ConnectorAlreadyConnectedError } from '@wagmi/core'
 import useEVM from "../evm/useEVM"
 import useStarknet from "../starknet/useStarknet"
-import { useWalletStore } from "../../../stores/paradexWalletStore"
+import { useWalletStore } from "../../../stores/walletStore"
 import { AuthorizeStarknet } from "./Authorize/Starknet"
 import { walletClientToSigner } from "../../ethersToViem/ethers"
 import AuhorizeEthereum from "./Authorize/Ethereum"
