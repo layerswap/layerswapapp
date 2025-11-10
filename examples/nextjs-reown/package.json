@@ -1,5 +1,5 @@
 {
-  "name": "nextjs-dynamic-example",
+  "name": "nextjs-reown-example",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,18 +10,10 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@bigmi/client": "^0.3.1",
-    "@bigmi/core": "^0.3.1",
-    "@bigmi/react": "^0.3.1",
-    "@dynamic-labs/ethereum": "^4.14.0",
-    "@dynamic-labs/sdk-react-core": "^4.14.0",
-    "@dynamic-labs/starknet": "^4.41.1",
-    "@dynamic-labs/wagmi-connector": "^4.14.0",
-    "@layerswap/wallet-bitcoin": "^1.0.0",
-    "@layerswap/wallet-evm": "^1.0.1",
-    "@layerswap/wallet-starknet": "^1.0.2",
-    "@layerswap/wallet-svm": "^1.0.0",
-    "@layerswap/widget": "^1.0.3",
+    "@layerswap/wallet-evm": "^1.0.2",
+    "@layerswap/widget": "^1.0.5",
+    "@reown/appkit": "^1.8.13",
+    "@reown/appkit-adapter-wagmi": "^1.8.13",
     "@tanstack/react-query": "^5.74.7",
     "next": "^14.0.4",
     "react": "^18.3.1",
@@ -33,8 +25,6 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.13",
-    "@types/bn.js": "^5.1.0",
-    "@types/crypto-js": "^4.1.1",
     "@types/react": "18.3.1",
     "@web3-react/types": "^6.0.7",
     "autoprefixer": "^10.4.5",
