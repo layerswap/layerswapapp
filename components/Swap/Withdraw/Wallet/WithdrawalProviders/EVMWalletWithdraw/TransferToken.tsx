@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useState } from "react";
 import { useConfig } from "wagmi";
 import { parseEther } from 'viem'
 import { ActionData, TransferProps } from "../../Common/sharedTypes";
@@ -30,38 +30,25 @@ const TransferTokenButton: FC<Props> = ({
     const [error, setError] = useState<any | undefined>()
     const [loading, setLoading] = useState(false)
     const { swapError } = useSwapDataState()
-    const [estimatedGas, setEstimatedGas] = useState<number>()
 
-    const { depositActionsResponse } = useSwapDataState()
     const selectedSourceAccount = useSelectedAccount("from", swapData.source_network.name);
     const { wallets } = useWallet(swapData.source_network, 'withdrawal')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
-    const callData = depositActionsResponse?.find(da => true)?.call_data as `0x${string}` | undefined
+    const { gasData, gasError } = useSWRGas(selectedSourceAccount?.address, swapData?.source_network)
 
-    useEffect(() => {
-        (async () => {
-            if (selectedSourceAccount?.address && swapData?.destination_address) {
-                try {
-                    const { gasData } = useSWRGas(selectedSourceAccount?.address, swapData?.source_network)
-                    setEstimatedGas(gasData?.gas)
-                }
-                catch (e) {
-                    const error = e;
-                    error.name = `EstimateGasError`;
-                    error.cause = error;
+    if (gasError) {
+        gasError.name = `EstimateGasError`;
+        gasError.cause = gasError;
 
-                    posthog.capture('$exception', {
-                        name: error?.name,
-                        $layerswap_exception_type: "EstimateGasError",
-                        message: error?.message,
-                        where: 'TransferToken',
-                        cause: error?.cause,
-                        severity: 'error',
-                    });
-                }
-            }
-        })()
-    }, [selectedSourceAccount?.address, callData, swapData?.destination_address])
+        posthog.capture('$exception', {
+            name: gasError?.name,
+            $layerswap_exception_type: "EstimateGasError",
+            message: gasError?.message,
+            where: 'TransferToken',
+            cause: gasError?.cause,
+            severity: 'error',
+        });
+    }
 
     const clickHandler = useCallback(async ({ amount, callData, depositAddress }: TransferProps) => {
         setButtonClicked(true)
@@ -79,7 +66,7 @@ const TransferTokenButton: FC<Props> = ({
                 chainId,
                 to: depositAddress as `0x${string}`,
                 value: parseEther(amount?.toString()),
-                gas: estimatedGas ? BigInt(estimatedGas) : undefined,
+                gas: gasData?.gas ? BigInt(gasData.gas) : undefined,
                 data: callData as `0x${string}`,
                 account: selectedSourceAccount.address as `0x${string}`
             }
@@ -100,7 +87,7 @@ const TransferTokenButton: FC<Props> = ({
 
             throw e
         }
-    }, [config, chainId, selectedSourceAccount?.address, estimatedGas])
+    }, [config, chainId, selectedSourceAccount?.address, gasData?.gas])
 
     const transaction: ActionData = {
         error: error,
