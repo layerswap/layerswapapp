@@ -1,5 +1,5 @@
 {
-  "count": 580,
+  "count": 581,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -10903,13 +10903,16 @@
       "app_type": "wallet",
       "category": "Mobile Wallets",
       "chains": [
+        "bip122:000000000019d6689c085ae165831e93",
         "eip155:1",
-        "eip155:56"
+        "eip155:137",
+        "eip155:56",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ],
       "description": "Buy, sell, swap, transfer & track crypto on our non-custodial DeFi Crypto wallet.",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://tradestrike.io/",
       "id": "36dbd7f82df78f406723eb71599640fbbf703b2583682ba1e419a9098a2d4945",
@@ -10929,7 +10932,7 @@
       },
       "mobile": {
         "native": "strikex://",
-        "universal": null
+        "universal": ""
       },
       "name": "StrikeX Wallet",
       "rdns": null,
@@ -11268,6 +11271,68 @@
       ],
       "slug": "atomic-wallet",
       "updatedAt": "2025-02-18T15:24:39.080321+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
+    "38633830ef578a1249c345848a8d6487551a346b923d21ce197ea57f423f3113": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=io.hashport.hashwallet&pcampaignid=pcampaignidMKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "https://apps.apple.com/jp/app/hashport-wallet/id6450660947",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:11155111",
+        "eip155:137",
+        "eip155:80002",
+        "eip155:8453",
+        "eip155:84532"
+      ],
+      "description": "HashPort Wallet is a web3 wallet anyone can use with confidence.\nStore, exchange, and hold NFTs and SBTs—all within this single app.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://wallet.hashport.com/",
+      "id": "38633830ef578a1249c345848a8d6487551a346b923d21ce197ea57f423f3113",
+      "image_id": "0d59745c-6146-4c86-3718-c847855b7b00",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/0d59745c-6146-4c86-3718-c847855b7b00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/0d59745c-6146-4c86-3718-c847855b7b00?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/0d59745c-6146-4c86-3718-c847855b7b00?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "wallet.hashport://",
+        "universal": "https://link.wallet.hashport.com"
+      },
+      "name": "HashPort Wallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "hashport-wallet",
+      "updatedAt": "2025-11-10T07:24:05.628837+00:00",
       "versions": [
         "1",
         "2"
@@ -23301,14 +23366,14 @@
     },
     "82e648053152b18d863d85a467c0ba20bde86e892eb6189e47e260bb78c1e653": {
       "app": {
-        "android": "",
+        "android": null,
         "browser": "https://www.anchorage.com/platform/self-custody",
         "chrome": null,
         "edge": null,
         "firefox": null,
         "ios": "https://apps.apple.com/us/app/porto-by-anchorage-digital/id6470914477",
         "linux": null,
-        "mac": "https://www.anchorage.com/platform/self-custody",
+        "mac": null,
         "opera": null,
         "safari": null,
         "windows": null
@@ -40378,7 +40443,7 @@
       "description": "Flow Wallet is the non-custodial wallet on Flow blockchain.  It enables you to access Web 3.0, NFTs, tokens and dApps.",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://wallet.flow.com/",
       "id": "e6a8cb6abe47f88d7511b0698829eab01d76e78bad82b8ccca66004055055d89",
@@ -44208,5 +44273,5 @@
       ]
     }
   },
-  "total": 580
+  "total": 581
 }
