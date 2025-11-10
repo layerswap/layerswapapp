@@ -4,12 +4,20 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectVa
 import { THEME_COLORS, THEME_OPTIONS } from "@/lib/Themes";
 type ThemeKey = typeof THEME_OPTIONS[number]["value"];
 export function ThemeButton() {
-    const { updateWholeTheme, themeName } = useWidgetContext();
+    const { updateWholeTheme, themeName, themeData } = useWidgetContext();
 
     const handleClick = (value: ThemeKey) => {
         const newTheme = THEME_COLORS[value];
         if (newTheme) {
-            updateWholeTheme({ theme: newTheme, themeName: value });
+            // Preserve existing customizations (header and hidePoweredBy)
+            updateWholeTheme({
+                theme: {
+                    ...newTheme,
+                    header: themeData?.header,
+                    hidePoweredBy: themeData?.hidePoweredBy,
+                },
+                themeName: value
+            });
         }
     };
 

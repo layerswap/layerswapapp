@@ -179,6 +179,7 @@ const SlippageInput = forwardRef<HTMLInputElement, SlippageInputProps>(function 
                         ref={ref}
                         autoComplete="off"
                         autoFocus={false}
+                        title=""
                         className={clsx("w-10 bg-transparent border-none outline-none focus:outline-none focus-visible:outline-none ring-0 focus:ring-0 focus-visible:ring-0 focus:border-transparent focus:shadow-none text-primary-text text-base leading-3.5 p-0 text-right")}
                         value={localPercent}
                         onChange={(e) => {
@@ -186,6 +187,12 @@ const SlippageInput = forwardRef<HTMLInputElement, SlippageInputProps>(function 
                             if (!Number.isNaN(next as number)) {
                                 onEditing?.()
                                 setLocalPercent(next)
+                            }
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key == "Enter") {
+                                e.preventDefault();
+                                return false;
                             }
                         }}
                     />

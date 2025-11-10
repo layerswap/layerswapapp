@@ -15,8 +15,9 @@ import {
     createTronProvider,
     createImmutablePassportProvider
 } from "@layerswap/wallets";
+import { ParsedUrlQuery } from "querystring"
 
-const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string }> = ({ settings, themeData, apiKey }) => {
+const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string, initialValues: ParsedUrlQuery }> = ({ settings, themeData, apiKey, initialValues }) => {
     const router = useRouter()
 
     const imtblPassportConfig = typeof window !== 'undefined' ? {

@@ -1,7 +1,9 @@
 "use client";
 import {
-    CardRadiusButton, NetworksButton, ResetButton, CloseButton, ColorsContent, ThemeButton, ManageExternallyButton, LoadingButton, ActionTextButton,
-    ColorsTrigger, CardRadiusButtonTrigger, ThemeButtonTrigger, NetworksButtonTrigger, ManageExternallyTriger, LoadingButtonTrigger, ActionTextButtonTrigger,
+    CardRadiusButton, InitialSettingsButton, ResetButton, CloseButton, ColorsContent, ThemeButton, ManageExternallyButton, LoadingButton,
+    ColorsTrigger, CardRadiusButtonTrigger, ThemeButtonTrigger, InitialSettingsButtonTrigger, ManageExternallyTriger, LoadingButtonTrigger,
+    ConfigurationButton,
+    ConfigurationButtonTrigger,
 } from "./buttons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import clsx from "clsx";
@@ -29,23 +31,23 @@ const accordionElements = {
             trigger: <ThemeButtonTrigger />,
             content: <ThemeButton />
         },
+        {
+            trigger: <ConfigurationButtonTrigger />,
+            content: <ConfigurationButton />
+        }
     ],
     "Widget configs": [
-        // {
-        //     trigger: <NetworksButtonTrigger />,
-        //     content: <NetworksButton />
-        // },
         {
-            trigger: <ActionTextButtonTrigger />,
-            content: <ActionTextButton />
+            trigger: <InitialSettingsButtonTrigger />,
+            content: <InitialSettingsButton />
         },
     ],
-    "Wallet configs": [
-        {
-            trigger: <ManageExternallyTriger />,
-            content: <ManageExternallyButton />
-        },
-    ],
+    // "Wallet configs": [
+    //     {
+    //         trigger: <ManageExternallyTriger />,
+    //         content: <ManageExternallyButton />
+    //     },
+    // ],
     "Other": [
         {
             trigger: <LoadingButtonTrigger />,

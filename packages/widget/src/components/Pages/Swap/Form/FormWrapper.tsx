@@ -145,7 +145,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                     setShow={handleShowSwapModal}
                     header={`Complete the swap`}
                     modalId="showSwap"
-                    className={!swapBasicData?.use_deposit_address ? "openwithdrawalmodal" : ""}>
+                    className={!swapBasicData?.use_deposit_address ? "expandContainerHeight" : ""}>
                     <VaulDrawer.Snap id="item-1">
                         <SwapDetails type="contained" onWalletWithdrawalSuccess={handleWalletWithdrawalSuccess} partner={partner} />
                     </VaulDrawer.Snap>
@@ -196,15 +196,10 @@ const handleCreateSwap = async ({ query, values, partner, setShowSwapModal, crea
             })
             setShowConnectNetworkModal(true);
         } else if (data?.code === LSAPIKnownErrorCode.NETWORK_CURRENCY_DAILY_LIMIT_REACHED) {
-            const time = data.metadata.RemainingLimitPeriod?.split(':');
-            const hours = Number(time[0])
-            const minutes = Number(time[1])
-            const remainingTime = `${hours > 0 ? `${hours.toFixed()} ${(hours > 1 ? 'hours' : 'hour')}` : ''} ${minutes > 0 ? `${minutes.toFixed()} ${(minutes > 1 ? 'minutes' : 'minute')}` : ''}`
-
             if (data.metadata.AvailableTransactionAmount) {
-                throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromAsset?.symbol} or retry in ${remainingTime}.`)
+                throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please try sending up to ${data.metadata.AvailableTransactionAmount} ${values.fromAsset?.symbol}.`)
             } else {
-                throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached. Please retry in ${remainingTime}.`)
+                throw new Error(`Daily limit of ${values.fromAsset?.symbol} transfers from ${values.from?.display_name} is reached.`)
             }
         }
         else {

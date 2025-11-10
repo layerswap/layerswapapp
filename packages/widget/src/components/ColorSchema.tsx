@@ -100,19 +100,12 @@ const ColorSchema: FC<Props> = ({ themeData }) => {
                     --ls-colors-secondary-900: ${mergedTheme.secondary?.[900]};
                     --ls-colors-secondary-text: ${mergedTheme.secondary?.text};
 
-                    --ls-color-warning-foreground: ${mergedTheme.warning?.Foreground};
+                    --ls-colors-warning-foreground: ${mergedTheme.warning?.Foreground};
                     --ls-colors-warning-background: ${mergedTheme.warning?.Background};
-                    --ls-color-error-foreground: ${mergedTheme.error?.Foreground};
+                    --ls-colors-error-foreground: ${mergedTheme.error?.Foreground};
                     --ls-colors-error-background: ${mergedTheme.error?.Background};
-                    --ls-color-success-foreground: ${mergedTheme.success?.Foreground};
+                    --ls-colors-success-foreground: ${mergedTheme.success?.Foreground};
                     --ls-colors-success-background: ${mergedTheme.success?.Background};
-                }
-                .headerLogo {
-                    display: ${mergedTheme.headerLogo};
-                }
-                .footerLogo {
-                    display: ${mergedTheme.footerLogo};
-                    height: ${mergedTheme.footerLogoHeight};
                 }
             `}
             </style>

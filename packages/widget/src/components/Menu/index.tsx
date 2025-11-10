@@ -55,7 +55,7 @@ const Comp = () => {
                     </div>
                 }
             >
-                <VaulDrawer.Snap openFullHeight id="item-1">
+                <VaulDrawer.Snap openFullHeight className="h-full pb-0!" id="item-1">
                     <Wizard wizardId='menuWizard' >
                         <WizardItem StepName={MenuStep.Menu} inModal>
                             <MenuList goToStep={handleGoToStep} />

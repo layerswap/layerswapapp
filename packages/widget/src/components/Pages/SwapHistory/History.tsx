@@ -252,7 +252,7 @@ const BlankHistory = ({ onNewTransferClick }: BlankHistoryProps) => {
 const ConnectWalletCard = () => {
     return <div className="w-full h-full flex flex-col justify-between items-center space-y-10">
         <div className="flex flex-col items-center justify-center text-center w-full h-full">
-            <HistoryItemSceleton className="scale-[.63] w-full shadow-lg mr-7" />
+            <HistoryItemSceleton className="scale-[.63] w-full shadow-card mr-7" />
             <HistoryItemSceleton className="scale-[.63] -mt-12 shadow-card ml-7 w-full" />
             <div className="mt-4 text-center space-y-3">
                 <h1 className="text-secondary-text text-[28px] font-bold tracking-wide" >

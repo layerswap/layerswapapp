@@ -34,19 +34,20 @@ export function ColorBox({ rgbColor, colorKey }: ColorPickerProps) {
 
         if (!themeData) return;
 
-        if (colorKey.startsWith('primary') || colorKey.startsWith('secondary')) {
-            const group = colorKey.startsWith('primary') ? 'primary' : 'secondary';
-            const rawKey = colorKey.replace(group, "").trim() || "DEFAULT";
-            const currentGroup = themeData[group];
-            const updatedGroup = {
-                ...currentGroup,
-                [rawKey]: rgbString,
-            };
-
-            updateTheme(group as keyof ThemeData, updatedGroup as any);
-        } else {
+        const nestedColorGroups = ['primary', 'secondary', 'warning', 'error', 'success'];
+        const matchedGroup = nestedColorGroups.find(group => colorKey.startsWith(group));
+        if (matchedGroup) {
+            const subKey = colorKey.replace(matchedGroup, '').trim() || 'DEFAULT';
+            const currentGroup = themeData[matchedGroup as keyof ThemeData];
+            if (typeof currentGroup === 'object' && currentGroup !== null) {
+                const updatedGroup = {
+                    ...currentGroup,
+                    [subKey]: rgbString,
+                };
+                updateTheme(matchedGroup as keyof ThemeData, updatedGroup as any);
+            }
+        } else
             updateTheme(colorKey as keyof ThemeData, rgbString);
-        }
     }
 
     return (

@@ -1,13 +1,14 @@
 import { providers } from 'ethers'
-import * as Paradex from "../lib";
-import { TypedData } from '../lib/types';
+import { Config, getParadex } from "../lib";
+import type { TypedData } from '../lib';
 import { AppSettings } from '@layerswap/widget/internal';
 
 export default async function AuhorizeEthereum(ethersSigner: providers.JsonRpcSigner) {
     const environment = AppSettings.ApiVersion === 'testnet' ? 'testnet' : 'prod'
-    const config = await Paradex.Config.fetchConfig(environment);
+    const config = await Config.fetchConfig(environment);
 
-    const paraclearProvider = new Paradex.ParaclearProvider.DefaultProvider(config);
+    const paradex = getParadex(config);
+    const paraclearProvider = new paradex.ParaclearProvider.DefaultProvider(config);
 
     function ethersSignerAdapter(signer: typeof ethersSigner) {
         return {
@@ -21,7 +22,7 @@ export default async function AuhorizeEthereum(ethersSigner: providers.JsonRpcSi
 
     if (!signer) throw new Error('Signer not found');
 
-    const paradexAccount = await Paradex.Account.fromEthSigner({
+    const paradexAccount = await paradex.Account.fromEthSigner({
         provider: paraclearProvider,
         config,
         signer: signer,

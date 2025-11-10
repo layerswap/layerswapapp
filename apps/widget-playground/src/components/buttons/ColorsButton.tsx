@@ -13,6 +13,15 @@ const getColors = (theme?: typeof THEME_COLORS['default']) => {
         { displayName: 'Button text color', value: theme.buttonTextColor, id: 'buttonTextColor' },
     ];
 
+    const statusColors = [
+        { displayName: 'Warning foreground', value: theme.warning?.Foreground, id: 'warningForeground' },
+        { displayName: 'Warning background', value: theme.warning?.Background, id: 'warningBackground' },
+        { displayName: 'Error foreground', value: theme.error?.Foreground, id: 'errorForeground' },
+        { displayName: 'Error background', value: theme.error?.Background, id: 'errorBackground' },
+        { displayName: 'Success foreground', value: theme.success?.Foreground, id: 'successForeground' },
+        { displayName: 'Success background', value: theme.success?.Background, id: 'successBackground' },
+    ];
+
     const primaryColors = [
         { displayName: 'Primary default', value: theme.primary.DEFAULT, id: 'primary' },
         { displayName: 'Primary 100', value: theme.primary[100], id: 'primary100' },
@@ -41,7 +50,7 @@ const getColors = (theme?: typeof THEME_COLORS['default']) => {
         { displayName: 'Secondary text', value: theme.secondary.text, id: 'secondarytext' },
     ];
 
-    return [...additionalColors, ...primaryColors, ...secondaryColors];
+    return [...additionalColors, ...statusColors, ...primaryColors, ...secondaryColors];
 }
 
 export function ColorsContent() {

@@ -14,7 +14,6 @@ import { QuoteError, transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
 import { useSelectedAccount } from './balanceAccounts';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
-import { useSwapIdChangeCallback } from './callbackProvider';
 import { useInitialSettings } from './settings';
 import { addressFormat } from '@/lib/address/formatter';
 import { useSlippageStore } from '@/stores/slippageStore';
@@ -89,10 +88,8 @@ export function SwapDataProvider({ children }) {
 
     const { quote: formDataQuote, quoteError: formDataQuoteError } = useQuoteData(quoteArgs, swapId ? 0 : undefined);
 
-    const triggerSwapIdChangeCallback = useSwapIdChangeCallback()
     const handleUpdateSwapid = (value: string | undefined) => {
         setSwapId(value)
-        triggerSwapIdChangeCallback(value)
     }
 
     const setSubmitedFormValues = useCallback((values: NonNullable<SwapFormValues>) => {
@@ -148,7 +145,7 @@ export function SwapDataProvider({ children }) {
     }, [formDataQuoteError, data, swapId]);
 
     const refuel = useMemo(() => {
-        if (swapId) {
+        if (swapId && data?.data) {
             return data?.data?.refuel
         }
         return formDataQuote?.refuel
