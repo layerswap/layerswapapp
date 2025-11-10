@@ -1,10 +1,10 @@
 import { keyDerivation } from '@starkware-industries/starkware-crypto-utils';
-import * as Starknet from 'starknet-old';
+import * as Starknet from 'starknet';
 
-import type { ParadexConfig } from './config';
-import * as ethereumSigner from './ethereum-signer';
+import type { ParadexConfig } from '../config';
+import * as ethereumSigner from '../ethereum-signer';
 import * as starknetSigner from './starknet-signer';
-import type { Hex } from './types';
+import type { Hex } from '../types';
 
 export interface Account extends Starknet.Account {}
 

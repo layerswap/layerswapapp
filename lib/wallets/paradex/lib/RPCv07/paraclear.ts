@@ -1,10 +1,10 @@
 import BigNumber from 'bignumber.js';
-import * as Starknet from 'starknet';
+import * as Starknet from 'starknet-old';
 
 import type { Account } from './account';
-import type { ParadexConfig } from './config';
+import type { ParadexConfig } from '../config';
 import type { ParaclearProvider } from './paraclear-provider';
-import type { Hex } from './types';
+import type { Hex } from '../types';
 
 const MAX_FEE = BigNumber('5e17'); // 5e17 WEI = 0.5 ETH
 
