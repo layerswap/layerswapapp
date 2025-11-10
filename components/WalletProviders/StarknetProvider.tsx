@@ -1,6 +1,10 @@
 import { FC, ReactNode, useEffect, useState } from "react";
 import { mainnet, sepolia } from "@starknet-react/chains"
-import { Connector, ConnectorNotConnectedError, UserNotConnectedError, StarknetConfig, publicProvider } from '@starknet-react/core';
+import { Connector, ConnectorNotConnectedError, UserNotConnectedError, StarknetConfig, publicProvider, useConnect, useDisconnect } from '@starknet-react/core';
+import { useSettingsState } from "../../context/settings";
+import { useStarknetStore } from "../../stores/starknetWalletStore";
+import KnownInternalNames from "../../lib/knownIds";
+import useStarknet, { resolveStarknetWallet } from "../../lib/wallets/starknet/useStarknet";
 import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from "@starknet-io/starknet-types-07";
 
 const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
@@ -132,9 +136,58 @@ const StarknetProvider: FC<{ children: ReactNode }> = ({ children }) => {
             provider={publicProvider()}
             connectors={connectors}
         >
+            <StarknetWalletInitializer />
             {children}
         </StarknetConfig>
     )
 }
 
 export default StarknetProvider;
+
+const StarknetWalletInitializer = () => {
+    const { connectors } = useConnect();
+    const { disconnectAsync } = useDisconnect();
+    const { networks } = useSettingsState();
+    const starknetAccounts = useStarknetStore((state) => state.starknetAccounts) || {};
+    const addWallet = useStarknetStore((state) => state.connectWallet);
+    const removeAccount = useStarknetStore((state) => state.removeAccount);
+    const { withdrawalSupportedNetworks, autofillSupportedNetworks, asSourceSupportedNetworks } = useStarknet();
+    
+    useEffect(() => {
+        const initializeWallet = async () => {
+            const starknetNetwork = networks.find(
+                (n) =>
+                    n.name === KnownInternalNames.Networks.StarkNetMainnet ||
+                    n.name === KnownInternalNames.Networks.StarkNetSepolia
+            );
+
+            for (const connector of connectors) {
+                const address = starknetAccounts[connector.id];
+                if (address) {
+                    const wallet = await resolveStarknetWallet({
+                        name: "Starknet",
+                        connector,
+                        network: starknetNetwork,
+                        disconnectWallets: () => disconnectAsync().then(() => removeAccount(address)),
+                        withdrawalSupportedNetworks,
+                        autofillSupportedNetworks,
+                        asSourceSupportedNetworks,
+                        address
+                    });
+
+                    if (wallet?.address) {
+                        addWallet(wallet);
+                    } else {
+                        removeAccount(address);
+                    }
+                }
+            }
+        };
+
+        if (Object.keys(starknetAccounts).length) {
+            initializeWallet();
+        }
+    }, [connectors, networks]);
+
+    return null;
+}

@@ -32,7 +32,6 @@ const SourceWalletPicker: FC = () => {
     const { selectedConnector } = useConnectModal()
     const availableWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
 
-
     const handleWalletChange = () => {
         setOpenModal(true)
     }
