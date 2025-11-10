@@ -1,19 +1,17 @@
 import { FC, useCallback, useEffect, useState } from "react";
-import {
-    useConfig,
-} from "wagmi";
-import { createPublicClient, http, parseEther, parseGwei } from 'viem'
+import { useConfig } from "wagmi";
+import { parseEther } from 'viem'
 import { ActionData, TransferProps } from "../../Common/sharedTypes";
 import TransactionMessage from "./transactionMessage";
 import { SendTransactionButton } from "../../Common/buttons";
 import { isMobile } from "@/lib/openLink";
-import { getConnections, sendTransaction } from '@wagmi/core'
+import { sendTransaction } from '@wagmi/core'
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import useWallet from "@/hooks/useWallet";
 import { useSwapDataState } from "@/context/swap";
-import resolveChain from "@/lib/resolveChain";
 import { posthog } from "posthog-js";
+import useSWRGas from "@/lib/gases/useSWRGas";
 
 type Props = {
     savedTransactionHash?: string;
@@ -32,7 +30,7 @@ const TransferTokenButton: FC<Props> = ({
     const [error, setError] = useState<any | undefined>()
     const [loading, setLoading] = useState(false)
     const { swapError } = useSwapDataState()
-    const [estimatedGas, setEstimatedGas] = useState<bigint>()
+    const [estimatedGas, setEstimatedGas] = useState<number>()
 
     const { depositActionsResponse } = useSwapDataState()
     const selectedSourceAccount = useSelectedAccount("from", swapData.source_network.name);
@@ -40,22 +38,12 @@ const TransferTokenButton: FC<Props> = ({
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const callData = depositActionsResponse?.find(da => true)?.call_data as `0x${string}` | undefined
 
-    const chain = resolveChain(swapData.source_network)
-    const publicClient = createPublicClient({
-        chain,
-        transport: http()
-    })
-
     useEffect(() => {
         (async () => {
             if (selectedSourceAccount?.address && swapData?.destination_address) {
                 try {
-                    const gasEstimate = await publicClient.estimateGas({
-                        account: selectedSourceAccount.address as `0x${string}`,
-                        to: swapData?.destination_address as `0x${string}`,
-                        data: callData,
-                    })
-                    setEstimatedGas(gasEstimate)
+                    const { gasData } = useSWRGas(selectedSourceAccount?.address, swapData?.source_network)
+                    setEstimatedGas(gasData?.gas)
                 }
                 catch (e) {
                     const error = e;
@@ -91,11 +79,11 @@ const TransferTokenButton: FC<Props> = ({
                 chainId,
                 to: depositAddress as `0x${string}`,
                 value: parseEther(amount?.toString()),
-                gas: estimatedGas,
+                gas: estimatedGas ? BigInt(estimatedGas) : undefined,
                 data: callData as `0x${string}`,
                 account: selectedSourceAccount.address as `0x${string}`
             }
-           
+
             if (isMobile() && wallet?.metadata?.deepLink) {
                 window.location.href = wallet.metadata?.deepLink
                 await new Promise(resolve => setTimeout(resolve, 100))
