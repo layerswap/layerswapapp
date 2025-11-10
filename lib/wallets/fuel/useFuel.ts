@@ -18,7 +18,7 @@ import { useEffect, useMemo } from "react";
 import { useSettingsState } from "@/context/settings";
 import { BAKO_STATE } from "./Bako";
 import sleep from "../utils/sleep";
-import { useWalletStore } from "@/stores/paradexWalletStore";
+import { useWalletStore } from "@/stores/walletStore";
 
 export default function useFuel(): WalletProvider {
     const commonSupportedNetworks = [
