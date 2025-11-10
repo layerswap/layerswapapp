@@ -58,7 +58,6 @@ export default function resolveChain(network: Network) {
         res.fees = {
             ...res.fees,
             baseFeeMultiplier: () => {
-                console.log("brrrah")
                 return baseFeeMultiplier
             },
         }
