@@ -12,8 +12,10 @@ export function truncateDecimals(value: number, decimals = 0) {
     const truncated = Math.trunc(value * factor) / factor;
 
     const formatted = isScientific(truncated)
-        ? truncated.toFixed(decimals).replace(/\.?0+$/, '')
-        : truncated.toString();
+        ? (!isNaN(Number(truncated))
+            ? truncated.toFixed(decimals).replace(/\.?0+$/, '')
+            : '')
+        : truncated?.toString();
 
     return Number(formatted).toLocaleString('en-US', {
         minimumFractionDigits: 0,
