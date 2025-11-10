@@ -122,26 +122,19 @@ export default function useStarknet(): WalletProvider {
 
     return provider
 }
-
-export async function resolveStarknetWallet({
-    name,
-    connector,
-    network,
-    disconnectWallets,
-    address,
-    withdrawalSupportedNetworks,
-    autofillSupportedNetworks,
-    asSourceSupportedNetworks
-}: {
+type ResolveStarknetWalletProps = {
     name: string,
     connector: Connector;
     network: NetworkWithTokens | undefined;
     disconnectWallets: (connectorName?: string, address?: string) => Promise<void>;
     address: string,
-    withdrawalSupportedNetworks?: string[]
+    withdrawalSupportedNetworks: string[]
     autofillSupportedNetworks?: string[],
     asSourceSupportedNetworks?: string[]
-}): Promise<Wallet | null> {
+}
+
+export async function resolveStarknetWallet(props: ResolveStarknetWalletProps): Promise<Wallet | null> {
+    const { name, connector, network, disconnectWallets, address, withdrawalSupportedNetworks, autofillSupportedNetworks, asSourceSupportedNetworks } = props;
     try {
         const walletChain = network?.chain_id;
         const { RpcProvider, WalletAccount } = await import('starknet')

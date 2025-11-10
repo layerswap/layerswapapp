@@ -4,7 +4,7 @@ import { Connector, ConnectorNotConnectedError, UserNotConnectedError, StarknetC
 import { useSettingsState } from "../../context/settings";
 import { useStarknetStore } from "../../stores/starknetWalletStore";
 import KnownInternalNames from "../../lib/knownIds";
-import { resolveStarknetWallet } from "../../lib/wallets/starknet/useStarknet";
+import useStarknet, { resolveStarknetWallet } from "../../lib/wallets/starknet/useStarknet";
 import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from "@starknet-io/starknet-types-07";
 
 const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
@@ -151,7 +151,8 @@ const StarknetWalletInitializer = () => {
     const starknetAccounts = useStarknetStore((state) => state.starknetAccounts) || {};
     const addWallet = useStarknetStore((state) => state.connectWallet);
     const removeAccount = useStarknetStore((state) => state.removeAccount);
-
+    const { withdrawalSupportedNetworks, autofillSupportedNetworks, asSourceSupportedNetworks } = useStarknet();
+    
     useEffect(() => {
         const initializeWallet = async () => {
             const starknetNetwork = networks.find(
@@ -168,6 +169,9 @@ const StarknetWalletInitializer = () => {
                         connector,
                         network: starknetNetwork,
                         disconnectWallets: () => disconnectAsync().then(() => removeAccount(address)),
+                        withdrawalSupportedNetworks,
+                        autofillSupportedNetworks,
+                        asSourceSupportedNetworks,
                         address
                     });
 
