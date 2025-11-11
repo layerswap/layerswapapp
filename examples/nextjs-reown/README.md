@@ -1,6 +1,6 @@
-# Layerswap Widget + RainbowKit + Next.js Example
+# Layerswap Widget + Reown AppKit + Next.js Example
 
-This example demonstrates how to integrate the [Layerswap Widget](https://github.com/layerswap/layerswapapp) with [RainbowKit](https://rainbowkit.com) and [wagmi](https://wagmi.sh) in a [Next.js](https://nextjs.org/) application.
+This example demonstrates how to integrate the [Layerswap Widget](https://github.com/layerswap/layerswapapp) with [Reown AppKit](https://reown.com/appkit) and [wagmi](https://wagmi.sh) in a [Next.js](https://nextjs.org/) application.
 
 ## Getting started
 
@@ -27,7 +27,7 @@ NEXT_PUBLIC_API_KEY = YOUR_API_KEY
 
 YOUR_API_KEY is used for accessing the widget. You can generate and input the API key from the [Partner Dashboard](https://docs.layerswap.io/api-reference/api-keys)
 
-The example uses a default WalletConnect projectId. For production, you should get your own projectId from [WalletConnect Cloud](https://cloud.walletconnect.com). Update it in [src/components/PageComponent.tsx:15](src/components/PageComponent.tsx#L15).
+The example uses a default Reown projectId. For production, you should get your own projectId from [Reown Cloud](https://cloud.reown.com). Update it in [components/PageComponent.tsx:14](components/PageComponent.tsx#L14).
 
 ### Running the Development Server
 
