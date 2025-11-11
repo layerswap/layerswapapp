@@ -173,13 +173,10 @@ const StarknetWalletInitializer = () => {
                 setConnectorsReady(true);
             }
         };
-
-        // Check immediately
         checkConnectorsReady();
-
-        // Poll every 500ms until connectors are ready
+        
         const interval = setInterval(checkConnectorsReady, 500);
-
+        
         return () => clearInterval(interval);
     }, [connectors, connectorsReady, starknetAccounts])
 
