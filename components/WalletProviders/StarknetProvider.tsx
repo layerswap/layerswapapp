@@ -189,5 +189,5 @@ const StarknetWalletInitializer = () => {
         }
     }, [connectors, networks]);
 
-    return null;
+    return <></>;
 }
