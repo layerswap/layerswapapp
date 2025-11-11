@@ -6,9 +6,15 @@ import { useStarknetStore } from "../../stores/starknetWalletStore";
 import KnownInternalNames from "../../lib/knownIds";
 import useStarknet, { resolveStarknetWallet } from "../../lib/wallets/starknet/useStarknet";
 import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from "@starknet-io/starknet-types-07";
+import sleep from "@/lib/wallets/utils/sleep";
+//@ts-ignore
+import { ArgentMobileConnector } from "starknetkit/argentMobile";
+// @ts-ignore
+import { InjectedConnector } from "starknetkit/injected"
+// @ts-ignore
+import { WebWalletConnector } from "starknetkit/webwallet"
 
 const WALLETCONNECT_PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID || '28168903b2d30c75e5f7f2d71902581b';
-
 class DiscoveryConnector extends Connector {
     #wallet;
     #store;
@@ -60,20 +66,16 @@ class DiscoveryConnector extends Connector {
     chainId(): Promise<bigint> {
         throw new Error("Method not implemented.");
     }
-    request<T extends RpcMessage["type"]>(call: RequestFnCall<T>) : Promise<RpcTypeToMessageMap[T]["result"]> {
+    request<T extends RpcMessage["type"]>(call: RequestFnCall<T>): Promise<RpcTypeToMessageMap[T]["result"]> {
         throw new Error("Method not implemented.");
     }
 
 }
 
-
 const StarknetProvider: FC<{ children: ReactNode }> = ({ children }) => {
     const [connectors, setConnectors] = useState<any[]>([])
 
     const resolveConnectors = async () => {
-        const InjectedConnector = (await import('../../node_modules/starknetkit/dist/injectedConnector')).InjectedConnector
-        const ArgentMobileConnector = (await import('../../node_modules/starknetkit/dist/argentMobile')).ArgentMobileConnector
-        const WebWalletConnector = (await import('../../node_modules/starknetkit/dist/webwalletConnector')).WebWalletConnector
 
         const isSafari =
             typeof window !== "undefined"
@@ -152,7 +154,35 @@ const StarknetWalletInitializer = () => {
     const addWallet = useStarknetStore((state) => state.connectWallet);
     const removeAccount = useStarknetStore((state) => state.removeAccount);
     const { withdrawalSupportedNetworks, autofillSupportedNetworks, asSourceSupportedNetworks } = useStarknet();
-    
+    const [connectorsReady, setConnectorsReady] = useState(false)
+
+    useEffect(() => {
+        if (connectors.length === 0 || connectorsReady || Object.keys(starknetAccounts).length == 0) return;
+
+        const checkConnectorsReady = () => {
+            const hasWallet = connectors.some(connector => {
+                try {
+                    const wallet = InjectedConnector.getInjectedWallet(connector.id);
+                    return wallet !== null && wallet !== undefined;
+                } catch {
+                    return false;
+                }
+            });
+
+            if (hasWallet) {
+                setConnectorsReady(true);
+            }
+        };
+
+        // Check immediately
+        checkConnectorsReady();
+
+        // Poll every 500ms until connectors are ready
+        const interval = setInterval(checkConnectorsReady, 500);
+
+        return () => clearInterval(interval);
+    }, [connectors, connectorsReady, starknetAccounts])
+
     useEffect(() => {
         const initializeWallet = async () => {
             const starknetNetwork = networks.find(
@@ -177,17 +207,15 @@ const StarknetWalletInitializer = () => {
 
                     if (wallet?.address) {
                         addWallet(wallet);
-                    } else {
-                        removeAccount(address);
                     }
                 }
             }
         };
 
-        if (Object.keys(starknetAccounts).length) {
+        if (Object.keys(starknetAccounts).length && connectorsReady) {
             initializeWallet();
         }
-    }, [connectors, networks]);
+    }, [connectors, networks, connectorsReady]);
 
     return <></>;
 }
