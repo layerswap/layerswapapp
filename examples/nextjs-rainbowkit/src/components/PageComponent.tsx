@@ -1,59 +1,39 @@
 import { FC } from "react";
-import { AppKitConnectButton, AppKitAccountButton } from '@reown/appkit/react'
 import { Swap, LayerswapProvider, LayerSwapSettings, ThemeData } from '@layerswap/widget'
 import { EVMProvider } from "@layerswap/wallet-evm"
 import "@layerswap/widget/index.css"
-import { createAppKit } from '@reown/appkit/react'
-import { useAccount, WagmiProvider } from 'wagmi'
-import { AppKitNetwork, arbitrum, base, mainnet, optimism } from '@reown/appkit/networks'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
+import '@rainbow-me/rainbowkit/styles.css';
+import { ConnectButton, darkTheme, getDefaultConfig, RainbowKitProvider, } from '@rainbow-me/rainbowkit';
+import { WagmiProvider } from 'wagmi';
+import { mainnet, optimism, arbitrum, base, } from 'wagmi/chains';
+import { QueryClientProvider, QueryClient, } from "@tanstack/react-query";
 
 const queryClient = new QueryClient()
 
-const projectId = '821ab14954640abd9a7974a70f74bc6c'
-
-const metadata = {
-    name: 'Layerswap Example',
-    description: 'Layerswap Example',
-    url: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000',
-    icons: ['https://layerswap.io/app/symbol.png']
-}
-const networks: [AppKitNetwork, ...AppKitNetwork[]] = [mainnet, optimism, arbitrum, base]
-
-const wagmiAdapter = new WagmiAdapter({
-    networks,
-    projectId,
-    ssr: true
-})
-
-createAppKit({
-    adapters: [wagmiAdapter],
-    networks,
-    projectId,
-    metadata,
-    enableWallets: true,
-})
+const config = getDefaultConfig({
+    appName: 'Layerswap Example',
+    projectId: '821ab14954640abd9a7974a70f74bc6c',
+    chains: [mainnet, optimism, arbitrum, base],
+    ssr: true,
+});
 
 const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
     return (
-        <WagmiProvider config={wagmiAdapter.wagmiConfig}>
+        <WagmiProvider config={config}>
             <QueryClientProvider client={queryClient}>
-                <Comp settings={settings} />
+                <RainbowKitProvider theme={darkTheme()}>
+                    <Comp settings={settings} />
+                </RainbowKitProvider>
             </QueryClientProvider>
         </WagmiProvider>
     )
 }
 
-const Comp: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
-    const { address } = useAccount()
 
-    return <div className="h-screen flex flex-col items-center justify-center gap-4">
-        {
-            address
-                ? <AppKitAccountButton />
-                : <AppKitConnectButton />
-        }
+const Comp: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
+
+    return (<div className="h-screen flex flex-col items-center justify-center gap-4">
+        <ConnectButton />
         <div className="w-[600px] mx-auto flex flex-col justify-center place-self-center h- rounded-lg">
             <LayerswapProvider
                 config={{
@@ -73,13 +53,14 @@ const Comp: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
             </LayerswapProvider>
         </div>
     </div>
+    )
 }
 
 const theme: ThemeData = {
-    buttonTextColor: '25, 22, 25',
+    buttonTextColor: '248, 250, 252',
     tertiary: '72, 74, 83',
     primary: {
-        DEFAULT: '61, 134, 233',
+        DEFAULT: '14, 118, 253',
         100: '222, 231, 252',
         200: '184, 207, 248',
         300: '143, 181, 243',
@@ -105,5 +86,7 @@ const theme: ThemeData = {
         text: '168, 170, 182',
     },
 }
+
+
 
 export default PageComponent
