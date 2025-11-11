@@ -1,6 +1,6 @@
 import { FC, ReactNode, useEffect, useState } from "react";
 import { mainnet, sepolia } from "@starknet-react/chains"
-import { Connector, ConnectorNotConnectedError, UserNotConnectedError, StarknetConfig, publicProvider, useConnect, useDisconnect } from '@starknet-react/core';
+import { Connector, ConnectorNotConnectedError, UserNotConnectedError, StarknetConfig, publicProvider, useConnect, useDisconnect, useInjectedConnectors, argent, braavos } from '@starknet-react/core';
 import { useSettingsState } from "../../context/settings";
 import { useStarknetStore } from "../../stores/starknetWalletStore";
 import KnownInternalNames from "../../lib/knownIds";
@@ -60,7 +60,7 @@ class DiscoveryConnector extends Connector {
     chainId(): Promise<bigint> {
         throw new Error("Method not implemented.");
     }
-    request<T extends RpcMessage["type"]>(call: RequestFnCall<T>) : Promise<RpcTypeToMessageMap[T]["result"]> {
+    request<T extends RpcMessage["type"]>(call: RequestFnCall<T>): Promise<RpcTypeToMessageMap[T]["result"]> {
         throw new Error("Method not implemented.");
     }
 
@@ -152,7 +152,14 @@ const StarknetWalletInitializer = () => {
     const addWallet = useStarknetStore((state) => state.connectWallet);
     const removeAccount = useStarknetStore((state) => state.removeAccount);
     const { withdrawalSupportedNetworks, autofillSupportedNetworks, asSourceSupportedNetworks } = useStarknet();
-    
+
+    const { connectors: injectedConnectors } = useInjectedConnectors({
+        recommended: [braavos(), argent()],
+        includeRecommended: 'onlyIfNoConnectors',
+        order: 'alphabetical',
+    });
+    console.log('connectors', injectedConnectors);
+
     useEffect(() => {
         const initializeWallet = async () => {
             const starknetNetwork = networks.find(
@@ -161,7 +168,7 @@ const StarknetWalletInitializer = () => {
                     n.name === KnownInternalNames.Networks.StarkNetSepolia
             );
 
-            for (const connector of connectors) {
+            for (const connector of injectedConnectors) {
                 const address = starknetAccounts[connector.id];
                 if (address) {
                     const wallet = await resolveStarknetWallet({
