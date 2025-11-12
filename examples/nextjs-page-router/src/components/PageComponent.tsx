@@ -19,29 +19,45 @@ export function PageComponent({ settings }: { settings: LayerSwapSettings }) {
     }
 
     return (
-        <LayerswapProvider
-            config={{
-                settings,
-                // apiKey: "Replace with your own API key",
-                version: 'mainnet', //'mainnet' or 'testnet'
-                tonConfigs: {
-                    tonApiKey: "Replace with your own TON API key",
-                    manifestUrl: 'https://layerswap.io/app/tonconnect-manifest.json',
-                },
-                walletConnect
-            }}
-            walletProviders={[
-                EVMProvider,
-                StarknetProvider,
-                SVMProvider,
-                BitcoinProvider,
-                FuelProvider,
-                TonProvider,
-                TronProvider,
-                ParadexProvider
-            ]}
-        >
-            <Swap />
-        </LayerswapProvider>
+        <div className="flex flex-col items-center justify-center min-h-screen p-5">
+            <h1 className="text-2xl font-bold text-white">
+                Layerswap Widget Page Router Example
+            </h1>
+            <p className="mb-4 text-center text-gray-400 max-w-lg px-4">
+                This example demonstrates the Layerswap widget integration using Next.js Page Router. For information on all available widget configurations, please refer to{' '}
+                <a
+                    href="https://docs.layerswap.io/introduction"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-pink-600 hover:no-underline underline"
+                >
+                    our documentation
+                </a>.
+            </p>
+            <LayerswapProvider
+                config={{
+                    settings,
+                    // apiKey: "Replace with your own API key",
+                    version: 'mainnet', //'mainnet' or 'testnet'
+                    tonConfigs: {
+                        tonApiKey: "Replace with your own TON API key",
+                        manifestUrl: 'https://layerswap.io/app/tonconnect-manifest.json',
+                    },
+                    walletConnect
+                }}
+                walletProviders={[
+                    EVMProvider,
+                    StarknetProvider,
+                    SVMProvider,
+                    BitcoinProvider,
+                    FuelProvider,
+                    TonProvider,
+                    TronProvider,
+                    ParadexProvider
+                ]}
+            >
+                <Swap />
+            </LayerswapProvider>
+        </div>
     );
 }
