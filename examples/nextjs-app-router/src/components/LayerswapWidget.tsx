@@ -1,6 +1,5 @@
 "use client";
-import '@layerswap/widget/index.css';
-import { LayerswapProvider, Swap } from '@layerswap/widget';
+import { LayerswapProvider, Swap, LayerSwapSettings } from '@layerswap/widget';
 import { EVMProvider } from '@layerswap/wallet-evm';
 import { StarknetProvider } from '@layerswap/wallet-starknet';
 import { SVMProvider } from '@layerswap/wallet-svm';
@@ -10,8 +9,7 @@ import { TonProvider } from '@layerswap/wallet-ton';
 import { TronProvider } from '@layerswap/wallet-tron';
 import { ParadexProvider } from '@layerswap/wallet-paradex';
 
-export default function App() {
-
+export function LayerswapWidget({ settings }: { settings: LayerSwapSettings }) {
   const walletConnect = {
     projectId: '821ab14954640abd9a7974a70f74bc6c',
     name: 'Layerswap Example',
@@ -19,9 +17,11 @@ export default function App() {
     url: 'https://layerswap.io/app/',
     icons: ['https://layerswap.io/app/symbol.png']
   }
+
   return (
     <LayerswapProvider
       config={{
+        settings,
         // apiKey: "Replace with your own API key",
         version: 'mainnet', //'mainnet' or 'testnet'
         tonConfigs: {

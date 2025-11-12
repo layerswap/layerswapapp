@@ -5650,17 +5650,17 @@
     postcss "^8.4.41"
     tailwindcss "4.1.17"
 
-"@tanstack/query-core@5.90.7":
-  version "5.90.7"
-  resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-5.90.7.tgz#ebe0d692e83bd76bde36a371955b0944a204f10c"
-  integrity sha512-6PN65csiuTNfBMXqQUxQhCNdtm1rV+9kC9YwWAIKcaxAauq3Wu7p18j3gQY3YIBJU70jT/wzCCZ2uqto/vQgiQ==
+"@tanstack/query-core@5.90.8":
+  version "5.90.8"
+  resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-5.90.8.tgz#4a2600a5acf403494e4d5a3fcfac038ed84c5db7"
+  integrity sha512-4E0RP/0GJCxSNiRF2kAqE/LQkTJVlL/QNU7gIJSptaseV9HP6kOuA+N11y4bZKZxa3QopK3ZuewwutHx6DqDXQ==
 
 "@tanstack/react-query@^5.25.0", "@tanstack/react-query@^5.90.7":
-  version "5.90.7"
-  resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-5.90.7.tgz#68a32e9fc2bf8fa8c7890177f5ec35653731a1dd"
-  integrity sha512-wAHc/cgKzW7LZNFloThyHnV/AX9gTg3w5yAv0gvQHPZoCnepwqCMtzbuPbb2UvfvO32XZ46e8bPOYbfZhzVnnQ==
+  version "5.90.8"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-5.90.8.tgz#c9b8bdbffd2df4b023094c3da144324a9daa5cef"
+  integrity sha512-/3b9QGzkf4rE5/miL6tyhldQRlLXzMHcySOm/2Tm2OLEFE9P1ImkH0+OviDBSvyAvtAOJocar5xhd7vxdLi3aQ==
   dependencies:
-    "@tanstack/query-core" "5.90.7"
+    "@tanstack/query-core" "5.90.8"
 
 "@tanstack/react-virtual@^3.10.8", "@tanstack/react-virtual@^3.13.9":
   version "3.13.12"
@@ -6394,17 +6394,11 @@
   dependencies:
     "@types/node" "*"
 
-"@types/prop-types@*":
-  version "15.7.15"
-  resolved "https://registry.yarnpkg.com/@types/prop-types/-/prop-types-15.7.15.tgz#e6e5a86d602beaca71ce5163fadf5f95d70931c7"
-  integrity sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==
-
-"@types/react@^18.3.1":
-  version "18.3.26"
-  resolved "https://registry.yarnpkg.com/@types/react/-/react-18.3.26.tgz#4c5970878d30db3d2a0bca1e4eb5f258e391bbeb"
-  integrity sha512-RFA/bURkcKzx/X9oumPG9Vp3D3JUgus/d0b67KB0t5S/raciymilkOa66olh78MUI92QLbEJevO7rvqU/kjwKA==
+"@types/react@19.2.0":
+  version "19.2.0"
+  resolved "https://registry.yarnpkg.com/@types/react/-/react-19.2.0.tgz#8412946e7e1efb0de9bb59b3aa87676d96add385"
+  integrity sha512-1LOH8xovvsKsCBq1wnT4ntDUdCJKmnEakhsuoUSy6ExlHCkGP2hqnatagYTgFk6oeL0VU31u7SNjunPN+GchtA==
   dependencies:
-    "@types/prop-types" "*"
     csstype "^3.0.2"
 
 "@types/secp256k1@^4.0.1":
@@ -8885,9 +8879,9 @@ default-browser-id@^5.0.0:
   integrity sha512-A6p/pu/6fyBcA1TRz/GqWYPViplrftcW2gZC9q79ngNCKAeR/X3gcEdXQHl4KNXV+3wgIJ1CPkJQ3IHM6lcsyA==
 
 default-browser@^5.2.1:
-  version "5.2.1"
-  resolved "https://registry.yarnpkg.com/default-browser/-/default-browser-5.2.1.tgz#7b7ba61204ff3e425b556869ae6d3e9d9f1712cf"
-  integrity sha512-WY/3TUME0x3KPYdRRxEJJvXRHV4PyPoUsxtZa78lwItwRQRHhd2U9xOscaT/YTf8uCXIAjeJOFBVEh/7FtD8Xg==
+  version "5.3.0"
+  resolved "https://registry.yarnpkg.com/default-browser/-/default-browser-5.3.0.tgz#ffca5f10c31a2890e731ea7f15c1cc1271d14991"
+  integrity sha512-Qq68+VkJlc8tjnPV1i7HtbIn7ohmjZa88qUvHMIK0ZKUXMCuV45cT7cEXALPUmeXCe0q1DWQkQTemHVaLIFSrg==
   dependencies:
     bundle-name "^4.1.0"
     default-browser-id "^5.0.0"

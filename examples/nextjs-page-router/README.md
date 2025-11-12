@@ -1,6 +1,6 @@
 # Layerswap Next.js Example
 
-A minimal Next.js project with Layerswap widget implementation.
+A minimal Next.js Page Router project with Layerswap widget implementation.
 
 ## Setup
 

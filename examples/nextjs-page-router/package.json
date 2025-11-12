@@ -1,5 +1,5 @@
 {
-  "name": "nextjs-example",
+  "name": "nextjs-page-router",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -34,7 +34,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.13",
     "@types/node": "^20.14.8",
-    "@types/react": "^18.3.1",
+    "@types/react": "19.2.0",
     "eslint-config-next": "^15.1.7",
     "tailwindcss": "^4.0.15",
     "typescript": "5.5.4"
