@@ -697,6 +697,9 @@ importers:
       '@ton/core':
         specifier: ^0.62.0
         version: 0.62.0(@ton/crypto@3.3.0)
+      '@ton/crypto':
+        specifier: ^3.3.0
+        version: 3.3.0
       '@ton/ton':
         specifier: ^15.4.0
         version: 15.4.0(@ton/core@0.62.0(@ton/crypto@3.3.0))(@ton/crypto@3.3.0)
@@ -707,9 +710,6 @@ importers:
       '@layerswap/widget':
         specifier: workspace:^
         version: link:../../widget
-      '@ton/crypto':
-        specifier: ^3.3.0
-        version: 3.3.0
       react:
         specifier: 'catalog:'
         version: 18.3.1
