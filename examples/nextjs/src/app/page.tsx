@@ -16,13 +16,13 @@ export default function App() {
     projectId: '821ab14954640abd9a7974a70f74bc6c',
     name: 'Layerswap Example',
     description: 'Layerswap Example',
-    url: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000',
+    url: 'https://layerswap.io/app/',
     icons: ['https://layerswap.io/app/symbol.png']
   }
   return (
     <LayerswapProvider
       config={{
-        apiKey: "Replace with your own API key",
+        // apiKey: "Replace with your own API key",
         version: 'mainnet', //'mainnet' or 'testnet'
         tonConfigs: {
           tonApiKey: "Replace with your own TON API key",
