@@ -35,10 +35,6 @@ export function resolveRouteValidation(quoteError?: QuoteError) {
         }
     }
 
-    if (quoteError) {
-        validationMessage = 'Route not found';
-        validationDetails = { title: 'Unable to retrieve quote', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
-    }
     if (quoteErrorCode === "QUOTE_REQUIRES_NO_DEPOSIT_ADDRESS") {
         validationDetails = { title: 'Manual swapping is not supported', type: 'warning', icon: <RouteOff className={ICON_CLASSES_WARNING} /> };
         validationMessage = `Swaps via manual transfer are not supported for this route. Please select a wallet to send from.`;
