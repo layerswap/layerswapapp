@@ -1,9 +1,9 @@
 import { FC } from 'react'
-import { useSwapDataState } from '../../../context/swap';
-import KnownInternalNames from '../../../lib/knownIds';
+import { useSwapDataState } from '@/context/swap';
+import KnownInternalNames from '@/lib/knownIds';
 import SwapSummary from '../Summary';
 import External from './External';
-import { useQueryState } from '../../../context/query';
+import { useQueryState } from '@/context/query';
 import { Widget } from '../../Widget/Index';
 import { SwapQuoteDetails } from './SwapQuoteDetails';
 import WalletTransferButton from './WalletTransferButton';
@@ -11,9 +11,10 @@ import { useBalance } from '@/lib/balances/useBalance';
 import { useSettingsState } from '@/context/settings';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 import { ErrorDisplay } from '@/components/validationError/ErrorDisplay';
+import { Partner } from '@/Models/Partner';
 
-const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void }> = ({ type, onWalletWithdrawalSuccess }) => {
-    const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading } = useSwapDataState()
+const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, partner }) => {
+    const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
 
     const { appName, signature } = useQueryState()
     const sourceIsImmutableX = swapBasicData?.source_network.name?.toUpperCase() === KnownInternalNames.Networks.ImmutableXMainnet?.toUpperCase()
@@ -32,7 +33,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
         content?: JSX.Element | JSX.Element[],
         footer?: JSX.Element | JSX.Element[],
     } = {}
-
+    
     const showInsufficientBalanceWarning = swapBasicData?.use_deposit_address === false
         && swapBasicData?.requested_amount
         && Number(swapBasicData?.requested_amount)
@@ -56,7 +57,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
                 <div className="w-full flex flex-col justify-between  text-secondary-text">
                     <div className='grid grid-cols-1 gap-3 '>
                         <SwapSummary />
-                        <SwapQuoteDetails swapBasicData={swapBasicData} quote={quote} refuel={refuel} quoteIsLoading={quoteIsLoading} />
+                        <SwapQuoteDetails swapBasicData={swapBasicData} quote={quote} refuel={refuel} quoteIsLoading={quoteIsLoading} quoteError={quoteError} partner={partner} />
                         {withdraw?.content}
                     </div>
                 </div>

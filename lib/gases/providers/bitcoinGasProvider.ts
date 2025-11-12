@@ -1,7 +1,7 @@
 import { buildPsbt } from "@/components/Swap/Withdraw/Wallet/WithdrawalProviders/BitcoinWalletWithdraw/transactionBuilder/buildPsbt";
 import { GasProps } from "@/Models/Balance";
 import { Network } from "@/Models/Network";
-import formatAmount from "../../formatAmount";
+import { formatUnits } from "viem";
 import KnownInternalNames from "../../knownIds";
 import { JsonRpcClient } from "@/lib/apiClients/jsonRpcClient";
 
@@ -16,7 +16,7 @@ export class BitcoinGasProvider {
         if (!amount) throw new Error("No amount provided")
 
         const version = KnownInternalNames.Networks.BitcoinMainnet.includes(network.name) ? 'mainnet' : 'testnet';
-        recipientAddress = version == 'testnet' ? 'tb1q5dc7f552h57tfepls66tgkta8wwjpha3ktw45s': 'bc1plxa9q77gz9r33g8pd4c2ygzezchjffuedtzdrkclyceseyw8v80qasmquf'
+        const bitcoinAddress = recipientAddress || version == 'testnet' ? 'tb1q5dc7f552h57tfepls66tgkta8wwjpha3ktw45s': 'bc1plxa9q77gz9r33g8pd4c2ygzezchjffuedtzdrkclyceseyw8v80qasmquf'
         const rpcClient = new JsonRpcClient(network.node_url);
 
         const amountInSatoshi = Math.floor(amount * 1e8);
@@ -25,13 +25,13 @@ export class BitcoinGasProvider {
         try {
             const { fee } = await buildPsbt({
                 userAddress: address,
-                depositAddress: recipientAddress,
+                depositAddress: bitcoinAddress,
                 version: version,
                 memo: hexMemo,
                 amount: amountInSatoshi,
                 rpcClient: rpcClient
             })
-            const formattedGas = formatAmount(fee, network.token.decimals)
+            const formattedGas = Number(formatUnits(BigInt(fee), network.token.decimals))
             return formattedGas
 
         } catch (e) {

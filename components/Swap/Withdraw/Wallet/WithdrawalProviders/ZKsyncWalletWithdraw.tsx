@@ -9,7 +9,7 @@ import { useSettingsState } from '@/context/settings';
 import { useAccount } from 'wagmi';
 import ClickTooltip from '@/components/Tooltips/ClickTooltip';
 import SignatureIcon from '@/components/icons/SignatureIcon';
-import formatAmount from '@/lib/formatAmount';
+import { formatUnits } from "viem";
 import Link from 'next/link';
 import KnownInternalNames from '@/lib/knownIds';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
@@ -52,7 +52,7 @@ export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
                 let activationFee = await syncProvider.getTransactionFee({
                     ChangePubKey: 'ECDSA'
                 }, wallet.address(), Number(source_token?.contract));
-                const formatedGas = formatAmount(activationFee.totalFee, Number(source_token?.decimals))
+                const formatedGas = Number(formatUnits(BigInt(activationFee.totalFee.toString()), Number(source_token?.decimals)))
                 let assetUsdPrice = source_token?.price_in_usd;
                 setActivationFee({ feeInAsset: formatedGas, feeInUsd: formatedGas * (assetUsdPrice ?? 0) })
             }
@@ -174,7 +174,7 @@ export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
                                                     <span>The connected address is not </span>
                                                     <span className='italic'>active</span>
                                                     <span><span> in the zkSync Lite network.</span>
-                                                        <p>You can learn more about account activation and the associated fee</p>
+                                                        <span>You can learn more about account activation and the associated fee</span>
                                                     </span>
                                                 </span>
                                                 <a target='_blank' className='text-primary underline hover:no-underline decoration-primary cursor-pointer' href="https://docs.zksync.io/userdocs/faq/#what-is-the-account-activation-fee/">in the zkSync Lite FAQ</a>

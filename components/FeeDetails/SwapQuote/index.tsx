@@ -9,6 +9,7 @@ import { SummaryRow } from './SummaryRow'
 import { DetailedEstimates } from './DetailedEstimates'
 import { addressFormat } from '@/lib/address/formatter'
 import { useSelectedAccount } from '@/context/balanceAccounts'
+import { Partner } from '@/Models/Partner'
 
 interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {
     from?: Network;
@@ -24,16 +25,15 @@ interface QuoteComponentProps {
     sourceAddress?: string;
     onOpen?: () => void;
     isAccordionOpen?: boolean;
+    partner?: Partner;
 }
 
-const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quoteData, isQuoteLoading }) => {
+const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quoteData, isQuoteLoading, partner }) => {
     const [isOpen, setIsOpen] = useState(false)
-    const isCEX = !!values.fromExchange
-    const { wallets } = useWallet(!isCEX ? values.from : undefined, 'withdrawal')
-
-    const wallet = (values?.to && values?.destination_address) ? wallets?.find(w => addressFormat(w.address, values?.to!) === addressFormat(values?.destination_address!, values?.to!)) : undefined
+    const { wallets: destWallets } = useWallet(values.to, 'autofil')
+    const wallet = (values?.to && values?.destination_address) ? destWallets?.find(w => w.addresses?.some(a => addressFormat(a, values.to!) === addressFormat(values.destination_address!, values.to!))) : undefined
     const selectedSourceAccount = useSelectedAccount("from", values?.from?.name);
-    
+
     return (
         <Accordion
             type="single"
@@ -57,15 +57,14 @@ const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quo
                         onOpen={() => setIsOpen(true)}
                         isOpen={isOpen}
                         sourceAddress={selectedSourceAccount?.address}
+                        partner={partner}
                     />
                 </AccordionTrigger>
 
                 <AccordionContent className="rounded-2xl">
                     <DetailedEstimates
-                        isQuoteLoading={isQuoteLoading}
                         swapValues={values}
                         quote={quoteData}
-                        sourceAddress={wallet?.address}
                         variant='base'
                     />
                 </AccordionContent>

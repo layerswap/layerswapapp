@@ -1,10 +1,9 @@
 import { useFormikContext } from "formik";
-import { SwapFormValues } from "../../DTOs/SwapFormValues";
+import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import useSWRGas from "@/lib/gases/useSWRGas";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import React, { useMemo } from "react";
 import { resolveMaxAllowedAmount } from "./helpers";
-import { updateForm } from "@/components/Swap/Form/updateForm";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import { useBalance } from "@/lib/balances/useBalance";
@@ -46,11 +45,7 @@ const MinMax = (props: MinMaxProps) => {
 
     const handleSetValue = (value: string) => {
         mutateBalances()
-        updateForm({
-            formDataKey: 'amount',
-            formDataValue: value,
-            setFieldValue
-        })
+        setFieldValue('amount', value, true)
         onActionHover(undefined)
     }
 

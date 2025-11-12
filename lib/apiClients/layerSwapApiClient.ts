@@ -70,7 +70,7 @@ export default class LayerSwapApiClient {
     }
 
     async GetTransactionStatus(network: string, tx_id: string): Promise<ApiResponse<any>> {
-        return await this.AuthenticatedRequest<ApiResponse<any>>("POST", `/internal/networks/${network}/transaction_status`, { transaction_id: tx_id });
+        return await this.UnauthenticatedRequest<ApiResponse<any>>("GET", `/transaction_status?network=${network}&transaction_id=${tx_id}`);
     }
 
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
@@ -90,6 +90,7 @@ export default class LayerSwapApiClient {
                     posthog.capture('$exception', {
                         name: renderingError.name,
                         message: renderingError.message,
+                        $layerswap_exception_type: "API Error",
                         stack: renderingError.stack,
                         cause: renderingError.cause,
                         where: 'apiClient',
@@ -133,7 +134,7 @@ export type CreateSwapParams = {
     destination_network: string,
     destination_token: string
     refuel?: boolean,
-    slippage?: number,
+    slippage?: string,
     destination_address: string,
     source_address?: string
     refund_address?: string
@@ -166,9 +167,8 @@ export type SwapBasicData = {
     destination_network: Network,
     destination_token: Token,
     destination_address: string,
-    requested_amount: number,
-    use_deposit_address: boolean,
-
+    requested_amount: string,
+    use_deposit_address: boolean
 }
 
 export type SwapDetails = {

@@ -1,11 +1,12 @@
 import { FC, useCallback, useEffect } from "react";
 import GoHomeButton from "../utils/GoHome";
 import { useIntercom } from "react-use-intercom";
-import { TrackEvent } from '../../pages/_document';
+import { TrackEvent } from '@/pages/_document';
 import { Home } from "lucide-react";
 import { useRouter } from "next/router";
 import NotFoundIcon from "../icons/NotFoundIcon";
 import MessageComponent from "../MessageComponent";
+import { posthog } from "posthog-js";
 
 const NotFound: FC = () => {
 
@@ -14,8 +15,11 @@ const NotFound: FC = () => {
     const updateWithProps = () => update({ customAttributes: { swapId: query?.swapId } })
 
     useEffect(() => {
-        plausible(TrackEvent.SwapFailed)
-    }, [])
+        posthog.capture(TrackEvent.SwapFailed, {
+            swapId: query?.swapId ?? null,
+            path: typeof window !== 'undefined' ? window.location.pathname : undefined,
+        });
+    }, []);
 
     const startIntercom = useCallback(() => {
         boot();

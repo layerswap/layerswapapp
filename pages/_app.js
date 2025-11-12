@@ -21,7 +21,7 @@ if (typeof window !== "undefined") {
     capture_pageview: 'history_change',
     capture_pageleave: true,
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-    defaults: '2025-05-24'
+    defaults: '2025-05-24',
   })
 }
 

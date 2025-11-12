@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { RowElement } from "../../../Models/Route";
-import { SwapDirection } from "../../DTOs/SwapFormValues";
-import { useVirtualizer } from "../../../lib/virtual";
-import { Accordion } from "../../shadcn/accordion";
+import { RowElement } from "@/Models/Route";
+import { SwapDirection } from "@/components/DTOs/SwapFormValues";
+import { useVirtualizer } from "@/lib/virtual";
+import { Accordion } from "@/components/shadcn/accordion";
 import Row from "./Rows";
 import { LayoutGroup, motion } from "framer-motion";
-import { NetworkRoute, NetworkRouteToken } from "../../../Models/Network";
-import { useSelectorState } from "../../Select/Selector/Index";
+import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
+import { useSelectorState } from "@/components/Select/Selector/Index";
 import useWallet from "@/hooks/useWallet";
-import ConnectWalletButton from "../../Common/ConnectWalletButton";
+import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
 import { SearchComponent } from "../Search";
 
 type ContentProps = {
@@ -34,16 +34,34 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
     }
     const virtualizer = useVirtualizer({
         count: rowElements.length,
-        estimateSize: () => 50,
+        estimateSize: (index) => {
+            const item = rowElements[index];
+            const key = (item as any)?.route?.name || (item as any)?.symbol;
+            const isOpen = openValues.includes(key);
+            // Better size estimation based on open state
+            if (isOpen && (item.type === 'network' || item.type === 'grouped_token')) {
+                const tokenCount = item.type === 'network'
+                    ? item.route.tokens.length
+                    : item.items.length;
+                // Base header (52) + tokens (each ~52px) + padding
+                return 52 + (tokenCount * 52) + 20;
+            }
+            return 52;
+        },
         getScrollElement: () => parentRef.current,
         overscan: 15
     })
+
+    useEffect(() => {
+        virtualizer.measure();
+    }, [openValues])
+
     const items = virtualizer.getVirtualItems()
 
     useEffect(() => {
         return () => setSearchQuery('')
     }, [])
-    
+
     return <div className="overflow-y-auto flex flex-col h-full z-40 openpicker" >
         <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={shouldFocus} />
         <LayoutGroup>
@@ -91,6 +109,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                                                 item={data}
                                                 selectedRoute={selectedRoute}
                                                 selectedToken={selectedToken}
+                                                searchQuery={searchQuery}
                                                 toggleContent={toggleAccordionItem}
                                             />
                                         </div>

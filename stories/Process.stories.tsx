@@ -20,15 +20,17 @@ import WalletsProviders from '../components/WalletProviders';
 import { TimerProvider } from '@/context/timerContext';
 import { Tabs } from '@/components/Swap/Form/NetworkExchangeTabs';
 
-window.plausible = () => { }
 const Comp: FC<{ settings: any, swapData: SwapContextData, failedSwap?: SwapItem, theme?: "default" | "light", initialValues?: SwapFormValues, timestamp?: string }> = ({ swapData, theme, initialValues }) => {
     const formikRef = useRef<FormikProps<SwapFormValues>>(null);
     const appSettings = new LayerSwapAppSettings(Settings)
     const swapContextInitialValues: SwapContextData = {
+        swapError: '',
+        setSwapError: () => { },
         codeRequested: false, swapBasicData: swapData.swapBasicData, quote: swapData.quote, refuel: swapData.refuel, swapDetails: swapData.swapDetails, depositAddressIsFromAccount: false, withdrawType: undefined, swapTransaction: undefined,
         quoteIsLoading: false,
         swapId: undefined,
-        swapModalOpen: false
+        swapModalOpen: false,
+        quoteError: undefined
     }
 
     if (!appSettings) {
@@ -144,12 +146,13 @@ export const UserTransferInitiated: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
                 destination_token: swap.swapResponse.swap.destination_token,
                 refuel: !!swap.swapResponse.refuel,
-                requested_amount: swap.swapResponse.swap.requested_amount,
+                requested_amount: swap.swapResponse.swap.requested_amount.toString(),
                 source_network: swap.swapResponse.swap.source_network,
                 source_token: swap.swapResponse.swap.source_token,
                 use_deposit_address: swap.swapResponse.swap.use_deposit_address,
@@ -181,12 +184,13 @@ export const UserTransferDetected: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
                 destination_token: swap.swapResponse.swap.destination_token,
                 refuel: !!swap.swapResponse.refuel,
-                requested_amount: swap.swapResponse.swap.requested_amount,
+                requested_amount: swap.swapResponse.swap.requested_amount.toString(),
                 source_network: swap.swapResponse.swap.source_network,
                 source_token: swap.swapResponse.swap.source_token,
                 use_deposit_address: swap.swapResponse.swap.use_deposit_address,
@@ -211,12 +215,13 @@ export const UserTransferPendingInputCompleted: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
                 destination_token: swap.swapResponse.swap.destination_token,
                 refuel: !!swap.swapResponse.refuel,
-                requested_amount: swap.swapResponse.swap.requested_amount,
+                requested_amount: swap.swapResponse.swap.requested_amount.toString(),
                 source_network: swap.swapResponse.swap.source_network,
                 source_token: swap.swapResponse.swap.source_token,
                 use_deposit_address: swap.swapResponse.swap.use_deposit_address,
@@ -242,12 +247,13 @@ export const LsTransferPending: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
                 destination_token: swap.swapResponse.swap.destination_token,
                 refuel: !!swap.swapResponse.refuel,
-                requested_amount: swap.swapResponse.swap.requested_amount,
+                requested_amount: swap.swapResponse.swap.requested_amount.toString(),
                 source_network: swap.swapResponse.swap.source_network,
                 source_token: swap.swapResponse.swap.source_token,
                 use_deposit_address: swap.swapResponse.swap.use_deposit_address,
@@ -274,12 +280,13 @@ export const LsTransferPendingWithRefuel: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
                 destination_token: swap.swapResponse.swap.destination_token,
                 refuel: !!swap.swapResponse.refuel,
-                requested_amount: swap.swapResponse.swap.requested_amount,
+                requested_amount: swap.swapResponse.swap.requested_amount.toString(),
                 source_network: swap.swapResponse.swap.source_network,
                 source_token: swap.swapResponse.swap.source_token,
                 use_deposit_address: swap.swapResponse.swap.use_deposit_address,
@@ -307,12 +314,13 @@ export const LsTransferInitiated: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
                 destination_token: swap.swapResponse.swap.destination_token,
                 refuel: !!swap.swapResponse.refuel,
-                requested_amount: swap.swapResponse.swap.requested_amount,
+                requested_amount: swap.swapResponse.swap.requested_amount.toString(),
                 source_network: swap.swapResponse.swap.source_network,
                 source_token: swap.swapResponse.swap.source_token,
                 use_deposit_address: swap.swapResponse.swap.use_deposit_address,
@@ -340,12 +348,13 @@ export const Completed: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
                 destination_token: swap.swapResponse.swap.destination_token,
                 refuel: !!swap.swapResponse.refuel,
-                requested_amount: swap.swapResponse.swap.requested_amount,
+                requested_amount: swap.swapResponse.swap.requested_amount.toString(),
                 source_network: swap.swapResponse.swap.source_network,
                 source_token: swap.swapResponse.swap.source_token,
                 use_deposit_address: swap.swapResponse.swap.use_deposit_address,
@@ -373,12 +382,13 @@ export const OnlyRefuelCompleted: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
                 destination_token: swap.swapResponse.swap.destination_token,
                 refuel: !!swap.swapResponse.refuel,
-                requested_amount: swap.swapResponse.swap.requested_amount,
+                requested_amount: swap.swapResponse.swap.requested_amount.toString(),
                 source_network: swap.swapResponse.swap.source_network,
                 source_token: swap.swapResponse.swap.source_token,
                 use_deposit_address: swap.swapResponse.swap.use_deposit_address,
@@ -407,12 +417,13 @@ export const UserTransferDelayed: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
                 destination_token: swap.swapResponse.swap.destination_token,
                 refuel: !!swap.swapResponse.refuel,
-                requested_amount: swap.swapResponse.swap.requested_amount,
+                requested_amount: swap.swapResponse.swap.requested_amount.toString(),
                 source_network: swap.swapResponse.swap.source_network,
                 source_token: swap.swapResponse.swap.source_token,
                 use_deposit_address: swap.swapResponse.swap.use_deposit_address,
@@ -438,12 +449,13 @@ export const Failed: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
                 destination_token: swap.swapResponse.swap.destination_token,
                 refuel: !!swap.swapResponse.refuel,
-                requested_amount: swap.swapResponse.swap.requested_amount,
+                requested_amount: swap.swapResponse.swap.requested_amount.toString(),
                 source_network: swap.swapResponse.swap.source_network,
                 source_token: swap.swapResponse.swap.source_token,
                 use_deposit_address: swap.swapResponse.swap.use_deposit_address,
@@ -469,12 +481,13 @@ export const FailedInput: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
                 destination_token: swap.swapResponse.swap.destination_token,
                 refuel: !!swap.swapResponse.refuel,
-                requested_amount: swap.swapResponse.swap.requested_amount,
+                requested_amount: swap.swapResponse.swap.requested_amount.toString(),
                 source_network: swap.swapResponse.swap.source_network,
                 source_token: swap.swapResponse.swap.source_token,
                 use_deposit_address: swap.swapResponse.swap.use_deposit_address,
@@ -506,12 +519,13 @@ export const FailedOutOfRangeAmount: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
                 destination_token: swap.swapResponse.swap.destination_token,
                 refuel: !!swap.swapResponse.refuel,
-                requested_amount: swap.swapResponse.swap.requested_amount,
+                requested_amount: swap.swapResponse.swap.requested_amount.toString(),
                 source_network: swap.swapResponse.swap.source_network,
                 source_token: swap.swapResponse.swap.source_token,
                 use_deposit_address: swap.swapResponse.swap.use_deposit_address,
@@ -537,12 +551,13 @@ export const Cancelled: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
                 destination_token: swap.swapResponse.swap.destination_token,
                 refuel: !!swap.swapResponse.refuel,
-                requested_amount: swap.swapResponse.swap.requested_amount,
+                requested_amount: swap.swapResponse.swap.requested_amount.toString(),
                 source_network: swap.swapResponse.swap.source_network,
                 source_token: swap.swapResponse.swap.source_token,
                 use_deposit_address: swap.swapResponse.swap.use_deposit_address,
@@ -566,12 +581,13 @@ export const Expired: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
                 destination_token: swap.swapResponse.swap.destination_token,
                 refuel: !!swap.swapResponse.refuel,
-                requested_amount: swap.swapResponse.swap.requested_amount,
+                requested_amount: swap.swapResponse.swap.requested_amount.toString(),
                 source_network: swap.swapResponse.swap.source_network,
                 source_token: swap.swapResponse.swap.source_token,
                 use_deposit_address: swap.swapResponse.swap.use_deposit_address,
@@ -595,12 +611,13 @@ export const RefundPending: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
                 destination_token: swap.swapResponse.swap.destination_token,
                 refuel: !!swap.swapResponse.refuel,
-                requested_amount: swap.swapResponse.swap.requested_amount,
+                requested_amount: swap.swapResponse.swap.requested_amount.toString(),
                 source_network: swap.swapResponse.swap.source_network,
                 source_token: swap.swapResponse.swap.source_token,
                 use_deposit_address: swap.swapResponse.swap.use_deposit_address,
@@ -628,12 +645,13 @@ export const RefundCompleted: Story = {
     args: {
         settings: Settings,
         swapData: {
+            quoteError: undefined,
             swapBasicData: {
                 destination_address: swap.swapResponse.swap.destination_address,
                 destination_network: swap.swapResponse.swap.destination_network,
                 destination_token: swap.swapResponse.swap.destination_token,
                 refuel: false, // No refuel for refund cases
-                requested_amount: swap.swapResponse.swap.requested_amount,
+                requested_amount: swap.swapResponse.swap.requested_amount.toString(),
                 source_network: swap.swapResponse.swap.source_network,
                 source_token: swap.swapResponse.swap.source_token,
                 use_deposit_address: swap.swapResponse.swap.use_deposit_address,

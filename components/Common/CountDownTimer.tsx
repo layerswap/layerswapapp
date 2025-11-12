@@ -26,7 +26,7 @@ const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThre
         }, 1000);
 
         return () => clearInterval(timer);
-    }, [initialTime, swapDetails.status, swapInputTransaction, thresholdElapsed]);
+    }, [initialTime, swapDetails.status]);
 
     const formatTime = (milliseconds: number): string => {
         const totalSeconds = Math.floor(milliseconds / 1000);
@@ -41,29 +41,10 @@ const CountdownTimer: FC<{ initialTime: string, swapDetails: SwapDetails, onThre
     };
     const formatted = formatTime(elapsedTimer);
 
-    if (thresholdElapsed && swapDetails.status !== SwapStatus.Completed) {
-        const renderingError = new Error("Transaction is taking longer than expected");
-        renderingError.name = `LongTransactionError`;
-        renderingError.cause = renderingError;
-
-        posthog.capture('$exception', {
-            name: renderingError.name,
-            message: renderingError.message,
-            stack: renderingError.stack,
-            cause: renderingError.cause,
-            where: 'longTransactionError',
-            severity: 'error',
-        });
-    }
-
     return (
         <div className='flex items-center justify-center space-x-1'>
             {
-                thresholdElapsed && swapDetails.status !== SwapStatus.UserTransferPending ? (
-                    <div>
-                        <span>Transaction is taking longer than expected</span>
-                    </div>
-                ) : swapDetails.status === SwapStatus.Completed ? (
+                swapDetails.status === SwapStatus.Completed ? (
                     ""
                 ) : (
                     <div className='text-secondary-text flex items-center'>

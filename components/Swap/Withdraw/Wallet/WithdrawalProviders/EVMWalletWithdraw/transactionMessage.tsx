@@ -1,7 +1,7 @@
 import { FC } from "react"
 import { ActionData } from "../../Common/sharedTypes"
 import { BaseError } from 'viem'
-import TransactionMessages from "../../../messages/TransactionMessages";
+import ActionMessages from "../../../messages/TransactionMessages";
 import resolveError from "./resolveError";
 
 type TransactionMessageProps = {
@@ -10,35 +10,39 @@ type TransactionMessageProps = {
     applyingTransaction: boolean,
     activeAddress: string | undefined
     selectedSourceAddress: string | undefined
+    swapError?: string | null | undefined
 }
 
 const TransactionMessage: FC<TransactionMessageProps> = ({
-    wait, transaction, applyingTransaction, activeAddress, selectedSourceAddress
+    wait, transaction, applyingTransaction, activeAddress, selectedSourceAddress, swapError
 }) => {
     const transactionResolvedError = resolveError(transaction?.error as BaseError)
     const hasError = transaction?.isError || wait?.isError
 
     if (wait?.isPending || applyingTransaction) {
-        return <TransactionMessages.TransactionInProgressMessage />
+        return <ActionMessages.TransactionInProgressMessage />
     }
     else if (transaction?.isPending || applyingTransaction) {
-        return <TransactionMessages.ConfirmTransactionMessage />
+        return <ActionMessages.ConfirmTransactionMessage />
     }
     else if (transaction?.isError && transactionResolvedError === "insufficient_funds") {
-        return <TransactionMessages.InsufficientFundsMessage />
+        return <ActionMessages.InsufficientFundsMessage />
     }
     else if (transaction?.isError && transactionResolvedError === "transaction_rejected") {
-        return <TransactionMessages.TransactionRejectedMessage />
+        return <ActionMessages.TransactionRejectedMessage />
+    }
+    else if (swapError) {
+        return <ActionMessages.SwapErrorMessage message={swapError} />
     }
     //TODO: this is old we mihght need to remove it, as now the selected account is the active one
     else if (transaction.isError && activeAddress && selectedSourceAddress && (activeAddress?.toLowerCase() !== selectedSourceAddress?.toLowerCase())) {
-        return <TransactionMessages.WaletMismatchMessage address={selectedSourceAddress} />
+        return <ActionMessages.WaletMismatchMessage address={selectedSourceAddress} />
     }
     else if (hasError) {
         const unexpectedError = transaction?.error?.['data']?.message || transaction?.error
             || wait?.error
 
-        return <TransactionMessages.UexpectedErrorMessage message={unexpectedError?.message} />
+        return <ActionMessages.UexpectedErrorMessage message={unexpectedError?.message} />
     }
     else return <></>
 }

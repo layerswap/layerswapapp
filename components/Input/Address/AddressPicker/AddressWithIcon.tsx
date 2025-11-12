@@ -78,7 +78,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
 
             <div className="flex flex-col items-start grow min-w-0 ml-3 text-sm">
                 <div className="flex w-full min-w-0">
-                    <ExtendedAddress address={addressItem.address} network={network} onDisconnect={onDisconnect} addressClassNames="font-normal" showDetails={true} title="USDC" description="Circle USD Coin" logo="https://prodlslayerswapbridgesa.blob.core.windows.net/layerswap/currencies/arusdc.png" />
+                    <ExtendedAddress address={addressItem.address} network={network} showDetails={addressItem.wallet ? true : false} title={addressItem.wallet?.displayName?.split("-")[0]} description={addressItem.wallet?.providerName} logo={addressItem.wallet?.icon} />
                 </div>
                 <div className="text-secondary-text w-full min-w-0">
                     <div className="flex items-center gap-1 text-xs">
@@ -100,7 +100,7 @@ const AddressWithIcon: FC<Props> = ({ addressItem, partner, network, balance, on
                                         <div className='h-[14px] w-20 inline-flex bg-gray-500 rounded-xs animate-pulse' />
                                         :
                                         <>
-                                            <span>{balance.amount}</span> <span>{balance.symbol}</span>
+                                            <span>{balance.amount.toLocaleString()}</span> <span>{balance.symbol}</span>
                                         </>
                                 }
                             </div>

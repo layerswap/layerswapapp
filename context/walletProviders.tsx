@@ -61,7 +61,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
                     <div className="flex items-center gap-1">
                         {
                             (selectedConnector || selectedMultiChainConnector) &&
-                            <div className='-ml-2'>
+                            <div className="sm:-ml-2 -ml-0">
                                 <IconButton onClick={goBack} icon={
                                     <ChevronLeft className="h-6 w-6" />
                                 }>
@@ -71,7 +71,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
                         <p>{(selectedMultiChainConnector && !selectedConnector) ? "Select ecosystem" : "Connect wallet"}</p>
                     </div>
                 }>
-                <VaulDrawer.Snap id='item-1'>
+                <VaulDrawer.Snap openFullHeight={!isMobilePlatform} id='item-1' className="pb-4 sm:!pb-0 sm:h-full">
                     <ConnectorsList onFinish={onFinish} />
                 </VaulDrawer.Snap>
             </VaulDrawer>

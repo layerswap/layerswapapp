@@ -1,17 +1,17 @@
 import { useFormikContext } from "formik";
 import { SwapFormValues } from "../DTOs/SwapFormValues";
 import { Dispatch, FC, SetStateAction, useCallback, useState } from "react";
-import useWallet from "../../hooks/useWallet";
-import shortenAddress from "../utils/ShortenAddress";
+import useWallet from "@/hooks/useWallet";
+import shortenAddress from "@/components/utils/ShortenAddress";
 import { ChevronDown, CircleHelp, QrCode } from "lucide-react";
 import VaulDrawer, { ModalFooterPortal } from "../modal/vaulModal";
-import { SelectAccountProps, Wallet } from "../../Models/WalletProvider";
-import WalletIcon from "../icons/WalletIcon";
-import SubmitButton from "../buttons/submitButton";
+import { SelectAccountProps, Wallet } from "@/Models/WalletProvider";
+import WalletIcon from "@/components/icons/WalletIcon";
+import SubmitButton from "@/components/buttons/submitButton";
 import { useConnectModal } from "../WalletModal";
-import WalletsList from "../Wallet/WalletsList";
-import { Popover, PopoverContent, PopoverTrigger } from "../shadcn/popover";
-import FilledCheck from "../icons/FilledCheck";
+import WalletsList from "@/components/Wallet/WalletsList";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
+import FilledCheck from "@/components/icons/FilledCheck";
 import clsx from "clsx";
 import { useSelectedAccount, useUpdateBalanceAccount } from "@/context/balanceAccounts";
 
@@ -31,7 +31,6 @@ const SourceWalletPicker: FC = () => {
 
     const { selectedConnector } = useConnectModal()
     const availableWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
-
 
     const handleWalletChange = () => {
         setOpenModal(true)
@@ -276,7 +275,7 @@ const Connect: FC<{ connectFn?: () => Promise<Wallet | undefined | void>; setMou
 const ContinueWithoutWallet: FC<{ onClick: () => void }> = ({ onClick }) => {
     //TODO: bg-secondary-700 is a hotfix, should refactor and fix sticky footer for VaulDrawer
     return (
-        <div className="inline-flex items-center gap-1.5 justify-center w-full pt-2 bg-secondary-700">
+        <div className="inline-flex items-center max-sm:pb-2 gap-1.5 justify-center w-full pt-2 bg-secondary-700">
             <button type="button" onClick={onClick} className="underline hover:no-underline text-base text-center text-secondary-text cursor-pointer ">
                 Continue without a wallet
             </button>

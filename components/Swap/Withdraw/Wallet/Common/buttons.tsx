@@ -157,7 +157,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 }) => {
     const [actionStateText, setActionStateText] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
-    const { quote, quoteIsLoading } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError } = useSwapDataState()
     const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
     const query = useQueryState()
@@ -181,7 +181,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             setSwapId(undefined)
 
             const swapValues: SwapFormValues = {
-                amount: swapData.requested_amount.toString(),
+                amount: swapData.requested_amount,
                 from: swapData.source_network as NetworkRoute,
                 to: swapData.destination_network as NetworkRoute,
                 fromAsset: swapData.source_token,
@@ -224,7 +224,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         catch (e) {
             setSwapId(undefined)
             console.log('Error in SendTransactionButton:', e)
-
+            
             const swapWithdrawalError = new Error(e);
             swapWithdrawalError.name = `SwapWithdrawalError`;
             swapWithdrawalError.cause = e;
@@ -232,6 +232,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 name: swapWithdrawalError.name,
                 cause: swapWithdrawalError.cause,
                 message: swapWithdrawalError.message,
+                $layerswap_exception_type: "Swap Withdrawal Error",
+                $fromAddress: selectedSourceAccount?.address,
+                $toAddress: swapData?.destination_address,
                 stack: swapWithdrawalError.stack,
                 where: 'TransactionError',
                 severity: 'error',
@@ -259,7 +262,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             {...props}
             isSubmitting={props.isSubmitting || loading || quoteIsLoading}
             onClick={handleClick}
-            isDisabled={quoteIsLoading}
+            isDisabled={quoteIsLoading || !!quoteError}
         >
             {error ? 'Try again' : 'Swap now'}
         </ButtonWrapper>

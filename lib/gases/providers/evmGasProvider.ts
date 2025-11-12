@@ -4,7 +4,7 @@ import { NetworkType, Network, Token } from "../../../Models/Network"
 import { GasProvider } from "./types"
 import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, http, parseEther, serializeTransaction } from "viem";
 import { erc20Abi } from "viem";
-import formatAmount from "../../formatAmount";
+import { formatUnits } from "viem";
 import { publicActionsL2 } from 'viem/op-stack'
 import resolveChain from "../../resolveChain";
 import posthog from "posthog-js";
@@ -131,6 +131,7 @@ abstract class getEVMGas {
             posthog.capture('$exception', {
                 name: error.name,
                 message: error.message,
+                $layerswap_exception_type: "Gas Price Error",
                 stack: error.stack,
                 cause: error.cause,
                 where: 'getGasPrice',
@@ -149,6 +150,7 @@ abstract class getEVMGas {
             posthog.capture('$exception', {
                 name: error.name,
                 message: error.message,
+                $layerswap_exception_type: "Fees Per Gas Error",
                 stack: error.stack,
                 cause: error.cause,
                 where: 'feesPerGasError',
@@ -167,6 +169,7 @@ abstract class getEVMGas {
             posthog.capture('$exception', {
                 name: error.name,
                 message: error.message,
+                $layerswap_exception_type: "Max Priority Fee Per Gas Error",
                 stack: error.stack,
                 cause: error.cause,
                 where: 'maxPriorityFeePerGasError',
@@ -230,7 +233,7 @@ class getEthereumGas extends getEVMGas {
 
         const totalGas = multiplier * estimatedGasLimit
 
-        const formattedGas = formatAmount(totalGas, this.nativeToken?.decimals)
+        const formattedGas = Number(formatUnits(BigInt(totalGas), this.nativeToken?.decimals))
         return formattedGas
     }
 
@@ -262,7 +265,7 @@ export default class getOptimismGas extends getEVMGas {
 
         let totalGas = (multiplier * estimatedGasLimit) + l1OpFee
 
-        const formattedGas = formatAmount(totalGas, this.nativeToken?.decimals)
+        const formattedGas = Number(formatUnits(BigInt(totalGas), this.nativeToken?.decimals))
         return formattedGas
     }
 

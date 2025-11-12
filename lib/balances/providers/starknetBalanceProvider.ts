@@ -1,17 +1,16 @@
 import { TokenBalance } from "@/Models/Balance";
-import { NetworkWithTokens } from "@/Models/Network";
-import formatAmount from "@/lib/formatAmount";
+import { formatUnits } from "viem";
 import Erc20Abi from '@/lib/abis/ERC20.json'
 import KnownInternalNames from "@/lib/knownIds";
 import { insertIfNotExists } from "../helpers";
 import { BalanceProvider } from "@/Models/BalanceProvider";
 
 export class StarknetBalanceProvider extends BalanceProvider {
-    supportsNetwork = (network: NetworkWithTokens): boolean => {
+    supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return (KnownInternalNames.Networks.StarkNetMainnet.includes(network.name) || KnownInternalNames.Networks.StarkNetGoerli.includes(network.name) || KnownInternalNames.Networks.StarkNetSepolia.includes(network.name))
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens) => {
+    fetchBalance: BalanceProvider['fetchBalance'] = async (address, network) => {
         const {
             Contract,
             RpcProvider,
@@ -39,7 +38,7 @@ export class StarknetBalanceProvider extends BalanceProvider {
                 const balance = {
                     network: network.name,
                     token: token.symbol,
-                    amount: formatAmount(balanceInWei, token.decimals),
+                    amount: Number(formatUnits(BigInt(balanceInWei), token.decimals)),
                     request_time: new Date().toJSON(),
                     decimals: token.decimals,
                     isNativeCurrency: false,

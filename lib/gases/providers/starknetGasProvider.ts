@@ -3,7 +3,7 @@ import { Network } from "@/Models/Network";
 import KnownInternalNames from "../../knownIds";
 import { GasProvider } from "./types";
 import { CallData, cairo, type Call, type EstimateFeeResponse } from "starknet";
-import formatAmount from "@/lib/formatAmount";
+import { formatUnits } from "viem";
 
 export class StarknetGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
@@ -48,7 +48,7 @@ export class StarknetGasProvider implements GasProvider {
         };
 
         const feeInWei = resp.suggestedMaxFee.toString();
-        const gas = formatAmount(feeInWei, network.token.decimals)
+        const gas = Number(formatUnits(BigInt(feeInWei), network.token.decimals))
 
         return { gas, token: network.token }
 

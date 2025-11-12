@@ -12,6 +12,8 @@ import { useBalanceAccounts } from "@/context/balanceAccounts";
 import clsx from "clsx";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import { ExtendedAddress } from "../Address/AddressPicker/AddressWithIcon";
+import { getTotalBalanceInUSD } from "@/helpers/balanceHelper";
+import { useMemo } from "react";
 
 type TokenItemProps = {
     route: NetworkRoute;
@@ -74,7 +76,7 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
                             :
                             <p className="flex items-center gap-1 text-xs text-secondary-text">
                                 <span>•</span>
-                                <p className="truncate max-w-[80px]">{item.display_asset || item.symbol}</p>
+                                <span className="truncate max-w-[80px]">{item.display_asset || item.symbol}</span>
                             </p>
                     }
                 </div>
@@ -82,22 +84,16 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
         }
         secondaryLogoSrc={route.logo}
     >
-        {(allbalancesLoaded && tokenbalance && Number(tokenbalance?.amount) >= 0) ? (
+        {(allbalancesLoaded && tokenbalance && Number(tokenbalance?.amount) > 0) ? (
             <span className="text-sm text-secondary-text text-right my-auto leading-4 font-medium">
-                {Number(usdAmount) >= 0 && (
+                {Number(usdAmount) > 0 && (
                     <div
-                        className={clsx("text-primary-text",
-                            {
-                                'text-lg leading-[22px]': type === 'suggested_token',
-                            }
+                        className={clsx("text-primary-text text-base",
+                            { '!text-lg !leading-[22px]': type === 'suggested_token' }
                         )}
                     >{formatUsd(usdAmount)}</div>
                 )}
-                <div
-                    className={clsx({
-                        'text-xs leading-4': type == 'suggested_token',
-                    })}
-                >
+                <div className='text-xs leading-4'>
                     {formatted_balance_amount}
                 </div>
             </span>
@@ -122,14 +118,15 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
     const balanceAccounts = useBalanceAccounts(direction)
 
     const selectedAccount = balanceAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(item.name));
-    const { balances, totalInUSD } = useBalance(selectedAccount?.address, item)
-    const tokensWithBalance = balances?.filter(b => b.amount && b.amount > 0)
+    const networkBalances = useBalance(selectedAccount?.address, item)
+    const totalInUSD = useMemo(() => networkBalances ? getTotalBalanceInUSD(networkBalances, item) : undefined, [networkBalances.balances, item])
+    const tokensWithBalance = networkBalances.balances?.filter(b => b.amount && b.amount > 0)
         ?.map(b => b.token);
     const filteredNetworkTokens = item?.tokens?.filter(token =>
         tokensWithBalance?.includes(token.symbol)
     );
 
-    const hasLoadedBalances = allbalancesLoaded && Number(totalInUSD) >= 0;
+    const hasLoadedBalances = allbalancesLoaded && totalInUSD !== null && Number(totalInUSD) > 0;
     const showTokenLogos = hasLoadedBalances && filteredNetworkTokens?.length;
 
     return (

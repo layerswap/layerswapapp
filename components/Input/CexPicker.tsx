@@ -1,16 +1,16 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { Selector, SelectorContent, SelectorTrigger } from "../Select/Selector/Index";
-import { Exchange } from "../../Models/Exchange";
+import { Exchange } from "@/Models/Exchange";
 import React from "react";
-import { SelectItem } from "../Select/Selector/SelectItem";
+import { SelectItem } from "@/components/Select/Selector/SelectItem";
 import useFormRoutes from "@/hooks/useFormRoutes";
 import { LayoutGroup, motion } from "framer-motion";
 import { SearchComponent } from "./Search";
-import { ImageWithFallback } from "../Common/ImageWithFallback";
+import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import { ChevronDown } from "lucide-react";
-import { updateForm } from "../Swap/Form/updateForm";
+import { updateForm } from "@/components/Swap/Form/updateForm";
 
 const CexPicker: FC = () => {
     const {
@@ -22,6 +22,10 @@ const CexPicker: FC = () => {
     const { exchanges, exchangesRoutesLoading: isLoading, selectedRoute, selectedToken, exchangeNetworks } = useFormRoutes({ direction, values });
     const { fromExchange } = values;
     const [searchQuery, setSearchQuery] = useState("");
+
+    const filteredExchanges = useMemo(() => {
+        return exchanges.filter(e => e.display_name.toLowerCase().includes(searchQuery.toLowerCase()));
+    }, [exchanges, searchQuery]);
 
     useEffect(() => {
         const updateValues = async () => {
@@ -62,7 +66,7 @@ const CexPicker: FC = () => {
                                 <LayoutGroup>
                                     <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full">
                                         <div className="relative">
-                                            {exchanges.map((exchange) => {
+                                            {filteredExchanges.map((exchange) => {
                                                 return <div className="py-1 box-border" key={exchange.name}>
                                                     <ExchangeNetwork
                                                         route={exchange}

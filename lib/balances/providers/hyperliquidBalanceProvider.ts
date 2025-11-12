@@ -12,12 +12,12 @@ export class HyperliquidBalanceProvider extends BalanceProvider {
         this.client = new HyperliquidClient();
     }
 
-    supportsNetwork = (network: NetworkWithTokens): boolean => {
+    supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return network.name === KnownInternalNames.Networks.HyperliquidMainnet ||
             network.name === KnownInternalNames.Networks.HyperliquidTestnet;
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens): Promise<TokenBalance[] | undefined> => {
+    fetchBalance: BalanceProvider['fetchBalance'] = async (address, network, options) => {
         if (!network?.tokens && !network.token) return;
 
         try {
@@ -27,7 +27,7 @@ export class HyperliquidBalanceProvider extends BalanceProvider {
                     ? "https://api.hyperliquid.xyz" : "https://api.hyperliquid-testnet.xyz";
             }
 
-            const clearinghouseState = await this.client.getClearinghouseState(address, nodeUrl);
+            const clearinghouseState = await this.client.getClearinghouseState(address, nodeUrl, options?.timeoutMs, options?.retryCount);
 
             const balances: TokenBalance[] = [];
 
@@ -36,7 +36,7 @@ export class HyperliquidBalanceProvider extends BalanceProvider {
 
             if (usdcToken) {
                 const withdrawableAmount = parseFloat(clearinghouseState.withdrawable);
-                if (withdrawableAmount > 0) {
+                if (withdrawableAmount >= 0) {
                     balances.push({
                         network: network.name,
                         amount: withdrawableAmount,

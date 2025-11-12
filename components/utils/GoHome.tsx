@@ -1,13 +1,13 @@
 import { FC } from "react";
-import CopyButton from "../buttons/copyButton";
-import LayerSwapLogo from "../icons/layerSwapLogo";
+import CopyButton from "@/components/buttons/copyButton";
+import LayerSwapLogo from "@/components/icons/layerSwapLogo";
 import { Paperclip } from 'lucide-react'
 import { renderToString } from 'react-dom/server'
-import LayerSwapLogoSmall from "../icons/layerSwapLogoSmall";
+import LayerSwapLogoSmall from "@/components/icons/layerSwapLogoSmall";
 import * as ContextMenuPrimitive from '@radix-ui/react-context-menu';
-import { useGoHome } from "../../hooks/useGoHome";
+import { useGoHome } from "@/hooks/useGoHome";
 import clsx from "clsx";
-import LayerswapMobileLogo from "../icons/layerSwapMobileLogo";
+import LayerswapMobileLogo from "@/components/icons/layerSwapMobileLogo";
 interface Props {
     className?: string;
     children?: JSX.Element | JSX.Element[] | string;
@@ -17,7 +17,7 @@ const GoHomeButton: FC<Props> = (({ className, children }) => {
     const goHome = useGoHome()
 
     return (
-        <div className="w-full">
+        <div className="w-full" onClick={children ? goHome : undefined}>
             {
                 children ??
                 <>
@@ -26,7 +26,7 @@ const GoHomeButton: FC<Props> = (({ className, children }) => {
                             <div>
                                 <LayerswapMobileLogo
                                     className={clsx(
-                                        "block md:hidden px-4 h-4 w-auto text-logo fill-primary-text",
+                                        "block md:hidden h-4 w-auto text-logo fill-primary-text",
                                         className
                                     )}
                                     onClick={goHome}

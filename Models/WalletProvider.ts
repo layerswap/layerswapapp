@@ -11,6 +11,7 @@ export type InternalConnector = {
     providerName?: string,
     installUrl?: string,
     isMobileSupported?: boolean,
+    isHidden?: boolean,
 }
 
 export type Wallet = {
@@ -55,7 +56,7 @@ export type WalletProvider = {
     connectedWallets: Wallet[] | undefined,
     activeWallet: Wallet | undefined,
     autofillSupportedNetworks?: string[],
-    withdrawalSupportedNetworks?: string[],
+    withdrawalSupportedNetworks: string[],
     asSourceSupportedNetworks?: string[],
     name: string,
     id: string,

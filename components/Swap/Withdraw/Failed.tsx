@@ -5,6 +5,7 @@ import { SwapStatus } from '../../../Models/SwapStatus';
 import { TrackEvent } from '../../../pages/_document';
 import QuestionIcon from '../../icons/Question';
 import Link from 'next/link';
+import { posthog } from 'posthog-js';
 
 const Failed: FC = () => {
     const { swapDetails } = useSwapDataState()
@@ -12,8 +13,11 @@ const Failed: FC = () => {
     const updateWithProps = () => update({ customAttributes: { swapId: swapDetails?.id } })
 
     useEffect(() => {
-        window.plausible && plausible(TrackEvent.SwapFailed)
-    }, [])
+        posthog.capture(TrackEvent.SwapFailed, {
+            swapId: swapDetails?.id ?? null,
+            path: typeof window !== 'undefined' ? window.location.pathname : undefined,
+        });
+    }, []);
 
     const startIntercom = useCallback(() => {
         boot();
@@ -65,7 +69,7 @@ const Delay: FC = () => {
     return (
         <div>
             <p className='text-md '><span>This usually means that the exchange needs additional verification.</span>
-                <Link target='_blank' href="https://docs.layerswap.io/user-docs/why-is-coinbase-transfer-taking-so-long/"
+                <Link target='_blank' href="https://learn.layerswap.io/user-docs/why-is-coinbase-transfer-taking-so-long/"
                     className='disabled:text-primary-text/40 disabled:bg-primary-900 disabled:cursor-not-allowed ml-1 underline hover:no-underline cursor-pointer'>Learn More</Link></p>
             <ul className="list-inside list-decimal font-light space-y-1 mt-2 text-left text-primary-text ">
                 <li>Check your email for details from Coinbase</li>

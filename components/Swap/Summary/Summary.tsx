@@ -10,7 +10,6 @@ import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import NumberFlow from "@number-flow/react";
 import clsx from "clsx";
 import { PriceImpact } from "@/components/Input/Amount/PriceImpact";
-import useWallet from "@/hooks/useWallet";
 import { Token } from "@/Models/Network";
 
 type SwapInfoProps = Omit<SwapResponse, 'quote' | 'swap'> & {
@@ -22,7 +21,7 @@ type SwapInfoProps = Omit<SwapResponse, 'quote' | 'swap'> & {
 }
 
 const Summary: FC<SwapInfoProps> = (props) => {
-    const { swap, quote, receiveAmount, quoteIsLoading } = props
+    const { swap, quote, receiveAmount } = props
     const { refuel, quote: swapQuote } = quote
     const { source_token: sourceCurrency, destination_token: destinationCurrency, source_network: from, destination_network: to, requested_amount: requestedAmount, destination_address: destinationAddress, source_exchange: sourceExchange } = swap
     const {
@@ -39,7 +38,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
     const source = (hideFrom && partner && account) ? partner : from
     const destination = (hideTo && partner && account) ? partner : to
 
-    const requestedAmountInUsd = requestedAmount && (sourceCurrency?.price_in_usd * requestedAmount).toFixed(2)
+    const requestedAmountInUsd = requestedAmount && (sourceCurrency?.price_in_usd * Number(requestedAmount)).toFixed(2)
     const receiveAmountInUsd = receiveAmount ? (destinationCurrency?.price_in_usd * receiveAmount).toFixed(2) : undefined
     const nativeCurrency = refuel?.token
 
@@ -52,16 +51,14 @@ const Summary: FC<SwapInfoProps> = (props) => {
 
             <div className="font-normal flex flex-col w-full relative z-10 space-y-3">
                 <div className="w-full grid grid-cols-10">
-                    <div className="col-span-6">
-                        <RouteTokenPair
-                            route={sourceExchange || source}
-                            token={sourceCurrency}
-                        />
-                    </div>
+                    <RouteTokenPair
+                        route={sourceExchange || source}
+                        token={sourceCurrency}
+                    />
                     <div className="flex flex-col col-start-7 col-span-4 items-end">
                         {
                             requestedAmount &&
-                            <p className="text-primary-text text-sm">{truncateDecimals(requestedAmount, sourceCurrency.precision)} {sourceCurrency.symbol}</p>
+                            <p className="text-primary-text text-sm whitespace-nowrap">{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)} {sourceCurrency.symbol}</p>
                         }
                         <p className="text-secondary-text text-sm flex justify-end"><NumberFlow value={requestedAmountInUsd || 0} format={{ style: 'currency', currency: 'USD' }} trend={0} /></p>
                     </div>
@@ -71,12 +68,10 @@ const Summary: FC<SwapInfoProps> = (props) => {
                     <ArrowDown className="absolute left-1/2 -translate-x-1/2 top-[-10px] h-6 w-6 p-1 bg-secondary-400 rounded-md text-secondary-text" />
                 </div>
                 <div className="w-full grid grid-cols-10">
-                    <div className="col-span-6">
-                        <RouteTokenPair
-                            route={destination}
-                            token={destinationCurrency}
-                        />
-                    </div>
+                    <RouteTokenPair
+                        route={destination}
+                        token={destinationCurrency}
+                    />
                     {
                         receiveAmount && (
                             <div className="flex flex-col justify-end items-end w-full col-start-7 col-span-4">
@@ -121,7 +116,7 @@ type RouteTokenPairProps = {
 const RouteTokenPair: FC<RouteTokenPairProps> = ({ route, token }) => {
 
     return (
-        <div className="flex grow gap-4 text-left items-center md:text-base relative">
+        <div className="flex grow gap-4 text-left items-center md:text-base relative col-span-6 align-center">
             <div className="inline-flex items-center relative shrink-0 mb-1.5">
                 <ImageWithFallback
                     src={token.logo}
@@ -143,9 +138,9 @@ const RouteTokenPair: FC<RouteTokenPairProps> = ({ route, token }) => {
                 />
             </div>
             <div className="flex flex-col font-medium text-primary-text overflow-hidden">
-                <span className="leading-4 text-sm ">{token.symbol}</span>
+                <span className="leading-4 text-sm p-[1.75px]">{token.symbol}</span>
                 <div className="flex items-center gap-1 leading-3 text-sm sm:text-base">
-                    <p className="text-secondary-text text-sm truncate whitespace-nowrap">
+                    <p className="text-secondary-text text-sm truncate whitespace-nowrap p-[1.75px]">
                         {route.display_name}
                     </p>
                 </div>

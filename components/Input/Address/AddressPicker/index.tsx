@@ -15,7 +15,7 @@ import AddressButton from "./AddressButton";
 import { useQueryState } from "@/context/query";
 import ConnectedWallets from "./ConnectedWallets";
 import { Wallet } from "@/Models/WalletProvider";
-import { useBalanceAccounts, useSelectedAccount, useUpdateBalanceAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount, useUpdateBalanceAccount } from "@/context/balanceAccounts";
 
 export enum AddressGroup {
     ConnectedWallet = "Connected wallet",
@@ -62,7 +62,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
     const { destination_address, to: destination, toExchange } = values
     const selectDestinationAccount = useUpdateBalanceAccount("to");
 
-    const { provider, wallets } = useWallet(destination, 'autofil')
+    const { provider, unAvailableWallets } = useWallet(destination, 'autofil')
     const connectedWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
     const defaultAccount = useSelectedAccount("to", values.to?.name);
     const connectedWalletskey = connectedWallets?.map(w => w.addresses.join('')).join('')
@@ -198,7 +198,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
                             && !manualAddress &&
                             <ConnectedWallets
                                 provider={provider}
-                                wallets={wallets}
+                                notCompatibleWallets={unAvailableWallets}
                                 onClick={(props) => handleSelectAddress(props.address)}
                                 onConnect={onConnect}
                                 destination={destination}

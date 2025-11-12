@@ -1,16 +1,17 @@
 import { BalanceProvider } from "@/Models/BalanceProvider";
-import { TokenBalance } from "../../../Models/Balance";
-import { NetworkWithTokens } from "../../../Models/Network";
-import formatAmount from "../../formatAmount";
+import { TokenBalance } from "@/Models/Balance";
+import { NetworkWithTokens } from "@/Models/Network";
+import { formatUnits } from "viem";
 import KnownInternalNames from "../../knownIds";
 import retryWithExponentialBackoff from "../../retry";
+import fetchWithTimeout from "@/lib/fetchWithTimeout";
 
 export class FuelBalanceProvider extends BalanceProvider {
-    supportsNetwork = (network: NetworkWithTokens): boolean => {
+    supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return KnownInternalNames.Networks.FuelMainnet.includes(network.name) || KnownInternalNames.Networks.FuelTestnet.includes(network.name)
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens) => {
+    fetchBalance: BalanceProvider['fetchBalance'] = async (address, network, options) => {
         let balances: TokenBalance[] = []
 
         if (!network?.tokens) return
@@ -31,7 +32,7 @@ export class FuelBalanceProvider extends BalanceProvider {
         };
 
         try {
-            const response = await retryWithExponentialBackoff(async () => await fetch(network.node_url, {
+            const response = await retryWithExponentialBackoff(async () => await fetchWithTimeout(network.node_url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -41,7 +42,8 @@ export class FuelBalanceProvider extends BalanceProvider {
                     query: BALANCES_QUERY,
                     variables: BALANCES_ARGS,
                 }),
-            }));
+                timeoutMs: options?.timeoutMs ?? 60000,
+            }), options?.retryCount ?? 3);
             const json: {
                 data: {
                     balances: {
@@ -60,7 +62,7 @@ export class FuelBalanceProvider extends BalanceProvider {
 
                 const balanceObj: TokenBalance = {
                     network: network.name,
-                    amount: balance?.amount ? formatAmount(Number(balance?.amount), token.decimals) : undefined,
+                    amount: balance?.amount ? Number(formatUnits(BigInt(Number(balance?.amount)), token.decimals)) : undefined,
                     decimals: token.decimals,
                     isNativeCurrency: network.token?.symbol === token.symbol,
                     token: token.symbol,

@@ -10,14 +10,14 @@ import { useConnectModal } from "@/components/WalletModal";
 
 type Props = {
     provider: WalletProvider,
-    wallets: Wallet[],
+    notCompatibleWallets: Wallet[],
     onClick: (props: SelectAccountProps) => void,
     onConnect?: (wallet: Wallet) => void,
     destination: Network,
     destination_address?: string | undefined
 }
 
-const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, destination, destination_address }) => {
+const ConnectedWallets: FC<Props> = ({ provider, notCompatibleWallets, onClick, onConnect, destination, destination_address }) => {
 
     const [isLoading, setIsLoading] = useState(false)
     const [showIncompatibleWallets, setShowIncompatibleWallets] = useState(false)
@@ -30,9 +30,6 @@ const ConnectedWallets: FC<Props> = ({ provider, wallets, onClick, onConnect, de
         if (onConnect && result) onConnect(result)
         setIsLoading(false)
     }
-
-    //TODO: should check for real compatibility, in the future network can have wallets from multiple providers
-    const notCompatibleWallets = wallets.filter(wallet => wallet.providerName !== provider.name || wallet.isNotAvailable)
 
     return (notCompatibleWallets?.length || connectedWallets?.length) ? <div className="flex flex-col gap-2">
         {

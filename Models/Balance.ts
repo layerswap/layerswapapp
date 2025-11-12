@@ -22,11 +22,4 @@ export type TokenBalance = {
 
 export type NetworkBalance = {
     balances?: TokenBalance[] | null,
-    totalInUSD?: number,
-}
-
-export type BalanceFetchError = {
-    message: string
-    code?: string | number
-    cause?: unknown
 }

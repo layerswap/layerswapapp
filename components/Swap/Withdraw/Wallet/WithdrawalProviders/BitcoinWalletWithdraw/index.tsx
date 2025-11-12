@@ -9,7 +9,7 @@ import { JsonRpcClient } from '@/lib/apiClients/jsonRpcClient';
 import { sendTransaction } from './sendTransaction';
 import { useConnectModal } from '@/components/WalletModal';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
-import TransactionMessages from '../../../messages/TransactionMessages';
+import ActionMessages from '../../../messages/TransactionMessages';
 import { posthog } from 'posthog-js';
 import { useSelectedAccount } from '@/context/balanceAccounts';
 
@@ -83,7 +83,7 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData
         <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">
             {
                 transactionErrorMessage &&
-                <TransactionMessage isLoading={loading} error={transactionErrorMessage} />
+                <TransactionMessage isLoading={loading} error={transactionErrorMessage} sourceAddress={selectedSourceAccount?.address} destAddress={swapBasicData?.destination_address} />
             }
             <SendTransactionButton
                 isDisabled={!!loading || dataLoading}
@@ -96,15 +96,15 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData
     )
 }
 
-const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> = ({ isLoading, error }) => {
+const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined, sourceAddress: string | undefined, destAddress: string | undefined }> = ({ isLoading, error, sourceAddress, destAddress }) => {
     if (isLoading) {
-        return <TransactionMessages.ConfirmTransactionMessage />
+        return <ActionMessages.ConfirmTransactionMessage />
     }
     else if (error && error.includes('User rejected the request.')) {
-        return <TransactionMessages.TransactionRejectedMessage />
+        return <ActionMessages.TransactionRejectedMessage />
     }
     else if (error && error.includes('Insufficient balance.')) {
-        return <TransactionMessages.InsufficientFundsMessage />
+        return <ActionMessages.InsufficientFundsMessage />
     }
     else if (error) {
         const swapWithdrawalError = new Error(error);
@@ -113,13 +113,16 @@ const TransactionMessage: FC<{ isLoading: boolean, error: string | undefined }> 
         posthog.captureException('$exception', {
             name: swapWithdrawalError.name,
             message: swapWithdrawalError.message,
+            $layerswap_exception_type: "Swap Withdrawal Error",
+            $fromAddress: sourceAddress,
+            $toAddress: destAddress,
             stack: swapWithdrawalError.stack,
             cause: swapWithdrawalError.cause,
             where: 'swapWithdrawalError',
             severity: 'error',
         });
 
-        return <TransactionMessages.UexpectedErrorMessage message={error} />
+        return <ActionMessages.UexpectedErrorMessage message={error} />
     }
     else return <></>
 }

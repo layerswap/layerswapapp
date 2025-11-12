@@ -1,6 +1,6 @@
 import { TokenBalance } from "@/Models/Balance";
 import { Network, NetworkWithTokens, Token } from "@/Models/Network";
-import formatAmount from "@/lib/formatAmount";
+import { formatUnits } from "viem";
 import KnownInternalNames from "@/lib/knownIds";
 import retryWithExponentialBackoff from "@/lib/retry";
 import tonClient from "@/lib/wallets/ton/client";
@@ -8,11 +8,11 @@ import { insertIfNotExists } from "../helpers";
 import { BalanceProvider } from "@/Models/BalanceProvider";
 
 export class TonBalanceProvider extends BalanceProvider {
-    supportsNetwork = (network: NetworkWithTokens): boolean => {
+    supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return KnownInternalNames.Networks.TONMainnet.includes(network.name)
     }
 
-    fetchBalance = async (address: string, network: NetworkWithTokens) => {
+    fetchBalance: BalanceProvider['fetchBalance'] = async (address, network) => {
         let balances: TokenBalance[] = []
         const tokens = insertIfNotExists(network.tokens || [], network.token)
 
@@ -62,7 +62,7 @@ const getNativeAssetBalance = async ({ network, token, address }: { network: Net
     return ({
         network: network.name,
         token: token.symbol,
-        amount: formatAmount(tonBalance.toString(), Number(token?.decimals)),
+        amount: Number(formatUnits(BigInt(tonBalance.toString()), Number(token?.decimals))),
         request_time: new Date().toJSON(),
         decimals: Number(token?.decimals),
         isNativeCurrency: true,
@@ -93,7 +93,7 @@ const getJettonBalance = async ({ network, token, address }: { network: Network,
     const balance = {
         network: network.name,
         token: token.symbol,
-        amount: formatAmount(Number(BigInt(jettonBalance)), token.decimals),
+        amount: Number(formatUnits(BigInt(jettonBalance), token.decimals)),
         request_time: new Date().toJSON(),
         decimals: token.decimals,
         isNativeCurrency: false,

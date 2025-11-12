@@ -1,5 +1,5 @@
-import { TokenBalance } from "../../../Models/Balance"
-import { Token } from "../../../Models/Network"
+import { TokenBalance } from "@/Models/Balance"
+import { Token } from "@/Models/Network"
 
 
 type ResoleMaxAllowedAmountProps = {
@@ -20,8 +20,8 @@ export const resolveMaxAllowedAmount = (props: ResoleMaxAllowedAmountProps) => {
     const shouldPayGasWithTheToken = (native_currency?.symbol === fromCurrency?.symbol) || !native_currency
     const payableAmount = walletBalance.amount - gasAmount
 
-    if (!shouldPayGasWithTheToken )
+    if (!shouldPayGasWithTheToken)
         return walletBalance.amount
 
-    return Number(payableAmount.toFixed(fromCurrency?.decimals))
+    return Number(Number(payableAmount).toFixed(fromCurrency?.decimals))
 }
