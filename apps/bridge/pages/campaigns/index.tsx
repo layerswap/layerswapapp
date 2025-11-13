@@ -16,6 +16,8 @@ import {
     createTronProvider,
     createImmutablePassportProvider
 } from "@layerswap/wallets";
+import { ZKsyncProvider } from '@layerswap/wallet-zksync';
+import { LoopringProvider } from '@layerswap/wallet-loopring';
 
 
 export default function CampaignsPage({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
@@ -27,7 +29,7 @@ export default function CampaignsPage({ settings, themeData, apiKey }: InferGetS
         logoutRedirectUri: router.basePath ? `${window.location.origin}${router.basePath}/` : `${window.location.origin}/`
     } : undefined
 
-    const walletConnectConfigs= {
+    const walletConnectConfigs = {
         projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '',
         name: 'Layerswap',
         description: 'Layerswap App',
@@ -35,7 +37,7 @@ export default function CampaignsPage({ settings, themeData, apiKey }: InferGetS
         icons: ['https://www.layerswap.io/app/symbol.png']
     }
     const walletProviders = [
-        createEVMProvider({ walletConnectConfigs }),
+        createEVMProvider({ walletConnectConfigs, walletProviderModules: [ZKsyncProvider, LoopringProvider] }),
         createStarknetProvider({ walletConnectConfigs }),
         createFuelProvider(),
         createParadexProvider(),

@@ -10,6 +10,8 @@ import { QueryClient, QueryClientProvider, } from '@tanstack/react-query';
 import { mainnet } from 'viem/chains';
 import useCustomEvm from '@/hooks/useCustomEvm';
 import { createEVMProvider } from '@layerswap/wallets'
+import { ZKsyncProvider } from '@layerswap/wallet-zksync';
+import { LoopringProvider } from '@layerswap/wallet-loopring';
 
 const wagmiConfig = createConfig({
     chains: [mainnet],
@@ -27,6 +29,7 @@ const LayerswapWidgetCustomEvm: FC = () => {
 
     const evmProvider = createEVMProvider({
         customHook: useCustomEvm,
+        walletProviderModules: [ZKsyncProvider, LoopringProvider]
     })
 
     return (

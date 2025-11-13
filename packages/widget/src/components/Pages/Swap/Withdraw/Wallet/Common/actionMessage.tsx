@@ -2,10 +2,6 @@ import { FC } from "react"
 import { ActionMessages, ActionMessageType } from "../../messages/TransactionMessages"
 
 export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean }> = ({ error, isLoading }) => {
-    console.log(
-        "message ", error?.message,
-        "name ", error?.name
-    )
     if (isLoading) {
         return <ActionMessages.ConfirmActionMessage />
     }

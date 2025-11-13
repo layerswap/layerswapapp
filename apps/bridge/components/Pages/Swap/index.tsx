@@ -38,7 +38,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
     }
 
     const walletProviders = [
-        createEVMProvider({ walletConnectConfigs }),
+        createEVMProvider({ walletConnectConfigs, walletProviderModules: [ZKsyncProvider, LoopringProvider] }),
         createStarknetProvider({ walletConnectConfigs }),
         createFuelProvider(),
         createParadexProvider(),
