@@ -294,8 +294,8 @@ const vaulStyles = `
 [data-vaul-drawer] {
     touch-action: none;
     will-change: transform;
-    transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
-    animation-duration: 0.5s;
+    transition: transform 0.1s cubic-bezier(0.32, 0.72, 0, 1);
+    animation-duration: 0.1s;
     animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
 }
 [data-vaul-drawer][data-vaul-snap-points='false'][data-vaul-drawer-direction='bottom'][data-state='open'] {
@@ -311,7 +311,7 @@ const vaulStyles = `
     transform: translate3d(0, var(--snap-point-height, 0), 0);
 }
 [data-vaul-overlay][data-vaul-snap-points='false'] {
-    animation-duration: 0.5s;
+    animation-duration: 0.1s;
     animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
 }
 [data-vaul-overlay][data-vaul-snap-points='false'][data-state='open'] {
@@ -322,7 +322,7 @@ const vaulStyles = `
 }
 [data-vaul-overlay][data-vaul-snap-points='true'] {
     opacity: 0;
-    transition: opacity 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+    transition: opacity 0.1s cubic-bezier(0.32, 0.72, 0, 1);
 }
 [data-vaul-overlay][data-vaul-snap-points='true'] {
     opacity: 1;

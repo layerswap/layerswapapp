@@ -229,7 +229,8 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
 
     if (selectedConnector.installUrl) {
         return <div className={clsx('w-full sm:h-full flex flex-col justify-center items-center font-semibold relative', {
-            'h-[60vh]': isMobileSize && AppSettings.ThemeData?.enablePortal
+            'h-[60vh]': isMobileSize && AppSettings.ThemeData?.enablePortal,
+            'h-[300px]': isMobileSize && !AppSettings.ThemeData?.enablePortal,
         })}>
             <div className="flex grow items-center">
                 <div className="flex flex-col gap-4 items-center justify-end row-start-2 row-span-1">
@@ -256,6 +257,7 @@ const LoadingConnect: FC<{ onRetry: () => void, selectedConnector: WalletModalCo
             className={clsx('w-full flex flex-col justify-center items-center font-semibold relative', {
                 'h-[60vh]': isMobileSize && AppSettings.ThemeData?.enablePortal,
                 'h-full': !isMobileSize || !AppSettings.ThemeData?.enablePortal,
+                'h-[300px]!': isMobileSize && !AppSettings.ThemeData?.enablePortal,
             })}
         >
             {
