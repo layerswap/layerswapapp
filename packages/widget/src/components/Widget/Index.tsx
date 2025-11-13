@@ -20,7 +20,7 @@ const Widget = ({ children, hideMenu, goBack, contextualMenu }: Props) => {
    return <div className="relative p-px h-full">
       {
          AppSettings.ThemeData?.enableWideVersion &&
-         <div className="invisible sm:visible absolute inset-0 rounded-[25px] bg-gradient-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
+         <div className="invisible sm:visible absolute inset-0 rounded-[25px] bg-linear-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
       }
       <div
          id="widget"

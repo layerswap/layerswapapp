@@ -27,9 +27,6 @@ export type LayerswapWidgetConfig = {
     settings?: LayerSwapSettings;
     theme?: ThemeData | null,
     initialValues?: InitialSettings,
-    walletConnect?: typeof AppSettings.WalletConnectConfig
-    imtblPassport?: typeof AppSettings.ImtblPassportConfig
-    tonConfigs?: typeof AppSettings.TonClientConfig
 }
 
 export type LayerswapContextProps = {
@@ -41,14 +38,11 @@ export type LayerswapContextProps = {
 
 const INTERCOM_APP_ID = 'h5zisg78'
 const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callbacks, config, walletProviders = [] }) => {
-    let { apiKey, version, settings: _settings, theme: themeData, imtblPassport, initialValues } = config || {}
+    let { apiKey, version, settings: _settings, theme: themeData, initialValues } = config || {}
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
     themeData = { ...THEME_COLORS['default'], ...config?.theme }
 
     AppSettings.ApiVersion = version || AppSettings.ApiVersion
-    AppSettings.ImtblPassportConfig = imtblPassport
-    AppSettings.TonClientConfig = config?.tonConfigs || AppSettings.TonClientConfig
-    AppSettings.WalletConnectConfig = config?.walletConnect || AppSettings.WalletConnectConfig
     AppSettings.ThemeData = themeData
     if (apiKey) LayerSwapApiClient.apiKey = apiKey
 

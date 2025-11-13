@@ -1,8 +1,14 @@
 import { THEME, TonConnectUIProvider } from "@tonconnect/ui-react"
 import { ThemeData } from "@layerswap/widget/types";
-import { AppSettings } from "@layerswap/widget/internal";
+import { TonClientConfig } from "./index";
 
-const TonConnectProvider = ({ children, themeData, appName }: { children: JSX.Element | JSX.Element[], themeData: ThemeData, appName: string | undefined }) => {
+type TonConnectProviderProps = {
+    children: JSX.Element | JSX.Element[]
+    themeData: ThemeData | undefined
+    tonConfigs?: TonClientConfig
+}
+
+const TonConnectProvider = ({ children, themeData, tonConfigs }: TonConnectProviderProps) => {
 
     const rgbToHex = (rgb: string) => {
         const rgbArray = rgb.match(/\d+/g)
@@ -15,8 +21,6 @@ const TonConnectProvider = ({ children, themeData, appName }: { children: JSX.El
 
         return "#" + componentToHex(Number(rgbArray[0])) + componentToHex(Number(rgbArray[1])) + componentToHex(Number(rgbArray[2]));
     }
-
-    const manifestUrl = AppSettings.TonClientConfig.manifestUrl
 
     return (
         <TonConnectUIProvider
@@ -39,14 +43,14 @@ const TonConnectProvider = ({ children, themeData, appName }: { children: JSX.El
                             icon: {
                                 primary: rgbToHex(themeData?.primary?.[500] || ''),
                                 secondary: rgbToHex(themeData?.secondary?.text || ''),
-                                tertiary: rgbToHex(themeData.secondary?.[400] || ''),
+                                tertiary: rgbToHex(themeData?.secondary?.[400] || ''),
                                 success: rgbToHex(themeData?.primary?.[500] || ''),
                             },
                             background: {
-                                primary: rgbToHex(themeData.secondary?.[900] || ''),
-                                secondary: rgbToHex(themeData.secondary?.[800] || ''),
-                                segment: rgbToHex(themeData.secondary?.[200] || ''),
-                                tint: rgbToHex(themeData.secondary?.[700] || ''),
+                                primary: rgbToHex(themeData?.secondary?.[900] || ''),
+                                secondary: rgbToHex(themeData?.secondary?.[800] || ''),
+                                segment: rgbToHex(themeData?.secondary?.[200] || ''),
+                                tint: rgbToHex(themeData?.secondary?.[700] || ''),
                                 qr: '#f1f1f1f1',
                             },
                             text: {
@@ -57,7 +61,7 @@ const TonConnectProvider = ({ children, themeData, appName }: { children: JSX.El
                     }
                 }
             }
-            manifestUrl={manifestUrl}
+            manifestUrl={tonConfigs?.manifestUrl}
         >
             {children}
         </TonConnectUIProvider>

@@ -1,10 +1,8 @@
 import { walletConnect } from "./walletConnect"
 import walletsData from "../../jsons/walletsData.json"
 import { InternalConnector } from "@layerswap/widget/types"
-import { AppSettings } from "@layerswap/widget/internal"
 import { resolveEVMWalletConnectorIndex } from "../../evmUtils"
 
-const projectId = AppSettings.WalletConnectConfig.projectId
 const wallets = Object.values(walletsData.listings)
 
 export type WalletConnectWallet = {
@@ -31,13 +29,13 @@ const walletsToFilter = [
     "5d9f1395b3a8e848684848dc4147cbd05c8d54bb737eac78fe103901fe6b01a1"
 ]
 
-export const resolveWallets: () => WalletConnectWallet[] = () => {
+export const resolveWallets: (projectId: string) => WalletConnectWallet[] = (projectId: string) => {
 
     const resolvedWallets = pickLatestBy(
         wallets,
         c => c.slug
     ).filter(w => w.name && w.slug && !walletsToFilter.some(wtf => wtf == w.id)).map(wallet => {
-        const w = resolveWallet(wallet)
+        const w = resolveWallet(wallet, projectId)
         return w
     })
 
@@ -45,16 +43,16 @@ export const resolveWallets: () => WalletConnectWallet[] = () => {
 }
 
 
-export const resolveConnector = (name: string) => {
+export const resolveConnector = (name: string, projectId: string) => {
     const wallet = wallets.find(w => w.name === name && !walletsToFilter.includes(w.id))
-    const params = resolveWallet(wallet)
+    const params = resolveWallet(wallet, projectId)
     return walletConnect(params as any)
 }
 
-const resolveWallet = (wallet: any) => {
+const resolveWallet = (wallet: any, projectId: string) => {
 
     if (!wallet) {
-        throw new Error(`Wallet ${wallet.name} not found`)
+        throw new Error(`Wallet ${wallet?.name} not found`)
     }
 
     const w: WalletConnectWallet = {
@@ -74,7 +72,6 @@ const resolveWallet = (wallet: any) => {
 
     return w
 }
-export const walletConnectWallets = resolveWallets()
 
 function pickLatestBy<T>(
     connectors: T[],

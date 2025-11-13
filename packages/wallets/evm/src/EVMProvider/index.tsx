@@ -6,9 +6,11 @@ import { ActiveEvmAccountProvider } from "./ActiveEvmAccount";
 import { useSettingsState } from "@layerswap/widget/internal";
 import { useContext } from 'react';
 import { useChainConfigs } from '../evmUtils/chainConfigs';
+import { WalletConnectConfig } from '../index';
 
 type Props = {
     children: JSX.Element | JSX.Element[]
+    walletConnectConfigs?: WalletConnectConfig
 }
 
 const queryClient = new QueryClient()
@@ -36,9 +38,9 @@ function WagmiComponent({ children }: Props) {
     )
 }
 
-const EVMProvider = ({ children }: Props) => {
+const EVMProvider = ({ children, walletConnectConfigs }: Props) => {
     return (
-        <EvmConnectorsProvider>
+        <EvmConnectorsProvider walletConnectConfigs={walletConnectConfigs}>
             <WagmiWrapper>
                 {children}
             </WagmiWrapper>

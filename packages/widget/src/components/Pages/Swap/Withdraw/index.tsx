@@ -5,17 +5,19 @@ import { SwapDataProvider, useSwapDataState, useSwapDataUpdate } from "@/context
 import NotFound from "./NotFound";
 import SwapDetails from "./SwapDetails";
 import { LayerswapContextProps, LayerswapProvider } from "@/context/LayerswapProvider";
+import { useBackClickCallback } from "@/context/callbackProvider";
 
 const Comp: FC = () => {
     const { swapBasicData, swapApiError, swapId } = useSwapDataState()
     const { mutateSwap } = useSwapDataUpdate()
+    const triggerOnBackClickCallback = useBackClickCallback()
 
     useEffect(() => {
         mutateSwap()
     }, [])
 
     if (!swapBasicData)
-        return <Widget>
+        return <Widget goBack={triggerOnBackClickCallback}>
             <div className={`rounded-lg w-full overflow-hidden relative h-[548px]`}>
                 {
                     swapApiError &&
