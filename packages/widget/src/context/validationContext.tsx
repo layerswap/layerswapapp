@@ -16,6 +16,7 @@ export interface ValidationDetails {
 
 interface ValidationContextType {
     formValidation: {
+        code?: string;
         message: string;
     };
     routeValidation: {

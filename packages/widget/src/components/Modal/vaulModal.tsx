@@ -140,7 +140,6 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         )}
                     </AnimatePresence>
                 )}
-
                 <Drawer.Content
                     data-testid="content"
                     className={clsx('absolute flex flex-col bg-secondary-700 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-4 text-primary-text ring-0! outline-hidden! ', className, {
@@ -200,8 +199,9 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                                 </motion.div>
                             }
                         </AnimatePresence>
+                        {isMobile && <VaulFooter snapElement={snapElement} />}
                     </div>
-                    <VaulFooter snapElement={snapElement} />
+                    {!isMobile && <VaulFooter snapElement={snapElement} />}
                 </Drawer.Content>
             </Drawer.Portal>
         </Drawer.Root >

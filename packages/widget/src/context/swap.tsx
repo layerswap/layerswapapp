@@ -102,7 +102,7 @@ export function SwapDataProvider({ children }) {
             destination_network: values.to,
             source_token: values.fromAsset,
             destination_token: values.toAsset,
-            requested_amount: Number(values.amount),
+            requested_amount: values.amount,
             destination_address: values.destination_address,
             use_deposit_address: values.depositMethod === 'deposit_address',
             refuel: !!values.refuel,
@@ -119,6 +119,7 @@ export function SwapDataProvider({ children }) {
         if (swapId && data?.data) {
             return data?.data?.swap ? {
                 ...data.data.swap,
+                requested_amount: data.data.swap.requested_amount.toString(),
                 refuel: !!data.data.refuel
             } : undefined;
         }

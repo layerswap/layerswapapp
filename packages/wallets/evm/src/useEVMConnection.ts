@@ -134,7 +134,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
                     })
                 }
             }
-            else if (connector.type !== 'injected' && connector.isMobileSupported && connector.id !== "coinbaseWalletSDK") {
+            else if (connector.type !== 'injected' && connector.isMobileSupported && connector.id !== "coinbaseWalletSDK" && connector.id !== "metaMaskSDK") {
                 setSelectedConnector({ ...connector, qr: { state: 'loading', value: undefined } })
                 getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
                     setSelectedConnector({ ...connector, icon: base64Icon, qr: { state: 'fetched', value: uri } })
