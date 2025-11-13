@@ -1,0 +1,60 @@
+[
+    {
+        "inputs": [
+            {
+                "internalType": "address[]",
+                "name": "users",
+                "type": "address[]"
+            },
+            {
+                "internalType": "address[]",
+                "name": "tokens",
+                "type": "address[]"
+            }
+        ],
+        "name": "batchGetBalances",
+        "outputs": [
+            {
+                "internalType": "bool[][]",
+                "name": "allSuccesses",
+                "type": "bool[][]"
+            },
+            {
+                "internalType": "uint256[][]",
+                "name": "allBalances",
+                "type": "uint256[][]"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "user",
+                "type": "address"
+            },
+            {
+                "internalType": "address[]",
+                "name": "tokens",
+                "type": "address[]"
+            }
+        ],
+        "name": "getBalances",
+        "outputs": [
+            {
+                "internalType": "bool[]",
+                "name": "_successes",
+                "type": "bool[]"
+            },
+            {
+                "internalType": "uint256[]",
+                "name": "_balances",
+                "type": "uint256[]"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    }
+]
