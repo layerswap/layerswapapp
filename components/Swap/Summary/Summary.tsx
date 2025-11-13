@@ -10,7 +10,6 @@ import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
 import NumberFlow from "@number-flow/react";
 import clsx from "clsx";
 import { PriceImpact } from "@/components/Input/Amount/PriceImpact";
-import useWallet from "@/hooks/useWallet";
 import { Token } from "@/Models/Network";
 
 type SwapInfoProps = Omit<SwapResponse, 'quote' | 'swap'> & {
@@ -22,7 +21,7 @@ type SwapInfoProps = Omit<SwapResponse, 'quote' | 'swap'> & {
 }
 
 const Summary: FC<SwapInfoProps> = (props) => {
-    const { swap, quote, receiveAmount, quoteIsLoading } = props
+    const { swap, quote, receiveAmount } = props
     const { refuel, quote: swapQuote } = quote
     const { source_token: sourceCurrency, destination_token: destinationCurrency, source_network: from, destination_network: to, requested_amount: requestedAmount, destination_address: destinationAddress, source_exchange: sourceExchange } = swap
     const {
@@ -39,7 +38,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
     const source = (hideFrom && partner && account) ? partner : from
     const destination = (hideTo && partner && account) ? partner : to
 
-    const requestedAmountInUsd = requestedAmount && (sourceCurrency?.price_in_usd * requestedAmount).toFixed(2)
+    const requestedAmountInUsd = requestedAmount && (sourceCurrency?.price_in_usd * Number(requestedAmount)).toFixed(2)
     const receiveAmountInUsd = receiveAmount ? (destinationCurrency?.price_in_usd * receiveAmount).toFixed(2) : undefined
     const nativeCurrency = refuel?.token
 
@@ -59,7 +58,7 @@ const Summary: FC<SwapInfoProps> = (props) => {
                     <div className="flex flex-col col-start-7 col-span-4 items-end">
                         {
                             requestedAmount &&
-                            <p className="text-primary-text text-sm">{truncateDecimals(requestedAmount, sourceCurrency.precision)} {sourceCurrency.symbol}</p>
+                            <p className="text-primary-text text-sm whitespace-nowrap">{truncateDecimals(Number(requestedAmount), sourceCurrency.precision)} {sourceCurrency.symbol}</p>
                         }
                         <p className="text-secondary-text text-sm flex justify-end"><NumberFlow value={requestedAmountInUsd || 0} format={{ style: 'currency', currency: 'USD' }} trend={0} /></p>
                     </div>

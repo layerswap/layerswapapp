@@ -72,7 +72,6 @@ export class EVMBalanceProvider extends BalanceProvider {
             return res.concat(erc20Balances, nativeBalance ? [nativeBalance] : [])
         }
         catch (e) {
-            console.log("********* errorororororor *********", e)
             return network.tokens.map(t => this.resolveTokenBalanceFetchError(e, t, network))
         }
     }
@@ -101,14 +100,17 @@ export class EVMBalanceProvider extends BalanceProvider {
 
         const resolvedERC20Balances = network.tokens.filter(t => t.contract)?.map((token, index) => {
             const amount = balances[1][index]
-
-            if (amount >= 0) return {
-                network: network.name,
-                token: token.symbol,
-                amount: formatUnits(BigInt(amount), token.decimals),
-                request_time: new Date().toJSON(),
-                decimals: token.decimals,
-                isNativeCurrency: false,
+    
+            if (amount >= 0) {
+                const formattedAmount = formatUnits(BigInt(amount), token.decimals)
+                return {
+                    network: network.name,
+                    token: token.symbol,
+                    amount: formattedAmount,
+                    request_time: new Date().toJSON(),
+                    decimals: token.decimals,
+                    isNativeCurrency: false,
+                }
             }
             else {
                 return {
