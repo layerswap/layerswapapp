@@ -28,9 +28,8 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
 
     const availableWallets = useMemo(() => {
         if (!purpose || !network) {
-            return []
+            return wallets.filter(wallet => !wallet.isNotAvailable)
         }
-
         switch (purpose) {
             case "withdrawal":
                 return wallets.filter(wallet => wallet.withdrawalSupportedNetworks?.includes(network.name))
