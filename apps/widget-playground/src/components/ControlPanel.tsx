@@ -7,14 +7,14 @@ import {
 } from "./buttons";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import clsx from "clsx";
-import { Code, Palette } from 'lucide-react';
 import { useState } from "react";
 import { CodeSegment } from "./CodeSegment";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, } from "@/components/ui/accordion"
+import Route from "@/public/icons/Route";
 
 const tabValues = [
-    { value: 'design', component: <><Palette /> <span>Design</span></> },
-    { value: 'code', component: <><Code /> <span>Code</span></> },
+    { value: 'design', component: <><Route className="[&_path]:fill-current" /> <span className="text-xl">Design</span></> },
+    { value: 'code', component: <><Route className="[&_path]:fill-current" /> <span className="text-xl">Code</span></> },
 ]
 
 const accordionElements = {
@@ -60,23 +60,23 @@ export function ControlPanel() {
     const [activeTab, setActiveTab] = useState('design')
 
     return (
-        <div className="text-primary-text w-[500px] min-h-screen bg-secondary-800  overflow-y-auto h-full styled-scroll">
-            <div className="flex items-center justify-between h-16 p-6 shrink-0 sticky top-0 bg-secondary-800 z-20">
+        <div className="text-primary-text w-[500px] min-h-screen bg-secondary-900  overflow-y-auto h-full styled-scroll">
+            <div className="flex items-center justify-between h-16 p-5 shrink-0 sticky top-0 z-20">
                 <h1 className="text-2xl ">Layerswap Widget</h1>
                 <div className='flex gap-4 justify-end'>
                     <ResetButton />
                     <CloseButton />
                 </div>
             </div>
-            <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="design" className="my-4 space-y-6 p-6 pt-0">
-                <TabsList className="flex items-center bg-secondary-600 hover:bg-secondary-500 transition-colors duration-200">
+            <Tabs value={activeTab} onValueChange={setActiveTab} defaultValue="design" className=" space-y-6 px-5">
+                <TabsList className="flex items-center bg-secondary-700 hover:bg-secondary-600 transition-colors duration-200 rounded-xl !m-0">
                     {
                         tabValues.map((v, index) => (
                             <TabsTrigger
                                 key={index}
                                 value={v.value}
-                                className={clsx('bg-transparent transition-colors gap-1 place-self-center w-full py-2', {
-                                    'bg-primary-500': activeTab == v.value,
+                                className={clsx('bg-transparent transition-colors gap-1 place-self-center w-full rounded-xl text-secondary-text', {
+                                    'bg-secondary-300 !text-primary-text': activeTab == v.value,
                                 })}
                             >
                                 {v.component}
