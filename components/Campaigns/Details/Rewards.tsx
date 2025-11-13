@@ -18,7 +18,7 @@ type Props = {
 const Rewards: FC<Props> = ({ campaign }) => {
     const network = campaign?.network
 
-    const { provider } = useWallet(network, 'autofil')
+    const { provider } = useWallet(network, 'autofill')
     const wallet = provider?.activeWallet
 
     const address = wallet?.address

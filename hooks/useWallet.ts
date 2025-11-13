@@ -3,7 +3,7 @@ import { Wallet, WalletProvider } from "../Models/WalletProvider";
 import { useCallback, useMemo } from "react";
 import { useWalletProviders } from "../context/walletProviders";
 
-export type WalletPurpose = "autofil" | "withdrawal" | "asSource"
+export type WalletPurpose = "autofill" | "withdrawal" | "asSource"
 
 export default function useWallet(network?: Network | undefined, purpose?: WalletPurpose) {
     const walletProviders = useWalletProviders()
@@ -27,8 +27,21 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
     }, [wallets])
 
     const availableWallets = useMemo(() => {
-        return wallets.filter(wallet => !wallet.isNotAvailable)
-    }, [wallets])
+        if (!purpose || !network) {
+            return []
+        }
+
+        switch (purpose) {
+            case "withdrawal":
+                return wallets.filter(wallet => wallet.withdrawalSupportedNetworks?.includes(network.name))
+            case "autofill":
+                return wallets.filter(wallet => wallet.autofillSupportedNetworks?.includes(network.name))
+            case "asSource":
+                return wallets.filter(wallet => wallet.asSourceSupportedNetworks?.includes(network.name))
+            default:
+                return []
+        }
+    }, [wallets, network, purpose])
 
     const getProvider = useCallback((network: Network, purpose: WalletPurpose) => {
         return network && resolveProvider(network, walletProviders, purpose)
@@ -53,7 +66,7 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletPr
         case "withdrawal":
             provider = walletProviders.find(provider => provider.withdrawalSupportedNetworks?.includes(network.name))
             break;
-        case "autofil":
+        case "autofill":
             provider = walletProviders.find(provider => provider.autofillSupportedNetworks?.includes(network.name))
             break;
         case "asSource":
@@ -85,24 +98,24 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletPr
 
 const resolveWallet = (wallet: Wallet, network: Network | undefined, provider: WalletProvider, purpose?: WalletPurpose) => {
 
-    if(provider.isNotAvailableCondition && network?.name && wallet.internalId) {
+    if (provider.isNotAvailableCondition && network?.name && wallet.internalId) {
         return {
             ...wallet,
             isNotAvailable: provider.isNotAvailableCondition(wallet.internalId, network?.name),
         }
     }
 
-    if(purpose === "autofil") {
+    if (purpose === "autofill") {
         return {
             ...wallet,
             isNotAvailable: !wallet.autofillSupportedNetworks?.some(n => n.toLowerCase() === network?.name.toLowerCase()),
         }
-    } else if(purpose === "withdrawal") {
+    } else if (purpose === "withdrawal") {
         return {
             ...wallet,
             isNotAvailable: !wallet.withdrawalSupportedNetworks?.some(n => n.toLowerCase() === network?.name.toLowerCase()),
         }
-    } else if(purpose === "asSource") {
+    } else if (purpose === "asSource") {
         return {
             ...wallet,
             isNotAvailable: !wallet.asSourceSupportedNetworks?.some(n => n.toLowerCase() === network?.name.toLowerCase()),
