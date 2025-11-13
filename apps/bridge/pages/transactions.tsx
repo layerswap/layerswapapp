@@ -14,6 +14,8 @@ import {
   createTronProvider,
   createImmutablePassportProvider
 } from "@layerswap/wallets";
+import { ZKsyncProvider } from "@layerswap/wallet-zksync"
+import { LoopringProvider } from "@layerswap/wallet-loopring"
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../helpers/querryHelper';
 
@@ -22,7 +24,7 @@ export default function Transactions({ settings, themeData, apiKey }: InferGetSe
 
   const router = useRouter()
 
-  const walletConnectConfigs= {
+  const walletConnectConfigs = {
     projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '',
     name: 'Layerswap',
     description: 'Layerswap App',
@@ -38,7 +40,7 @@ export default function Transactions({ settings, themeData, apiKey }: InferGetSe
   } : undefined
 
   const walletProviders = [
-    createEVMProvider({ walletConnectConfigs }),
+    createEVMProvider({ walletConnectConfigs, walletProviderModules: [ZKsyncProvider, LoopringProvider] }),
     createStarknetProvider({ walletConnectConfigs }),
     createFuelProvider(),
     createParadexProvider(),

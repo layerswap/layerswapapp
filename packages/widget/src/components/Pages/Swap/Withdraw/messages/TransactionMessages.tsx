@@ -2,7 +2,7 @@ import { FC } from "react"
 import WalletMessage from "./Message"
 import shortenAddress from "@/components/utils/ShortenAddress"
 
-const ConfirmTransactionMessage: FC = () => {
+const ConfirmActionMessage: FC = () => {
     return <WalletMessage
         status="pending"
         header='Confirm in wallet'
@@ -66,8 +66,8 @@ const UnexpectedErrorMessage: FC<{ message: string }> = ({ message }) => {
         showInModal />
 }
 
-const ActionMessages = {
-    ConfirmTransactionMessage,
+export const ActionMessages = {
+    ConfirmActionMessage,
     TransactionInProgressMessage,
     InsufficientFundsMessage,
     TransactionRejectedMessage,
@@ -78,7 +78,7 @@ const ActionMessages = {
     DifferentAccountsNotAllowedError
 }
 
-export enum TransactionMessageType {
+export enum ActionMessageType {
     ConfirmTransaction = 'ConfirmTransaction',
     TransactionInProgress = 'TransactionInProgress',
     InsufficientFunds = 'InsufficientFunds',
@@ -88,5 +88,3 @@ export enum TransactionMessageType {
     UnexpectedErrorMessage = 'UnexpectedErrorMessage',
     DifferentAccountsNotAllowedError = 'DifferentAccountsNotAllowedError',
 }
-
-export default ActionMessages

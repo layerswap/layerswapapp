@@ -18,6 +18,8 @@ import {
 } from "@layerswap/wallets";
 import { useRouter } from 'next/router';
 import { resolvePersistantQueryParams } from '../../helpers/querryHelper';
+import { ZKsyncProvider } from '@layerswap/wallet-zksync';
+import { LoopringProvider } from '@layerswap/wallet-loopring';
 
 
 
@@ -40,7 +42,7 @@ const SwapDetails = ({ settings, themeData, apiKey }: InferGetServerSidePropsTyp
   } : undefined
 
   const walletProviders = [
-    createEVMProvider({ walletConnectConfigs }),
+    createEVMProvider({ walletConnectConfigs, walletProviderModules: [ZKsyncProvider, LoopringProvider] }),
     createStarknetProvider({ walletConnectConfigs }),
     createFuelProvider(),
     createParadexProvider(),

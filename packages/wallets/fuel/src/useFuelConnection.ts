@@ -5,7 +5,7 @@ import { useWalletStore, sleep, KnownInternalNames } from "@layerswap/widget/int
 import { useEffect, useMemo } from "react";
 import { transactionBuilder } from "./services/transferService/transactionBuilder";
 import { BAKO_STATE } from "./connectors/bako-safe/Bako";
-import { TransactionMessageType, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types";
+import { ActionMessageType, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types";
 import { resolveFuelWalletConnectorIcon } from './utils';
 
 export default function useFuelConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
@@ -146,15 +146,15 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
             if (error === "The account(s) sending the transaction don't have enough funds to cover the transaction."
                 || error === "the target cannot be met due to no coins available or exceeding the 255 coin limit."
             ) {
-                error.name = TransactionMessageType.InsufficientFunds
+                error.name = ActionMessageType.InsufficientFunds
                 throw e
             }
             else if (error === "Request cancelled without user response!" || error === "User rejected the transaction!" || error === "User canceled sending transaction") {
-                e.name = TransactionMessageType.TransactionRejected
+                e.name = ActionMessageType.TransactionRejected
                 throw e
             }
             else {
-                e.name = TransactionMessageType.UnexpectedErrorMessage
+                e.name = ActionMessageType.UnexpectedErrorMessage
                 throw e
             }
         }

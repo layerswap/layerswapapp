@@ -3,6 +3,8 @@ import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useState } from "react";
 import { createEVMProvider, createImmutablePassportProvider, ImtblRedirect } from "@layerswap/wallets";
+import { LoopringProvider } from "@layerswap/wallet-loopring";
+import { ZKsyncProvider } from "@layerswap/wallet-zksync";
 
 const ImtblRedirectPage = () => {
     const [loaded, setLoaded] = useState(false)
@@ -29,7 +31,7 @@ const ImtblRedirectPage = () => {
                 description: 'Layerswap App',
                 url: 'https://layerswap.io/app/',
                 icons: ['https://www.layerswap.io/app/symbol.png']
-            }
+            }, walletProviderModules: [ZKsyncProvider, LoopringProvider]
         }),
         createImmutablePassportProvider({
             imtblPassportConfig: {

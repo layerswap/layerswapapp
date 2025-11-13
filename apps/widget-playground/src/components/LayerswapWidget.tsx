@@ -5,7 +5,8 @@ import { useWidgetContext } from '@/context/ConfigContext';
 import { useSettingsState } from '@/context/settings';
 // import dynamic from 'next/dynamic';
 import { createEVMProvider, createStarknetProvider, createFuelProvider, createBitcoinProvider, createTONProvider, createSVMProvider, createTronProvider } from '@layerswap/wallets';
-
+import { ZKsyncProvider } from '@layerswap/wallet-zksync';
+import { LoopringProvider } from '@layerswap/wallet-loopring';
 // const LayerswapWidgetCustomEvm = dynamic(
 //     () => import('./LayerswapWidgetCustomEvm'),
 //     {
@@ -28,7 +29,7 @@ const LayerswapWidget: FC = () => {
 
 
     const walletProviders = useMemo(() => [
-        createEVMProvider({ walletConnectConfigs }),
+        createEVMProvider({ walletConnectConfigs, walletProviderModules: [ZKsyncProvider, LoopringProvider] }),
         createStarknetProvider({ walletConnectConfigs }),
         createFuelProvider(),
         createBitcoinProvider(),

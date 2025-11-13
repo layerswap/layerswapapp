@@ -18,6 +18,8 @@
     "@bigmi/core": "^0.6.1",
     "@bigmi/react": "^0.6.1",
     "@layerswap/wallets": "workspace:^",
+    "@layerswap/wallet-loopring": "workspace:*",
+    "@layerswap/wallet-zksync": "workspace:*",
     "@layerswap/widget": "workspace:^",
     "@radix-ui/react-context-menu": "^1.0.0",
     "@tanstack/react-query": "catalog:",

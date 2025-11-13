@@ -1,12 +1,15 @@
 import { WalletIcon } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
 import { AuthorizeStarknet } from '../../Authorize/Starknet';
-import { SendTransactionButton, KnownInternalNames, useSelectedAccount, useWallet, useSettingsState } from '@layerswap/widget/internal';
-import { TransferProps, TransactionMessageType, WithdrawPageProps } from '@layerswap/widget/types';
+import { SendTransactionButton, KnownInternalNames, useSelectedAccount, useWallet, useSettingsState, ActionMessage } from '@layerswap/widget/internal';
+import { TransferProps, ActionMessageType, WithdrawPageProps } from '@layerswap/widget/types';
 
 const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
 
     const [loading, setLoading] = useState(false)
+    const [buttonClicked, setButtonClicked] = useState(false)
+    const [error, setError] = useState<Error | undefined>()
+
     const { source_token } = swapBasicData;
     const { networks } = useSettingsState();
     const starknet = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetGoerli || n.name === KnownInternalNames.Networks.StarkNetSepolia);
@@ -19,6 +22,8 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
             return
         }
         setLoading(true)
+        setButtonClicked(true)
+        setError(undefined)
         try {
             if (!selectedSourceAccount) {
                 throw Error("Starknet wallet not connected")
@@ -47,33 +52,41 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
             }
         }
         catch (error) {
+            (error as Error).name = ActionMessageType.UnexpectedErrorMessage
             setLoading(false)
-            error.name = TransactionMessageType.UnexpectedErrorMessage
-            error.message = error
-            throw new Error(error)
+            setError(error as Error)
         }
     }, [selectedSourceAccount?.address, starknet, source_token])
 
 
     return (
-        <div className="w-full space-y-5 flex flex-col justify-between h-full text-secondary-text">
+        <>
             {
-                selectedSourceAccount &&
-                <div className="flex flex-row
-                    text-primary-text text-base space-x-2">
-                    <SendTransactionButton
-                        isDisabled={!!(loading)}
-                        isSubmitting={!!(loading)}
-                        onClick={handleTransfer}
-                        icon={<WalletIcon className="h-5 w-5 ml-2" aria-hidden="true" />}
-                        swapData={swapBasicData}
-                        refuel={refuel}
-                    >
-                        Send from Starknet wallet
-                    </SendTransactionButton>
-                </div>
+                buttonClicked &&
+                <ActionMessage
+                    error={error}
+                    isLoading={loading}
+                />
             }
-        </div >
+            <div className="w-full space-y-5 flex flex-col justify-between h-full text-secondary-text">
+                {
+                    selectedSourceAccount &&
+                    <div className="flex flex-row
+                    text-primary-text text-base space-x-2">
+                        <SendTransactionButton
+                            isDisabled={!!(loading)}
+                            isSubmitting={!!(loading)}
+                            onClick={handleTransfer}
+                            icon={<WalletIcon className="h-5 w-5 ml-2" aria-hidden="true" />}
+                            swapData={swapBasicData}
+                            refuel={refuel}
+                        >
+                            Send from Starknet wallet
+                        </SendTransactionButton>
+                    </div>
+                }
+            </div >
+        </>
     )
 }
 export default StarknetComponent;

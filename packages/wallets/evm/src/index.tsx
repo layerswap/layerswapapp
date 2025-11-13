@@ -1,9 +1,9 @@
 'use client'
-import { WalletProvider, BaseWalletProviderConfig } from "@layerswap/widget/types";
-import { EVMBalanceProvider, HyperliquidBalanceProvider, LoopringBalanceProvider, ZkSyncBalanceProvider } from "./balanceProviders"
+import { WalletProvider, BaseWalletProviderConfig, WalletProviderModule } from "@layerswap/widget/types";
+import { EVMBalanceProvider, HyperliquidBalanceProvider } from "./balanceProviders"
 import useEVMConnection from "./useEVMConnection"
 import EVMProviderWrapper from "./EVMProvider"
-import { EVMGasProvider, LoopringGasProvider, ZkSyncGasProvider } from "./gasProviders"
+import { EVMGasProvider } from "./gasProviders"
 import { EVMAddressUtilsProvider } from "./evmAddressUtilsProvider"
 
 export type WalletConnectConfig = {
@@ -16,11 +16,13 @@ export type WalletConnectConfig = {
 
 export type EVMProviderConfig = BaseWalletProviderConfig & {
     walletConnectConfigs?: WalletConnectConfig
+    walletProviderModules?: WalletProviderModule[]
 }
 
 export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvider {
     const {
         walletConnectConfigs,
+        walletProviderModules,
         customHook,
         balanceProviders,
         gasProviders,
@@ -35,13 +37,35 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         );
     };
 
-    const walletConnectionProvider = customHook || useEVMConnection;
+    const baseWalletConnectionProvider = customHook || useEVMConnection;
+
+    const moduleMultiStepHandlers = walletProviderModules
+        ?.map(m => m.multiStepHandler)
+        .filter(h => h !== undefined) || [];
+
+    const walletConnectionProvider = (props: any) => {
+        const provider = baseWalletConnectionProvider(props);
+        return {
+            ...provider,
+            multiStepHandlers: [
+                ...(provider.multiStepHandlers || []),
+                ...moduleMultiStepHandlers,
+            ],
+        };
+    };
+
+    const moduleBalanceProviders = walletProviderModules
+        ?.map(m => m.balanceProvider)
+        .filter(p => p !== undefined) || [];
+
+    const moduleGasProviders = walletProviderModules
+        ?.map(m => m.gasProvider)
+        .filter(p => p !== undefined) || [];
 
     const defaultBalanceProviders = [
         new EVMBalanceProvider(),
         new HyperliquidBalanceProvider(),
-        new LoopringBalanceProvider(),
-        new ZkSyncBalanceProvider()
+        ...moduleBalanceProviders,
     ];
     const finalBalanceProviders = balanceProviders !== undefined
         ? (Array.isArray(balanceProviders) ? balanceProviders : [balanceProviders])
@@ -49,8 +73,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
 
     const defaultGasProviders = [
         new EVMGasProvider(),
-        new LoopringGasProvider(),
-        new ZkSyncGasProvider()
+        ...moduleGasProviders,
     ];
     const finalGasProviders = gasProviders !== undefined
         ? (Array.isArray(gasProviders) ? gasProviders : [gasProviders])
@@ -64,7 +87,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
     return {
         id: "evm",
         wrapper: WrapperComponent,
-        walletConnectionProvider,
+        walletConnectionProvider: walletConnectionProvider,
         addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
