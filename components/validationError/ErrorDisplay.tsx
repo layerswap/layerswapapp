@@ -23,7 +23,7 @@ export const ErrorDisplay: React.FC<Partial<ErrorDisplayProps & { errorName?: st
     return (
         <div className="px-2 py-3 rounded-2xl bg-secondary-400">
             <div className="flex items-start gap-2">
-                <span className="shrink-0">{details?.icon}</span>
+                <span className="shrink-0 p-0.5">{details?.icon}</span>
                 <div className="flex flex-col gap-1">
                     <p className="text-white font-medium leading-4 text-base mt-0.5">{details?.title}</p>
                     {message ? <p className="text-secondary-text text-sm leading-[18px]">{message}</p> : null}
