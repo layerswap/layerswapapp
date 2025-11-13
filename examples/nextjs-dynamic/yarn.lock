@@ -54,34 +54,34 @@
     viem "^2.31.7"
     zustand "5.0.3"
 
-"@bigmi/client@^0.3.1":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@bigmi/client/-/client-0.3.1.tgz#824f01b857ef0bc9aeb8791b16593e5ca8bcc4ab"
-  integrity sha512-7VLRMuOSJtV72VhWSEk7b2FLAGzPvSr1s3aBPobYdndMqrkt1UF9b+2IudkRinsRKetuV8uaH1DtWsyrYCXGKg==
+"@bigmi/client@^0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@bigmi/client/-/client-0.6.1.tgz#7bc90ca3a696dc015a11c879da0deb5954d4a966"
+  integrity sha512-qwpMQAXfbiZuAshyfKlfojDO1WVeU9ErySp9f86biMIsJIAe49lklgHqLW83iYAbfujNTuG1RRpEUzkccokMoQ==
   dependencies:
-    "@bigmi/core" "^0.3.1"
+    "@bigmi/core" "^0.6.1"
     eventemitter3 "^5.0.1"
-    zustand "^5.0.5"
+    zustand "^5.0.8"
 
-"@bigmi/core@^0.3.1":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@bigmi/core/-/core-0.3.1.tgz#5d0ac4ecbbf8d70af797fbbea58772dbafd4535d"
-  integrity sha512-KU2KZJmyHPtw7m9sTfOWZ2gQaE8iONpLajmh4gCZfscZIRiL1LddqWkLuFIoFNfY0jbJmvqX46leLUw5YIOVDw==
+"@bigmi/core@^0.6.1":
+  version "0.6.2"
+  resolved "https://registry.yarnpkg.com/@bigmi/core/-/core-0.6.2.tgz#fda7bfb8a33c402bace351933fbe22198fa62cf4"
+  integrity sha512-lfznHbEdDhIbJ43zMi8yGFRyYuiaNDK5vOQ+0y8wpQXlMmtVAd3EMbq7Dj1bxi8PU6oOo8fqGfOHBZN4AUHD4A==
   dependencies:
     "@noble/hashes" "^1.8.0"
     bech32 "^2.0.0"
-    bitcoinjs-lib "^7.0.0-rc.0"
+    bitcoinjs-lib "^7.0.0"
     bs58 "^6.0.0"
     eventemitter3 "^5.0.1"
-    zustand "^5.0.5"
+    zustand "^5.0.8"
 
-"@bigmi/react@^0.3.1":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@bigmi/react/-/react-0.3.1.tgz#edf3cd6b09555ef8f26131ab3415306d08381380"
-  integrity sha512-+evNAsf/TNAGuSLwToQEyqX++FddLCqRBGKnRhmnk5WZJuOUtr+LwpjDFkGu2PNSMbbIFd8eprysMhVIGnEM3w==
+"@bigmi/react@^0.6.1":
+  version "0.6.1"
+  resolved "https://registry.yarnpkg.com/@bigmi/react/-/react-0.6.1.tgz#f65f98e8b2966cd5e9401a32a2503632af2aeab5"
+  integrity sha512-Fk+dwy8YfMi8POXA7L9O7aAtNk8LXMLB3l/UjQ3cnpGh+5YXHcRtOIYq/Gn23NapbGfKTuTpxZDGrQ9kfWm9Bg==
   dependencies:
-    "@bigmi/client" "^0.3.1"
-    "@bigmi/core" "^0.3.1"
+    "@bigmi/client" "^0.6.1"
+    "@bigmi/core" "^0.6.1"
 
 "@bitcoinerlab/secp256k1@^1.2.0":
   version "1.2.0"
@@ -1825,7 +1825,7 @@
     bs58 "^5.0.0"
     uuid "^8.3.2"
 
-"@layerswap/wallet-bitcoin@^1.0.0":
+"@layerswap/wallet-bitcoin@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@layerswap/wallet-bitcoin/-/wallet-bitcoin-1.0.1.tgz#58a540fe06c53ba8c83073b9219ce4b42d3993c6"
   integrity sha512-9ivYzqBw/Qmqf0r1jUyfuByQ6ZQVUzzk8No/fn9sP4swFE5Os69EXpak545s14uRYAMYn+Np53GdwYO581nu8Q==
@@ -1835,7 +1835,7 @@
     bitcoin-address-validation "^3.0.0"
     bitcoinjs-lib "^7.0.0"
 
-"@layerswap/wallet-evm@^1.0.1":
+"@layerswap/wallet-evm@^1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@layerswap/wallet-evm/-/wallet-evm-1.0.2.tgz#8b50847dfd912c9ed4787da03ba6f9cf5bbf2e8b"
   integrity sha512-SpRj7n2VvkTTXyTsi1feFPIZAnJOfkTfxnlyKRNdIhXEPpSxTWSMESZjDqq+YRTfU6Ynsd+kAfVvwOkOrX8Yrw==
@@ -1887,10 +1887,10 @@
     "@solana/wallet-adapter-wallets" "^0.19.36"
     "@solana/web3.js" "1.66.0"
 
-"@layerswap/widget@^1.0.3":
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/@layerswap/widget/-/widget-1.0.5.tgz#715c17511b8b48f40f93d0270f816d7d4f3e1fbb"
-  integrity sha512-KXnqVDmkW629bWhRkVGxAdgn4XscnQyzTwvPHKoG0FRS4vfKwTBcF3MjE/C3mq5eYcvyCUbAUeEbAgtq/wU52Q==
+"@layerswap/widget@^1.0.6":
+  version "1.0.6"
+  resolved "https://registry.yarnpkg.com/@layerswap/widget/-/widget-1.0.6.tgz#9b6149bccf084174efdc1b3bcaaa189b51ee5106"
+  integrity sha512-A9+nnPqTKYCJmKP5tV8XOVCxYTSC6FbtgPMUDF/utMvbLNCxwkcHtXRv13TGk+dgHL/PgCL2GiXztBMNErLaXw==
   dependencies:
     "@headlessui/react" "^2.1.1"
     "@number-flow/react" "^0.5.10"
@@ -5501,12 +5501,24 @@
   resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-5.90.5.tgz#0175f9f517514906db8ab379589ed3f96694ecc4"
   integrity sha512-wLamYp7FaDq6ZnNehypKI5fNvxHPfTYylE0m/ZpuuzJfJqhR5Pxg9gvGBHZx4n7J+V5Rg5mZxHHTlv25Zt5u+w==
 
-"@tanstack/react-query@^5.25.0", "@tanstack/react-query@^5.74.7":
+"@tanstack/query-core@5.90.8":
+  version "5.90.8"
+  resolved "https://registry.yarnpkg.com/@tanstack/query-core/-/query-core-5.90.8.tgz#4a2600a5acf403494e4d5a3fcfac038ed84c5db7"
+  integrity sha512-4E0RP/0GJCxSNiRF2kAqE/LQkTJVlL/QNU7gIJSptaseV9HP6kOuA+N11y4bZKZxa3QopK3ZuewwutHx6DqDXQ==
+
+"@tanstack/react-query@^5.25.0":
   version "5.90.5"
   resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-5.90.5.tgz#545e61282c787bd87ac5785da9a4943462f78ef6"
   integrity sha512-pN+8UWpxZkEJ/Rnnj2v2Sxpx1WFlaa9L6a4UO89p6tTQbeo+m0MS8oYDjbggrR8QcTyjKoYWKS3xJQGr3ExT8Q==
   dependencies:
     "@tanstack/query-core" "5.90.5"
+
+"@tanstack/react-query@^5.90.5":
+  version "5.90.8"
+  resolved "https://registry.yarnpkg.com/@tanstack/react-query/-/react-query-5.90.8.tgz#c9b8bdbffd2df4b023094c3da144324a9daa5cef"
+  integrity sha512-/3b9QGzkf4rE5/miL6tyhldQRlLXzMHcySOm/2Tm2OLEFE9P1ImkH0+OviDBSvyAvtAOJocar5xhd7vxdLi3aQ==
+  dependencies:
+    "@tanstack/query-core" "5.90.8"
 
 "@tanstack/react-virtual@^3.10.8", "@tanstack/react-virtual@^3.13.9":
   version "3.13.12"
@@ -8030,7 +8042,7 @@ bitcoin-ops@^1.3.0, bitcoin-ops@^1.4.1:
   resolved "https://registry.yarnpkg.com/bitcoin-ops/-/bitcoin-ops-1.4.1.tgz#e45de620398e22fd4ca6023de43974ff42240278"
   integrity sha512-pef6gxZFztEhaE9RY9HmWVmiIHqCb2OyS4HPKkpc6CIiiOa3Qmuoylxc5P2EkU3w+5eTSifI9SEZC88idAIGow==
 
-bitcoinjs-lib@^7.0.0, bitcoinjs-lib@^7.0.0-rc.0:
+bitcoinjs-lib@^7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/bitcoinjs-lib/-/bitcoinjs-lib-7.0.0.tgz#0bea06c164b9048b4453914507514ed7ee3018c2"
   integrity sha512-2W6dGXFd1KG3Bs90Bzb5+ViCeSKNIYkCUWZ4cvUzUgwnneiNNZ6Sk8twGNcjlesmxC0JyLc/958QycfpvXLg7A==
@@ -14109,7 +14121,7 @@ zustand@^4.5.7:
   dependencies:
     use-sync-external-store "^1.2.2"
 
-zustand@^5.0.5:
+zustand@^5.0.8:
   version "5.0.8"
   resolved "https://registry.yarnpkg.com/zustand/-/zustand-5.0.8.tgz#b998a0c088c7027a20f2709141a91cb07ac57f8a"
   integrity sha512-gyPKpIaxY9XcO2vSMrLbiER7QMAMGOQZVRdJ6Zi782jkbzZygq5GI9nG8g+sMgitRtndwaBSl7uiqC49o1SSiw==
