@@ -10,7 +10,7 @@ export default function Home({ settings }: InferGetServerSidePropsType<typeof ge
 
   return (
     <Layout>
-      <PageComponent settings={settings} />
+      <PageComponent layerswapSettings={settings} />
     </Layout>
   )
 }

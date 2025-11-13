@@ -1,19 +1,36 @@
-# Layerswap Next.js Example
+# Layerswap Widget + Next.js Example
 
-A minimal Next.js Page Router project with Layerswap widget implementation.
+This example demonstrates how to integrate the [Layerswap Widget](https://github.com/layerswap/layerswapapp) in a [Next.js](https://nextjs.org/) Page Router.
 
-## Setup
+## Getting started
 
-1. Install dependencies:
+### Prerequisites
+
+- Node.js >= 20.9.0
+- Yarn 1.22.22 or later
+
+### Installation
+
+Install dependencies:
+
 ```bash
 yarn install
 ```
 
-2. Update API keys in `src/app/page.tsx`
+### Environment Setup
 
-3. Run the dev server:
+Create a `.env.local` file in the root directory and add your API keys:
+
+```env
+NEXT_PUBLIC_API_KEY = YOUR_API_KEY
+```
+
+YOUR_API_KEY is used for accessing the widget. You can generate and input the API key from the [Partner Dashboard](https://docs.layerswap.io/api-reference/api-keys)
+
+### Running the Development Server
+
 ```bash
 yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to see the Layerswap widget.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the widget.

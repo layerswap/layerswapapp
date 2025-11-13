@@ -9,7 +9,7 @@ import { TonProvider } from '@layerswap/wallet-ton';
 import { TronProvider } from '@layerswap/wallet-tron';
 import { ParadexProvider } from '@layerswap/wallet-paradex';
 
-export function PageComponent({ settings }: { settings: LayerSwapSettings }) {
+export function PageComponent({ layerswapSettings }: { layerswapSettings: LayerSwapSettings }) {
     const walletConnect = {
         projectId: '821ab14954640abd9a7974a70f74bc6c',
         name: 'Layerswap Example',
@@ -34,30 +34,32 @@ export function PageComponent({ settings }: { settings: LayerSwapSettings }) {
                     our documentation
                 </a>.
             </p>
-            <LayerswapProvider
-                config={{
-                    settings,
-                    // apiKey: "Replace with your own API key",
-                    version: 'mainnet', //'mainnet' or 'testnet'
-                    tonConfigs: {
-                        tonApiKey: "Replace with your own TON API key",
-                        manifestUrl: 'https://layerswap.io/app/tonconnect-manifest.json',
-                    },
-                    walletConnect
-                }}
-                walletProviders={[
-                    EVMProvider,
-                    StarknetProvider,
-                    SVMProvider,
-                    BitcoinProvider,
-                    FuelProvider,
-                    TonProvider,
-                    TronProvider,
-                    ParadexProvider
-                ]}
-            >
-                <Swap />
-            </LayerswapProvider>
+            <div className="w-full max-w-lg mx-auto h-full rounded-xl">
+                <LayerswapProvider
+                    config={{
+                        settings: layerswapSettings,
+                        // apiKey: "Replace with your own API key",
+                        version: 'mainnet', //'mainnet' or 'testnet'
+                        // tonConfigs: {
+                        //     tonApiKey: "Replace with your own TON API key",
+                        //     manifestUrl: 'https://layerswap.io/app/tonconnect-manifest.json',
+                        // },
+                        walletConnect
+                    }}
+                    walletProviders={[
+                        EVMProvider,
+                        StarknetProvider,
+                        SVMProvider,
+                        BitcoinProvider,
+                        FuelProvider,
+                        TonProvider,
+                        TronProvider,
+                        ParadexProvider
+                    ]}
+                >
+                    <Swap />
+                </LayerswapProvider>
+            </div>
         </div>
     );
 }

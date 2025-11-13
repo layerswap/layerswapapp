@@ -49,6 +49,11 @@ const Comp: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
     const { address } = useAccount()
 
     return <div className="h-screen flex flex-col items-center justify-center gap-4">
+        <h1 className="text-2xl font-bold text-white text-center">Layerswap Widget with Reown Example</h1>
+        <p className="text-gray-400 max-w-lg px-4 text-center">This example demonstrates the Layerswap widget integration using Reown. For information on all available widget configurations, please refer to{' '}
+            <a href="https://docs.layerswap.io/introduction" target="_blank" rel="noopener noreferrer" className="text-pink-600 hover:no-underline underline">our documentation</a>.
+        </p>
+
         {
             address
                 ? <AppKitAccountButton />

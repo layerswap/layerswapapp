@@ -34,30 +34,32 @@ export function LayerswapWidget({ settings }: { settings: LayerSwapSettings }) {
           our documentation
         </a>.
       </p>
-      <LayerswapProvider
-        config={{
-          settings,
-          // apiKey: "Replace with your own API key",
-          version: 'mainnet', //'mainnet' or 'testnet'
-          tonConfigs: {
-            tonApiKey: "Replace with your own TON API key",
-            manifestUrl: 'https://layerswap.io/app/tonconnect-manifest.json',
-          },
-          walletConnect
-        }}
-        walletProviders={[
-          EVMProvider,
-          StarknetProvider,
-          SVMProvider,
-          BitcoinProvider,
-          FuelProvider,
-          TonProvider,
-          TronProvider,
-          ParadexProvider
-        ]}
-      >
-        <Swap />
-      </LayerswapProvider>
+      <div className="w-full max-w-lg mx-auto h-full rounded-xl">
+        <LayerswapProvider
+          config={{
+            settings,
+            // apiKey: "Replace with your own API key",
+            version: 'mainnet', //'mainnet' or 'testnet'
+            // tonConfigs: {
+            //   tonApiKey: "Replace with your own TON API key",
+            //   manifestUrl: 'https://layerswap.io/app/tonconnect-manifest.json',
+            // },
+            walletConnect
+          }}
+          walletProviders={[
+            EVMProvider,
+            StarknetProvider,
+            SVMProvider,
+            BitcoinProvider,
+            FuelProvider,
+            TonProvider,
+            TronProvider,
+            ParadexProvider
+          ]}
+        >
+          <Swap />
+        </LayerswapProvider>
+      </div>
     </div>
   );
 }
