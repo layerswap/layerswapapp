@@ -1,15 +1,17 @@
 import { Lock } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useAccount, useConfig } from 'wagmi';
-import { ActivationTokenPicker } from './ActivationTokentPicker';
-import { useActivationData, useLoopringAccount, useLoopringTokens } from './hooks';
-import { AppSettings, SignatureIcon, WalletMessage, ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactionButton } from '@layerswap/widget/internal';
-import { TransactionMessageType, TransferProps, WithdrawPageProps } from '@layerswap/widget/types';
-import { ChainId, UnlockedAccount } from '../../services/transferService/loopring/defs';
-import { LoopringAPI } from '../../services/transferService/loopring/LoopringAPI';
+import { ActivationTokenPicker } from '@/utils/ActivationTokentPicker';
+import { useActivationData, useLoopringAccount, useLoopringTokens } from '@/utils/hooks';
+import { AppSettings, SignatureIcon, WalletMessage, ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactionButton, ActionMessage } from '@layerswap/widget/internal';
+import { ActionMessageType, TransferProps, WithdrawPageProps } from '@layerswap/widget/types';
+import { ChainId, UnlockedAccount } from '@/services/defs';
+import { LoopringAPI } from '@/services/LoopringAPI';
 
-const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
+const LoopringMultiStepHandler: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
+    const [buttonClicked, setButtonClicked] = useState(false)
+    const [error, setError] = useState<Error | undefined>()
     const [transferDone, setTransferDone] = useState<boolean>();
     const [activationPubKey, setActivationPubKey] = useState<{ x: string; y: string }>()
     const [selectedActivationAsset, setSelectedActivationAsset] = useState<string>()
@@ -31,6 +33,8 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
 
     const handleUnlockAccount = useCallback(async () => {
         setLoading(true)
+        setButtonClicked(true)
+        setError(undefined)
         try {
             if (!accInfo)
                 return
@@ -38,9 +42,8 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
             setUnlockedAccount(res)
         }
         catch (error) {
-            error.name = TransactionMessageType.UnexpectedErrorMessage
-            error.message = error
-            throw new Error(error)
+            (error as Error).name = ActionMessageType.UexpectedErrorMessage
+            setError(error as Error)
         }
         finally {
             setLoading(false)
@@ -49,6 +52,8 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
 
     const activateAccout = useCallback(async () => {
         setLoading(true)
+        setButtonClicked(true)
+        setError(undefined)
         try {
             if (!accInfo || !selectedActivationAsset || !loopringToken)
                 return
@@ -62,9 +67,8 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
             await refetchAccount()
         }
         catch (error) {
-            error.name = TransactionMessageType.UnexpectedErrorMessage
-            error.message = error
-            throw new Error(error)
+            (error as Error).name = ActionMessageType.UexpectedErrorMessage
+            setError(error as Error)
         }
         finally {
             setLoading(false)
@@ -73,6 +77,8 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
 
     const handleTransfer = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setLoading(true)
+        setLoading(true)
+        setButtonClicked(true)
         try {
             if (!swapId || !accInfo || !unlockedAccount || !source_token || !amount)
                 return
@@ -90,20 +96,16 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
                 return transferResult.hash
             }
             else {
-                throw new Error(TransactionMessageType.TransactionFailed)
+                throw new Error(ActionMessageType.TransactionFailed)
             }
         }
         catch (error) {
             setLoading(false)
-            if (error in TransactionMessageType) {
-                error.name = error
-                throw error
-            }
-            else {
-                error.name = TransactionMessageType.UnexpectedErrorMessage
-                error.message = error
-                throw new Error(error)
-            }
+            if (error in ActionMessageType)
+                (error as Error).name = error
+            else
+                (error as Error).name = ActionMessageType.UexpectedErrorMessage
+            setError(error as Error)
         }
     }, [source_network, accInfo, unlockedAccount, source_token])
 
@@ -158,6 +160,13 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-secondary-text">
                 <div className='space-y-4'>
                     {
+                        buttonClicked &&
+                        <ActionMessage
+                            error={error}
+                            isLoading={loading}
+                        />
+                    }
+                    {
                         (accInfo && unlockedAccount) ?
                             <SendTransactionButton
                                 isDisabled={!!(loading || transferDone)}
@@ -195,4 +204,4 @@ const LoopringWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
     )
 }
 
-export default LoopringWalletWithdraw
+export default LoopringMultiStepHandler

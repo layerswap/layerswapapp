@@ -1,22 +1,22 @@
 'use client'
 import { FC, ReactNode, useEffect, useState } from "react"
-import ThemeWrapper from "../components/themeWrapper";
+import ThemeWrapper from "@/components/themeWrapper";
 import { ErrorBoundary } from "react-error-boundary";
 import { SettingsProvider } from "./settings";
-import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
-import { LayerSwapSettings } from "../Models/LayerSwapSettings";
-import ErrorFallback from "../components/ErrorFallback";
-import { THEME_COLORS, ThemeData } from "../Models/Theme";
+import { LayerSwapAppSettings } from "@/Models/LayerSwapAppSettings";
+import { LayerSwapSettings } from "@/Models/LayerSwapSettings";
+import ErrorFallback from "@/components/ErrorFallback";
+import { THEME_COLORS, ThemeData } from "@/Models/Theme";
 import { AsyncModalProvider } from "./asyncModal";
 import { IntercomProvider } from 'react-use-intercom';
-import AppSettings from "../lib/AppSettings";
-import { getSettings } from "../helpers/getSettings";
+import AppSettings from "@/lib/AppSettings";
+import { getSettings } from "@/helpers/getSettings";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 import ColorSchema from "@/components/ColorSchema";
 import { WidgetLoading } from "@/components/WidgetLoading";
 import WalletsProviders from "@/components/Wallet/WalletProviders";
 import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
-import { InitialSettings } from "../Models/InitialSettings";
+import { InitialSettings } from "@/Models/InitialSettings";
 import { BalanceAccountsProvider } from "./balanceAccounts";
 import { WalletProvider } from "@/types";
 import { ResolverProviders } from "./resolverContext";

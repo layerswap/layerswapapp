@@ -1,6 +1,6 @@
 import { useWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
 import { KnownInternalNames, walletIconResolver } from "@layerswap/widget/internal";
-import { GasWithToken, TransactionMessageType, WalletConnectionProviderProps, InternalConnector, Wallet, WalletConnectionProvider } from "@layerswap/widget/types";
+import { GasWithToken, ActionMessageType, WalletConnectionProviderProps, InternalConnector, Wallet, WalletConnectionProvider } from "@layerswap/widget/types";
 import { buildInitialTransaction } from "./services/transferService/transactionBuilder";
 import { useMemo } from "react";
 import { TronGasProvider } from "./tronGasProvider";
@@ -116,15 +116,15 @@ export default function useTronConnection({ networks }: WalletConnectionProvider
             const e = new Error()
             e.message = error.message
             if (error === "BANDWITH_ERROR") {
-                e.name = TransactionMessageType.InsufficientFunds
+                e.name = ActionMessageType.InsufficientFunds
                 throw e
             }
             else if (error === "user reject this request") {
-                e.name = TransactionMessageType.TransactionRejected
+                e.name = ActionMessageType.TransactionRejected
                 throw e
             }
             else {
-                e.name = TransactionMessageType.UnexpectedErrorMessage
+                e.name = ActionMessageType.UexpectedErrorMessage
                 throw e
             }
         }

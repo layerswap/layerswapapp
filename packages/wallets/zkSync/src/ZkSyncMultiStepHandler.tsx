@@ -2,11 +2,11 @@
 import { ArrowLeftRight, Info } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { utils } from 'ethers';
-import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactionButton, useSettingsState, KnownInternalNames, useSelectedAccount, useWallet, SignatureIcon, ClickTooltip } from '@layerswap/widget/internal';
+import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactionButton, useSettingsState, KnownInternalNames, useSelectedAccount, useWallet, SignatureIcon, ClickTooltip, ActionMessage } from '@layerswap/widget/internal';
 import { useAccount } from 'wagmi';
-import { TransferProps, TransactionMessageType, WithdrawPageProps } from '@layerswap/widget/types';
+import { TransferProps, ActionMessageType, WithdrawPageProps } from '@layerswap/widget/types';
 import { formatUnits } from 'viem';
-import { useEthersSigner } from '../evmUtils/ethers';
+import { useEthersSigner } from '@/utils/ethers';
 
 // Type definitions for zksync
 type ZkSyncWallet = {
@@ -37,8 +37,10 @@ type ZkSyncModule = {
     };
 };
 
-const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
+const ZkSyncMultiStepHandler: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
+    const [buttonClicked, setButtonClicked] = useState(false)
+    const [error, setError] = useState<Error | undefined>()
     const [syncWallet, setSyncWallet] = useState<ZkSyncWallet | null>();
     const [accountIsActivated, setAccountIsActivated] = useState(false);
     const [activationFee, setActivationFee] = useState<({ feeInAsset: number, feeInUsd: number } | undefined)>(undefined);
@@ -64,6 +66,8 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel
         if (!signer)
             return
         setLoading(true)
+        setButtonClicked(true)
+        setError(undefined)
         try {
             const zksync = await import('zksync') as ZkSyncModule;
             const syncProvider = await zksync.getDefaultProvider(defaultProvider);
@@ -80,9 +84,8 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel
             setSyncWallet(wallet)
         }
         catch (error) {
-            error.name = TransactionMessageType.UnexpectedErrorMessage
-            error.message = error
-            throw new Error(error)
+            (error as Error).name = ActionMessageType.UexpectedErrorMessage
+            setError(error as Error)
         }
         finally {
             setLoading(false)
@@ -90,9 +93,12 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel
     }, [signer, defaultProvider, source_token])
 
     const activateAccout = useCallback(async () => {
+
         if (!syncWallet)
             return
         setLoading(true)
+        setButtonClicked(true)
+        setError(undefined)
         try {
             if (await syncWallet.isSigningKeySet()) {
                 setAccountIsActivated(true)
@@ -105,13 +111,13 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel
                 setAccountIsActivated(true)
             else if (receipt.failReason)
                 throw new Error(receipt.failReason)
+
             else
                 throw new Error("Activation failed")
         }
         catch (error) {
-            error.name = TransactionMessageType.UnexpectedErrorMessage
-            error.message = error
-            throw new Error(error)
+            (error as Error).name = ActionMessageType.UexpectedErrorMessage
+            setError(error as Error)
         }
         finally {
             setLoading(false)
@@ -123,6 +129,8 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel
         if (!swapId || !syncWallet || !depositAddress || !source_token || !sequenceNumber || !amount) return
 
         setLoading(true)
+        setButtonClicked(true)
+        setError(undefined)
         try {
             const zksync = await import('zksync') as ZkSyncModule;
             const tf = await syncWallet?.syncTransfer({
@@ -138,10 +146,9 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel
             }
         }
         catch (error) {
+            (error as Error).name = ActionMessageType.UexpectedErrorMessage
             setLoading(false)
-            error.name = TransactionMessageType.UnexpectedErrorMessage
-            error.message = error
-            throw new Error(error)
+            setError(error as Error)
         }
     }, [syncWallet, source_token])
 
@@ -178,7 +185,13 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel
         <>
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-primary-text">
                 <div className='space-y-4'>
-
+                    {
+                        buttonClicked &&
+                        <ActionMessage
+                            error={error}
+                            isLoading={loading}
+                        />
+                    }
                     {
                         !syncWallet &&
                         <ButtonWrapper isDisabled={loading} isSubmitting={loading} onClick={handleAuthorize} icon={<SignatureIcon className="h-5 w-5 ml-2" aria-hidden="true" />} >
@@ -232,4 +245,4 @@ const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel
     )
 }
 
-export default ZkSyncWalletWithdrawStep
+export default ZkSyncMultiStepHandler

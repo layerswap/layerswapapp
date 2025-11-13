@@ -1,0 +1,80 @@
+{
+    "name": "@layerswap/wallet-loopring",
+    "version": "1.0.0",
+    "description": "Loopring Wallet Provider for Layerswap Widget",
+    "type": "module",
+    "main": "dist/esm/index.js",
+    "types": "dist/types/index.d.ts",
+    "typings": "dist/types/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/types/index.d.ts",
+            "default": "./dist/esm/index.js"
+        }
+    },
+    "sideEffects": false,
+    "files": [
+        "dist",
+        "dist/**/*"
+    ],
+    "scripts": {
+        "build": "pnpm run clean && pnpm run build:esm+types",
+        "build:esm+types": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types && tsc-alias -p tsconfig.json --outDir ./dist/esm",
+        "check:types": "tsc --noEmit",
+        "clean": "rimraf dist tsconfig.tsbuildinfo actions chains codegen experimental internal query",
+        "dev": "tsc --project tsconfig.json --rootDir ./src --outDir ./dist/esm --declaration --declarationMap --declarationDir ./dist/types --watch"
+    },
+    "author": "Layerswap",
+    "homepage": "https://github.com/layerswap/layerswapapp",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/layerswap/layerswapapp.git",
+        "directory": "packages/wallets/loopring"
+    },
+    "keywords": [
+        "layerswap",
+        "loopring",
+        "wallet",
+        "provider"
+    ],
+    "license": "MIT",
+    "peerDependencies": {
+        "@tanstack/react-query": "catalog:",
+        "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+        "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+        "@layerswap/widget": "workspace:^"
+    },
+    "dependencies": {
+        "axios": "catalog:",
+        "swr": "catalog:",
+        "@loopring-web/loopring-sdk": "^3.9.22",
+        "web-encoding": "^1.1.5",
+        "lucide-react": "^0.379.0",
+        "js-sha512": "^0.9.0",
+        "ethers": "5.7.2",
+        "jsbn": "^1.1.0",
+        "ethereumjs-util": "^7.1.5",
+        "bignumber.js": "^9.3.1",
+        "blake2b": "^2.1.4",
+        "crypto-js": "^4.1.1",
+        "bn.js": "^5.2.0"
+    },
+    "devDependencies": {
+        "@tailwindcss/postcss": "^4.0.15",
+        "@tanstack/react-query": "catalog:",
+        "@types/react": "catalog:",
+        "react": "catalog:",
+        "react-dom": "catalog:",
+        "@layerswap/widget": "workspace:^",
+        "tailwindcss": "^4.0.15"
+    },
+    "engines": {
+        "node": ">=22"
+    },
+    "directories": {
+        "lib": "lib"
+    },
+    "bugs": {
+        "url": "https://github.com/layerswap/layerswapapp/issues"
+    }
+}

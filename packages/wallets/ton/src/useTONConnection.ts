@@ -1,7 +1,7 @@
 import { ConnectedWallet, useTonConnectUI, useTonWallet } from "@tonconnect/ui-react"
 import { Address } from "@ton/core";
 import { KnownInternalNames, walletIconResolver } from "@layerswap/widget/internal";
-import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType, WalletConnectionProviderProps } from "@layerswap/widget/types";
+import { InternalConnector, Wallet, WalletConnectionProvider, ActionMessageType, WalletConnectionProviderProps } from "@layerswap/widget/types";
 import { transactionBuilder } from "./services/transferService/transactionBuilder";
 import { useTonConfig } from "./index";
 
@@ -131,15 +131,15 @@ export default function useTONConnection({ networks }: WalletConnectionProviderP
             const e = new Error()
             e.message = error.message
             if (error && error.includes('Reject request')) {
-                e.name = TransactionMessageType.TransactionRejected
+                e.name = ActionMessageType.TransactionRejected
                 throw e
             }
             else if (error && error.includes('Transaction was not sent')) {
-                e.name = TransactionMessageType.TransactionFailed
+                e.name = ActionMessageType.TransactionFailed
                 throw e
             }
             else {
-                e.name = TransactionMessageType.UnexpectedErrorMessage
+                e.name = ActionMessageType.UexpectedErrorMessage
                 throw e
             }
         }

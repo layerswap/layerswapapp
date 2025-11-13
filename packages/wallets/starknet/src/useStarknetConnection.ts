@@ -1,5 +1,5 @@
 import { useConnect, useDisconnect } from "@starknet-react/core";
-import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType, WalletConnectionProviderProps } from "@layerswap/widget/types";
+import { InternalConnector, Wallet, WalletConnectionProvider, ActionMessageType, WalletConnectionProviderProps } from "@layerswap/widget/types";
 import { KnownInternalNames, useWalletStore } from "@layerswap/widget/internal";
 import { resolveStarknetWalletConnectorIcon } from "./utils";
 
@@ -136,15 +136,15 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
             const e = new Error()
             e.message = error
             if (error === "An error occurred (USER_REFUSED_OP)" || error === "Execute failed") {
-                e.name = TransactionMessageType.TransactionRejected
+                e.name = ActionMessageType.TransactionRejected
                 throw e
             }
             else if (error === "failedTransfer") {
-                e.name = TransactionMessageType.TransactionFailed
+                e.name = ActionMessageType.TransactionFailed
                 throw e
             }
             else {
-                e.name = TransactionMessageType.UnexpectedErrorMessage
+                e.name = ActionMessageType.UexpectedErrorMessage
                 throw e
             }
         }

@@ -15,6 +15,8 @@ import {
     createTronProvider,
     createImmutablePassportProvider
 } from "@layerswap/wallets";
+import { ZKsyncProvider } from "@layerswap/wallet-zksync"
+import { LoopringProvider } from "@layerswap/wallet-loopring"
 import { ParsedUrlQuery } from "querystring"
 
 const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string, initialValues: ParsedUrlQuery }> = ({ settings, themeData, apiKey, initialValues }) => {
@@ -27,7 +29,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
         logoutRedirectUri: router.basePath ? `${window.location.origin}${router.basePath}/` : `${window.location.origin}/`
     } : undefined
 
-    const walletConnectConfigs= {
+    const walletConnectConfigs = {
         projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '',
         name: 'Layerswap',
         description: 'Layerswap App',

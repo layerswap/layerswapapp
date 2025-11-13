@@ -1,7 +1,7 @@
 {
-  "name": "@layerswap/wallet-evm",
-  "version": "1.0.2",
-  "description": "EVM Wallet Provider for Layerswap Widget",
+  "name": "@layerswap/wallet-zksync",
+  "version": "1.0.0",
+  "description": "ZKsync Wallet Provider for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",
   "types": "dist/types/index.d.ts",
@@ -29,27 +29,23 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/layerswap/layerswapapp.git",
-    "directory": "packages/wallets/evm"
+    "directory": "packages/wallets/zkSync"
   },
   "keywords": [
     "layerswap",
-    "evm",
-    "wallet",
-    "provider"
+    "bitcoin",
+    "wallet-provider"
   ],
   "license": "MIT",
-  "peerDependencies": {
-    "@tanstack/react-query": "catalog:",
-    "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
-    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
-    "viem": "catalog:",
-    "wagmi": "catalog:",
-    "@layerswap/widget": "workspace:^"
-  },
   "dependencies": {
-    "@walletconnect/ethereum-provider": "2.21.8",
+    "zksync": "0.13.1",
+    "web-encoding": "^1.1.5",
     "ethers": "5.7.2",
-    "js-sha3": "^0.8.0"
+    "lucide-react": "^0.379.0"
+  },
+  "peerDepƒendencies": {
+    "viem": "catalog:",
+    "wagmi": "catalog:"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.15",
