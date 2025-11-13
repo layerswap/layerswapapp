@@ -27,16 +27,15 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
     }, [wallets])
 
     const availableWallets = useMemo(() => {
-        if (!purpose || !network) {
-            return wallets.filter(wallet => !wallet.isNotAvailable)
-        }
+        if (!network) return []
+        const filteredWallets = wallets.filter(wallet => wallet.isNotAvailable)
         switch (purpose) {
             case "withdrawal":
-                return wallets.filter(wallet => wallet.withdrawalSupportedNetworks?.includes(network.name))
+                return filteredWallets.filter(wallet => wallet.withdrawalSupportedNetworks?.includes(network.name))
             case "autofill":
-                return wallets.filter(wallet => wallet.autofillSupportedNetworks?.includes(network.name))
+                return filteredWallets.filter(wallet => wallet.autofillSupportedNetworks?.includes(network.name))
             case "asSource":
-                return wallets.filter(wallet => wallet.asSourceSupportedNetworks?.includes(network.name))
+                return filteredWallets.filter(wallet => wallet.asSourceSupportedNetworks?.includes(network.name))
             default:
                 return []
         }
