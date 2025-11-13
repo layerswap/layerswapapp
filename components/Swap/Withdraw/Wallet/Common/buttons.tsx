@@ -145,6 +145,7 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
 type ButtonWrapperProps = ComponentProps<typeof ButtonWrapper>;
 type SendFromWalletButtonProps = Omit<ButtonWrapperProps, 'onClick'> & {
     error?: boolean;
+    clearError?: () => void
     onClick: (props: TransferProps) => Promise<string | undefined>
     swapData: SwapBasicData,
     refuel: boolean
@@ -152,6 +153,7 @@ type SendFromWalletButtonProps = Omit<ButtonWrapperProps, 'onClick'> & {
 
 export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     error,
+    clearError,
     onClick,
     swapData: swapBasicData,
     refuel,
@@ -164,6 +166,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
 
+    
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network?.name);
     const { wallets } = useWallet(swapBasicData.source_network, 'withdrawal')
 
@@ -183,7 +186,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             if (!selectedWallet?.isActive) {
                 throw new Error('Wallet is not active')
             }
+            
             setLoading(true)
+            clearError?.()
 
             let swapData: SwapDetails | undefined = swapDetails
             if (!swapId || !swapDetails) {
@@ -225,7 +230,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 swapData = newSwapData.swap
             }
 
-
             if (!depositActionsResponse) {
                 throw new Error('No deposit actions response')
             }
@@ -243,9 +247,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             }
         }
         catch (e) {
-            if (!highPriceImpact && swapId) {
-                setSwapId(undefined)
-            }
+            setSwapId(undefined)
 
             console.log('Error in SendTransactionButton:', e)
 
@@ -316,7 +318,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     }
     return (
         <>
-            {!!(!swapId && highPriceImpact && quote?.destination_token && priceImpactValues) && <div className="py-1">
+            {!!(!swapId && highPriceImpact && quote?.destination_token && priceImpactValues && !error) && <div className="py-1">
                 <div className="flex items-start gap-2.5">
                     <span className="shrink-0"><InfoIcon className="w-5 h-5 text-warning-foreground" /></span>
                     <div className="flex flex-col gap-1.5 pr-4">
