@@ -14,9 +14,10 @@ type Props = {
     swapId: string | undefined
     refuel: boolean
     onWalletWithdrawalSuccess?: () => void
+    onCancelWithdrawal?: () => void
 };
 //TODO have separate components for evm and none_evm as others are sweepless anyway
-export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWalletWithdrawalSuccess }) => {
+export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWalletWithdrawalSuccess, onCancelWithdrawal }) => {
     const { source_network } = swapData
     const source_network_internal_name = source_network?.name;
 
@@ -116,7 +117,7 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
     return <>
         {
             swapData && WithdrawalComponent &&
-            <WithdrawalProvider onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}>
+            <WithdrawalProvider onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal}>
                 <WithdrawalComponent
                     swapId={swapId}
                     swapBasicData={swapData}

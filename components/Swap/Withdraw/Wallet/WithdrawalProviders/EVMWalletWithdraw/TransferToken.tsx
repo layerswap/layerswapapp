@@ -96,44 +96,11 @@ const TransferTokenButton: FC<Props> = ({
             <SendTransactionButton
                 onClick={clickHandler}
                 error={!!error && buttonClicked}
+                clearError={() => setError(undefined)}
                 swapData={swapData}
                 refuel={refuel}
             />
-        }
-        {/* <Modal
-            height="80%"
-            show={openChangeAmount}
-            setShow={setOpenChangeAmount}
-            modalId="transferNative"
-        >
-            <MessageComponent>
-                <div className="space-y-4">
-                    <div className='md:text-2xl text-lg font-bold text-primary-text leading-6 text-center'>
-                        Insufficient funds for gas
-                    </div>
-                    <div className="text-base font-medium space-y-6 text-primary-text text-center">
-                        This transfer can&apos;t be processed because you don&apos;t have enough gas.
-                    </div>
-                </div>
-                <div className="text-base">
-                    <span>You have requested swap with</span> <span>{amount}</span>
-                </div>
-                <MessageComponent.Buttons>
-                    <div className="flex flex-row text-primary-text text-base space-x-2">
-                        <div className='basis-1/3'>
-                            <SubmitButton onClick={() => { setOpenChangeAmount(false); clickHandler() }} text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='filled' >
-                                Transfer
-                            </SubmitButton>
-                        </div>
-                        <div className='basis-2/3'>
-                            <SubmitButton onClick={() => setOpenChangeAmount(false)} button_align='right' text_align='left' isDisabled={false} isSubmitting={false} buttonStyle='outline' >
-                                Cancel
-                            </SubmitButton>
-                        </div>
-                    </div>
-                </MessageComponent.Buttons>
-            </MessageComponent>
-        </Modal> */}
+        }        
     </div>
 }
 

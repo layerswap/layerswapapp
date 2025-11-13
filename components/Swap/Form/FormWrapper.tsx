@@ -101,7 +101,6 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
         : generateSwapInitialValues(settings, query, type)
 
     const handleShowSwapModal = useCallback((value: boolean) => {
-        setSwapModalOpen(value)
         if (!value) {
             setSwapId(undefined)
             removeSwapPath(router)
@@ -111,6 +110,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                 formikRef?.current?.setFieldValue('amount', 0, true);
             }
         }
+        setSwapModalOpen(value)
     }, [router, swapDetails, walletWihdrawDone, mutateBalances])
 
     const handleWalletWithdrawalSuccess = useCallback(() => {
@@ -144,7 +144,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                     modalId="showSwap"
                     className={!swapBasicData?.use_deposit_address ? "expandContainerHeight" : ""}>
                     <VaulDrawer.Snap id="item-1">
-                        <SwapDetails type="contained" onWalletWithdrawalSuccess={handleWalletWithdrawalSuccess} partner={partner} />
+                        <SwapDetails type="contained" onWalletWithdrawalSuccess={handleWalletWithdrawalSuccess} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
                     </VaulDrawer.Snap>
                 </VaulDrawer>
                 {children}
