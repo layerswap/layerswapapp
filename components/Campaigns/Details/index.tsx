@@ -24,7 +24,7 @@ function CampaignDetails() {
     const campaign = campaignsData?.data?.find(c => c.name === camapaignName)
     const network = campaign?.network
 
-    const { provider } = useWallet(network, 'autofil')
+    const { provider } = useWallet(network, 'autofill')
     const { connect } = useConnectModal()
 
     const handleConnect = useCallback(async () => {

@@ -30,7 +30,7 @@ interface QuoteComponentProps {
 
 const SwapQuoteComp: FC<QuoteComponentProps> = ({ swapValues: values, quote: quoteData, isQuoteLoading, partner }) => {
     const [isOpen, setIsOpen] = useState(false)
-    const { wallets: destWallets } = useWallet(values.to, 'autofil')
+    const { wallets: destWallets } = useWallet(values.to, 'autofill')
     const wallet = (values?.to && values?.destination_address) ? destWallets?.find(w => w.addresses?.some(a => addressFormat(a, values.to!) === addressFormat(values.destination_address!, values.to!))) : undefined
     const selectedSourceAccount = useSelectedAccount("from", values?.from?.name);
 
