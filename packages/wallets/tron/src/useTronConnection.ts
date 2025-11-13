@@ -124,7 +124,7 @@ export default function useTronConnection({ networks }: WalletConnectionProvider
                 throw e
             }
             else {
-                e.name = ActionMessageType.UexpectedErrorMessage
+                e.name = ActionMessageType.UnexpectedErrorMessage
                 throw e
             }
         }

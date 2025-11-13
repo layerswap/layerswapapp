@@ -25,7 +25,7 @@ export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean }>
         return <ActionMessages.DifferentAccountsNotAllowedError network={error?.message} />
     }
     else if (error) {
-        if (!error.message) return <ActionMessages.UexpectedErrorMessage message={'Something went wrong'} />
+        if (!error.message) return <ActionMessages.UnexpectedErrorMessage message={'Something went wrong'} />
 
         const swapWithdrawalError = new Error(error?.message);
         swapWithdrawalError.name = `SwapWithdrawalError`;
@@ -39,7 +39,7 @@ export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean }>
         //     where: 'swapWithdrawalError',
         //     severity: 'error',
         // });
-        return <ActionMessages.UexpectedErrorMessage message={error?.message} />
+        return <ActionMessages.UnexpectedErrorMessage message={error?.message} />
     }
     else return <></>
 }

@@ -42,7 +42,7 @@ const LoopringMultiStepHandler: FC<WithdrawPageProps> = ({ swapBasicData, refuel
             setUnlockedAccount(res)
         }
         catch (error) {
-            (error as Error).name = ActionMessageType.UexpectedErrorMessage
+            (error as Error).name = ActionMessageType.UnexpectedErrorMessage
             setError(error as Error)
         }
         finally {
@@ -67,7 +67,7 @@ const LoopringMultiStepHandler: FC<WithdrawPageProps> = ({ swapBasicData, refuel
             await refetchAccount()
         }
         catch (error) {
-            (error as Error).name = ActionMessageType.UexpectedErrorMessage
+            (error as Error).name = ActionMessageType.UnexpectedErrorMessage
             setError(error as Error)
         }
         finally {
@@ -104,7 +104,7 @@ const LoopringMultiStepHandler: FC<WithdrawPageProps> = ({ swapBasicData, refuel
             if (error in ActionMessageType)
                 (error as Error).name = error
             else
-                (error as Error).name = ActionMessageType.UexpectedErrorMessage
+                (error as Error).name = ActionMessageType.UnexpectedErrorMessage
             setError(error as Error)
         }
     }, [source_network, accInfo, unlockedAccount, source_token])

@@ -144,7 +144,7 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
                 throw e
             }
             else {
-                e.name = ActionMessageType.UexpectedErrorMessage
+                e.name = ActionMessageType.UnexpectedErrorMessage
                 throw e
             }
         }

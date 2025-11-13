@@ -84,7 +84,7 @@ const ZkSyncMultiStepHandler: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
             setSyncWallet(wallet)
         }
         catch (error) {
-            (error as Error).name = ActionMessageType.UexpectedErrorMessage
+            (error as Error).name = ActionMessageType.UnexpectedErrorMessage
             setError(error as Error)
         }
         finally {
@@ -116,7 +116,7 @@ const ZkSyncMultiStepHandler: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
                 throw new Error("Activation failed")
         }
         catch (error) {
-            (error as Error).name = ActionMessageType.UexpectedErrorMessage
+            (error as Error).name = ActionMessageType.UnexpectedErrorMessage
             setError(error as Error)
         }
         finally {
@@ -146,7 +146,7 @@ const ZkSyncMultiStepHandler: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
             }
         }
         catch (error) {
-            (error as Error).name = ActionMessageType.UexpectedErrorMessage
+            (error as Error).name = ActionMessageType.UnexpectedErrorMessage
             setLoading(false)
             setError(error as Error)
         }

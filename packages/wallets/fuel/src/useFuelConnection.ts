@@ -154,7 +154,7 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
                 throw e
             }
             else {
-                e.name = ActionMessageType.UexpectedErrorMessage
+                e.name = ActionMessageType.UnexpectedErrorMessage
                 throw e
             }
         }

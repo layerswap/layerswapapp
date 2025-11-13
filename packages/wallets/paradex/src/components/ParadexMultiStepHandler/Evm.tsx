@@ -41,7 +41,7 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
                 return res.transaction_hash
             }
         } catch (error) {
-            (error as Error).name = ActionMessageType.UexpectedErrorMessage
+            (error as Error).name = ActionMessageType.UnexpectedErrorMessage
             setLoading(false)
             setError(error as Error)
         }
