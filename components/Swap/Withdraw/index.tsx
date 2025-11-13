@@ -13,7 +13,7 @@ import { useSelectedAccount } from '@/context/balanceAccounts';
 import { ErrorDisplay } from '@/components/validationError/ErrorDisplay';
 import { Partner } from '@/Models/Partner';
 
-const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, partner }) => {
+const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: () => void, onCancelWithdrawal?: () => void, partner?: Partner }> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
     const { swapBasicData, swapDetails, quote, refuel, quoteIsLoading, quoteError } = useSwapDataState()
 
     const { appName, signature } = useQueryState()
@@ -33,7 +33,7 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
         content?: JSX.Element | JSX.Element[],
         footer?: JSX.Element | JSX.Element[],
     } = {}
-    
+
     const showInsufficientBalanceWarning = swapBasicData?.use_deposit_address === false
         && swapBasicData?.requested_amount
         && Number(swapBasicData?.requested_amount)
@@ -41,7 +41,14 @@ const Withdraw: FC<{ type: 'widget' | 'contained', onWalletWithdrawalSuccess?: (
 
     if (swapBasicData?.use_deposit_address === false) {
         withdraw = {
-            footer: <WalletTransferButton swapBasicData={swapBasicData} swapId={swapDetails?.id} refuel={!!refuel} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} balanceWarning={showInsufficientBalanceWarning ? <ErrorDisplay errorName='insufficientFunds' /> : null} />
+            footer: <WalletTransferButton
+                swapBasicData={swapBasicData}
+                swapId={swapDetails?.id}
+                refuel={!!refuel}
+                onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}
+                balanceWarning={showInsufficientBalanceWarning ? <ErrorDisplay errorName='insufficientFunds' /> : null}
+                onCancelWithdrawal={onCancelWithdrawal}
+            />
         }
     }
 
