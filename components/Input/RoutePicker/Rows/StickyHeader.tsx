@@ -11,7 +11,6 @@ type StickyHeaderProps = {
     open: boolean | undefined;
     headerRef: React.RefObject<HTMLDivElement>;
     contentRef: React.RefObject<HTMLDivElement>;
-    allbalancesLoaded?: boolean;
     childrenCount?: number;
     onClick: () => void;
     isSticky: boolean;
@@ -25,7 +24,6 @@ export function StickyHeader({
     open,
     headerRef,
     contentRef,
-    allbalancesLoaded,
     childrenCount,
     onClick,
     isSticky,
@@ -68,7 +66,6 @@ export function StickyHeader({
                 <CollapsableHeader
                     item={item}
                     direction={direction}
-                    allbalancesLoaded={allbalancesLoaded}
                     hideTokenImages={open}
                 />
             </div>
