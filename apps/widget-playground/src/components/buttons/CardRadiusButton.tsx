@@ -2,44 +2,46 @@
 import * as React from "react"
 import { useWidgetContext } from "@/context/ConfigContext";
 import { ThemeData } from '@layerswap/widget';
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select"
+import { Check } from "lucide-react";
 
 export function CardRadiusButton() {
     const { updateTheme, themeData } = useWidgetContext();
 
-    const handleClick = (radius: string) => {
-        updateTheme('borderRadius', radius as ThemeData['borderRadius']);
+    const handleClick = (radius: ThemeData['borderRadius']) => {
+        updateTheme('borderRadius', radius);
     };
 
     return (
-        <div className="w-full flex gap-2 alling-items-center justify-center">
-            <Select value={themeData?.borderRadius} onValueChange={handleClick}>
-                <SelectTrigger className="flex gap-2 w-full border-none bg-secondary-600 hover:bg-secondary-500 transition-colors duration-200">
-                    <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectGroup>
-                        {borderRadiusValues.map(({ value, label }) => (
-                            <SelectItem key={value} value={value as string}>
-                                {label}
-                            </SelectItem>
-                        ))}
-                    </SelectGroup>
-                </SelectContent>
-            </Select>
+        <div className="flex flex-col gap-3 pb-1">
+            {borderRadiusValues.map(({ value, label }) => {
+                const isSelected = themeData?.borderRadius === value;
+                return (
+                    <div
+                        key={value}
+                        onClick={() => handleClick(value)}
+                        className={`flex items-center justify-between cursor-pointer rounded-md py-3 px-2 transition-colors duration-200 ${isSelected ? 'bg-secondary-300' : 'hover:bg-secondary-500'
+                            }`}
+                    >
+                        <span className="text-xl text-primary-text leading-6">{label}</span>
+                        {isSelected && <Check className="w-5 h-5 text-primary-text" />}
+                    </div>
+                );
+            })}
         </div>
     );
 }
 
 export const CardRadiusButtonTrigger = () => {
     const { themeData } = useWidgetContext();
+    const currentRadius = borderRadiusValues.find((item) => item.value === themeData?.borderRadius);
+
     return (
         <div className="flex justify-between w-full">
             <label>
                 Border radius
             </label>
-            <label className="capitalize text-secondary-text">
-                {themeData?.borderRadius}
+            <label className="text-secondary-text">
+                {currentRadius?.label || themeData?.borderRadius}
             </label>
         </div>
     );

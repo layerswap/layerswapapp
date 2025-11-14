@@ -9,7 +9,11 @@ export function ResetButton() {
     return (
         <Tooltip>
             <TooltipTrigger asChild>
-                <Rotate onClick={resetData} className=' w-6 h-6 p-1 bg-transparent hover:bg-secondary-300 transition-colors' />
+                <button
+                    onClick={resetData}
+                    className='rounded-xl w-6 h-6 flex items-center justify-center bg-transparent hover:bg-secondary-300 transition-colors'>
+                    <Rotate className='w-[18px] h-[18px]' />
+                </button>
             </TooltipTrigger>
             <TooltipContent >
                 <p>Reset</p>

@@ -9,9 +9,11 @@ export function CloseButton() {
     return (
         <Tooltip>
             <TooltipTrigger asChild>
-                <IconX
+                <button
                     onClick={() => updateShowPanel(!showPanel)}
-                    className=' w-6 h-6 p-1 bg-transparent hover:bg-secondary-300 transition-colors' />
+                    className='rounded-xl w-6 h-6 flex items-center justify-center bg-transparent hover:bg-secondary-300 transition-colors'>
+                    <IconX className='w-[16px] h-[16px]' />
+                </button>
             </TooltipTrigger >
             <TooltipContent >
                 <p>Close</p>
