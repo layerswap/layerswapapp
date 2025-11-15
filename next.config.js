@@ -68,11 +68,11 @@ module.exports = (phase, { defaultConfig }) => {
     async rewrites() {
       return [
         {
-          source: "/lsph/static/:path*",
+          source: `${process.env.APP_BASE_PATH || ''}/lsph/static/:path*`,
           destination: "https://us-assets.i.posthog.com/static/:path*",
         },
         {
-          source: "/lsph/:path*",
+          source: `${process.env.APP_BASE_PATH || ''}/lsph/:path*`,
           destination: "https://us.i.posthog.com/:path*",
         },
       ];
