@@ -60,7 +60,7 @@ const HistorySummary: FC<SwapInfoProps> = ({
     }
 
     const destAddress = (hideAddress && hideTo && account) ? account : destination_address
-    
+
     return (
         source_token && <>
             <div className={`${className || ""} bg-secondary-500 relative z-10 w-full rounded-xl overflow-hidden hover:bg-secondary-400`}>
@@ -85,11 +85,11 @@ const HistorySummary: FC<SwapInfoProps> = ({
                             )}
                         </div>
 
-                        <div className="flex min-w-0 flex-col items-start space-y-0.5">
-                            <span className="text-white text-lg leading-5 flex min-w-0">
+                        <div className="flex min-w-0 flex-col items-start space-y-0.5 overflow-hidden">
+                            <div className="text-white text-lg leading-5 flex items-center min-w-0 gap-1 w-full">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <span className="truncate overflow-hidden whitespace-nowrap max-w-[100px]">
+                                        <span className="truncate block shrink">
                                             {requested_amount.toLocaleString('en-US', { maximumFractionDigits: 20 })}
                                         </span>
                                     </TooltipTrigger>
@@ -98,10 +98,10 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                     </TooltipContent>
                                 </Tooltip>
 
-                                &nbsp;{source_token.symbol}
-                            </span>
+                                <span className="shrink-0">{source_token.symbol}</span>
+                            </div>
 
-                            <span className="text-secondary-text text-sm leading-[14px]">
+                            <span className="text-secondary-text text-sm leading-3.5">
                                 {source?.display_name || ""}
                             </span>
                         </div>
@@ -114,11 +114,11 @@ const HistorySummary: FC<SwapInfoProps> = ({
                     </div>
 
                     <div className="col-span-6 flex items-center justify-end gap-2 bg-secondary-400 p-3 rounded-xl">
-                        <div className="flex min-w-0 flex-col items-end space-y-0.5">
-                            <span className="text-white text-lg leading-5 flex min-w-0">
+                        <div className="flex min-w-0 flex-col items-end space-y-0.5 overflow-hidden">
+                            <div className="text-white text-lg leading-5 flex items-center min-w-0 gap-1 w-full justify-end">
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <span className="truncate overflow-hidden whitespace-nowrap max-w-[100px]">
+                                        <span className="truncate block shrink">
                                             {calculatedReceiveAmount.toLocaleString('en-US', { maximumFractionDigits: 20 })}
                                         </span>
                                     </TooltipTrigger>
@@ -127,10 +127,10 @@ const HistorySummary: FC<SwapInfoProps> = ({
                                     </TooltipContent>
                                 </Tooltip>
 
-                                &nbsp;{destination_token.symbol}
-                            </span>
+                                <span className="shrink-0">{destination_token.symbol}</span>
+                            </div>
 
-                            <span className="text-secondary-text text-sm leading-[14px]">
+                            <span className="text-secondary-text text-sm leading-3.5">
                                 {destination?.display_name || ""}
                             </span>
                         </div>
