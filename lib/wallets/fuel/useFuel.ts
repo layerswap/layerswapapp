@@ -212,6 +212,7 @@ export default function useFuel(): WalletProvider {
         connectedWallets,
         name,
         id,
+        ready: connectors.length > 0
     }
 
     return provider

@@ -106,7 +106,8 @@ export default function useTron(): WalletProvider {
         name,
         id,
         providerIcon: network?.logo,
-        switchAccount
+        switchAccount,
+        ready: wallets.length > 0
     }
 
     return provider

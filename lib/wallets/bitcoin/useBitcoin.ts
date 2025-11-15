@@ -146,7 +146,8 @@ export default function useBitcoin(): WalletProvider {
         id,
         providerIcon,
         unsupportedPlatforms: ["mobile"],
-        switchAccount
+        switchAccount,
+        ready: connectors.length > 0
     }
 
     return provider

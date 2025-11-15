@@ -15,8 +15,10 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, descriptionText, 
 
     const [isLoading, setIsLoading] = useState(false)
     const { connect } = useConnectModal()
+    const isProviderReady = provider?.ready ?? true
 
     const handleConnect = async () => {
+        if (!isProviderReady) return
         setIsLoading(true)
         const result = await connect(provider)
         if (onConnect && result) onConnect(result)
@@ -27,7 +29,8 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, descriptionText, 
         {...rest}
         type="button"
         onClick={handleConnect}
-        className={classNames(`py-5 px-6 bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl ${isLoading && 'cursor-progress opacity-80'}`, rest.className)}
+        disabled={!isProviderReady || rest.disabled}
+        className={classNames(`py-5 px-6 bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl ${(isLoading || !isProviderReady) && 'cursor-progress opacity-80'} disabled:opacity-50 disabled:cursor-not-allowed`, rest.className)}
     >
         <div className="flex flex-row justify-between gap-9 items-stretch">
             <ResolveConnectorIcon
@@ -39,13 +42,19 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, descriptionText, 
                 <p className="text-sm font-medium text-secondary-text text-start">{descriptionText ?? 'Connect your wallet to browse and select from your addresses'}</p>
                 <div className="bg-primary-700/30 border-none text-primary! py-2 rounded-lg text-base font-semibold">
                     {
-                        isLoading ?
+                        !isProviderReady ?
                             <div className="flex items-center gap-1 justify-center">
                                 <RefreshCw className="h-3 w-auto animate-spin" />
-                                <span className="ml-1">Connecting...</span>
+                                <span className="ml-1">Initializing...</span>
                             </div>
                             :
-                            <>Connect Now</>
+                            isLoading ?
+                                <div className="flex items-center gap-1 justify-center">
+                                    <RefreshCw className="h-3 w-auto animate-spin" />
+                                    <span className="ml-1">Connecting...</span>
+                                </div>
+                                :
+                                <>Connect Now</>
                     }
                 </div>
             </div>

@@ -205,7 +205,8 @@ export default function useParadex(): WalletProvider {
         availableWalletsForConnect,
         name,
         id,
-        hideFromList: true
+        hideFromList: true,
+        ready: evmProvider.ready && starknetProvider.ready
     }
     return provider
 }
