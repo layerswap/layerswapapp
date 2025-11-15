@@ -51,11 +51,10 @@ export function TypingEffect({ text = 'Typing Effect', onComplete }: { text: str
 
     useEffect(() => {
         if (isInView && onComplete) {
-            // Calculate total animation duration: (text.length - 1) * 0.1 (delay) + 0.2 (duration)
             const totalDuration = (text.length - 1) * 0.1 + 0.05;
             const timeout = setTimeout(() => {
                 onComplete();
-            }, totalDuration * 1000); // Convert to milliseconds
+            }, totalDuration * 1000);
 
             return () => clearTimeout(timeout);
         }
