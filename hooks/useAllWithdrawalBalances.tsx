@@ -37,6 +37,7 @@ export default function useAllWithdrawalBalances() {
     const lastBalancesRef = useRef<Record<string, NetworkBalance> | null>(null)
     const resolvedBalances = useBalanceStore(selectResolvedSortingBalances)
     const isLoading = useBalanceStore(s => s.sortingDataIsLoading)
+    const partialPublished = useBalanceStore(s => s.partialPublished)
 
     if (resolvedBalances != null && Object.keys(resolvedBalances).length > 0) {
         lastBalancesRef.current = resolvedBalances
@@ -44,5 +45,5 @@ export default function useAllWithdrawalBalances() {
 
     const result = resolvedBalances === null && isLoading ? lastBalancesRef.current : resolvedBalances
 
-    return useMemo(() => ({ isLoading, balances: result }), [result, isLoading])
+    return useMemo(() => ({ isLoading, balances: result, partialPublished }), [result, isLoading, partialPublished])
 }

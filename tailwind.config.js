@@ -37,8 +37,13 @@ module.exports = {
         // Button press-down
         'press-down': 'press-down 150ms ease-in-out',
         'shake': 'shake 0.82s cubic-bezier(.36,.07,.19,.97) both',
+        shine: 'shine 2s linear infinite'
       },
       keyframes: {
+        shine: {
+          '0%': { backgroundPosition: '100% 0' },
+          '100%': { backgroundPosition: '-100% 0' },
+        },
         'shake': {
           '10%, 90%': {
             transform: 'translate3d(-1px, 0, 0)'
