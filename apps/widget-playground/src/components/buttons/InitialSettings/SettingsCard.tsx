@@ -2,12 +2,11 @@
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
 import { useMemo, useEffect, useState } from "react";
 import { useWidgetContext } from "@/context/ConfigContext";
 import { useSettingsState } from "@/context/settings";
 import type { InitialSettings } from "@layerswap/widget/types";
-import { Trash } from "lucide-react";
+import IconDelete from "@/public/icons/Delete";
 import { FIELD_REQUIRES, isBooleanField, isNumericField, isSelectField, PARAM_OPTIONS } from "./utils";
 
 type SettingsCardProps = {
@@ -34,10 +33,10 @@ const resolveSelectItem = (item: any) => {
 
 const renderSelect = (items: any[], placeholder: string, disabled: boolean, currentValue: string | undefined, onValueChange: (value: string) => void) => (
     <Select value={currentValue} onValueChange={onValueChange} disabled={disabled}>
-        <SelectTrigger className="w-full border-none bg-secondary-600 hover:bg-secondary-500 transition-colors h-full">
+        <SelectTrigger className="w-full border-none bg-secondary-500 hover:bg-secondary-400 transition-colors h-12">
             <SelectValue placeholder={placeholder} />
         </SelectTrigger>
-        <SelectContent className="max-h-[300px] overflow-y-auto">
+        <SelectContent className="max-h-[300px] overflow-y-auto bg-secondary-500">
             <SelectGroup>
                 {items.map((item, idx) => {
                     const { value, content } = resolveSelectItem(item);
@@ -53,8 +52,14 @@ const renderSelect = (items: any[], placeholder: string, disabled: boolean, curr
 export function SettingsCard({ cardId, prefillKey, usedKeys = [], onParamKeyChange, onRemove, }: SettingsCardProps) {
     const { initialValues, updateInitialValues } = useWidgetContext();
     const { sourceExchanges, sourceRoutes, destinationRoutes } = useSettingsState();
-    const [selectedKey, setSelectedKey] = useState<keyof InitialSettings | undefined>(prefillKey);
+    const selectedKey = prefillKey;
     const [textDraft, setTextDraft] = useState("");
+
+    // Get the label for the current parameter
+    const paramLabel = useMemo(() => {
+        return PARAM_OPTIONS.find(opt => opt.value === selectedKey)?.label || "";
+    }, [selectedKey]);
+
     // Notify parent when prefillKey is set
     useEffect(() => {
         if (prefillKey) {
@@ -66,20 +71,6 @@ export function SettingsCard({ cardId, prefillKey, usedKeys = [], onParamKeyChan
         () => (selectedKey ? initialValues[selectedKey] : undefined),
         [selectedKey, initialValues]
     );
-    // Filter available options based on dependencies and usage
-    const availableOptions = useMemo(() => {
-        return PARAM_OPTIONS.filter((option) => {
-            // Check if this field has a dependency that isn't met
-            const requiredField = FIELD_REQUIRES[option.value];
-            if (requiredField && !initialValues[requiredField])
-                return false;
-            // Check if already used by another card
-            if (usedKeys.includes(option.value as keyof InitialSettings) && option.value !== selectedKey)
-                return false;
-
-            return true;
-        });
-    }, [initialValues, usedKeys, selectedKey]);
 
     // Get tokens for from/to networks
     const fromTokens = useMemo(() => {
@@ -123,12 +114,6 @@ export function SettingsCard({ cardId, prefillKey, usedKeys = [], onParamKeyChan
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [textDraft, selectedKey]);
 
-    const handleKeyChange = (key: string) => {
-        const newKey = key as keyof InitialSettings;
-        setSelectedKey(newKey);
-        onParamKeyChange?.(cardId, newKey);
-    };
-
     const handleBooleanChange = (checked: boolean) => {
         if (selectedKey) updateInitialValues(selectedKey, checked as any);
     };
@@ -171,7 +156,7 @@ export function SettingsCard({ cardId, prefillKey, usedKeys = [], onParamKeyChan
         }
         if (isBooleanField(selectedKey)) {
             return (
-                <div className="w-full h-full rounded-xl bg-secondary-500 px-4 flex items-center justify-end">
+                <div className="w-full h-12 rounded-xl bg-secondary-500 px-4 flex items-center justify-end">
                     <Switch checked={!!currentValue} onCheckedChange={handleBooleanChange} />
                 </div>
             );
@@ -184,7 +169,7 @@ export function SettingsCard({ cardId, prefillKey, usedKeys = [], onParamKeyChan
                     placeholder="0.0"
                     value={textDraft}
                     onChange={(e) => setTextDraft(e.target.value)}
-                    className="bg-secondary-500 h-full rounded-xl"
+                    className="bg-secondary-500 rounded-xl h-12"
                 />
             );
         }
@@ -193,39 +178,28 @@ export function SettingsCard({ cardId, prefillKey, usedKeys = [], onParamKeyChan
                 value={textDraft}
                 onChange={(e) => setTextDraft(e.target.value)}
                 placeholder={String(selectedKey)}
-                className="bg-secondary-500 h-full rounded-xl"
+                className="bg-secondary-500 rounded-xl h-12"
             />
         );
     };
+    if (!selectedKey) return null;
+
     return (
-        <div className="flex w-full items-stretch gap-2">
-            <div className="w-1/2">
-                <Select value={selectedKey as string | undefined} onValueChange={handleKeyChange}>
-                    <SelectTrigger className="w-full border-none bg-secondary-600 hover:bg-secondary-500 transition-colors">
-                        <SelectValue placeholder="Pick a parameter" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-[300px] overflow-y-auto">
-                        <SelectGroup>
-                            {availableOptions.map((option) => (
-                                <SelectItem key={option.value as string} value={option.value as string}>
-                                    {option.label}
-                                </SelectItem>
-                            ))}
-                        </SelectGroup>
-                    </SelectContent>
-                </Select>
+        <div className="flex w-full gap-2">
+            <div className="flex-1 flex flex-col">
+                <label className="text-sm text-secondary-text mb-1 block">{paramLabel}</label>
+                <div className="flex-1">
+                    {renderValueEditor()}
+                </div>
             </div>
-            <div className="flex-1 flex items-stretch gap-2">
-                <div className="flex-1 truncate">{renderValueEditor()}</div>
-                <Button
-                    type="button"
-                    variant="ghost"
+            <div className="flex flex-col justify-end">
+                <div
                     onClick={handleRemove}
+                    className="shrink-0 w-11 h-11 rounded-xl bg-secondary-700 hover:bg-secondary-600 cursor-pointer flex items-center justify-center transition-colors"
                     title="Remove"
-                    className="self-center shrink-0 w-10 aspect-square rounded-full bg-red-500/15 hover:bg-red-500/25"
                 >
-                    <Trash className="h-4 w-4 text-red-500" />
-                </Button>
+                    <IconDelete className="w-6 h-6" />
+                </div>
             </div>
         </div>
     );
