@@ -13,7 +13,8 @@ type PriceImpactValues = {
     marketImpact?: number;
     priceImpactPercentage?: number;
     marketImpactPercentage?: number;
-    highPriceImpact?: boolean | undefined;
+    highMarketPriceImpact?: boolean | undefined;
+    criticalMarketPriceImpact?: boolean | undefined;
     minReceiveAmountUSD?: string | undefined;
 };
 
@@ -58,7 +59,8 @@ export const resolvePriceImpactValues = (quote: SwapQuote | undefined): PriceImp
         ? Number(((marketImpact / requestedAmountUSD) * 100).toFixed(2))
         : undefined;
 
-    const highPriceImpact = priceImpactPercentage ? priceImpactPercentage < -0.01 : undefined; //-10
+    const highMarketPriceImpact = marketImpactPercentage ? marketImpactPercentage < -5 : false;
+    const criticalMarketPriceImpact = marketImpactPercentage ? marketImpactPercentage < -10 : false;
 
     const minReceiveAmountUSD = quote?.min_receive_amount && destinationTokenPriceUsd != null
         ? Number(quote.min_receive_amount * destinationTokenPriceUsd).toFixed(2)
@@ -73,7 +75,8 @@ export const resolvePriceImpactValues = (quote: SwapQuote | undefined): PriceImp
         marketImpact,
         priceImpactPercentage,
         marketImpactPercentage,
-        highPriceImpact,
+        highMarketPriceImpact,
+        criticalMarketPriceImpact,
         minReceiveAmountUSD,
     };
 };

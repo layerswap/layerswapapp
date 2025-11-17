@@ -172,10 +172,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
     const [actionStateText, setActionStateText] = useState<string | undefined>()
     const [loading, setLoading] = useState(false)
-    const [showHighPriceImpactButtons, setShowHighPriceImpactButtons] = useState(false)
+    const [showCriticalMarketPriceImpactButtons, setShowCriticalMarketPriceImpactButtons] = useState(false)
 
     const priceImpactValues = useMemo(() => quote ? resolvePriceImpactValues(quote) : undefined, [quote]);
-    const highPriceImpact = useMemo(() => priceImpactValues?.highPriceImpact, [priceImpactValues]);
+    const criticalMarketPriceImpact = useMemo(() => priceImpactValues?.criticalMarketPriceImpact, [priceImpactValues]);
 
     const handleClick = async () => {
         try {
@@ -189,8 +189,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             
             setLoading(true)
             clearError?.()
-
             let swapData: SwapDetails | undefined = swapDetails
+            let depositActions = depositActionsResponse;
+
             if (!swapId || !swapDetails) {
                 setActionStateText("Preparing")
                 setSwapId(undefined)
@@ -216,8 +217,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
                 const priceImpactValues = newSwapData.quote ? resolvePriceImpactValues(newSwapData.quote) : undefined;
 
-                if (priceImpactValues?.highPriceImpact) {
-                    setShowHighPriceImpactButtons(true)
+                if (priceImpactValues?.criticalMarketPriceImpact) {
+                    setShowCriticalMarketPriceImpactButtons(true)
                     return
                 }
 
@@ -228,17 +229,17 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     setQuoteLoading(false)
                 }
                 swapData = newSwapData.swap
+                depositActions = newSwapData.deposit_actions;
             }
-
-            if (!depositActionsResponse) {
-                throw new Error('No deposit actions response')
+            if (!depositActions) {
+                throw new Error('No deposit actions')
             }
 
             if (!swapData) {
                 throw new Error('No swap data')
             }
 
-            const transferProps = resolveTransactionData(swapData, depositActionsResponse, swapBasicData.destination_address);
+            const transferProps = resolveTransactionData(swapData, depositActions, swapBasicData.destination_address);
             setActionStateText("Opening Wallet")
             const hash = await onClick(transferProps)
             if (hash) {
@@ -283,7 +284,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             </ButtonWrapper>
         )
 
-    if (showHighPriceImpactButtons) {
+    if (showCriticalMarketPriceImpactButtons) {
         return (<>
             {quote && priceImpactValues && <div className="py-1">
                 <div className="flex items-start gap-2.5">
@@ -318,7 +319,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     }
     return (
         <>
-            {!!(!swapId && highPriceImpact && quote?.destination_token && priceImpactValues && !error) && <div className="py-1">
+            {!!(!swapId && criticalMarketPriceImpact && quote?.destination_token && priceImpactValues && !error) && <div className="py-1">
                 <div className="flex items-start gap-2.5">
                     <span className="shrink-0"><InfoIcon className="w-5 h-5 text-warning-foreground" /></span>
                     <div className="flex flex-col gap-1.5 pr-4">

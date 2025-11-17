@@ -19,13 +19,12 @@ export const PriceImpact: FC<PriceImpactProps> = ({
 
     if (priceImpactValues === undefined) return null;
 
-
     return (<>
         <Tooltip openOnClick>
             <TooltipTrigger asChild>
                 <span className={clsx("flex text-secondary-text items-center cursor-default hover:text-primary-text",
                     className,
-                    { "text-warning-foreground hover:text-warning-foreground/80": priceImpactValues.highPriceImpact }
+                    { "text-warning-foreground hover:text-warning-foreground/80": priceImpactValues.highMarketPriceImpact }
                 )}>
                     <span className="flex items-center gap-0.5">
                         <span>(</span>
@@ -38,10 +37,10 @@ export const PriceImpact: FC<PriceImpactProps> = ({
                 </span>
             </TooltipTrigger>
             <TooltipContent arrowClasses="!bg-secondary-500 !fill-secondary-500" side="top" align="center" className="bg-secondary-500! border-secondary-500! text-secondary-text! text-xs font-normal rounded-xl p-4! shadow-card">
-                <p className={clsx("text-primary-text font-medium text-sm flex items-baseline space-x-0.5 mb-1", { "text-warning-foreground": priceImpactValues.highPriceImpact })}>
-                    {priceImpactValues.highPriceImpact ? <span>High price impact:</span> : <span>Price impact:</span>}
+                <p className={clsx("text-primary-text font-medium text-sm flex items-baseline space-x-0.5 mb-1", { "text-warning-foreground": priceImpactValues.highMarketPriceImpact })}>
+                    {priceImpactValues.highMarketPriceImpact ? priceImpactValues.highMarketPriceImpact ? <span>Critical price impact:</span> : <span>High price impact:</span> : <span>Price impact:</span>}
                     <span>{formatCurrency(priceImpactValues.priceImpact)}</span>
-                    <span className={clsx("text-secondary-text text-xs font-normal", { "text-warning-foreground": priceImpactValues.highPriceImpact })}>{priceImpactValues.priceImpactPercentage ? `(${priceImpactValues.priceImpactPercentage < 0 ? "-" : "+"}${Math.abs(priceImpactValues.priceImpactPercentage)}%)` : ""}</span>
+                    <span className={clsx("text-secondary-text text-xs font-normal", { "text-warning-foreground": priceImpactValues.highMarketPriceImpact })}>{priceImpactValues.priceImpactPercentage ? `(${priceImpactValues.priceImpactPercentage < 0 ? "-" : "+"}${Math.abs(priceImpactValues.priceImpactPercentage)}%)` : ""}</span>
                 </p>
                 <p>This is the difference in total USD value</p>
                 <p>between the assets you send and the assets you receive.</p>
