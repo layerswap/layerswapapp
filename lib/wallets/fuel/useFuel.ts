@@ -15,10 +15,10 @@ import shortenAddress from "@/components/utils/ShortenAddress";
 import { resolveWalletConnectorIcon } from "../utils/resolveWalletIcon";
 import { InternalConnector, Wallet, WalletProvider } from "@/Models/WalletProvider";
 import { useEffect, useMemo } from "react";
-import { useWalletStore } from "@/stores/walletStore";
 import { useSettingsState } from "@/context/settings";
 import { BAKO_STATE } from "./Bako";
 import sleep from "../utils/sleep";
+import { useWalletStore } from "@/stores/walletStore";
 
 export default function useFuel(): WalletProvider {
     const commonSupportedNetworks = [
@@ -212,6 +212,7 @@ export default function useFuel(): WalletProvider {
         connectedWallets,
         name,
         id,
+        ready: connectors.length > 0
     }
 
     return provider

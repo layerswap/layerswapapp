@@ -158,15 +158,15 @@ const SlippageInput = forwardRef<HTMLInputElement, SlippageInputProps>(function 
         setLocalPercent(valueDecimal !== undefined ? Math.round(valueDecimal * 10000) / 100 : undefined)
     }, [valueDecimal])
 
-    const invalid = localPercent !== undefined && (localPercent < 0 || localPercent > 80)
+    const invalid = localPercent !== undefined && (localPercent < 0.1 || localPercent > 5)
 
     useEffect(() => {
         const t = setTimeout(() => {
-            if (localPercent !== undefined && (localPercent < 0 || localPercent > 80)) return
+            if (invalid) return
             onDebouncedChange(localPercent !== undefined ? Math.round(localPercent * 100) / 10000 : undefined)
         }, 300)
         return () => clearTimeout(t)
-    }, [localPercent])
+    }, [localPercent, invalid])
 
     return (
         <Popover open={invalid}>
@@ -179,6 +179,7 @@ const SlippageInput = forwardRef<HTMLInputElement, SlippageInputProps>(function 
                         ref={ref}
                         autoComplete="off"
                         autoFocus={false}
+                        title=""
                         className={clsx("w-10 bg-transparent border-none outline-none focus:outline-none focus-visible:outline-none ring-0 focus:ring-0 focus-visible:ring-0 focus:border-transparent focus:shadow-none text-primary-text text-base leading-3.5 p-0 text-right")}
                         value={localPercent}
                         onChange={(e) => {
@@ -188,12 +189,18 @@ const SlippageInput = forwardRef<HTMLInputElement, SlippageInputProps>(function 
                                 setLocalPercent(next)
                             }
                         }}
+                        onKeyDown={(e) => {
+                            if (e.key == "Enter") {
+                                e.preventDefault();
+                                return false;
+                            }
+                        }}
                     />
                     <span>%</span>
                 </div>
             </PopoverTrigger>
             <PopoverContent side="top" align="center" className="text-xs">
-                Slippage can not be out of 0% - 80% range.
+                Slippage can not be out of 0.1% - 5% range.
             </PopoverContent>
         </Popover>
     )

@@ -1,6 +1,6 @@
 import { Context, useCallback, useEffect, useState, createContext, useContext, useMemo } from 'react'
 import { SwapFormValues } from '../components/DTOs/SwapFormValues';
-import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, Quote, SwapBasicData, SwapQuote, Refuel, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
+import LayerSwapApiClient, { CreateSwapParams, PublishedSwapTransactions, SwapTransaction, WithdrawType, SwapResponse, DepositAction, SwapBasicData, SwapQuote, Refuel, SwapDetails, TransactionType } from '@/lib/apiClients/layerSwapApiClient';
 import { NextRouter, useRouter } from 'next/router';
 import { QueryParams } from '../Models/QueryParams';
 import useSWR, { KeyedMutator } from 'swr';
@@ -115,7 +115,7 @@ export function SwapDataProvider({ children }) {
             destination_network: values.to,
             source_token: values.fromAsset,
             destination_token: values.toAsset,
-            requested_amount: Number(values.amount),
+            requested_amount: values.amount,
             destination_address: values.destination_address,
             use_deposit_address: values.depositMethod === 'deposit_address',
             refuel: !!values.refuel,
@@ -132,6 +132,7 @@ export function SwapDataProvider({ children }) {
         if (swapId && data?.data) {
             return data?.data?.swap ? {
                 ...data.data.swap,
+                requested_amount: data.data.swap.requested_amount.toString(),
                 refuel: !!data.data.refuel
             } : undefined;
         }
@@ -158,7 +159,7 @@ export function SwapDataProvider({ children }) {
     }, [formDataQuoteError, data, swapId]);
 
     const refuel = useMemo(() => {
-        if (swapId) {
+        if (swapId && data?.data) {
             return data?.data?.refuel
         }
         return formDataQuote?.refuel
@@ -254,6 +255,8 @@ export function SwapDataProvider({ children }) {
         posthog.capture(TrackEvent.SwapInitiated, {
             name: TrackEvent.SwapInitiated,
             swapId: swapDetails?.id ?? null,
+            $fromAddress: selectedSourceAccount?.address,
+            $toAddress: destination_address,
             path: typeof window !== 'undefined' ? window.location.pathname : undefined,
         });
 

@@ -1,5 +1,5 @@
 import { useFormikContext } from "formik";
-import { FC, useCallback, useEffect, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { SwapDirection, SwapFormValues } from "../DTOs/SwapFormValues";
 import { Selector, SelectorContent, SelectorTrigger } from "../Select/Selector/Index";
 import { Exchange } from "@/Models/Exchange";
@@ -22,6 +22,10 @@ const CexPicker: FC = () => {
     const { exchanges, exchangesRoutesLoading: isLoading, selectedRoute, selectedToken, exchangeNetworks } = useFormRoutes({ direction, values });
     const { fromExchange } = values;
     const [searchQuery, setSearchQuery] = useState("");
+
+    const filteredExchanges = useMemo(() => {
+        return exchanges.filter(e => e.display_name.toLowerCase().includes(searchQuery.toLowerCase()));
+    }, [exchanges, searchQuery]);
 
     useEffect(() => {
         const updateValues = async () => {
@@ -62,7 +66,7 @@ const CexPicker: FC = () => {
                                 <LayoutGroup>
                                     <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full">
                                         <div className="relative">
-                                            {exchanges.map((exchange) => {
+                                            {filteredExchanges.map((exchange) => {
                                                 return <div className="py-1 box-border" key={exchange.name}>
                                                     <ExchangeNetwork
                                                         route={exchange}

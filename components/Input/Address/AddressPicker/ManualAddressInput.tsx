@@ -26,7 +26,6 @@ type AddressInput = {
 }
 
 const ManualAddressInput: FC<AddressInput> = ({ manualAddress, setManualAddress, setNewAddress, values, name, inputReference, setFieldValue, close, addresses, connectedWallet, partner }) => {
-
     const { to: destination } = values || {}
     const [isFocused, setIsFocused] = useState(false);
     const placeholder = "Enter address"

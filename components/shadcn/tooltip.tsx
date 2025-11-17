@@ -117,4 +117,7 @@ function TooltipContent({
   )
 }
 
-export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }
+function TooltipArrow({ className, ...props }: React.ComponentProps<typeof TooltipPrimitive.Arrow>) {
+  return <TooltipPrimitive.Arrow className={clsx("bg-secondary-500 fill-secondary-500 z-50 size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-[2px]", className)} {...props} />
+}
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider, TooltipArrow }

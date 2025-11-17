@@ -1,17 +1,22 @@
 import Image, { ImageProps } from "next/image";
 import React, { forwardRef, useEffect, useState } from "react";
-
-const fallbackImage = '/images/logo_placeholder.png';
+import LogoPlaceholder from "../icons/LogoPlaceholder";
 
 export const ImageWithFallback = forwardRef<HTMLImageElement, ImageProps>(({ src, ...props }, ref) => {
     const [imgSrc, setImgSrc] = useState(src);
+    const [hasError, setHasError] = useState(false);
 
     useEffect(() => {
         setImgSrc(src);
+        setHasError(false);
     }, [src])
 
-    const handleErrpr = () => {
-        setImgSrc(fallbackImage)
+    const handleError = () => {
+        setHasError(true);
+    }
+
+    if (hasError) {
+        return <LogoPlaceholder {...props} />;
     }
 
     return <Image
@@ -19,7 +24,6 @@ export const ImageWithFallback = forwardRef<HTMLImageElement, ImageProps>(({ src
         alt={props.alt || 'ImageWithFallback'}
         ref={ref}
         src={imgSrc}
-        onError={handleErrpr}
-        blurDataURL={fallbackImage}
+        onError={handleError}
     />;
 });

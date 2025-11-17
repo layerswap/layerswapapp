@@ -65,6 +65,7 @@ export const StarknetWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicDat
                     refuel={refuel}
                     swapData={swapBasicData}
                     error={!!error}
+                    clearError={() => setError(undefined)}
                 />
             }
         </div >

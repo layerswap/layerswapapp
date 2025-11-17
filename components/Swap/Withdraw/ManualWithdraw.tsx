@@ -22,15 +22,22 @@ import { handleLimitsUpdate } from './QuoteUpdate'
 import SubmitButton from '@/components/buttons/submitButton'
 import { Widget } from '@/components/Widget/Index'
 import { truncateDecimals } from '@/components/utils/RoundDecimals'
+import { Partner } from '@/Models/Partner'
+import { addressFormat } from '@/lib/address/formatter'
+import { isValidAddress } from '@/lib/address/validator'
+import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
 
 interface Props {
     swapBasicData: SwapBasicData;
     quote: SwapQuote | undefined;
     depositActions: DepositAction[] | undefined;
     refuel?: Refuel | undefined
+    partner?: Partner;
+    type: 'widget' | 'contained'
+
 }
 
-const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refuel }) => {
+const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refuel, partner, type }) => {
     const { wallets } = useWallet();
     const { createSwap, setSwapId } = useSwapDataUpdate()
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
@@ -44,8 +51,10 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
     const [copied, copy] = useCopyClipboard()
     const query = useQueryState()
     const depositAddress = depositActions?.find(da => true)?.to_address;
+    const { destination_address: destinationAddressFromQuery } = query
 
     const WalletIcon = wallets.find(wallet => wallet.address.toLowerCase() == swapBasicData?.destination_address?.toLowerCase())?.icon;
+    const addressProviderIcon = destinationAddressFromQuery && partner?.is_wallet && addressFormat(destinationAddressFromQuery, swapBasicData?.destination_network) === addressFormat(swapBasicData?.destination_address, swapBasicData?.destination_network) && partner?.logo
 
     const handleCopy = () => {
         if (depositAddress) {
@@ -100,7 +109,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
 
     const requestAmount = (
         <span className='inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg'>
-            <span>{truncateDecimals(swapBasicData?.requested_amount, swapBasicData?.source_token?.precision)}</span> <span>{swapBasicData?.source_token?.symbol}</span>
+            <span>{truncateDecimals(Number(swapBasicData?.requested_amount), swapBasicData?.source_token?.precision)}</span> <span>{swapBasicData?.source_token?.symbol}</span>
             <CopyButton toCopy={swapBasicData?.requested_amount} iconClassName='text-secondary-text' />
         </span>
     )
@@ -225,8 +234,15 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                                     </div>
                                 }
                                 value={
-                                    <span className="cursor-pointer hover:underline min-h-[20px] block">
-                                        {depositAddress ? shortenAddress(depositAddress) : <span className="inline-block w-28 bg-secondary-400 h-[20px] rounded animate-pulse"></span>}
+                                    <span className="cursor-pointer hover:underline min-h-5 block">
+                                        {depositAddress ? (
+                                            <span className='flex items-center gap-1'>
+                                                {shortenAddress(depositAddress)}
+                                                <CopyButton toCopy={depositAddress || ''} className='flex' />
+                                            </span>
+                                        ) : (
+                                            <span className="inline-block w-28 bg-secondary-400 h-5 rounded animate-pulse"></span>
+                                        )}
                                     </span>
                                 }
                             />
@@ -268,13 +284,28 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                                     </span>
                                 }
                                 value={
-                                    <span className="cursor-pointer hover:underline flex items-center gap-2">
-                                        {WalletIcon ?
-                                            <WalletIcon className="w-4 h-4 p-0.5 bg-white rounded-sm" />
-                                            :
-                                            <AddressIcon className="h-4 w-4" address={swapBasicData.destination_address} size={36} rounded='4px' />
+                                    <span className="cursor-pointer hover:underline flex items-center gap-1">
+                                        {WalletIcon ? (
+                                            <WalletIcon className="w-4 h-4 bg-secondary-700 rounded-sm" />
+                                        ) : addressProviderIcon ? (
+                                            <ImageWithFallback
+                                                alt="Partner logo"
+                                                className="h-4 w-4 rounded-md object-contain"
+                                                src={partner.logo}
+                                                width="36"
+                                                height="36"
+                                            />
+                                        ) : (
+                                            <AddressIcon className="h-4 w-4" address={swapBasicData.destination_address} size={36} rounded="4px" />
+                                        )}
+                                        {
+                                            ((swapBasicData?.destination_network && isValidAddress(swapBasicData?.destination_address, swapBasicData?.destination_network)) ?
+                                                <div className="text-sm group/addressItem text-secondary-text">
+                                                    <ExtendedAddress address={addressFormat(swapBasicData?.destination_address, swapBasicData?.destination_network)} network={swapBasicData?.destination_network} shouldShowChevron={false} />
+                                                </div>
+                                                :
+                                                <p className="text-sm text-secondary-text">{shortenAddress(swapBasicData?.destination_address)}</p>)
                                         }
-                                        {shortenAddress(swapBasicData.destination_address)}
                                     </span>
                                 }
                             />
@@ -282,7 +313,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                     )}
                 </div>
             </Widget.Content>
-            <Widget.Footer>
+            <Widget.Footer sticky={type == 'widget'}>
                 <SubmitButton onClick={handleCopy}>
                     {copied ? 'Copied!' : 'Copy deposit address'}
                 </SubmitButton>

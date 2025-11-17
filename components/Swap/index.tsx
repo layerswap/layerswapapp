@@ -8,13 +8,16 @@ import { SwapStatus } from '../../Models/SwapStatus';
 import { useSwapTransactionStore } from '../../stores/swapTransactionStore';
 import SubmitButton from '../buttons/submitButton';
 import ManualWithdraw from './Withdraw/ManualWithdraw';
+import { Partner } from '@/Models/Partner';
 
 type Props = {
     type: "widget" | "contained",
     onWalletWithdrawalSuccess?: () => void,
+    onCancelWithdrawal?: () => void,
+    partner?: Partner
 }
 
-const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess }) => {
+const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
     const { swapDetails, swapBasicData, quote, refuel, depositActionsResponse } = useSwapDataState()
 
     const swapStatus = swapDetails?.status || SwapStatus.UserTransferPending;
@@ -46,8 +49,8 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess }) => {
                     && !(swapInputTransaction || storedWalletTransaction))) ?
                     (
                         swapBasicData?.use_deposit_address === true
-                            ? <ManualWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} />
-                            : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} />
+                            ? <ManualWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} />
+                            : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} partner={partner} />
                     )
                     :
                     <div className='space-y-3 w-full h-full'>

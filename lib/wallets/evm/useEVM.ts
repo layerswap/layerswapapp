@@ -137,7 +137,7 @@ export default function useEVM(): WalletProvider {
                     })
                 }
             }
-            else if (connector.type !== 'injected' && connector.isMobileSupported && connector.id !== "coinbaseWalletSDK") {
+            else if (connector.type !== 'injected' && connector.isMobileSupported && connector.id !== "coinbaseWalletSDK" && connector.id !== "metaMaskSDK") {
                 setSelectedConnector({ ...connector, qr: { state: 'loading', value: undefined } })
                 getWalletConnectUri(connector, connector?.resolveURI, (uri: string) => {
                     setSelectedConnector({ ...connector, icon: base64Icon, qr: { state: 'fetched', value: uri } })
@@ -265,9 +265,10 @@ export default function useEVM(): WalletProvider {
             availableHiddenWalletsForConnect: walletConnectConnectors,
             name,
             id,
-            providerIcon
+            providerIcon,
+            ready: allConnectors.length > 0
         }
-    }, [connectWallet, disconnectWallets, switchAccount, resolvedConnectors, availableFeaturedWalletsForConnect, walletConnectConnectors, autofillSupportedNetworks, withdrawalSupportedNetworks, asSourceSupportedNetworks, name, id, networks]);
+    }, [connectWallet, disconnectWallets, switchAccount, resolvedConnectors, availableFeaturedWalletsForConnect, walletConnectConnectors, autofillSupportedNetworks, withdrawalSupportedNetworks, asSourceSupportedNetworks, name, id, networks, allConnectors.length]);
 
     return provider
 }

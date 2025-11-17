@@ -52,19 +52,14 @@ export default function resolveChain(network: Network) {
         },
     })
 
-    const defaultPriorityFee = NetworkSettings.KnownSettings[network.name]?.DefaultPriorityFee?.toString()
     const baseFeeMultiplier = NetworkSettings.KnownSettings[network.name]?.BaseFeeMultiplier ?? 1.2
 
-    if (defaultPriorityFee) {
-        res.fees = {
-            ...res.fees,
-            defaultPriorityFee: () => parseGwei(defaultPriorityFee),
-        }
-    }
     if (baseFeeMultiplier) {
         res.fees = {
             ...res.fees,
-            baseFeeMultiplier: () => baseFeeMultiplier
+            baseFeeMultiplier: () => {
+                return baseFeeMultiplier
+            },
         }
     }
     return res

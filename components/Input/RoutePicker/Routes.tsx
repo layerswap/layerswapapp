@@ -21,11 +21,10 @@ type TokenItemProps = {
     type?: RowElement['type'];
     selected: boolean;
     direction: SwapDirection;
-    allbalancesLoaded?: boolean;
 };
 
 export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
-    const { item, route, direction, allbalancesLoaded, type } = props
+    const { item, route, direction, type } = props
 
     return <SelectItem className="group">
         <SelectItem.Logo
@@ -33,7 +32,7 @@ export const CurrencySelectItemDisplay = (props: TokenItemProps) => {
             altText={`${item.symbol} logo`}
             className="rounded-full"
         />
-        <NetworkTokenTitle item={item} route={route} direction={direction} allbalancesLoaded={allbalancesLoaded} type={type} />
+        <NetworkTokenTitle item={item} route={route} direction={direction} type={type} />
     </SelectItem>
 }
 
@@ -42,10 +41,9 @@ type NetworkTokenItemProps = {
     item: NetworkRouteToken;
     direction: SwapDirection;
     type?: RowElement['type'];
-    allbalancesLoaded?: boolean;
 }
 export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
-    const { item, route, direction, allbalancesLoaded, type } = props
+    const { item, route, direction, type } = props
     const balanceAccounts = useBalanceAccounts(direction)
     const selectedAccount = balanceAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(route.name));
 
@@ -84,30 +82,20 @@ export const NetworkTokenTitle = (props: NetworkTokenItemProps) => {
         }
         secondaryLogoSrc={route.logo}
     >
-        {(allbalancesLoaded && tokenbalance && Number(tokenbalance?.amount) >= 0) ? (
+        {(tokenbalance && Number(tokenbalance?.amount) > 0) ? (
             <span className="text-sm text-secondary-text text-right my-auto leading-4 font-medium">
-                {Number(usdAmount) >= 0 && (
+                {Number(usdAmount) > 0 && (
                     <div
-                        className={clsx("text-primary-text",
-                            {
-                                'text-lg leading-[22px]': type === 'suggested_token',
-                            }
+                        className={clsx("text-primary-text text-base",
+                            { '!text-lg !leading-[22px]': type === 'suggested_token' }
                         )}
                     >{formatUsd(usdAmount)}</div>
                 )}
-                <div
-                    className={clsx({
-                        'text-xs leading-4': type == 'suggested_token',
-                    })}
-                >
+                <div className='text-xs leading-4'>
                     {formatted_balance_amount}
                 </div>
             </span>
-        ) : !allbalancesLoaded ? (
-            <span className="px-0.5">-</span>
-        ) : (
-            <></>
-        )}
+        ) : <></>}
     </SelectItem.DetailedTitle>
 }
 
@@ -115,12 +103,11 @@ type NetworkRouteItemProps = {
     item: NetworkRoute;
     selected: boolean;
     direction: SwapDirection;
-    allbalancesLoaded?: boolean;
     hideTokenImages?: boolean;
 }
 
 export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
-    const { item, direction, allbalancesLoaded, hideTokenImages } = props
+    const { item, direction, hideTokenImages } = props
     const balanceAccounts = useBalanceAccounts(direction)
 
     const selectedAccount = balanceAccounts?.find(w => (direction == 'from' ? w.provider?.withdrawalSupportedNetworks : w.provider?.autofillSupportedNetworks)?.includes(item.name));
@@ -132,7 +119,7 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
         tokensWithBalance?.includes(token.symbol)
     );
 
-    const hasLoadedBalances = allbalancesLoaded && totalInUSD !== null && Number(totalInUSD) > 0;
+    const hasLoadedBalances = totalInUSD !== null && Number(totalInUSD) > 0;
     const showTokenLogos = hasLoadedBalances && filteredNetworkTokens?.length;
 
     return (
@@ -170,8 +157,6 @@ export const NetworkRouteSelectItemDisplay = (props: NetworkRouteItemProps) => {
                                 </div>
                             ) : <></>}
                         </div>
-                    ) : !allbalancesLoaded ? (
-                        <span className="px-0.5">-</span>
                     ) : <></>}
 
                     <ChevronDown
@@ -195,12 +180,10 @@ type SelectedCurrencyDisplayProps = {
 export const GroupedTokenHeader = ({
     item,
     direction,
-    allbalancesLoaded,
     hideTokenImages
 }: {
     item: GroupedTokenElement;
     direction: SwapDirection;
-    allbalancesLoaded?: boolean;
     hideTokenImages?: boolean;
 }) => {
     const balanceAccounts = useBalanceAccounts(direction)
@@ -248,7 +231,7 @@ export const GroupedTokenHeader = ({
     }, { sum: 0, hasVale: false });
 
     const mainToken = tokens[0]?.route.token;
-    const hasLoadedBalances = allbalancesLoaded && tokenBalances.hasVale && Number(tokenBalances.sum) >= 0;
+    const hasLoadedBalances = tokenBalances.hasVale && Number(tokenBalances.sum) >= 0;
     const showNetworkIcons = hasLoadedBalances && networksWithBalance.length > 0;
 
     return (
@@ -261,7 +244,6 @@ export const GroupedTokenHeader = ({
             <SelectItem.Title>
                 <>
                     <span>{mainToken.symbol}</span>
-
                     {hasLoadedBalances ? (
                         <div className={`${showNetworkIcons ? "flex flex-col space-y-0.5" : ""} ${hideTokenImages ? "invisible" : "visible"}`}>
                             <span className="text-secondary-text text-sm leading-4 font-medium">
@@ -290,8 +272,6 @@ export const GroupedTokenHeader = ({
                                 </div>
                             )}
                         </div>
-                    ) : balances ? (
-                        <div className="px-0.5">-</div>
                     ) : <></>}
 
                     <ChevronDown

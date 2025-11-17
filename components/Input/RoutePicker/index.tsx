@@ -19,7 +19,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
         setFieldValue,
     } = useFormikContext<SwapFormValues>();
     const [searchQuery, setSearchQuery] = useState("")
-    const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken, allbalancesLoaded } = useFormRoutes({ direction, values }, searchQuery)
+    const { allRoutes, isLoading, routeElements, selectedRoute, selectedToken } = useFormRoutes({ direction, values }, searchQuery)
     const currencyFieldName = direction === 'from' ? 'fromAsset' : 'toAsset';
 
     useEffect(() => {
@@ -60,6 +60,8 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
         })
     }, [currencyFieldName, direction, values])
     const showbalance = !isExchange && (direction === 'to' || values.depositMethod === 'wallet')
+
+
     return (
         <div className={clsx("flex flex-col self-end relative items-center", className)}>
             <Selector>
@@ -69,7 +71,6 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
                 <SelectorContent isLoading={isLoading} searchHint="Search" header={<PickerWalletConnect direction={direction} />}>
                     {({ closeModal }) => (
                         <Content
-                            allbalancesLoaded={allbalancesLoaded}
                             onSelect={(r, t) => { handleSelect(r, t); closeModal(); }}
                             searchQuery={searchQuery}
                             setSearchQuery={setSearchQuery}

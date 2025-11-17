@@ -2,7 +2,6 @@ import { useCallback, useEffect } from "react";
 import { useIntercom } from "react-use-intercom";
 import { Home, RotateCcw } from "lucide-react";
 import { useRouter } from "next/router";
-import { TrackEvent } from '../pages/_document';
 import MessageComponent from "./MessageComponent";
 import NotFoundIcon from "./icons/NotFoundIcon";
 import GoHomeButton from "./utils/GoHome";
@@ -17,10 +16,11 @@ export default function ErrorFallback({ error, resetErrorBoundary }) {
     const updateWithProps = () => update({ customAttributes: { swapId: query?.swapId } })
 
     useEffect(() => {
-        posthog.capture('$exception', {
+        posthog.captureException('$error_fallback', {
             name: error?.name,
             $layerswap_exception_type: "Error Fallback",
             message: error?.message,
+            cause: error?.cause,
             where: 'ErrorFallback',
             severity: 'error',
         });

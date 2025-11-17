@@ -1,7 +1,7 @@
 import { FC, useCallback, useEffect } from "react";
 import GoHomeButton from "../utils/GoHome";
 import { useIntercom } from "react-use-intercom";
-import { TrackEvent } from '../../pages/_document';
+import { TrackEvent } from '@/pages/_document';
 import { Home } from "lucide-react";
 import { useRouter } from "next/router";
 import NotFoundIcon from "../icons/NotFoundIcon";

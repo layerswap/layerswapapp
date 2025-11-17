@@ -32,7 +32,7 @@ export const ReceiveAmount: FC<ReceiveAmountProps> = ({ source_token, destinatio
                 <span className="text-base leading-5 font-medium text-secondary-text h-5">
                     <NumberFlow className="p-0" value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD', maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
                 </span>
-                <PriceImpact className="h-5 text-base leading-5" bridgeFee={quote?.blockchain_fee} destinationTokenPriceUsd={quote?.destination_token?.price_in_usd} receiveAmount={quote?.receive_amount} requestedAmount={quote?.requested_amount} serviceFee={quote?.service_fee} sourceTokenPriceUsd={quote?.source_token?.price_in_usd} refuelInUsd={refuelInUsd} />
+                <PriceImpact className="h-5 text-base leading-5" quote={quote} refuel={fee?.refuel} />
             </div>
         </div>
     </>)

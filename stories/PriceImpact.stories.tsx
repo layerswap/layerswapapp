@@ -11,6 +11,7 @@ import { SwapDataProvider } from '../context/swap';
 import { SettingsStateContext } from '../context/settings';
 import { TimerProvider } from '@/context/timerContext';
 import { PriceImpact } from '@/components/Input/Amount/PriceImpact';
+import { SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 
 type PriceImpactRelevant = {
     requested_amount: number;
@@ -26,7 +27,7 @@ const Comp: FC<{ quote: PriceImpactRelevant; theme?: 'default' | 'light' }> = ({
     const appSettings = new LayerSwapAppSettings(Settings);
     if (!appSettings) return <div>Loading...</div>;
     const themeData = theme ? THEME_COLORS[theme] : THEME_COLORS['default'];
-
+    //TODO: Add refuel
     return (
         <IntercomProvider appId="123">
             <SettingsStateContext.Provider value={appSettings}>
@@ -34,15 +35,7 @@ const Comp: FC<{ quote: PriceImpactRelevant; theme?: 'default' | 'light' }> = ({
                     <SwapDataProvider>
                         <TimerProvider>
                             <WalletsProviders basePath="/" themeData={THEME_COLORS['default']} appName="Layerswap">
-                                <PriceImpact
-                                    bridgeFee={quote.blockchain_fee}
-                                    destinationTokenPriceUsd={quote.destination_token.price_in_usd}
-                                    receiveAmount={quote.receive_amount}
-                                    requestedAmount={quote.requested_amount}
-                                    serviceFee={quote.service_fee}
-                                    sourceTokenPriceUsd={quote.source_token.price_in_usd}
-                                    refuelInUsd={quote.refuelInUsd}
-                                />
+                                <PriceImpact quote={quote as SwapQuote} refuel={undefined} />
                             </WalletsProviders>
                         </TimerProvider>
                     </SwapDataProvider>
