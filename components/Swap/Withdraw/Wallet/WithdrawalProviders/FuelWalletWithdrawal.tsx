@@ -107,6 +107,7 @@ export const FuelWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, r
                     isDisabled={!!loading}
                     isSubmitting={!!loading}
                     onClick={handleTransfer}
+                    clearError={() => setError(undefined)}
                     swapData={swapBasicData}
                     refuel={refuel}
                 />
