@@ -27,16 +27,16 @@ function App({ Component, pageProps }) {
   const router = useRouter()
 
   useEffect(() => {
-    if (process.env.NEXT_PUBLIC_POSTHOG_KEY) {
+    if (process.env.NEXT_PUBLIC_POSTHOG_KEY && typeof window !== 'undefined') {
       posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
         capture_pageview: 'history_change',
         capture_pageleave: true,
-        api_host: `${process.env.APP_BASE_PATH || ''}/lsph`,
+        api_host: `${router.basePath || ''}/lsph`,
         ui_host: 'https://us.posthog.com',
         defaults: '2025-05-24',
       });
     }
-  }, []);
+  }, [router.basePath]);
 
   return (
     <SWRConfig
