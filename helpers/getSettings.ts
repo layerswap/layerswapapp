@@ -13,26 +13,35 @@ export async function getServerSideProps(context) {
     LayerSwapApiClient.apiKey = apiKey
     const apiClient = new LayerSwapApiClient()
 
-    const { data: networkData } = await apiClient.GetLSNetworksAsync()
-    const { data: sourceExchangesData } = await apiClient.GetSourceExchangesAsync()
-
-    const { data: sourceRoutes } = await apiClient.GetRoutesAsync('sources')
-    const { data: destinationRoutes } = await apiClient.GetRoutesAsync('destinations')
-
-
-
-    if (!networkData) return
-
-    const settings = {
-        networks: networkData,
-        sourceExchanges: sourceExchangesData || [],
-        sourceRoutes: sourceRoutes || [],
-        destinationRoutes: destinationRoutes || []
+    try {
+        const { data: networkData } = await apiClient.GetLSNetworksAsync()
+        const { data: sourceExchangesData } = await apiClient.GetSourceExchangesAsync()
+    
+        const { data: sourceRoutes } = await apiClient.GetRoutesAsync('sources')
+        const { data: destinationRoutes } = await apiClient.GetRoutesAsync('destinations')
+    
+    
+    
+        if (!networkData) return
+    
+        const settings = {
+            networks: networkData,
+            sourceExchanges: sourceExchangesData || [],
+            sourceRoutes: sourceRoutes || [],
+            destinationRoutes: destinationRoutes || []
+        }
+    
+        const themeData = await getThemeData(context.query)
+    
+        return {
+            props: { settings, themeData, apiKey }
+        }
+    }
+    catch (error) {
+        console.error(error)
+        return {
+            props: { settings: null, themeData: null, apiKey: null }
+        }
     }
 
-    const themeData = await getThemeData(context.query)
-
-    return {
-        props: { settings, themeData, apiKey }
-    }
 }
