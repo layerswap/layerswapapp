@@ -17,7 +17,6 @@ import useSWR from 'swr';
 import { ApiResponse } from '@/Models/ApiResponse';
 import { useIntercom } from 'react-use-intercom';
 import logError from '@/lib/logError';
-import SubmitButton from '@/components/buttons/submitButton';
 import { posthog } from 'posthog-js';
 
 type Props = {
@@ -62,19 +61,6 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     const inputTxStatus = swapInputTransaction ? swapInputTransaction.status : inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus
 
     const loggedNotDetectedTxAt = useRef<number | null>(null);
-
-    const handleSupportClick = useCallback(() => {
-        const transactionHash = swapInputTransaction?.transaction_hash || storedWalletTransaction?.hash;
-        const message = `Hi! My transaction (Swap ID: ${swapDetails.id}) has been processing for longer than expected. ${transactionHash ? `Transaction hash: ${transactionHash}` : ''} Could you please help me check the status?`;
-
-        boot();
-        update({
-            customAttributes: {
-                swapId: swapDetails.id,
-            }
-        });
-        showNewMessages(message)
-    }, [boot, show, update, swapDetails.id, swapInputTransaction, storedWalletTransaction]);
 
     useEffect(() => {
         if (inputTxStatus === TransactionStatus.Completed || inputTxStatus === TransactionStatus.Pending) {

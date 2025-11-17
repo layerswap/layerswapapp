@@ -172,4 +172,4 @@ const ExchangeTokenContract = ({ fromAsset, network }: { fromAsset: NetworkRoute
     </RowWrapper >
 }
 
-const LoadingBar = () => (<div className='h-[10px] w-16 inline-flex bg-gray-500 rounded-xs animate-pulse' />);
+const LoadingBar = () => (<div className='h-2.5 w-16 inline-flex bg-gray-500 rounded-xs animate-pulse' />);

@@ -32,9 +32,10 @@ export interface QuoteComponentProps {
     destination?: Network,
     destinationAddress?: string;
     reward?: QuoteReward | undefined;
+    variant?: 'extended' | 'base';
 }
 
-export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading, reward }: QuoteComponentProps) {
+export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading, reward, variant = 'extended' }: QuoteComponentProps) {
     const { toAsset, fromAsset: fromCurrency, destination_address } = values || {};
     const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(false);
 
@@ -69,7 +70,7 @@ export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading
                                     <DetailedEstimates
                                         swapValues={values}
                                         quote={quote}
-                                        variant='extended'
+                                        variant={variant}
                                         reward={reward}
                                     />
                                 }
