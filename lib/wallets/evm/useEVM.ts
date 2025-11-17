@@ -265,9 +265,10 @@ export default function useEVM(): WalletProvider {
             availableHiddenWalletsForConnect: walletConnectConnectors,
             name,
             id,
-            providerIcon
+            providerIcon,
+            ready: allConnectors.length > 0
         }
-    }, [connectWallet, disconnectWallets, switchAccount, resolvedConnectors, availableFeaturedWalletsForConnect, walletConnectConnectors, autofillSupportedNetworks, withdrawalSupportedNetworks, asSourceSupportedNetworks, name, id, networks]);
+    }, [connectWallet, disconnectWallets, switchAccount, resolvedConnectors, availableFeaturedWalletsForConnect, walletConnectConnectors, autofillSupportedNetworks, withdrawalSupportedNetworks, asSourceSupportedNetworks, name, id, networks, allConnectors.length]);
 
     return provider
 }
