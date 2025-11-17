@@ -39,7 +39,8 @@
   "peerDependencies": {
     "@layerswap/widget": "workspace:^",
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
-    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc"
+    "react-dom": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
+    "zustand": "catalog:"
   },
   "dependencies": {
     "@starknet-io/types-js": "^0.9.2",
@@ -53,7 +54,8 @@
   },
   "devDependencies": {
     "@layerswap/widget": "workspace:^",
-    "react": "catalog:"
+    "react": "catalog:",
+    "zustand": "catalog:"
   },
   "engines": {
     "node": ">=22"

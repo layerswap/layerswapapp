@@ -1,7 +1,8 @@
 import { FC, ReactNode, useEffect, useState } from "react";
 import { mainnet, sepolia } from "@starknet-react/chains"
-import { Connector, ConnectorNotConnectedError, UserNotConnectedError, StarknetConfig, publicProvider } from '@starknet-react/core';
+import { Connector, ConnectorNotConnectedError, UserNotConnectedError, StarknetConfig, publicProvider, useConnect, useDisconnect } from '@starknet-react/core';
 import { WalletConnectConfig } from "./index";
+import { KnownInternalNames, useSettingsState } from "@layerswap/widget/internal";
 //@ts-ignore
 import { ArgentMobileConnector } from "starknetkit/argentMobile";
 // @ts-ignore
@@ -9,6 +10,8 @@ import { InjectedConnector } from "starknetkit/injected"
 // @ts-ignore
 import { WebWalletConnector } from "starknetkit/webwallet"
 import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from "@starknet-io/types-js";
+import useStarknetConnection, { resolveStarknetWallet } from "./useStarknetConnection";
+import { useStarknetStore } from "./starknetWalletStore";
 
 type StarknetProviderProps = {
     children: ReactNode
@@ -66,7 +69,7 @@ class DiscoveryConnector extends Connector {
     chainId(): Promise<bigint> {
         throw new Error("Method not implemented.");
     }
-    request<T extends RpcMessage["type"]>(call: RequestFnCall<T>) : Promise<RpcTypeToMessageMap[T]["result"]> {
+    request<T extends RpcMessage["type"]>(call: RequestFnCall<T>): Promise<RpcTypeToMessageMap[T]["result"]> {
         throw new Error("Method not implemented.");
     }
 
@@ -142,9 +145,81 @@ const StarknetProvider: FC<StarknetProviderProps> = ({ children, walletConnectCo
             provider={publicProvider()}
             connectors={connectors}
         >
+            <StarknetWalletInitializer />
             {children}
         </StarknetConfig>
     )
 }
 
 export default StarknetProvider;
+
+const StarknetWalletInitializer = () => {
+    const { connectors } = useConnect();
+    const { disconnectAsync } = useDisconnect();
+    const { networks } = useSettingsState();
+    const starknetAccounts = useStarknetStore((state) => state.starknetAccounts) || {};
+    const addWallet = useStarknetStore((state) => state.connectWallet);
+    const removeAccount = useStarknetStore((state) => state.removeAccount);
+    const { withdrawalSupportedNetworks, autofillSupportedNetworks, asSourceSupportedNetworks } = useStarknetConnection({ networks });
+    const [connectorsReady, setConnectorsReady] = useState(false)
+
+    useEffect(() => {
+        if (connectors.length === 0 || connectorsReady || Object.keys(starknetAccounts).length == 0) return;
+
+        const checkConnectorsReady = () => {
+            const hasWallet = connectors.some(connector => {
+                try {
+                    const wallet = InjectedConnector.getInjectedWallet(connector.id);
+                    return wallet !== null && wallet !== undefined;
+                } catch {
+                    return false;
+                }
+            });
+
+            if (hasWallet) {
+                setConnectorsReady(true);
+            }
+        };
+        checkConnectorsReady();
+
+        const interval = setInterval(checkConnectorsReady, 500);
+
+        return () => clearInterval(interval);
+    }, [connectors, connectorsReady, starknetAccounts])
+
+    useEffect(() => {
+        const initializeWallet = async () => {
+            const starknetNetwork = networks.find(
+                (n) =>
+                    n.name === KnownInternalNames.Networks.StarkNetMainnet ||
+                    n.name === KnownInternalNames.Networks.StarkNetSepolia
+            );
+
+            for (const connector of connectors) {
+                const address = starknetAccounts[connector.id];
+                if (address) {
+                    const wallet = await resolveStarknetWallet({
+                        name: "Starknet",
+                        connector,
+                        network: starknetNetwork,
+                        disconnectWallets: () => disconnectAsync().then(() => removeAccount(address)),
+                        withdrawalSupportedNetworks,
+                        autofillSupportedNetworks,
+                        asSourceSupportedNetworks,
+                        address
+                    });
+
+                    if (wallet?.address) {
+                        addWallet(wallet);
+                    }
+                }
+            }
+        };
+
+        if (Object.keys(starknetAccounts).length && connectorsReady) {
+            initializeWallet();
+        }
+    }, [connectors, networks, connectorsReady]);
+
+    return <></>;
+}

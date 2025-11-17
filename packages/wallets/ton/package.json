@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/wallet-ton",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "TON Wallet Provider for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -44,11 +44,11 @@
   "dependencies": {
     "@ton/core": "^0.62.0",
     "@ton/ton": "^15.4.0",
+    "@ton/crypto": "^3.3.0",
     "@tonconnect/ui-react": "^2.3.1"
   },
   "devDependencies": {
     "@layerswap/widget": "workspace:^",
-    "@ton/crypto": "^3.3.0",
     "react": "catalog:",
     "ton": "^13.9.0"
   },

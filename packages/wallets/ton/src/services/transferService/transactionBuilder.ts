@@ -26,7 +26,7 @@ export const transactionBuilder = async (amount: number, token: Token, depositAd
             .storeRef(forwardPayload)
             .endCell();
 
-        const tonClient = createTonClient(apiKey);
+        const tonClient = createTonClient(apiKey)
         const jettonMasterAddress = Address.parse(token.contract!)
         const jettonMaster = tonClient.open(JettonMaster.create(jettonMasterAddress))
         const jettonAddress = await jettonMaster.getWalletAddress(userAddress)

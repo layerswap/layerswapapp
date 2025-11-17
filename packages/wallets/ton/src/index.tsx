@@ -4,7 +4,8 @@ import { TonGasProvider } from "./tonGasProvider";
 import TonProviderWrapper from "./TonProvider";
 import useTONConnection from "./useTONConnection";
 import { TonAddressUtilsProvider } from "./tonAddressUtilsProvider";
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useMemo } from "react";
+import { AppSettings } from "@layerswap/widget/internal";
 
 export type TonClientConfig = {
     tonApiKey: string
@@ -34,11 +35,15 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
         addressUtilsProviders
     } = config;
 
+    const resolvedTonConfigs: TonClientConfig = useMemo(() => ({
+        tonApiKey: tonConfigs?.tonApiKey || AppSettings.TonClientConfig.tonApiKey,
+        manifestUrl: tonConfigs?.manifestUrl || AppSettings.TonClientConfig.manifestUrl
+    }), [tonConfigs])
 
     const WrapperComponent = ({ children, themeData }: { children: React.ReactNode, themeData?: ThemeData }) => {
         return (
-            <TonConfigContext.Provider value={tonConfigs}>
-                <TonProviderWrapper tonConfigs={tonConfigs} themeData={themeData}>
+            <TonConfigContext.Provider value={resolvedTonConfigs}>
+                <TonProviderWrapper tonConfigs={resolvedTonConfigs} themeData={themeData}>
                     {children}
                 </TonProviderWrapper>
             </TonConfigContext.Provider>

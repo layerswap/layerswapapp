@@ -81,7 +81,7 @@ export type WalletConnectionProvider = {
     connectedWallets: Wallet[] | undefined,
     activeWallet: Wallet | undefined,
     autofillSupportedNetworks?: string[],
-    withdrawalSupportedNetworks?: string[],
+    withdrawalSupportedNetworks: string[],
     asSourceSupportedNetworks?: string[],
     name: string,
     id: string,

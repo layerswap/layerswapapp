@@ -1,6 +1,7 @@
 import { KnownInternalNames, insertIfNotExists, formatUnits, retryWithExponentialBackoff } from "@layerswap/widget/internal";
 import { createTonClient } from "./client";
 import { BalanceProvider, TokenBalance, Network, Token } from "@layerswap/widget/types";
+import { TonClient } from "@ton/ton";
 
 export class TonBalanceProvider extends BalanceProvider {
     private apiKey?: string;
@@ -43,20 +44,20 @@ export const resolveBalance = async ({ address, network, token, apiKey }: {
     apiKey?: string
 }
 ) => {
+    const tonClient = createTonClient(apiKey)
 
     if (token.contract) {
-        const res = await getJettonBalance({ network, token, address }, apiKey)
+        const res = await getJettonBalance({ network, token, address, tonClient })
         return res
     }
     else {
-        const res = await getNativeAssetBalance({ network, token, address }, apiKey)
+        const res = await getNativeAssetBalance({ network, token, address, tonClient })
         return res
     }
 }
 
-const getNativeAssetBalance = async ({ network, token, address }: { network: Network, token: Token, address: string }, apiKey?: string) => {
+const getNativeAssetBalance = async ({ network, token, address, tonClient }: { network: Network, token: Token, address: string, tonClient: TonClient }) => {
     const { Address } = await import("@ton/ton");
-    const tonClient = createTonClient(apiKey);
 
     const getBalance = async () => {
         return await tonClient.getBalance(Address.parse(address))
@@ -74,10 +75,8 @@ const getNativeAssetBalance = async ({ network, token, address }: { network: Net
 
 }
 
-const getJettonBalance = async ({ network, token, address }: { network: Network, token: Token, address: string }, apiKey?: string) => {
-
+const getJettonBalance = async ({ network, token, address, tonClient }: { network: Network, token: Token, address: string, tonClient: TonClient }) => {
     const { JettonMaster, JettonWallet, Address } = await import("@ton/ton");
-    const tonClient = createTonClient(apiKey);
 
     const jettonMasterAddress = Address.parse(token.contract!)
     const userAddress = Address.parse(address)

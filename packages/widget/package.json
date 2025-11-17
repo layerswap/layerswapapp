@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/widget",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Streamline your asset transaction experience with Layerswap Widget across 60+ blockchains and 15+ exchanges.",
   "type": "module",
   "main": "dist/esm/index.js",
