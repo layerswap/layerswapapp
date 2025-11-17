@@ -29,7 +29,7 @@ const Comp: FC<{ quote: PriceImpactRelevant; theme?: 'default' | 'light' }> = ({
     return (
         <IntercomProvider appId="123">
             <SettingsStateContext.Provider value={appSettings}>
-                <Layout settings={Settings} themeData={themeData}>
+                <Layout settings={Settings || undefined} themeData={themeData}>
                     <SwapDataProvider>
                         <TimerProvider>
                             <WalletsProviders basePath="/" themeData={THEME_COLORS['default']} appName="Layerswap">

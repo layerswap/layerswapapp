@@ -7,7 +7,7 @@ import LayerSwapApiClient from '../../lib/apiClients/layerSwapApiClient'
 export default function CampaignsPage({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     LayerSwapApiClient.apiKey = apiKey
     return (<>
-        <Layout settings={settings} themeData={themeData}>
+        <Layout settings={settings || undefined} themeData={themeData}>
             <Campaigns />
         </Layout>
     </>)
