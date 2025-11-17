@@ -10,11 +10,11 @@ import clsx from "clsx";
 import { useState } from "react";
 import { CodeSegment } from "./CodeSegment";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger, } from "@/components/ui/accordion"
-import Route from "@/public/icons/Route";
+import { Code, Paintbrush } from "lucide-react";
 
 const tabValues = [
-    { value: 'design', component: <><Route className="[&_path]:fill-current" /> <span className="text-xl">Design</span></> },
-    { value: 'code', component: <><Route className="[&_path]:fill-current" /> <span className="text-xl">Code</span></> },
+    { value: 'design', component: <><Paintbrush /> <span className="text-xl">Design</span></> },
+    { value: 'code', component: <><Code /> <span className="text-xl">Code</span></> },
 ]
 
 const accordionElements = {

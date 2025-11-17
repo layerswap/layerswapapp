@@ -1,13 +1,14 @@
 "use client";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Switch } from "@/components/ui/switch";
 import { useMemo, useEffect, useState } from "react";
 import { useWidgetContext } from "@/context/ConfigContext";
 import { useSettingsState } from "@/context/settings";
 import type { InitialSettings } from "@layerswap/widget/types";
 import IconDelete from "@/public/icons/Delete";
-import { FIELD_REQUIRES, isBooleanField, isNumericField, isSelectField, PARAM_OPTIONS } from "./utils";
+import IconSwap from "@/public/icons/Swap";
+import IconCEX from "@/public/icons/CEX";
+import { isBooleanField, isNumericField, isSelectField, PARAM_OPTIONS } from "./utils";
 
 type SettingsCardProps = {
     cardId: string;
@@ -18,9 +19,25 @@ type SettingsCardProps = {
 };
 
 const resolveSelectItem = (item: any) => {
+    if (typeof item === "string") {
+        return { value: item, content: item.charAt(0).toUpperCase() + item.slice(1) };
+    }
+
     const value = item.value ?? item.name ?? item.symbol;
     const label = item.label ?? item.display_name ?? item.symbol;
     const logo = item.logo;
+    const icon = item.icon;
+
+    if (icon) {
+        const IconComponent = icon;
+        const content = (
+            <div className="flex items-center gap-2">
+                <IconComponent className="w-5 h-5" />
+                <p className="text-primary-text">{label}</p>
+            </div>
+        );
+        return { value, content, icon: IconComponent };
+    }
 
     const content = logo ? (
         <div className="flex items-center space-x-1.5">
@@ -31,23 +48,38 @@ const resolveSelectItem = (item: any) => {
     return { value, content };
 };
 
-const renderSelect = (items: any[], placeholder: string, disabled: boolean, currentValue: string | undefined, onValueChange: (value: string) => void) => (
-    <Select value={currentValue} onValueChange={onValueChange} disabled={disabled}>
-        <SelectTrigger className="w-full border-none bg-secondary-500 hover:bg-secondary-400 transition-colors h-12">
-            <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-        <SelectContent className="max-h-[300px] overflow-y-auto bg-secondary-500">
-            <SelectGroup>
-                {items.map((item, idx) => {
-                    const { value, content } = resolveSelectItem(item);
-                    return (<SelectItem key={idx} value={value}>
-                        {content}
-                    </SelectItem>);
-                })}
-            </SelectGroup>
-        </SelectContent>
-    </Select>
-);
+const renderSelect = (items: any[], placeholder: string, disabled: boolean, currentValue: string | undefined, onValueChange: (value: string) => void) => {
+    const getSelectedContent = () => {
+        if (!currentValue) return <SelectValue placeholder={placeholder} />;
+
+        const selectedItem = items.find(item => {
+            const itemValue = typeof item === "string" ? item : (item.value ?? item.name ?? item.symbol);
+            return itemValue === currentValue;
+        });
+
+        return selectedItem ? resolveSelectItem(selectedItem).content : <SelectValue placeholder={placeholder} />;
+    };
+
+    return (
+        <Select value={currentValue} onValueChange={onValueChange} disabled={disabled}>
+            <SelectTrigger className="w-full border-none bg-secondary-500 hover:bg-secondary-400 transition-colors h-12">
+                {getSelectedContent()}
+            </SelectTrigger>
+            <SelectContent className="max-h-[420px] overflow-y-auto bg-secondary-500">
+                <SelectGroup>
+                    {items.map((item, idx) => {
+                        const { value, content } = resolveSelectItem(item);
+                        return (
+                            <SelectItem key={idx} value={value}>
+                                {content}
+                            </SelectItem>
+                        );
+                    })}
+                </SelectGroup>
+            </SelectContent>
+        </Select>
+    );
+};
 
 export function SettingsCard({ cardId, prefillKey, usedKeys = [], onParamKeyChange, onRemove, }: SettingsCardProps) {
     const { initialValues, updateInitialValues } = useWidgetContext();
@@ -55,12 +87,10 @@ export function SettingsCard({ cardId, prefillKey, usedKeys = [], onParamKeyChan
     const selectedKey = prefillKey;
     const [textDraft, setTextDraft] = useState("");
 
-    // Get the label for the current parameter
     const paramLabel = useMemo(() => {
         return PARAM_OPTIONS.find(opt => opt.value === selectedKey)?.label || "";
     }, [selectedKey]);
 
-    // Notify parent when prefillKey is set
     useEffect(() => {
         if (prefillKey) {
             onParamKeyChange?.(cardId, prefillKey);
@@ -72,7 +102,6 @@ export function SettingsCard({ cardId, prefillKey, usedKeys = [], onParamKeyChan
         [selectedKey, initialValues]
     );
 
-    // Get tokens for from/to networks
     const fromTokens = useMemo(() => {
         if (!initialValues.from) return [];
         const network = sourceRoutes.find((n) => n.name === initialValues.from);
@@ -85,7 +114,6 @@ export function SettingsCard({ cardId, prefillKey, usedKeys = [], onParamKeyChan
         return network?.tokens ?? [];
     }, [initialValues.to, destinationRoutes]);
 
-    // Sync text draft with current value for text/numeric fields
     useEffect(() => {
         if (!selectedKey || isBooleanField(selectedKey) || isSelectField(selectedKey)) {
             setTextDraft("");
@@ -95,7 +123,6 @@ export function SettingsCard({ cardId, prefillKey, usedKeys = [], onParamKeyChan
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedKey, currentValue]);
 
-    // Debounced update for text/numeric fields
     useEffect(() => {
         if (!selectedKey || isBooleanField(selectedKey) || isSelectField(selectedKey)) return;
 
@@ -114,18 +141,37 @@ export function SettingsCard({ cardId, prefillKey, usedKeys = [], onParamKeyChan
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [textDraft, selectedKey]);
 
-    const handleBooleanChange = (checked: boolean) => {
-        if (selectedKey) updateInitialValues(selectedKey, checked as any);
-    };
     const handleSelectChange = (value: string) => {
-        if (selectedKey) updateInitialValues(selectedKey, value as any);
+        if (selectedKey) {
+            if (isBooleanField(selectedKey)) {
+                updateInitialValues(selectedKey, value === "on");
+            } else {
+                updateInitialValues(selectedKey, value);
+            }
+        }
     };
     const handleRemove = () => {
         onRemove?.(cardId, selectedKey);
     };
-    const select = (items: any[], placeholder: string, disabled = false) =>
-        renderSelect(items, placeholder, disabled, currentValue as string | undefined, handleSelectChange)
-    // Render the appropriate input based on field type
+    const select = (items: any[], placeholder: string, disabled = false) => {
+        let displayValue: string | undefined;
+
+        if (isBooleanField(selectedKey)) {
+            displayValue = currentValue === true ? "on" : "off";
+            if (currentValue === undefined && selectedKey) {
+                updateInitialValues(selectedKey, false);
+            }
+        } else if (selectedKey === "defaultTab") {
+            displayValue = (currentValue as string) || "swap";
+            if (!currentValue && selectedKey) {
+                updateInitialValues(selectedKey, "swap");
+            }
+        } else {
+            displayValue = currentValue as string | undefined;
+        }
+
+        return renderSelect(items, placeholder, disabled, displayValue, handleSelectChange);
+    }
     const renderValueEditor = () => {
         if (!selectedKey) {
             return (
@@ -151,15 +197,14 @@ export function SettingsCard({ cardId, prefillKey, usedKeys = [], onParamKeyChan
                     return select(toTokens, networkSelected ? "Select asset" : "Pick a to network first", !networkSelected);
                 }
                 case "defaultTab":
-                    return select([{ value: "swap", label: "Swap" }, { value: "cex", label: "CEX" }], "Select default tab");
+                    return select([
+                        { value: "swap", label: "Swap", icon: IconSwap },
+                        { value: "cex", label: "CEX", icon: IconCEX }
+                    ], "Select default tab");
             }
         }
         if (isBooleanField(selectedKey)) {
-            return (
-                <div className="w-full h-12 rounded-xl bg-secondary-500 px-4 flex items-center justify-end">
-                    <Switch checked={!!currentValue} onCheckedChange={handleBooleanChange} />
-                </div>
-            );
+            return select(["on", "off"], "Select option");
         }
         if (isNumericField(selectedKey)) {
             return (

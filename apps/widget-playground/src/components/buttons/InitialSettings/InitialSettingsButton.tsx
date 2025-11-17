@@ -34,13 +34,13 @@ export function InitialSettingsButton() {
         }
         hasSeeded.current = true;
     }, [initialValues]);
-    // Derive cardKeyMap from cards - maps card IDs to their selected keys
+
     const cardKeyMap = useMemo(() => {
         const map: Record<string, keyof InitialSettings | undefined> = {};
         cards.forEach((card) => { map[card.id] = card.prefillKey; });
         return map;
     }, [cards]);
-    // Get list of already-used keys to prevent duplicates
+
     const usedKeys = useMemo(() => Object.values(cardKeyMap).filter((key): key is keyof InitialSettings => key !== undefined),
         [cardKeyMap]
     );
@@ -60,16 +60,13 @@ export function InitialSettingsButton() {
     }, []);
 
     const handleRemoveCard = useCallback((cardId: string, key?: keyof InitialSettings) => {
-        // Clear the field value from context
+
         if (key) {
             updateInitialValues(key, undefined as any);
-            // Get dependent fields to cascade delete
             const dependentFields = FIELD_DEPENDENCIES[key] || [];
-            // Clear all dependent field values
             dependentFields.forEach((depKey) => {
                 updateInitialValues(depKey, undefined as any);
             });
-            // Remove card and any cards with dependent fields
             if (dependentFields.length > 0) {
                 setCards((prev) =>
                     prev.filter((card) => {
@@ -80,18 +77,14 @@ export function InitialSettingsButton() {
                 return;
             }
         }
-        // Remove card without dependencies
         setCards((prev) => prev.filter((card) => card.id !== cardId));
     }, [updateInitialValues]);
 
-    // Filter available options based on dependencies and usage
     const availableOptions = useMemo(() => {
         return PARAM_OPTIONS.filter((option) => {
-            // Check if this field has a dependency that isn't met
             const requiredField = FIELD_REQUIRES[option.value];
             if (requiredField && !initialValues[requiredField])
                 return false;
-            // Check if already used
             if (usedKeys.includes(option.value as keyof InitialSettings))
                 return false;
 
@@ -106,7 +99,7 @@ export function InitialSettingsButton() {
                     <Plus className="h-6 w-6" />
                     <span className="text-lg leading-6">Add Parameter</span>
                 </SelectTrigger>
-                <SelectContent className="w-full max-h-[300px] bg-secondary rounded-xl" position="popper" side="bottom" align="start" sideOffset={4}>
+                <SelectContent className="w-full max-h-[500px] bg-secondary rounded-xl" position="popper" side="bottom" align="start" sideOffset={4}>
                     <SelectGroup>
                         {availableOptions.map((option) => (
                             <SelectItem
