@@ -89,6 +89,7 @@ export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData
                 isDisabled={!!loading || dataLoading}
                 isSubmitting={!!loading || dataLoading}
                 onClick={handleTransfer}
+                clearError={() => setTransactionErrorMessage(undefined)}
                 swapData={swapBasicData}
                 refuel={refuel}
             />
