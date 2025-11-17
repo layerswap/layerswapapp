@@ -38,7 +38,7 @@ export const PriceImpact: FC<PriceImpactProps> = ({
             </TooltipTrigger>
             <TooltipContent arrowClasses="!bg-secondary-500 !fill-secondary-500" side="top" align="center" className="bg-secondary-500! border-secondary-500! text-secondary-text! text-xs font-normal rounded-xl p-4! shadow-card">
                 <p className={clsx("text-primary-text font-medium text-sm flex items-baseline space-x-0.5 mb-1", { "text-warning-foreground": priceImpactValues.highMarketPriceImpact })}>
-                    {priceImpactValues.highMarketPriceImpact ? priceImpactValues.highMarketPriceImpact ? <span>Critical price impact:</span> : <span>High price impact:</span> : <span>Price impact:</span>}
+                    {priceImpactValues.highMarketPriceImpact ? (priceImpactValues.criticalMarketPriceImpact ? <span>Critical price impact:</span> : <span>High price impact:</span>) : <span>Price impact:</span>}
                     <span>{formatCurrency(priceImpactValues.priceImpact)}</span>
                     <span className={clsx("text-secondary-text text-xs font-normal", { "text-warning-foreground": priceImpactValues.highMarketPriceImpact })}>{priceImpactValues.priceImpactPercentage ? `(${priceImpactValues.priceImpactPercentage < 0 ? "-" : "+"}${Math.abs(priceImpactValues.priceImpactPercentage)}%)` : ""}</span>
                 </p>
