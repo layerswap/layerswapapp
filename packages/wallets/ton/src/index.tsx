@@ -35,15 +35,10 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
         addressUtilsProviders
     } = config;
 
-    const resolvedTonConfigs: TonClientConfig = useMemo(() => ({
-        tonApiKey: tonConfigs?.tonApiKey || AppSettings.TonClientConfig.tonApiKey,
-        manifestUrl: tonConfigs?.manifestUrl || AppSettings.TonClientConfig.manifestUrl
-    }), [tonConfigs])
-
     const WrapperComponent = ({ children, themeData }: { children: React.ReactNode, themeData?: ThemeData }) => {
         return (
-            <TonConfigContext.Provider value={resolvedTonConfigs}>
-                <TonProviderWrapper tonConfigs={resolvedTonConfigs} themeData={themeData}>
+            <TonConfigContext.Provider value={tonConfigs}>
+                <TonProviderWrapper tonConfigs={tonConfigs} themeData={themeData}>
                     {children}
                 </TonProviderWrapper>
             </TonConfigContext.Provider>
@@ -76,3 +71,26 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
         balanceProvider: finalBalanceProviders,
     };
 }
+
+/**
+ * @deprecated Use createTONProvider() instead. This export will be removed in a future version.
+ * Note: This uses default TON configuration from AppSettings.
+ */
+export const TONProvider: WalletProvider = {
+    id: "ton",
+    wrapper: ({ children, themeData }: { children: React.ReactNode, themeData?: ThemeData }) => {
+        const configs = AppSettings.TonClientConfig;
+        console.log('configs', configs)
+        return (
+            <TonConfigContext.Provider value={configs}>
+                <TonProviderWrapper tonConfigs={configs} themeData={themeData}>
+                    {children}
+                </TonProviderWrapper>
+            </TonConfigContext.Provider>
+        );
+    },
+    walletConnectionProvider: useTONConnection,
+    addressUtilsProvider: [new TonAddressUtilsProvider()],
+    gasProvider: [new TonGasProvider()],
+    balanceProvider: [new TonBalanceProvider()],
+};

@@ -1,4 +1,4 @@
-import { KnownInternalNames, insertIfNotExists, formatUnits, retryWithExponentialBackoff } from "@layerswap/widget/internal";
+import { KnownInternalNames, insertIfNotExists, formatUnits, retryWithExponentialBackoff, AppSettings } from "@layerswap/widget/internal";
 import { createTonClient } from "./client";
 import { BalanceProvider, TokenBalance, Network, Token } from "@layerswap/widget/types";
 import { TonClient } from "@ton/ton";
@@ -21,7 +21,7 @@ export class TonBalanceProvider extends BalanceProvider {
 
         for (const token of tokens) {
             try {
-                const balance = await resolveBalance({ network, address, token, apiKey: this.apiKey })
+                const balance = await resolveBalance({ network, address, token, apiKey: this.apiKey || AppSettings.TonClientConfig?.tonApiKey })
 
                 balances.push(balance)
 

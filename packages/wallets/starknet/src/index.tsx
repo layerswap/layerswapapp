@@ -3,6 +3,7 @@ import useStarknetConnection from "./useStarknetConnection";
 import { StarknetBalanceProvider } from "./starknetBalanceProvider";
 import { StarknetGasProvider } from "./starknetGasProvider";
 import { WalletProvider, BaseWalletProviderConfig, NftProvider } from "@layerswap/widget/types";
+import { AppSettings } from "@layerswap/widget/internal";
 import { StarknetAddressUtilsProvider } from "./starknetAddressUtilsProvider";
 import { StarknetNftProvider } from "./starknetNftProvider";
 import React from "react";
@@ -75,3 +76,23 @@ export function createStarknetProvider(config: StarknetProviderConfig = {}): Wal
         nftProvider: finalNftProviders,
     };
 }
+
+/**
+ * @deprecated Use createStarknetProvider() instead. This export will be removed in a future version.
+ * Note: This uses default WalletConnect configuration provided to LayerswapProvider.
+ */
+export const StarknetProvider: WalletProvider = {
+    id: "starknet",
+    wrapper: ({ children }: { children: React.ReactNode }) => {
+        return (
+            <StarknetProviderWrapper walletConnectConfigs={AppSettings.WalletConnectConfig}>
+                {children}
+            </StarknetProviderWrapper>
+        );
+    },
+    walletConnectionProvider: useStarknetConnection,
+    addressUtilsProvider: [new StarknetAddressUtilsProvider()],
+    gasProvider: [new StarknetGasProvider()],
+    balanceProvider: [new StarknetBalanceProvider()],
+    nftProvider: [new StarknetNftProvider()],
+};

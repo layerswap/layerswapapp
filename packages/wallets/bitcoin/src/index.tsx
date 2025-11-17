@@ -50,3 +50,15 @@ export function createBitcoinProvider(config: BitcoinProviderConfig = {}): Walle
         balanceProvider: finalBalanceProviders,
     };
 }
+
+/**
+ * @deprecated Use createBitcoinProvider() instead. This export will be removed in a future version.
+ */
+export const BitcoinProvider: WalletProvider = {
+    id: "bitcoin",
+    wrapper: BitcoinProviderWrapper,
+    walletConnectionProvider: useBitcoinConnection,
+    addressUtilsProvider: [new BitcoinAddressUtilsProvider()],
+    gasProvider: [new BitcoinGasProvider()],
+    balanceProvider: [new BitcoinBalanceProvider()],
+};

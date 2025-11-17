@@ -39,3 +39,13 @@ export function createParadexProvider(config: ParadexProviderConfig = {}): Walle
 }
 
 export { default as ParadexMultiStepHandler } from "./components/ParadexMultiStepHandler"
+
+/**
+ * @deprecated Use createParadexProvider() instead. This export will be removed in a future version.
+ */
+export const ParadexProvider: WalletProvider = {
+    id: "paradex",
+    wrapper: ActiveParadexAccountProvider,
+    walletConnectionProvider: useParadexConnection,
+    balanceProvider: [new ParadexBalanceProvider()],
+};
