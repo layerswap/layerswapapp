@@ -35,9 +35,6 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
     if (!amount) {
         return { message: 'Enter an amount' };
     }
-    if (!/^[0-9]*[.,]?[0-9]*$/i.test(amount.toString())) {
-        return { message: 'Invalid amount' };
-    }
     if (amount < 0) {
         return { message: "Can't be negative" };
     }
@@ -47,7 +44,9 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
     if (minAllowedAmount != undefined && amount < minAllowedAmount) {
         return { code: FORM_VALIDATION_ERROR_CODES.MIN_AMOUNT_ERROR, message: `Min amount is ${minAllowedAmount}` };
     }
-
+    if (!/^[0-9]*[.,]?[0-9]*$/i.test(amount.toString())) {
+        return { message: 'Invalid amount' };
+    }
     if (values.to) {
         if (values.destination_address && !isValidAddress(values.destination_address, values.to)) {
             return { message: `Enter a valid ${values.to?.display_name} address` };
