@@ -23,6 +23,7 @@ const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
                 // Find your environment id at https://app.dynamic.xyz/dashboard/developer
                 environmentId: "63a881b4-4008-45d7-9697-4a9e743f51d9",
                 walletConnectors: [StarknetWalletConnectors],
+                initialAuthenticationMode: 'connect-only'
             }}
         >
             <div className="h-screen flex flex-col items-center justify-center gap-4 w-full">
