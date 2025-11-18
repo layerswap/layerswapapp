@@ -28,7 +28,7 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
 
     const availableWallets = useMemo(() => {
         if (!network) return []
-        const filteredWallets = wallets.filter(wallet => wallet.isNotAvailable)
+        const filteredWallets = wallets.filter(wallet => !wallet.isNotAvailable)
         switch (purpose) {
             case "withdrawal":
                 return filteredWallets.filter(wallet => wallet.withdrawalSupportedNetworks?.includes(network.name))
@@ -72,19 +72,19 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletPr
             break;
     }
 
-    if (provider?.isNotAvailableCondition) {
-        const availableWalletsForConnect = provider.availableWalletsForConnect?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name) : true)
+    if (provider?.isNotAvailableCondition && purpose) {
+        const availableWalletsForConnect = provider.availableWalletsForConnect?.filter(connector => (provider.isNotAvailableCondition && network?.name) ? !provider.isNotAvailableCondition(connector.id, network?.name, purpose) : true)
         const resolvedProvider = {
             ...provider,
             connectedWallets: provider.connectedWallets?.map(wallet => {
                 return {
                     ...wallet,
-                    isNotAvailable: (provider.isNotAvailableCondition && network?.name && wallet.internalId) ? provider.isNotAvailableCondition(wallet.internalId, network?.name) : false,
+                    isNotAvailable: (provider.isNotAvailableCondition && network?.name && wallet.internalId) ? provider.isNotAvailableCondition(wallet.internalId, network?.name, purpose) : false,
                 }
             }),
             activeWallet: provider.activeWallet ? {
                 ...provider.activeWallet,
-                isNotAvailable: (network?.name) ? provider.isNotAvailableCondition(provider.activeWallet.id, network?.name) : false,
+                isNotAvailable: (network?.name) ? provider.isNotAvailableCondition(provider.activeWallet.id, network?.name, purpose) : false,
             } : undefined,
             availableWalletsForConnect
         }
@@ -96,7 +96,7 @@ const resolveProvider = (network: Network | undefined, walletProviders: WalletPr
 
 const resolveWallet = (wallet: Wallet, network: Network | undefined, provider: WalletProvider, purpose?: WalletPurpose) => {
 
-    if (provider.isNotAvailableCondition && network?.name && wallet.internalId) {
+    if (provider.isNotAvailableCondition && network?.name && wallet.internalId && !purpose) {
         return {
             ...wallet,
             isNotAvailable: provider.isNotAvailableCondition(wallet.internalId, network?.name),
