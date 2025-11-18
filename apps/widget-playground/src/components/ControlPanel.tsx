@@ -31,16 +31,16 @@ const accordionElements = {
             trigger: <ThemeButtonTrigger />,
             content: <ThemeButton />
         },
-        {
-            trigger: <ConfigurationButtonTrigger />,
-            content: <ConfigurationButton />
-        }
     ],
     "Widget configs": [
         {
             trigger: <InitialSettingsButtonTrigger />,
             content: <InitialSettingsButton />
         },
+        {
+            trigger: <ConfigurationButtonTrigger />,
+            content: <ConfigurationButton />
+        }
     ],
     // "Wallet configs": [
     //     {
