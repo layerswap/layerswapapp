@@ -37,7 +37,7 @@ const Comp = ({ children, hidden, sticky = true }: FooterProps) => {
 
     return (
         sticky ?
-            <>
+            <div className="max-sm:mt-4">
                 <motion.div
                     ref={footerRef}
                     transition={{
@@ -46,16 +46,17 @@ const Comp = ({ children, hidden, sticky = true }: FooterProps) => {
                     custom={{ direction: -1, width: 100 }}
                     variants={variants}
                     className={`text-primary-text text-base
+                        bg-secondary-700
                         max-sm:fixed
                         max-sm:inset-x-0
                         max-sm:bottom-0 
                         max-sm:z-30
                         max-sm:bg-secondary-transparent
                         max-sm:shadow-widget-footer 
-                        max-sm:p-4 
+                        max-sm:pb-4
                         max-sm:px-4 
                         max-sm:w-full ${hidden ? 'animation-slide-out' : ''} w-full`}>
-                    {children}
+                        {children}
                 </motion.div>
 
                 <div style={{ height: `${height ? height - 20 : 0}px` }}
@@ -64,7 +65,7 @@ const Comp = ({ children, hidden, sticky = true }: FooterProps) => {
                              max-sm:bottom-0 
                               max-sm:w-full invisible sm:hidden w-full`}>
                 </div>
-            </ >
+            </div>
             :
             children
     )

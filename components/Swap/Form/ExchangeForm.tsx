@@ -108,91 +108,91 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
             <DepositMethodComponent />
             <Form className="h-full grow flex flex-col flex-1 gap-3 justify-between w-full">
                 <Widget.Content>
-                    <div className="w-full max-sm:min-h-[79svh] flex flex-col justify-between mt-2 sm:mt-0">
-                        <div className='flex-col relative flex justify-between gap-1.5 w-full leading-4'>
-                            <div className="flex flex-col w-full space-y-3">
-                                <div className="space-y-2">
-                                    <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5">
-                                        Send from
-                                    </label>
-                                    <div className="relative">
-                                        <CexPicker />
-                                    </div>
+                    <div className="w-full flex flex-col flex-1 relative gap-1.5 leading-4 justify-between mt-2 sm:mt-0">
+                        <div className="flex flex-col w-full space-y-3 flex-1">
+                            <div className="space-y-2">
+                                <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5">
+                                    Send from
+                                </label>
+                                <div className="relative">
+                                    <CexPicker />
                                 </div>
-                                <div className="space-y-2">
-                                    <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5">
-                                        Send to
-                                    </label>
-                                    <div className="relative group exchange-picker">
-                                        <RoutePicker direction="to" isExchange={true} />
-                                    </div>
-                                    <div className="hover:bg-secondary-300 bg-secondary-500 rounded-2xl p-3">
-                                        <Address partner={partner} >{
-                                            ({ addressItem }) => {
-                                                const addressProviderIcon = (partner?.is_wallet && addressItem?.group === AddressGroup.FromQuery && partner?.logo) ? partner.logo : undefined
-                                                return <>
-                                                    {
-                                                        addressItem ? <>
-                                                            <AddressButton address={addressItem.address} network={destination} wallet={wallet} addressProviderIcon={addressProviderIcon} />
+                            </div>
+                            <div className="space-y-2">
+                                <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5">
+                                    Send to
+                                </label>
+                                <div className="relative group exchange-picker">
+                                    <RoutePicker direction="to" isExchange={true} />
+                                </div>
+                                <div className="hover:bg-secondary-300 bg-secondary-500 rounded-2xl p-3">
+                                    <Address partner={partner} >{
+                                        ({ addressItem }) => {
+                                            const addressProviderIcon = (partner?.is_wallet && addressItem?.group === AddressGroup.FromQuery && partner?.logo) ? partner.logo : undefined
+                                            return <>
+                                                {
+                                                    addressItem ? <>
+                                                        <AddressButton address={addressItem.address} network={destination} wallet={wallet} addressProviderIcon={addressProviderIcon} />
+                                                    </>
+                                                        : destination_address ? <>
+                                                            <AddressButton address={destination_address} />
                                                         </>
-                                                            : destination_address ? <>
-                                                                <AddressButton address={destination_address} />
-                                                            </>
-                                                                :
-                                                                <span className="flex items-center">
-                                                                    <SelectedEchangePlaceholder placeholder='Enter destination address' />
-                                                                    <span className="absolute right-0 px-1 pr-5 pointer-events-none text-primary-text">
-                                                                        <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
-                                                                    </span>
+                                                            :
+                                                            <span className="flex items-center">
+                                                                <SelectedEchangePlaceholder placeholder='Enter destination address' />
+                                                                <span className="absolute right-0 px-1 pr-5 pointer-events-none text-primary-text">
+                                                                    <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
                                                                 </span>
-                                                    }
-                                                </>
-                                            }
-                                        }</Address>
-                                    </div>
+                                                            </span>
+                                                }
+                                            </>
+                                        }
+                                    }</Address>
                                 </div>
+                            </div>
 
-                                <div className="bg-secondary-500 rounded-2xl p-3 group space-y-2" onClick={setShowQuickActions} ref={parentRef}>
-                                    <div className="flex justify-between items-center">
-                                        <label htmlFor="From" className="block font-normal text-secondary-text text-base ml-2 leading-5">
-                                            Enter amount
-                                        </label>
-                                        {
-                                            from && fromCurrency && minAllowedAmount && maxAmountFromApi &&
-                                            <div className={clsx({
-                                                "hidden": !showQuickActions,
-                                                "block": showQuickActions,
-                                            },
-                                                "group-hover:block"
-                                            )}>
-                                                <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} depositMethod="deposit_address" />
-                                            </div>
-                                        }
-                                    </div>
-                                    <div className="relative group exchange-amount-field">
-                                        <AmountField
-                                            className="pb-0! rounded-xl!"
-                                            fee={quote}
-                                            usdPosition="right"
-                                            actionValue={actionTempValue}
-                                        />
-                                        {quote &&
-                                            <div className="mt-3 ml-2">
-                                                <span className="text-base leading-5 text-secondary-text">You will receive</span>
-                                                <ExchangeReceiveAmount
-                                                    destination_token={toCurrency}
-                                                    fee={quote}
-                                                    isFeeLoading={isQuoteLoading}
-                                                />
-                                            </div>
-                                        }
-                                    </div>
+                            <div className="bg-secondary-500 rounded-2xl p-3 group space-y-2" onClick={setShowQuickActions} ref={parentRef}>
+                                <div className="flex justify-between items-center">
+                                    <label htmlFor="From" className="block font-normal text-secondary-text text-base ml-2 leading-5">
+                                        Enter amount
+                                    </label>
+                                    {
+                                        from && fromCurrency && minAllowedAmount && maxAmountFromApi &&
+                                        <div className={clsx({
+                                            "hidden": !showQuickActions,
+                                            "block": showQuickActions,
+                                        },
+                                            "group-hover:block"
+                                        )}>
+                                            <MinMax from={from} fromCurrency={fromCurrency} limitsMinAmount={minAllowedAmount} limitsMaxAmount={maxAmountFromApi} onActionHover={handleActionHover} depositMethod="deposit_address" />
+                                        </div>
+                                    }
                                 </div>
-                                {
-                                    routeValidation.message
-                                        ? <ValidationError />
-                                        : null
-                                }
+                                <div className="relative group exchange-amount-field">
+                                    <AmountField
+                                        className="pb-0! rounded-xl!"
+                                        fee={quote}
+                                        usdPosition="right"
+                                        actionValue={actionTempValue}
+                                    />
+                                    {quote &&
+                                        <div className="mt-3 ml-2">
+                                            <span className="text-base leading-5 text-secondary-text">You will receive</span>
+                                            <ExchangeReceiveAmount
+                                                destination_token={toCurrency}
+                                                fee={quote}
+                                                isFeeLoading={isQuoteLoading}
+                                            />
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            {
+                                routeValidation.message
+                                    ? <ValidationError />
+                                    : null
+                            }
+                            <div className="mt-auto">
                                 <QuoteDetails swapValues={values} quote={quote?.quote} isQuoteLoading={isQuoteLoading} reward={quote?.reward} variant="base" />
                             </div>
                         </div>
