@@ -94,7 +94,7 @@ export function InitialSettingsButton() {
 
     return (
         <div className="flex flex-col gap-4 px-2 pb-1">
-            <Select onValueChange={handleParameterSelect}>
+            <Select value="" onValueChange={handleParameterSelect}>
                 <SelectTrigger hideChevron className="flex items-center justify-center gap-2 w-full p-3 rounded-xl bg-secondary hover:bg-secondary-400 border-none transition-colors">
                     <Plus className="h-6 w-6" />
                     <span className="text-lg leading-6">Add Parameter</span>

@@ -82,7 +82,7 @@ function SelectContent({
         >
           {children}
         </SelectPrimitive.Viewport>
-        <div className="absolute bottom-0 left-0 right-0 h-1/2 pointer-events-none bg-gradient-to-t from-secondary-700 via-secondary-700/50 to-transparent" />
+        {/* <div className="absolute bottom-0 left-0 right-0 h-1/2 pointer-events-none bg-gradient-to-t from-secondary-700 via-secondary-700/50 to-transparent" />  fade */}
       </SelectPrimitive.Content>
     </SelectPrimitive.Portal>
   )

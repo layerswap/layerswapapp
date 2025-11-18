@@ -92,9 +92,9 @@ export function ColorBox({ rgbColor, colorKey }: ColorBoxProps) {
             />
             <Popover>
                 <PopoverTrigger asChild>
-                    <button className="w-8 h-8 rounded-lg border border-secondary-300 p-1 flex items-center justify-center cursor-pointer">
+                    <button className="w-8 h-8 rounded-lg border border-secondary-300 p-0 flex items-center justify-center cursor-pointer">
                         <div
-                            className="w-6 h-6 rounded"
+                            className="w-6 h-6 rounded place-self-center"
                             style={{ backgroundColor: hexColor }}
                         />
                     </button>

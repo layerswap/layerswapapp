@@ -51,7 +51,7 @@ const accordionElements = {
     "Other": [
         {
             trigger: <LoadingButtonTrigger />,
-            // content: <LoadingButton />
+            content: null,
         },
     ]
 }
@@ -95,22 +95,27 @@ export function ControlPanel() {
                                     <div className="space-y-3">
                                         {
                                             items.map((item, index) => (
-                                                <AccordionItem key={`${groupName}-${index}`}
-                                                    value={`item-${groupName}-${index}`}
-                                                    className="bg-secondary-700 hover:brightness-110 transition-colors duration-200 rounded-xl p-2">
-                                                    <AccordionTrigger
-                                                        className={`flex justify-normal px-2 gap-2 overflow-hidden h-12 text-lg ${!item.content ? 'cursor-default' : 'cursor-pointer'}`}
-                                                        hideChevron={!item.content}
-                                                    >
-                                                        {item.trigger}
-                                                    </AccordionTrigger>
-                                                    {item.content ?
+                                                item.content ? (
+                                                    <AccordionItem key={`${groupName}-${index}`}
+                                                        value={`item-${groupName}-${index}`}
+                                                        className="bg-secondary-700 hover:brightness-110 transition-colors duration-200 rounded-xl p-2">
+                                                        <AccordionTrigger
+                                                            className="flex justify-normal px-2 gap-2 overflow-hidden h-12 text-lg cursor-pointer"
+                                                        >
+                                                            {item.trigger}
+                                                        </AccordionTrigger>
                                                         <AccordionContent className="pt-3">
                                                             {item.content}
                                                         </AccordionContent>
-                                                        : null
-                                                    }
-                                                </AccordionItem>
+                                                    </AccordionItem>
+                                                ) : (
+                                                    <div key={`${groupName}-${index}`}
+                                                        className="bg-secondary-700 hover:brightness-110 transition-colors duration-200 rounded-xl p-2">
+                                                        <div className="flex justify-normal px-2 gap-2 overflow-hidden h-12 text-lg items-center">
+                                                            {item.trigger}
+                                                        </div>
+                                                    </div>
+                                                )
                                             ))
                                         }
                                     </div>
