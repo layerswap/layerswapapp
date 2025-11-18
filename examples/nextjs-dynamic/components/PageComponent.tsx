@@ -23,13 +23,15 @@ const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
                 // Find your environment id at https://app.dynamic.xyz/dashboard/developer
                 environmentId: "63a881b4-4008-45d7-9697-4a9e743f51d9",
                 walletConnectors: [StarknetWalletConnectors],
+                initialAuthenticationMode: 'connect-only'
             }}
         >
             <div className="h-screen flex flex-col items-center justify-center gap-4 w-full">
-                <h1 className="text-2xl font-bold text-white text-center">Layerswap Widget with Dynamic SDK Example</h1>
-                <p className="text-gray-400 max-w-lg px-4 text-center">This example demonstrates the Layerswap widget integration using Dynamic SDK. For information on all available widget configurations, please refer to{' '}
+                
+                {/* <h1 className="text-2xl font-bold text-white text-center">Layerswap Widget with Dynamic SDK Example</h1> */}
+                {/* <p className="text-gray-400 max-w-lg px-4 text-center">This example demonstrates the Layerswap widget integration using Dynamic SDK. For information on all available widget configurations, please refer to{' '}
                     <a href="https://docs.layerswap.io/introduction" target="_blank" rel="noopener noreferrer" className="text-pink-600 hover:no-underline underline">our documentation</a>.
-                </p>
+                </p> */}
 
                 <div className="flex flex-col items-center justify-center gap-4">
                     <DynamicWidget />

@@ -31,16 +31,28 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
     });
     const { lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset } = useInitialSettings()
     const groupByToken = useRouteTokenSwitchStore((s) => s.showTokens)
-    const { balances, isLoading: balancesLoading } = useAllWithdrawalBalances();
+    const { balances, partialPublished, isLoading } = useAllWithdrawalBalances();
     const routesHistory = useRecentNetworksStore(state => state.recentRoutes)
-
+    const loadingSuggestions = useMemo(() => {
+        return !partialPublished && isLoading && direction === "from"
+    }, [isLoading, direction, partialPublished])
     // Apply query-based filtering
     const filteredRoutes = useMemo(() => {
         const filtered = filterRoutesByQuery(routes, direction, { lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset });
         return filtered;
     }, [routes, direction, lockFrom, from, lockTo, to, lockFromAsset, fromAsset, lockToAsset, toAsset]);
 
-    const routeElements = useMemo(() => groupRoutes(filteredRoutes, direction, balances, groupByToken ? "token" : "network", routesHistory, balancesLoading, search), [balancesLoading, filteredRoutes, balances, direction, search, groupByToken, routesHistory]);
+    const routeElements = useMemo(() =>
+        groupRoutes({
+            routes: filteredRoutes,
+            direction,
+            balances,
+            groupBy: groupByToken ? "token" : "network",
+            recents: routesHistory,
+            balancesLoaded: loadingSuggestions,
+            search
+        }),
+        [filteredRoutes, balances, direction, search, groupByToken, routesHistory, loadingSuggestions]);
 
     const exchanges = useMemo(() => {
         return groupExchanges(exchangesRoutes, search, direction, { lockFrom, from, lockTo, to });
@@ -60,7 +72,6 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         exchangeSourceNetworksLoading,
         selectedRoute,
         selectedToken,
-        allbalancesLoaded: !balancesLoading,
     }), [
         filteredRoutes,
         routesLoading,
@@ -70,8 +81,7 @@ export default function useFormRoutes({ direction, values }: Props, search?: str
         withdrawalNetworks,
         exchangeSourceNetworksLoading,
         selectedRoute,
-        selectedToken,
-        balancesLoading,
+        selectedToken
     ]);
 }
 
@@ -237,21 +247,25 @@ const searchInTokens = (routes: NetworkRoute[], search: string): NetworkTokenEle
 };
 // ---------- Route Grouping ----------
 
+type GroupRoutesProps = {
+    routes: NetworkRoute[];
+    direction: SwapDirection;
+    balances: Record<string, NetworkBalance> | null;
+    groupBy: 'token' | 'network';
+    recents: RoutesHistory;
+    balancesLoaded: boolean;
+    search?: string;
+}
+
 function groupRoutes(
-    routes: NetworkRoute[],
-    direction: SwapDirection,
-    balances: Record<string, NetworkBalance> | null,
-    groupBy: 'token' | 'network' = 'network',
-    recents: RoutesHistory,
-    balancesLoading: boolean,
-    search?: string
+    { routes, direction, balances, groupBy, recents, balancesLoaded, search }: GroupRoutesProps
 ): RowElement[] {
 
     if (search) {
         return resolveSearch(routes, search, direction, balances, recents)
     }
 
-    const suggestedRoutes = getSuggestedRoutes(routes, balances, recents, direction, balancesLoading)
+    const suggestedRoutes = getSuggestedRoutes(routes, balances, recents, direction, balancesLoaded)
 
     if (groupBy === "token") {
         const groupedTokens = resolveTokenRoutes(routes, balances, direction)

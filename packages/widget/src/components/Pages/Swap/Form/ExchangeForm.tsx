@@ -82,7 +82,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                             <div className="relative group exchange-picker">
                                 <RoutePicker direction="to" isExchange={true} />
                             </div>
-                            <div className="hover:bg-secondary-300 bg-secondary-500 rounded-2xl p-3">
+                            <div className="hover:bg-secondary-300 bg-secondary-500 rounded-2xl p-3 h-[52px]">
                                 <Address partner={partner} >{
                                     ({ addressItem }) => {
                                         const addressProviderIcon = (partner?.is_wallet && addressItem?.group === AddressGroup.FromQuery && partner?.logo) ? partner.logo : undefined
