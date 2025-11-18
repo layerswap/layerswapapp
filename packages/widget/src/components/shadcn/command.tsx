@@ -16,7 +16,9 @@ const Command = React.forwardRef<
     )}
     {...props}
   />
-))
+)) as React.ForwardRefExoticComponent<
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive> & React.RefAttributes<React.ElementRef<typeof CommandPrimitive>>
+>
 Command.displayName = CommandPrimitive.displayName
 
 // eslint-disable-next-line react/display-name
@@ -29,7 +31,9 @@ const CommandWrapper = React.forwardRef<
   )}>
     {children}
   </Command>
-))
+)) as React.ForwardRefExoticComponent<
+  React.ComponentPropsWithoutRef<typeof Command> & React.RefAttributes<React.ElementRef<typeof Command>>
+>
 
 const CommandInput = React.forwardRef<
   React.ElementRef<typeof CommandPrimitive.Input>,
@@ -43,7 +47,9 @@ const CommandInput = React.forwardRef<
         className
       )} />
   </div>
-))
+)) as React.ForwardRefExoticComponent<
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input> & React.RefAttributes<React.ElementRef<typeof CommandPrimitive.Input>>
+>
 
 CommandInput.displayName = CommandPrimitive.Input.displayName
 
@@ -56,7 +62,9 @@ const CommandList = React.forwardRef<
     className={classNames("overflow-y-auto styled-scroll-no-bg rdxCommandList overflow-x-hidden", className)}
     {...props}
   />
-))
+)) as React.ForwardRefExoticComponent<
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.List> & React.RefAttributes<React.ElementRef<typeof CommandPrimitive.List>>
+>
 
 CommandList.displayName = CommandPrimitive.List.displayName
 
@@ -69,7 +77,9 @@ const CommandEmpty = React.forwardRef<
     className="py-6 text-center text-sm"
     {...props}
   />
-))
+)) as React.ForwardRefExoticComponent<
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Empty> & React.RefAttributes<React.ElementRef<typeof CommandPrimitive.Empty>>
+>
 
 CommandEmpty.displayName = CommandPrimitive.Empty.displayName
 
@@ -85,7 +95,9 @@ const CommandGroup = React.forwardRef<
     )}
     {...props}
   ><div className="bg-secondary-800 rounded-md overflow-hidden">{props.children}</div></CommandPrimitive.Group>
-))
+)) as React.ForwardRefExoticComponent<
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Group> & React.RefAttributes<React.ElementRef<typeof CommandPrimitive.Group>>
+>
 
 CommandGroup.displayName = CommandPrimitive.Group.displayName
 
@@ -98,7 +110,9 @@ const CommandSeparator = React.forwardRef<
     className={classNames("-mx-1 h-px bg-secondary-500", className)}
     {...props}
   />
-))
+)) as React.ForwardRefExoticComponent<
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Separator> & React.RefAttributes<React.ElementRef<typeof CommandPrimitive.Separator>>
+>
 CommandSeparator.displayName = CommandPrimitive.Separator.displayName
 
 const CommandItem = React.forwardRef<
@@ -114,7 +128,9 @@ const CommandItem = React.forwardRef<
     )}
     {...props}
   />
-))
+)) as React.ForwardRefExoticComponent<
+  React.ComponentPropsWithoutRef<typeof CommandPrimitive.Item> & React.RefAttributes<React.ElementRef<typeof CommandPrimitive.Item>>
+>
 
 
 CommandItem.displayName = CommandPrimitive.Item.displayName

@@ -9,6 +9,7 @@ import {
     WalletProvider,
 } from "@solana/wallet-adapter-react";
 import { ReactNode, useMemo } from "react";
+import type { ReactElement } from "react";
 import { CoinbaseWalletAdapter } from "@solana/wallet-adapter-coinbase";
 import { WalletConnectConfig } from ".";
 
@@ -17,7 +18,7 @@ type SolanaProviderProps = {
     walletConnectConfigs?: WalletConnectConfig
 }
 
-function SolanaProvider({ children, walletConnectConfigs }: SolanaProviderProps) {
+function SolanaProvider({ children, walletConnectConfigs }: SolanaProviderProps): ReactElement {
     const walletConnectConfig = walletConnectConfigs
     const WALLETCONNECT_PROJECT_ID = walletConnectConfig?.projectId
 
