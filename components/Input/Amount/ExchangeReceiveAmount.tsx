@@ -17,7 +17,7 @@ export const ExchangeReceiveAmount: FC<ReceiveAmountProps> = ({ destination_toke
         <div className="w-full flex min-w-0 font-normal border-0 text-xl text-primary-text relative truncate items-baseline flex-row">
             <div className="flex items-center justify-start relative w-fit">
                 <div className={clsx(
-                    "w-full flex items-center py-[3px] pr-2 receiveAmount",
+                    "w-full flex items-center py-[3px] pr-2",
                     { "animate-pulse-stronger": isFeeLoading },
                     { "text-secondary-text": !receive_amount }
                 )}>
@@ -26,7 +26,7 @@ export const ExchangeReceiveAmount: FC<ReceiveAmountProps> = ({ destination_toke
                 </div>
             </div>
             <div className="flex items-baseline space-x-2 mt-1.5">
-                <span className="text-sm leading-4 font-medium text-secondary-text h-5 receiveAmountInUsd">
+                <span className="text-sm leading-4 font-medium text-secondary-text h-5">
                     <NumberFlow className="p-0" value={receiveAmountInUsd || 0} format={{ style: 'currency', currency: 'USD', maximumFractionDigits: receiveAmountInUsd ? 2 : 0 }} trend={0} />
                 </span>
             </div>
