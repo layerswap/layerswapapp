@@ -25,7 +25,7 @@ import { Network } from "@/Models/Network";
 import { Wallet } from "@/Models/WalletProvider";
 import { AddressGroup } from "@/components/Input/Address/AddressPicker";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
-import { ReceiveAmount } from "@/components/Input/Amount/ReceiveAmount";
+import { ExchangeReceiveAmount } from "@/components/Input/Amount/ExchangeReceiveAmount";
 
 type Props = {
     partner?: Partner;
@@ -179,8 +179,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                         {quote &&
                                             <div className="mt-3 ml-2">
                                                 <span className="text-base leading-5 text-secondary-text">You will receive</span>
-                                                <ReceiveAmount
-                                                    source_token={fromCurrency}
+                                                <ExchangeReceiveAmount
                                                     destination_token={toCurrency}
                                                     fee={quote}
                                                     isFeeLoading={isQuoteLoading}
