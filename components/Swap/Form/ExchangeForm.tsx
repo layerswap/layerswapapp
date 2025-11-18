@@ -84,7 +84,7 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
     const handleActionHover = (value: number | undefined) => {
         setActionTempValue(value)
     }
-   
+
     return (
         <>
             {showBanner && (
@@ -108,47 +108,49 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
             <DepositMethodComponent />
             <Form className="h-full grow flex flex-col flex-1 gap-3 justify-between w-full">
                 <Widget.Content>
-                    <div className="flex flex-col w-full space-y-3">
-                        <div className="space-y-2">
-                            <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5">
-                                Send from
-                            </label>
-                            <div className="relative">
-                                <CexPicker />
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5">
-                                Send to
-                            </label>
-                            <div className="relative group exchange-picker">
-                                <RoutePicker direction="to" isExchange={true} />
-                            </div>
-                            <div className="hover:bg-secondary-300 bg-secondary-500 rounded-2xl p-3 h-[52px]">
-                                <Address partner={partner} >{
-                                    ({ addressItem }) => {
-                                        const addressProviderIcon = (partner?.is_wallet && addressItem?.group === AddressGroup.FromQuery && partner?.logo) ? partner.logo : undefined
-                                        return <>
-                                            {
-                                                addressItem ? <>
-                                                    <AddressButton address={addressItem.address} network={destination} wallet={wallet} addressProviderIcon={addressProviderIcon} />
+                    <div className="w-full max-sm:min-h-[79svh] flex flex-col justify-between mt-2 sm:mt-0">
+                        <div className='flex-col relative flex justify-between gap-1.5 w-full leading-4'>
+                            <div className="flex flex-col w-full space-y-3">
+                                <div className="space-y-2">
+                                    <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5">
+                                        Send from
+                                    </label>
+                                    <div className="relative">
+                                        <CexPicker />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5">
+                                        Send to
+                                    </label>
+                                    <div className="relative group exchange-picker">
+                                        <RoutePicker direction="to" isExchange={true} />
+                                    </div>
+                                    <div className="hover:bg-secondary-300 bg-secondary-500 rounded-2xl p-3">
+                                        <Address partner={partner} >{
+                                            ({ addressItem }) => {
+                                                const addressProviderIcon = (partner?.is_wallet && addressItem?.group === AddressGroup.FromQuery && partner?.logo) ? partner.logo : undefined
+                                                return <>
+                                                    {
+                                                        addressItem ? <>
+                                                            <AddressButton address={addressItem.address} network={destination} wallet={wallet} addressProviderIcon={addressProviderIcon} />
+                                                        </>
+                                                            : destination_address ? <>
+                                                                <AddressButton address={destination_address} />
+                                                            </>
+                                                                :
+                                                                <span className="flex items-center">
+                                                                    <SelectedEchangePlaceholder placeholder='Enter destination address' />
+                                                                    <span className="absolute right-0 px-1 pr-5 pointer-events-none text-primary-text">
+                                                                        <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
+                                                                    </span>
+                                                                </span>
+                                                    }
                                                 </>
-                                                    : destination_address ? <>
-                                                        <AddressButton address={destination_address} />
-                                                    </>
-                                                        :
-                                                        <span className="flex items-center">
-                                                            <SelectedEchangePlaceholder placeholder='Enter destination address' />
-                                                            <span className="absolute right-0 px-1 pr-5 pointer-events-none text-primary-text">
-                                                                <ChevronDown className="h-4 w-4 text-secondary-text" aria-hidden="true" />
-                                                            </span>
-                                                        </span>
                                             }
-                                        </>
-                                    }
-                                }</Address>
-                            </div>
-                        </div>
+                                        }</Address>
+                                    </div>
+                                </div>
 
                                 <div className="bg-secondary-500 rounded-2xl p-3 group space-y-2" onClick={setShowQuickActions} ref={parentRef}>
                                     <div className="flex justify-between items-center">
@@ -169,36 +171,32 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
                                     </div>
                                     <div className="relative group exchange-amount-field">
                                         <AmountField
-                                            className="!pb-0 !rounded-xl"
+                                            className="pb-0! rounded-xl!"
                                             fee={quote}
                                             usdPosition="right"
                                             actionValue={actionTempValue}
                                         />
                                         {quote &&
-                                        <div className="mt-3 ml-2">
-                                            <span className="text-base leading-5 text-secondary-text">You will receive</span>
-                                            <ReceiveAmount
-                                                source_token={fromCurrency}
-                                                destination_token={toCurrency}
-                                                fee={quote}
-                                                isFeeLoading={isQuoteLoading}
-                                            />
-                                        </div>
+                                            <div className="mt-3 ml-2">
+                                                <span className="text-base leading-5 text-secondary-text">You will receive</span>
+                                                <ReceiveAmount
+                                                    source_token={fromCurrency}
+                                                    destination_token={toCurrency}
+                                                    fee={quote}
+                                                    isFeeLoading={isQuoteLoading}
+                                                />
+                                            </div>
                                         }
                                     </div>
                                 </div>
+                                {
+                                    routeValidation.message
+                                        ? <ValidationError />
+                                        : null
+                                }
+                                <QuoteDetails swapValues={values} quote={quote?.quote} isQuoteLoading={isQuoteLoading} reward={quote?.reward} variant="base" />
                             </div>
                         </div>
-                    </div>
-                </Widget.Content>
-                <Widget.Footer>
-                    <div className="space-y-3 mb-3">
-                        {
-                            routeValidation.message
-                                ? <ValidationError />
-                                : null
-                        }
-                        <QuoteDetails swapValues={values} quote={quote?.quote} isQuoteLoading={isQuoteLoading} reward={quote?.reward} variant="base" />
                     </div>
                 </Widget.Content>
                 <Widget.Footer showPoweredBy>
