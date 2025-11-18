@@ -1,12 +1,13 @@
-import { RefObject, useMemo, useRef, useState, } from "react";
+import { RefObject, useEffect, useMemo, useRef, useState, } from "react";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcn/accordion";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { NetworkElement, GroupedTokenElement, } from "@/Models/Route";
 import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { CollapsableHeader } from "./CollapsableHeader";
 import { StickyHeader } from "./StickyHeader";
 import { CurrencySelectItemDisplay } from "../Routes";
+import { useBalanceStore } from "@/stores/balanceStore";
 
 type GenericAccordionRowProps = {
   item: NetworkElement | GroupedTokenElement;
@@ -18,7 +19,6 @@ type GenericAccordionRowProps = {
   toggleContent: (itemName: string) => void;
   openValues?: string[];
   scrollContainerRef: RefObject<HTMLDivElement>;
-  allbalancesLoaded?: boolean;
 };
 
 type ChildWrapper = {
@@ -28,6 +28,7 @@ type ChildWrapper = {
 
 export const CollapsibleRow = ({
   item,
+  index,
   toggleContent,
   direction,
   onSelect,
@@ -35,9 +36,8 @@ export const CollapsibleRow = ({
   selectedToken,
   searchQuery,
   openValues,
-  scrollContainerRef,
-  allbalancesLoaded,
-}: GenericAccordionRowProps) => {
+  scrollContainerRef
+}: GenericAccordionRowProps & { index: number }) => {
   const groupName = item.type === "grouped_token" ? item.symbol : item.route.name;
   const headerId = `${groupName}-header`;
 
@@ -81,7 +81,6 @@ export const CollapsibleRow = ({
             <CollapsableHeader
               item={item}
               direction={direction}
-              allbalancesLoaded={allbalancesLoaded}
               hideTokenImages={isOpen}
             />
           </AccordionTrigger>
@@ -94,7 +93,6 @@ export const CollapsibleRow = ({
           open={isOpen}
           headerRef={headerRef}
           contentRef={contentRef}
-          allbalancesLoaded={allbalancesLoaded}
           childrenCount={childrenList?.length}
           onClick={stickyToggle}
           isSticky={isSticky}
@@ -118,7 +116,6 @@ export const CollapsibleRow = ({
                     onClick={() => onSelect(route, token)}
                   >
                     <CurrencySelectItemDisplay
-                      allbalancesLoaded={allbalancesLoaded}
                       item={token}
                       selected={isSelected}
                       route={route}

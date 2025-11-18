@@ -2,13 +2,14 @@ import React, { FC } from 'react'
 
 type WalletWithdrawalContextValue = {
     onWalletWithdrawalSuccess?: () => void;
+    onCancelWithdrawal?: () => void;
 }
 
 const WalletWithdrawalContext = React.createContext<WalletWithdrawalContextValue | null>(null);
 
-export const WithdrawalProvider: FC<{ onWalletWithdrawalSuccess?: () => void, children?: React.ReactNode }> = ({ onWalletWithdrawalSuccess, children }) => {
+export const WithdrawalProvider: FC<{ onWalletWithdrawalSuccess?: () => void, onCancelWithdrawal?: () => void, children?: React.ReactNode }> = ({ onWalletWithdrawalSuccess, onCancelWithdrawal, children }) => {
     return (
-        <WalletWithdrawalContext.Provider value={{ onWalletWithdrawalSuccess }}>
+        <WalletWithdrawalContext.Provider value={{ onWalletWithdrawalSuccess, onCancelWithdrawal }}>
             {children}
         </WalletWithdrawalContext.Provider>
     );

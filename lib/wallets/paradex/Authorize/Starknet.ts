@@ -1,17 +1,18 @@
-import { AccountInterface } from 'starknet-old';
-import * as Paradex from "../lib";
+import type { AccountInterface as AccountInterfaceOld } from 'starknet-old';
+import type { AccountInterface as AccountInterfaceNew } from 'starknet';
+import { Config, getParadex } from "../lib";
 
-export async function AuthorizeStarknet(starknetAccount: AccountInterface) {
-    const config = await Paradex.Config.fetchConfig(process.env.NEXT_PUBLIC_API_VERSION === "sandbox" ? 'testnet' : 'prod'); ///TODO: check environment may be mainnet
+export async function AuthorizeStarknet(starknetAccount: AccountInterfaceOld | AccountInterfaceNew) {
+    const config = await Config.fetchConfig(process.env.NEXT_PUBLIC_API_VERSION === "sandbox" ? 'testnet' : 'prod'); ///TODO: check environment may be mainnet
 
-    const paraclearProvider = new Paradex.ParaclearProvider.DefaultProvider(config);
+    // Get the appropriate modules based on the config's RPC version
+    const paradex = getParadex(config);
+    const paraclearProvider = new paradex.ParaclearProvider.DefaultProvider(config);
 
-    const snAccount = starknetAccount
-
-    const paradexAccount = await Paradex.Account.fromStarknetAccount({
+    const paradexAccount = await paradex.Account.fromStarknetAccount({
         provider: paraclearProvider,
         config,
-        account: snAccount,
+        account: starknetAccount as any, // Type assertion needed due to runtime version detection
     });
 
     return paradexAccount

@@ -11,6 +11,12 @@ interface Params {
     quoteError?: QuoteError
 }
 
+export const FORM_VALIDATION_ERROR_CODES = {
+    MIN_AMOUNT_ERROR: "MIN_AMOUNT_ERROR",
+    MAX_AMOUNT_ERROR: "MAX_AMOUNT_ERROR",
+}
+
+
 export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmount, sourceAddress, sameAccountNetwork, quoteError }: Params) {
     let amount = values.amount ? Number(values.amount) : undefined;
 
@@ -29,19 +35,18 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
     if (!amount) {
         return { message: 'Enter an amount' };
     }
-    if (!/^[0-9]*[.,]?[0-9]*$/i.test(amount.toString())) {
-        return { message: 'Invalid amount' };
-    }
     if (amount < 0) {
         return { message: "Can't be negative" };
     }
     if (maxAllowedAmount != undefined && amount > maxAllowedAmount) {
-        return { message: `Max amount is ${maxAllowedAmount}` };
+        return { code: FORM_VALIDATION_ERROR_CODES.MAX_AMOUNT_ERROR, message: `Max amount is ${maxAllowedAmount}` };
     }
     if (minAllowedAmount != undefined && amount < minAllowedAmount) {
-        return { message: `Min amount is ${minAllowedAmount}` };
+        return { code: FORM_VALIDATION_ERROR_CODES.MIN_AMOUNT_ERROR, message: `Min amount is ${minAllowedAmount}` };
     }
-
+    if (!/^[0-9]*[.,]?[0-9]*$/i.test(amount.toString())) {
+        return { message: 'Invalid amount' };
+    }
     if (values.to) {
         if (values.destination_address && !isValidAddress(values.destination_address, values.to)) {
             return { message: `Enter a valid ${values.to?.display_name} address` };
@@ -67,7 +72,7 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
     
     const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
     if (quoteError && quoteErrorCode !== "QUOTE_REQUIRES_NO_DEPOSIT_ADDRESS") {
-        return { message: quoteError.response?.data?.error?.message || 'Unable to retrieve quote' };
+        return { message: 'Route not found' };
     }
 
     return { message: '' };

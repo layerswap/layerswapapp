@@ -78,6 +78,7 @@ export const TonWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
                     error={!!transactionErrorMessage}
                     swapData={swapBasicData}
                     refuel={refuel}
+                    clearError={() => setTransactionErrorMessage(undefined)}
                 />
             }
         </div>

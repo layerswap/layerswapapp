@@ -27,6 +27,7 @@ import RefuelToggle from "@/components/FeeDetails/Refuel";
 import ReserveGasNote from "@/components/ReserveGasNote";
 import RefuelModal from "@/components/FeeDetails/RefuelModal";
 import { useSelectedAccount } from "@/context/balanceAccounts";
+import posthog from "posthog-js";
 
 type Props = {
     partner?: Partner;
@@ -74,11 +75,19 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
+    useEffect(() => {
+        if (wallets?.length) {
+            const allWalletAddresses = wallets.flatMap(w => w.addresses).filter(Boolean);
+            posthog.setPersonProperties({
+                accounts: allWalletAddresses,
+            });
+        }
+    }, [wallets]);
 
     return (
         <>
             <DepositMethodComponent />
-            <Form className="h-full grow flex flex-col flex-1 justify-between w-full">
+            <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-3">
                 <Widget.Content>
                     <div className="w-full flex flex-col justify-between flex-1 gap-3">
                         <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
@@ -130,7 +139,7 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                         <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} />
                     </div>
                 </Widget.Content>
-                <Widget.Footer>
+                <Widget.Footer showPoweredBy>
                     <FormButton
                         shouldConnectWallet={shouldConnectWallet}
                         values={values}

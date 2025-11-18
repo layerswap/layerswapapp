@@ -1,7 +1,7 @@
 import { FC } from "react"
 import { useSwapDataState } from "@/context/swap"
 import Summary from "./Summary"
-import { SwapResponse, TransactionType } from "@/lib/apiClients/layerSwapApiClient"
+import { TransactionType } from "@/lib/apiClients/layerSwapApiClient"
 import { shortenEmail } from "@/components/utils/ShortenAddress"
 import KnownInternalNames from "@/lib/knownIds"
 import { useQueryState } from "@/context/query"
@@ -29,7 +29,7 @@ const SwapSummary: FC = () => {
     const requested_amount = (swapInputTransaction?.amount ?? swapBasicData.requested_amount) || undefined
 
     const receiveAmount = quote?.receive_amount
-    const calculatedReceiveAmount = swapOutputTransaction?.amount ?? receiveAmount
+    const calculatedReceiveAmount = swapOutputTransaction?.amount ? swapOutputTransaction?.amount : receiveAmount
     let sourceAccountAddress = ""
     if (hideFrom && account) {
         sourceAccountAddress = account;
@@ -53,7 +53,7 @@ const SwapSummary: FC = () => {
     const swapData = {
         swap: {
             ...swapBasicData,
-            requested_amount: requested_amount!
+            requested_amount: requested_amount?.toString()!
         },
         quote: {
             quote: quote!,

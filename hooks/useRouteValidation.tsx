@@ -15,14 +15,12 @@ interface ValidationDetails {
 
 export function resolveRouteValidation(quoteError?: QuoteError) {
     const { values } = useFormikContext<SwapFormValues>();
-    const { to, from, destination_address, fromAsset, toAsset } = values;
+    const { to, from, destination_address } = values;
     const selectedSourceAccount = useSelectedAccount("from", from?.name);
     const query = useQueryState();
     const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
     let validationMessage: string = '';
     let validationDetails: ValidationDetails = {};
-
-
 
     if (((from?.name && from?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase()) || (to?.name && to?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase()))) {
         const network = from?.name.toLowerCase() === query.sameAccountNetwork?.toLowerCase() ? from : to;
