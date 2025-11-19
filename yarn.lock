@@ -3914,6 +3914,11 @@
     "@posthog/core" "1.3.1"
     semver "^7.7.2"
 
+"@posthog/react@^1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@posthog/react/-/react-1.4.0.tgz#c6b10466f8f58211786eee0b7a8bda7344e17cfa"
+  integrity sha512-xzPeZ753fQ0deZzdgY/0YavZvNpmdaxUzLYJYu5XjONNcZ8PwJnNLEK+7D/Cj8UM4Q8nWI7QC5mjum0uLWa4FA==
+
 "@prisma/debug@5.22.0":
   version "5.22.0"
   resolved "https://registry.yarnpkg.com/@prisma/debug/-/debug-5.22.0.tgz#58af56ed7f6f313df9fb1042b6224d3174bbf412"
