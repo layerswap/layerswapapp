@@ -1,6 +1,6 @@
-import { HomeComponent } from "@/components/HomeComponent";
-import { GetSettings } from "@layerswap/widget";
-import { InferGetServerSidePropsType } from "next";
+import { InferGetServerSidePropsType } from 'next'
+import { getServerSideProps } from '../helpers/getSettings';
+import { HomeComponent } from '@/components/HomeComponent';
 
 export default function Home({ settings }: InferGetServerSidePropsType<typeof getServerSideProps>) {
     return (
@@ -8,11 +8,4 @@ export default function Home({ settings }: InferGetServerSidePropsType<typeof ge
     )
 }
 
-export async function getServerSideProps() {
-
-    const settings = await GetSettings()
-
-    return {
-        props: { settings },
-    }
-}
+export { getServerSideProps };
