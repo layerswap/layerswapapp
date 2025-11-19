@@ -3,10 +3,10 @@ import { RowElement } from "@/Models/Route";
 import { CurrencySelectItemDisplay } from "../Routes";
 import { CollapsibleRow } from "./CollapsibleRow";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
-import RouteTokenSwitch from "../RouteTokenSwitch";
 import clsx from "clsx";
 import { SelectItem } from "@/components/Select/Selector/SelectItem";
 import { SwapDirection } from "@/components/Pages/Swap/Form/SwapFormValues";
+import TitleRow from "./TitleRow";
 
 type Props = {
     item: RowElement;
@@ -18,7 +18,7 @@ type Props = {
     onSelect: (route: NetworkRoute, token: NetworkRouteToken) => void;
     openValues: string[];
     scrollContainerRef: RefObject<HTMLDivElement>;
-    allbalancesLoaded?: boolean;
+    index: number;
 };
 
 export default function Row({
@@ -30,8 +30,8 @@ export default function Row({
     toggleContent,
     onSelect,
     openValues,
-    allbalancesLoaded,
     scrollContainerRef,
+    index,
 }: Props) {
 
     switch (item.type) {
@@ -39,6 +39,7 @@ export default function Row({
         case "grouped_token":
             return (
                 <CollapsibleRow
+                    index={index}
                     item={item}
                     direction={direction}
                     selectedRoute={selectedRoute}
@@ -48,7 +49,6 @@ export default function Row({
                     onSelect={onSelect}
                     openValues={openValues}
                     scrollContainerRef={scrollContainerRef}
-                    allbalancesLoaded={allbalancesLoaded}
                 />
             );
         case "network_token":
@@ -60,7 +60,6 @@ export default function Row({
             return (
                 <div className={clsx("cursor-pointer hover:bg-secondary-500 outline-none disabled:cursor-not-allowed rounded-xl")} onClick={() => onSelect(route, token)} >
                     <CurrencySelectItemDisplay
-                        allbalancesLoaded={allbalancesLoaded}
                         item={token}
                         selected={isSelected}
                         route={route}
@@ -71,19 +70,7 @@ export default function Row({
             );
         }
         case "group_title":
-            return (
-                <div className="text-primary-text-tertiary text-base font-normal leading-5 pl-1 sticky top-0 z-50 flex items-baseline" style={{ position: "sticky", top: 0, transform: "none" }} >
-                    <p>
-                        {item.text}
-                    </p>
-                    {
-                        item.text.toLowerCase().includes("all") &&
-                        <div className="relative ml-auto">
-                            <RouteTokenSwitch />
-                        </div>
-                    }
-                </div>
-            );
+            return <TitleRow item={item} />
         case "sceleton_token":
             return (
                 <SelectItem className="animate-pulse">
@@ -95,7 +82,7 @@ export default function Row({
                         <div className="grid gap-0 leading-5 align-middle space-y-0.5 font-medium">
                             <span className="align-middle h-3.5 my-1 w-12 bg-secondary-500 rounded-sm" />
                             <div className="flex items-center space-x-1 align-middle" >
-                                <div className="w-2 h-2 my-1 bg-secondary-500 rounded-[4px]" />
+                                <div className="w-2 h-2 my-1 bg-secondary-500 rounded-sm" />
                                 <span className="bg-secondary-500 text-xs whitespace-nowrap h-2 my-1 w-20 rounded-sm" />
                             </div>
                         </div>

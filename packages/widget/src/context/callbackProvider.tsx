@@ -8,7 +8,6 @@ export interface CallbacksContextType {
     onSwapCreate?: (swapData: SwapResponse) => void
     onSwapComplete?: (swapData: SwapResponse) => void
     onSwapModalStateChange?: (open: boolean) => void
-    onSwapIdChange?: (swapId: string | undefined) => void
     onBackClick?: () => void
     onError?: (error: any) => void
     onLogError?: {
@@ -80,16 +79,6 @@ export function useSwapModalStateChangeCallback() {
             onSwapModalStateChange(open)
         }
     }, [onSwapModalStateChange])
-}
-
-export function useSwapIdChangeCallback() {
-    const { onSwapIdChange } = useCallbacks()
-
-    return useCallback((swapId: string | undefined) => {
-        if (onSwapIdChange) {
-            onSwapIdChange(swapId)
-        }
-    }, [onSwapIdChange])
 }
 
 export function useBackClickCallback() {

@@ -37,8 +37,8 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@layerswap/wallet-evm": "workspace:*",
-    "@layerswap/wallet-starknet": "workspace:*",
+    "@layerswap/wallet-evm": "workspace:^",
+    "@layerswap/wallet-starknet": "workspace:^",
     "@layerswap/widget": "workspace:^",
     "@wagmi/core": "catalog:",
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",
@@ -52,11 +52,12 @@
     "bignumber.js": "^9.3.1",
     "ethers": "5.7.2",
     "lucide-react": "^0.379.0",
-    "starknet-old": "npm:starknet@6.8.0"
+    "starknet-old": "npm:starknet@6.8.0",
+    "starknet": "catalog:"
   },
   "devDependencies": {
-    "@layerswap/wallet-evm": "workspace:*",
-    "@layerswap/wallet-starknet": "workspace:*",
+    "@layerswap/wallet-evm": "workspace:^",
+    "@layerswap/wallet-starknet": "workspace:^",
     "@layerswap/widget": "workspace:^",
     "react": "catalog:"
   },

@@ -43,7 +43,7 @@ export const SummaryRow: FC<{
                     <div className="text-right text-primary-text">
                         <span className="cursor-pointer hover:underline flex items-center gap-2">
                             {wallet?.icon ? (
-                                <wallet.icon className="w-4 h-4 p-0.5 bg-white rounded-sm" />
+                                <wallet.icon className="w-4 h-4 bg-secondary-700 rounded-sm" />
                             ) : addressProviderIcon ? (
                                 <ImageWithFallback
                                     alt="Partner logo"

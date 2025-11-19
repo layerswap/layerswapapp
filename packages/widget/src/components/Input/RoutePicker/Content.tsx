@@ -3,7 +3,7 @@ import { RowElement } from "@/Models/Route";
 import { useVirtualizer } from "@/lib/virtual";
 import { Accordion } from "@/components/shadcn/accordion";
 import Row from "./Rows";
-import { LayoutGroup, motion } from "framer-motion";
+import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { useSelectorState } from "@/components/Select/Selector/Index";
 import useWallet from "@/hooks/useWallet";
@@ -19,9 +19,9 @@ type ContentProps = {
     selectedRoute: string | undefined;
     selectedToken: string | undefined;
     direction: SwapDirection;
-    allbalancesLoaded?: boolean;
+    partialPublished?: boolean;
 }
-export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, allbalancesLoaded }: ContentProps) => {
+export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToken, selectedRoute, direction, onSelect, partialPublished }: ContentProps) => {
     const parentRef = useRef<HTMLDivElement>(null)
     const [openValues, setOpenValues] = useState<string[]>(selectedRoute ? [selectedRoute] : [])
     const { shouldFocus } = useSelectorState();
@@ -34,16 +34,33 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
     }
     const virtualizer = useVirtualizer({
         count: rowElements.length,
-        estimateSize: () => 50,
+        estimateSize: (index) => {
+            const item = rowElements[index];
+            const key = (item as any)?.route?.name || (item as any)?.symbol;
+            const isOpen = openValues.includes(key);
+            // Better size estimation based on open state
+            if (isOpen && (item.type === 'network' || item.type === 'grouped_token')) {
+                const tokenCount = item.type === 'network'
+                    ? item.route.tokens.length
+                    : item.items.length;
+                // Base header (52) + tokens (each ~52px) + padding
+                return 52 + (tokenCount * 52) + 20;
+            }
+            return 52;
+        },
         getScrollElement: () => parentRef.current,
         overscan: 15
     })
+
+    useEffect(() => {
+        virtualizer.measure();
+    }, [openValues])
+
     const items = virtualizer.getVirtualItems()
 
     useEffect(() => {
         return () => setSearchQuery('')
     }, [])
-
     return <div className="overflow-y-auto flex flex-col h-full z-40 openpicker" >
         <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={shouldFocus} className="mb-2" />
         <LayoutGroup>
@@ -78,12 +95,12 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                                         const data = rowElements?.[virtualRow.index]
                                         const key = ((data as any)?.route as any)?.name || virtualRow.key;
                                         return <div
-                                            className="py-1 box-border w-full overflow-hidden"
+                                            className="py-1 box-border w-full overflow-hidden select-none"
                                             key={key}
                                             data-index={virtualRow.index}
                                             ref={virtualizer.measureElement}>
                                             <Row
-                                                allbalancesLoaded={allbalancesLoaded}
+                                                index={virtualRow.index}
                                                 scrollContainerRef={parentRef}
                                                 openValues={openValues}
                                                 onSelect={onSelect}
@@ -99,7 +116,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                                 </div>
                             </div>
                         </div>
-                    </Accordion >
+                    </Accordion>
                 </div>
             </motion.div>
         </LayoutGroup>

@@ -53,7 +53,7 @@ const SwapSummary: FC = () => {
     const swapData = {
         swap: {
             ...swapBasicData,
-            requested_amount: requested_amount!
+            requested_amount: requested_amount?.toString()!
         },
         quote: {
             quote: quote!,

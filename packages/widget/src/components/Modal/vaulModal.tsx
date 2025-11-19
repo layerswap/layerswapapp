@@ -22,7 +22,7 @@ export type VaulDrawerProps = {
     className?: string;
 }
 
-const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className }) => {
+const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, description, onClose, onAnimationEnd, className, modalId }) => {
     const { isMobileWithPortal: isMobile, isMobile: isMobileWithoutPortal } = useWindowDimensions();
     let [headerRef, { height }] = useMeasure();
     const { setHeaderHeight } = useSnapPoints()
@@ -50,13 +50,11 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
 
     useEffect(() => {
         if (!snapElement || snapElement.height === snap) return;
-
         setSnap(snapElement.height)
     }, [snapElement])
 
     useEffect(() => {
         if (!snap || snap === snapElement?.height) return
-
         setSnapElement(snapPoints.find((item) => item.height === snap) || null)
     }, [snap])
 
@@ -117,31 +115,36 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
             modal={isMobile ? true : false}
             repositionInputs={false}
             onAnimationEnd={(e) => { onAnimationEnd && onAnimationEnd(e) }}
-            handleOnly={isMobile}
+            handleOnly={isMobileWithoutPortal}
         >
 
             <Drawer.Portal>
-                <Drawer.Close asChild>
-                    {
-                        isMobile
-                            ? <Drawer.Overlay
-                                className='fixed inset-0 z-50 bg-black/50 block'
-                            />
-                            : <motion.div
-                                key="backdrop"
-                                className='absolute inset-0 z-50 bg-black/50 block'
-                                initial={{ opacity: 0.5 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                            />
-                    }
-                </Drawer.Close>
-
+                {isMobile ? (
+                    <Drawer.Close asChild>
+                        <Drawer.Overlay
+                            className='fixed inset-0 z-50 bg-black/50 block'
+                        />
+                    </Drawer.Close>
+                ) : (
+                    <AnimatePresence>
+                        {show && (
+                            <Drawer.Close asChild key={`backdrop-${modalId}`}>
+                                <motion.div
+                                    className='absolute inset-0 z-50 bg-black/50 block pointer-events-auto'
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
+                                />
+                            </Drawer.Close>
+                        )}
+                    </AnimatePresence>
+                )}
                 <Drawer.Content
                     data-testid="content"
                     className={clsx('absolute flex flex-col bg-secondary-700 rounded-t-3xl bottom-0 left-0 right-0 h-full z-50 pb-4 text-primary-text ring-0! outline-hidden! ', className, {
                         'border-none! rounded-none!': snap === 1,
-                        '!fixed sm:!absolute': AppSettings.ThemeData?.enablePortal == true,
+                        'fixed! sm:absolute!': AppSettings.ThemeData?.enablePortal == true,
                     })}
                 >
                     <div
@@ -175,10 +178,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         }
                     </div>
                     <div
-                        className={clsx('flex flex-col w-full h-fit max-h-[90dvh] px-4 styled-scroll overflow-x-hidden relative', {
-                            'overflow-y-auto h-full': snap === 1,
-                            'overflow-hidden': snap !== 1,
-                        })}
+                        className='flex flex-col w-full h-full max-h-[90dvh] px-4 styled-scroll overflow-x-hidden relative'
                         id="virtualListContainer"
                     >
                         {children}
@@ -199,8 +199,9 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                                 </motion.div>
                             }
                         </AnimatePresence>
-                        <VaulFooter snapElement={snapElement} />
+                        {isMobile && <VaulFooter snapElement={snapElement} />}
                     </div>
+                    {!isMobile && <VaulFooter snapElement={snapElement} />}
                 </Drawer.Content>
             </Drawer.Portal>
         </Drawer.Root >
@@ -215,17 +216,15 @@ const VaulFooter: FC<{ snapElement: SnapElement | null }> = ({ snapElement }) =>
         setFooterHeight(height || 0);
     }, [height])
 
-    return (
-        <div
-            ref={ref}
-            id='walletModalFooter'
-            style={{
-                top: snapElement?.height !== 1 ? `${Number(snapElement?.height?.toString().replace('px', '')) - 50}px` : undefined,
-                bottom: snapElement?.height === 1 ? '12px' : undefined
-            }}
-            className='w-full fixed left-0 z-50'
-        />
-    )
+    return <div
+        ref={ref}
+        id='walletModalFooter'
+        style={{
+            top: snapElement?.height !== 1 ? `${Number(snapElement?.height?.toString().replace('px', '')) - 50}px` : undefined,
+            bottom: snapElement?.height === 1 ? '12px' : undefined
+        }}
+        className='w-full left-0 z-50 max-sm:absolute'
+    />
 }
 
 const VaulDrawerSnap: FC<React.HTMLAttributes<HTMLDivElement> & { id: `item-${number}`, openFullHeight?: boolean }> = (props) => {
@@ -295,8 +294,8 @@ const vaulStyles = `
 [data-vaul-drawer] {
     touch-action: none;
     will-change: transform;
-    transition: transform 0.5s cubic-bezier(0.32, 0.72, 0, 1);
-    animation-duration: 0.5s;
+    transition: transform 0.1s cubic-bezier(0.32, 0.72, 0, 1);
+    animation-duration: 0.1s;
     animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
 }
 [data-vaul-drawer][data-vaul-snap-points='false'][data-vaul-drawer-direction='bottom'][data-state='open'] {
@@ -312,7 +311,7 @@ const vaulStyles = `
     transform: translate3d(0, var(--snap-point-height, 0), 0);
 }
 [data-vaul-overlay][data-vaul-snap-points='false'] {
-    animation-duration: 0.5s;
+    animation-duration: 0.1s;
     animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
 }
 [data-vaul-overlay][data-vaul-snap-points='false'][data-state='open'] {
@@ -323,7 +322,7 @@ const vaulStyles = `
 }
 [data-vaul-overlay][data-vaul-snap-points='true'] {
     opacity: 0;
-    transition: opacity 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+    transition: opacity 0.1s cubic-bezier(0.32, 0.72, 0, 1);
 }
 [data-vaul-overlay][data-vaul-snap-points='true'] {
     opacity: 1;

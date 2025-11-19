@@ -2,8 +2,7 @@ import { LayerswapProvider, THEME_COLORS } from "@layerswap/widget";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useState } from "react";
-import { ImtblPassportProvider, ImtblRedirect } from "@layerswap/wallet-imtbl-passport";
-import { EVMProvider } from "@layerswap/wallet-evm";
+import { EVMProvider, ImtblPassportProvider, ImtblRedirect } from "@layerswap/wallets";
 
 const ImtblRedirectPage = () => {
     const [loaded, setLoaded] = useState(false)

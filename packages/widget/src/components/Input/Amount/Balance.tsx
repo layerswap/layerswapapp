@@ -5,6 +5,7 @@ import { useBalance } from "@/lib/balances/useBalance";
 import { FC } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import InfoIcon from "@/components/Icons/InfoIcon";
+import { NetworkRoute } from "@/Models/Network";
 
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 
@@ -22,24 +23,51 @@ const Balance = ({ values, direction }: { values: SwapFormValues, direction: str
     if (!isLoading && !(network && token && tokenBalance))
         return null;
 
-    return <div className="min-w-4/5 -top-[1px] p-1 mx-2 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs text-secondary-text leading-[18px] font-normal">
+    return <div className="min-w-4/5  p-1 mx-2 relative rounded-b-lg text-center bg-secondary-400 py-0.5 text-xs text-secondary-text leading-[18px] font-normal">
         {
             isLoading ?
                 <div className='h-[10px] w-fit px-4 inline-flex bg-gray-500 rounded-xs animate-pulse' />
                 : !truncatedBalance ?
-                    <div className="flex items-center justify-center gap-1 text-orange-400">
-                        <InfoIcon className='w-3 h-3' />
-                        <span>Network issue</span>
-                    </div>
+                    <NetworkIssue network={network} />
                     : (network && token && truncatedBalance) ?
-                        ((Number(tokenBalance?.amount )>= 0 && Number(tokenBalance?.amount) < Number(values.amount) && values.depositMethod === 'wallet' && direction == 'from') ?
+                        ((Number(tokenBalance?.amount) >= 0 && Number(tokenBalance?.amount) < Number(values.amount) && values.depositMethod === 'wallet' && direction == 'from') ?
                             <InsufficientBalance balance={truncatedBalance} />
                             :
                             <span>{truncatedBalance}</span>
-                        ) 
+                        )
                         : null
         }
     </div>
+}
+
+const NetworkIssue: FC<{ network: NetworkRoute | undefined }> = ({ network }) => {
+    return <Tooltip openOnClick>
+        <TooltipTrigger asChild>
+            <div className="flex items-center gap-1 text-warning-foreground justify-center">
+                <InfoIcon className='w-3 h-3' />
+                <p>Network issue</p>
+            </div>
+        </TooltipTrigger>
+        <TooltipContent className="!bg-secondary-400 !border-0 !p-3 !rounded-xl">
+            <div className="flex items-center gap-2 justify-center max-w-[300px]">
+                <div className="w-4 h-4">
+                    <InfoIcon className='w-4 h-4 text-warning-foreground' />
+                </div>
+                <p className="text-sm">
+                    <span>
+                        <span>We are currently unable to retrieve balance information for </span>
+                        <span>
+                            {network?.display_name ?
+                                <span>{network?.display_name}</span>
+                                :
+                                <span>the network</span>
+                            }
+                        </span>
+                    </span>
+                </p>
+            </div>
+        </TooltipContent>
+    </Tooltip>
 }
 
 const InsufficientBalance: FC<{ balance: string }> = ({ balance }) => {

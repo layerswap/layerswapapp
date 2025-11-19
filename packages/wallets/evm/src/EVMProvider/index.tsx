@@ -49,11 +49,17 @@ const EVMProvider = ({ children }: Props) => {
 const WagmiWrapper = ({ children }: Props) => {
     const wagmiContext = useContext(WagmiContext)
 
-    if (wagmiContext) return (
-        <ActiveEvmAccountProvider>
-            {children}
-        </ActiveEvmAccountProvider>
-    )
+    // Check if there's a valid external Wagmi context with a config
+    // wagmiContext.state exists when WagmiProvider is mounted with a valid config
+    const hasExternalWagmiProvider = wagmiContext && wagmiContext.state !== undefined
+
+    if (hasExternalWagmiProvider) {
+        return (
+            <ActiveEvmAccountProvider>
+                {children}
+            </ActiveEvmAccountProvider>
+        )
+    }
 
     return <WagmiComponent>
         {children}

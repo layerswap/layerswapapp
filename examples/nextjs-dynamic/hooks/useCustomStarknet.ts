@@ -102,18 +102,8 @@ export default function useStarknet({ networks }: WalletConnectionProviderProps)
 
   const logo = networks.find((n) => n.name.toLowerCase().includes("starknet"))?.logo;
 
-  const availableConnectors = [{
-    id: id,
-    name: name,
-    icon: logo,
-  }]
-
   return {
     connectWallet,
-    switchAccount: async (connector: Wallet, address: string) => {
-      throw new Error("Not implemented");
-    },
-    availableWalletsForConnect: availableConnectors,
     activeWallet: connectedWallets.find((w) => w.isActive),
     connectedWallets,
     asSourceSupportedNetworks: supportedNetworks.asSource,

@@ -26,7 +26,6 @@ type GenericAccordionRowProps = {
   toggleContent: (itemName: string) => void;
   openValues?: string[];
   scrollContainerRef: RefObject<HTMLDivElement>;
-  allbalancesLoaded?: boolean;
 };
 
 type ChildWrapper = {
@@ -36,6 +35,7 @@ type ChildWrapper = {
 
 export const CollapsibleRow = ({
   item,
+  index,
   toggleContent,
   direction,
   onSelect,
@@ -43,9 +43,8 @@ export const CollapsibleRow = ({
   selectedToken,
   searchQuery,
   openValues,
-  scrollContainerRef,
-  allbalancesLoaded,
-}: GenericAccordionRowProps) => {
+  scrollContainerRef
+}: GenericAccordionRowProps & { index: number }) => {
   const groupName = item.type === "grouped_token" ? item.symbol : item.route.name;
   const headerId = `${groupName}-header`;
 
@@ -89,7 +88,6 @@ export const CollapsibleRow = ({
             <CollapsableHeader
               item={item}
               direction={direction}
-              allbalancesLoaded={allbalancesLoaded}
               hideTokenImages={isOpen}
             />
           </AccordionTrigger>
@@ -102,7 +100,6 @@ export const CollapsibleRow = ({
           open={isOpen}
           headerRef={headerRef}
           contentRef={contentRef}
-          allbalancesLoaded={allbalancesLoaded}
           childrenCount={childrenList?.length}
           onClick={stickyToggle}
           isSticky={isSticky}
@@ -126,7 +123,6 @@ export const CollapsibleRow = ({
                     onClick={() => onSelect(route, token)}
                   >
                     <CurrencySelectItemDisplay
-                      allbalancesLoaded={allbalancesLoaded}
                       item={token}
                       selected={isSelected}
                       route={route}

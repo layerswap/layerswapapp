@@ -18,6 +18,7 @@ export type InternalConnector = {
     providerName?: string,
     installUrl?: string,
     isMobileSupported?: boolean,
+    isHidden?: boolean,
 }
 
 export type Wallet = {
@@ -69,7 +70,7 @@ export type WalletConnectionProviderProps = {
 export type WalletConnectionProvider = {
     connectWallet: (props?: { connector?: InternalConnector }) => Promise<Wallet | undefined> | undefined,
     disconnectWallets?: () => Promise<void> | undefined | void,
-    switchAccount: (connector: Wallet, address: string) => Promise<void>,
+    switchAccount?: (connector: Wallet, address: string) => Promise<void>,
     switchChain?: (connector: Wallet, chainId: string | number) => Promise<void>
     isNotAvailableCondition?: (connector: string, network: string) => boolean,
 
@@ -80,7 +81,7 @@ export type WalletConnectionProvider = {
     connectedWallets: Wallet[] | undefined,
     activeWallet: Wallet | undefined,
     autofillSupportedNetworks?: string[],
-    withdrawalSupportedNetworks?: string[],
+    withdrawalSupportedNetworks: string[],
     asSourceSupportedNetworks?: string[],
     name: string,
     id: string,

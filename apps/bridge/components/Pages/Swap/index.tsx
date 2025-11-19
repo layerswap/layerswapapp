@@ -1,23 +1,13 @@
 import { LayerswapProvider, LayerSwapSettings, Swap, ThemeData } from "@layerswap/widget"
-import { BalanceError, GasFeeError, WalletWithdrawalError, WidgetError, OnLongTransactionWarning } from "@layerswap/widget/types"
-
 import { useRouter } from "next/router"
 import { FC } from "react"
 import { updateFormBulk } from "../../utils/updateForm"
 import { removeSwapPath, setSwapPath } from "../../utils/updateSwapPath"
-import { EVMProvider } from "@layerswap/wallet-evm";
-import { BitcoinProvider } from "@layerswap/wallet-bitcoin";
-import { FuelProvider } from "@layerswap/wallet-fuel"
-import { ParadexProvider } from "@layerswap/wallet-paradex"
-import { StarknetProvider } from "@layerswap/wallet-starknet"
-import { ImmutableXProvider } from "@layerswap/wallet-imtbl-x";
-import { TonProvider } from "@layerswap/wallet-ton";
-import { SVMProvider } from "@layerswap/wallet-svm";
-import { TronProvider } from "@layerswap/wallet-tron";
-import { ImtblPassportProvider } from "@layerswap/wallet-imtbl-passport";
+import { EVMProvider, FuelProvider, ParadexProvider, StarknetProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider } from "@layerswap/wallets";
+import { ParsedUrlQuery } from "querystring"
 import { logError } from "../../utils/logError"
 
-const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string }> = ({ settings, themeData, apiKey }) => {
+const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string, initialValues: ParsedUrlQuery }> = ({ settings, themeData, apiKey, initialValues }) => {
     const router = useRouter()
 
     const imtblPassportConfigs = typeof window !== 'undefined' ? {
@@ -33,7 +23,12 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
             version: process.env.NEXT_PUBLIC_API_VERSION as 'mainnet' | 'testnet',
             settings,
             theme: { ...themeData, borderRadius: 'default', enablePortal: true, enableWideVersion: true, hidePoweredBy: true },
-            imtblPassport: imtblPassportConfigs
+            imtblPassport: imtblPassportConfigs,
+            tonConfigs: {
+                'manifestUrl': 'https://layerswap.io/app/tonconnect-manifest.json',
+                'tonApiKey': process.env.NEXT_PUBLIC_TON_API_KEY || ''
+            },
+            initialValues
         }}
         callbacks={{
             onFormChange(formData) {
@@ -58,7 +53,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
         }}
         walletProviders={[EVMProvider, StarknetProvider, FuelProvider, ParadexProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider]}
     >
-        <Swap />
+        <Swap/>
     </LayerswapProvider>
 }
 

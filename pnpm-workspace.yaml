@@ -1,9 +1,9 @@
 packages:
   - packages/**
-  - apps/bridge
+  - apps/*
 
 catalog:
-  '@tanstack/react-query': ^5.90.5
+  '@tanstack/react-query': 5.90.5
   '@types/react': 18.3.1
   '@wagmi/connectors': 5.7.7
   '@wagmi/core': 2.16.4
@@ -14,3 +14,4 @@ catalog:
   viem: ^2.21.16
   wagmi: 2.14.11
   zustand: 4.5.7
+  starknet: ^7.6.4

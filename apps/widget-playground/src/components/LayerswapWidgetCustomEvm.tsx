@@ -9,7 +9,7 @@ import { createConfig, http, WagmiProvider } from 'wagmi';
 import { QueryClient, QueryClientProvider, } from '@tanstack/react-query';
 import { mainnet } from 'viem/chains';
 import useCustomEvm from '@/hooks/useCustomEvm';
-import { EVMProvider } from '@layerswap/wallet-evm'
+import { EVMProvider } from '@layerswap/wallets'
 
 const wagmiConfig = createConfig({
     chains: [mainnet],

@@ -132,14 +132,12 @@ export const useBalanceStore = create<BalanceStore>()(
         }, {})
       const sortedpairs = pairs.sort((a, b) => Number(a.network.source_rank) - Number(b.network.source_rank))
       sortedpairs.forEach(({ address, network }) => {
-        get().fetchBalance(address, network, { dedupeInterval: 120_000, ignoreCache: false, timeoutMs: 4500, retryCount: 0 })
+        get().fetchBalance(address, network, { dedupeInterval: 120_000, ignoreCache: false, retryCount: 0 })
       })
-
       set({ sortingDataIsLoading: true })
       set({ initiatedBalances })
       set({ startTimeOfInit: Date.now() })
       set({ partialPublished: false })
-
       api.subscribe(
         state => state.balances,
         balances => {
@@ -166,7 +164,6 @@ export const useBalanceStore = create<BalanceStore>()(
               })
               set({ balanceKeysForSorting: partial })
               set({ partialPublished: true })
-              set({ sortingDataIsLoading: false })
             }
           }
         },

@@ -1,6 +1,6 @@
-import { KnownInternalNames, insertIfNotExists, formatUnits, retryWithExponentialBackoff } from "@layerswap/widget/internal";
-import tonClient from "./client";
+import { KnownInternalNames, insertIfNotExists, formatUnits, retryWithExponentialBackoff, AppSettings } from "@layerswap/widget/internal";
 import { BalanceProvider, TokenBalance, Network, Token } from "@layerswap/widget/types";
+import { TonClient } from "@ton/ton";
 
 export class TonBalanceProvider extends BalanceProvider {
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
@@ -35,18 +35,22 @@ export const resolveBalance = async ({ address, network, token }: {
     address: string
 }
 ) => {
+    const tonClient = new TonClient({
+        endpoint: 'https://toncenter.com/api/v2/jsonRPC',
+        apiKey: AppSettings.TonClientConfig.tonApiKey
+    });
 
     if (token.contract) {
-        const res = await getJettonBalance({ network, token, address })
+        const res = await getJettonBalance({ network, token, address, tonClient })
         return res
     }
     else {
-        const res = await getNativeAssetBalance({ network, token, address })
+        const res = await getNativeAssetBalance({ network, token, address, tonClient })
         return res
     }
 }
 
-const getNativeAssetBalance = async ({ network, token, address }: { network: Network, token: Token, address: string }) => {
+const getNativeAssetBalance = async ({ network, token, address, tonClient }: { network: Network, token: Token, address: string, tonClient: TonClient }) => {
     const { Address } = await import("@ton/ton");
 
     const getBalance = async () => {
@@ -65,8 +69,7 @@ const getNativeAssetBalance = async ({ network, token, address }: { network: Net
 
 }
 
-const getJettonBalance = async ({ network, token, address }: { network: Network, token: Token, address: string }) => {
-
+const getJettonBalance = async ({ network, token, address, tonClient }: { network: Network, token: Token, address: string, tonClient: TonClient }) => {
     const { JettonMaster, JettonWallet, Address } = await import("@ton/ton");
 
     const jettonMasterAddress = Address.parse(token.contract!)

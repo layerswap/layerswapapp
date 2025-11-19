@@ -14,7 +14,6 @@ import { QuoteError, transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
 import { useSelectedAccount } from './balanceAccounts';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
-import { useSwapIdChangeCallback } from './callbackProvider';
 import { useInitialSettings } from './settings';
 import { addressFormat } from '@/lib/address/formatter';
 import { useSlippageStore } from '@/stores/slippageStore';
@@ -89,10 +88,8 @@ export function SwapDataProvider({ children }) {
 
     const { quote: formDataQuote, quoteError: formDataQuoteError } = useQuoteData(quoteArgs, swapId ? 0 : undefined);
 
-    const triggerSwapIdChangeCallback = useSwapIdChangeCallback()
     const handleUpdateSwapid = (value: string | undefined) => {
         setSwapId(value)
-        triggerSwapIdChangeCallback(value)
     }
 
     const setSubmitedFormValues = useCallback((values: NonNullable<SwapFormValues>) => {
@@ -105,7 +102,7 @@ export function SwapDataProvider({ children }) {
             destination_network: values.to,
             source_token: values.fromAsset,
             destination_token: values.toAsset,
-            requested_amount: Number(values.amount),
+            requested_amount: values.amount,
             destination_address: values.destination_address,
             use_deposit_address: values.depositMethod === 'deposit_address',
             refuel: !!values.refuel,
@@ -122,6 +119,7 @@ export function SwapDataProvider({ children }) {
         if (swapId && data?.data) {
             return data?.data?.swap ? {
                 ...data.data.swap,
+                requested_amount: data.data.swap.requested_amount.toString(),
                 refuel: !!data.data.refuel
             } : undefined;
         }
@@ -148,7 +146,7 @@ export function SwapDataProvider({ children }) {
     }, [formDataQuoteError, data, swapId]);
 
     const refuel = useMemo(() => {
-        if (swapId) {
+        if (swapId && data?.data) {
             return data?.data?.refuel
         }
         return formDataQuote?.refuel

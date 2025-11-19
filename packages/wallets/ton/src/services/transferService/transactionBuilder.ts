@@ -1,6 +1,6 @@
-import { Address, JettonMaster, beginCell, toNano } from '@ton/ton'
+import { Address, JettonMaster, TonClient, beginCell, toNano } from '@ton/ton'
 import { Token } from '@layerswap/widget/types';
-import tonClient from '../../client';
+import { AppSettings } from '@layerswap/widget/internal';
 
 export const transactionBuilder = async (amount: number, token: Token, depositAddress: string, sourceAddress: string, callData: string) => {
     const parsedCallData = JSON.parse(callData)
@@ -25,6 +25,11 @@ export const transactionBuilder = async (amount: number, token: Token, depositAd
             .storeBit(1) // we store forwardPayload as a reference
             .storeRef(forwardPayload)
             .endCell();
+
+        const tonClient = new TonClient({
+            endpoint: 'https://toncenter.com/api/v2/jsonRPC',
+            apiKey: AppSettings.TonClientConfig.tonApiKey
+        });
 
         const jettonMasterAddress = Address.parse(token.contract!)
         const jettonMaster = tonClient.open(JettonMaster.create(jettonMasterAddress))

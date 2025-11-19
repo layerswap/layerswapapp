@@ -171,7 +171,7 @@ export type SwapBasicData = {
     destination_network: Network,
     destination_token: Token,
     destination_address: string,
-    requested_amount: number,
+    requested_amount: string,
     use_deposit_address: boolean
 }
 
