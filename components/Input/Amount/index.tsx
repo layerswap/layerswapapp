@@ -6,6 +6,7 @@ import { useQuoteData } from "@/hooks/useFee";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import clsx from "clsx";
 import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
+import useWindowDimensions from "@/hooks/useWindowDimensions";
 
 interface AmountFieldProps {
     usdPosition?: "right" | "bottom";
@@ -20,6 +21,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
     const name = "amount"
     const amountRef = useRef(ref)
     const suffixRef = useRef<HTMLDivElement>(null);
+    const { isMobile } = useWindowDimensions()
 
     const sourceCurrencyPriceInUsd = resolveTokenUsdPrice(fromCurrency, fee?.quote)
 
@@ -53,6 +55,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
     const step = 1 / Math.pow(10, fromCurrency?.precision || 1)
 
     const disabled = Boolean(fromExchange && !toCurrency)
+    const fontClass = getAmountFontSize(amount, isMobile);
 
     return (<>
         <div className={clsx("flex flex-col bg-secondary-500 space-y-0.5 relative w-full group",
@@ -70,7 +73,7 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
                 ref={amountRef}
                 precision={fromCurrency?.precision}
                 tempValue={actionValue}
-                className="w-full text-[28px] leading-[34px] rounded-xl text-primary-text focus:outline-none focus:border-none focus:ring-0 duration-300 ease-in-out !bg-secondary-500 !font-normal group-[.exchange-amount-field]:px-2.5 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! pl-0"
+                className={`w-full ${fontClass} w-full rounded-xl text-primary-text focus:outline-none focus:border-none focus:ring-0 duration-300 ease-in-out !bg-secondary-500 !font-normal group-[.exchange-amount-field]:px-2.5 group-[.exchange-amount-field]:pb-2 group-[.exchange-amount-field]:pr-2 group-[.exchange-amount-field]:bg-secondary-300! pl-0`}
                 onChange={e => {
                     /^[0-9]*[.,]?[0-9]*$/.test(e.target.value) && handleChange(e);
                 }}
@@ -107,4 +110,14 @@ function getFontFromElement(el: HTMLElement | null): string {
     if (!el) return '28px sans-serif';
     const style = window.getComputedStyle(el);
     return `${style.fontSize} ${style.fontFamily}`;
+}
+
+function getAmountFontSize(value: string | undefined, isMobile: boolean) {
+    const length = String(value ?? '').replace(/[.,\s]/g, '').length;
+
+    const threshold = isMobile ? 10 : 14;
+
+    return length > threshold
+        ? 'text-[20px] leading-[26px]'
+        : 'text-[28px] leading-[34px]';
 }
