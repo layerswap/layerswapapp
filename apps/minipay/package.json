@@ -1,0 +1,35 @@
+{
+  "name": "layerswap-minipay",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "debug": "next dev",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "15.3.2",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "@layerswap/wallets": "workspace:^",
+    "@layerswap/widget": "workspace:^",
+    "@tanstack/react-query": "catalog:",
+    "viem": "catalog:",
+    "wagmi": "catalog:",
+    "zustand": "catalog:"
+  },
+  "devDependencies": {
+    "@types/bn.js": "^5.1.0",
+    "@types/node": "^20",
+    "@types/react": "18.x",
+    "autoprefixer": "^10.4.5",
+    "eslint": "8.49.0",
+    "eslint-config-next": "^15.3.3",
+    "postcss": "^8.4.13",
+    "tailwindcss": "4.0.15",
+    "tailwindcss-themer": "^2.0.2",
+    "typescript": "^5"
+  }
+}

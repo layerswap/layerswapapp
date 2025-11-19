@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+
+  /* Chrome, Safari, Edge, Opera */
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+}
+
+@layer base {
+
+  body {
+    @apply bg-secondary-900 sm:bg-secondary-900;
+  }
+
+  /* On iOS disabled inputs have default opacitiy */
+  .ntdi {
+    opacity: 1;
+    /* required on iOS */
+  }
+}
