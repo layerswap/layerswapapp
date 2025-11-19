@@ -1,6 +1,66 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@config '../../tailwind.config.js';
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: transparent;
+  }
+}
+
+@theme static {
+  /* Primary */
+  --color-primary: rgb(204, 45, 93);
+  --color-primary-100: rgb(255, 148, 176);
+  --color-primary-200: rgb(245, 103, 141);
+  --color-primary-300: rgb(235, 84, 129);
+  --color-primary-400: rgb(229, 64, 114);
+  --color-primary-500: rgb(204, 45, 93);
+  --color-primary-600: rgb(178, 29, 74);
+  --color-primary-700: rgb(143, 23, 59);
+  --color-primary-800: rgb(89, 14, 37);
+  --color-primary-900: rgb(46, 7, 19);
+  --color-primary-text: rgb(225, 227, 230);
+
+  /* Secondary */
+  --color-secondary: rgb(17, 29, 54);
+  --color-secondary-100: rgb(60, 72, 97);
+  --color-secondary-200: rgb(52, 63, 87);
+  --color-secondary-300: rgb(40, 50, 71);
+  --color-secondary-400: rgb(31, 40, 61);
+  --color-secondary-500: rgb(23, 31, 49);
+  --color-secondary-600: rgb(18, 25, 41);
+  --color-secondary-700: rgb(14, 21, 36);
+  --color-secondary-800: rgb(11, 17, 31);
+  --color-secondary-900: rgb(7, 12, 23);
+  --color-secondary-text: rgb(163, 173, 194);
+
+  /* Supporting */
+  --color-tertiary: rgb(118, 128, 147);
+  --color-buttonTextColor: rgb(228, 229, 240);
+  --color-logo: rgb(255, 0, 147);
+
+  /* Semantic */
+  --color-warning-foreground: rgb(255, 201, 74);
+  --color-warning-background: rgb(47, 43, 29);
+
+  --color-error-foreground: rgb(255, 97, 97);
+  --color-error-background: rgb(46, 27, 27);
+
+  --color-success-foreground: rgb(89, 224, 125);
+  --color-success-background: rgb(14, 43, 22);
+}
 
 @layer utilities {
 

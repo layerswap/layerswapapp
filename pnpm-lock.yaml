@@ -263,6 +263,9 @@ importers:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@18.3.27)(react@18.3.1)
     devDependencies:
+      '@tailwindcss/postcss':
+        specifier: 4.0.15
+        version: 4.0.15
       '@types/bn.js':
         specifier: ^5.1.0
         version: 5.2.0
