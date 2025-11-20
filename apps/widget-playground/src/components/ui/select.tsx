@@ -28,9 +28,11 @@ function SelectTrigger({
   className,
   size = "default",
   children,
+  hideChevron,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Trigger> & {
   size?: "sm" | "default"
+  hideChevron?: boolean
 }) {
   return (
     <SelectPrimitive.Trigger
@@ -43,9 +45,11 @@ function SelectTrigger({
       {...props}
     >
       {children}
-      <SelectPrimitive.Icon asChild>
-        <ChevronDownIcon className="fill-currenttext-muted-foreground pointer-events-none size-4 shrink-0 translate-y-0.5 transition-transform duration-200  dark:text-secondary-text placeholder:text-secondary-text" />
-      </SelectPrimitive.Icon>
+      {!hideChevron && (
+        <SelectPrimitive.Icon asChild>
+          <ChevronDownIcon className="fill-currenttext-muted-foreground pointer-events-none size-4 shrink-0 translate-y-0.5 transition-transform duration-200  dark:text-secondary-text placeholder:text-secondary-text" />
+        </SelectPrimitive.Icon>
+      )}
     </SelectPrimitive.Trigger>
   )
 }
@@ -63,25 +67,22 @@ function SelectContent({
       <SelectPrimitive.Content
         data-slot="select-content"
         className={cn(
-          "animate-in fade-in-80 relative z-50 min-w-[8rem] overflow-hidden rounded-xl shadow-md ring-1 ring-secondary-500 bg-secondary-700 text-secondary-text ",
-          position === "popper" &&
-          "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
+          "animate-in fade-in-80 relative z-50 min-w-[8rem] overflow-hidden rounded-xl shadow-md ring-1 ring-secondary-500 bg-secondary-700 text-secondary-text",
           className
         )}
         position={position}
         {...props}
       >
-        <SelectScrollUpButton />
         <SelectPrimitive.Viewport
           className={cn(
             "p-1",
             position === "popper" &&
-            "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1"
+            "w-full min-w-[var(--radix-select-trigger-width)]"
           )}
         >
           {children}
         </SelectPrimitive.Viewport>
-        <SelectScrollDownButton />
+        {/* <div className="absolute bottom-0 left-0 right-0 h-1/2 pointer-events-none bg-gradient-to-t from-secondary-700 via-secondary-700/50 to-transparent" />  fade */}
       </SelectPrimitive.Content>
     </SelectPrimitive.Portal>
   )
@@ -109,7 +110,7 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "relative flex cursor-default select-none items-center rounded-xl p-3  pl-8 text-base outline-none focus:bg-slate-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-secondary-500 transition-colors duration-200",
+        "relative flex cursor-default select-none items-center rounded-xl p-3  pl-8 text-base outline-none focus:bg-slate-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:focus:bg-secondary-400 dark:hover:bg-secondary-400 transition-colors duration-200",
         className
       )}
       {...props}

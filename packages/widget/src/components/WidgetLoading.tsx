@@ -8,7 +8,7 @@ export const WidgetLoading: FC = () => {
     return (
         <>
             <ColorSchema themeData={AppSettings.ThemeData} />
-            <div className="relative w-fit h-fit max-w-lg mx-auto p-px">
+            <div className="relative w-fit h-fit max-w-lg mx-auto">
                 {
                     AppSettings.ThemeData?.enableWideVersion &&
                     <>
@@ -27,7 +27,7 @@ export const WidgetLoading: FC = () => {
                                         <div className="flex flex-nowrap grow w-full">
                                             <div className="w-fit flex flex-col justify-between text-secondary-500 h-full">
                                                 <div className="flex flex-col">
-                                                    <div className="w-full grid grid-cols-5 px-6 mt-2 pb-2">
+                                                    <div className="w-full grid grid-cols-5 px-6 pb-2 h-[56px]">
                                                         <div className="col-start-5 justify-self-end self-center flex items-center gap-x-1 -mr-2">
                                                             {
                                                                 !AppSettings.ThemeData?.header?.hideWallets && <div className="space-y-1 py-1.5">
@@ -58,7 +58,7 @@ export const WidgetLoading: FC = () => {
                                                                 </div>
                                                             </div>
                                                             <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 rounded-lg w-7 h-7 bg-secondary-400 animate-pulse" />
-                                                            <div className="flex flex-col bg-secondary-500 rounded-2xl p-4 pb-[15px] space-y-[27px] w-[438px] h-[154px] group animate-pulse">
+                                                            <div className="flex flex-col bg-secondary-500 rounded-2xl p-4 pb-[15px] space-y-[27px] w-[438px] h-[156px] group animate-pulse">
                                                                 <div className="grid grid-cols-9 gap-2 items-center h-7">
                                                                     <div className="block col-span-5 h-5" />
                                                                 </div>
@@ -76,6 +76,7 @@ export const WidgetLoading: FC = () => {
                                                         <div className="">
                                                             <div className="w-full h-12 bg-primary animate-pulse rounded-xl py-3 px-2 md:px-3" />
                                                         </div>
+                                                        <div className="w-[152px] h-[14px] bg-secondary-400 rounded-xl mx-auto" />
                                                     </div>
                                                 </div>
                                             </div>

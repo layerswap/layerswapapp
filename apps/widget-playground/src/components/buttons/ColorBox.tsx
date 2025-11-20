@@ -1,37 +1,35 @@
 "use client";
 import tinycolor from "tinycolor2";
-import Sketch from "@uiw/react-color-sketch";
 import { useWidgetContext } from "@/context/ConfigContext";
 import { ThemeData } from "@layerswap/widget";
-import { Popover, PopoverContent, PopoverTrigger, } from "@/components/ui/popover"
+import { Popover, PopoverContent, PopoverTrigger, } from "@/components/ui/popover";
+import { useState, useEffect, useCallback } from "react";
+import {
+    ColorPicker,
+    ColorPickerSelection,
+    ColorPickerHue,
+    ColorPickerAlpha,
+    ColorPickerFormat,
+    ColorPickerOutput
+} from "@/components/ui/shadcn-io/color-picker";
 
-type ColorPickerProps = {
-    rgbColor: string; //rgb
+type ColorBoxProps = {
+    rgbColor: string;
     colorKey: string
 };
 
-function isDarkColor(rgb: string): boolean {
-    const [r, g, b] = rgb.split(',').map(Number);
-    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-    return brightness < 128;
-}
-
-
-interface RgbColor {
-    r: number;
-    g: number;
-    b: number;
-}
-
-export function ColorBox({ rgbColor, colorKey }: ColorPickerProps) {
+export function ColorBox({ rgbColor, colorKey }: ColorBoxProps) {
     const { updateTheme, themeData } = useWidgetContext();
     const cssColor = `rgb(${rgbColor})`;
     const hexColor = tinycolor(cssColor).toHexString();
-    const textColor = isDarkColor(rgbColor) ? 'white' : 'black';
+    const [inputValue, setInputValue] = useState(hexColor);
 
-    const handleColorChange = ({ b, g, r }: RgbColor) => {
-        const rgbString = `${r}, ${g}, ${b}`;
+    // Sync input value when rgbColor prop changes
+    useEffect(() => {
+        setInputValue(hexColor);
+    }, [hexColor]);
 
+    const updateThemeColor = useCallback((rgbString: string) => {
         if (!themeData) return;
 
         const nestedColorGroups = ['primary', 'secondary', 'warning', 'error', 'success'];
@@ -46,30 +44,78 @@ export function ColorBox({ rgbColor, colorKey }: ColorPickerProps) {
                 };
                 updateTheme(matchedGroup as keyof ThemeData, updatedGroup as any);
             }
-        } else
+        } else {
             updateTheme(colorKey as keyof ThemeData, rgbString);
-    }
+        }
+    }, [colorKey, themeData, updateTheme]);
+
+    const handleColorChange = useCallback((value: any) => {
+        // The ColorPicker passes [r, g, b, alpha] array
+        if (Array.isArray(value)) {
+            const [r, g, b] = value;
+            const rgbString = `${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)}`;
+            updateThemeColor(rgbString);
+        }
+    }, [updateThemeColor]);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const hex = e.target.value;
+        setInputValue(hex);
+
+        // Validate and update if it's a valid hex color
+        if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+            const color = tinycolor(hex);
+            if (color.isValid()) {
+                const { r, g, b } = color.toRgb();
+                const rgbString = `${r}, ${g}, ${b}`;
+                updateThemeColor(rgbString);
+            }
+        }
+    };
+
+    const handleInputBlur = () => {
+        // Reset to actual color if invalid
+        const color = tinycolor(inputValue);
+        if (!color.isValid() || !/^#[0-9A-Fa-f]{6}$/.test(inputValue)) {
+            setInputValue(hexColor);
+        }
+    };
 
     return (
-        <div className=" relative inline-block">
+        <div className="flex items-center gap-2">
+            <input
+                type="text"
+                value={inputValue}
+                onChange={handleInputChange}
+                onBlur={handleInputBlur}
+                className="w-[100px] h-8 rounded-lg border border-secondary-300 px-2 text-base bg-transparent text-secondary-text focus:outline-none focus:ring-0 focus:border-secondary-300"
+            />
             <Popover>
                 <PopoverTrigger asChild>
-                    <div
-                        className="w-24 h-10 rounded-lg flex items-center justify-center text-sm cursor-pointer "
-                        style={{ backgroundColor: hexColor, color: textColor }}
-                    >
-                        {hexColor}
-                    </div>
-                </PopoverTrigger>
-                <PopoverContent>
-                    <Sketch
-                        className="!bg-transparent !border-0 !outline-none !shadow-none"
-                        color={hexColor}
-                        onChange={(col) => { handleColorChange(col.rgb) }}
-                    />
-                    <button>
-                        apply
+                    <button className="w-8 h-8 rounded-lg border border-secondary-300 p-0 flex items-center justify-center cursor-pointer">
+                        <div
+                            className="w-6 h-6 rounded place-self-center"
+                            style={{ backgroundColor: hexColor }}
+                        />
                     </button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto">
+                    <ColorPicker
+                        value={hexColor}
+                        onChange={handleColorChange}
+                    >
+                        <ColorPickerSelection className="h-[150px]" />
+                        <div className="flex gap-2 mt-2">
+                            <ColorPickerHue />
+                        </div>
+                        <div className="flex gap-2 mt-2">
+                            <ColorPickerAlpha />
+                        </div>
+                        <div className="flex gap-2 mt-2">
+                            <ColorPickerFormat />
+                            <ColorPickerOutput />
+                        </div>
+                    </ColorPicker>
                 </PopoverContent>
             </Popover>
         </div>
