@@ -1,12 +1,5 @@
 {
   "extends": "../tsconfig.wallet.json",
-  "compilerOptions": {
-    "paths": {
-      "@/*": [
-        "./src/*"
-      ]
-    }
-  },
   "include": [
     "src"
   ],

@@ -6,7 +6,7 @@ import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactio
 import { useAccount } from 'wagmi';
 import { TransferProps, ActionMessageType, WithdrawPageProps } from '@layerswap/widget/types';
 import { formatUnits } from 'viem';
-import { useEthersSigner } from '@/utils/ethers';
+import { useEthersSigner } from './utils/ethers';
 
 // Type definitions for zksync
 type ZkSyncWallet = {
