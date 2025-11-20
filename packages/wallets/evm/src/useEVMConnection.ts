@@ -2,7 +2,7 @@ import { useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, 
 import { CreateConnectorFn, getAccount, getConnections, sendTransaction } from '@wagmi/core'
 import { BaseError } from "viem"
 import { useCallback, useEffect, useMemo, useRef } from "react"
-import { TransactionMessageType, NetworkType, NetworkWithTokens, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types"
+import { ActionMessageType, NetworkType, NetworkWithTokens, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types"
 import { isMobile, sleep, convertSvgComponentToBase64, useConnectModal, KnownInternalNames } from "@layerswap/widget/internal"
 import { evmConnectorNameResolver, resolveError, resolveEVMWalletConnectorIcon, resolveEVMWalletConnectorIndex } from "./evmUtils"
 import { LSConnector } from "./connectors/types"
@@ -10,7 +10,6 @@ import { explicitInjectedProviderDetected } from "./connectors/explicitInjectedP
 import { useEvmConnectors } from "./EVMProvider/evmConnectorsContext"
 import { useActiveEvmAccount } from "./EVMProvider/ActiveEvmAccount"
 import { transactionBuilder } from "./services/transferService/transactionBuilder"
-import { LoopringMultiStepHandler, ZkSyncMultiStepHandler } from "./components"
 
 const ethereumNames = [KnownInternalNames.Networks.EthereumMainnet, KnownInternalNames.Networks.EthereumSepolia]
 const immutableZKEvm = [KnownInternalNames.Networks.ImmutableZkEVM]
@@ -254,15 +253,15 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
             const e = new Error()
             e.message = error.message
             if (transactionResolvedError && transactionResolvedError === "insufficient_funds") {
-                e.name = TransactionMessageType.TransactionRejected
+                e.name = ActionMessageType.TransactionRejected
                 throw e
             }
             else if (transactionResolvedError && transactionResolvedError === "transaction_rejected") {
-                e.name = TransactionMessageType.TransactionRejected
+                e.name = ActionMessageType.TransactionRejected
                 throw e
             }
             else {
-                e.name = TransactionMessageType.UnexpectedErrorMessage
+                e.name = ActionMessageType.UnexpectedErrorMessage
                 throw e
             }
         }
@@ -300,19 +299,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
             name,
             id,
             providerIcon,
-            ready: allConnectors.length > 0,
-
-
-            multiStepHandlers: [
-                {
-                    component: LoopringMultiStepHandler,
-                    supportedNetworks: [KnownInternalNames.Networks.LoopringMainnet, KnownInternalNames.Networks.LoopringGoerli, KnownInternalNames.Networks.LoopringSepolia]
-                },
-                {
-                    component: ZkSyncMultiStepHandler,
-                    supportedNetworks: [KnownInternalNames.Networks.ZksyncMainnet]
-                }
-            ]
+            ready: allConnectors.length > 0
         }
     }, [connectWallet, disconnectWallets, switchAccount, resolvedConnectors, availableFeaturedWalletsForConnect, walletConnectConnectors, autofillSupportedNetworks, withdrawalSupportedNetworks, asSourceSupportedNetworks, name, id, networks, allConnectors.length]);
 

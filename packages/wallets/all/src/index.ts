@@ -29,6 +29,9 @@ export type { TONProviderConfig } from "@layerswap/wallet-ton";
 export { createTronProvider } from "@layerswap/wallet-tron";
 export type { TronProviderConfig } from "@layerswap/wallet-tron";
 
+export { LoopringModule } from "@layerswap/wallet-module-loopring";
+export { zkSyncModule } from "@layerswap/wallet-module-zksync";
+
 // Re-export deprecated providers for backward compatibility
 /**
  * @deprecated Use createBitcoinProvider() instead. This export will be removed in a future version.

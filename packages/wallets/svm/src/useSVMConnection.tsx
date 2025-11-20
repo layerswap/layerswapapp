@@ -1,6 +1,6 @@
 import { useWallet } from "@solana/wallet-adapter-react"
 import { KnownInternalNames } from "@layerswap/widget/internal"
-import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType, NetworkType, WalletConnectionProviderProps } from "@layerswap/widget/types"
+import { InternalConnector, Wallet, WalletConnectionProvider, ActionMessageType, NetworkType, WalletConnectionProviderProps } from "@layerswap/widget/types"
 import { useMemo } from "react"
 import { configureAndSendCurrentTransaction } from "./services/transferService/transactionSender"
 import { resolveSolanaWalletConnectorIcon } from "./utils"
@@ -112,7 +112,7 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
                 insufficientTokensArr.push(token?.symbol);
             }
 
-            if (insufficientTokensArr.length > 0) throw new Error(TransactionMessageType.InsufficientFunds)
+            if (insufficientTokensArr.length > 0) throw new Error(ActionMessageType.InsufficientFunds)
 
             const signature = await configureAndSendCurrentTransaction(
                 transaction,
@@ -124,16 +124,16 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
         } catch (error) {
             const e = new Error()
             e.message = error.message
-            if (error in TransactionMessageType) {
+            if (error in ActionMessageType) {
                 e.name = error
                 throw e
             }
             else if (error.message === "User rejected the request.") {
-                e.name = TransactionMessageType.TransactionRejected
+                e.name = ActionMessageType.TransactionRejected
                 throw e
             }
             else {
-                e.name = TransactionMessageType.UnexpectedErrorMessage
+                e.name = ActionMessageType.UnexpectedErrorMessage
                 throw e
             }
         }

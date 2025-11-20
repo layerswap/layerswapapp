@@ -1,5 +1,5 @@
 import { useConnectModal, KnownInternalNames, convertSvgComponentToBase64, JsonRpcClient, walletIconResolver } from "@layerswap/widget/internal"
-import { TransactionMessageType, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps, NetworkType, NetworkWithTokens } from "@layerswap/widget/types";
+import { ActionMessageType, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps, NetworkType, NetworkWithTokens } from "@layerswap/widget/types";
 import { useConnect, useAccount, useConfig } from '@bigmi/react'
 import { disconnect } from "@bigmi/client"
 import { useMemo } from "react"
@@ -134,15 +134,15 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
             const e = new Error(message)
             e.message = message
             if (error && message.includes('User rejected the request.')) {
-                e.name = TransactionMessageType.TransactionRejected
+                e.name = ActionMessageType.TransactionRejected
                 throw e
             }
             else if (error && (message.includes('Insufficient balance.') || message.includes('Insufficient funds'))) {
-                e.name = TransactionMessageType.InsufficientFunds
+                e.name = ActionMessageType.InsufficientFunds
                 throw e
             }
             else {
-                e.name = TransactionMessageType.UnexpectedErrorMessage
+                e.name = ActionMessageType.UnexpectedErrorMessage
                 throw e
             }
         }

@@ -1,6 +1,6 @@
 import { useWalletStore, KnownInternalNames } from "@layerswap/widget/internal"
 import ImtblClient from "./client"
-import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType, WalletConnectionProviderProps } from "@layerswap/widget/types"
+import { InternalConnector, Wallet, WalletConnectionProvider, ActionMessageType, WalletConnectionProviderProps } from "@layerswap/widget/types"
 import IMX from "./utils/ImxIcon"
 
 const supportedNetworks = [
@@ -75,7 +75,7 @@ export default function useImtblXConnection({ networks }: WalletConnectionProvid
             const res = await imtblClient.Transfer(amount.toString(), token, depositAddress)
             const transactionRes = res?.result?.[0]
             if (!transactionRes)
-                throw new Error(TransactionMessageType.TransactionFailed)
+                throw new Error(ActionMessageType.TransactionFailed)
             else if (transactionRes.status == "error") {
                 throw new Error(transactionRes.message)
             }
@@ -85,12 +85,12 @@ export default function useImtblXConnection({ networks }: WalletConnectionProvid
         } catch (error) {
             const e = new Error()
             e.message = error.message
-            if (error in TransactionMessageType) {
+            if (error in ActionMessageType) {
                 e.name = error
                 throw e
             }
             else {
-                e.name = TransactionMessageType.UnexpectedErrorMessage
+                e.name = ActionMessageType.UnexpectedErrorMessage
                 throw e
             }
         }

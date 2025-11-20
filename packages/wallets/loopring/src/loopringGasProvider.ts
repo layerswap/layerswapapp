@@ -1,8 +1,8 @@
 import axios from "axios";
 import { KnownInternalNames, formatUnits } from "@layerswap/widget/internal";
 import { GasProvider, GasProps, Network } from "@layerswap/widget/types";
-import { LoopringAPI } from "../services/transferService/loopring/LoopringAPI";
-import { LOOPRING_URLs, LpFee } from "../services/transferService/loopring/defs";
+import { LoopringAPI } from "./services/LoopringAPI";
+import { LOOPRING_URLs, LpFee } from "./services/defs";
 
 export class LoopringGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
