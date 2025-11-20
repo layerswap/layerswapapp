@@ -31,7 +31,7 @@ export default function Salon({ settings, apiKey }: InferGetServerSidePropsType<
     }, [router])
 
     return (
-        <Layout settings={settings}>
+        <Layout settings={settings || undefined}>
             <div className="h-full min-h-screen flex flex-col justify-center text-secondary-text text-md font-lighter leading-6">
                 <div className='flex place-content-center mb-4'>
                     <svg xmlns="http://www.w3.org/2000/svg" width="140" height="140" viewBox="0 0 116 116" fill="none">

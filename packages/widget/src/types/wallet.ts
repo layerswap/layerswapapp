@@ -88,6 +88,7 @@ export type WalletConnectionProvider = {
     providerIcon?: string,
     unsupportedPlatforms?: string[],
     hideFromList?: boolean,
+    ready: boolean,
 
     multiStepHandlers?: MultiStepHandler[],
 }

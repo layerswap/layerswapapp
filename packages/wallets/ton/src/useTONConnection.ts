@@ -166,6 +166,7 @@ export default function useTONConnection({ networks }: WalletConnectionProviderP
         asSourceSupportedNetworks: commonSupportedNetworks,
         name,
         id,
+        ready: !!tonConnectUI
     }
 
     return provider

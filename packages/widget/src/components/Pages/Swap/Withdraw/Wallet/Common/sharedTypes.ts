@@ -11,4 +11,5 @@ export type WithdrawPageProps = {
     swapBasicData: SwapBasicData
     refuel: boolean
     savedTransactionHash?: string
+    onCancelWithdrawal?: () => void
 }
