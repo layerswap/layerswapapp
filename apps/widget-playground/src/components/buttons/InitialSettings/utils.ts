@@ -4,8 +4,8 @@ type FieldType = "select" | "boolean" | "numeric" | "text";
 
 export const PARAM_OPTIONS = [
     { value: "defaultTab", label: "Default tab", type: "select" as FieldType },
-    { value: "from", label: "From (network)", type: "select" as FieldType },
-    { value: "to", label: "To (network)", type: "select" as FieldType },
+    { value: "from", label: "From network", type: "select" as FieldType },
+    { value: "to", label: "To network", type: "select" as FieldType },
     { value: "fromAsset", label: "From asset", type: "select" as FieldType, requires: "from" as keyof InitialSettings },
     { value: "toAsset", label: "To asset", type: "select" as FieldType, requires: "to" as keyof InitialSettings },
     { value: "amount", label: "Amount", type: "numeric" as FieldType },

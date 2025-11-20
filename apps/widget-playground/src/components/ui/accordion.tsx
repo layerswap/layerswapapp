@@ -2,9 +2,8 @@
 
 import * as React from "react"
 import * as AccordionPrimitive from "@radix-ui/react-accordion"
-// import { ChevronDownIcon } from "lucide-react"
-
 import { cn } from "@/lib/utils"
+import { ChevronDownIcon } from "lucide-react"
 
 function Accordion({
   ...props
@@ -28,8 +27,9 @@ function AccordionItem({
 function AccordionTrigger({
   className,
   children,
+  hideChevron,
   ...props
-}: React.ComponentProps<typeof AccordionPrimitive.Trigger>) {
+}: React.ComponentProps<typeof AccordionPrimitive.Trigger> & { hideChevron?: boolean }) {
   return (
     <AccordionPrimitive.Header className="flex ">
       <AccordionPrimitive.Trigger
@@ -41,7 +41,11 @@ function AccordionTrigger({
         {...props}
       >
         {children}
-        {/* <ChevronDownIcon className=" fill-currenttext-muted-foreground pointer-events-none size-4 shrink-0 translate-y-0.5 transition-transform duration-200  dark:text-secondary-text placeholder:text-secondary-text" /> */}
+        {!hideChevron && (
+          <div className="bg-secondary-500 rounded-md w-6 h-6 p-0.5 flex items-center justify-center shrink-0">
+            <ChevronDownIcon className="fill-currenttext-muted-foreground pointer-events-none w-5 h-5 transition-transform duration-200 dark:text-secondary-text placeholder:text-secondary-text" />
+          </div>
+        )}
       </AccordionPrimitive.Trigger>
     </AccordionPrimitive.Header>
   )
