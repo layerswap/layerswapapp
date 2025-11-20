@@ -4,7 +4,6 @@ import { Widget } from "../../../Widget/Index";
 import { SwapDataProvider, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import NotFound from "./NotFound";
 import SwapDetails from "./SwapDetails";
-import { LayerswapContextProps, LayerswapProvider } from "@/context/LayerswapProvider";
 import { useBackClickCallback } from "@/context/callbackProvider";
 
 const Comp: FC = () => {
@@ -32,12 +31,10 @@ const Comp: FC = () => {
     )
 };
 
-export const SwapWithdrawal: FC<LayerswapContextProps> = (props) => {
+export const SwapWithdrawal: FC = () => {
     return (
-        <LayerswapProvider {...props}>
-            <SwapDataProvider>
-                <Comp />
-            </SwapDataProvider >
-        </LayerswapProvider>
+        <SwapDataProvider>
+            <Comp />
+        </SwapDataProvider >
     )
 }
