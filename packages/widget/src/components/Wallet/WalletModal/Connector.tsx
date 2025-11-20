@@ -9,9 +9,10 @@ type Connector = DetailedHTMLProps<ButtonHTMLAttributes<HTMLButtonElement>, HTML
     connectingConnector?: WalletModalConnector
     isRecent?: boolean
     onClick: () => void
+    isProviderReady?: boolean
 }
 
-const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isRecent, ...props }) => {
+const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isRecent, isProviderReady = true, ...props }) => {
     const connectorName = connector?.name
 
     const Icon = resolveWalletConnectorIcon({ connector: connector, iconUrl: connector.icon })
@@ -21,8 +22,8 @@ const Connector: FC<Connector> = ({ connector, connectingConnector, onClick, isR
         <>
             <button
                 type="button"
-                disabled={!!connectingConnector}
-                className="w-full h-fit flex items-center justify-between bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl p-3"
+                disabled={!!connectingConnector || !isProviderReady}
+                className="w-full h-fit flex items-center justify-between bg-secondary-500 hover:bg-secondary-400 transition-colors duration-200 rounded-xl p-3 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={onClick}
                 {...props}
             >
