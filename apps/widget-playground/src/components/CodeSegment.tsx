@@ -2,10 +2,10 @@
 import { useWidgetContext } from "@/context/ConfigContext";
 import hljs from "highlight.js";
 import { useEffect, useRef, useState } from "react";
-import { Files } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { InitialSettings } from "@layerswap/widget/types";
 import type { ThemeData } from "@layerswap/widget";
+import IconCopy from "@/public/icons/IconCopy";
 
 function isPlainObject(v: unknown): v is Record<string, any> {
     return typeof v === "object" && v !== null && !Array.isArray(v);
@@ -78,7 +78,7 @@ function buildConfigSnippet(
 
 export function CodeSegment() {
     const ctx = useWidgetContext();
-    const { themeData, actionText, initialValues, updateWholeTheme, updateActionText, updateInitialValues, resetData } = ctx;
+    const { themeData, actionText, initialValues, updateWholeTheme, updateActionText, updateInitialValues } = ctx;
 
     const generatedCode = buildConfigSnippet(themeData, actionText, initialValues);
 
@@ -86,6 +86,7 @@ export function CodeSegment() {
     const [error, setError] = useState<string | null>(null);
     const [isUserEdited, setIsUserEdited] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const [lastAppliedState, setLastAppliedState] = useState<{ theme?: ThemeData; actionText?: string; initialValues?: InitialSettings } | null>(null);
     const codeRef = useRef<HTMLElement>(null);
     const preRef = useRef<HTMLPreElement>(null);
 
@@ -96,6 +97,17 @@ export function CodeSegment() {
             hljs.highlightElement(codeRef.current);
         }
     }, [generatedCode, isUserEdited, isEditing]);
+
+    useEffect(() => {
+        if (codeRef.current) {
+            codeRef.current.textContent = generatedCode;
+            codeRef.current.removeAttribute("data-highlighted");
+            hljs.highlightElement(codeRef.current);
+            setIsUserEdited(false);
+            setLastAppliedState(null);
+            setError(null);
+        }
+    }, [themeData, actionText, initialValues]);
 
     const handleCopy = async () => {
         const text = codeRef.current?.textContent || generatedCode;
@@ -129,6 +141,12 @@ export function CodeSegment() {
         }
 
         try {
+            setLastAppliedState({
+                theme: themeData,
+                actionText,
+                initialValues
+            });
+
             if (config.theme) {
                 updateWholeTheme({ theme: config.theme as ThemeData, themeName: 'custom' });
             }
@@ -145,6 +163,26 @@ export function CodeSegment() {
         } catch (e) {
             setError(`Failed to apply config: ${e instanceof Error ? e.message : String(e)}`);
         }
+    };
+
+    const handleUndo = () => {
+        if (!lastAppliedState) return;
+
+        setError(null);
+        if (lastAppliedState.theme) {
+            updateWholeTheme({ theme: lastAppliedState.theme, themeName: 'custom' });
+        }
+        if (lastAppliedState.actionText !== undefined) {
+            updateActionText(lastAppliedState.actionText);
+        }
+        if (lastAppliedState.initialValues) {
+            const prevInitialValues = lastAppliedState.initialValues;
+            Object.keys(prevInitialValues).forEach((key) => {
+                updateInitialValues(key as keyof InitialSettings, prevInitialValues[key as keyof InitialSettings]);
+            });
+        }
+        setLastAppliedState(null);
+        setIsUserEdited(false);
     };
 
     const handleInput = () => {
@@ -167,55 +205,59 @@ export function CodeSegment() {
         }
     };
 
-    const handleReset = () => {
-        resetData();
-        if (codeRef.current) {
-            codeRef.current.textContent = generatedCode;
-            codeRef.current.removeAttribute("data-highlighted");
-            hljs.highlightElement(codeRef.current);
-        }
-        setIsUserEdited(false);
-        setError(null);
-    };
-
     return (<>
         {error && (
-            <div className="mb-4 rounded-md bg-red-500/10 border border-red-500/20 px-4 py-2 text-sm text-red-400">
+            <div className="mt-3 rounded-md bg-error-background  px-4 py-2 text-sm text-error-foreground">
                 {error}
             </div>
         )}
-        <div className="relative w-full overflow-hidden rounded-tl-xl rounded-md border bg-secondary-700 border-secondary-500 focus-within:border-primary transition-colors">
-
-            <div className="absolute right-4 top-4 z-10 flex gap-2">
+        <div className="flex justify-between gap-2 my-3">
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <button
+                        className="rounded-xl bg-secondary-300 text-base px-3 leading-6 text-primary-text transition hover:bg-secondary-200  hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                        onClick={handleUndo}
+                        disabled={!lastAppliedState}
+                    >
+                        Undo
+                    </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>Undo last apply</p>
+                </TooltipContent>
+            </Tooltip>
+            <div className="flex gap-2">
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Files
-                            className="rounded-full bg-secondary-500 text-base text-primary-text transition hover:bg-primary p-1.5 h-8 w-auto hover:cursor-pointer"
+                        <button
+                            className="rounded-xl bg-secondary-300 text-base p-1.5 leading-6 text-primary-text transition hover:bg-secondary-200 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                             onClick={handleCopy}
-                        />
+                            disabled={false}
+                        >
+                            <IconCopy className="h-6 w-6" />
+                        </button>
                     </TooltipTrigger>
                     <TooltipContent>
-                        <p>{copied ? "Copied!" : "Copy"}</p>
+                        <p>{copied ? "Copied!" : "Copy code"}</p>
                     </TooltipContent>
                 </Tooltip>
-                {isUserEdited && (
-                    <>
+                <Tooltip>
+                    <TooltipTrigger asChild>
                         <button
-                            className="rounded-full bg-secondary-500 text-xs text-primary-text transition hover:bg-primary px-3 py-1.5 hover:cursor-pointer"
-                            onClick={handleReset}
-                        >
-                            Reset
-                        </button>
-                        <button
-                            className="rounded-full bg-primary text-xs text-primary-text transition hover:bg-primary-600 px-3 py-1.5 hover:cursor-pointer"
+                            className="rounded-xl bg-secondary-300 px-3 leading-6 text-base text-primary-text transition hover:bg-secondary-200 hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                             onClick={applyConfig}
+                            disabled={!isUserEdited}
                         >
                             Apply
                         </button>
-                    </>
-                )}
+                    </TooltipTrigger>
+                    <TooltipContent>
+                        <p>Apply configuration</p>
+                    </TooltipContent>
+                </Tooltip>
             </div>
-
+        </div>
+        <div className="relative w-full overflow-hidden rounded-tl-xl rounded-md border bg-secondary-700 border-secondary-500 focus-within:border-secondary transition-colors">
             <div className="px-6 pb-14 pt-6">
                 <pre ref={preRef}>
                     <code

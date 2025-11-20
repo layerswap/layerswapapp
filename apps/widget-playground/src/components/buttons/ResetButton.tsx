@@ -1,7 +1,7 @@
 "use client";
-import { RotateCcw } from 'lucide-react';
 import { useWidgetContext } from '@/context/ConfigContext';
 import { Tooltip, TooltipContent, TooltipTrigger, } from "@/components/ui/tooltip"
+import Rotate from '@/public/icons/Rotate';
 
 export function ResetButton() {
     const { resetData } = useWidgetContext();
@@ -9,7 +9,11 @@ export function ResetButton() {
     return (
         <Tooltip>
             <TooltipTrigger asChild>
-                <RotateCcw onClick={resetData} className=' w-8 h-8 p-1 rounded-full bg-transparent hover:bg-primary-500 transition-colors ' />
+                <button
+                    onClick={resetData}
+                    className='rounded-xl w-6 h-6 flex items-center justify-center bg-transparent hover:bg-secondary-300 transition-colors'>
+                    <Rotate className='w-[18px] h-[18px]' />
+                </button>
             </TooltipTrigger>
             <TooltipContent >
                 <p>Reset</p>

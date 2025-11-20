@@ -4,6 +4,7 @@ import { THEME_COLORS } from "@layerswap/widget";
 import { useMemo } from "react";
 import { ColorBox } from "./ColorBox";
 import tinycolor from "tinycolor2";
+import { Plus } from "lucide-react";
 
 const getColors = (theme?: typeof THEME_COLORS['default']) => {
     if (!theme?.primary || !theme?.secondary) return undefined
@@ -56,30 +57,41 @@ const getColors = (theme?: typeof THEME_COLORS['default']) => {
 export function ColorsContent() {
     const { themeData } = useWidgetContext();
     const editColors = useMemo(() => getColors(themeData), [themeData]);
-    return editColors?.map(({ displayName, value, id }) => (
-        <div key={id} className="my-1 rounded-xl p-2 bg-secondary-600  hover:bg-secondary-500 transition-colors duration-200 flex items-center justify-between gap-4">
-            <span>{displayName}</span>
-            <ColorBox rgbColor={value!} colorKey={id} />
-        </div>
-    ))
+    return <div className="flex flex-col gap-1 py-1">
+        {editColors?.map(({ displayName, value, id }) => (
+            <div key={id} className="flex items-center justify-between gap-4 py-1 px-2 hover:bg-secondary-500 rounded-md">
+                <span className="text-xl leading-6">{displayName}</span>
+                <ColorBox rgbColor={value!} colorKey={id} />
+            </div>
+        ))}
+    </div>
 }
 
 export const ColorsTrigger = () => {
     const { themeData } = useWidgetContext();
-    const editColors = useMemo(() => getColors(themeData), [themeData]);
+
+    const previewColors = [
+        themeData?.primary?.[500],
+        themeData?.secondary?.[500],
+        themeData?.primary?.text,
+    ];
 
     return (
         <div className="flex justify-between w-full">
             <label>
                 Colors
             </label>
-            <div className="flex justify-end ">
-                {editColors?.map(({ value, id }) => (
-                    <div key={id}
-                        style={{ backgroundColor: tinycolor(`rgb(${value})`).toRgbString() }}
-                        className="w-2.5 h-full"
-                    ></div>
+            <div className="flex justify-end gap-1">
+                {previewColors.map((color, index) => (
+                    <div
+                        key={index}
+                        style={{ backgroundColor: tinycolor(`rgb(${color})`).toRgbString() }}
+                        className="w-6 h-6 rounded-md"
+                    />
                 ))}
+                <div className="w-6 h-6 flex rounded-md items-center bg-secondary-500 justify-center">
+                    <Plus className="w-5 h-5 text-secondary-text" />
+                </div>
             </div>
         </div>
     )
