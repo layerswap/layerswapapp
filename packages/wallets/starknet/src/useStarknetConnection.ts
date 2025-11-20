@@ -1,6 +1,6 @@
 import { Connector, useConnect, useDisconnect } from "@starknet-react/core";
 import { InternalConnector, Wallet, WalletConnectionProvider, ActionMessageType, WalletConnectionProviderProps, NetworkWithTokens } from "@layerswap/widget/types";
-import { KnownInternalNames, useWalletStore } from "@layerswap/widget/internal";
+import { KnownInternalNames } from "@layerswap/widget/internal";
 import { resolveStarknetWalletConnectorIcon } from "./utils";
 import { useStarknetStore } from "./starknetWalletStore";
 

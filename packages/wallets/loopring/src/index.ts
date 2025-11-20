@@ -6,8 +6,7 @@ import { LoopringGasProvider } from "./loopringGasProvider";
 import LoopringMultiStepHandler from "./loopringMultiStepHandler";
 import { WalletProviderModule } from "@layerswap/widget/types";
 
-
-export const LoopringProvider: WalletProviderModule = {
+export const LoopringModule: WalletProviderModule = {
     id: "evm", // ID of the provider that this module depends on
     gasProvider: new LoopringGasProvider(),
     balanceProvider: new LoopringBalanceProvider(),

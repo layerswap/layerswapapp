@@ -1,7 +1,7 @@
 import { FeeData, useLoopringTokens } from './hooks';
 import { formatUnits } from "viem";
 import { useEffect } from 'react';
-import { UserBalanceInfo } from '@/services/defs';
+import { UserBalanceInfo } from '../services/defs';
 import { ImageWithFallback, AppSettings, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@layerswap/widget/internal';
 
 type Props = {

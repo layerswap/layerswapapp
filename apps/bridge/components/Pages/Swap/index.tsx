@@ -13,10 +13,10 @@ import {
     createTONProvider,
     createSVMProvider,
     createTronProvider,
-    createImmutablePassportProvider
+    createImmutablePassportProvider,
+    zkSyncModule,
+    LoopringModule
 } from "@layerswap/wallets";
-import { ZKsyncProvider } from "@layerswap/wallet-zksync"
-import { LoopringProvider } from "@layerswap/wallet-loopring"
 import { ParsedUrlQuery } from "querystring"
 
 const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string, initialValues: ParsedUrlQuery }> = ({ settings, themeData, apiKey, initialValues }) => {
@@ -38,7 +38,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
     }
 
     const walletProviders = [
-        createEVMProvider({ walletConnectConfigs, walletProviderModules: [ZKsyncProvider, LoopringProvider] }),
+        createEVMProvider({ walletConnectConfigs, walletProviderModules: [zkSyncModule, LoopringModule] }),
         createStarknetProvider({ walletConnectConfigs }),
         createFuelProvider(),
         createParadexProvider(),

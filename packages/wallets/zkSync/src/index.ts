@@ -6,7 +6,7 @@ import { ZkSyncBalanceProvider } from "./zkSyncBalanceProvider";
 import ZkSyncMultiStepHandler from "./ZkSyncMultiStepHandler";
 import { KnownInternalNames } from "@layerswap/widget/internal";
 
-export const ZKsyncProvider: WalletProviderModule = {
+export const zkSyncModule: WalletProviderModule = {
     id: "evm", // ID of the provider that this module depends on
     gasProvider: new ZkSyncGasProvider(),
     balanceProvider: new ZkSyncBalanceProvider(),

@@ -1,12 +1,12 @@
 import { Lock } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { useAccount, useConfig } from 'wagmi';
-import { ActivationTokenPicker } from '@/utils/ActivationTokentPicker';
-import { useActivationData, useLoopringAccount, useLoopringTokens } from '@/utils/hooks';
+import { ActivationTokenPicker } from './utils/ActivationTokentPicker';
+import { useActivationData, useLoopringAccount, useLoopringTokens } from './utils/hooks';
 import { AppSettings, SignatureIcon, WalletMessage, ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactionButton, ActionMessage } from '@layerswap/widget/internal';
 import { ActionMessageType, TransferProps, WithdrawPageProps } from '@layerswap/widget/types';
-import { ChainId, UnlockedAccount } from '@/services/defs';
-import { LoopringAPI } from '@/services/LoopringAPI';
+import { ChainId, UnlockedAccount } from './services/defs';
+import { LoopringAPI } from './services/LoopringAPI';
 
 const LoopringMultiStepHandler: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);

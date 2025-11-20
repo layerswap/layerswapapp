@@ -1,7 +1,7 @@
 {
-  "name": "@layerswap/wallet-zksync",
+  "name": "@layerswap/wallet-module-zksync",
   "version": "1.0.0",
-  "description": "ZKsync Wallet Provider for Layerswap Widget",
+  "description": "ZKsync Wallet Module for Layerswap Widget",
   "type": "module",
   "main": "dist/esm/index.js",
   "types": "dist/types/index.d.ts",

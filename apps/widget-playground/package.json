@@ -14,8 +14,6 @@
     "@dynamic-labs/wagmi-connector": "^4.19.7",
     "@layerswap/wallets": "workspace:^",
     "@layerswap/widget": "workspace:^",
-    "@layerswap/wallet-loopring": "workspace:*",
-    "@layerswap/wallet-zksync": "workspace:*",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-popover": "^1.1.14",
     "@radix-ui/react-scroll-area": "^1.2.9",
