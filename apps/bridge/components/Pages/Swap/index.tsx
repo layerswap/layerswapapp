@@ -77,7 +77,7 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
         }}
         walletProviders={walletProviders}
     >
-        <Swap />
+        <Swap/>
     </LayerswapProvider>
 }
 

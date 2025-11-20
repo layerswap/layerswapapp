@@ -60,7 +60,7 @@ const SwapDetails = ({ settings, themeData, apiKey }: InferGetServerSidePropsTyp
   ];
 
   return (<>
-    <Layout settings={settings} themeData={themeData}>
+    <Layout settings={settings || undefined} themeData={themeData}>
       <SwapWithdrawal
         config={{
           theme: {

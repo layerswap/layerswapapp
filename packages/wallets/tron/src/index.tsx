@@ -50,3 +50,15 @@ export function createTronProvider(config: TronProviderConfig = {}): WalletProvi
         balanceProvider: finalBalanceProviders,
     };
 }
+
+/**
+ * @deprecated Use createTronProvider() instead. This export will be removed in a future version.
+ */
+export const TronProvider: WalletProvider = {
+    id: "tron",
+    wrapper: TronProviderWrapper,
+    walletConnectionProvider: useTronConnection,
+    addressUtilsProvider: [new TronAddressUtilsProvider()],
+    gasProvider: [new TronGasProvider()],
+    balanceProvider: [new TronBalanceProvider()],
+};

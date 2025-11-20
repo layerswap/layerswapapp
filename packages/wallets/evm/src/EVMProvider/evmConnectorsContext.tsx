@@ -1,9 +1,9 @@
 import { createContext, useContext, useMemo, useState } from 'react'
 import { resolveConnector, resolveWallets, WalletConnectWallet } from '../connectors/resolveConnectors';
 import { CreateConnectorFn } from 'wagmi';
-import { coinbaseWallet, walletConnect } from '@wagmi/connectors'
+import { coinbaseWallet, walletConnect, metaMask } from '@wagmi/connectors'
 import { browserInjected } from '../connectors/browserInjected';
-import { isMobile, AppSettings, usePersistedState } from '@layerswap/widget/internal';
+import { isMobile, usePersistedState } from '@layerswap/widget/internal';
 import { WalletConnectConfig } from '..';
 
 type ContextType = {
@@ -64,7 +64,7 @@ export function EvmConnectorsProvider({ children, walletConnectConfigs }: EvmCon
     }, [recentConnectors, _walletConnectWallets]);
 
     const resolvedFeaturedWallets = useMemo(() => {
-        return featuredWallets.map(wallet => {
+        return featuredWallets.filter(wallet => wallet.name.toLowerCase() !== 'metamask').map(wallet => {
             return resolveConnector(wallet.name, WALLETCONNECT_PROJECT_ID)
         })
     }, [featuredWallets, WALLETCONNECT_PROJECT_ID]);
@@ -83,9 +83,16 @@ export function EvmConnectorsProvider({ children, walletConnectConfigs }: EvmCon
     }, [walletConnectWallets, initialRecentConnectors, WALLETCONNECT_PROJECT_ID]);
 
     const defaultConnectors: CreateConnectorFn[] = useMemo(() => [
+        metaMask({
+            dappMetadata: {
+                name: walletConnectConfig?.name ||'Layerswap',
+                url: walletConnectConfig?.url || 'https://layerswap.io/app/',
+                iconUrl: walletConnectConfig?.icons?.[0] || 'https://layerswap.io/app/symbol.png'
+            }
+        }),
         coinbaseWallet({
             appName: walletConnectConfig?.name || 'Layerswap',
-            appLogoUrl: walletConnectConfig?.icons?.[0] || 'https://layerswap.io/app/symbol.png',
+            appLogoUrl: walletConnectConfig?.icons?.[0] || 'https://layerswap.io/app/symbol.png'
         }),
         wltcnnct_inited,
         ...resolvedFeaturedWallets,

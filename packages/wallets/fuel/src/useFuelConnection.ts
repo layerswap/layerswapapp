@@ -235,6 +235,7 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
         connectedWallets,
         name,
         id,
+        ready: connectors.length > 0
     }
 
     return provider

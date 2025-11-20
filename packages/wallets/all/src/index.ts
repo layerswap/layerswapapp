@@ -29,3 +29,54 @@ export type { TONProviderConfig } from "@layerswap/wallet-ton";
 export { createTronProvider } from "@layerswap/wallet-tron";
 export type { TronProviderConfig } from "@layerswap/wallet-tron";
 
+// Re-export deprecated providers for backward compatibility
+/**
+ * @deprecated Use createBitcoinProvider() instead. This export will be removed in a future version.
+ */
+export { BitcoinProvider } from "@layerswap/wallet-bitcoin";
+
+/**
+ * @deprecated Use createEVMProvider() instead. This export will be removed in a future version.
+ */
+export { EVMProvider } from "@layerswap/wallet-evm";
+
+/**
+ * @deprecated Use createFuelProvider() instead. This export will be removed in a future version.
+ */
+export { FuelProvider } from "@layerswap/wallet-fuel";
+
+/**
+ * @deprecated Use createImmutableXProvider() instead. This export will be removed in a future version.
+ */
+export { ImmutableXProvider } from "@layerswap/wallet-imtbl-x";
+
+/**
+ * @deprecated Use createImmutablePassportProvider() instead. This export will be removed in a future version.
+ */
+export { ImtblPassportProvider } from "@layerswap/wallet-imtbl-passport";
+
+/**
+ * @deprecated Use createParadexProvider() instead. This export will be removed in a future version.
+ */
+export { ParadexProvider } from "@layerswap/wallet-paradex";
+
+/**
+ * @deprecated Use createStarknetProvider() instead. This export will be removed in a future version.
+ */
+export { StarknetProvider } from "@layerswap/wallet-starknet";
+
+/**
+ * @deprecated Use createSVMProvider() instead. This export will be removed in a future version.
+ */
+export { SVMProvider } from "@layerswap/wallet-svm";
+
+/**
+ * @deprecated Use createTONProvider() instead. This export will be removed in a future version.
+ */
+export { TONProvider } from "@layerswap/wallet-ton";
+
+/**
+ * @deprecated Use createTronProvider() instead. This export will be removed in a future version.
+ */
+export { TronProvider } from "@layerswap/wallet-tron";
+

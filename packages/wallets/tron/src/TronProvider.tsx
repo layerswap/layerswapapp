@@ -10,8 +10,9 @@ import { GateWalletAdapter } from '@tronweb3/tronwallet-adapter-gatewallet'
 import { LedgerAdapter } from '@tronweb3/tronwallet-adapter-ledger'
 import { ImTokenAdapter } from '@tronweb3/tronwallet-adapter-imtoken'
 import { TrustAdapter } from '@tronweb3/tronwallet-adapter-trust'
+import type { ReactElement } from 'react';
 
-export default function TronProvider({ children }: { children: React.ReactNode }) {
+export default function TronProvider({ children }: { children: React.ReactNode }): ReactElement {
 
     const adapters = useMemo(() => {
         if (typeof window === 'undefined') return

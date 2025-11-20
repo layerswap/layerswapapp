@@ -120,7 +120,8 @@ export default function useImtblXConnection({ networks }: WalletConnectionProvid
         id,
         hideFromList: true,
         availableWalletsForConnect,
-        switchAccount
+        switchAccount,
+        ready: true
     }
 
     return provider

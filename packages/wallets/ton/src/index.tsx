@@ -4,7 +4,8 @@ import { TonGasProvider } from "./tonGasProvider";
 import TonProviderWrapper from "./TonProvider";
 import useTONConnection from "./useTONConnection";
 import { TonAddressUtilsProvider } from "./tonAddressUtilsProvider";
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useMemo } from "react";
+import { AppSettings } from "@layerswap/widget/internal";
 
 export type TonClientConfig = {
     tonApiKey: string
@@ -33,7 +34,6 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
         gasProviders,
         addressUtilsProviders
     } = config;
-
 
     const WrapperComponent = ({ children, themeData }: { children: React.ReactNode, themeData?: ThemeData }) => {
         return (
@@ -71,3 +71,26 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
         balanceProvider: finalBalanceProviders,
     };
 }
+
+/**
+ * @deprecated Use createTONProvider() instead. This export will be removed in a future version.
+ * Note: This uses default TON configuration from AppSettings.
+ */
+export const TONProvider: WalletProvider = {
+    id: "ton",
+    wrapper: ({ children, themeData }: { children: React.ReactNode, themeData?: ThemeData }) => {
+        const configs = AppSettings.TonClientConfig;
+        console.log('configs', configs)
+        return (
+            <TonConfigContext.Provider value={configs}>
+                <TonProviderWrapper tonConfigs={configs} themeData={themeData}>
+                    {children}
+                </TonProviderWrapper>
+            </TonConfigContext.Provider>
+        );
+    },
+    walletConnectionProvider: useTONConnection,
+    addressUtilsProvider: [new TonAddressUtilsProvider()],
+    gasProvider: [new TonGasProvider()],
+    balanceProvider: [new TonBalanceProvider()],
+};

@@ -1,6 +1,7 @@
 import { THEME, TonConnectUIProvider } from "@tonconnect/ui-react"
 import { ThemeData } from "@layerswap/widget/types";
 import { TonClientConfig } from "./index";
+import type { ReactElement } from "react";
 
 type TonConnectProviderProps = {
     children: JSX.Element | JSX.Element[]
@@ -8,7 +9,7 @@ type TonConnectProviderProps = {
     tonConfigs?: TonClientConfig
 }
 
-const TonConnectProvider = ({ children, themeData, tonConfigs }: TonConnectProviderProps) => {
+const TonConnectProvider = ({ children, themeData, tonConfigs }: TonConnectProviderProps): ReactElement => {
 
     const rgbToHex = (rgb: string) => {
         const rgbArray = rgb.match(/\d+/g)

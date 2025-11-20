@@ -38,3 +38,13 @@ export function createImmutableXProvider(config: ImmutableXProviderConfig = {}):
         balanceProvider: finalBalanceProviders,
     };
 }
+
+/**
+ * @deprecated Use createImmutableXProvider() instead. This export will be removed in a future version.
+ */
+export const ImmutableXProvider: WalletProvider = {
+    id: "imx",
+    walletConnectionProvider: useImtblXConnection,
+    gasProvider: [new ImmutableXGasProvider()],
+    balanceProvider: [new ImmutableXBalanceProvider()],
+};

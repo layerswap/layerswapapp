@@ -5,6 +5,7 @@ import useEVMConnection from "./useEVMConnection"
 import EVMProviderWrapper from "./EVMProvider"
 import { EVMGasProvider } from "./gasProviders"
 import { EVMAddressUtilsProvider } from "./evmAddressUtilsProvider"
+import { AppSettings } from "@layerswap/widget/internal";
 
 export type WalletConnectConfig = {
     projectId: string
@@ -95,3 +96,22 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
 }
 
 export { default as useEVMConnection } from "./useEVMConnection";
+
+/**
+ * @deprecated Use createEVMProvider() instead. This export will be removed in a future version.
+ * Note: This uses default WalletConnect configuration provided to LayerswapProvider.
+ */
+export const EVMProvider: WalletProvider = {
+    id: "evm",
+    wrapper: ({ children }: { children: JSX.Element | JSX.Element[] }) => {
+        return (
+            <EVMProviderWrapper walletConnectConfigs={AppSettings.WalletConnectConfig}>
+                {children}
+            </EVMProviderWrapper>
+        );
+    },
+    walletConnectionProvider: useEVMConnection,
+    addressUtilsProvider: [new EVMAddressUtilsProvider()],
+    gasProvider: [new EVMGasProvider()],
+    balanceProvider: [new EVMBalanceProvider(), new HyperliquidBalanceProvider()],
+};

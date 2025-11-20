@@ -1,5 +1,5 @@
 {
-  "name": "nextjs-dynamic",
+  "name": "nextjs-dynamic-example",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -10,18 +10,19 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@bigmi/client": "^0.3.1",
-    "@bigmi/core": "^0.3.1",
-    "@bigmi/react": "^0.3.1",
+    "@bigmi/client": "^0.6.1",
+    "@bigmi/core": "^0.6.1",
+    "@bigmi/react": "^0.6.1",
     "@dynamic-labs/ethereum": "^4.14.0",
     "@dynamic-labs/sdk-react-core": "^4.14.0",
     "@dynamic-labs/starknet": "^4.41.1",
     "@dynamic-labs/wagmi-connector": "^4.14.0",
-    "@layerswap/wallet-evm": "1.0.0-alpha1.4",
-    "@layerswap/wallet-imtbl-passport": "1.0.0-alpha1.3",
-    "@layerswap/wallet-imtbl-x": "1.0.0-alpha1.3",
-    "@layerswap/widget": "1.0.0-alpha1.3",
-    "@tanstack/react-query": "^5.74.7",
+    "@layerswap/wallet-bitcoin": "^1.0.1",
+    "@layerswap/wallet-evm": "^1.0.2",
+    "@layerswap/wallet-starknet": "^1.0.2",
+    "@layerswap/wallet-svm": "^1.0.0",
+    "@layerswap/widget": "^1.0.6",
+    "@tanstack/react-query": "^5.90.5",
     "next": "^14.0.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -44,5 +45,6 @@
   },
   "engines": {
     "node": ">=20.9.0"
-  }
+  },
+  "packageManager": "yarn@1.22.22"
 }

@@ -50,3 +50,15 @@ export function createFuelProvider(config: FuelProviderConfig = {}): WalletProvi
         balanceProvider: finalBalanceProviders,
     };
 }
+
+/**
+ * @deprecated Use createFuelProvider() instead. This export will be removed in a future version.
+ */
+export const FuelProvider: WalletProvider = {
+    id: "fuel",
+    wrapper: FuelProviderWrapper,
+    walletConnectionProvider: useFuelConnection,
+    addressUtilsProvider: [new FuelAddressUtilsProvider()],
+    gasProvider: [new FuelGasProvider()],
+    balanceProvider: [new FuelBalanceProvider()],
+};
