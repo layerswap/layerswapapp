@@ -1,5 +1,5 @@
 {
-  "count": 584,
+  "count": 585,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -38042,6 +38042,67 @@
         "2"
       ]
     },
+    "dab33dac227aad5740856cb0a2d84dd27fcf311ca0b3fd7612fec041fbbb4d43": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.sweatwallet",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "https://apps.apple.com/us/app/sweat-wallet-walk-into-crypto/id1619316571",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "eip155:1",
+        "eip155:42161",
+        "eip155:56",
+        "eip155:8453",
+        "near:mainnet"
+      ],
+      "description": "Sweat Wallet is your gateway to multichain finance and rewards, trusted by over 20 million users worldwide. Earn crypto through your movement, grow your balance with high-yield Grow Jars, and seamlessly manage crypto tokens across chains",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "https://swe.at",
+      "id": "dab33dac227aad5740856cb0a2d84dd27fcf311ca0b3fd7612fec041fbbb4d43",
+      "image_id": "df295afa-253d-4db9-fe94-4fd70c0b3500",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/df295afa-253d-4db9-fe94-4fd70c0b3500?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/df295afa-253d-4db9-fe94-4fd70c0b3500?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/df295afa-253d-4db9-fe94-4fd70c0b3500?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "sweat://",
+        "universal": "https://wallet.sweateconomy.com"
+      },
+      "name": "Sweat Wallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "sweat-wallet",
+      "updatedAt": "2025-11-19T05:48:02.130665+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "dacf9f750e579e7aa93a752117fb3870a5bfc2e967441b477cef5e6f1458e33d": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.tokoin.wallet",
@@ -44931,5 +44992,5 @@
       ]
     }
   },
-  "total": 584
+  "total": 585
 }
