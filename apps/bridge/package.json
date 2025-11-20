@@ -19,6 +19,7 @@
     "@bigmi/react": "^0.6.1",
     "@layerswap/wallets": "workspace:^",
     "@layerswap/widget": "workspace:^",
+    "@posthog/react": "1.4.0",
     "@radix-ui/react-context-menu": "^1.0.0",
     "@tanstack/react-query": "catalog:",
     "@uidotdev/usehooks": "^2.4.1",
