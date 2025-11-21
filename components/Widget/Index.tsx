@@ -38,9 +38,12 @@ const Widget = ({ children, hideMenu, contextualMenu }: Props) => {
    }, [])
 
    const handleBack = router.pathname === "/" ? null : goBack
+   const isTransparentTheme = theme?.cardBackgroundStyle?.backgroundColor === 'transparent'
 
    return <div className="relative p-px">
-      <div className="invisible sm:visible absolute inset-0 rounded-[25px] bg-gradient-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
+      {!isTransparentTheme && (
+         <div className="invisible sm:visible absolute inset-0 rounded-[25px] bg-gradient-to-t from-secondary-800 to-secondary-300 pointer-events-none" />
+      )}
       <div
          style={theme?.cardBackgroundStyle}
          id="widget"
