@@ -9,9 +9,10 @@ type SearchComponentProps = {
     isOpen?: boolean
     className?: string;
     placeholder?: string;
+    onArrowDown?: () => void;
 }
 
-export const SearchComponent = ({ searchQuery, setSearchQuery, isOpen, className, placeholder }: SearchComponentProps) => {
+export const SearchComponent = ({ searchQuery, setSearchQuery, isOpen, className, placeholder, onArrowDown }: SearchComponentProps) => {
     const { isDesktop } = useWindowDimensions();
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -21,6 +22,21 @@ export const SearchComponent = ({ searchQuery, setSearchQuery, isOpen, className
         }
     }, [isOpen]);
 
+    useEffect(() => {
+        const handleFocusSearch = () => {
+            inputRef.current?.focus();
+        };
+        const handleBlurSearch = () => {
+            inputRef.current?.blur();
+        };
+        window.addEventListener('focusSearch', handleFocusSearch);
+        window.addEventListener('blurSearch', handleBlurSearch);
+        return () => {
+            window.removeEventListener('focusSearch', handleFocusSearch);
+            window.removeEventListener('blurSearch', handleBlurSearch);
+        };
+    }, []);
+
     return <div className={`flex items-center bg-secondary-500 focus-within:bg-secondary-300 rounded-lg px-2 mb-2 h-10 ${className}`}>
         <div className="w-6 h-6 flex items-center justify-center mr-1">
             <SearchIcon className="text-primary-text-tertiary" />
@@ -29,6 +45,12 @@ export const SearchComponent = ({ searchQuery, setSearchQuery, isOpen, className
             ref={inputRef}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+                if (e.key === 'ArrowDown' && onArrowDown) {
+                    e.preventDefault();
+                    onArrowDown();
+                }
+            }}
             autoFocus={isDesktop}
             placeholder={placeholder ?? "Search"}
             autoComplete="off"

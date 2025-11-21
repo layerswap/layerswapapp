@@ -65,7 +65,7 @@ const RoutePicker: FC<{ direction: SwapDirection, isExchange?: boolean, classNam
     return (
         <div className={clsx("flex flex-col self-end relative items-center", className)}>
             <Selector>
-                <SelectorTrigger disabled={false} className={"group-[.exchange-picker]:bg-secondary-500 py-[6px] px-2 group-[.exchange-picker]:!py-2 group-[.exchange-picker]:!px-3 active:animate-press-down group-[.exchange-picker]:active:animate-none"}>
+                <SelectorTrigger disabled={false} className={"group-[.exchange-picker]:bg-secondary-500 py-1.5 px-2 group-[.exchange-picker]:!py-2 group-[.exchange-picker]:!px-3 active:animate-press-down group-[.exchange-picker]:active:animate-none"}>
                     <SelectedRouteDisplay route={selectedRoute} token={selectedToken} placeholder="Select token" />
                 </SelectorTrigger>
                 <SelectorContent isLoading={isLoading} searchHint="Search" header={<PickerWalletConnect direction={direction} />}>

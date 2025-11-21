@@ -1,13 +1,13 @@
-import { RefObject, useEffect, useMemo, useRef, useState, } from "react";
+import { RefObject, useMemo, useRef, useState, forwardRef, useEffect } from "react";
 import { AccordionContent, AccordionItem, AccordionTrigger } from "@/components/shadcn/accordion";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { NetworkElement, GroupedTokenElement, } from "@/Models/Route";
 import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { CollapsableHeader } from "./CollapsableHeader";
 import { StickyHeader } from "./StickyHeader";
 import { CurrencySelectItemDisplay } from "../Routes";
-import { useBalanceStore } from "@/stores/balanceStore";
+import clsx from "clsx";
 
 type GenericAccordionRowProps = {
   item: NetworkElement | GroupedTokenElement;
@@ -19,6 +19,10 @@ type GenericAccordionRowProps = {
   toggleContent: (itemName: string) => void;
   openValues?: string[];
   scrollContainerRef: RefObject<HTMLDivElement>;
+  focusedIndex: string | null;
+  navigableIndex: number;
+  isFocused: boolean;
+  onHover: (index: string) => void;
 };
 
 type ChildWrapper = {
@@ -26,7 +30,7 @@ type ChildWrapper = {
   route: NetworkRoute;
 };
 
-export const CollapsibleRow = ({
+export const CollapsibleRow = forwardRef<HTMLDivElement, GenericAccordionRowProps & { index: number }>(({
   item,
   index,
   toggleContent,
@@ -36,8 +40,12 @@ export const CollapsibleRow = ({
   selectedToken,
   searchQuery,
   openValues,
-  scrollContainerRef
-}: GenericAccordionRowProps & { index: number }) => {
+  scrollContainerRef,
+  focusedIndex,
+  navigableIndex,
+  isFocused,
+  onHover
+}, ref) => {
   const groupName = item.type === "grouped_token" ? item.symbol : item.route.name;
   const headerId = `${groupName}-header`;
 
@@ -60,7 +68,21 @@ export const CollapsibleRow = ({
   const [isSticky, setSticky] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const childRefs = useRef<(HTMLDivElement | null)[]>([]);
   const isOpen = openValues?.some((ov) => ov === groupName);
+  const focusedParts = focusedIndex?.split('.') || [];
+  const focusedParent = focusedParts[0] ? parseInt(focusedParts[0]) : -1;
+  const focusedChild = focusedParts[1] !== undefined ? parseInt(focusedParts[1]) : undefined;
+  const isChildFocused = focusedIndex !== null && focusedParent === navigableIndex && focusedChild !== undefined;
+
+  useEffect(() => {
+    if (isChildFocused && focusedChild !== undefined) {
+      const childElement = childRefs.current[focusedChild];
+      if (childElement) {
+        childElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+  }, [isChildFocused, focusedChild]);
 
   const stickyToggle = () => {
     toggleContent(groupName);
@@ -71,11 +93,25 @@ export const CollapsibleRow = ({
     <motion.div {...(!searchQuery && { layout: "position" })} key={searchQuery ? "search" : "default"}>
       <AccordionItem value={groupName}>
         <div
-          ref={headerRef}
+          ref={(el) => {
+            if (headerRef) {
+              (headerRef as any).current = el;
+            }
+            if (ref && typeof ref === 'function') {
+              ref(el);
+            } else if (ref) {
+              (ref as any).current = el;
+            }
+          }}
           id={headerId}
+          data-nav-index={navigableIndex >= 0 ? navigableIndex.toString() : undefined}
           onClick={() => toggleContent(groupName)}
-          className={`cursor-pointer bg-secondary-700 rounded-lg hover:bg-secondary-600 relative ${isSticky ? "opacity-0" : ""
-            }`}
+          onMouseEnter={() => navigableIndex >= 0 && onHover(navigableIndex.toString())}
+          className={clsx(
+            "cursor-pointer rounded-lg relative group/accordion",
+            isSticky && "opacity-0",
+            isFocused && "is-focused"
+          )}
         >
           <AccordionTrigger>
             <CollapsableHeader
@@ -106,14 +142,22 @@ export const CollapsibleRow = ({
         >
           <div className="has-[.token-item]:mt-1 bg-secondary-500 rounded-xl overflow-hidden">
             <div className="overflow-y-auto styled-scroll p-2">
-              {childrenList?.map(({ token, route }, index) => {
+              {childrenList?.map(({ token, route }, childIndex) => {
                 const isSelected = selectedRoute === route.name && selectedToken === token.symbol;
+                const isThisChildFocused = isChildFocused && focusedChild === childIndex;
 
                 return (
                   <div
-                    key={`${groupName}-${index}`}
-                    className={`token-item pl-2 pr-3 cursor-pointer hover:bg-secondary-400 rounded-xl outline-none disabled:cursor-not-allowed`}
+                    key={`${groupName}-${childIndex}`}
+                    ref={(el) => { childRefs.current[childIndex] = el; }}
+                    data-nav-index={`${navigableIndex}.${childIndex}`}
+                    className={clsx(
+                      "token-item pl-2 pr-3 cursor-pointer rounded-xl outline-none disabled:cursor-not-allowed",
+                      !isThisChildFocused && "hover:bg-secondary-400",
+                      isThisChildFocused && "bg-secondary-400"
+                    )}
                     onClick={() => onSelect(route, token)}
+                    onMouseEnter={() => onHover(`${navigableIndex}.${childIndex}`)}
                   >
                     <CurrencySelectItemDisplay
                       item={token}
@@ -130,4 +174,4 @@ export const CollapsibleRow = ({
       </AccordionItem>
     </motion.div>
   );
-};
+})

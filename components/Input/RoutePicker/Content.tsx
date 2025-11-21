@@ -1,15 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { RowElement } from "@/Models/Route";
 import { SwapDirection } from "@/components/DTOs/SwapFormValues";
 import { useVirtualizer } from "@/lib/virtual";
 import { Accordion } from "@/components/shadcn/accordion";
 import Row from "./Rows";
-import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
+import { LayoutGroup, motion } from "framer-motion";
 import { NetworkRoute, NetworkRouteToken } from "@/Models/Network";
 import { useSelectorState } from "@/components/Select/Selector/Index";
 import useWallet from "@/hooks/useWallet";
 import ConnectWalletButton from "@/components/Common/ConnectWalletButton";
 import { SearchComponent } from "../Search";
+import { useRoutePickerNavigation } from "@/helpers/navigation";
 
 type ContentProps = {
     onSelect: (route: NetworkRoute, token: NetworkRouteToken) => Promise<void> | void;
@@ -32,6 +33,30 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
             prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
         )
     }
+
+    const navigableItems = useMemo(() => {
+        return rowElements.reduce<Array<{ rowIndex: number; childCount: number }>>((acc, item, index) => {
+            if (item.type === 'group_title' || item.type === 'sceleton_token') return acc;
+
+            let childCount = 0;
+            if (item.type === 'network' || item.type === 'grouped_token') {
+                const groupName = item.type === "grouped_token" ? item.symbol : item.route.name;
+                const isOpen = openValues.includes(groupName);
+                if (isOpen) {
+                    childCount = item.type === 'network' ? item.route.tokens.length : item.items.length;
+                }
+            }
+            acc.push({ rowIndex: index, childCount });
+            return acc;
+        }, []);
+    }, [rowElements, openValues]);
+
+    const { focusedIndex, handleHover } = useRoutePickerNavigation(
+        navigableItems,
+        searchQuery,
+        shouldFocus
+    );
+
     const virtualizer = useVirtualizer({
         count: rowElements.length,
         estimateSize: (index) => {
@@ -62,7 +87,12 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
         return () => setSearchQuery('')
     }, [])
     return <div className="overflow-y-auto flex flex-col h-full z-40 openpicker" >
-        <SearchComponent searchQuery={searchQuery} setSearchQuery={setSearchQuery} isOpen={shouldFocus} />
+        <SearchComponent
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            isOpen={shouldFocus}
+            onArrowDown={() => { window.dispatchEvent(new Event('blurSearch')); }}
+        />
         <LayoutGroup>
             <motion.div layoutScroll className="select-text in-has-[.hide-main-scrollbar]:overflow-y-hidden overflow-y-auto overflow-x-hidden styled-scroll pr-3 h-full" ref={parentRef}>
                 {
@@ -94,6 +124,7 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                                     {items.map((virtualRow) => {
                                         const data = rowElements?.[virtualRow.index]
                                         const key = ((data as any)?.route as any)?.name || virtualRow.key;
+                                        const navigableIndex = navigableItems.findIndex(ni => ni.rowIndex === virtualRow.index);
                                         return <div
                                             className="py-1 box-border w-full overflow-hidden select-none"
                                             key={key}
@@ -110,6 +141,9 @@ export const Content = ({ searchQuery, setSearchQuery, rowElements, selectedToke
                                                 selectedToken={selectedToken}
                                                 searchQuery={searchQuery}
                                                 toggleContent={toggleAccordionItem}
+                                                focusedIndex={focusedIndex}
+                                                navigableIndex={navigableIndex}
+                                                onHover={handleHover}
                                             />
                                         </div>
                                     })}
