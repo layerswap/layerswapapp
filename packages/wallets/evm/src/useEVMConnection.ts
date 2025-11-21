@@ -50,7 +50,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
     const pendingId = useRef<string>()
 
     const { setSelectedConnector } = useConnectModal()
-    const { walletConnectConnectors, addWalletConnectWallet } = useEvmConnectors()
+    const { walletConnectConnectors, addToAdditionalWallets } = useEvmConnectors()
 
     const disconnectWallet = useCallback(async (connectorName: string) => {
 
@@ -104,7 +104,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
             if (!connector) {
                 const walletConnectConnector = walletConnectConnectors.find(w => w.id === internalConnector.id)
                 if (!walletConnectConnector) throw new Error("Connector not found")
-                await addWalletConnectWallet(walletConnectConnector)
+                await addToAdditionalWallets(walletConnectConnector)
 
                 connector = await new Promise<InternalConnector & LSConnector>((res, rej) => {
                     pendingId.current = walletConnectConnector.id
