@@ -3,8 +3,10 @@ import ColorSchema from "./ColorSchema";
 import AppSettings from "../lib/AppSettings";
 import { FC } from "react";
 import WalletIcon from "./Icons/WalletIcon";
-
+import { PoweredBy } from "./Widget/Footer";
+import clsx from "clsx";
 export const WidgetLoading: FC = () => {
+    const isFooterSticky = (AppSettings.ThemeData?.enablePortal && AppSettings.ThemeData?.enablePortal == true) ?? false
     return (
         <>
             <ColorSchema themeData={AppSettings.ThemeData} />
@@ -27,15 +29,21 @@ export const WidgetLoading: FC = () => {
                                         <div className="flex flex-nowrap grow w-full">
                                             <div className="w-fit flex flex-col justify-between text-secondary-500 h-full">
                                                 <div className="flex flex-col">
-                                                    <div className="w-full grid grid-cols-5 px-6 pb-2 h-[56px]">
-                                                        <div className="col-start-5 justify-self-end self-center flex items-center gap-x-1 -mr-2">
+                                                    <div className="w-full grid grid-cols-5 px-4 pb-2 mt-2">
+                                                        {
+                                                            !AppSettings.ThemeData?.header?.hideTabs && <div className="col-start-1 justify-self-start self-center flex items-center w-[76px] h-[40px] bg-secondary-500 rounded-lg p-1.5">
+                                                                <div className="w-7 h-7 bg-secondary-300 rounded-md mr-2" />
+                                                                <div className="w-7 h-7 bg-secondary-300 rounded-md" />
+                                                            </div>
+                                                        }
+                                                        <div className="col-start-5 justify-self-end self-center flex items-center gap-x-2 sm:gap-x-1 sm:mr-2">
                                                             {
-                                                                !AppSettings.ThemeData?.header?.hideWallets && <div className="space-y-1 py-1.5">
+                                                                !AppSettings.ThemeData?.header?.hideWallets && <div className="p-1.5 max-sm:p-2 ">
                                                                     <WalletIcon className="w-6 h-6" strokeWidth="2" />
                                                                 </div>
                                                             }
                                                             {
-                                                                !AppSettings.ThemeData?.header?.hideMenu && <div className="mx-2 space-y-1 py-1.5">
+                                                                !AppSettings.ThemeData?.header?.hideMenu && <div className="p-1.5 max-sm:p-2 sm:-mr-2 -mr-0">
                                                                     <MenuIcon className="w-6 h-6" strokeWidth="2" />
                                                                 </div>
                                                             }
@@ -76,7 +84,17 @@ export const WidgetLoading: FC = () => {
                                                         <div className="">
                                                             <div className="w-full h-12 bg-primary animate-pulse rounded-xl py-3 px-2 md:px-3" />
                                                         </div>
-                                                        <div className="w-[152px] h-[14px] bg-secondary-400 rounded-xl mx-auto" />
+                                                        {
+                                                            !AppSettings.ThemeData?.hidePoweredBy &&
+                                                            <div className={clsx("flex justify-center text-secondary-text", {
+                                                                'mt-3 sm:!mb-0': isFooterSticky,
+                                                                'mb-3 sm:!mb-0': !isFooterSticky,
+                                                            })}>
+                                                                <a target="_blank" href='https://layerswap.io/' className="flex items-center gap-1.5 w-fit">
+                                                                    <PoweredBy className="fill-secondary-text text-secondary-text" />
+                                                                </a>
+                                                            </div>
+                                                        }
                                                     </div>
                                                 </div>
                                             </div>
