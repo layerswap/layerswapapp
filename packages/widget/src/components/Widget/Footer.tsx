@@ -93,7 +93,7 @@ const Footer = ({ children, hidden, sticky, showPoweredBy }: FooterProps) => {
     )
 }
 
-const PoweredBy = (props: SVGProps<SVGSVGElement>) => {
+export const PoweredBy = (props: SVGProps<SVGSVGElement>) => {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" width="152" height="14" viewBox="0 0 152 14" fill="currentColor" {...props}>
             <path d="M92.9333 11.2374C92.7677 11.2374 92.6334 11.0985 92.6334 10.9271V3.21025C92.6334 3.03884 92.7677 2.8999 92.9333 2.8999H94.105C94.2707 2.8999 94.4048 3.03884 94.4048 3.21025V9.68817H97.8308C97.9962 9.68817 98.1306 9.8271 98.1306 9.99851V10.9271C98.1306 11.0985 97.9962 11.2374 97.8308 11.2374H92.9333Z" fill="currentColor" />
