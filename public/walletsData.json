@@ -11724,7 +11724,7 @@
       "description": "Simple and easy wallet for blockchain game beginners on Oasys",
       "desktop": {
         "native": "",
-        "universal": null
+        "universal": ""
       },
       "homepage": "https://www.oasys-wallet.com/",
       "id": "37aacf1e6bf6793c892e42c3f7623a61d9ffcb4337010804cc3193c4d596cf5c",
@@ -38087,7 +38087,7 @@
         "shortName": null
       },
       "mobile": {
-        "native": "sweat://",
+        "native": "sweat:///",
         "universal": "https://wallet.sweateconomy.com"
       },
       "name": "Sweat Wallet",
