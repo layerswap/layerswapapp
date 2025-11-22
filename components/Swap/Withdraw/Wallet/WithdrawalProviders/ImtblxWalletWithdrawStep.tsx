@@ -31,9 +31,9 @@ export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
             const res = await imtblClient.Transfer(amount.toString(), source_token, depositAddress)
             const transactionRes = res?.result?.[0]
             if (!transactionRes)
-                toast('Transfer failed or terminated')
+                throw new Error('Transfer failed or terminated')
             else if (transactionRes.status == "error") {
-                toast(transactionRes.message)
+                throw new Error(transactionRes.message)
             }
             else if (transactionRes && swapId) {
                 setTransferDone(true)
@@ -56,7 +56,7 @@ export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData,
         <>
             <div className="w-full space-y-5 flex flex-col justify-between h-full text-secondary-text">
                 <div className='space-y-4'>
-                    <WarningMessage messageType='informing'>
+                    <WarningMessage className='bg-secondary-400!' messageType='informing'>
                         <span className='flex-none'>
                             Learn how to send from
                         </span>
