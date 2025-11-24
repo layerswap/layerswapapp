@@ -37,7 +37,7 @@ const Comp = ({ children, hidden, sticky = true }: FooterProps) => {
 
     return (
         sticky ?
-            <div className="max-sm:mt-4">
+            <div className="max-sm:mt-5">
                 <motion.div
                     ref={footerRef}
                     transition={{
