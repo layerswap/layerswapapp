@@ -105,17 +105,56 @@ export const GasFee = ({ values, quote }: { values: SwapValues, quote: SwapQuote
 const Fees = ({ quote, values }: { quote: SwapQuote | undefined, values: SwapValues }) => {
 
     const lsFeeAmountInUsd = quote?.total_fee_in_usd
-    const displayLsFeeInUsd = lsFeeAmountInUsd != null ? (lsFeeAmountInUsd < 0.01 ? '<$0.01' : `$${lsFeeAmountInUsd.toFixed(2)}`) : null
+    const feeDiscount = quote?.fee_discount
+    const hasDiscount = feeDiscount != null && feeDiscount > 0
+    
+    // total_fee is the original fee, discounted fee is total_fee - fee_discount
+    const originalFee = quote?.total_fee
+    const discountedFee = hasDiscount && originalFee !== undefined
+        ? originalFee - feeDiscount
+        : originalFee
+    
+    // Calculate fees in USD
+    const sourceTokenPriceInUsd = resolveTokenUsdPrice(values.fromAsset, quote)
+    const originalFeeInUsd = originalFee !== undefined && sourceTokenPriceInUsd != null
+        ? originalFee * sourceTokenPriceInUsd
+        : null
+    
+    // Calculate discounted fee in USD
+    const discountedFeeInUsd = discountedFee !== undefined && sourceTokenPriceInUsd != null
+        ? discountedFee * sourceTokenPriceInUsd
+        : null
+    
+    const displayOriginalFeeInUsd = originalFeeInUsd != null 
+        ? (originalFeeInUsd < 0.01 ? '<$0.01' : `$${originalFeeInUsd.toFixed(2)}`)
+        : null
+    
+    const isFree = discountedFee !== undefined && discountedFee === 0
+    const displayLsFeeInUsd = isFree 
+        ? "Free"
+        : (discountedFeeInUsd != null 
+            ? (discountedFeeInUsd < 0.01 ? '<$0.01' : `$${discountedFeeInUsd.toFixed(2)}`)
+            : null)
+    
     const currencyName = values.fromAsset?.symbol || ''
-    const displayLsFee = quote?.total_fee !== undefined ? truncateDecimals(quote.total_fee, values.fromAsset?.decimals) : undefined
+    const displayLsFee = discountedFee !== undefined 
+        ? truncateDecimals(discountedFee, values.fromAsset?.decimals) 
+        : undefined
 
     return <RowWrapper title="Fees">
         <Tooltip>
             <TooltipTrigger asChild>
                 {displayLsFeeInUsd !== undefined && (
-                    <span className="text-sm ml-1 font-small">
-                        {displayLsFeeInUsd}
-                    </span>
+                    <div className="flex items-center gap-2 text-sm ml-1 font-small">
+                        {hasDiscount && displayOriginalFeeInUsd && (
+                            <span className="line-through text-primary-text-tertiary">
+                                {displayOriginalFeeInUsd}
+                            </span>
+                        )}
+                        <span className={hasDiscount || isFree ? "text-primary-text" : ""}>
+                            {displayLsFeeInUsd}
+                        </span>
+                    </div>
                 )}
             </TooltipTrigger>
             <TooltipContent className="!bg-secondary-300 !border-ssecondary-300 !text-primart-text">
