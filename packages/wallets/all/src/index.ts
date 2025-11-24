@@ -2,7 +2,7 @@
 import { createBitcoinProvider } from "@layerswap/wallet-bitcoin";
 import type { BitcoinProviderConfig } from "@layerswap/wallet-bitcoin";
 
-import { createEVMProvider } from "@layerswap/wallet-evm";
+import { createEVMProvider, useChainConfigs } from "@layerswap/wallet-evm";
 import type { EVMProviderConfig, WalletConnectConfig } from "@layerswap/wallet-evm";
 
 import { createFuelProvider } from "@layerswap/wallet-fuel";
@@ -36,7 +36,7 @@ import { zkSyncModule } from "@layerswap/wallet-module-zksync";
 export { createBitcoinProvider };
 export type { BitcoinProviderConfig };
 
-export { createEVMProvider };
+export { createEVMProvider, useChainConfigs };
 export type { EVMProviderConfig, WalletConnectConfig };
 
 export { createFuelProvider };

@@ -96,6 +96,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
 }
 
 export { default as useEVMConnection } from "./useEVMConnection";
+export { useChainConfigs } from "./evmUtils/chainConfigs";
 
 /**
  * @deprecated Use createEVMProvider() instead. This export will be removed in a future version.
