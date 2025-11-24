@@ -43,7 +43,7 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote, minAllowedAmount 
         setFieldValue('refuel', value)
     }
 
-    const showRefuel = needRefuel && (quote && (Number(amount) === Number(minAllowedAmount) || refuel) || (refuel && formValidation.code === FORM_VALIDATION_ERROR_CODES.MIN_AMOUNT_ERROR))
+    const showRefuel = needRefuel && formValidation.code !== FORM_VALIDATION_ERROR_CODES.ROUTE_NOT_FOUND
 
     return (
         showRefuel &&

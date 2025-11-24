@@ -12,6 +12,7 @@ interface Params {
 }
 
 export const FORM_VALIDATION_ERROR_CODES = {
+    ROUTE_NOT_FOUND: "ROUTE_NOT_FOUND",
     MIN_AMOUNT_ERROR: "MIN_AMOUNT_ERROR",
     MAX_AMOUNT_ERROR: "MAX_AMOUNT_ERROR",
 }
@@ -69,10 +70,10 @@ export function resolveFormValidation({ values, maxAllowedAmount, minAllowedAmou
             return { message: 'Manual Transfer is not supported' };
         }
     }
-    
+
     const quoteErrorCode = quoteError?.response?.data?.error?.code || quoteError?.code;
     if (quoteError && quoteErrorCode !== "QUOTE_REQUIRES_NO_DEPOSIT_ADDRESS") {
-        return { message: 'Route not found' };
+        return { message: 'Route not found', code: FORM_VALIDATION_ERROR_CODES.ROUTE_NOT_FOUND };
     }
 
     return { message: '' };
