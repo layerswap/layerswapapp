@@ -3,27 +3,10 @@ import { useRouter } from "next/router"
 import { ComponentProps, ReactNode } from "react"
 import { updateFormBulk } from "./utils/updateForm"
 import { removeSwapPath, setSwapPath } from "./utils/updateSwapPath"
-import {
-    createEVMProvider,
-    createStarknetProvider,
-    createFuelProvider,
-    createParadexProvider,
-    createBitcoinProvider,
-    createImmutableXProvider,
-    createTONProvider,
-    createSVMProvider,
-    createTronProvider,
-    createImmutablePassportProvider
-} from "@layerswap/wallets";
+import { getDefaultProviders } from "@layerswap/wallets";
 import { ParsedUrlQuery } from "querystring"
 
 type LayerswapProviderComponentProps = ComponentProps<typeof LayerswapProvider>;
-
-type WidgetWrapperRenderProps = {
-    config: LayerswapProviderComponentProps['config'];
-    walletProviders?: LayerswapProviderComponentProps['walletProviders'];
-    callbacks?: LayerswapProviderComponentProps['callbacks'];
-}
 
 type WidgetWrapperProps<T extends Record<string, unknown> = Record<string, never>> = T & {
     children: ReactNode;
@@ -65,23 +48,14 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
         icons: ['https://www.layerswap.io/app/symbol.png']
     }
 
-    const defaultWalletProviders = [
-        createEVMProvider({ walletConnectConfigs }),
-        createStarknetProvider({ walletConnectConfigs }),
-        createFuelProvider(),
-        createParadexProvider(),
-        createBitcoinProvider(),
-        createImmutableXProvider(),
-        createTONProvider({
-            tonConfigs: {
-                manifestUrl: 'https://layerswap.io/app/tonconnect-manifest.json',
-                tonApiKey: process.env.NEXT_PUBLIC_TON_API_KEY || ''
-            }
-        }),
-        createSVMProvider({ walletConnectConfigs }),
-        createTronProvider(),
-        createImmutablePassportProvider({ imtblPassportConfig })
-    ]
+    const defaultWalletProviders = getDefaultProviders({
+        walletConnect: walletConnectConfigs,
+        immutablePassport: imtblPassportConfig,
+        ton: {
+            tonApiKey: process.env.NEXT_PUBLIC_TON_API_KEY || '',
+            manifestUrl: 'https://layerswap.io/app/tonconnect-manifest.json'
+        }
+    })
 
     const resolvedWalletProviders = walletProviders ?? defaultWalletProviders
 

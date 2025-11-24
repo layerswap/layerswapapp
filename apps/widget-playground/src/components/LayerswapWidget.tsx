@@ -4,7 +4,7 @@ import { LayerswapProvider, Swap, WidgetLoading } from '@layerswap/widget';
 import { useWidgetContext } from '@/context/ConfigContext';
 import { useSettingsState } from '@/context/settings';
 // import dynamic from 'next/dynamic';
-import { createEVMProvider, createStarknetProvider, createFuelProvider, createBitcoinProvider, createTONProvider, createSVMProvider, createTronProvider, zkSyncModule, LoopringModule } from '@layerswap/wallets';
+import { getDefaultProviders } from '@layerswap/wallets';
 // const LayerswapWidgetCustomEvm = dynamic(
 //     () => import('./LayerswapWidgetCustomEvm'),
 //     {
@@ -25,16 +25,13 @@ const LayerswapWidget: FC = () => {
     const { widgetRenderKey, showLoading, config, customEvmSwitch, initialValues } = useWidgetContext();
     const settings = useSettingsState();
 
-
-    const walletProviders = useMemo(() => [
-        createEVMProvider({ walletConnectConfigs, walletProviderModules: [zkSyncModule, LoopringModule] }),
-        createStarknetProvider({ walletConnectConfigs }),
-        createFuelProvider(),
-        createBitcoinProvider(),
-        // createTONProvider(),
-        createSVMProvider({ walletConnectConfigs }),
-        createTronProvider()
-    ], []);
+    const defaultWalletProviders = useMemo(() => getDefaultProviders({
+        walletConnect: walletConnectConfigs,
+        ton: {
+            tonApiKey: process.env.NEXT_PUBLIC_TON_API_KEY || '',
+            manifestUrl: 'https://layerswap.io/app/tonconnect-manifest.json'
+        }
+    }), [])
 
     // if (customEvmSwitch) {
     //     return <LayerswapWidgetCustomEvm />;
@@ -46,7 +43,7 @@ const LayerswapWidget: FC = () => {
             className="flex items-center justify-center min-h-screen w-full place-self-center">
             <div className='w-full h-full rounded-xl'>
                 <LayerswapProvider
-                    walletProviders={walletProviders}
+                    walletProviders={defaultWalletProviders}
                     config={{
                         apiKey: process.env.NEXT_PUBLIC_LAYERSWAP_API_KEY as string,
                         version: process.env.NEXT_PUBLIC_API_VERSION as 'mainnet' | 'testnet',
