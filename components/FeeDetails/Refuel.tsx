@@ -29,7 +29,7 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote, minAllowedAmount 
     const needRefuel = toCurrency && toCurrency.refuel && to && to.token && isValidAddress(destination_address, to) && destinationNativeBalance && destinationNativeBalance?.amount == 0
     const previouslySelectedDestination = useRef(to)
 
-    const { formValidation } = useValidationContext()
+    const { routeValidation, formValidation } = useValidationContext()
 
     useEffect(() => {
         if (to && previouslySelectedDestination.current !== to && !!refuel) {
@@ -42,8 +42,9 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote, minAllowedAmount 
     const handleConfirmToggleChange = (value: boolean) => {
         setFieldValue('refuel', value)
     }
+    console.log( routeValidation, formValidation)
 
-    const showRefuel = needRefuel && (quote && (Number(amount) === Number(minAllowedAmount) || refuel) || (refuel && formValidation.code === FORM_VALIDATION_ERROR_CODES.MIN_AMOUNT_ERROR))
+    const showRefuel = needRefuel && formValidation.code !== FORM_VALIDATION_ERROR_CODES.ROUTE_NOT_FOUND
 
     return (
         showRefuel &&
