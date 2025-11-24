@@ -29,41 +29,14 @@ import { ExchangeReceiveAmount } from "@/components/Input/Amount/ExchangeReceive
 
 type Props = {
     partner?: Partner;
+    showBanner: boolean;
+    dismissBanner: () => void;
 };
 
-const ExchangeForm: FC<Props> = ({ partner }) => {
+const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
     const {
         values, isSubmitting
     } = useFormikContext<SwapFormValues>();
-
-    const [showBanner, setShowBanner] = useState(false);
-
-    useEffect(() => {
-        if (typeof window === "undefined") return;
-
-        const sessionCountKey = "exchange_banner_session_count";
-        const closedKey = "exchange_banner_closed";
-        const seenKey = "exchange_banner_seen";
-
-        // Skip if user closed it this session
-        if (sessionStorage.getItem(closedKey) === "1") return;
-
-        // Increment session count once per session
-        if (!sessionStorage.getItem(seenKey)) {
-            sessionStorage.setItem(seenKey, "1");
-            const next = (parseInt(localStorage.getItem(sessionCountKey) || "0") || 0) + 1;
-            localStorage.setItem(sessionCountKey, String(next));
-            if (next <= 3) setShowBanner(true);
-        } else {
-            const count = parseInt(localStorage.getItem(sessionCountKey) || "0") || 0;
-            if (count <= 3) setShowBanner(true);
-        }
-    }, []);
-
-    const dismissBanner = () => {
-        setShowBanner(false);
-        if (typeof window !== "undefined") sessionStorage.setItem("exchange_banner_closed", "1");
-    };
 
     const { fromAsset: fromCurrency, from, to: destination, destination_address, amount, toAsset: toCurrency } = values || {};
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
