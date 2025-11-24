@@ -502,3 +502,33 @@ padding: calc(var(--number-flow-mask-height, 0.25em) / 2) 0;
   pointer-events: auto;
   animation: releasePointerAfterDelay 300ms linear forwards;
 }
+
+/* Hide cursor everywhere during keyboard navigation */
+body.keyboard-navigating,
+body.keyboard-navigating *,
+body.keyboard-navigating *::before,
+body.keyboard-navigating *::after {
+  cursor: none !important;
+}
+
+/* Disable pointer events only in the picker during keyboard navigation */
+body.keyboard-navigating .openpicker * {
+  pointer-events: none !important;
+}
+
+/* Re-enable pointer events on clickable elements so Enter key still works */
+body.keyboard-navigating .openpicker [data-nav-index] {
+  pointer-events: auto !important;
+}
+
+/* Prevent hover background changes during keyboard navigation */
+/* Target elements that have both a base bg and hover:bg class */
+body.keyboard-navigating .openpicker [class*="hover:bg-"]:hover {
+  /* Don't change background on hover - keep original */
+  background-color: initial !important;
+}
+
+/* For elements with explicit background colors, maintain them during hover in keyboard nav */
+body.keyboard-navigating .openpicker .bg-secondary-500[class*="hover:bg-"]:hover {
+  background-color: rgb(var(--ls-colors-secondary-500)) !important;
+}

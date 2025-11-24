@@ -15,12 +15,15 @@ const parseIndex = (index: string): { parent: number; child?: number } => {
 
 export const useRoutePickerNavigation = (navigableItems: NavigableItem[], searchQuery: string, shouldFocus: boolean) => {
     const [focusedIndex, setFocusedIndex] = useState<string | null>(null);
+    const [isKeyboardNavigating, setIsKeyboardNavigating] = useState(false);
+
     // Reset focus when search query changes
     useEffect(() => {
         setFocusedIndex(null);
     }, [searchQuery]);
 
     const handleArrowDown = useCallback(() => {
+        setIsKeyboardNavigating(true);
         if (focusedIndex === null) {
             if (navigableItems.length > 0) {
                 setFocusedIndex("0");
@@ -54,6 +57,7 @@ export const useRoutePickerNavigation = (navigableItems: NavigableItem[], search
     }, [focusedIndex, navigableItems]);
 
     const handleArrowUp = useCallback(() => {
+        setIsKeyboardNavigating(true);
         if (focusedIndex === null)
             return;
         const { parent, child } = parseIndex(focusedIndex);
@@ -102,10 +106,32 @@ export const useRoutePickerNavigation = (navigableItems: NavigableItem[], search
     );
 
     const handleHover = useCallback((index: string) => {
+        if (isKeyboardNavigating) return;
         setFocusedIndex(index);
         // Blur search if it's focused
         window.dispatchEvent(new Event('blurSearch'));
-    }, []);
+    }, [isKeyboardNavigating]);
+
+    // Add/remove body class and detect mouse movement to re-enable hover
+    useEffect(() => {
+        if (isKeyboardNavigating) {
+            document.body.classList.add('keyboard-navigating');
+        } else {
+            document.body.classList.remove('keyboard-navigating');
+        }
+
+        const handleMouseMove = () => {
+            if (isKeyboardNavigating) {
+                setIsKeyboardNavigating(false);
+            }
+        };
+
+        window.addEventListener('mousemove', handleMouseMove);
+        return () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            document.body.classList.remove('keyboard-navigating');
+        };
+    }, [isKeyboardNavigating]);
 
     return {
         focusedIndex,
