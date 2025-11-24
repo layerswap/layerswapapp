@@ -106,7 +106,7 @@ const Comp: FC<VaulDrawerProps> = ({ children, show, setShow, header, descriptio
                         {show && (
                             <Drawer.Close asChild key={`backdrop-${modalId}`}>
                                 <motion.div
-                                    className='absolute inset-0 z-40 bg-black/50 block pointer-events-auto'
+                                    className='absolute inset-0 z-50 bg-black/50 block pointer-events-auto'
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}

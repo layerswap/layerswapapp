@@ -57,7 +57,7 @@ export default function Form() {
     const partner = appName && partnerData?.data?.client_id?.toLowerCase() === (appName as string)?.toLowerCase() ? partnerData?.data : undefined
 
     return <Tabs defaultValue={defaultTab}>
-        {!theme.header?.hideTabs ? <div className="hidden sm:block">
+        {!theme?.header?.hideTabs ? <div className="hidden sm:block">
             <NetworkExchangeTabs />
         </div> : null}
 

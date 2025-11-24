@@ -20,12 +20,12 @@ export default function Home({ settings, themeData, apiKey }: InferGetServerSide
     <SWRConfig value={{
       use: [updatePendingCount],
       fallback: {
-        [sourceRoutesDeafultKey]: { data: settings.sourceRoutes, error: null },
-        [destinationRoutesDefaultKey]: { data: settings.destinationRoutes, error: null },
-        [sourceExchangesDeafaultkey]: { data: settings.sourceExchanges, error: null },
+        [sourceRoutesDeafultKey]: { data: settings?.sourceRoutes, error: null },
+        [destinationRoutesDefaultKey]: { data: settings?.destinationRoutes, error: null },
+        [sourceExchangesDeafaultkey]: { data: settings?.sourceExchanges, error: null },
       }
     }}>
-      <Layout settings={settings} themeData={themeData}>
+      <Layout settings={settings || undefined} themeData={themeData}>
         <Swap />
       </Layout>
     </SWRConfig>

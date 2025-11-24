@@ -42,9 +42,9 @@ function HeaderWithMenu({ goBack, contextualMenu }: Props) {
             }
          </div>
          <div className="col-start-5 justify-self-end self-center flex items-center gap-x-2 sm:gap-x-1">
-            {!theme.header?.hideWallets && <WalletsHeader />}
-            {!theme.header?.hideTabs && contextualMenu}
-            {!theme.header?.hideMenu && <LayerswapMenu />}
+            {!theme?.header?.hideWallets && <WalletsHeader />}
+            {!theme?.header?.hideTabs && contextualMenu}
+            {!theme?.header?.hideMenu && <LayerswapMenu />}
          </div>
       </div>
    )

@@ -106,6 +106,12 @@
     @apply bg-secondary-900 sm:bg-gradient-to-b to-secondary-500 from-secondary-900;
   }
 
+  /* Transparent background for immutable theme (iframe embedding) */
+  html:has(#widget[style*="transparent"]),
+  body:has(#widget[style*="transparent"]) {
+    background: transparent !important;
+  }
+
   /* On iOS disabled inputs have default opacitiy */
   .ntdi {
     opacity: 1;
@@ -335,9 +341,15 @@ body {
   background-color: rgb(var(--ls-colors-secondary-700));
 }
 
+
 body::-webkit-scrollbar {
   --tw-bg-opacity: 1;
   background-color: rgb(var(--ls-colors-secondary-700));
+}
+
+/* Transparent scrollbar background for immutable theme */
+body:has(#widget[style*="transparent"])::-webkit-scrollbar {
+  background-color: transparent !important;
 }
 
 body::-webkit-scrollbar {

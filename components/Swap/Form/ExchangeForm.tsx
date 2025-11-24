@@ -79,10 +79,10 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
             )}
 
             <DepositMethodComponent />
-            <Form className="h-full grow flex flex-col flex-1 gap-3 justify-between w-full">
+            <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-3">
                 <Widget.Content>
-                    <div className="w-full flex flex-col flex-1 relative gap-1.5 leading-4 justify-between mt-2 sm:mt-0">
-                        <div className="flex flex-col w-full space-y-3 flex-1">
+                    <div className="w-full flex flex-col justify-between flex-1 relative">
+                        <div className="flex flex-col w-full gap-3">
                             <div className="space-y-2">
                                 <label htmlFor="From" className="block font-normal text-secondary-text text-base leading-5">
                                     Send from
@@ -98,7 +98,7 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
                                 <div className="relative group exchange-picker">
                                     <RoutePicker direction="to" isExchange={true} />
                                 </div>
-                                <div className="hover:bg-secondary-300 bg-secondary-500 rounded-2xl p-3">
+                                <div className="hover:bg-secondary-300 bg-secondary-500 rounded-2xl p-3 h-[52px]">
                                     <Address partner={partner} >{
                                         ({ addressItem }) => {
                                             const addressProviderIcon = (partner?.is_wallet && addressItem?.group === AddressGroup.FromQuery && partner?.logo) ? partner.logo : undefined
@@ -123,7 +123,6 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
                                     }</Address>
                                 </div>
                             </div>
-
                             <div className="bg-secondary-500 rounded-2xl p-3 group space-y-2" onClick={setShowQuickActions} ref={parentRef}>
                                 <div className="flex justify-between items-center">
                                     <label htmlFor="From" className="block font-normal text-secondary-text text-base ml-2 leading-5">
@@ -160,14 +159,14 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
                                     }
                                 </div>
                             </div>
+                        </div>
+                        <div>
                             {
                                 routeValidation.message
                                     ? <ValidationError />
                                     : null
                             }
-                            <div className="mt-auto">
-                                <QuoteDetails swapValues={values} quote={quote?.quote} isQuoteLoading={isQuoteLoading} reward={quote?.reward} variant="base" />
-                            </div>
+                            <QuoteDetails swapValues={values} quote={quote?.quote} isQuoteLoading={isQuoteLoading} reward={quote?.reward} variant="base" />
                         </div>
                     </div>
                 </Widget.Content>
