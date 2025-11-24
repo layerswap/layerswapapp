@@ -108,6 +108,7 @@ export const SVMWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, re
                     isSubmitting={!!loading}
                     onClick={handleTransfer}
                     error={!!error}
+                    clearError={() => setError(undefined)}
                     refuel={refuel}
                     swapData={swapBasicData}
                 />

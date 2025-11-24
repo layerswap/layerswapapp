@@ -46,6 +46,19 @@ export class BalanceResolver {
             if (!provider) throw new Error(`No balance provider found for network ${network.name}`)
             const balances = await provider.fetchBalance(address, network, { timeoutMs: options?.timeoutMs, retryCount: options?.retryCount })
 
+            const errorBalances = balances?.filter(b => b.error)
+            if (errorBalances?.length) {
+                posthog.capture('$exception', {
+                    name: "BalanceError",
+                    $layerswap_exception_type: "Balance Error",
+                    network: network.name,
+                    address: address,
+                    balances: errorBalances,
+                    where: 'BalanceProviderError',
+                    message: `Could not fetch balance for ${errorBalances.map(t=>t.token).join(", ")} in ${network.name}, message: ${errorBalances.map(b=>b.error).join(", ")}`,
+                });
+            }
+
             return { balances };
         }
         catch (e) {

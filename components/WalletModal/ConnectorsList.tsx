@@ -51,6 +51,10 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
             }
             setSelectedConnector(connector)
             if (connector.installUrl) return
+            if (!provider.ready) {
+                setConnectionError("Wallet provider is still initializing. Please wait a moment and try again.")
+                return
+            }
 
             const result = provider?.connectWallet && await provider.connectWallet({ connector })
 
@@ -193,7 +197,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                 </div>
                 <div
                     onScroll={handleScroll}
-                    className={clsx('overflow-y-scroll max-sm:h-[55svh] -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 overflow-x-hidden scrollbar-thumb:bg-transparent hover:styled-scroll', {
+                    className={clsx('overflow-y-scroll max-sm:h-[55svh] -mr-4 pr-2 scrollbar:!w-1.5 scrollbar:!h-1.5 overflow-x-hidden scrollbar-thumb:bg-transparent', {
                         'styled-scroll': isScrolling
                     })}
                 >
@@ -209,6 +213,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                                         onClick={() => connect(item, provider!)}
                                         connectingConnector={selectedConnector}
                                         isRecent={isRecent}
+                                        isProviderReady={provider?.ready}
                                     />
                                 )
                             })

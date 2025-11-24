@@ -23,7 +23,7 @@ function MaintananceContent(props) {
                         <p className="mb-4 text-secondary-text">
                             We&apos;re upgrading our systems and infrastructure to give you the best experience yet.
                         </p>
-                        <span className="block font-bold text-2xl xl:inline"><span>We&apos;ll be back at</span> <span>{new Date(1748448000000).toLocaleTimeString()}</span></span>
+                        <span className="block font-bold text-2xl xl:inline">We&apos;ll be back soon!</span>
                     </h1>
                     <SubmitButton onClick={() => window.open('https://twitter.com/layerswap', '_blank')} icon={twitterLogo} isDisabled={false} isSubmitting={false}>Follow for updates</SubmitButton>
                 </div>

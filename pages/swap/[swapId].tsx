@@ -11,7 +11,7 @@ const SwapDetails = ({ settings, themeData, apiKey }: InferGetServerSidePropsTyp
   LayerSwapApiClient.apiKey = apiKey
 
   return (<>
-    <Layout settings={settings} themeData={themeData}>
+    <Layout settings={settings || undefined} themeData={themeData}>
       <SwapDataProvider >
         <TimerProvider>
           <SwapWithdrawal />

@@ -130,7 +130,8 @@ export default function useSVM(): WalletProvider {
         name,
         id,
         providerIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo,
-        switchAccount
+        switchAccount,
+        ready: wallets.length > 0
     }
 
     return provider

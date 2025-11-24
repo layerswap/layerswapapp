@@ -7,6 +7,8 @@ import { isValidAddress } from "../../lib/address/validator";
 import { useQuoteData } from "@/hooks/useFee";
 import clsx from "clsx";
 import { useBalance } from "@/lib/balances/useBalance";
+import { useValidationContext } from "@/context/validationContext";
+import { FORM_VALIDATION_ERROR_CODES } from "@/hooks/useFormValidation";
 
 type RefuelProps = {
     onButtonClick: () => void
@@ -27,6 +29,8 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote, minAllowedAmount 
     const needRefuel = toCurrency && toCurrency.refuel && to && to.token && isValidAddress(destination_address, to) && destinationNativeBalance && destinationNativeBalance?.amount == 0
     const previouslySelectedDestination = useRef(to)
 
+    const { formValidation } = useValidationContext()
+
     useEffect(() => {
         if (to && previouslySelectedDestination.current !== to && !!refuel) {
             setFieldValue('refuel', false)
@@ -39,13 +43,13 @@ const RefuelToggle: FC<RefuelProps> = ({ onButtonClick, quote, minAllowedAmount 
         setFieldValue('refuel', value)
     }
 
-    const showRefuel = needRefuel && (quote || Number(amount) === Number(minAllowedAmount) || refuel)
+    const showRefuel = needRefuel && formValidation.code !== FORM_VALIDATION_ERROR_CODES.ROUTE_NOT_FOUND
 
     return (
         showRefuel &&
         <div
             className={clsx("gap-4 flex relative items-center outline-hidden w-full text-primary-text px-4 py-3 bg-secondary-500 border border-transparent transition-colors duration-200 rounded-2xl mt-auto", {
-                "!border-primary": needRefuel && !refuel
+                "border-primary!": needRefuel && !refuel
             })}
         >
             <div className="flex justify-between w-full text-secondary-text ">

@@ -79,6 +79,7 @@ export const TronWalletWithdraw: FC<WithdrawPageProps> = ({ swapBasicData, refue
                     error={!!error}
                     refuel={refuel}
                     swapData={swapBasicData}
+                    clearError={() => setError(undefined)}
                 />
             }
         </div>

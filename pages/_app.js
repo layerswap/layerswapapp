@@ -8,6 +8,8 @@ import { SWRConfig } from 'swr'
 import ProgressBar from "@badrap/bar-of-progress";
 import Router from "next/router";
 import posthog from "posthog-js";
+import { PostHogProvider } from '@posthog/react'
+import { useEffect } from 'react';
 
 const progress = new ProgressBar({
   size: 2,
@@ -15,15 +17,6 @@ const progress = new ProgressBar({
   className: "bar-of-progress",
   delay: 100,
 });
-
-if (typeof window !== "undefined") {
-  posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
-    capture_pageview: 'history_change',
-    capture_pageleave: true,
-    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-    defaults: '2025-05-24',
-  })
-}
 
 Router.events.on("routeChangeStart", progress.start);
 Router.events.on("routeChangeComplete", progress.finish);
@@ -34,6 +27,18 @@ const INTERCOM_APP_ID = 'h5zisg78'
 function App({ Component, pageProps }) {
   const router = useRouter()
 
+  useEffect(() => {
+    if (process.env.NEXT_PUBLIC_POSTHOG_KEY && typeof window !== 'undefined') {
+      posthog.init(process.env.NEXT_PUBLIC_POSTHOG_KEY, {
+        capture_pageview: 'history_change',
+        capture_pageleave: true,
+        api_host: `${router.basePath || ''}/lsph`,
+        ui_host: 'https://us.posthog.com',
+        defaults: '2025-05-24',
+      });
+    }
+  }, [router.basePath]);
+
   return (
     <SWRConfig
       value={{
@@ -41,9 +46,11 @@ function App({ Component, pageProps }) {
         dedupingInterval: 5000,
       }}
     >
-      <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
-        <Component key={router.asPath} {...pageProps} />
-      </IntercomProvider>
+      <PostHogProvider client={posthog}>
+        <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
+          <Component key={router.asPath} {...pageProps} />
+        </IntercomProvider>
+      </PostHogProvider>
     </SWRConfig>)
 }
 

@@ -89,7 +89,8 @@ export default function useImtblX(): WalletProvider {
         id,
         hideFromList: true,
         availableWalletsForConnect,
-        switchAccount
+        switchAccount,
+        ready: true
     }
 
     return provider
