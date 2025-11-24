@@ -43,6 +43,7 @@ interface FromStarknetAccountParams {
   readonly config: ParadexConfig;
   readonly account: Starknet.AccountInterface;
   readonly starknetProvider?: Starknet.ProviderInterface;
+  readonly nodeUrl: string;
 }
 
 /**
@@ -54,6 +55,7 @@ export async function fromStarknetAccount({
   config,
   account,
   starknetProvider,
+  nodeUrl,
 }: FromStarknetAccountParams): Promise<Account> {
   const starkKeyTypedData = starknetSigner.buildStarknetStarkKeyTypedData(
     config.starknetChainId,
@@ -62,7 +64,7 @@ export async function fromStarknetAccount({
   const accountSupport = await starknetSigner.getAccountSupport(
     account,
     starknetProvider ??
-      starknetSigner.getPublicProvider(config.starknetChainId),
+      starknetSigner.getPublicProvider(config.starknetChainId, nodeUrl),
   );
   const signature = await account.signMessage(starkKeyTypedData);
   const seed = accountSupport.getSeedFromSignature(signature);
