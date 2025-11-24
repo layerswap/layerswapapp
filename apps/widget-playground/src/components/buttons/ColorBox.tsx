@@ -8,6 +8,7 @@ import {
     ColorPicker,
     ColorPickerSelection,
     ColorPickerHue,
+    ColorPickerLightness,
     ColorPickerAlpha,
     ColorPickerFormat,
     ColorPickerOutput
@@ -99,7 +100,7 @@ export function ColorBox({ rgbColor, colorKey }: ColorBoxProps) {
                         />
                     </button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto">
+                <PopoverContent>
                     <ColorPicker
                         value={hexColor}
                         onChange={handleColorChange}
@@ -107,6 +108,9 @@ export function ColorBox({ rgbColor, colorKey }: ColorBoxProps) {
                         <ColorPickerSelection className="h-[150px]" />
                         <div className="flex gap-2 mt-2">
                             <ColorPickerHue />
+                        </div>
+                        <div className="flex gap-2 mt-2">
+                            <ColorPickerLightness />
                         </div>
                         <div className="flex gap-2 mt-2">
                             <ColorPickerAlpha />

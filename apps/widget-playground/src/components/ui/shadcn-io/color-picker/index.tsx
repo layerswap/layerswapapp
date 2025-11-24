@@ -126,7 +126,7 @@ export const ColorPicker = ({
       }}
     >
       <div
-        className={cn('flex size-full flex-col gap-4', className)}
+        className={cn('flex w-[280px] flex-col gap-4 p-4', className)}
         {...props}
       />
     </ColorPickerContext.Provider>
@@ -248,7 +248,8 @@ export const ColorPickerAlpha = ({
   className,
   ...props
 }: ColorPickerAlphaProps) => {
-  const { alpha, setAlpha } = useColorPicker();
+  const { hue, saturation, lightness, alpha, setAlpha } = useColorPicker();
+  const color = Color.hsl(hue, saturation, lightness);
 
   return (
     <Slider.Root
@@ -266,8 +267,43 @@ export const ColorPickerAlpha = ({
             'url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMUlEQVQ4T2NkYGAQYcAP3uCTZhw1gGGYhAGBZIA/nYDCgBDAm9BGDWAAJyRCgLaBCAAgXwixzAS0pgAAAABJRU5ErkJggg==") left center',
         }}
       >
-        <div className="absolute inset-0 rounded-full bg-gradient-to-r from-transparent to-black/50" />
+        <div
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: `linear-gradient(to right, transparent, ${color.hex()})`
+          }}
+        />
         <Slider.Range className="absolute h-full rounded-full bg-transparent" />
+      </Slider.Track>
+      <Slider.Thumb className="block h-4 w-4 rounded-full border border-primary/50 bg-background shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50" />
+    </Slider.Root>
+  );
+};
+
+export type ColorPickerLightnessProps = ComponentProps<typeof Slider.Root>;
+
+export const ColorPickerLightness = ({
+  className,
+  ...props
+}: ColorPickerLightnessProps) => {
+  const { hue, saturation, lightness, setLightness } = useColorPicker();
+
+  return (
+    <Slider.Root
+      className={cn('relative flex h-4 w-full touch-none', className)}
+      max={100}
+      onValueChange={([lightness]) => setLightness(lightness)}
+      step={1}
+      value={[lightness]}
+      {...props}
+    >
+      <Slider.Track
+        className="relative my-0.5 h-3 w-full grow rounded-full"
+        style={{
+          background: `linear-gradient(to right, hsl(${hue}, ${saturation}%, 0%), hsl(${hue}, ${saturation}%, 50%), hsl(${hue}, ${saturation}%, 100%))`
+        }}
+      >
+        <Slider.Range className="absolute h-full" />
       </Slider.Track>
       <Slider.Thumb className="block h-4 w-4 rounded-full border border-primary/50 bg-background shadow transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50" />
     </Slider.Root>
@@ -315,7 +351,7 @@ export const ColorPickerEyeDropper = ({
 
 export type ColorPickerOutputProps = ComponentProps<typeof SelectTrigger>;
 
-const formats = ['hex', 'rgb', 'css', 'hsl'];
+const formats = ['hex', 'rgb', 'hsl'];
 
 export const ColorPickerOutput = ({
   className,

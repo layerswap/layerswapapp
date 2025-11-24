@@ -257,12 +257,12 @@ export function CodeSegment() {
                 </Tooltip>
             </div>
         </div>
-        <div className="relative w-full overflow-hidden rounded-tl-xl rounded-md border bg-secondary-700 border-secondary-500 focus-within:border-secondary transition-colors">
+        <div className="relative w-full overflow-hidden rounded-xl border bg-secondary-700 border-secondary-500 focus-within:border-primary transition-colors">
             <div className="px-6 pb-14 pt-6">
-                <pre ref={preRef}>
+                <pre ref={preRef} className="m-0">
                     <code
                         ref={codeRef}
-                        className="language-typescript styled-scroll focus:outline-none text-sm"
+                        className="language-typescript styled-scroll focus:outline-none text-sm block !p-0"
                         contentEditable
                         onInput={handleInput}
                         onFocus={handleFocus}
