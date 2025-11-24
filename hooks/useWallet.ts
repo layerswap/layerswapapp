@@ -27,19 +27,8 @@ export default function useWallet(network?: Network | undefined, purpose?: Walle
     }, [wallets])
 
     const availableWallets = useMemo(() => {
-        if (!network) return []
-        const filteredWallets = wallets.filter(wallet => !wallet.isNotAvailable)
-        switch (purpose) {
-            case "withdrawal":
-                return filteredWallets.filter(wallet => wallet.withdrawalSupportedNetworks?.includes(network.name))
-            case "autofill":
-                return filteredWallets.filter(wallet => wallet.autofillSupportedNetworks?.includes(network.name))
-            case "asSource":
-                return filteredWallets.filter(wallet => wallet.asSourceSupportedNetworks?.includes(network.name))
-            default:
-                return []
-        }
-    }, [wallets, network, purpose])
+        return wallets.filter(wallet => !wallet.isNotAvailable)
+    }, [wallets])
 
     const getProvider = useCallback((network: Network, purpose: WalletPurpose) => {
         return network && resolveProvider(network, walletProviders, purpose)
