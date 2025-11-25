@@ -1,3 +1,0 @@
-/* istanbul ignore if -- @preserve */
-
-/* istanbul ignore next -- @preserve */
