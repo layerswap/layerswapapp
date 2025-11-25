@@ -4,9 +4,6 @@
     "src",
     "src/jsons/*.json"
   ],
-  "references": [
-    { "path": "../../widget" }   
-  ],
   "exclude": [
     "node_modules"
   ]
