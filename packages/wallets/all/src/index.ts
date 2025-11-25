@@ -29,8 +29,9 @@ import type { TONProviderConfig, TonClientConfig } from "@layerswap/wallet-ton";
 import { createTronProvider } from "@layerswap/wallet-tron";
 import type { TronProviderConfig } from "@layerswap/wallet-tron";
 
-import { LoopringModule } from "@layerswap/wallet-module-loopring";
-import { zkSyncModule } from "@layerswap/wallet-module-zksync";
+import { createLoopringModule } from "@layerswap/wallet-module-loopring";
+
+import { createZkSyncModule } from "@layerswap/wallet-module-zksync";
 
 // Re-export all wallet provider factories
 export { createBitcoinProvider };
@@ -63,8 +64,9 @@ export type { TONProviderConfig, TonClientConfig };
 export { createTronProvider };
 export type { TronProviderConfig };
 
-export { LoopringModule };
-export { zkSyncModule };
+export { createLoopringModule };
+
+export { createZkSyncModule };
 
 // Re-export deprecated providers for backward compatibility
 /**
@@ -136,7 +138,7 @@ export type DefaultWalletConfig = {
  * - **TON**: Always included, uses provided configuration or undefined as fallback
  * - **Immutable Passport**: Included only if Immutable Passport configuration is provided
  * - **Bitcoin, Fuel, Tron, Paradex, ImmutableX**: Always included (no configuration required)
- * - **EVM**: Includes zkSyncModule and LoopringModule by default
+ * - **EVM**: Includes zkSync and Loopring modules by default
  *
  * @param config - Configuration options for the wallet providers
  * @param config.walletConnect - Optional WalletConnect configuration (projectId, name, description, url, icons)
@@ -180,7 +182,7 @@ export function getDefaultProviders(config: DefaultWalletConfig = {}) {
         // EVM with modules
         createEVMProvider({
             walletConnectConfigs: walletConnect,
-            walletProviderModules: [LoopringModule, zkSyncModule]
+            walletProviderModules: [createLoopringModule(), createZkSyncModule()]
         }),
         // Starknet
         createStarknetProvider({
