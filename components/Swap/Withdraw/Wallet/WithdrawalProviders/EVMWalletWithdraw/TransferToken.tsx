@@ -34,21 +34,7 @@ const TransferTokenButton: FC<Props> = ({
     const selectedSourceAccount = useSelectedAccount("from", swapData.source_network.name);
     const { wallets } = useWallet(swapData.source_network, 'withdrawal')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
-    const { gasData, gasError } = useSWRGas(selectedSourceAccount?.address, swapData?.source_network)
-
-    if (gasError) {
-        gasError.name = `EstimateGasError`;
-        gasError.cause = gasError;
-
-        posthog.capture('$exception', {
-            name: gasError?.name,
-            $layerswap_exception_type: "EstimateGasError",
-            message: gasError?.message,
-            where: 'TransferToken',
-            cause: gasError?.cause,
-            severity: 'error',
-        });
-    }
+    const { gasData } = useSWRGas(selectedSourceAccount?.address, swapData?.source_network)
 
     const clickHandler = useCallback(async ({ amount, callData, depositAddress }: TransferProps) => {
         setButtonClicked(true)
