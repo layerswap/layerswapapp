@@ -8,7 +8,7 @@ import { EVMProvider, FuelProvider, ParadexProvider, StarknetProvider, BitcoinPr
 
 const SwapDetails = ({ settings, themeData, apiKey }: InferGetServerSidePropsType<typeof getServerSideProps>) => {
   return (<>
-    <Layout settings={settings} themeData={themeData}>
+    <Layout settings={settings || undefined} themeData={themeData}>
       <SwapWithdrawal
         config={{ theme: { ...themeData, borderRadius: 'default', enablePortal: true, enableWideVersion: true, hidePoweredBy: true }, apiKey, settings }}
         walletProviders={[EVMProvider, StarknetProvider, FuelProvider, ParadexProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider]}

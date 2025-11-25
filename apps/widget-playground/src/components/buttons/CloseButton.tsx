@@ -1,17 +1,19 @@
 "use client";
 
-import { X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger, } from "@/components/ui/tooltip"
 import { useWidgetContext } from '@/context/ConfigContext';
+import IconX from '@/public/icons/IconX';
 
 export function CloseButton() {
     const { showPanel, updateShowPanel } = useWidgetContext();
     return (
         <Tooltip>
             <TooltipTrigger asChild>
-                <X
+                <button
                     onClick={() => updateShowPanel(!showPanel)}
-                    className=' w-8 h-8 p-1 rounded-full bg-transparent hover:bg-primary-500 transition-colors ' />
+                    className='rounded-xl w-6 h-6 flex items-center justify-center bg-transparent hover:bg-secondary-300 transition-colors'>
+                    <IconX className='w-[16px] h-[16px]' />
+                </button>
             </TooltipTrigger >
             <TooltipContent >
                 <p>Close</p>

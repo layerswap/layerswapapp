@@ -4,8 +4,8 @@ import { Switch } from '@/components/ui/switch';
 
 const ToggleRow = ({ label, checked, onCheckedChange }: { label: string, checked: boolean, onCheckedChange: (checked: boolean) => void }) => {
     return (
-        <div className="my-1 rounded-xl p-3 flex items-center justify-between gap-2 bg-secondary-600 hover:bg-secondary-500 transition-colors">
-            <span>{label}</span>
+        <div className="rounded-md py-3 px-2 flex items-center justify-between gap-2 hover:bg-secondary-500 transition-colors duration-200">
+            <span className="text-xl leading-6 text-primary-text">{label}</span>
             <Switch checked={checked} onCheckedChange={onCheckedChange} />
         </div>
     );
@@ -26,7 +26,7 @@ export function ConfigurationButton() {
     };
 
     return (
-        <div>
+        <div className="flex flex-col gap-3 pb-1">
             <ToggleRow
                 label="Hide Menu"
                 checked={themeData?.header?.hideMenu ?? false}

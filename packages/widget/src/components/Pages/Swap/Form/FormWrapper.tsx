@@ -145,7 +145,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                     modalId="showSwap"
                     className={!swapBasicData?.use_deposit_address ? "expandContainerHeight" : ""}>
                     <VaulDrawer.Snap id="item-1">
-                        <SwapDetails type="contained" onWalletWithdrawalSuccess={handleWalletWithdrawalSuccess} partner={partner} />
+                        <SwapDetails type="contained" onWalletWithdrawalSuccess={handleWalletWithdrawalSuccess} partner={partner} onCancelWithdrawal={() => handleShowSwapModal(false)} />
                     </VaulDrawer.Snap>
                 </VaulDrawer>
                 {children}

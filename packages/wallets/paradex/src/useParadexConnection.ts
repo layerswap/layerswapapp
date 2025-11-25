@@ -203,12 +203,14 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
         id,
         providerIcon,
         hideFromList: true,
+        ready: evmProvider.ready && starknetProvider.ready,
         multiStepHandlers: [
             {
                 component: ParadexMultiStepHandler,
                 supportedNetworks: withdrawalSupportedNetworks
             }
         ]
+
     }
     return provider
 }

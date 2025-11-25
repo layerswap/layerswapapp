@@ -192,6 +192,7 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
         id,
         providerIcon,
         unsupportedPlatforms: ["mobile"],
+        ready: connectors.length > 0
     }
 
     return provider

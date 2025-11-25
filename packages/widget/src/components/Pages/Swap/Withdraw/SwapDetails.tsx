@@ -13,10 +13,11 @@ import { Partner } from '@/Models';
 type Props = {
     type: "widget" | "contained",
     onWalletWithdrawalSuccess?: () => void,
+    onCancelWithdrawal?: () => void,
     partner?: Partner
 }
 
-const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner }) => {
+const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
     const { swapDetails, swapBasicData, quote, refuel, depositActionsResponse } = useSwapDataState()
 
     const swapStatus = swapDetails?.status || SwapStatus.UserTransferPending;
@@ -49,7 +50,7 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, partner }) =>
                     (
                         swapBasicData?.use_deposit_address === true
                             ? <ManualWithdraw swapBasicData={swapBasicData} quote={quote} depositActions={depositActionsResponse} refuel={refuel} partner={partner} type={type} />
-                            : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} partner={partner} />
+                            : <Withdraw type={type} onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal} partner={partner} />
                     )
                     :
                     <div className='space-y-3 w-full h-full'>

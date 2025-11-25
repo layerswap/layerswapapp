@@ -1,4 +1,4 @@
-import { ComponentProps, FC, useCallback, useState } from "react";
+import { ComponentProps, FC, useCallback, useMemo, useState } from "react";
 import WalletIcon from "@/components/Icons/WalletIcon";
 import { ActionData } from "./sharedTypes";
 import SubmitButton, { SubmitButtonProps } from "@/components/Buttons/submitButton";
@@ -9,16 +9,20 @@ import { Loader2 } from "lucide-react";
 import WalletMessage from "../../messages/Message";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { Network, NetworkRoute } from "@/Models/Network";
-import { useInitialSettings } from "@/context/settings";
+import { useInitialSettings, useSettingsState } from "@/context/settings";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
-import { BackendTransactionStatus, SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
+import { BackendTransactionStatus, DepositAction, SwapBasicData, SwapDetails, SwapItem, SwapResponse } from "@/lib/apiClients/layerSwapApiClient";
 import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
 import { useWalletWithdrawalState } from "@/context/withdrawalContext";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import { SwapFormValues } from "../../../Form/SwapFormValues";
-import { TransferProps } from "@/types";
 import { ErrorHandler } from "@/lib/ErrorHandler";
+import { TokenBalance, TransferProps, Wallet } from "@/types";
+import { resolvePriceImpactValues } from "@/lib/fees";
+import InfoIcon from "@/components/Icons/InfoIcon";
+import { addressFormat } from "@/lib/address/formatter";
+import { useBalance } from "@/lib/balances/useBalance";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
@@ -41,7 +45,6 @@ export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
         finally {
             setLoading(false)
         }
-
     }, [provider])
 
     return <ButtonWrapper
@@ -144,6 +147,7 @@ export const ButtonWrapper: FC<SubmitButtonProps> = ({
 type ButtonWrapperProps = ComponentProps<typeof ButtonWrapper>;
 type SendFromWalletButtonProps = Omit<ButtonWrapperProps, 'onClick'> & {
     error?: boolean;
+    clearError?: () => void
     onClick: (props: TransferProps) => Promise<string | undefined>
     swapData: SwapBasicData,
     refuel: boolean
@@ -151,85 +155,99 @@ type SendFromWalletButtonProps = Omit<ButtonWrapperProps, 'onClick'> & {
 
 export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     error,
+    clearError,
     onClick,
-    swapData,
+    swapData: swapBasicData,
     refuel,
     ...props
 }) => {
-    const [actionStateText, setActionStateText] = useState<string | undefined>()
-    const [loading, setLoading] = useState(false)
-    const { quote, quoteIsLoading, quoteError } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse } = useSwapDataState()
+    const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess, onCancelWithdrawal } = useWalletWithdrawalState();
     const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
     const initialSettings = useInitialSettings()
+    const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network?.name);
 
-    const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess } = useWalletWithdrawalState();
+    const { networks } = useSettingsState()
+    const networkWithTokens = swapBasicData.source_network && networks.find(n => n.name === swapBasicData.source_network?.name)
+    const { balances } = useBalance(selectedSourceAccount?.address, networkWithTokens)
 
-    const selectedSourceAccount = useSelectedAccount("from", swapData.source_network?.name);
-    const { wallets } = useWallet(swapData.source_network, 'withdrawal')
+    const { wallets } = useWallet(swapBasicData.source_network, 'withdrawal')
+    const [actionStateText, setActionStateText] = useState<string | undefined>()
+    const [loading, setLoading] = useState(false)
+    const [showCriticalMarketPriceImpactButtons, setShowCriticalMarketPriceImpactButtons] = useState(false)
+
+    const priceImpactValues = useMemo(() => quote ? resolvePriceImpactValues(quote) : undefined, [quote]);
+    const criticalMarketPriceImpact = useMemo(() => priceImpactValues?.criticalMarketPriceImpact, [priceImpactValues]);
 
     const handleClick = async () => {
         try {
-            const selectedWallet = wallets.find(w => w.id === selectedSourceAccount?.id)
+            const selectedWallet = selectedSourceAccount && wallets.find(w => w.addresses.some(a => addressFormat(a, swapBasicData.source_network) === addressFormat(selectedSourceAccount?.address, swapBasicData.source_network)))
             if (!selectedSourceAccount) {
                 throw new Error('Selected source account is undefined')
             }
             if (!selectedWallet?.isActive) {
                 throw new Error('Wallet is not active')
             }
+
             setLoading(true)
-            setActionStateText("Preparing")
-            setSwapId(undefined)
+            clearError?.()
+            let swapData: SwapDetails | undefined = swapDetails
+            let depositActions = depositActionsResponse;
 
-            const swapValues: SwapFormValues = {
-                amount: swapData.requested_amount,
-                from: swapData.source_network as NetworkRoute,
-                to: swapData.destination_network as NetworkRoute,
-                fromAsset: swapData.source_token,
-                toAsset: swapData.destination_token,
-                refuel: refuel,
-                destination_address: swapData.destination_address,
-                depositMethod: 'wallet',
+            if (!swapId || !swapDetails) {
+                setActionStateText("Preparing")
+                setSwapId(undefined)
+
+                const swapValues: SwapFormValues = {
+                    amount: swapBasicData.requested_amount.toString(),
+                    from: swapBasicData.source_network as NetworkRoute,
+                    to: swapBasicData.destination_network as NetworkRoute,
+                    fromAsset: swapBasicData.source_token,
+                    toAsset: swapBasicData.destination_token,
+                    refuel: refuel,
+                    destination_address: swapBasicData.destination_address,
+                    depositMethod: 'wallet',
+                }
+
+                const newSwapData = await createSwap(swapValues, initialSettings);
+                const newSwapId = newSwapData?.swap?.id;
+                if (!newSwapId) {
+                    throw new Error('Swap ID is undefined');
+                }
+
+                setSwapId(newSwapId)
+
+                const priceImpactValues = newSwapData.quote ? resolvePriceImpactValues(newSwapData.quote) : undefined;
+
+                if (priceImpactValues?.criticalMarketPriceImpact) {
+                    setShowCriticalMarketPriceImpactButtons(true)
+                    return
+                }
+
+                if (isDiffByPercent(quote?.receive_amount, newSwapData.quote.receive_amount, 2)) {
+                    setActionStateText("Updating quotes")
+                    setQuoteLoading(true)
+                    await sleep(3500)
+                    setQuoteLoading(false)
+                }
+                swapData = newSwapData.swap
+                depositActions = newSwapData.deposit_actions;
+            }
+            if (!depositActions) {
+                throw new Error('No deposit actions')
             }
 
-            const newSwapData = await createSwap(swapValues, initialSettings);
-            const swapId = newSwapData?.swap?.id;
-            if (!swapId) {
-                throw new Error('Swap ID is undefined');
+            if (!swapData) {
+                throw new Error('No swap data')
             }
 
-            if (isDiffByPercent(quote?.receive_amount, newSwapData.quote.receive_amount, 2)) {
-                setActionStateText("Updating quotes")
-                setQuoteLoading(true)
-                await sleep(3500)
-                setQuoteLoading(false)
-            }
+            const transferProps = resolveTransactionData(swapData, swapBasicData, depositActions, balances, selectedWallet);
             setActionStateText("Opening Wallet")
-            setSwapId(swapId)
-            const depositAction = newSwapData?.deposit_actions && newSwapData?.deposit_actions[0];
-
-            if (!depositAction) {
-                throw new Error('No deposit action')
-            }
-            if (!depositAction.call_data) {
-                throw new Error('No deposit action call data')
-            }
-
-            const transferProps: TransferProps = {
-                network: swapData.source_network,
-                token: swapData.source_token,
-                selectedWallet: selectedWallet,
-                amount: depositAction?.amount,
-                callData: depositAction?.call_data,
-                depositAddress: depositAction?.to_address,
-                sequenceNumber: newSwapData.swap?.metadata.sequence_number,
-                swapId: swapId,
-                userDestinationAddress: newSwapData.swap?.destination_address
-            }
             const hash = await onClick(transferProps)
             if (hash) {
                 onWalletWithdrawalSuccess?.();
-                setSwapTransaction(swapId, BackendTransactionStatus.Pending, hash);
+                setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, hash);
             }
         }
         catch (e) {
@@ -259,14 +277,78 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             </ButtonWrapper>
         )
 
+    if (showCriticalMarketPriceImpactButtons) {
+        return (<>
+            {quote && priceImpactValues && <div className="py-1">
+                <div className="flex items-start gap-2.5">
+                    <span className="shrink-0"><InfoIcon className="w-5 h-5 text-warning-foreground" /></span>
+                    <div className="flex flex-col gap-1.5 pr-4">
+                        <p className="text-white font-semibold leading-4 text-base mt-0.5">Critical receiving amount</p>
+                        <p className="text-priamry-text text-base font-normal leading-[18px]"><span>By continuing, you agree to receive as low as </span><span className="text-warning-foreground text-nowrap">{quote.min_receive_amount} {quote.destination_token?.symbol} ($ {priceImpactValues.minReceiveAmountUSD})</span></p>
+                    </div>
+                </div>
+            </div>}
+            <ButtonWrapper
+                {...props}
+                onClick={handleClick}
+                buttonStyle="secondary"
+                size="small"
+                isSubmitting={false}
+                isDisabled={false}
+            >
+                Continue anyway
+            </ButtonWrapper>
+            <ButtonWrapper
+                {...props}
+                size="small"
+                onClick={() => onCancelWithdrawal?.()}
+                isSubmitting={false}
+                isDisabled={false}
+            >
+                Cancel & try another route
+            </ButtonWrapper>
+        </>
+        )
+    }
     return (
-        <ButtonWrapper
-            {...props}
-            isSubmitting={props.isSubmitting || loading || quoteIsLoading}
-            onClick={handleClick}
-            isDisabled={quoteIsLoading || !!quoteError}
-        >
-            {error ? 'Try again' : 'Swap now'}
-        </ButtonWrapper>
+        <>
+            {!!(!swapId && criticalMarketPriceImpact && quote?.destination_token && priceImpactValues && !error) && <div className="py-1">
+                <div className="flex items-start gap-2.5">
+                    <span className="shrink-0"><InfoIcon className="w-5 h-5 text-warning-foreground" /></span>
+                    <div className="flex flex-col gap-1.5 pr-4">
+                        <p className="text-white font-medium leading-4 text-base mt-0.5">Critical receiving amount</p>
+                        <p className="text-secondary-text text-sm leading-[18px]"><span>The “receive at least” amount is affected by high price impact. You will receive at least </span><span>{quote.min_receive_amount} {quote.destination_token?.symbol} ($ {priceImpactValues.minReceiveAmountUSD}) </span></p>
+                    </div>
+                </div>
+            </div>}
+            <ButtonWrapper
+                {...props}
+                isSubmitting={props.isSubmitting || loading || quoteIsLoading}
+                onClick={handleClick}
+                isDisabled={quoteIsLoading || !!quoteError}
+            >
+                {error ? 'Try again' : 'Swap now'}
+            </ButtonWrapper>
+        </>
     )
+}
+
+
+const resolveTransactionData = (swapDetails: SwapDetails, swapBasicData: SwapBasicData, deposit_actions: DepositAction[], balances: TokenBalance[] | null | undefined, selectedWallet: Wallet): TransferProps => {
+    const depositAction = deposit_actions?.find(action => action.type === 'transfer');
+    if (!depositAction) {
+        throw new Error('No deposit action found')
+    }
+    return {
+        amount: depositAction.amount,
+        callData: depositAction.call_data,
+        depositAddress: depositAction.to_address,
+        sequenceNumber: swapDetails.metadata.sequence_number,
+        swapId: swapDetails.id,
+        userDestinationAddress: swapBasicData.destination_address,
+        balances: balances,
+        network: swapBasicData.source_network,
+        token: swapBasicData.source_token,
+        selectedWallet: selectedWallet,
+    }
 }

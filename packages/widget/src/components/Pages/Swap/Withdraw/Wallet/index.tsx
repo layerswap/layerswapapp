@@ -17,8 +17,9 @@ type Props = {
     swapId: string | undefined
     refuel: boolean
     onWalletWithdrawalSuccess?: () => void
+    onCancelWithdrawal?: () => void
 };
-export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWalletWithdrawalSuccess }) => {
+export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWalletWithdrawalSuccess, onCancelWithdrawal }) => {
     const { source_network } = swapData
 
     const { provider, wallets } = useWallet(source_network, "withdrawal")
@@ -34,7 +35,7 @@ export const WalletTransferAction: FC<Props> = ({ swapData, swapId, refuel, onWa
     return <>
         {
             swapData &&
-            <WithdrawalProvider onWalletWithdrawalSuccess={onWalletWithdrawalSuccess}>
+            <WithdrawalProvider onWalletWithdrawalSuccess={onWalletWithdrawalSuccess} onCancelWithdrawal={onCancelWithdrawal}>
                 <WalletWithdrawal
                     swapId={swapId}
                     swapBasicData={swapData}

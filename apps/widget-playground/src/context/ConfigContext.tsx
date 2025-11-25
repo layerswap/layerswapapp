@@ -1,5 +1,5 @@
 "use client";
-import { Context, createContext, Dispatch, SetStateAction, useContext, useEffect, useMemo, useState } from 'react';
+import { Context, createContext, Dispatch, FC, SetStateAction, useContext, useEffect, useMemo, useState } from 'react';
 import { ThemeData, THEME_COLORS, LayerswapWidgetConfig } from '@layerswap/widget';
 import { InitialSettings } from '@layerswap/widget/types';
 
@@ -28,7 +28,7 @@ interface ContextType {
 
 const WidgetContext = createContext<ContextType | undefined>(undefined);
 
-export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
+export const ConfigProvider: FC<{ children: React.ReactNode }> = ({ children }) => {
     const [themeData, setThemeData] = useState<{ theme: ThemeData | undefined, themeName?: string | undefined } | undefined>({
         theme: {
             ...THEME_COLORS['default'],
@@ -98,7 +98,9 @@ export const ConfigProvider = ({ children }: { children: React.ReactNode }) => {
             themeData: themeData?.theme, themeName: themeData?.themeName, widgetRenderKey, customEvmSwitch, showLoading, showPanel, actionText, initialValues, config,
             updateTheme, updateWholeTheme: setThemeData, resetData, updateCustomEvmSwitch: setCustomEvmSwitch, updateShowLoading: setShowLoading, updateShowPanel: setShowPanel, updateActionText: setActionText, updateInitialValues
         }}>
-            {children}
+            <>
+                {children}
+            </>
         </WidgetContext.Provider>
     );
 }

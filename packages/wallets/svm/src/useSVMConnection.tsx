@@ -43,11 +43,6 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
 
     }, [connectedAddress, connectedAdapterName])
 
-
-    const switchAccount = async (wallet: Wallet, address: string) => {
-        // as we do not have multiple accounts management we will leave the method empty
-    }
-
     const connectWallet = async ({ connector }: { connector: InternalConnector }) => {
         const solanaConnector = wallets.find(w => w.adapter.name.includes(connector.name))
         if (!solanaConnector) throw new Error('Connector not found')
@@ -168,7 +163,6 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
         connectWallet,
         disconnectWallets: disconnectWallet,
         isNotAvailableCondition: isNotAvailable,
-        switchAccount,
 
         transfer,
 
@@ -180,7 +174,8 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
         activeWallet: connectedWallets?.[0],
         name,
         id,
-        providerIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo
+        providerIcon: networks.find(n => solanaNames.some(name => name === n.name))?.logo,
+        ready: wallets.length > 0
     }
 
     return provider

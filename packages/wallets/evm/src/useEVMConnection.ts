@@ -302,6 +302,8 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
             name,
             id,
             providerIcon,
+            ready: allConnectors.length > 0,
+
 
             multiStepHandlers: [
                 {
@@ -314,7 +316,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
                 }
             ]
         }
-    }, [connectWallet, disconnectWallets, switchAccount, resolvedConnectors, availableFeaturedWalletsForConnect, walletConnectConnectors, autofillSupportedNetworks, withdrawalSupportedNetworks, asSourceSupportedNetworks, name, id, networks]);
+    }, [connectWallet, disconnectWallets, switchAccount, resolvedConnectors, availableFeaturedWalletsForConnect, walletConnectConnectors, autofillSupportedNetworks, withdrawalSupportedNetworks, asSourceSupportedNetworks, name, id, networks, allConnectors.length]);
 
     return provider
 }
