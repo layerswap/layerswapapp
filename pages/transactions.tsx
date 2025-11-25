@@ -9,7 +9,7 @@ export default function Transactions({ settings, themeData, apiKey }: InferGetSe
   LayerSwapApiClient.apiKey = apiKey
   return (
     <>
-      <Layout settings={settings} themeData={themeData}>
+      <Layout settings={settings || undefined} themeData={themeData}>
         <SwapDataProvider >
           <TransactionsHistory />
         </SwapDataProvider >

@@ -11,9 +11,9 @@ const GLobalFooter = () => {
             { name: 'Product', href: '/' },
             { name: 'Company', href: '/company' },
             { name: 'FAQ', href: '/faq' },
-            { name: 'Privacy Policy', href: 'https://docs.layerswap.io/user-docs/more-information/privacy-policy' },
-            { name: 'Terms of Services', href: 'https://docs.layerswap.io/user-docs/more-information/terms-of-services' },
-            { name: 'Docs', href: 'https://docs.layerswap.io/onboarding-sdk' },
+            { name: 'Privacy Policy', href: 'https://learn.layerswap.io/user-docs/more-information/privacy-policy' },
+            { name: 'Terms of Services', href: 'https://learn.layerswap.io/user-docs/more-information/terms-of-services' },
+            { name: 'Docs', href: 'https://learn.layerswap.io/onboarding-sdk' },
         ],
         social: [
             {
@@ -55,10 +55,10 @@ const GLobalFooter = () => {
                 <div className="flex justify-between items-center w-full px-6">
                     <div className="px-6">
                         <div className="flex mt-3 md:mt-0 gap-6">
-                            <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/privacy-policy/" className="text-xs leading-6 text-primary-text-tertiary underline hover:no-underline hover:text-primary-text-tertiary/70 duration-200 transition-all">
+                            <Link target="_blank" href="https://learn.layerswap.io/user-docs/more-information/privacy-policy/" className="text-xs leading-6 text-primary-text-tertiary underline hover:no-underline hover:text-primary-text-tertiary/70 duration-200 transition-all">
                                 Privacy Policy
                             </Link>
-                            <Link target="_blank" href="https://docs.layerswap.io/user-docs/more-information/terms-of-services/" className="text-xs leading-6 text-primary-text-tertiary underline hover:no-underline hover:text-primary-text-tertiary/70 duration-200 transition-all">
+                            <Link target="_blank" href="https://learn.layerswap.io/user-docs/more-information/terms-of-services/" className="text-xs leading-6 text-primary-text-tertiary underline hover:no-underline hover:text-primary-text-tertiary/70 duration-200 transition-all">
                                 Terms of Services
                             </Link>
                         </div>

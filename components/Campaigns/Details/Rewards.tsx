@@ -176,7 +176,7 @@ const ProgressComponent: FC<{ campaign: Campaign, rewardsData: Reward | undefine
                     <div className="flex justify-between w-full font-semibold text-sm ">
                         <div className="text-primary"><span className="text-primary-text">{weeklyEarned.toFixed(0)}</span> <span>/</span> {campaign.max_payout_amount} {campaign.token.symbol}</div>
                         <div>
-                            Refreshes every 7 days
+                            <span>Refreshes every </span> <span className="font-semibold">{campaign.reward_limit_period}</span> <span> days</span>
                         </div>
                     </div>
                 </div>

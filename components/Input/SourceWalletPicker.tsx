@@ -32,7 +32,6 @@ const SourceWalletPicker: FC = () => {
     const { selectedConnector } = useConnectModal()
     const availableWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []
 
-
     const handleWalletChange = () => {
         setOpenModal(true)
     }
@@ -261,6 +260,9 @@ export const FormSourceWalletButton: FC = () => {
 
 const Connect: FC<{ connectFn?: () => Promise<Wallet | undefined | void>; setMountWalletPortal?: Dispatch<SetStateAction<boolean>> }> = ({ connectFn, setMountWalletPortal }) => {
     const { connect } = useConnectModal()
+    const { providers } = useWallet()
+
+    const isProvidersReady =  providers.every(p => p.ready)
 
     const connectWallet = async () => {
         setMountWalletPortal && setMountWalletPortal(true)
@@ -268,7 +270,12 @@ const Connect: FC<{ connectFn?: () => Promise<Wallet | undefined | void>; setMou
         setMountWalletPortal && setMountWalletPortal(false)
     }
 
-    return <SubmitButton onClick={() => connectFn ? connectFn() : connectWallet()} type="button" icon={<WalletIcon className="h-6 w-6" strokeWidth={2} />} >
+    return <SubmitButton
+        onClick={() => connectFn ? connectFn() : connectWallet()}
+        type="button"
+        icon={<WalletIcon className="h-6 w-6" strokeWidth={2} />}
+        isDisabled={!isProvidersReady}
+    >
         Connect a wallet
     </SubmitButton>
 }
@@ -276,7 +283,7 @@ const Connect: FC<{ connectFn?: () => Promise<Wallet | undefined | void>; setMou
 const ContinueWithoutWallet: FC<{ onClick: () => void }> = ({ onClick }) => {
     //TODO: bg-secondary-700 is a hotfix, should refactor and fix sticky footer for VaulDrawer
     return (
-        <div className="inline-flex items-center gap-1.5 justify-center w-full pt-2 bg-secondary-700">
+        <div className="inline-flex items-center max-sm:pb-2 gap-1.5 justify-center w-full pt-2 bg-secondary-700">
             <button type="button" onClick={onClick} className="underline hover:no-underline text-base text-center text-secondary-text cursor-pointer ">
                 Continue without a wallet
             </button>

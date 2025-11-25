@@ -1,5 +1,5 @@
 import { useSettingsState } from "../context/settings"
-import { selectResolvedInitiatedBalances, useBalanceStore } from "../stores/balanceStore"
+import { selectResolvedSortingBalances, useBalanceStore } from "../stores/balanceStore"
 import { useEffect, useMemo, useRef } from "react"
 import { NetworkWithTokens } from "../Models/Network"
 import { NetworkBalance } from "@/Models/Balance"
@@ -31,12 +31,13 @@ export default function useAllWithdrawalBalances() {
 
     useEffect(() => {
         if (walletNetworks)
-            useBalanceStore.getState().initAllBalances(walletNetworks)
+            useBalanceStore.getState().initSortingBalances(walletNetworks)
     }, [walletNetwokrsString])
 
     const lastBalancesRef = useRef<Record<string, NetworkBalance> | null>(null)
-    const resolvedBalances = useBalanceStore(selectResolvedInitiatedBalances)
-    const isLoading = useBalanceStore(s => s.isLoading)
+    const resolvedBalances = useBalanceStore(selectResolvedSortingBalances)
+    const isLoading = useBalanceStore(s => s.sortingDataIsLoading)
+    const partialPublished = useBalanceStore(s => s.partialPublished)
 
     if (resolvedBalances != null && Object.keys(resolvedBalances).length > 0) {
         lastBalancesRef.current = resolvedBalances
@@ -44,5 +45,5 @@ export default function useAllWithdrawalBalances() {
 
     const result = resolvedBalances === null && isLoading ? lastBalancesRef.current : resolvedBalances
 
-    return useMemo(() => ({ isLoading, balances: result }), [result, isLoading])
+    return useMemo(() => ({ isLoading, balances: result, partialPublished }), [result, isLoading, partialPublished])
 }

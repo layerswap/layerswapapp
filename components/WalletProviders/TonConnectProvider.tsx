@@ -32,16 +32,16 @@ const TonConnectProvider = ({ children, basePath, themeData, appName }: { childr
                                 white: '#f1f1f1f1',
                             },
                             connectButton: {
-                                background: rgbToHex(themeData.primary?.[500]),
+                                background: rgbToHex(themeData?.primary?.[500] || ''),
                                 foreground: rgbToHex(themeData?.secondary?.[800] || ''),
                             },
-                            accent: rgbToHex(themeData.primary?.[500]),
-                            telegramButton: rgbToHex(themeData.primary?.[500]),
+                            accent: rgbToHex(themeData?.primary?.[500] || ''),
+                            telegramButton: rgbToHex(themeData.primary?.[500] || ''),
                             icon: {
-                                primary: rgbToHex(themeData.primary?.[500]),
+                                primary: rgbToHex(themeData?.primary?.[500] || ''),
                                 secondary: rgbToHex(themeData?.secondary?.text || ''),
                                 tertiary: rgbToHex(themeData.secondary?.[400] || ''),
-                                success: rgbToHex(themeData.primary?.[500]),
+                                success: rgbToHex(themeData?.primary?.[500] || ''),
                             },
                             background: {
                                 primary: rgbToHex(themeData.secondary?.[900] || ''),
@@ -51,7 +51,7 @@ const TonConnectProvider = ({ children, basePath, themeData, appName }: { childr
                                 qr: '#f1f1f1f1',
                             },
                             text: {
-                                primary: rgbToHex(themeData.primary.text),
+                                primary: rgbToHex(themeData?.primary?.text || ''),
                                 secondary: rgbToHex(themeData?.secondary?.text || ''),
                             }
                         }

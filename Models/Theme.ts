@@ -1,10 +1,10 @@
+import { HTMLAttributes } from "react"
 
 export type ThemeData = {
-    backdrop?: string,
-    buttonTextColor: string,
-    logo: string,
-    tertiary: string,
-    primary: ThemeColor,
+    buttonTextColor?: string,
+    logo?: string,
+    tertiary?: string,
+    primary?: ThemeColor,
     secondary?: ThemeColor,
     headerLogo?: string,
     footerLogo?: string,
@@ -12,6 +12,12 @@ export type ThemeData = {
     warning?: StatusColor,
     error?: StatusColor,
     success?: StatusColor,
+    header?: {
+        hideMenu?: boolean,
+        hideTabs?: boolean,
+        hideWallets?: boolean,
+    }
+    cardBackgroundStyle?: HTMLAttributes<HTMLDivElement>['style']
 }
 
 export type ThemeColor = {
@@ -35,7 +41,6 @@ export type StatusColor = {
 
 export const THEME_COLORS: { [key: string]: ThemeData } = {
     "imxMarketplace": {
-        backdrop: "0, 121, 133",
         buttonTextColor: '255, 255, 255',
         tertiary: '140, 152, 192',
         logo: '255, 255, 255',
@@ -100,7 +105,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         },
     },
     "default": {
-        backdrop: "62, 18, 64",
         tertiary: '118, 128, 147',
         buttonTextColor: '228, 229, 240',
         logo: '255, 0, 147',
@@ -144,6 +148,50 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
             'text': '163, 173, 194',
         },
     },
+    "halloween": {
+        tertiary: "110, 80, 140",
+        buttonTextColor: "255, 240, 200",
+        logo: '255, 0, 147',
+        footerLogo: "none",
+        warning: {
+            Foreground: "255, 180, 70",
+            Background: "45, 30, 10",
+        },
+        error: {
+            Foreground: "255, 90, 90",
+            Background: "40, 15, 15",
+        },
+        success: {
+            Foreground: "150, 255, 180",
+            Background: "20, 40, 25",
+        },
+        primary: {
+            DEFAULT: "230, 80, 25",
+            "100": "255, 180, 120",
+            "200": "255, 150, 70",
+            "300": "255, 120, 50",
+            "400": "255, 100, 30",
+            "500": "230, 80, 25",
+            "600": "190, 60, 20",
+            "700": "150, 45, 15",
+            "800": "100, 30, 10",
+            "900": "50, 15, 5",
+            "text": "255, 240, 200",
+        },
+        secondary: {
+            DEFAULT: "35, 25, 60",
+            "100": "90, 75, 130",
+            "200": "75, 60, 120",
+            "300": "60, 50, 110",
+            "400": "50, 40, 90",
+            "500": "40, 30, 75",
+            "600": "30, 25, 65",
+            "700": "25, 20, 55",
+            "800": "18, 15, 45",
+            "900": "12, 10, 35",
+            "text": "220, 210, 250",
+        },
+    },
     "ton": {
         tertiary: '134, 134, 134',
         buttonTextColor: '15, 15, 15',
@@ -183,6 +231,53 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         headerLogo: 'none',
         footerLogo: 'block',
         footerLogoHeight: '20px',
+        header: {
+            hideMenu: true,
+            hideTabs: true,
+            hideWallets: true,
+        },
+        primary: {
+            DEFAULT: '243, 243, 243',
+            '100': '255, 255, 255',
+            '200': '255, 255, 255',
+            '300': '255, 255, 255',
+            '400': '255, 255, 255',
+            '500': '243, 243, 243',
+            '600': '215, 215, 215',
+            '700': '187, 187, 187',
+            '800': '159, 159, 159',
+            '900': '131, 131, 131',
+            'text': '243, 243, 243',
+        },
+        secondary: {
+            DEFAULT: '37, 37, 37',
+            '100': '119, 119, 119',
+            '200': '98, 98, 98',
+            '300': '78, 78, 78',
+            '400': '57, 57, 57',
+            '500': '37, 37, 37',
+            '600': '13, 13, 13',
+            '700': '13, 13, 13',
+            '800': '13, 13, 13',
+            '900': '0, 0, 0',
+            'text': '182, 182, 182',
+        },
+    },
+    "immutablePlay": {
+        tertiary: '182, 182, 182',
+        buttonTextColor: '19, 19, 19',
+        logo: '187, 187, 187',
+        headerLogo: 'none',
+        footerLogo: 'block',
+        footerLogoHeight: '20px',
+        header: {
+            hideMenu: true,
+            hideTabs: true,
+            hideWallets: true,
+        },
+        cardBackgroundStyle: {
+            backgroundColor: 'transparent',
+        },
         primary: {
             DEFAULT: '243, 243, 243',
             '100': '255, 255, 255',

@@ -109,7 +109,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
 
     const requestAmount = (
         <span className='inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg'>
-            <span>{truncateDecimals(swapBasicData?.requested_amount, swapBasicData?.source_token?.precision)}</span> <span>{swapBasicData?.source_token?.symbol}</span>
+            <span>{truncateDecimals(Number(swapBasicData?.requested_amount), swapBasicData?.source_token?.precision)}</span> <span>{swapBasicData?.source_token?.symbol}</span>
             <CopyButton toCopy={swapBasicData?.requested_amount} iconClassName='text-secondary-text' />
         </span>
     )
@@ -234,14 +234,14 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                                     </div>
                                 }
                                 value={
-                                    <span className="cursor-pointer hover:underline min-h-[20px] block">
+                                    <span className="cursor-pointer hover:underline min-h-5 block">
                                         {depositAddress ? (
                                             <span className='flex items-center gap-1'>
                                                 {shortenAddress(depositAddress)}
                                                 <CopyButton toCopy={depositAddress || ''} className='flex' />
                                             </span>
                                         ) : (
-                                            <span className="inline-block w-28 bg-secondary-400 h-[20px] rounded animate-pulse"></span>
+                                            <span className="inline-block w-28 bg-secondary-400 h-5 rounded animate-pulse"></span>
                                         )}
                                     </span>
                                 }
@@ -286,7 +286,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                                 value={
                                     <span className="cursor-pointer hover:underline flex items-center gap-1">
                                         {WalletIcon ? (
-                                            <WalletIcon className="w-4 h-4 p-0.5 bg-white rounded-sm" />
+                                            <WalletIcon className="w-4 h-4 bg-secondary-700 rounded-sm" />
                                         ) : addressProviderIcon ? (
                                             <ImageWithFallback
                                                 alt="Partner logo"

@@ -15,11 +15,11 @@ const securityHeaders = [
 const REMOTE_PATTERNS = [
   {
     protocol: 'https',
-    hostname: 'stagelslayerswapbridgesa.blob.core.windows.net',
+    hostname: 'cdn.layerswap.io',
   },
   {
     protocol: 'https',
-    hostname: 'bransferstorage.blob.core.windows.net',
+    hostname: 'cdn.layerswap.cloud',
   },
   {
     protocol: 'https',
@@ -65,6 +65,19 @@ module.exports = (phase, { defaultConfig }) => {
       return config;
     },
     productionBrowserSourceMaps: true,
+    async rewrites() {
+      return [
+        {
+          source: `/lsph/static/:path*`,
+          destination: "https://us-assets.i.posthog.com/static/:path*",
+        },
+        {
+          source: `/lsph/:path*`,
+          destination: "https://us.i.posthog.com/:path*",
+        },
+      ];
+    },
+    skipTrailingSlashRedirect: true,
     transpilePackages: ['@imtbl/sdk', '@fuels/connectors', '@fuels/react', "@radix-ui/react-dismissable-layer"]
   }
   if (process.env.APP_BASE_PATH) {

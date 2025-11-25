@@ -1,7 +1,7 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useContext, useMemo, useState } from 'react'
 import { resolveConnector, walletConnectWallets as _walletConnectWallets, WalletConnectWallet } from '../lib/wallets/connectors/resolveConnectors';
 import { CreateConnectorFn } from 'wagmi';
-import { coinbaseWallet, walletConnect } from '@wagmi/connectors'
+import { coinbaseWallet, walletConnect, metaMask } from '@wagmi/connectors'
 import { browserInjected } from '../lib/wallets/connectors/browserInjected';
 import { isMobile } from '../lib/isMobile';
 import { usePersistedState } from '@/hooks/usePersistedState';
@@ -51,7 +51,7 @@ export function EvmConnectorsProvider({ children }) {
     }, [recentConnectors]);
 
     const resolvedFeaturedWallets = useMemo(() => {
-        return featuredWallets.map(wallet => {
+        return featuredWallets.filter(wallet => wallet.name.toLowerCase() !== 'metamask').map(wallet => {
             return resolveConnector(wallet.name)
         })
     }, [featuredWallets]);
@@ -70,6 +70,13 @@ export function EvmConnectorsProvider({ children }) {
     }, [walletConnectWallets, initialRecentConnectors]);
 
     const defaultConnectors: CreateConnectorFn[] = [
+        metaMask({
+            dappMetadata: {
+                name: 'Layerswap',
+                url: 'https://layerswap.io/app/',
+                iconUrl: 'https://layerswap.io/app/symbol.png'
+            }
+        }),
         coinbaseWallet({
             appName: 'Layerswap',
             appLogoUrl: 'https://layerswap.io/app/symbol.png',

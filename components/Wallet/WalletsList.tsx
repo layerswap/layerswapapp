@@ -1,7 +1,7 @@
 import { Plus, Unplug } from "lucide-react";
 import AddressIcon from "../AddressIcon";
+import { FC, HTMLAttributes, useCallback } from "react";
 import { SelectAccountProps, Wallet, WalletProvider } from "../../Models/WalletProvider";
-import { FC, HTMLAttributes } from "react";
 import { ExtendedAddress } from "../Input/Address/AddressPicker/AddressWithIcon";
 import { clsx } from 'clsx';
 import { useConnectModal } from "../WalletModal";
@@ -30,7 +30,7 @@ const WalletsList: FC<Props> = (props) => {
 
     const { connect } = useConnectModal()
 
-    const connectWallet = async () => {
+    const connectWallet = useCallback(async () => {
         const result = await connect(provider)
 
         if (result && onSelect && result.withdrawalSupportedNetworks?.some(n => n === network?.name)) {
@@ -40,7 +40,8 @@ const WalletsList: FC<Props> = (props) => {
                 address: result.address
             })
         }
-    }
+
+    }, [provider, onSelect, network])
 
     const selectedSourceAccount = useSelectedAccount("from", selectedDepositMethod == 'wallet' ? network?.name : undefined);
 

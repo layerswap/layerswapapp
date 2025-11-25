@@ -8,7 +8,7 @@ import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import { SwapStatus } from '@/Models/SwapStatus';
 import { SwapFailReasons } from '@/Models/RangeError';
 import { Gauge } from '@/components/gauge';
-import { Check, CircleCheck, Undo2 } from 'lucide-react';
+import { CircleCheck, Undo2 } from 'lucide-react';
 import Failed from '../Failed';
 import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
@@ -17,7 +17,6 @@ import useSWR from 'swr';
 import { ApiResponse } from '@/Models/ApiResponse';
 import { useIntercom } from 'react-use-intercom';
 import logError from '@/lib/logError';
-import SubmitButton from '@/components/buttons/submitButton';
 import { posthog } from 'posthog-js';
 
 type Props = {
@@ -102,6 +101,8 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
                 name: renderingError.name,
                 message: renderingError.message,
                 $layerswap_exception_type: "Transaction Error",
+                $fromAddress: swapInputTransaction?.from,
+                $toAddress: swapBasicData?.destination_address,
                 stack: renderingError.stack,
                 cause: renderingError.cause,
                 where: 'TransactionError',
@@ -346,7 +347,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
 
     const swapStatus = swapDetails.status;
     return (
-        <Widget.Content>
+        <Widget.Content fitContent>
             <div className={`w-full min-h-[410px] h-full space-y-3 flex flex-col justify-between text-primary-text`}>
                 <SwapSummary />
                 <div className="bg-secondary-500 font-normal px-3 pt-6 pb-3 rounded-2xl space-y-4 flex flex-col w-full relative z-10 divide-y-2 divide-secondary-300 divide-dashed">

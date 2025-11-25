@@ -1,8 +1,8 @@
 import { keyDerivation } from '@starkware-industries/starkware-crypto-utils';
-import type { Signature, SignerInterface, TypedData } from 'starknet';
-import * as Starknet from 'starknet';
+import type { Signature, SignerInterface, TypedData } from 'starknet-old';
+import * as Starknet from 'starknet-old';
 
-import { STARKNET_MAINNET_CHAIN_ID } from './constants';
+import { STARKNET_MAINNET_CHAIN_ID } from '../constants';
 import { AccountSupport } from './starknet-account-support';
 
 export type { SignerInterface as Signer, TypedData, Signature };
@@ -85,24 +85,10 @@ export async function getAccountSupport(
   return accountSupport;
 }
 
-const RPC_NODES_MAINNET: readonly string[] = [
-  'https://starknet-mainnet.public.blastapi.io',
-  'https://free-rpc.nethermind.io/mainnet-juno',
-];
-const RPC_NODES_TESTNET: readonly string[] = [
-  'https://starknet-sepolia.public.blastapi.io',
-  'https://free-rpc.nethermind.io/sepolia-juno',
-];
 
-export function getPublicProvider(chainId: string): Starknet.ProviderInterface {
-  const nodes =
-    chainId === STARKNET_MAINNET_CHAIN_ID
-      ? RPC_NODES_MAINNET
-      : RPC_NODES_TESTNET;
-  const randIdx = Math.floor(Math.random() * nodes.length);
-  const node = nodes[randIdx];
-  if (node == null) throw new Error('No public provider defined');
-  const provider = new Starknet.RpcProvider({ nodeUrl: node });
+export function getPublicProvider(chainId: string, nodeUrl: string): Starknet.ProviderInterface {
+  if (!nodeUrl) throw new Error('No public provider defined');
+  const provider = new Starknet.RpcProvider({ nodeUrl });
   return provider;
 }
 
