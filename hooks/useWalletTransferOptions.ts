@@ -52,7 +52,7 @@ let checkContractWallet = async (address, network) => {
             transport: http()
         })
         try {
-            const bytecode = await publicClient.getBytecode({
+            const bytecode = await publicClient.getCode({
                 address: address as `0x${string}`
             });
 

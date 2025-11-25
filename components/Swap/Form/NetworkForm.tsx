@@ -28,6 +28,7 @@ import ReserveGasNote from "@/components/ReserveGasNote";
 import RefuelModal from "@/components/FeeDetails/RefuelModal";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import posthog from "posthog-js";
+import ContractAddressValidation from "@/components/validationError/AddressContractValidation";
 
 type Props = {
     partner?: Partner;
@@ -136,6 +137,11 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 ? <ValidationError />
                                 : null
                         }
+                        <ContractAddressValidation
+                            source_network={source}
+                            destination_network={destination}
+                            destination_address={values.destination_address}
+                        />
                         <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
                     </div>
                 </Widget.Content>
