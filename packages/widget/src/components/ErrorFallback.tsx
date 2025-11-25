@@ -1,29 +1,25 @@
 import { useCallback, useEffect } from "react";
 import { useIntercom } from "react-use-intercom";
 import { Home, RotateCcw } from "lucide-react";
-import { useLog } from "@/context/ErrorProvider";
 import MessageComponent from "./Common/MessageComponent";
 import NotFoundIcon from "./Icons/NotFoundIcon";
 import SubmitButton from "./Buttons/submitButton";
 import { FallbackProps } from "react-error-boundary";
+import { ErrorHandler } from "@/lib/ErrorHandler";
 
 export default function ErrorFallback({ error, resetErrorBoundary }: FallbackProps) {
 
     const { boot, show } = useIntercom()
-    const { log } = useLog();
 
     useEffect(() => {
-        log({
+        ErrorHandler({
             type: "ErrorFallback",
-            props: {
-                name: error?.name,
-                message: error?.message,
-                where: "ErrorFallback",
-                severity: "error",
-                $exception_type: "Error Fallback",
-            },
+            message: error.message,
+            name: error.name,
+            stack: error.stack,
+            cause: error.cause
         });
-    }, []);
+    }, [error]);
 
     const startIntercom = useCallback(() => {
         boot();

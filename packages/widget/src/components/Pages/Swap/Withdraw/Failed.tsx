@@ -3,7 +3,7 @@ import { useSwapDataState } from '@/context/swap';
 import { useIntercom } from 'react-use-intercom';
 import { SwapStatus } from '@/Models/SwapStatus';
 import QuestionIcon from '@/components//Icons/Question';
-import { log } from '@/context/ErrorProvider';
+import { ErrorHandler } from '@/lib/ErrorHandler';
 
 const Failed: FC = () => {
     const { swapDetails } = useSwapDataState()
@@ -11,14 +11,15 @@ const Failed: FC = () => {
     const updateWithProps = () => update({ customAttributes: { swapId: swapDetails?.id } })
 
     useEffect(() => {
-        log({
+        const error = new Error(`Swap failed: ${swapDetails?.id}`)
+        ErrorHandler({
             type: "SwapFailed",
-            props: {
-                severity: "error",
-                path: typeof window !== "undefined" ? window.location.pathname : undefined,
-            },
+            message: error.message,
+            name: error.name,
+            stack: error.stack,
+            cause: error.cause
         });
-    }, []);
+    }, [swapDetails?.id]);
 
     const startIntercom = useCallback(() => {
         boot();

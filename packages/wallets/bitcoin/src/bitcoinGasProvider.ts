@@ -1,5 +1,5 @@
 import { buildPsbt } from "./services/transferService/transactionBuilder/buildPsbt";
-import { JsonRpcClient, KnownInternalNames, formatUnits } from "@layerswap/widget/internal";
+import { ErrorHandler, JsonRpcClient, KnownInternalNames, formatUnits } from "@layerswap/widget/internal";
 import { Network, GasProps, GasWithToken, GasProvider } from "@layerswap/widget/types";
 
 export class BitcoinGasProvider implements GasProvider {
@@ -32,8 +32,14 @@ export class BitcoinGasProvider implements GasProvider {
             return { gas: formattedGas, token: network.token }
 
         } catch (e) {
-            console.log(e)
+            const error = e as Error;
+            ErrorHandler({
+                type: "GasProviderError",
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
+            });
         }
-
     }
 }

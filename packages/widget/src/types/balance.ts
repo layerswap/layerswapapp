@@ -1,6 +1,6 @@
 import { TokenBalance } from "@/Models/Balance";
 import { Network, NetworkWithTokens, Token } from "@/Models/Network";
-import { log } from "@/context/ErrorProvider";
+import { ErrorHandler } from "@/lib/ErrorHandler";
 
 export abstract class BalanceProvider {
     abstract supportsNetwork: (network: NetworkWithTokens) => boolean
@@ -8,19 +8,12 @@ export abstract class BalanceProvider {
     protected resolveTokenBalanceFetchError = (err: Error, token: Token, network: Network, isNativeCurrency?: boolean) => {
         const errorMessage = `${err.message || err}`
 
-        log({
+        ErrorHandler({
             type: 'BalanceProviderError',
-            props: {
-                where: "BalanceProvider",
-                network: network.name,
-                $exception_type: "Balance Fetch Error",
-                token: token.symbol ?? undefined,
-                message: `Could not fetch balance for ${token.symbol} in ${network.name}, err: ${errorMessage}`,
-                cause: (err as any)?.cause,
-                timeoutError:
-                    errorMessage.toLowerCase().includes("timeout") ||
-                    errorMessage.toLowerCase().includes("took too long"),
-            },
+            message: err.message,
+            name: err.name,
+            stack: err.stack,
+            cause: err
         });
 
         const tokenBalance: TokenBalance = {

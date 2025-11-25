@@ -16,10 +16,9 @@ import CountdownTimer from '@/components/Common/CountDownTimer';
 import useSWR from 'swr';
 import { ApiResponse } from '@/Models/ApiResponse';
 import { useIntercom } from 'react-use-intercom';
-import logError from '@/lib/logError';
 import Steps from './StepsComponent';
-import { useLog } from '@/context/ErrorProvider';
-import { useSwapStatusChangeCallback } from '@/context/callbackProvider';
+import { useCallbacks } from '@/context/callbackProvider';
+import { ErrorHandler } from '@/lib/ErrorHandler';
 
 type Props = {
     swapBasicData: SwapBasicData;
@@ -31,14 +30,13 @@ type Props = {
 const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) => {
     const { boot, show, update } = useIntercom();
     const { setSwapTransaction, swapTransactions } = useSwapTransactionStore();
-    const { log } = useLog();
+    const { onSwapStatusChange } = useCallbacks()
     const {
         source_network,
         destination_network,
         destination_token,
     } = swapBasicData
     const { fail_reason } = swapDetails
-    const swapStatusChanged = useSwapStatusChangeCallback()
 
     const updateWithProps = () => update({ customAttributes: { swapId: swapDetails.id } });
     const startIntercom = useCallback(() => {
@@ -72,7 +70,14 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
             }
             if (Date.now() - (loggedNotDetectedTxAt.current || storedWalletTransaction.timestamp) > 60000) {
                 loggedNotDetectedTxAt.current = Date.now();
-                logError(`Transaction not detected in ${source_network.name}. Tx hash: \`${transactionHash}\`. Tx status: ${inputTxStatus}. Swap id: \`${swapDetails.id}\`. ${source_network.display_name} explorer: ${source_network?.transaction_explorer_template?.replace("{0}", transactionHash)} . LS explorer: https://layerswap.io/explorer/${storedWalletTransaction?.hash} `);
+                const error = new Error(`Transaction not detected in ${source_network.name}. Tx hash: \`${transactionHash}\`. Tx status: ${inputTxStatus}. Swap id: \`${swapDetails.id}\`. ${source_network.display_name} explorer: ${source_network?.transaction_explorer_template?.replace("{0}", transactionHash)} . LS explorer: https://layerswap.io/explorer/${storedWalletTransaction?.hash} `);
+                ErrorHandler({
+                    type: "TransactionNotDetected",
+                    message: error.message,
+                    name: error.name,
+                    stack: error.stack,
+                    cause: error.cause
+                })
             }
         }
     }, [swapDetails, storedWalletTransaction, source_network]);
@@ -84,33 +89,28 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     useEffect(() => {
         if (inputTxStatus === TransactionStatus.Failed) {
             const err = new Error("Transaction failed")
-            const renderingError = new Error(`Swap:${swapDetails?.id} transaction:${transactionHash} failed`);
-            renderingError.name = `TransactionFailed`;
-            renderingError.cause = err;
-            log({
+            const error = new Error(`Swap:${swapDetails?.id} transaction:${transactionHash} failed`);
+            error.name = `TransactionFailed`;
+            error.cause = err;
+            ErrorHandler({
                 type: "TransactionFailed",
-                props: {
-                    name: renderingError.name,
-                    message: renderingError.message,
-                    $exception_type: "Transaction Error",
-                    stack: renderingError.stack,
-                    cause: renderingError.cause,
-                    severity: "error",
-                    where: 'TransactionError',
-                },
-            });
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
+            })
         }
     }, [inputTxStatus, transactionHash, swapDetails?.id])
 
     useEffect(() => {
-        const status = swapDetails?.status as SwapStatus | undefined
+        const status = swapDetails?.status
         if (
             status === SwapStatus.Completed ||
             status === SwapStatus.Failed ||
             status === SwapStatus.Expired ||
             status === SwapStatus.LsTransferPending
         ) {
-            swapStatusChanged({
+            onSwapStatusChange({
                 type: status,
                 swapId: swapDetails?.id!,
                 path: 'Processing',

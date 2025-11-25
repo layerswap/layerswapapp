@@ -17,9 +17,8 @@ import { isDiffByPercent } from "@/components/utils/numbers";
 import { useWalletWithdrawalState } from "@/context/withdrawalContext";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import { SwapFormValues } from "../../../Form/SwapFormValues";
-import { useSwapCreateCallback } from "@/context/callbackProvider";
 import { TransferProps } from "@/types";
-import { log } from "@/context/ErrorProvider";
+import { ErrorHandler } from "@/lib/ErrorHandler";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
@@ -163,7 +162,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
     const initialSettings = useInitialSettings()
-    const triggerSwapCreateCallback = useSwapCreateCallback()
 
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess } = useWalletWithdrawalState();
 
@@ -232,27 +230,17 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             if (hash) {
                 onWalletWithdrawalSuccess?.();
                 setSwapTransaction(swapId, BackendTransactionStatus.Pending, hash);
-                triggerSwapCreateCallback(newSwapData);
             }
         }
         catch (e) {
             setSwapId(undefined)
-            console.log('Error in SendTransactionButton:', e)
-
-            const swapWithdrawalError = new Error(e);
-            swapWithdrawalError.name = `SwapWithdrawalError`;
-            swapWithdrawalError.cause = e;
-            log({
-                type: 'SwapWithdrawalError',
-                props: {
-                    name: swapWithdrawalError.name,
-                    message: swapWithdrawalError.message,
-                    $exception_type: "Swap Withdrawal Error",
-                    stack: swapWithdrawalError.stack,
-                    cause: (swapWithdrawalError as any)?.cause,
-                    where: 'TransactionError',
-                    severity: 'error',
-                },
+            const error = e as Error;
+            ErrorHandler({ 
+                type: 'SwapWithdrawalError', 
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
             });
         }
         finally {

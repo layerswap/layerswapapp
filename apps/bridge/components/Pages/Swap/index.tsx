@@ -42,18 +42,11 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
                     removeSwapPath(router)
                 }
             },
-            onLogError: {
-                onWidgetError: logError,
-                onBalanceError: logError,
-                onGasFeeError: logError,
-                onTransactionNotDetected: logError,
-                onWalletWithdrawalError: logError,
-                onLongTransactionWarning: logError,
-            },
+            onError: logError,
         }}
         walletProviders={[EVMProvider, StarknetProvider, FuelProvider, ParadexProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider]}
     >
-        <Swap/>
+        <Swap />
     </LayerswapProvider>
 }
 

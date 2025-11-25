@@ -2,7 +2,7 @@ import { GasProvider, GasProps, Network, Token, NetworkType } from "@layerswap/w
 import { PublicClient, TransactionSerializedEIP1559, createPublicClient, encodeFunctionData, http, serializeTransaction, formatUnits, erc20Abi } from "viem";
 import { publicActionsL2 } from 'viem/op-stack'
 import resolveChain from "../evmUtils/resolveChain";
-import { logException } from '@layerswap/widget/internal';
+import { ErrorHandler } from "@layerswap/widget/internal";
 export class EVMGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
         return network.type === NetworkType.EVM && !!network.token
@@ -48,7 +48,14 @@ export class EVMGasProvider implements GasProvider {
             }
         }
         catch (e) {
-            console.log(e)
+            const error = e as Error;
+            ErrorHandler({
+                type: "GasProviderError",
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
+            });
         }
 
     }
@@ -118,20 +125,13 @@ abstract class getEVMGas {
             return await this.publicClient.getGasPrice()
 
         } catch (e) {
-            const error = new Error(e);
-            error.name = 'GasPriceError';
-            error.cause = e;
-
-            logException({
+            const error = e as Error;
+            ErrorHandler({
                 type: 'GasPriceError',
-                props: {
-                    message: error.message,
-                    stack: error.stack,
-                    cause: String(error.cause),
-                    where: 'getGasPrice',
-                    severity: 'error',
-                    chainId: this.chainId,
-                },
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
             });
         }
     }
@@ -140,44 +140,27 @@ abstract class getEVMGas {
             return await this.publicClient.estimateFeesPerGas()
 
         } catch (e) {
-            const error = new Error(e)
-            error.name = "FeesPerGasError"
-            error.cause = e
-
-            logException({
+            const error = e as Error;
+            ErrorHandler({
                 type: 'FeesPerGasError',
-                props: {
-                    name: error.name,
-                    message: error.message,
-                    $exception_type: "Fees Per Gas Error",
-                    stack: error.stack,
-                    cause: error.cause,
-                    where: 'feesPerGasError',
-                    severity: 'error',
-                },
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
             });
         }
     }
     private async estimateMaxPriorityFeePerGas() {
         try {
             return await this.publicClient.estimateMaxPriorityFeePerGas()
-
         } catch (e) {
-            const error = new Error(e)
-            error.name = "MaxPriorityFeePerGasError"
-            error.cause = e
-
-            logException({
+            const error = e as Error;
+            ErrorHandler({
                 type: 'MaxPriorityFeePerGasError',
-                props: {
-                    name: error.name,
-                    message: error.message,
-                    $exception_type: "Max Priority Fee Per Gas Error",
-                    stack: error.stack,
-                    cause: error.cause,
-                    where: 'maxPriorityFeePerGasError',
-                    severity: 'error',
-                },
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
             });
         }
     }

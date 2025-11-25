@@ -1,5 +1,5 @@
 import axios from "axios";
-import { KnownInternalNames, formatUnits } from "@layerswap/widget/internal";
+import { ErrorHandler, KnownInternalNames, formatUnits } from "@layerswap/widget/internal";
 import { GasProvider, GasProps, Network } from "@layerswap/widget/types";
 import { LoopringAPI } from "../services/transferService/loopring/LoopringAPI";
 import { LOOPRING_URLs, LpFee } from "../services/transferService/loopring/defs";
@@ -18,7 +18,14 @@ export class LoopringGasProvider implements GasProvider {
             if (formatedGas) return { gas: formatedGas, token: token }
         }
         catch (e) {
-            console.log(e)
+            const error = e as Error;
+            ErrorHandler({
+                type: "GasProviderError",
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
+            });
         }
     }
 }

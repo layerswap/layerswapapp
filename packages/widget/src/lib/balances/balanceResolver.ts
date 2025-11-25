@@ -1,7 +1,7 @@
 import { NetworkBalance } from "@/Models/Balance";
 import { BalanceProvider } from "@/types/balance";
 import { NetworkWithTokens } from "@/Models/Network";
-import { log } from "@/context/ErrorProvider";
+import { ErrorHandler } from "@/lib/ErrorHandler";
 
 export class BalanceResolver {
 
@@ -24,23 +24,14 @@ export class BalanceResolver {
             return { balances };
         }
         catch (e) {
-            const error = new Error(e)
-            error.name = "BalanceError"
-            error.cause = e
-
-            log({
-                type: 'BalanceResolverError',
-                props: {
-                    name: error.name,
-                    message: error.message,
-                    $exception_type: "Balance Error",
-                    stack: error.stack,
-                    cause: (error as any)?.cause,
-                    where: 'Balance resolver',
-                    severity: 'error',
-                },
+            const error = e as Error;
+            ErrorHandler({ 
+                type: 'BalanceResolverError', 
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error
             });
-
             return { balances: [] }
         }
     }

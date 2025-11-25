@@ -10,7 +10,7 @@ import { useInitialSettings, useSettingsState } from "@/context/settings";
 import WalletIcon from "@/components/Icons/WalletIcon";
 import { useBalance } from "@/lib/balances/useBalance";
 import { TransferProps } from "@/types";
-import { useLog } from "@/context/ErrorProvider";
+import { ErrorHandler } from "@/lib/ErrorHandler";
 
 type Props = {
     swapData: SwapBasicData
@@ -200,7 +200,6 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
 }
 
 const TransactionMessage: FC<{ error: Error, isLoading: boolean }> = ({ error, isLoading }) => {
-    const { log } = useLog();
 
     if (isLoading) {
         return <TransactionMessages.ConfirmTransactionMessage />
@@ -221,20 +220,13 @@ const TransactionMessage: FC<{ error: Error, isLoading: boolean }> = ({ error, i
         return <TransactionMessages.DifferentAccountsNotAllowedError network={error.message} />
     }
     else if (error) {
-        const swapWithdrawalError = new Error(error.message);
-        swapWithdrawalError.name = `SwapWithdrawalError`;
-        swapWithdrawalError.cause = error;
-        log({
-            type: "SwapWithdrawalError",
-            props: {
-                name: swapWithdrawalError.name,
-                message: swapWithdrawalError.message,
-                $exception_type: "Swap Withdrawal Error",
-                stack: swapWithdrawalError.stack,
-                cause: swapWithdrawalError.cause,
-                where: 'swapWithdrawalError',
-                severity: "error",
-            },
+        const err = error as Error;
+        ErrorHandler({ 
+            type: "SwapWithdrawalError", 
+            message: err.message,
+            name: err.name,
+            stack: err.stack,
+            cause: err.cause
         });
         return <TransactionMessages.UnexpectedErrorMessage message={error.message} />
     }

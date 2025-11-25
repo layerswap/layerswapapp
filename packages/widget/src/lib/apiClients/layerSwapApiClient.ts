@@ -7,7 +7,7 @@ import { AuthRefreshFailedError } from "../Errors/AuthRefreshFailedError";
 import { ApiResponse, EmptyApiResponse } from "../../Models/ApiResponse";
 import { NetworkWithTokens, Network, Token } from "../../Models/Network";
 import { Exchange } from "../../Models/Exchange";
-import { logException } from "@/context/ErrorProvider";
+import { ErrorHandler } from "@/lib/ErrorHandler";
 
 export default class LayerSwapApiClient {
     static apiBaseEndpoint?: string = AppSettings.LayerswapApiUri;
@@ -83,23 +83,14 @@ export default class LayerSwapApiClient {
                     return Promise.resolve(new EmptyApiResponse());
                 }
                 else {
-                    const renderingError = new Error(`API request error with uri:${uri}`);
-                    renderingError.name = `APIError`;
-                    renderingError.cause = reason;
-
-                    logException({
+                    const error = reason as Error;
+                    ErrorHandler({
                         type: 'APIError',
-                        props: {
-                            name: renderingError.name,
-                            message: renderingError.message,
-                            $exception_type: "API Error",
-                            stack: renderingError.stack,
-                            cause: renderingError.cause,
-                            where: 'apiClient',
-                            severity: 'error',
-                        },
+                        message: error.message,
+                        name: error.name,
+                        stack: error.stack,
+                        cause: error.cause
                     });
-
                     return Promise.reject(reason);
                 }
             });
