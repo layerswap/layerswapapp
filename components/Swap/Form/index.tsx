@@ -22,26 +22,26 @@ export default function Form() {
     }, [from, sourceExchanges])
     const [showBanner, setShowBanner] = useState(false);
 
-    useEffect(() => {
-        if (typeof window === "undefined") return;
+    // useEffect(() => {
+    //     if (typeof window === "undefined") return;
 
-        const sessionCountKey = "exchange_banner_session_count";
-        const closedKey = "exchange_banner_closed";
-        const seenKey = "exchange_banner_seen";
+    //     const sessionCountKey = "exchange_banner_session_count";
+    //     const closedKey = "exchange_banner_closed";
+    //     const seenKey = "exchange_banner_seen";
 
-        if (sessionStorage.getItem(closedKey) === "1") return;
+    //     if (sessionStorage.getItem(closedKey) === "1") return;
 
-        if (!sessionStorage.getItem(seenKey)) {
-            sessionStorage.setItem(seenKey, "1");
-            const next =
-                (parseInt(localStorage.getItem(sessionCountKey) || "0") || 0) + 1;
-            localStorage.setItem(sessionCountKey, String(next));
-            if (next <= 3) setShowBanner(true);
-        } else {
-            const count = parseInt(localStorage.getItem(sessionCountKey) || "0") || 0;
-            if (count <= 3) setShowBanner(true);
-        }
-    }, []);
+    //     if (!sessionStorage.getItem(seenKey)) {
+    //         sessionStorage.setItem(seenKey, "1");
+    //         const next =
+    //             (parseInt(localStorage.getItem(sessionCountKey) || "0") || 0) + 1;
+    //         localStorage.setItem(sessionCountKey, String(next));
+    //         if (next <= 3) setShowBanner(true);
+    //     } else {
+    //         const count = parseInt(localStorage.getItem(sessionCountKey) || "0") || 0;
+    //         if (count <= 3) setShowBanner(true);
+    //     }
+    // }, []);
 
     const dismissBanner = () => {
         setShowBanner(false);

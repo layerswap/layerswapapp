@@ -60,7 +60,7 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
 
     return (
         <>
-            {showBanner && (
+            {/* {showBanner && (
                 <div className="mb-3 rounded-2xl border border-secondary-400 bg-secondary-500 p-2.5 text-sm flex items-start justify-between">
                     <div>
                         <p className="text-sm text-primary-text mb-0.5">Deposit from CEX</p>
@@ -76,7 +76,7 @@ const ExchangeForm: FC<Props> = ({ partner, showBanner, dismissBanner }) => {
                         <X className="h-4 w-4" />
                     </button>
                 </div>
-            )}
+            )} */}
 
             <DepositMethodComponent />
             <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-3">
