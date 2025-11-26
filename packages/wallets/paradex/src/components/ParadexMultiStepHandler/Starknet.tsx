@@ -1,7 +1,7 @@
 import { WalletIcon } from 'lucide-react';
 import { FC, useCallback, useState } from 'react'
 import { AuthorizeStarknet } from '../../Authorize/Starknet';
-import { SendTransactionButton, KnownInternalNames, useSelectedAccount, useWallet, useSettingsState, ActionMessage } from '@layerswap/widget/internal';
+import { SendTransactionButton, KnownInternalNames, useSelectedAccount, useWallet, useSettingsState, ActionMessage, ErrorHandler } from '@layerswap/widget/internal';
 import { TransferProps, ActionMessageType, WithdrawPageProps } from '@layerswap/widget/types';
 
 const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
@@ -21,40 +21,46 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
         if (!swapId || !source_token) {
             return
         }
-        setLoading(true)
-        setButtonClicked(true)
-        setError(undefined)
+
         try {
+            setLoading(true)
+            setButtonClicked(true)
+            setError(undefined)
+            
             if (!selectedSourceAccount) {
                 throw Error("Starknet wallet not connected")
             }
-
+    
             if (amount == undefined && !amount)
                 throw Error("No amount")
 
-            try {
-                const snAccount = wallet?.metadata?.starknetAccount
-                if (!snAccount) {
-                    throw Error("Starknet account not found")
-                }
-                const paradexAccount = await AuthorizeStarknet(snAccount as any)
-
-                const parsedCallData = JSON.parse(callData || "")
-
-                const res = await paradexAccount.execute(parsedCallData, { maxFee: '1000000000000000' });
-
-                if (res.transaction_hash) {
-                    return res.transaction_hash
-                }
+            const snAccount = wallet?.metadata?.starknetAccount
+            if (!snAccount) {
+                throw Error("Starknet account not found")
             }
-            catch (error) {
-                throw error
+            const paradexAccount = await AuthorizeStarknet(snAccount as any)
+
+            const parsedCallData = JSON.parse(callData || "")
+
+            const res = await paradexAccount.execute(parsedCallData, { maxFee: '1000000000000000' });
+
+            if (res.transaction_hash) {
+                return res.transaction_hash
             }
         }
         catch (error) {
             (error as Error).name = ActionMessageType.UnexpectedErrorMessage
-            setLoading(false)
             setError(error as Error)
+            ErrorHandler({
+                type: "TransferError",
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
+            });
+        }
+        finally {
+            setLoading(false)
         }
     }, [selectedSourceAccount?.address, starknet, source_token])
 

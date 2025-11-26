@@ -3,7 +3,7 @@ import { FC, useCallback, useEffect, useState } from 'react'
 import { useAccount, useConfig } from 'wagmi';
 import { ActivationTokenPicker } from './utils/ActivationTokentPicker';
 import { useActivationData, useLoopringAccount, useLoopringTokens } from './utils/hooks';
-import { AppSettings, SignatureIcon, WalletMessage, ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactionButton, ActionMessage } from '@layerswap/widget/internal';
+import { AppSettings, SignatureIcon, WalletMessage, ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactionButton, ActionMessage, ErrorHandler } from '@layerswap/widget/internal';
 import { ActionMessageType, TransferProps, WithdrawPageProps } from '@layerswap/widget/types';
 import { ChainId, UnlockedAccount } from './services/defs';
 import { LoopringAPI } from './services/LoopringAPI';
@@ -44,6 +44,13 @@ const LoopringMultiStepHandler: FC<WithdrawPageProps> = ({ swapBasicData, refuel
         catch (error) {
             (error as Error).name = ActionMessageType.UnexpectedErrorMessage
             setError(error as Error)
+            ErrorHandler({
+                type: "WalletError",
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
+            });
         }
         finally {
             setLoading(false)
@@ -69,6 +76,13 @@ const LoopringMultiStepHandler: FC<WithdrawPageProps> = ({ swapBasicData, refuel
         catch (error) {
             (error as Error).name = ActionMessageType.UnexpectedErrorMessage
             setError(error as Error)
+            ErrorHandler({
+                type: "WalletError",
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
+            });
         }
         finally {
             setLoading(false)
@@ -106,6 +120,13 @@ const LoopringMultiStepHandler: FC<WithdrawPageProps> = ({ swapBasicData, refuel
             else
                 (error as Error).name = ActionMessageType.UnexpectedErrorMessage
             setError(error as Error)
+            ErrorHandler({
+                type: "TransferError",
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
+            });
         }
     }, [source_network, accInfo, unlockedAccount, source_token])
 

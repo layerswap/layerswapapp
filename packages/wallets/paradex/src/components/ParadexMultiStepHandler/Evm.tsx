@@ -1,6 +1,6 @@
 import { FC, useState } from 'react'
 import { useAccount } from 'wagmi';
-import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton, KnownInternalNames, useSelectedAccount, useWallet, useSettingsState, ActionMessage } from '@layerswap/widget/internal';
+import { ChangeNetworkButton, ConnectWalletButton, SendTransactionButton, KnownInternalNames, useSelectedAccount, useWallet, useSettingsState, ActionMessage, ErrorHandler } from '@layerswap/widget/internal';
 import { WithdrawPageProps, ActionMessageType, TransferProps } from '@layerswap/widget/types';
 import { useEthersSigner } from '../../utils/ethers';
 import AuhorizeEthereum from '../../Authorize/Ethereum';
@@ -42,8 +42,17 @@ const ParadexWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refue
             }
         } catch (error) {
             (error as Error).name = ActionMessageType.UnexpectedErrorMessage
-            setLoading(false)
             setError(error as Error)
+            ErrorHandler({
+                type: "TransferError",
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
+            });
+        }
+        finally {
+            setLoading(false)
         }
     }
 

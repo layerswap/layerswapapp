@@ -2,7 +2,7 @@
 import { ArrowLeftRight, Info } from 'lucide-react';
 import { FC, useCallback, useEffect, useState } from 'react'
 import { utils } from 'ethers';
-import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactionButton, useSettingsState, KnownInternalNames, useSelectedAccount, useWallet, SignatureIcon, ClickTooltip, ActionMessage } from '@layerswap/widget/internal';
+import { ButtonWrapper, ChangeNetworkButton, ConnectWalletButton, SendTransactionButton, useSettingsState, KnownInternalNames, useSelectedAccount, useWallet, SignatureIcon, ClickTooltip, ActionMessage, ErrorHandler } from '@layerswap/widget/internal';
 import { useAccount } from 'wagmi';
 import { TransferProps, ActionMessageType, WithdrawPageProps } from '@layerswap/widget/types';
 import { formatUnits } from 'viem';
@@ -86,6 +86,13 @@ const ZkSyncMultiStepHandler: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
         catch (error) {
             (error as Error).name = ActionMessageType.UnexpectedErrorMessage
             setError(error as Error)
+            ErrorHandler({
+                type: "WalletError",
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
+            });
         }
         finally {
             setLoading(false)
@@ -118,6 +125,13 @@ const ZkSyncMultiStepHandler: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
         catch (error) {
             (error as Error).name = ActionMessageType.UnexpectedErrorMessage
             setError(error as Error)
+            ErrorHandler({
+                type: "WalletError",
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
+            });
         }
         finally {
             setLoading(false)
@@ -149,6 +163,13 @@ const ZkSyncMultiStepHandler: FC<WithdrawPageProps> = ({ swapBasicData, refuel }
             (error as Error).name = ActionMessageType.UnexpectedErrorMessage
             setLoading(false)
             setError(error as Error)
+            ErrorHandler({
+                type: "TransferError",
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
+            });
         }
     }, [syncWallet, source_token])
 
