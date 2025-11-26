@@ -10,7 +10,7 @@ const fieldMapping: Record<string, string> = {
     fromExchange: "name",
 };
 
-const allowedFields = ['from', 'to', 'fromAsset', 'toAsset', 'fromExchange', 'amount'];
+const allowedFields = ['from', 'to', 'fromAsset', 'toAsset', 'fromExchange'];
 
 /**
  * Update a single query‐param (add/update or remove).

@@ -59,7 +59,7 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
     const { wallets, provider } = useWallet(source_network, "withdrawal")
     const { sameAccountNetwork } = useInitialSettings()
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id && w.withdrawalSupportedNetworks?.includes(source_network?.name))
-    const networkChainId = Number(source_network?.chain_id) ?? undefined
+    const networkChainId = source_network?.chain_id ?? undefined
     const [savedTransactionHash, setSavedTransactionHash] = useState<string>()
 
     useEffect(() => {
@@ -100,9 +100,9 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
     if (!wallet) {
         return <ConnectWalletButton />
     }
-    else if (wallet.chainId && wallet.chainId !== networkChainId && source_network) {
+    else if (wallet.chainId && wallet.chainId != networkChainId && source_network) {
         return <ChangeNetworkButton
-            chainId={networkChainId}
+            chainId={Number(networkChainId)}
             network={source_network}
         />
     }
@@ -110,7 +110,7 @@ export const WalletWithdrawal: FC<WithdrawPageProps> = ({
         return <TransferTokenButton
             swapData={swapBasicData}
             refuel={refuel}
-            chainId={networkChainId}
+            chainId={Number(networkChainId)}
             savedTransactionHash={savedTransactionHash as `0x${string}`}
         />
     }
@@ -174,27 +174,31 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
                 if (tx) {
                     return tx
                 }
-            } catch {
+            } catch (e) {
+                if (typeof e === 'string' && e?.includes('No transfer provider found for network:')) {
+                    if (!provider?.transfer) throw new Error('No provider transfer')
 
-                if (!provider?.transfer) throw new Error('No provider transfer')
+                    const tx = await provider.transfer({
+                        token: swapData.source_token,
+                        amount,
+                        depositAddress,
+                        callData,
+                        selectedWallet: wallet,
+                        network: swapData.source_network,
+                        balances: balances,
+                        userDestinationAddress: swapData.destination_address,
+                    }, wallet)
 
-                const tx = await provider.transfer({
-                    token: swapData.source_token,
-                    amount,
-                    depositAddress,
-                    callData,
-                    selectedWallet: wallet,
-                    network: swapData.source_network,
-                    balances: balances,
-                    userDestinationAddress: swapData.destination_address,
-                })
+                    if (!tx)
+                        throw new Error('No transaction')
 
-                if (!tx)
-                    throw new Error('No transaction')
-
-                if (tx) {
-                    return tx
+                    if (tx) {
+                        return tx
+                    }
+                } else {
+                    throw e
                 }
+
             }
         } catch (e) {
             setLoading(false)

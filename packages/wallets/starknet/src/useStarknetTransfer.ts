@@ -34,7 +34,7 @@ export function useStarknetTransfer(): TransferProvider {
                 const e = new Error(error)
                 e.message = error
 
-                if (error === "An error occurred (USER_REFUSED_OP)" || error === "Execute failed") {
+                if (error.message === "An error occurred (USER_REFUSED_OP)" || error.message === "Execute failed") {
                     e.name = ActionMessageType.TransactionRejected
                     throw e
                 } else if (error === "failedTransfer") {

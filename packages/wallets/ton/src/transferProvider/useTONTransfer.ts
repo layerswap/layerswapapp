@@ -2,6 +2,8 @@ import { TransferProvider, TransferProps, Network, ActionMessageType, Wallet } f
 import { useTonConnectUI } from "@tonconnect/ui-react"
 import { transactionBuilder } from "./transactionBuilder"
 import { useTonConfig } from "../index"
+import { waitForTransaction } from "./waitForTransaction"
+import { createTonClient } from "../client"
 
 export function useTONTransfer(): TransferProvider {
     const [tonConnectUI] = useTonConnectUI()
@@ -37,9 +39,12 @@ export function useTONTransfer(): TransferProvider {
                 )
 
                 const res = await tonConnectUI.sendTransaction(transaction)
+                const tonClient = createTonClient(tonConfig?.tonApiKey)
 
-                if (res) {
-                    return res.boc
+                const tx = await waitForTransaction(res.boc, tonClient);
+
+                if (tx?.hash) {
+                    return tx.hash.toString()
                 }
 
                 throw new Error("No transaction BOC returned")
@@ -47,10 +52,10 @@ export function useTONTransfer(): TransferProvider {
                 const e = new Error()
                 e.message = error.message
 
-                if (error && error.includes('Reject request')) {
+                if (typeof error === 'string' && error?.includes('Reject request')) {
                     e.name = ActionMessageType.TransactionRejected
                     throw e
-                } else if (error && error.includes('Transaction was not sent')) {
+                } else if (typeof error === 'string' && error?.includes('Transaction was not sent')) {
                     e.name = ActionMessageType.TransactionFailed
                     throw e
                 } else {
