@@ -35,11 +35,11 @@ const ContractAddressValidation: React.FC<AddressContractValidationProps> = ({ s
         return (
             <ErrorDisplay
                 details={{
-                    title: "Contract Address Not Supported",
+                    title: "Address is not a contract",
                     type: 'warning',
                     icon: <InfoIcon className={ICON_CLASSES_WARNING} />
                 }}
-                message="This address is a contract address in another network but not supported as a destination address."
+                message={`This address is a contract address in ${destination_network.display_name} but not supported as a destination address.`}
             />
         );
     }
