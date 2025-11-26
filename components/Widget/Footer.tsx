@@ -62,9 +62,9 @@ const Comp = ({ children, hidden, sticky = true }: FooterProps) => {
                     className={`text-primary-text text-base      
                              max-sm:inset-x-0
                              max-sm:bottom-0 
-                              max-sm:w-full invisible sm:hidden w-full`}>
+                             max-sm:w-full invisible sm:hidden w-full`}>
                 </div>
-            </ >
+            </>
             :
             children
     )
