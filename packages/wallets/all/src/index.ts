@@ -33,7 +33,6 @@ import { createLoopringModule } from "@layerswap/wallet-module-loopring";
 
 import { createZkSyncModule } from "@layerswap/wallet-module-zksync";
 
-// Re-export all wallet provider factories
 export { createBitcoinProvider };
 export type { BitcoinProviderConfig };
 
@@ -68,7 +67,6 @@ export { createLoopringModule };
 
 export { createZkSyncModule };
 
-// Re-export deprecated providers for backward compatibility
 /**
  * @deprecated Use createBitcoinProvider() instead. This export will be removed in a future version.
  */
