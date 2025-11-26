@@ -24,10 +24,6 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
     const config = useConfig()
     const { setSelectedConnector } = useConnectModal()
 
-    const switchAccount = async (wallet: Wallet, address: string) => {
-        // as we do not have multiple accounts management we will leave the method empty
-    }
-
     const disconnectWallet = async (connectorName: string) => {
         try {
             const connector = connectors.find(w => w.name.toLowerCase() === connectorName.toLowerCase())
@@ -178,7 +174,6 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
     const provider: WalletConnectionProvider = {
         connectWallet,
         disconnectWallets,
-        switchAccount,
 
         transfer,
 

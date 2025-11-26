@@ -2,13 +2,20 @@ import { TransferProvider, TransferProps, Network, ActionMessageType } from "@la
 import { useFuel } from '@fuels/react'
 import { Provider } from '@fuel-ts/account'
 import { transactionBuilder } from "./transactionBuilder"
+import { KnownInternalNames } from "@layerswap/widget/internal"
+
+const supportedNetworks = [
+    KnownInternalNames.Networks.FuelTestnet,
+    KnownInternalNames.Networks.FuelDevnet,
+    KnownInternalNames.Networks.FuelMainnet
+]
 
 export function useFuelTransfer(): TransferProvider {
     const { fuel } = useFuel()
 
     return {
         supportsNetwork(network: Network): boolean {
-            return network.name.toLowerCase().includes('fuel')
+            return supportedNetworks.includes(network.name)
         },
 
         async executeTransfer(params: TransferProps): Promise<string> {

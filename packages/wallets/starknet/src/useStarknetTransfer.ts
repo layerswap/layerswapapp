@@ -1,9 +1,16 @@
+import { KnownInternalNames } from "@layerswap/widget/internal"
 import { TransferProvider, TransferProps, Network, ActionMessageType, Wallet } from "@layerswap/widget/types"
+
+const supportedNetworks = [
+    KnownInternalNames.Networks.StarkNetMainnet,
+    KnownInternalNames.Networks.StarkNetGoerli,
+    KnownInternalNames.Networks.StarkNetSepolia
+]
 
 export function useStarknetTransfer(): TransferProvider {
     return {
         supportsNetwork(network: Network): boolean {
-            return network.name.toLowerCase().includes('starknet')
+            return supportedNetworks.includes(network.name)
         },
 
         async executeTransfer(params: TransferProps, wallet?: Wallet): Promise<string> {

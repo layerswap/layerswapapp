@@ -1,7 +1,7 @@
 import { WalletProvider, BaseWalletProviderConfig } from "@layerswap/widget/types";
 import { ImmutableXBalanceProvider } from "./immutableXBalanceProvider";
 import { ImmutableXGasProvider } from "./immutableXGasProvider";
-import useImtblXConnection from "./useImtblX";
+import useImmutableXConnection from "./useImmutableXConnection";
 import { useImmutableXTransfer } from "./useImmutableXTransfer"
 
 export type ImmutableXProviderConfig = BaseWalletProviderConfig
@@ -15,7 +15,7 @@ export function createImmutableXProvider(config: ImmutableXProviderConfig = {}):
         transferProviders
     } = config;
 
-    const walletConnectionProvider = customHook || useImtblXConnection;
+    const walletConnectionProvider = customHook || useImmutableXConnection;
 
     const defaultBalanceProviders = [new ImmutableXBalanceProvider()];
     const finalBalanceProviders = balanceProviders !== undefined
@@ -52,7 +52,7 @@ export function createImmutableXProvider(config: ImmutableXProviderConfig = {}):
  */
 export const ImmutableXProvider: WalletProvider = {
     id: "imx",
-    walletConnectionProvider: useImtblXConnection,
+    walletConnectionProvider: useImmutableXConnection,
     gasProvider: [new ImmutableXGasProvider()],
     balanceProvider: [new ImmutableXBalanceProvider()],
     transferProvider: [useImmutableXTransfer],

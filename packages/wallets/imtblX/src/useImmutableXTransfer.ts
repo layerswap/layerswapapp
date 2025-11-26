@@ -1,10 +1,17 @@
 import { TransferProvider, TransferProps, Network, ActionMessageType } from "@layerswap/widget/types"
 import ImtblClient from "./client"
+import { KnownInternalNames } from "@layerswap/widget/internal"
+
+const supportedNetworks = [
+    KnownInternalNames.Networks.ImmutableXMainnet,
+    KnownInternalNames.Networks.ImmutableXGoerli,
+    KnownInternalNames.Networks.ImmutableXSepolia,
+]
 
 export function useImmutableXTransfer(): TransferProvider {
     return {
         supportsNetwork(network: Network): boolean {
-            return network.name.toLowerCase().includes('immutablex') || network.name.toLowerCase().includes('imx')
+            return supportedNetworks.includes(network.name)
         },
 
         async executeTransfer(params: TransferProps): Promise<string> {

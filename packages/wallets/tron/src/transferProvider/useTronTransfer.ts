@@ -3,13 +3,19 @@ import { useWallet } from '@tronweb3/tronwallet-adapter-react-hooks'
 import { TronWeb } from 'tronweb'
 import { buildInitialTransaction } from "./transactionBuilder"
 import { TronGasProvider } from "../tronGasProvider"
+import { KnownInternalNames } from "@layerswap/widget/internal"
+
+const supportedNetworks = [
+    KnownInternalNames.Networks.TronMainnet,
+    KnownInternalNames.Networks.TronTestnet
+]
 
 export function useTronTransfer(): TransferProvider {
     const { signTransaction } = useWallet()
 
     return {
         supportsNetwork(network: Network): boolean {
-            return network.name.toLowerCase().includes('tron')
+            return supportedNetworks.includes(network.name)
         },
 
         async executeTransfer(params: TransferProps): Promise<string> {
