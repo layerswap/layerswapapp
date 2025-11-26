@@ -1,8 +1,23 @@
-import { FC } from "react"
+import { FC, useEffect } from "react"
 import { ActionMessages, ActionMessageType } from "../../messages/TransactionMessages"
 import { ErrorHandler } from "@/lib/ErrorHandler"
 
 export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean }> = ({ error, isLoading }) => {
+
+    useEffect(() => {
+        if (error && (error?.name === ActionMessageType.UnexpectedErrorMessage
+            || !Object.values(ActionMessageType).includes(error.name as ActionMessageType)
+        )) {
+            ErrorHandler({
+                type: "SwapWithdrawalError",
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
+            });
+        }
+    }, [error])
+
     if (isLoading) {
         return <ActionMessages.ConfirmActionMessage />
     }
@@ -23,15 +38,6 @@ export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean }>
     }
     else if (error) {
         if (!error.message) return <ActionMessages.UnexpectedErrorMessage message={'Something went wrong'} />
-
-        const err = error as Error;
-        ErrorHandler({ 
-            type: "SwapWithdrawalError", 
-            message: err.message,
-            name: err.name,
-            stack: err.stack,
-            cause: err.cause
-        });
         return <ActionMessages.UnexpectedErrorMessage message={error.message} />
     }
     else return <></>
