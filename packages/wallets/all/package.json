@@ -47,7 +47,9 @@
     "@layerswap/wallet-starknet": "workspace:^",
     "@layerswap/wallet-svm": "workspace:^",
     "@layerswap/wallet-ton": "workspace:^",
-    "@layerswap/wallet-tron": "workspace:^"
+    "@layerswap/wallet-tron": "workspace:^",
+    "@layerswap/wallet-module-loopring": "workspace:^",
+    "@layerswap/wallet-module-zksync": "workspace:^"
   },
   "peerDependencies": {
     "react": "^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc",

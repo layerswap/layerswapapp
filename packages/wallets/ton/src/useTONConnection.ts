@@ -1,8 +1,9 @@
 import { ConnectedWallet, useTonConnectUI, useTonWallet } from "@tonconnect/ui-react"
 import { Address } from "@ton/core";
 import { KnownInternalNames, walletIconResolver } from "@layerswap/widget/internal";
-import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType, WalletConnectionProviderProps } from "@layerswap/widget/types";
-import { transactionBuilder } from "./services/transferService/transactionBuilder";
+import { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types";
+import { useTonConfig } from "./index";
+import { useTONTransfer } from "./transferProvider/useTONTransfer";
 
 export default function useTONConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
 
@@ -13,6 +14,7 @@ export default function useTONConnection({ networks }: WalletConnectionProviderP
 
     const name = 'TON'
     const id = 'ton'
+    const tonConfig = useTonConfig();
 
     const tonWallet = useTonWallet();
     const [tonConnectUI] = useTonConnectUI();
@@ -111,38 +113,7 @@ export default function useTONConnection({ networks }: WalletConnectionProviderP
         }
     }
 
-    const transfer: WalletConnectionProvider['transfer'] = async (params, wallet) => {
-        const { amount, callData, depositAddress, token, network } = params
-
-        if (!wallet?.address) {
-            throw new Error('Wallet address not found')
-        }
-        if (!depositAddress) {
-            throw new Error('Deposit address not found')
-        }
-        try {
-            const transaction = await transactionBuilder(amount, token, depositAddress, wallet?.address, callData)
-            const res = await tonConnectUI.sendTransaction(transaction)
-            if (res) {
-                return res.boc
-            }
-        } catch (error) {
-            const e = new Error()
-            e.message = error.message
-            if (error && error.includes('Reject request')) {
-                e.name = TransactionMessageType.TransactionRejected
-                throw e
-            }
-            else if (error && error.includes('Transaction was not sent')) {
-                e.name = TransactionMessageType.TransactionFailed
-                throw e
-            }
-            else {
-                e.name = TransactionMessageType.UnexpectedErrorMessage
-                throw e
-            }
-        }
-    }
+    const { executeTransfer: transfer } = useTONTransfer()
 
     const logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADgAAAA4CAYAAACohjseAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAALSSURBVHgB7ZoxUxNBGIa/YEhITJRRG61ig40wjlJpExttsbWCX0DyC5L8AqCzQxpbMmNlFxtoYIYRGipS6YwjMxkxxkRE7r0Z7vYWyIXdb8NsZp8qN3N3e+++u9+7t7kEvfv+n0aYMRpxnEDbcQJtxwm0HSfQdpxA23ECbWfkBSZJk8l0gp7cSVIhf4M4aR79o8a3v6SLlsC5QppWizlPpJmBAJHljTbVm11SRfnJivfHaf31LWPiAEYF2kBbqig/3dLzHA2LyuxNUkVpiE6mvHl3L7y0ftCl8uavvtesv7odXNP42qOFxlHf80vTGVqczvq/iw/GPTfHvCF7QldFTaA0LD97xSCu8VYvuvUTd76KmItQGqKY/K1u+ACLXm+jmnKCe4btnSgLVp6DK3ud4DeKQelxhrjAnBNjZ22/Q6ooC1z+0om6OJNlcRHC5qfSwTGcW967BoGYU+XNdnCMwlN5ql7tzqg8y0bcq223vY5U37rVCrH3+3+8ihiuNkozGa0Vje/eo4ngGO6hDR20Uxo9LLJazJMqcE/k5ccW6aItEA6uCb2MzFJZecwVUhH34ByqtS4s66zq9u9IwVFZecgro5p3Tw5YBKKnxdiAi/NTEwNfj3MjhWWrzeIeYFspIzbEMF56kRs4Niqz4dzDPapM7gE2gX5sbITrS8TGIOEvh7pctHRhfdepN3uR2IgLfznUdw6PtWNBhv1lTnQgzkU51N98+kncsAuEgyu74Ry6zEU51LliQcbI63h1K4yNy1wUQx2FpcZYWESMCETBEWPDdzEVuljIJyPuwXET7oGEyY8QDt7e9d/E+wH3Hn44JFMY3RddaMQXDe5YkDEqEAVHjA0ZFBbuWJAxvrPdb3PJVGERMS7QX6funhdiKhZkhvLfhBgbwGQsyAxFIGIDQ3Xnx7HvGorPMNwDCfetmuU4gbbjBNqOE2g7TqDtOIG2cwq0XR5LWK5AWAAAAABJRU5ErkJggg=='
     const availableWalletsForConnect: InternalConnector[] = [{

@@ -3,18 +3,16 @@ import { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionPr
 import { AuthorizeStarknet } from "./Authorize/Starknet"
 import { walletClientToSigner } from "./utils/ethers"
 import AuhorizeEthereum from "./Authorize/Ethereum"
-import { getWalletClient, switchChain, getChainId,  type ConnectorAlreadyConnectedError } from '@wagmi/core'
+import { getWalletClient, switchChain, getChainId, type ConnectorAlreadyConnectedError } from '@wagmi/core'
 import { useConfig } from "wagmi"
 import { shortenAddress, sleep, KnownInternalNames, useWalletStore, useConnectModal } from "@layerswap/widget/internal"
 import { useActiveParadexAccount } from "./ActiveParadexAccount"
 import ParadexMultiStepHandler from "./components/ParadexMultiStepHandler"
-import { EVMProvider } from "@layerswap/wallet-evm";
-import { StarknetProvider } from "@layerswap/wallet-starknet";
 
 export function useParadexConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
     const name = 'Paradex'
     const id = 'prdx'
-    const { activeConnection, setActiveAddress } = useActiveParadexAccount()
+    const { activeConnection, setActiveAddress, evmProvider: evmProviderInstance, starknetProvider: starknetProviderInstance } = useActiveParadexAccount()
     const paradexAccounts = useWalletStore((state) => state.paradexAccounts)
     const addParadexAccount = useWalletStore((state) => state.addParadexAccount)
     const removeParadexAccount = useWalletStore((state) => state.removeParadexAccount)
@@ -29,12 +27,10 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
     const asSourceSupportedNetworks = [
         ...withdrawalSupportedNetworks
     ]
-    const useEVMConnection = EVMProvider.walletConnectionProvider
-    const useStarknetConnection = StarknetProvider.walletConnectionProvider
 
     const { setSelectedConnector } = useConnectModal()
-    const evmProvider = useEVMConnection({ networks })
-    const starknetProvider = useStarknetConnection({ networks })
+    const evmProvider = evmProviderInstance.walletConnectionProvider({ networks })
+    const starknetProvider = starknetProviderInstance.walletConnectionProvider({ networks })
 
     const config = useConfig()
 

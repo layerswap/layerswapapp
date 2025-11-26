@@ -1,8 +1,9 @@
 import { Connector, useConnect, useDisconnect } from "@starknet-react/core";
-import { InternalConnector, Wallet, WalletConnectionProvider, TransactionMessageType, WalletConnectionProviderProps, NetworkWithTokens } from "@layerswap/widget/types";
+import { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps, NetworkWithTokens } from "@layerswap/widget/types";
 import { KnownInternalNames } from "@layerswap/widget/internal";
 import { resolveStarknetWalletConnectorIcon } from "./utils";
 import { useStarknetStore } from "./starknetWalletStore";
+import { useStarknetTransfer } from "./useStarknetTransfer";
 
 const starknetNames = [KnownInternalNames.Networks.StarkNetGoerli, KnownInternalNames.Networks.StarkNetMainnet, KnownInternalNames.Networks.StarkNetSepolia]
 export default function useStarknetConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
@@ -103,32 +104,7 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
         setActiveWallet(address);
     };
 
-    const transfer: WalletConnectionProvider['transfer'] = async (params, wallet) => {
-        const { callData } = params
-
-        try {
-            const { transaction_hash: transferTxHash } = (await wallet?.metadata?.starknetAccount?.execute(JSON.parse(callData || "")) || {});
-
-            if (transferTxHash) {
-                return transferTxHash
-            }
-        } catch (error) {
-            const e = new Error()
-            e.message = error
-            if (error === "An error occurred (USER_REFUSED_OP)" || error === "Execute failed") {
-                e.name = TransactionMessageType.TransactionRejected
-                throw e
-            }
-            else if (error === "failedTransfer") {
-                e.name = TransactionMessageType.TransactionFailed
-                throw e
-            }
-            else {
-                e.name = TransactionMessageType.UnexpectedErrorMessage
-                throw e
-            }
-        }
-    }
+    const { executeTransfer: transfer } = useStarknetTransfer()
 
     const provider: WalletConnectionProvider = {
         connectWallet,

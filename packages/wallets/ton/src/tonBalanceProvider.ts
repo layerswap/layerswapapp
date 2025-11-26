@@ -1,8 +1,16 @@
 import { KnownInternalNames, insertIfNotExists, formatUnits, retryWithExponentialBackoff, AppSettings } from "@layerswap/widget/internal";
+import { createTonClient } from "./client";
 import { BalanceProvider, TokenBalance, Network, Token } from "@layerswap/widget/types";
 import { TonClient } from "@ton/ton";
 
 export class TonBalanceProvider extends BalanceProvider {
+    private apiKey?: string;
+
+    constructor(apiKey?: string) {
+        super();
+        this.apiKey = apiKey;
+    }
+
     supportsNetwork: BalanceProvider['supportsNetwork'] = (network) => {
         return KnownInternalNames.Networks.TONMainnet.includes(network.name)
     }
@@ -13,7 +21,7 @@ export class TonBalanceProvider extends BalanceProvider {
 
         for (const token of tokens) {
             try {
-                const balance = await resolveBalance({ network, address, token })
+                const balance = await resolveBalance({ network, address, token, apiKey: this.apiKey || AppSettings.TonClientConfig?.tonApiKey })
 
                 balances.push(balance)
 
@@ -29,16 +37,14 @@ export class TonBalanceProvider extends BalanceProvider {
 
 
 
-export const resolveBalance = async ({ address, network, token }: {
+export const resolveBalance = async ({ address, network, token, apiKey }: {
     network: Network,
     token: Token,
-    address: string
+    address: string,
+    apiKey?: string
 }
 ) => {
-    const tonClient = new TonClient({
-        endpoint: 'https://toncenter.com/api/v2/jsonRPC',
-        apiKey: AppSettings.TonClientConfig.tonApiKey
-    });
+    const tonClient = createTonClient(apiKey)
 
     if (token.contract) {
         const res = await getJettonBalance({ network, token, address, tonClient })

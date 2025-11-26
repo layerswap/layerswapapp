@@ -1,12 +1,13 @@
 import { useConnectModal, KnownInternalNames, convertSvgComponentToBase64, JsonRpcClient, walletIconResolver } from "@layerswap/widget/internal"
-import { TransactionMessageType, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps, NetworkType, NetworkWithTokens } from "@layerswap/widget/types";
+import { ActionMessageType, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps, NetworkType, NetworkWithTokens } from "@layerswap/widget/types";
 import { useConnect, useAccount, useConfig } from '@bigmi/react'
 import { disconnect } from "@bigmi/client"
 import { useMemo } from "react"
 import { Connector, CreateConnectorFn } from "@bigmi/client"
 import { isBitcoinAddressValid } from "./utils/isValidAddress"
 import { useBitcoinConnectors } from "./BitcoinProvider"
-import { sendTransaction } from "./services/transferService/sendTransaction"
+import { sendTransaction } from "./transferProvider/sendTransaction"
+import { useBitcoinTransfer } from "./transferProvider/useBitcoinTransfer";
 
 const bitcoinNames = [KnownInternalNames.Networks.BitcoinMainnet, KnownInternalNames.Networks.BitcoinTestnet]
 
@@ -23,10 +24,6 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
     const { connectAsync, connectors } = useConnect()
     const config = useConfig()
     const { setSelectedConnector } = useConnectModal()
-
-    const switchAccount = async (wallet: Wallet, address: string) => {
-        // as we do not have multiple accounts management we will leave the method empty
-    }
 
     const disconnectWallet = async (connectorName: string) => {
         try {
@@ -105,50 +102,7 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
         }
     }
 
-    const transfer: WalletConnectionProvider['transfer'] = async (params) => {
-        const { amount, callData, depositAddress, selectedWallet, network } = params
-
-        if (!connector) {
-            throw new Error("Connector not found");
-        }
-        if (!depositAddress) {
-            throw new Error("Deposit address not provided");
-        }
-
-        const rpcClient = new JsonRpcClient(network.node_url);
-        const isTestnet = network?.name === KnownInternalNames.Networks.BitcoinTestnet;
-        const publicClient = config.getClient()
-
-        try {
-            const txHash = await sendTransaction({
-                amount,
-                depositAddress,
-                userAddress: selectedWallet.address,
-                isTestnet,
-                rpcClient,
-                callData,
-                connector: connector,
-                publicClient
-            });
-            return txHash;
-        } catch (error) {
-            const message = typeof error === 'string' ? error : error.message
-            const e = new Error(message)
-            e.message = message
-            if (error && message.includes('User rejected the request.')) {
-                e.name = TransactionMessageType.TransactionRejected
-                throw e
-            }
-            else if (error && (message.includes('Insufficient balance.') || message.includes('Insufficient funds'))) {
-                e.name = TransactionMessageType.InsufficientFunds
-                throw e
-            }
-            else {
-                e.name = TransactionMessageType.UnexpectedErrorMessage
-                throw e
-            }
-        }
-    }
+    const { executeTransfer: transfer } = useBitcoinTransfer()
 
     const resolvedWallet = useMemo(() => {
 
@@ -178,7 +132,6 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
     const provider: WalletConnectionProvider = {
         connectWallet,
         disconnectWallets,
-        switchAccount,
 
         transfer,
 

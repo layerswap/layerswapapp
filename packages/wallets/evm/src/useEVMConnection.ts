@@ -1,16 +1,14 @@
 import { useConfig, useConnect, useConnectors, useDisconnect, useSwitchAccount, Connector } from "wagmi"
-import { CreateConnectorFn, getAccount, getConnections, sendTransaction } from '@wagmi/core'
-import { BaseError } from "viem"
+import { CreateConnectorFn, getAccount, getConnections } from '@wagmi/core'
 import { useCallback, useEffect, useMemo, useRef } from "react"
-import { TransactionMessageType, NetworkType, NetworkWithTokens, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types"
+import { NetworkType, NetworkWithTokens, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types"
 import { isMobile, sleep, convertSvgComponentToBase64, useConnectModal, KnownInternalNames } from "@layerswap/widget/internal"
-import { evmConnectorNameResolver, resolveError, resolveEVMWalletConnectorIcon, resolveEVMWalletConnectorIndex } from "./evmUtils"
+import { evmConnectorNameResolver, resolveEVMWalletConnectorIcon, resolveEVMWalletConnectorIndex } from "./evmUtils"
 import { LSConnector } from "./connectors/types"
 import { explicitInjectedProviderDetected } from "./connectors/explicitInjectedProviderDetected"
 import { useEvmConnectors } from "./EVMProvider/evmConnectorsContext"
 import { useActiveEvmAccount } from "./EVMProvider/ActiveEvmAccount"
-import { transactionBuilder } from "./services/transferService/transactionBuilder"
-import { LoopringMultiStepHandler, ZkSyncMultiStepHandler } from "./components"
+import { useEVMTransfer } from "./transferProvider/useEVMTransfer"
 
 const ethereumNames = [KnownInternalNames.Networks.EthereumMainnet, KnownInternalNames.Networks.EthereumSepolia]
 const immutableZKEvm = [KnownInternalNames.Networks.ImmutableZkEVM]
@@ -51,7 +49,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
     const pendingId = useRef<string>()
 
     const { setSelectedConnector } = useConnectModal()
-    const { walletConnectConnectors, addWalletConnectWallet } = useEvmConnectors()
+    const { walletConnectConnectors, addToAdditionalWallets } = useEvmConnectors()
 
     const disconnectWallet = useCallback(async (connectorName: string) => {
 
@@ -107,7 +105,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
             if (!connector) {
                 const walletConnectConnector = walletConnectConnectors.find(w => w.id === internalConnector.id)
                 if (!walletConnectConnector) throw new Error("Connector not found")
-                await addWalletConnectWallet(walletConnectConnector)
+                await addToAdditionalWallets(walletConnectConnector)
 
                 connector = await new Promise<InternalConnector & LSConnector>((res, rej) => {
                     pendingId.current = walletConnectConnector.id
@@ -236,39 +234,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
         }
     }
 
-    const transfer: WalletConnectionProvider['transfer'] = async (params) => {
-        const { selectedWallet } = params
-
-        try {
-            const tx = await transactionBuilder(params)
-
-            if (isMobile() && selectedWallet?.metadata?.deepLink) {
-                window.location.href = selectedWallet.metadata?.deepLink
-                await new Promise(resolve => setTimeout(resolve, 100))
-            }
-            const hash = await sendTransaction(config, tx)
-
-            if (hash) {
-                return hash
-            }
-        } catch (error) {
-            const transactionResolvedError = resolveError(error as BaseError)
-            const e = new Error()
-            e.message = error.message
-            if (transactionResolvedError && transactionResolvedError === "insufficient_funds") {
-                e.name = TransactionMessageType.TransactionRejected
-                throw e
-            }
-            else if (transactionResolvedError && transactionResolvedError === "transaction_rejected") {
-                e.name = TransactionMessageType.TransactionRejected
-                throw e
-            }
-            else {
-                e.name = TransactionMessageType.UnexpectedErrorMessage
-                throw e
-            }
-        }
-    }
+    const { executeTransfer: transfer } = useEVMTransfer()
 
     const activeWallet = useMemo(() => resolvedConnectors.find(w => w.isActive), [resolvedConnectors])
     const providerIcon = useMemo(() => networks.find(n => ethereumNames.some(name => name === n.name))?.logo, [networks])
@@ -302,19 +268,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
             name,
             id,
             providerIcon,
-            ready: allConnectors.length > 0,
-
-
-            multiStepHandlers: [
-                {
-                    component: LoopringMultiStepHandler,
-                    supportedNetworks: [KnownInternalNames.Networks.LoopringMainnet, KnownInternalNames.Networks.LoopringGoerli, KnownInternalNames.Networks.LoopringSepolia]
-                },
-                {
-                    component: ZkSyncMultiStepHandler,
-                    supportedNetworks: [KnownInternalNames.Networks.ZksyncMainnet]
-                }
-            ]
+            ready: allConnectors.length > 0
         }
     }, [connectWallet, disconnectWallets, switchAccount, resolvedConnectors, availableFeaturedWalletsForConnect, walletConnectConnectors, autofillSupportedNetworks, withdrawalSupportedNetworks, asSourceSupportedNetworks, name, id, networks, allConnectors.length]);
 

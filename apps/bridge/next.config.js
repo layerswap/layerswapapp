@@ -78,15 +78,7 @@ module.exports = (phase, { defaultConfig }) => {
       '@fuels/react',
       "@radix-ui/react-dismissable-layer",
       '@layerswap/widget',
-      '@layerswap/wallet-evm',
-      '@layerswap/wallet-bitcoin',
-      '@layerswap/wallet-fuel',
-      '@layerswap/wallet-starknet',
-      '@layerswap/wallet-ton',
-      '@layerswap/wallet-tron',
-      '@layerswap/wallet-imtbl-x',
-      '@layerswap/wallet-svm',
-      '@layerswap/wallet-paradex',
+      '@layerswap/wallets',
       '@solana/web3.js'
     ]
   }

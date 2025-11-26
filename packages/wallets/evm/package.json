@@ -49,20 +49,8 @@
   "dependencies": {
     "@metamask/sdk": "^0.33.1",
     "@walletconnect/ethereum-provider": "2.21.8",
-    "axios": "catalog:",
-    "bignumber.js": "^9.3.1",
-    "blake2b": "^2.1.4",
-    "bn.js": "^5.2.0",
-    "crypto-js": "^4.1.1",
-    "ethereumjs-util": "^7.1.5",
     "ethers": "5.7.2",
-    "js-sha3": "^0.8.0",
-    "js-sha512": "^0.9.0",
-    "jsbn": "^1.1.0",
-    "lucide-react": "^0.379.0",
-    "swr": "catalog:",
-    "web-encoding": "^1.1.5",
-    "zksync": "0.13.1"
+    "js-sha3": "^0.8.0"
   },
   "devDependencies": {
     "@layerswap/widget": "workspace:^",

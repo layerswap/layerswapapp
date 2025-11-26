@@ -47,11 +47,3 @@ export function useCallbacks(): Required<CallbacksContextType> {
     }
     return context
 }
-
-// export function useSwapCompleteCallback() {
-//     const { onSwapComplete } = useCallbacks()
-
-//     return useCallback((swapData: SwapResponse) => {
-//         onSwapComplete(swapData)
-//     }, [onSwapComplete])
-// }

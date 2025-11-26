@@ -25,6 +25,7 @@ const PageComponent: FC<{ settings?: LayerSwapSettings }> = ({ settings }) => {
                 walletConnectors: [StarknetWalletConnectors],
                 initialAuthenticationMode: 'connect-only'
             }}
+            
         >
             <div className="h-screen flex flex-col items-center justify-center gap-4 w-full">
                 

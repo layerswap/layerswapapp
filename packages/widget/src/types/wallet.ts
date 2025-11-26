@@ -1,7 +1,7 @@
 // import { WalletAccount } from 'starknet';
 // @ts-ignore
 import { StarknetWindowObject } from 'starknetkit';
-import { TransferProps } from './transfer';
+import { TransferProps, TransferProvider } from './transfer';
 import { NetworkWithTokens } from '@/Models/Network';
 import { BalanceProvider } from './balance';
 import { GasProvider } from './gas';
@@ -56,11 +56,19 @@ export type WalletProvider = WalletWrapper & {
     nftProvider?: NftProvider | NftProvider[],
     gasProvider?: GasProvider | GasProvider[],
     balanceProvider?: BalanceProvider | BalanceProvider[],
+    transferProvider?: (() => TransferProvider) | (() => TransferProvider)[],
 }
 
 export type WalletWrapper = {
     id: string,
     wrapper?: React.ComponentType<any>,
+}
+
+export type WalletProviderModule = {
+    id: string,
+    balanceProvider?: BalanceProvider,
+    gasProvider?: GasProvider,
+    multiStepHandler?: MultiStepHandler,
 }
 
 export type WalletConnectionProviderProps = {
@@ -74,6 +82,10 @@ export type WalletConnectionProvider = {
     switchChain?: (connector: Wallet, chainId: string | number) => Promise<void>
     isNotAvailableCondition?: (connector: string, network: string) => boolean,
 
+    /**
+     * @deprecated Use TransferResolver from useTransfer() hook instead. This will be removed in a future version.
+     * Transfer providers should now be configured via WalletProvider.transferProvider.
+     */
     transfer?: (params: TransferProps, wallet?: Wallet) => Promise<string | undefined>,
 
     availableWalletsForConnect?: InternalConnector[],
@@ -93,7 +105,7 @@ export type WalletConnectionProvider = {
     multiStepHandlers?: MultiStepHandler[],
 }
 
-type MultiStepHandler = {
+export type MultiStepHandler = {
     component: React.ComponentType<any>,
     supportedNetworks: string[]
 }
@@ -102,4 +114,12 @@ export type SelectAccountProps = {
     walletId: string;
     address: string;
     providerName: string;
+}
+
+export type BaseWalletProviderConfig = {
+    customHook?: (props: WalletConnectionProviderProps) => WalletConnectionProvider
+    balanceProviders?: BalanceProvider | BalanceProvider[]
+    gasProviders?: GasProvider | GasProvider[]
+    addressUtilsProviders?: AddressUtilsProvider | AddressUtilsProvider[]
+    transferProviders?: (() => TransferProvider) | (() => TransferProvider)[]
 }

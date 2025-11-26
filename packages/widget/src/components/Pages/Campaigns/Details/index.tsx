@@ -14,7 +14,6 @@ import SpinIcon from "@/components/Icons/spinIcon"
 import useWallet from "@/hooks/useWallet"
 import { useConnectModal } from "@/components/Wallet/WalletModal"
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback"
-import { LayerswapContextProps, LayerswapProvider } from "@/context/LayerswapProvider"
 
 export const CampaignDetailsComponent: FC<{ campaignName: string | undefined }> = ({ campaignName }) => {
 
@@ -120,12 +119,10 @@ const NotFound = () => <Widget>
     </Widget.Content>
 </Widget>
 
-export const CampaignDetails: FC<LayerswapContextProps & { campaignName: string; goBack: () => void }> = (props) => {
+export const CampaignDetails: FC<{ campaignName: string; goBack: () => void }> = (props) => {
     return (
-        <LayerswapProvider {...props}>
-            <Widget goBack={props.goBack}>
-                <CampaignDetailsComponent campaignName={props.campaignName} />
-            </Widget>
-        </LayerswapProvider>
+        <Widget goBack={props.goBack}>
+            <CampaignDetailsComponent campaignName={props.campaignName} />
+        </Widget>
     )
 }

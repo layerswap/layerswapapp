@@ -7,12 +7,13 @@ import { FuelWalletConnector } from './connectors/fuel-wallet';
 import { useSettingsState } from '@layerswap/widget/internal';
 import { NetworkType } from '@layerswap/widget/types';
 import { useMemo } from 'react';
+import type { ReactElement } from 'react';
 
 const HOST_URL = 'https://api.bako.global';
 
 const FuelProviderWrapper = ({
     children
-}: { children: React.ReactNode }) => {
+}: { children: React.ReactNode }): ReactElement => {
 
     const { networks } = useSettingsState()
 

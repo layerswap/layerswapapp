@@ -16,6 +16,7 @@ export * from "../components/shadcn"
 export { default as WalletMessage } from "../components/Pages/Swap/Withdraw/messages/Message"
 export * from "../components/Buttons"
 export * from "../components/Pages/Swap/Withdraw/Wallet/Common/buttons"
+export * from "../components/Pages/Swap/Withdraw/Wallet/Common/actionMessage"
 export { default as ClickTooltip } from "../components/Common/ClickTooltip"
 export { useSelectedAccount, useUpdateBalanceAccount, useBalanceAccounts, useNetworkBalance } from "@/context/balanceAccounts";
 export { default as useWallet } from "@/hooks/useWallet"
@@ -24,5 +25,6 @@ export * from "../lib/formatUnits"
 export * from "../stores"
 export { default as shortenAddress } from "../components/utils/ShortenAddress"
 export * from "../context/swap"
+export { useWalletProvidersList } from "../components/Wallet/WalletProviders"
 export { ErrorHandler } from '../lib/ErrorHandler';
 export type { ErrorEventType } from '../types/logEvents';

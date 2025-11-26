@@ -1,22 +1,22 @@
 'use client'
 import { FC, ReactNode, useEffect, useState } from "react"
-import ThemeWrapper from "../components/themeWrapper";
+import ThemeWrapper from "@/components/themeWrapper";
 import { ErrorBoundary } from "react-error-boundary";
 import { SettingsProvider } from "./settings";
-import { LayerSwapAppSettings } from "../Models/LayerSwapAppSettings";
-import { LayerSwapSettings } from "../Models/LayerSwapSettings";
-import ErrorFallback from "../components/ErrorFallback";
-import { THEME_COLORS, ThemeData } from "../Models/Theme";
+import { LayerSwapAppSettings } from "@/Models/LayerSwapAppSettings";
+import { LayerSwapSettings } from "@/Models/LayerSwapSettings";
+import ErrorFallback from "@/components/ErrorFallback";
+import { THEME_COLORS, ThemeData } from "@/Models/Theme";
 import { AsyncModalProvider } from "./asyncModal";
 import { IntercomProvider } from 'react-use-intercom';
-import AppSettings from "../lib/AppSettings";
-import { getSettings } from "../helpers/getSettings";
+import AppSettings from "@/lib/AppSettings";
+import { getSettings } from "@/helpers/getSettings";
 import LayerSwapApiClient from "@/lib/apiClients/layerSwapApiClient";
 import ColorSchema from "@/components/ColorSchema";
 import { WidgetLoading } from "@/components/WidgetLoading";
 import WalletsProviders from "@/components/Wallet/WalletProviders";
 import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
-import { InitialSettings } from "../Models/InitialSettings";
+import { InitialSettings } from "@/Models/InitialSettings";
 import { BalanceAccountsProvider } from "./balanceAccounts";
 import { WalletProvider } from "@/types";
 import { ResolverProviders } from "./resolverContext";
@@ -28,10 +28,7 @@ export type LayerswapWidgetConfig = {
     settings?: LayerSwapSettings;
     theme?: ThemeData | null,
     initialValues?: InitialSettings,
-    walletConnect?: typeof AppSettings.WalletConnectConfig
-    imtblPassport?: typeof AppSettings.ImtblPassportConfig
-    tonConfigs?: typeof AppSettings.TonClientConfig
-}
+} & WalletsConfigs
 
 export type LayerswapContextProps = {
     children?: ReactNode;
@@ -42,14 +39,14 @@ export type LayerswapContextProps = {
 
 const INTERCOM_APP_ID = 'h5zisg78'
 const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callbacks, config, walletProviders = [] }) => {
-    let { apiKey, version, settings: _settings, theme: themeData, imtblPassport, initialValues } = config || {}
+    let { apiKey, version, settings: _settings, theme: themeData, initialValues, imtblPassport, tonConfigs, walletConnect } = config || {}
     const [fetchedSettings, setFetchedSettings] = useState<LayerSwapSettings | null>(null)
     themeData = { ...THEME_COLORS['default'], ...config?.theme }
 
     AppSettings.ApiVersion = version || AppSettings.ApiVersion
     AppSettings.ImtblPassportConfig = imtblPassport
-    AppSettings.TonClientConfig = config?.tonConfigs || AppSettings.TonClientConfig
-    AppSettings.WalletConnectConfig = config?.walletConnect || AppSettings.WalletConnectConfig
+    AppSettings.TonClientConfig = tonConfigs || AppSettings.TonClientConfig
+    AppSettings.WalletConnectConfig = walletConnect || AppSettings.WalletConnectConfig
     AppSettings.ThemeData = themeData
     if (apiKey) LayerSwapApiClient.apiKey = apiKey
 
@@ -111,4 +108,26 @@ export const LayerswapProvider: typeof LayerswapProviderComponent = (props) => {
         </>
 
     )
+}
+
+/**
+ * @deprecated Pass wallet configurations directly to the wallet provider factories instead.
+ * - For walletConnect: use `createEVMProvider({ walletConnectConfigs })`, `createSVMProvider({ walletConnectConfigs })`, etc.
+ * - For imtblPassport: use `createImmutablePassportProvider({ imtblPassportConfig })`
+ * - For tonConfigs: use `createTONProvider({ tonConfigs })`
+ * This type will be removed in a future version.
+ */
+type WalletsConfigs = {
+    /**
+     * @deprecated Pass `walletConnectConfigs` directly to wallet provider factories
+     */
+    walletConnect?: typeof AppSettings.WalletConnectConfig
+    /**
+     * @deprecated Pass `imtblPassportConfig` to `createImmutablePassportProvider({ imtblPassportConfig })`
+     */
+    imtblPassport?: typeof AppSettings.ImtblPassportConfig
+    /**
+     * @deprecated Pass `tonConfigs` to `createTONProvider({ tonConfigs })`
+     */
+    tonConfigs?: typeof AppSettings.TonClientConfig
 }
