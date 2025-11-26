@@ -39,7 +39,7 @@ const ReserveGasNote = ({ onSubmit, minAllowedAmount, maxAllowedAmount }: Props)
                     (
                         <div className="mt-3">
                             {
-                                (Number(nativeTokenBalance.amount) < Number(gasData)) ?
+                                (Number(nativeTokenBalance.amount) < Number(gasData.gas)) ?
                                     <WarningMessage messageType="warning">
                                         <div className="font-normal text-primary-text">
                                             You don&apos;t have enough funds to cover gas fees.
