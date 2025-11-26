@@ -43,7 +43,7 @@ export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
     return <div className="flex flex-col w-full px-2">
         {variant === "extended" && <GasFee values={values} quote={quote} />}
         <Fees quote={quote} values={values} />
-        {values.depositMethod !== "deposit_address" && <Rate fromAsset={values?.fromAsset} toAsset={values?.toAsset} requestAmount={quote?.requested_amount} receiveAmount={quote?.receive_amount} />}
+        {values.depositMethod !== "deposit_address" && <Rate fromAsset={values?.fromAsset} toAsset={values?.toAsset} requestAmount={quote?.requested_amount} receiveAmount={quote?.receive_amount} totalFee={quote?.total_fee} />}
         {values.depositMethod === "deposit_address" && variant === "extended" && values?.fromAsset?.contract && <ExchangeTokenContract fromAsset={values?.fromAsset} network={values?.from} />}
         {variant === "extended" && values.depositMethod === "wallet" && <Slippage quoteData={quote} values={values} />}
         <Estimates quote={quote} />
@@ -192,9 +192,9 @@ const Reward = ({ reward }: { reward: QuoteReward }) => {
     </RowWrapper>
 }
 
-const Rate = ({ fromAsset, toAsset, requestAmount, receiveAmount }) => {
+const Rate = ({ fromAsset, toAsset, requestAmount, receiveAmount, totalFee }) => {
     return <RowWrapper title="Rate">
-        <RateElement fromAsset={fromAsset} toAsset={toAsset} requestAmount={requestAmount} receiveAmount={receiveAmount} />
+        <RateElement fromAsset={fromAsset} toAsset={toAsset} requestAmount={requestAmount} receiveAmount={receiveAmount} totalFee={totalFee} />
     </RowWrapper>
 }
 
