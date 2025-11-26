@@ -1,6 +1,6 @@
 import { ERC20TokenType, ETHTokenType, Link, LinkResults } from '@imtbl/imx-sdk'
 import { Token } from '@layerswap/widget/types'
-import { KnownInternalNames, NetworkSettings } from '@layerswap/widget/internal'
+import { ErrorHandler, KnownInternalNames, NetworkSettings } from '@layerswap/widget/internal'
 
 export default class ImtblClient {
     link: Link
@@ -60,7 +60,14 @@ export default class ImtblClient {
             }
         }
         catch (e) {
-            console.log(e)
+            const error = e as Error;
+            ErrorHandler({
+                type: "TransferError",
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
+            })
         }
     }
 }

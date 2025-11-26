@@ -75,6 +75,7 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
             await disconnect()
         }
         catch (e) {
+            //TODO: handle error
             console.log(e)
         }
     }

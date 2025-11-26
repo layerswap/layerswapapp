@@ -56,7 +56,6 @@ export default function useImtblXConnection({ networks }: WalletConnectionProvid
             return wallet
         }
         catch (e) {
-            console.log(e)
             throw new Error(e)
         }
     }

@@ -4,19 +4,19 @@ import { Widget } from "../../../Widget/Index";
 import { SwapDataProvider, useSwapDataState, useSwapDataUpdate } from "@/context/swap";
 import NotFound from "./NotFound";
 import SwapDetails from "./SwapDetails";
-import { useBackClickCallback } from "@/context/callbackProvider";
+import { useCallbacks } from "@/context/callbackProvider";
 
 const Comp: FC = () => {
     const { swapBasicData, swapApiError, swapId } = useSwapDataState()
     const { mutateSwap } = useSwapDataUpdate()
-    const triggerOnBackClickCallback = useBackClickCallback()
+    const { onBackClick } = useCallbacks()
 
     useEffect(() => {
         mutateSwap()
     }, [])
 
     if (!swapBasicData)
-        return <Widget goBack={triggerOnBackClickCallback}>
+        return <Widget goBack={onBackClick}>
             <div className={`rounded-lg w-full overflow-hidden relative h-[548px]`}>
                 {
                     swapApiError &&

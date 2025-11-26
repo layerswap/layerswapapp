@@ -62,6 +62,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
             })
         }
         catch (e) {
+            //TODO: handle error
             console.log(e)
         }
     }, [config, disconnectAsync])
@@ -74,6 +75,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
             })
         }
         catch (e) {
+            //TODO: handle error
             console.log(e)
         }
     }, [config, disconnectWallet])

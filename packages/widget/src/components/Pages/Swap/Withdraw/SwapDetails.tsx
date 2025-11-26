@@ -9,7 +9,7 @@ import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
 import SubmitButton from '@/components/Buttons/submitButton';
 import ManualWithdraw from './ManualWithdraw';
 import { Partner } from '@/Models';
-import { useBackClickCallback } from '@/context/callbackProvider';
+import { useCallbacks } from "@/context/callbackProvider";
 
 type Props = {
     type: "widget" | "contained",
@@ -20,7 +20,7 @@ type Props = {
 
 const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, onCancelWithdrawal, partner }) => {
     const { swapDetails, swapBasicData, quote, refuel, depositActionsResponse } = useSwapDataState()
-    const triggerOnBackClickCallback = useBackClickCallback()
+    const { onBackClick } = useCallbacks()
     const swapStatus = swapDetails?.status || SwapStatus.UserTransferPending;
     const storedWalletTransactions = useSwapTransactionStore()
 
@@ -44,7 +44,7 @@ const SwapDetails: FC<Props> = ({ type, onWalletWithdrawalSuccess, onCancelWithd
     </>
 
     return (
-        <Container type={type} goBack={triggerOnBackClickCallback}>
+        <Container type={type} goBack={onBackClick}>
             {
                 ((swapStatus === SwapStatus.UserTransferPending
                     && !(swapInputTransaction || storedWalletTransaction))) ?

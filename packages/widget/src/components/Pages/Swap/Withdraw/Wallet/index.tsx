@@ -12,7 +12,7 @@ import { TransferProps } from "@/types";
 import { ActionMessage } from "./Common/actionMessage";
 import { ActionMessages } from "../messages/TransactionMessages";
 import { useTransfer } from "@/hooks/useTransfer";
-// import { posthog } from "posthog-js";
+import { ErrorHandler } from "@/lib/ErrorHandler";
 
 type Props = {
     swapData: SwapBasicData

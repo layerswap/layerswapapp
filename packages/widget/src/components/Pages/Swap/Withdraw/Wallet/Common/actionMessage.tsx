@@ -1,5 +1,6 @@
 import { FC } from "react"
 import { ActionMessages, ActionMessageType } from "../../messages/TransactionMessages"
+import { ErrorHandler } from "@/lib/ErrorHandler"
 
 export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean }> = ({ error, isLoading }) => {
     if (isLoading) {
@@ -23,19 +24,15 @@ export const ActionMessage: FC<{ error: Error | undefined, isLoading: boolean }>
     else if (error) {
         if (!error.message) return <ActionMessages.UnexpectedErrorMessage message={'Something went wrong'} />
 
-        const swapWithdrawalError = new Error(error?.message);
-        swapWithdrawalError.name = `SwapWithdrawalError`;
-        swapWithdrawalError.cause = error;
-        // posthog.captureException('$exception', {
-        //     name: swapWithdrawalError.name,
-        //     message: swapWithdrawalError.message,
-        //     $layerswap_exception_type: "Swap Withdrawal Error",
-        //     stack: swapWithdrawalError.stack,
-        //     cause: swapWithdrawalError.cause,
-        //     where: 'swapWithdrawalError',
-        //     severity: 'error',
-        // });
-        return <ActionMessages.UnexpectedErrorMessage message={error?.message} />
+        const err = error as Error;
+        ErrorHandler({ 
+            type: "SwapWithdrawalError", 
+            message: err.message,
+            name: err.name,
+            stack: err.stack,
+            cause: err.cause
+        });
+        return <ActionMessages.UnexpectedErrorMessage message={error.message} />
     }
     else return <></>
 }

@@ -2,7 +2,7 @@
 
 import Color from 'color';
 import { PipetteIcon } from 'lucide-react';
-import { Slider } from 'radix-ui';
+import * as Slider from '@radix-ui/react-slider';
 import {
   type ComponentProps,
   createContext,

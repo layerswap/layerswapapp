@@ -1,15 +1,27 @@
-import { FC, useCallback } from "react";
+import { FC, useCallback, useEffect } from "react";
 import { useIntercom } from "react-use-intercom";
 import { Home } from "lucide-react";
-import { useBackClickCallback } from "@/context/callbackProvider";
+import { useCallbacks } from "@/context/callbackProvider";
 import MessageComponent from "@/components/Common/MessageComponent";
 import NotFoundIcon from "@/components/Icons/NotFoundIcon";
+import { ErrorHandler } from "@/lib/ErrorHandler";
 
 const NotFound: FC<{ swapId?: string | undefined }> = ({ swapId }) => {
 
     const { boot, show, update } = useIntercom()
     const updateWithProps = () => update({ customAttributes: { swapId: swapId } })
-    const triggerBackClickCallback = useBackClickCallback()
+    const { onBackClick } = useCallbacks()
+
+    useEffect(() => {
+        const error = new Error(`Swap not found: ${swapId}`)
+        ErrorHandler({
+            type: "NotFound",
+            message: error.message,
+            name: error.name,
+            stack: error.stack,
+            cause: error.cause
+        });
+    }, [swapId])
 
     const startIntercom = useCallback(() => {
         boot();
@@ -44,7 +56,7 @@ const NotFound: FC<{ swapId?: string | undefined }> = ({ swapId }) => {
         <MessageComponent.Buttons>
             <div className="flex w-full text-primary-text text-base space-x-2">
                 <button
-                    onClick={triggerBackClickCallback}
+                    onClick={onBackClick}
                     type="button"
                     className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-secondary-300 px-5 py-4 text-base font-semibold leading-6 hover:bg-secondary-400 focus:outline-none transition"
                 >

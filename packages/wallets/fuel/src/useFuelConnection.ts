@@ -62,7 +62,6 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
                     await sleep(1000)
                     return await attemptConnection(true)
                 }
-                console.log(e)
                 throw new Error(e)
             }
         }
@@ -79,6 +78,7 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
             await fuelConnector.disconnect()
         }
         catch (e) {
+            //TODO: handle error
             console.log(e)
         } finally {
             removeWallet(name, connectorName)
@@ -95,6 +95,7 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
             }
         }
         catch (e) {
+            //TODO: handle error
             console.log(e)
         }
     }
@@ -105,6 +106,7 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
 
             if (!res) throw new Error('Could not switch account')
         } catch (e) {
+            //TODO: handle error
             console.log(e)
         }
     }
@@ -119,6 +121,7 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
 
             if (!res) throw new Error('Could not switch chain')
         } catch (e) {
+            //TODO: handle error
             console.log(e)
         }
     }
@@ -186,6 +189,7 @@ export default function useFuelConnection({ networks }: WalletConnectionProvider
                 }
 
             } catch (e) {
+                //TODO: handle error
                 console.log(e)
             }
         }

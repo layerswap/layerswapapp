@@ -1,6 +1,6 @@
 import { GasProps, Network, NetworkType, GasProvider } from "@layerswap/widget/types";
 import { transactionBuilderForGas } from "./utils";
-import { formatUnits } from "@layerswap/widget/internal";
+import { ErrorHandler, formatUnits } from "@layerswap/widget/internal";
 
 export class SolanaGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
@@ -36,7 +36,14 @@ export class SolanaGasProvider implements GasProvider {
 
         }
         catch (e) {
-            console.log(e)
+            const error = e as Error;
+            ErrorHandler({
+                type: "GasProviderError",
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
+            })
         }
     }
 }

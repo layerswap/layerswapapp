@@ -1,4 +1,5 @@
 import { GasProps, Network, GasProvider } from "@layerswap/widget/types";
+import { ErrorHandler } from "@layerswap/widget/internal";
 import { KnownInternalNames, formatUnits } from "@layerswap/widget/internal";
 import ZkSyncLiteRPCClient from "./zkSyncBalanceProvider";
 
@@ -18,7 +19,14 @@ export class ZkSyncGasProvider implements GasProvider {
             if (formatedGas) return { gas: formatedGas, token }
         }
         catch (e) {
-            console.log(e)
+            const error = e as Error;
+            ErrorHandler({
+                type: "GasProviderError",
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
+            });
         }
     }
 }

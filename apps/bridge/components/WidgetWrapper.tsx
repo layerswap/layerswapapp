@@ -5,6 +5,7 @@ import { updateFormBulk } from "./utils/updateForm"
 import { removeSwapPath, setSwapPath } from "./utils/updateSwapPath"
 import { getDefaultProviders } from "@layerswap/wallets";
 import { ParsedUrlQuery } from "querystring"
+import { logError } from "./utils/logError"
 
 type LayerswapProviderComponentProps = ComponentProps<typeof LayerswapProvider>;
 
@@ -87,17 +88,18 @@ const WidgetWrapper = <T extends Record<string, unknown>>({
     } as LayerswapProviderComponentProps['config']
 
     const defaultSwapCallbacks = enableSwapCallbacks ? {
-        onFormChange(formData: Parameters<NonNullable<LayerswapProviderComponentProps['callbacks']>['onFormChange']>[0]) {
+        onFormChange(formData) {
             updateFormBulk(formData);
         },
-        onSwapCreate(swapData: Parameters<NonNullable<LayerswapProviderComponentProps['callbacks']>['onSwapCreate']>[0]) {
+        onSwapCreate(swapData) {
             setSwapPath(swapData.swap.id, router)
         },
-        onSwapModalStateChange(open: Parameters<NonNullable<LayerswapProviderComponentProps['callbacks']>['onSwapModalStateChange']>[0]) {
+        onSwapModalStateChange(open) {
             if (!open) {
                 removeSwapPath(router)
             }
-        }
+        },
+        onError: logError,
     } : undefined
 
     const resolvedCallbacks = callbacks ?? defaultSwapCallbacks

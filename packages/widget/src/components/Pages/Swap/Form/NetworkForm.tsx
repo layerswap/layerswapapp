@@ -27,7 +27,7 @@ import DepositMethodComponent from "./FeeDetails/DepositMethod";
 import RefuelToggle from "./FeeDetails/Refuel";
 import RefuelModal from "./FeeDetails/RefuelModal";
 import { SwapFormValues } from "./SwapFormValues";
-import { useFormChangeCallback } from "@/context/callbackProvider";
+import { useCallbacks } from "@/context/callbackProvider";
 
 type Props = {
     partner?: Partner;
@@ -64,10 +64,11 @@ const NetworkForm: FC<Props> = ({ partner }) => {
     const isValid = !formValidation.message;
     const error = formValidation.message;
 
-    const triggerFormChangeCallback = useFormChangeCallback()
+    const { onFormChange } = useCallbacks()
+
     useEffect(() => {
-        triggerFormChangeCallback(values);
-    }, [values, triggerFormChangeCallback]);
+        onFormChange(values);
+    }, [values, onFormChange]);
 
     useEffect(() => {
         if (!source || !toAsset || !toAsset.refuel) {

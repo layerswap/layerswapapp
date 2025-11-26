@@ -3,13 +3,13 @@ import { useRouter } from 'next/router';
 import Head from "next/head";
 import AppWrapper from "./AppWrapper";
 import { useEffect } from "react";
+import posthog from "posthog-js";
 
 type Props = {
   children: JSX.Element | JSX.Element[];
   settings?: LayerSwapSettings;
   themeData?: ThemeData | null
 };
-
 
 export default function Layout({ children, themeData }: Props) {
   const router = useRouter();
@@ -42,6 +42,10 @@ export default function Layout({ children, themeData }: Props) {
         'amount',
         'destAddress'
       ])
+
+      posthog.capture('$pageview', {
+        custom_url: customUrl,
+      })
     }
 
     trackPageview()

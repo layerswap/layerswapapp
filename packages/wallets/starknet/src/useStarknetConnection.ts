@@ -71,7 +71,6 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
         }
 
         catch (e) {
-            console.log(e)
             throw new Error(e)
         }
     }
@@ -82,6 +81,7 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
             if (address) removeAccount(address)
         }
         catch (e) {
+            //TODO: handle error
             console.log(e)
         }
     }
