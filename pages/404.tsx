@@ -32,7 +32,7 @@ export default function Custom404() {
                                 </MessageComponent.Header>
                                 <MessageComponent.Description>
                                     <p className="mx-auto text-center text-base font-normal leading-5 text-secondary-text px-9">
-                                        <span>Sorry, we couldn't find the page you're looking for.</span>
+                                        <span>Sorry, we couldn&apos;t find the page you&apos;re looking for.</span>
                                     </p>
                                 </MessageComponent.Description>
                             </MessageComponent.Content>
