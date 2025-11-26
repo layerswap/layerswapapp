@@ -1,4 +1,4 @@
-import { buildPsbt } from "./services/transferService/transactionBuilder/buildPsbt";
+import { buildPsbt } from "./transferProvider/transactionBuilder/buildPsbt";
 import { JsonRpcClient, KnownInternalNames, formatUnits } from "@layerswap/widget/internal";
 import { Network, GasProps, GasWithToken, GasProvider } from "@layerswap/widget/types";
 

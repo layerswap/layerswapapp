@@ -4,8 +4,9 @@ import { TonGasProvider } from "./tonGasProvider";
 import TonProviderWrapper from "./TonProvider";
 import useTONConnection from "./useTONConnection";
 import { TonAddressUtilsProvider } from "./tonAddressUtilsProvider";
-import React, { createContext, useContext, useMemo } from "react";
+import React, { createContext, useContext } from "react";
 import { AppSettings } from "@layerswap/widget/internal";
+import { useTONTransfer } from "./transferProvider/useTONTransfer";
 
 export type TonClientConfig = {
     tonApiKey: string
@@ -32,7 +33,8 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
         customHook,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders
+        addressUtilsProviders,
+        transferProviders
     } = config;
 
     const WrapperComponent = ({ children, themeData }: { children: React.ReactNode, themeData?: ThemeData }) => {
@@ -62,6 +64,11 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
         ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
         : defaultAddressUtilsProviders;
 
+    const defaultTransferProviders = [useTONTransfer];
+    const finalTransferProviders = transferProviders !== undefined
+        ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
+        : defaultTransferProviders;
+
     return {
         id: "ton",
         wrapper: WrapperComponent,
@@ -69,6 +76,7 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
         addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
+        transferProvider: finalTransferProviders,
     };
 }
 
@@ -93,4 +101,5 @@ export const TONProvider: WalletProvider = {
     addressUtilsProvider: [new TonAddressUtilsProvider()],
     gasProvider: [new TonGasProvider()],
     balanceProvider: [new TonBalanceProvider()],
+    transferProvider: [useTONTransfer],
 };

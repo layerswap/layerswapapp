@@ -11,6 +11,7 @@ import { useBalance } from "@/lib/balances/useBalance";
 import { TransferProps } from "@/types";
 import { ActionMessage } from "./Common/actionMessage";
 import { ActionMessages } from "../messages/TransactionMessages";
+import { useTransfer } from "@/hooks/useTransfer";
 // import { posthog } from "posthog-js";
 
 type Props = {
@@ -140,8 +141,9 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
     const { provider, wallets } = useWallet(swapData.source_network, "withdrawal")
     const { balances } = useBalance(selectedSourceAccount?.address, networkWithTokens)
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
+    const { executeTransfer } = useTransfer()
 
-    const clickHandler = useCallback(async ({ amount, callData, depositAddress }: TransferProps) => {
+    const clickHandler = useCallback(async ({ amount, callData, depositAddress, swapId }: TransferProps) => {
         setButtonClicked(true)
         setError(undefined)
         setLoading(true)
@@ -152,32 +154,55 @@ const TransferTokenButton: FC<TransferTokenButtonProps> = ({
                 throw new Error('Missing amount')
             if (!wallet)
                 throw new Error('No selected account')
-            if (!provider?.transfer) throw new Error('No provider transfer')
 
-            const tx = await provider.transfer({
-                token: swapData.source_token,
-                amount,
-                depositAddress,
-                callData,
-                selectedWallet: wallet,
-                network: swapData.source_network,
-                balances: balances,
-                userDestinationAddress: swapData.destination_address,
-            })
-            if (!tx)
-                throw new Error('No transaction')
+            try {
+                const tx = await executeTransfer({
+                    token: swapData.source_token,
+                    amount,
+                    depositAddress,
+                    callData,
+                    selectedWallet: wallet,
+                    network: swapData.source_network,
+                    balances: balances,
+                    userDestinationAddress: swapData.destination_address,
+                    swapId,
+                }, wallet)
 
-            if (tx) {
-                return tx
+                if (!tx)
+                    throw new Error('No transaction')
+
+                if (tx) {
+                    return tx
+                }
+            } catch {
+
+                if (!provider?.transfer) throw new Error('No provider transfer')
+
+                const tx = await provider.transfer({
+                    token: swapData.source_token,
+                    amount,
+                    depositAddress,
+                    callData,
+                    selectedWallet: wallet,
+                    network: swapData.source_network,
+                    balances: balances,
+                    userDestinationAddress: swapData.destination_address,
+                })
+
+                if (!tx)
+                    throw new Error('No transaction')
+
+                if (tx) {
+                    return tx
+                }
             }
-
         } catch (e) {
             setLoading(false)
             setError(e)
 
             throw e
         }
-    }, [provider, chainId, selectedSourceAccount?.address])
+    }, [executeTransfer, chainId, selectedSourceAccount?.address, wallet, swapData, balances])
 
 
     return <div className="w-full space-y-3 flex flex-col justify-between h-full text-primary-text">

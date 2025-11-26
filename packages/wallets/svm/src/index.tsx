@@ -6,6 +6,7 @@ import { SolanaBalanceProvider } from "./svmBalanceProvider";
 import { SolanaGasProvider } from "./svmGasProvider";
 import { SolanaAddressUtilsProvider } from "./svmAddressUtilsProvider";
 import React from "react";
+import { useSVMTransfer } from "./transferProvider/useSVMTransfer";
 
 export type WalletConnectConfig = {
     projectId: string
@@ -25,7 +26,8 @@ export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvide
         customHook,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders
+        addressUtilsProviders,
+        transferProviders
     } = config;
 
     const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
@@ -53,6 +55,11 @@ export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvide
         ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
         : defaultAddressUtilsProviders;
 
+    const defaultTransferProviders = [useSVMTransfer];
+    const finalTransferProviders = transferProviders !== undefined
+        ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
+        : defaultTransferProviders;
+
     return {
         id: "solana",
         wrapper: WrapperComponent,
@@ -60,6 +67,7 @@ export function createSVMProvider(config: SVMProviderConfig = {}): WalletProvide
         addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
+        transferProvider: finalTransferProviders,
     };
 }
 
@@ -80,4 +88,5 @@ export const SVMProvider: WalletProvider = {
     addressUtilsProvider: [new SolanaAddressUtilsProvider()],
     gasProvider: [new SolanaGasProvider()],
     balanceProvider: [new SolanaBalanceProvider()],
+    transferProvider: [useSVMTransfer],
 };

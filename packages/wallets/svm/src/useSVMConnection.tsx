@@ -2,7 +2,7 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { KnownInternalNames } from "@layerswap/widget/internal"
 import { InternalConnector, Wallet, WalletConnectionProvider, ActionMessageType, NetworkType, WalletConnectionProviderProps } from "@layerswap/widget/types"
 import { useMemo } from "react"
-import { configureAndSendCurrentTransaction } from "./services/transferService/transactionSender"
+import { configureAndSendCurrentTransaction } from "./transferProvider/transactionSender"
 import { resolveSolanaWalletConnectorIcon } from "./utils"
 
 const solanaNames = [KnownInternalNames.Networks.SolanaMainnet, KnownInternalNames.Networks.SolanaDevnet, KnownInternalNames.Networks.SolanaTestnet]

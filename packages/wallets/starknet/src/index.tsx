@@ -7,6 +7,7 @@ import { AppSettings } from "@layerswap/widget/internal";
 import { StarknetAddressUtilsProvider } from "./starknetAddressUtilsProvider";
 import { StarknetNftProvider } from "./starknetNftProvider";
 import React from "react";
+import { useStarknetTransfer } from "./useStarknetTransfer";
 
 export type WalletConnectConfig = {
     projectId: string
@@ -30,7 +31,8 @@ export function createStarknetProvider(config: StarknetProviderConfig = {}): Wal
         balanceProviders,
         gasProviders,
         addressUtilsProviders,
-        nftProviders
+        nftProviders,
+        transferProviders
     } = config;
 
     // Create wrapper component with config bound
@@ -66,6 +68,11 @@ export function createStarknetProvider(config: StarknetProviderConfig = {}): Wal
         ? (Array.isArray(nftProviders) ? nftProviders : [nftProviders])
         : defaultNftProviders;
 
+    const defaultTransferProviders = [useStarknetTransfer];
+    const finalTransferProviders = transferProviders !== undefined
+        ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
+        : defaultTransferProviders;
+
     return {
         id: "starknet",
         wrapper: WrapperComponent,
@@ -74,6 +81,7 @@ export function createStarknetProvider(config: StarknetProviderConfig = {}): Wal
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
         nftProvider: finalNftProviders,
+        transferProvider: finalTransferProviders,
     };
 }
 
@@ -95,4 +103,5 @@ export const StarknetProvider: WalletProvider = {
     gasProvider: [new StarknetGasProvider()],
     balanceProvider: [new StarknetBalanceProvider()],
     nftProvider: [new StarknetNftProvider()],
+    transferProvider: [useStarknetTransfer],
 };

@@ -3,7 +3,7 @@ import { FuelConnector, FuelConnectorEventTypes, Provider, } from '@fuel-ts/acco
 import { Address } from '@fuel-ts/address';
 import { useWalletStore, sleep, KnownInternalNames } from "@layerswap/widget/internal";
 import { useEffect, useMemo } from "react";
-import { transactionBuilder } from "./services/transferService/transactionBuilder";
+import { transactionBuilder } from "./transferProvider/transactionBuilder";
 import { BAKO_STATE } from "./connectors/bako-safe/Bako";
 import { ActionMessageType, InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types";
 import { resolveFuelWalletConnectorIcon } from './utils';

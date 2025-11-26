@@ -1,7 +1,7 @@
 import { useWallet } from '@tronweb3/tronwallet-adapter-react-hooks';
 import { KnownInternalNames, walletIconResolver } from "@layerswap/widget/internal";
 import { GasWithToken, ActionMessageType, WalletConnectionProviderProps, InternalConnector, Wallet, WalletConnectionProvider } from "@layerswap/widget/types";
-import { buildInitialTransaction } from "./services/transferService/transactionBuilder";
+import { buildInitialTransaction } from "./transferProvider/transactionBuilder";
 import { useMemo } from "react";
 import { TronGasProvider } from "./tronGasProvider";
 import { TronWeb } from 'tronweb';

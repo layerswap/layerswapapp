@@ -2,8 +2,8 @@ import { ConnectedWallet, useTonConnectUI, useTonWallet } from "@tonconnect/ui-r
 import { Address } from "@ton/core";
 import { KnownInternalNames, walletIconResolver } from "@layerswap/widget/internal";
 import { InternalConnector, Wallet, WalletConnectionProvider, ActionMessageType, WalletConnectionProviderProps } from "@layerswap/widget/types";
-import { transactionBuilder } from "./services/transferService/transactionBuilder";
 import { useTonConfig } from "./index";
+import { transactionBuilder } from "./transferProvider/transactionBuilder";
 
 export default function useTONConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
 

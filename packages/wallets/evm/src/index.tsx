@@ -6,6 +6,7 @@ import EVMProviderWrapper from "./EVMProvider"
 import { EVMGasProvider } from "./gasProviders"
 import { EVMAddressUtilsProvider } from "./evmAddressUtilsProvider"
 import { AppSettings } from "@layerswap/widget/internal";
+import { useEVMTransfer } from "./transferProvider/useEVMTransfer";
 
 export type WalletConnectConfig = {
     projectId: string
@@ -27,7 +28,8 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         customHook,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders
+        addressUtilsProviders,
+        transferProviders
     } = config;
 
     const WrapperComponent = ({ children }: { children: JSX.Element | JSX.Element[] }) => {
@@ -85,6 +87,11 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
         : defaultAddressUtilsProviders;
 
+    const defaultTransferProviders = [useEVMTransfer];
+    const finalTransferProviders = transferProviders !== undefined
+        ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
+        : defaultTransferProviders;
+
     return {
         id: "evm",
         wrapper: WrapperComponent,
@@ -92,6 +99,7 @@ export function createEVMProvider(config: EVMProviderConfig = {}): WalletProvide
         addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
+        transferProvider: finalTransferProviders,
     };
 }
 
@@ -115,4 +123,5 @@ export const EVMProvider: WalletProvider = {
     addressUtilsProvider: [new EVMAddressUtilsProvider()],
     gasProvider: [new EVMGasProvider()],
     balanceProvider: [new EVMBalanceProvider(), new HyperliquidBalanceProvider()],
+    transferProvider: [useEVMTransfer],
 };

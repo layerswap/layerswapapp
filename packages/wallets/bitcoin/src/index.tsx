@@ -5,6 +5,7 @@ import { BitcoinGasProvider } from "./bitcoinGasProvider";
 import { BitcoinBalanceProvider } from "./bitcoinBalanceProvider";
 import { BitcoinAddressUtilsProvider } from "./bitcoinAddressUtilsProvider";
 import React from "react";
+import { useBitcoinTransfer } from "./transferProvider/useBitcoinTransfer";
 
 export type BitcoinProviderConfig = BaseWalletProviderConfig
 
@@ -13,7 +14,8 @@ export function createBitcoinProvider(config: BitcoinProviderConfig = {}): Walle
         customHook,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders
+        addressUtilsProviders,
+        transferProviders
     } = config;
 
     const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
@@ -41,6 +43,12 @@ export function createBitcoinProvider(config: BitcoinProviderConfig = {}): Walle
         ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
         : defaultAddressUtilsProviders;
 
+
+    const defaultTransferProviders = [useBitcoinTransfer];
+    const finalTransferProviders = transferProviders !== undefined
+        ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
+        : defaultTransferProviders;
+
     return {
         id: "bitcoin",
         wrapper: WrapperComponent,
@@ -48,6 +56,7 @@ export function createBitcoinProvider(config: BitcoinProviderConfig = {}): Walle
         addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
+        transferProvider: finalTransferProviders,
     };
 }
 
@@ -61,4 +70,5 @@ export const BitcoinProvider: WalletProvider = {
     addressUtilsProvider: [new BitcoinAddressUtilsProvider()],
     gasProvider: [new BitcoinGasProvider()],
     balanceProvider: [new BitcoinBalanceProvider()],
+    transferProvider: [useBitcoinTransfer],
 };

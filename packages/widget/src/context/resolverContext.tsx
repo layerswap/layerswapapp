@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useMemo } from "react";
-import { WalletProvider, NftProvider, BalanceProvider, GasProvider, AddressUtilsProvider } from "@/types";
+import { WalletProvider, NftProvider, BalanceProvider, GasProvider, AddressUtilsProvider, TransferProvider } from "@/types";
 import { resolverService } from "@/lib/resolvers/resolverService";
 
 type ResolverContextType = {
@@ -12,6 +12,13 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{ walletProvide
     children,
     walletProviders
 }) => {
+
+    const transferProviders = walletProviders
+        .map(provider => provider.transferProvider)
+        .flat()
+        .filter((provider): provider is (() => TransferProvider) => Boolean(provider))
+        .map(provider => provider())
+
     const isInitialized = useMemo(() => {
         // Extract balance providers from wallet providers
         const balanceProviders: BalanceProvider[] = walletProviders
@@ -36,10 +43,10 @@ export const ResolverProviders: React.FC<React.PropsWithChildren<{ walletProvide
             .flat()
             .filter((provider): provider is NftProvider => Boolean(provider));
 
-        resolverService.setProviders(balanceProviders, gasProviders, addressUtilsProviders, nftProviders)
+        resolverService.setProviders(balanceProviders, gasProviders, addressUtilsProviders, nftProviders, transferProviders)
 
         return true;
-    }, [walletProviders]);
+    }, [walletProviders, transferProviders]);
 
     return (
         <ResolverContext.Provider value={{ isInitialized }}>

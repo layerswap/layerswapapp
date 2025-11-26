@@ -6,7 +6,7 @@ import { useMemo } from "react"
 import { Connector, CreateConnectorFn } from "@bigmi/client"
 import { isBitcoinAddressValid } from "./utils/isValidAddress"
 import { useBitcoinConnectors } from "./BitcoinProvider"
-import { sendTransaction } from "./services/transferService/sendTransaction"
+import { sendTransaction } from "./transferProvider/sendTransaction"
 
 const bitcoinNames = [KnownInternalNames.Networks.BitcoinMainnet, KnownInternalNames.Networks.BitcoinTestnet]
 

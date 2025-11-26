@@ -5,6 +5,7 @@ import useTronConnection from "./useTronConnection";
 import { TronBalanceProvider } from "./tronBalanceProvider";
 import { TronAddressUtilsProvider } from "./tronAddressUtilsProvider";
 import React from "react";
+import { useTronTransfer } from "./transferProvider/useTronTransfer";
 
 export type TronProviderConfig = BaseWalletProviderConfig
 
@@ -13,7 +14,8 @@ export function createTronProvider(config: TronProviderConfig = {}): WalletProvi
         customHook,
         balanceProviders,
         gasProviders,
-        addressUtilsProviders
+        addressUtilsProviders,
+        transferProviders
     } = config;
 
     const WrapperComponent = ({ children }: { children: React.ReactNode }) => {
@@ -41,6 +43,11 @@ export function createTronProvider(config: TronProviderConfig = {}): WalletProvi
         ? (Array.isArray(addressUtilsProviders) ? addressUtilsProviders : [addressUtilsProviders])
         : defaultAddressUtilsProviders;
 
+    const defaultTransferProviders = [useTronTransfer];
+    const finalTransferProviders = transferProviders !== undefined
+        ? (Array.isArray(transferProviders) ? transferProviders : [transferProviders])
+        : defaultTransferProviders;
+
     return {
         id: "tron",
         wrapper: WrapperComponent,
@@ -48,6 +55,7 @@ export function createTronProvider(config: TronProviderConfig = {}): WalletProvi
         addressUtilsProvider: finalAddressUtilsProviders,
         gasProvider: finalGasProviders,
         balanceProvider: finalBalanceProviders,
+        transferProvider: finalTransferProviders,
     };
 }
 
@@ -61,4 +69,5 @@ export const TronProvider: WalletProvider = {
     addressUtilsProvider: [new TronAddressUtilsProvider()],
     gasProvider: [new TronGasProvider()],
     balanceProvider: [new TronBalanceProvider()],
+    transferProvider: [useTronTransfer],
 };
