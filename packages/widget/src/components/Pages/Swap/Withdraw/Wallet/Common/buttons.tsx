@@ -14,11 +14,10 @@ import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
 import { BackendTransactionStatus, DepositAction, SwapBasicData, SwapDetails, SwapItem, SwapResponse } from "@/lib/apiClients/layerSwapApiClient";
 import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
-// import posthog from "posthog-js";
 import { useWalletWithdrawalState } from "@/context/withdrawalContext";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import { SwapFormValues } from "../../../Form/SwapFormValues";
-import { useSwapCreateCallback } from "@/context/callbackProvider";
+import { ErrorHandler } from "@/lib/ErrorHandler";
 import { TokenBalance, TransferProps, Wallet } from "@/types";
 import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/Icons/InfoIcon";
@@ -172,7 +171,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { networks } = useSettingsState()
     const networkWithTokens = swapBasicData.source_network && networks.find(n => n.name === swapBasicData.source_network?.name)
     const { balances } = useBalance(selectedSourceAccount?.address, networkWithTokens)
-    const triggerSwapCreateCallback = useSwapCreateCallback()
 
     const { wallets } = useWallet(swapBasicData.source_network, 'withdrawal')
     const [actionStateText, setActionStateText] = useState<string | undefined>()
@@ -235,8 +233,6 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 }
                 swapData = newSwapData.swap
                 depositActions = newSwapData.deposit_actions;
-                triggerSwapCreateCallback(newSwapData);
-
             }
             if (!depositActions) {
                 throw new Error('No deposit actions')
@@ -256,22 +252,14 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
         }
         catch (e) {
             setSwapId(undefined)
-
-            console.log('Error in SendTransactionButton:', e)
-
-            const swapWithdrawalError = new Error(e);
-            swapWithdrawalError.name = `SwapWithdrawalError`;
-            swapWithdrawalError.cause = e;
-            // posthog.capture('$exception', {
-            //     name: swapWithdrawalError.name,
-            //     cause: swapWithdrawalError.cause,
-            //     message: swapWithdrawalError.message,
-            //     $layerswap_exception_type: "Swap Withdrawal Error",
-            //     stack: swapWithdrawalError.stack,
-            //     where: 'TransactionError',
-            //     severity: 'error',
-            // });
-
+            const error = e as Error;
+            ErrorHandler({ 
+                type: 'SwapWithdrawalError', 
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
+            });
         }
         finally {
             setLoading(false)

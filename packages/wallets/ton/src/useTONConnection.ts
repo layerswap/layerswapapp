@@ -106,6 +106,7 @@ export default function useTONConnection({ networks }: WalletConnectionProviderP
             await tonConnectUI.disconnect()
         }
         catch (e) {
+            //TODO: handle error
             console.log(e)
         }
     }

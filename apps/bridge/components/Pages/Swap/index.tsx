@@ -5,6 +5,7 @@ import { updateFormBulk } from "../../utils/updateForm"
 import { removeSwapPath, setSwapPath } from "../../utils/updateSwapPath"
 import { EVMProvider, FuelProvider, ParadexProvider, StarknetProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider } from "@layerswap/wallets";
 import { ParsedUrlQuery } from "querystring"
+import { logError } from "../../utils/logError"
 
 const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, apiKey: string, initialValues: ParsedUrlQuery }> = ({ settings, themeData, apiKey, initialValues }) => {
     const router = useRouter()
@@ -40,11 +41,12 @@ const SwapPage: FC<{ settings: LayerSwapSettings, themeData: ThemeData | null, a
                 if (!open) {
                     removeSwapPath(router)
                 }
-            }
+            },
+            onError: logError,
         }}
         walletProviders={[EVMProvider, StarknetProvider, FuelProvider, ParadexProvider, BitcoinProvider, ImmutableXProvider, TonProvider, SVMProvider, TronProvider, ImtblPassportProvider]}
     >
-        <Swap/>
+        <Swap />
     </LayerswapProvider>
 }
 

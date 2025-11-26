@@ -21,7 +21,7 @@ import { useClickOutside } from "@/hooks/useClickOutside";
 import { Network } from "@/Models/Network";
 import { Wallet } from "@/types/wallet";
 import { SwapFormValues } from "./SwapFormValues";
-import { useFormChangeCallback } from "@/context/callbackProvider";
+import { useCallbacks } from "@/context/callbackProvider";
 import QuoteDetails from "./FeeDetails";
 import DepositMethodComponent from "./FeeDetails/DepositMethod";
 import { AddressGroup } from "@/components/Input/Address/AddressPicker";
@@ -36,10 +36,11 @@ const ExchangeForm: FC<Props> = ({ partner }) => {
         values, isSubmitting
     } = useFormikContext<SwapFormValues>();
 
-    const triggerFormChangeCallback = useFormChangeCallback()
+    const { onFormChange } = useCallbacks()
+
     useEffect(() => {
-        triggerFormChangeCallback(values);
-    }, [values, triggerFormChangeCallback]);
+        onFormChange?.(values);
+    }, [values, onFormChange]);
 
     const { fromAsset: fromCurrency, from, to: destination, destination_address, amount } = values || {};
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);

@@ -19,7 +19,7 @@ import { useBalance } from "@/lib/balances/useBalance";
 import { useSelectedAccount } from "@/context/balanceAccounts";
 import SwapDetails from "../Withdraw/SwapDetails";
 import { SwapFormValues } from "./SwapFormValues";
-import { useSwapCreateCallback, useSwapModalStateChangeCallback } from "@/context/callbackProvider";
+import { useCallbacks } from "@/context/callbackProvider";
 
 type NetworkToConnect = {
     DisplayName: string;
@@ -39,8 +39,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
     const [walletWihdrawDone, setWalletWihdrawDone] = useState(false);
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData?.source_network?.name);
     const { mutate: mutateBalances } = useBalance(selectedSourceAccount?.address, sourceNetworkWithTokens)
-    const triggerSwapModalStateChangeCallback = useSwapModalStateChangeCallback()
-    const triggerSwapCreateCallback = useSwapCreateCallback()
+    const { onSwapModalStateChange } = useCallbacks()
     const { getConfirmation } = useAsyncModal();
     const initialSettings = useInitialSettings()
     const { destination_address: destinationAddressFromQuery } = initialSettings
@@ -87,7 +86,6 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
                 partner,
                 createSwap: async (...props) => {
                     const response = await createSwap(...props)
-                    triggerSwapCreateCallback(response)
                     return response
                 },
                 setShowSwapModal: handleShowSwapModal,
@@ -105,7 +103,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
 
     const handleShowSwapModal = useCallback((value: boolean) => {
         setSwapModalOpen(value)
-        triggerSwapModalStateChangeCallback(value)
+        onSwapModalStateChange(value)
         if (!value) {
             if (walletWihdrawDone) {
                 mutateBalances()

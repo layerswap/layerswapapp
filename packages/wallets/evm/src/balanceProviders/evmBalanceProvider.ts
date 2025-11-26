@@ -20,6 +20,7 @@ export class EVMBalanceProvider extends BalanceProvider {
             const balances = await this.contractGetBalances(address, chain, network, options)
             return balances
         } catch (e) {
+            //TODO: handle error
             console.log(e)
         }
 

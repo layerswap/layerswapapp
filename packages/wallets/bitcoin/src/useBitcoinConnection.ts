@@ -34,6 +34,7 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
             await disconnect(config, { connector })
         }
         catch (e) {
+            //TODO: handle error
             console.log(e)
         }
     }
@@ -45,6 +46,7 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
             })
         }
         catch (e) {
+            //TODO: handle error
             console.log(e)
         }
     }

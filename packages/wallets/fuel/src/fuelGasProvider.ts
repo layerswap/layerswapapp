@@ -1,6 +1,6 @@
 import WatchdogAbi from './jsons/FUELWATCHDOG.json'
 import { GasProvider, GasProps, Network } from "@layerswap/widget/types";
-import { KnownInternalNames, formatUnits } from "@layerswap/widget/internal";
+import { ErrorHandler, KnownInternalNames, formatUnits } from "@layerswap/widget/internal";
 
 export class FuelGasProvider implements GasProvider {
     supportsNetwork(network: Network): boolean {
@@ -42,8 +42,14 @@ export class FuelGasProvider implements GasProvider {
             if (formatedGas) return { gas: formatedGas, token: network.token }
 
         } catch (e) {
-            console.log(e)
+            const error = e as Error;
+            ErrorHandler({
+                type: "GasProviderError",
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                cause: error.cause
+            });
         }
-
     }
 }

@@ -70,6 +70,7 @@ export default function useTronConnection({ networks }: WalletConnectionProvider
             return wallet
         }
         catch (e) {
+            //TODO: handle error
             console.log(e)
         }
     }
@@ -79,6 +80,7 @@ export default function useTronConnection({ networks }: WalletConnectionProvider
             await disconnect()
         }
         catch (e) {
+            //TODO: handle error
             console.log(e)
         }
     }

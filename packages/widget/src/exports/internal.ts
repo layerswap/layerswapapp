@@ -3,8 +3,6 @@ import KnownInternalNames from "@/lib/knownIds"
 export { KnownInternalNames }
 import NetworkSettings from "@/lib/NetworkSettings"
 export { NetworkSettings }
-import logError from "../lib/logError";
-export { logError }
 export { insertIfNotExists } from "../lib/balances/helpers"
 export * from "../lib/retry"
 export { fetchWithTimeout } from "../lib/fetchWithTimeout"
@@ -26,3 +24,5 @@ export * from "../lib/formatUnits"
 export * from "../stores"
 export { default as shortenAddress } from "../components/utils/ShortenAddress"
 export * from "../context/swap"
+export { ErrorHandler } from '../lib/ErrorHandler';
+export type { ErrorEventType } from '../types/logEvents';
