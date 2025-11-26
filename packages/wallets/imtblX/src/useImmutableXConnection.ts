@@ -1,7 +1,8 @@
 import { useWalletStore, KnownInternalNames } from "@layerswap/widget/internal"
 import ImtblClient from "./client"
-import { InternalConnector, Wallet, WalletConnectionProvider, ActionMessageType, WalletConnectionProviderProps } from "@layerswap/widget/types"
+import { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps } from "@layerswap/widget/types"
 import IMX from "./utils/ImxIcon"
+import { useImmutableXTransfer } from "./useImmutableXTransfer"
 
 const supportedNetworks = [
     KnownInternalNames.Networks.ImmutableXMainnet,
@@ -58,40 +59,7 @@ export default function useImtblXConnection({ networks }: WalletConnectionProvid
         }
     }
 
-    const transfer: WalletConnectionProvider['transfer'] = async (params) => {
-        const { network, token, amount, depositAddress, swapId } = params
-        try {
-            const imtblClient = new ImtblClient(network?.name)
-
-            if (!token) {
-                throw new Error("No source currency could be found");
-            }
-            if (!depositAddress) {
-                throw new Error("Deposit address not found");
-            }
-            const res = await imtblClient.Transfer(amount.toString(), token, depositAddress)
-            const transactionRes = res?.result?.[0]
-            if (!transactionRes)
-                throw new Error(ActionMessageType.TransactionFailed)
-            else if (transactionRes.status == "error") {
-                throw new Error(transactionRes.message)
-            }
-            else if (transactionRes && swapId) {
-                return transactionRes.txId.toString()
-            }
-        } catch (error) {
-            const e = new Error()
-            e.message = error.message
-            if (error in ActionMessageType) {
-                e.name = error
-                throw e
-            }
-            else {
-                e.name = ActionMessageType.UnexpectedErrorMessage
-                throw e
-            }
-        }
-    }
+    const { executeTransfer: transfer } = useImmutableXTransfer()
 
     const disconnectWallet = () => {
         return removeWallet(id)

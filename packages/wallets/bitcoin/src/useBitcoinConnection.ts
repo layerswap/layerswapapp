@@ -7,6 +7,7 @@ import { Connector, CreateConnectorFn } from "@bigmi/client"
 import { isBitcoinAddressValid } from "./utils/isValidAddress"
 import { useBitcoinConnectors } from "./BitcoinProvider"
 import { sendTransaction } from "./transferProvider/sendTransaction"
+import { useBitcoinTransfer } from "./transferProvider/useBitcoinTransfer";
 
 const bitcoinNames = [KnownInternalNames.Networks.BitcoinMainnet, KnownInternalNames.Networks.BitcoinTestnet]
 
@@ -101,50 +102,7 @@ export default function useBitcoinConnection({ networks }: WalletConnectionProvi
         }
     }
 
-    const transfer: WalletConnectionProvider['transfer'] = async (params) => {
-        const { amount, callData, depositAddress, selectedWallet, network } = params
-
-        if (!connector) {
-            throw new Error("Connector not found");
-        }
-        if (!depositAddress) {
-            throw new Error("Deposit address not provided");
-        }
-
-        const rpcClient = new JsonRpcClient(network.node_url);
-        const isTestnet = network?.name === KnownInternalNames.Networks.BitcoinTestnet;
-        const publicClient = config.getClient()
-
-        try {
-            const txHash = await sendTransaction({
-                amount,
-                depositAddress,
-                userAddress: selectedWallet.address,
-                isTestnet,
-                rpcClient,
-                callData,
-                connector: connector,
-                publicClient
-            });
-            return txHash;
-        } catch (error) {
-            const message = typeof error === 'string' ? error : error.message
-            const e = new Error(message)
-            e.message = message
-            if (error && message.includes('User rejected the request.')) {
-                e.name = ActionMessageType.TransactionRejected
-                throw e
-            }
-            else if (error && (message.includes('Insufficient balance.') || message.includes('Insufficient funds'))) {
-                e.name = ActionMessageType.InsufficientFunds
-                throw e
-            }
-            else {
-                e.name = ActionMessageType.UnexpectedErrorMessage
-                throw e
-            }
-        }
-    }
+    const { executeTransfer: transfer } = useBitcoinTransfer()
 
     const resolvedWallet = useMemo(() => {
 
