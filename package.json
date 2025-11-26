@@ -29,6 +29,7 @@
     "@metamask/sdk": "^0.33.1",
     "@number-flow/react": "^0.5.10",
     "@paradex/sdk": "0.6.0",
+    "@posthog/react": "^1.4.0",
     "@radix-ui/react-checkbox": "^1.1.5",
     "@radix-ui/react-context-menu": "^1.0.0",
     "@radix-ui/react-popover": "^1.1.15",

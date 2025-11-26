@@ -42,7 +42,7 @@ export default function useParadex(): WalletProvider {
     const starknetProvider = useStarknet()
 
     const config = useConfig()
-
+    const starknetNetwork = networks.find(n => n.name === KnownInternalNames.Networks.StarkNetMainnet || n.name === KnownInternalNames.Networks.StarkNetGoerli || n.name === KnownInternalNames.Networks.StarkNetSepolia)
     const connectWallet = async (props?: { connector: InternalConnector }) => {
         const { connector } = props || {};
         if (!connector) {
@@ -118,7 +118,10 @@ export default function useParadex(): WalletProvider {
                     if (!snAccount) {
                         throw Error("Starknet account not found")
                     }
-                    const paradexAccount = await AuthorizeStarknet(snAccount as any)
+                    if (!starknetNetwork?.node_url) {
+                        throw Error("Starknet node url not found")
+                    }
+                    const paradexAccount = await AuthorizeStarknet(snAccount as any, starknetNetwork.node_url)
                     addParadexAccount({ l1Address: connectionResult.address, paradexAddress: paradexAccount.address })
                     accounts = { [connectionResult.address.toLowerCase()]: paradexAccount.address }
                 }
@@ -164,7 +167,10 @@ export default function useParadex(): WalletProvider {
     }, [evmProvider, starknetProvider, paradexAccounts])
 
     const availableWalletsForConnect = useMemo(() => {
-        return [...(evmProvider.availableWalletsForConnect ? evmProvider.availableWalletsForConnect : []), ...(starknetProvider?.availableWalletsForConnect ? starknetProvider.availableWalletsForConnect : [])]
+        return [
+            ...(evmProvider.availableWalletsForConnect ? evmProvider.availableWalletsForConnect : []),
+            ...(starknetProvider?.availableWalletsForConnect ? starknetProvider.availableWalletsForConnect : [])
+        ]
     }, [evmProvider, starknetProvider])
 
     const switchAccount = async (wallet: Wallet, address: string) => {
@@ -192,7 +198,7 @@ export default function useParadex(): WalletProvider {
             disconnect: removeParadexAccount,
             networkIcon: paradexNetwork?.logo
         })
-    }, [evmProvider.activeWallet, starknetProvider.activeWallet, activeConnection])
+    }, [evmProvider.activeWallet, starknetProvider.activeWallet, activeConnection, paradexAccounts])
 
     const provider: WalletProvider = {
         connectWallet,
