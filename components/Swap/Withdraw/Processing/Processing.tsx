@@ -8,7 +8,7 @@ import { truncateDecimals } from '@/components/utils/RoundDecimals';
 import { SwapStatus } from '@/Models/SwapStatus';
 import { SwapFailReasons } from '@/Models/RangeError';
 import { Gauge } from '@/components/gauge';
-import { Check, CircleCheck, Undo2 } from 'lucide-react';
+import { CircleCheck, Undo2 } from 'lucide-react';
 import Failed from '../Failed';
 import { Progress, ProgressStates, ProgressStatus, StatusStep } from './types';
 import { useSwapTransactionStore } from '@/stores/swapTransactionStore';
@@ -17,7 +17,6 @@ import useSWR from 'swr';
 import { ApiResponse } from '@/Models/ApiResponse';
 import { useIntercom } from 'react-use-intercom';
 import logError from '@/lib/logError';
-import SubmitButton from '@/components/buttons/submitButton';
 import { posthog } from 'posthog-js';
 
 type Props = {
@@ -62,19 +61,6 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
     const inputTxStatus = swapInputTransaction ? swapInputTransaction.status : inputTxStatusData?.data?.status.toLowerCase() as TransactionStatus
 
     const loggedNotDetectedTxAt = useRef<number | null>(null);
-
-    const handleSupportClick = useCallback(() => {
-        const transactionHash = swapInputTransaction?.transaction_hash || storedWalletTransaction?.hash;
-        const message = `Hi! My transaction (Swap ID: ${swapDetails.id}) has been processing for longer than expected. ${transactionHash ? `Transaction hash: ${transactionHash}` : ''} Could you please help me check the status?`;
-
-        boot();
-        update({
-            customAttributes: {
-                swapId: swapDetails.id,
-            }
-        });
-        showNewMessages(message)
-    }, [boot, show, update, swapDetails.id, swapInputTransaction, storedWalletTransaction]);
 
     useEffect(() => {
         if (inputTxStatus === TransactionStatus.Completed || inputTxStatus === TransactionStatus.Pending) {
@@ -348,7 +334,7 @@ const Processing: FC<Props> = ({ swapBasicData, swapDetails, quote, refuel }) =>
 
     const swapStatus = swapDetails.status;
     return (
-        <Widget.Content>
+        <Widget.Content fitContent>
             <div className={`w-full min-h-[410px] h-full space-y-3 flex flex-col justify-between text-primary-text`}>
                 <SwapSummary />
                 <div className="bg-secondary-500 font-normal px-3 pt-6 pb-3 rounded-2xl space-y-4 flex flex-col w-full relative z-10 divide-y-2 divide-secondary-300 divide-dashed">

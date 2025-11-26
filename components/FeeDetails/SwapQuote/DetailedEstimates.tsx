@@ -13,22 +13,25 @@ import useSWRNftBalance from '@/lib/nft/useSWRNftBalance'
 import { useSelectedAccount } from '@/context/balanceAccounts'
 import { Slippage } from '../Slippage'
 import { truncateDecimals } from '@/components/utils/RoundDecimals'
+import { Network, NetworkRouteToken } from '@/Models/Network'
+import shortenAddress from '@/components/utils/ShortenAddress'
+import { isValidAddress } from '@/lib/address/validator'
+import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
+import { addressFormat } from '@/lib/address/formatter'
 
 type DetailedEstimatesProps = {
-    quote: Quote | undefined
+    quote: SwapQuote | undefined,
+    reward?: QuoteReward,
     swapValues: SwapValues
     variant?: "base" | "extended"
 }
 
 export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
-    quote: quoteData,
+    quote,
+    reward,
     swapValues: values,
     variant
 }) => {
-
-    const quote = quoteData?.quote
-    const reward = quoteData?.reward
-
     const shouldCheckNFT = reward?.campaign_type === "for_nft_holders" && reward?.nft_contract_address;
     const { balance: nftBalance, isLoading, error } = useSWRNftBalance(
         values.destination_address || '',
@@ -40,7 +43,8 @@ export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
     return <div className="flex flex-col w-full px-2">
         {variant === "extended" && <GasFee values={values} quote={quote} />}
         <Fees quote={quote} values={values} />
-        <Rate fromAsset={values?.fromAsset} toAsset={values?.toAsset} requestAmount={quote?.requested_amount} receiveAmount={quote?.receive_amount} />
+        {values.depositMethod !== "deposit_address" && <Rate fromAsset={values?.fromAsset} toAsset={values?.toAsset} requestAmount={quote?.requested_amount} receiveAmount={quote?.receive_amount} />}
+        {values.depositMethod === "deposit_address" && variant === "extended" && values?.fromAsset?.contract && <ExchangeTokenContract fromAsset={values?.fromAsset} network={values?.from} />}
         {variant === "extended" && values.depositMethod === "wallet" && <Slippage quoteData={quote} values={values} />}
         <Estimates quote={quote} />
         {showReward && <Reward reward={reward} />}
@@ -165,7 +169,7 @@ const Fees = ({ quote, values }: { quote: SwapQuote | undefined, values: SwapVal
     </RowWrapper>
 }
 const Estimates = ({ quote }: { quote: SwapQuote | undefined }) => {
-    return <RowWrapper title="Estimates">
+    return <RowWrapper title="Est. time">
         <AverageCompletionTime avgCompletionTime={quote?.avg_completion_time} />
     </RowWrapper>
 }
@@ -194,4 +198,17 @@ const Rate = ({ fromAsset, toAsset, requestAmount, receiveAmount }) => {
     </RowWrapper>
 }
 
-const LoadingBar = () => (<div className='h-[10px] w-16 inline-flex bg-gray-500 rounded-xs animate-pulse' />);
+const ExchangeTokenContract = ({ fromAsset, network }: { fromAsset: NetworkRouteToken | undefined, network: Network | undefined }) => {
+    return <RowWrapper title={`${network?.display_name} - ${fromAsset?.symbol}`}>
+        {
+            (fromAsset?.contract && network && (isValidAddress(fromAsset?.contract, network)) ?
+                <div className="text-sm group/addressItem text-secondary-text">
+                    <ExtendedAddress address={addressFormat(fromAsset?.contract, network)} network={network} showDetails={false} shouldShowChevron={false} />
+                </div>
+                :
+                <p className="text-sm text-secondary-text">{fromAsset?.contract ? shortenAddress(fromAsset.contract) : ''}</p>)
+        }
+    </RowWrapper >
+}
+
+const LoadingBar = () => (<div className='h-2.5 w-16 inline-flex bg-gray-500 rounded-xs animate-pulse' />);

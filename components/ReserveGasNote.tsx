@@ -37,23 +37,27 @@ const ReserveGasNote = ({ onSubmit, minAllowedAmount, maxAllowedAmount }: Props)
             {
                 mightBeOutOfGas && gasToReserveFormatted ?
                     (
-                        (Number(nativeTokenBalance.amount) < Number(gasData)) ?
-                            <WarningMessage messageType="warning">
-                                <div className="font-normal text-primary-text">
-                                    You don&apos;t have enough funds to cover gas fees.
-                                </div>
-                            </WarningMessage>
-                            :
-                            <WarningMessage messageType="warning">
-                                <div className="font-normal text-primary-text">
-                                    <div>
-                                        You might not be able to complete the transaction.
-                                    </div>
-                                    <div onClick={() => onSubmit(nativeTokenBalance, gasData.gas)} className="cursor-pointer border-b border-dotted border-primary-text w-fit hover:text-primary hover:border-primary text-primary-text">
-                                        <span>Reserve</span> <span>{gasToReserveFormatted}</span> <span>{values?.fromAsset?.symbol}</span> <span>for gas.</span>
-                                    </div>
-                                </div>
-                            </WarningMessage>
+                        <div className="mt-3">
+                            {
+                                (Number(nativeTokenBalance.amount) < Number(gasData.gas)) ?
+                                    <WarningMessage messageType="warning">
+                                        <div className="font-normal text-primary-text">
+                                            You don&apos;t have enough funds to cover gas fees.
+                                        </div>
+                                    </WarningMessage>
+                                    :
+                                    <WarningMessage messageType="warning">
+                                        <div className="font-normal text-primary-text">
+                                            <div>
+                                                You might not be able to complete the transaction.
+                                            </div>
+                                            <div onClick={() => onSubmit(nativeTokenBalance, gasData.gas)} className="cursor-pointer border-b border-dotted border-primary-text w-fit hover:text-primary hover:border-primary text-primary-text">
+                                                <span>Reserve</span> <span>{gasToReserveFormatted}</span> <span>{values?.fromAsset?.symbol}</span> <span>for gas.</span>
+                                            </div>
+                                        </div>
+                                    </WarningMessage>
+                            }
+                        </div>
                     ) : null
             }
         </>
