@@ -10678,7 +10678,7 @@
     "2f0e39323be165a0972147140c7b822be17e5eb464a5e8558ac0e0ab01c48944": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=com.finverselabs.openwallet&pli=1",
-        "browser": "https://openwallet.finance/",
+        "browser": "",
         "chrome": null,
         "edge": null,
         "firefox": null,
@@ -10699,12 +10699,14 @@
         "eip155:42161",
         "eip155:56",
         "eip155:59144",
-        "eip155:8453"
+        "eip155:8453",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+        "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
       ],
-      "description": "OpenWallet isn't your average crypto wallet. It throws away the keys (literally) and uses advanced tech to keep your digital assets safe",
+      "description": "Open Wallet isn't your average crypto wallet. It throws away the keys (literally) and uses advanced tech to keep your digital assets safe",
       "desktop": {
         "native": "",
-        "universal": "https://openwallet.finance/"
+        "universal": ""
       },
       "homepage": "https://openwallet.finance",
       "id": "2f0e39323be165a0972147140c7b822be17e5eb464a5e8558ac0e0ab01c48944",
@@ -10724,7 +10726,7 @@
       },
       "mobile": {
         "native": "x-app-open-wallet://",
-        "universal": null
+        "universal": ""
       },
       "name": "Open Wallet",
       "rdns": null,
