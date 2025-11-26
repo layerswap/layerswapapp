@@ -1,4 +1,5 @@
 import { SwapDirection, SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues"
+import AppSettings from "@/lib/AppSettings"
 
 export const resolveExchangesURLForSelectedToken = (values: SwapFormValues) => {
 
@@ -97,7 +98,10 @@ export const resolveRoutesURLForSelectedToken = ({ direction, network, token, in
         )
     });
 
-    const sourceRoutesURL = `/sources?${params.toString()}`
+    const availableNetworkTypes = AppSettings.AvailableSourceNetworkTypes;
+    const networkTypesQuery = availableNetworkTypes?.map(type => `network_types=${type}`).join('&') || '';
+
+    const sourceRoutesURL = `/sources?${params.toString()}${networkTypesQuery ? `&${networkTypesQuery}` : ''}`
     const destinationRoutesURL = `/destinations?${params.toString()}`
     const result = direction === "from" ? sourceRoutesURL : destinationRoutesURL
 

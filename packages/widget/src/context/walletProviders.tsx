@@ -8,11 +8,14 @@ import { ChevronLeft } from "lucide-react";
 import ConnectorsList from "@/components/Wallet/WalletModal/ConnectorsList";
 import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { isMobile } from "@/lib/wallets/utils/isMobile";
+import AppSettings from "@/lib/AppSettings";
+import { filterSourceNetworks } from "@/helpers/filterSourceNetworks";
 
 const WalletProvidersContext = createContext<WalletConnectionProvider[]>([]);
 
 export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walletProviders: WalletProvider[] }> = ({ children, walletProviders }) => {
     const { networks } = useSettingsState();
+    const settings = useSettingsState();
     const isMobilePlatform = isMobile();
     const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector } = useConnectModal()
 
@@ -26,7 +29,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren & { walle
                 provider.asSourceSupportedNetworks?.includes(net.name)
             )
         );
-
+        AppSettings.AvailableSourceNetworkTypes = filterSourceNetworks(settings, filteredProviders)
         return filteredProviders
     }, [networks, isMobilePlatform, allProviders]);
 
