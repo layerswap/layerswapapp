@@ -3,8 +3,8 @@ import { FC, useMemo } from 'react';
 import { LayerswapProvider, Swap, WidgetLoading } from '@layerswap/widget';
 import { useWidgetContext } from '@/context/ConfigContext';
 import { useSettingsState } from '@/context/settings';
-// import dynamic from 'next/dynamic';
 import { getDefaultProviders } from '@layerswap/wallets';
+// import dynamic from 'next/dynamic';
 // const LayerswapWidgetCustomEvm = dynamic(
 //     () => import('./LayerswapWidgetCustomEvm'),
 //     {
