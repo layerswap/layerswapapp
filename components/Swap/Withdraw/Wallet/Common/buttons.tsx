@@ -162,12 +162,12 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 }) => {
     const query = useQueryState()
     const goHome = useGoHome()
-    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse } = useSwapDataState()
+    const { quote, quoteIsLoading, quoteError, swapId, swapDetails, depositActionsResponse, refuel: refuelData } = useSwapDataState()
     const { onWalletWithdrawalSuccess: onWalletWithdrawalSuccess, onCancelWithdrawal } = useWalletWithdrawalState();
     const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
 
-    
+
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network?.name);
     const { wallets } = useWallet(swapBasicData.source_network, 'withdrawal')
 
@@ -175,7 +175,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const [loading, setLoading] = useState(false)
     const [showCriticalMarketPriceImpactButtons, setShowCriticalMarketPriceImpactButtons] = useState(false)
 
-    const priceImpactValues = useMemo(() => quote ? resolvePriceImpactValues(quote) : undefined, [quote]);
+    const priceImpactValues = useMemo(() => quote ? resolvePriceImpactValues(quote, refuel ? refuelData : undefined) : undefined, [quote, refuel]);
     const criticalMarketPriceImpact = useMemo(() => priceImpactValues?.criticalMarketPriceImpact, [priceImpactValues]);
 
     const handleClick = async () => {
@@ -187,7 +187,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             if (!selectedWallet?.isActive) {
                 throw new Error('Wallet is not active')
             }
-            
+
             setLoading(true)
             clearError?.()
             let swapData: SwapDetails | undefined = swapDetails
@@ -216,7 +216,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
                 setSwapId(newSwapId)
 
-                const priceImpactValues = newSwapData.quote ? resolvePriceImpactValues(newSwapData.quote) : undefined;
+                const priceImpactValues = newSwapData.quote ? resolvePriceImpactValues(newSwapData.quote, newSwapData.refuel) : undefined;
 
                 if (priceImpactValues?.criticalMarketPriceImpact) {
                     setShowCriticalMarketPriceImpactButtons(true)
