@@ -8,7 +8,8 @@ import { SWRConfig } from 'swr'
 import ProgressBar from "@badrap/bar-of-progress";
 import Router from "next/router";
 import posthog from "posthog-js";
-import { useEffect } from "react";
+import { PostHogProvider } from '@posthog/react'
+import { useEffect } from 'react';
 
 const progress = new ProgressBar({
   size: 2,
@@ -45,9 +46,11 @@ function App({ Component, pageProps }) {
         dedupingInterval: 5000,
       }}
     >
-      <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
-        <Component key={router.asPath} {...pageProps} />
-      </IntercomProvider>
+      <PostHogProvider client={posthog}>
+        <IntercomProvider appId={INTERCOM_APP_ID} initializeDelay={2500}>
+          <Component key={router.asPath} {...pageProps} />
+        </IntercomProvider>
+      </PostHogProvider>
     </SWRConfig>)
 }
 

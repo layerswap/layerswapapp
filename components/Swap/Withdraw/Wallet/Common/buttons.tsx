@@ -21,6 +21,7 @@ import { useSelectedAccount } from "@/context/balanceAccounts";
 import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/icons/InfoIcon";
 import { useGoHome } from "@/hooks/useGoHome";
+import KnownInternalNames from "@/lib/knownIds";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
@@ -231,7 +232,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 swapData = newSwapData.swap
                 depositActions = newSwapData.deposit_actions;
             }
-            if (!depositActions) {
+            if (!depositActions?.length) {
                 throw new Error('No deposit actions')
             }
 
@@ -239,7 +240,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 throw new Error('No swap data')
             }
 
-            const transferProps = resolveTransactionData(swapData, depositActions, swapBasicData.destination_address);
+            const transferProps = resolveTransactionData(swapData, depositActions, swapBasicData.destination_address, swapBasicData.source_network);
             setActionStateText("Opening Wallet")
             const hash = await onClick(transferProps)
             if (hash) {
@@ -341,8 +342,10 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 }
 
 
-const resolveTransactionData = (swapDetails: SwapDetails, deposit_actions: DepositAction[], destination_address: string): TransferProps => {
-    const depositAction = deposit_actions?.find(action => action.type === 'transfer');
+const resolveTransactionData = (swapDetails: SwapDetails, deposit_actions: DepositAction[], destination_address: string, source_network: Network): TransferProps => {
+    const depositAction = deposit_actions?.find(action => 
+        action.type === 'transfer' 
+        || ExceptionNetworks.includes(source_network.name) && action.type === 'manual_transfer');
     if (!depositAction) {
         throw new Error('No deposit action found')
     }
@@ -355,3 +358,9 @@ const resolveTransactionData = (swapDetails: SwapDetails, deposit_actions: Depos
         userDestinationAddress: destination_address
     }
 }
+
+
+const ExceptionNetworks = [
+    KnownInternalNames.Networks.ImmutableXMainnet,
+    KnownInternalNames.Networks.ImmutableXSepolia
+]
