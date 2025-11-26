@@ -25,7 +25,6 @@ export type TransferError = ({ type: 'TransferError' } & BaseErrorProps)
 
 export type ErrorEventType = WidgetError | BalanceError | GasFeeError | WalletWithdrawalError | AlertUIEvent | TransactionNotDetectedError | ChainError | TransferError;
 
-
 export type SwapStatusEvent = {
     type: SwapStatus;
     swapId: string;
