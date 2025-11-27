@@ -41,7 +41,7 @@ export default class LayerSwapApiClient {
     }
 
     async GetSwapsAsync(page: number, include_expired: boolean): Promise<ApiResponse<SwapResponse[]>> {
-        return await this.AuthenticatedRequest<ApiResponse<SwapResponse[]>>("GET", `/internal/swaps?page=${page}&include_expired=${include_expired}`);
+        return await this.AuthenticatedRequest<ApiResponse<SwapResponse[]>>("GET", `/swaps?page=${page}&include_expired=${include_expired}`);
     }
 
     async GetQuote({ params }: { params: GetQuoteParams }): Promise<ApiResponse<Quote>> {
