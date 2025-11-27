@@ -24,8 +24,8 @@ export const RateElement = ({
 
     const totalFee = totalFeeInUsd ? totalFeeInUsd / (toAsset?.price_in_usd || 1) : 0
 
-    const fromRate = (receiveAmount + (totalFee || 0)) / requestAmount
-    const toRate = requestAmount / (receiveAmount + (totalFee || 0))
+    const fromRate = (receiveAmount + totalFee) / requestAmount
+    const toRate = requestAmount / (receiveAmount + totalFee)
 
     const fromRateTruncated = truncateDecimals(fromRate, fromAsset?.precision || 6)
     const toRateTruncated = truncateDecimals(toRate, toAsset?.precision || 6)
