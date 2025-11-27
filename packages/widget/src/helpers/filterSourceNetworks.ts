@@ -1,29 +1,33 @@
-import { LayerSwapSettings } from "@/Models";
+import { AvailableSourceNetworkTypes, LayerSwapSettings } from "@/Models";
 import { WalletConnectionProvider } from "@/types";
 
-export function filterSourceNetworks(settings: LayerSwapSettings, walletProviders: WalletConnectionProvider[]) {
-    const allNetworkTypes: string[] = [...new Set(settings.sourceRoutes?.map(route => route.type))];
-    const routesByNetworkType = settings.sourceRoutes?.reduce((acc, route) => {
+
+export function filterSourceNetworks(settings: LayerSwapSettings, walletProviders: WalletConnectionProvider[]): AvailableSourceNetworkTypes {
+
+    const networkTypesAggregation = settings.sourceRoutes?.reduce((acc, route) => {
         if (!acc[route.type]) {
             acc[route.type] = [];
         }
         acc[route.type].push(route);
         return acc;
-    }, {} as Record<string, typeof settings.sourceRoutes>) || {};
+    }, {} as Record<string, typeof settings.sourceRoutes>) || {}
 
-    const unavailableNetworkTypes: string[] = [];
+    const allNetworkTypes = Object.keys(networkTypesAggregation)
 
-    Object.entries(routesByNetworkType).forEach(([networkType, routes]) => {
-        const walletOnlyRoutesForType = routes.filter(route => route.deposit_methods.length === 1 && route.deposit_methods[0] === "wallet");
+    const availableNetworkTypes = allNetworkTypes.filter(networkType => {
+        return networkTypesAggregation[networkType].some(route => route.deposit_methods.includes("deposit_address") ||
+            walletProviders.some(provider => provider.withdrawalSupportedNetworks.includes(route.name))
+        )
+    })
 
-        if (walletOnlyRoutesForType.length > 0) {
-            const hasAnySupportedRoute = routes.some(route => walletProviders.some(provider => provider.withdrawalSupportedNetworks.includes(route.name)));
-
-            if (!hasAnySupportedRoute) unavailableNetworkTypes.push(networkType);
+    if (availableNetworkTypes.length === allNetworkTypes.length) {
+        return {
+            all: true,
         }
-    });
+    }
 
-    const availableNetworkTypes = allNetworkTypes.filter(type => !unavailableNetworkTypes.includes(type));
-
-    return availableNetworkTypes;
+    return {
+        all: false,
+        networks: availableNetworkTypes
+    }
 }

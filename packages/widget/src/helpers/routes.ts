@@ -99,12 +99,10 @@ export const resolveRoutesURLForSelectedToken = ({ direction, network, token, in
     });
 
     const availableNetworkTypes = AppSettings.AvailableSourceNetworkTypes;
-    const networkTypesQuery = availableNetworkTypes?.map(type => `network_types=${type}`).join('&') || '';
-
+    const networkTypesQuery = availableNetworkTypes?.all ? '' : availableNetworkTypes?.networks?.map(type => `network_types=${type}`).join('&') || '';
     const sourceRoutesURL = `/sources?${params.toString()}${networkTypesQuery ? `&${networkTypesQuery}` : ''}`
     const destinationRoutesURL = `/destinations?${params.toString()}`
     const result = direction === "from" ? sourceRoutesURL : destinationRoutesURL
 
     return result
-
 }

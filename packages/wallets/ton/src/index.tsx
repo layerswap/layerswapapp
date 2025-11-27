@@ -39,7 +39,7 @@ export function createTONProvider(config: TONProviderConfig = {}): WalletProvide
 
     const WrapperComponent = ({ children, themeData }: { children: React.ReactNode, themeData?: ThemeData }) => {
         return (
-            <TonConfigContext.Provider value={tonConfigs}>
+            <TonConfigContext.Provider value={tonConfigs || null}>
                 <TonProviderWrapper tonConfigs={tonConfigs} themeData={themeData}>
                     {children}
                 </TonProviderWrapper>

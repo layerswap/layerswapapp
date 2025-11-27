@@ -80,7 +80,7 @@ const StarknetProvider: FC<StarknetProviderProps> = ({ children, walletConnectCo
     const [connectors, setConnectors] = useState<any[]>([])
 
     const walletConnectConfig = walletConnectConfigs
-    const WALLETCONNECT_PROJECT_ID = walletConnectConfig.projectId
+    const WALLETCONNECT_PROJECT_ID = walletConnectConfig?.projectId
 
     const resolveConnectors = async () => {
 
@@ -119,10 +119,10 @@ const StarknetProvider: FC<StarknetProviderProps> = ({ children, walletConnectCo
 
         defaultConnectors.push(ArgentMobileConnector.init({
             options: {
-                dappName: walletConnectConfig.name || 'Layerswap',
+                dappName: walletConnectConfig?.name || 'Layerswap',
                 projectId: WALLETCONNECT_PROJECT_ID,
-                url: walletConnectConfig.url || 'https://www.layerswap.io/app/',
-                description: walletConnectConfig.description || 'Move crypto across exchanges, blockchains, and wallets.',
+                url: walletConnectConfig?.url || 'https://www.layerswap.io/app/',
+                description: walletConnectConfig?.description || 'Move crypto across exchanges, blockchains, and wallets.',
             }
         }))
         defaultConnectors.push(new WebWalletConnector())
