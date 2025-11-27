@@ -1,8 +1,7 @@
 import { useWallet } from "@solana/wallet-adapter-react"
 import { KnownInternalNames } from "@layerswap/widget/internal"
-import { InternalConnector, Wallet, WalletConnectionProvider, ActionMessageType, NetworkType, WalletConnectionProviderProps } from "@layerswap/widget/types"
-import { useMemo } from "react"
-import { configureAndSendCurrentTransaction } from "./transferProvider/transactionSender"
+import { InternalConnector, Wallet, WalletConnectionProvider, NetworkType, WalletConnectionProviderProps } from "@layerswap/widget/types"
+import { useMemo, useCallback } from "react"
 import { resolveSolanaWalletConnectorIcon } from "./utils"
 import { useSVMTransfer } from "./transferProvider/useSVMTransfer"
 
@@ -102,10 +101,22 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
         return connectors;
     }, [wallets]);
 
+    const isNotAvailableCondition = useCallback((connectorId: string | undefined, network: string | undefined, purpose?: "withdrawal" | "autofill" | "asSource") => {
+        if (!network) return false
+        if (!connectorId) return true
+
+        if (!purpose) {
+            return resolveSupportedNetworks([network], connectorId).length === 0
+        }
+
+        const supportedNetworksByPurpose = resolveSupportedNetworks(commonSupportedNetworks, connectorId)
+        return supportedNetworksByPurpose.length === 0 || !supportedNetworksByPurpose.includes(network)
+    }, [commonSupportedNetworks]);
+
     const provider: WalletConnectionProvider = {
         connectWallet,
         disconnectWallets: disconnectWallet,
-        isNotAvailableCondition: isNotAvailable,
+        isNotAvailableCondition,
 
         transfer,
 
@@ -122,12 +133,6 @@ export default function useSVMConnection({ networks }: WalletConnectionProviderP
     }
 
     return provider
-}
-
-const isNotAvailable = (connector: string | undefined, network: string | undefined) => {
-    if (!network) return false
-    if (!connector) return true
-    return resolveSupportedNetworks([network], connector).length === 0
 }
 
 const networkSupport = {

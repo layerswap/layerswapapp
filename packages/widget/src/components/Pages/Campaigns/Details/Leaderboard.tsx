@@ -20,7 +20,7 @@ const Component: FC<Props> = ({ campaign }) => {
     const [openTopModal, setOpenTopModal] = useState(false)
 
     const selectedSourceAccount = useSelectedAccount("from", campaign.network?.name)
-    const { wallets } = useWallet(campaign.network, 'autofil')
+    const { wallets } = useWallet(campaign.network, 'autofill')
     const wallet = wallets.find(w => w.id === selectedSourceAccount?.id)
     const address = wallet?.address
 

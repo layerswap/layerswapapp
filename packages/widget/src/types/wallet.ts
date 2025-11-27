@@ -80,7 +80,7 @@ export type WalletConnectionProvider = {
     disconnectWallets?: () => Promise<void> | undefined | void,
     switchAccount?: (connector: Wallet, address: string) => Promise<void>,
     switchChain?: (connector: Wallet, chainId: string | number) => Promise<void>
-    isNotAvailableCondition?: (connector: string, network: string) => boolean,
+    isNotAvailableCondition?: (connector: string, network: string, purpose?: "withdrawal" | "autofill" | "asSource") => boolean,
 
     /**
      * @deprecated Use TransferResolver from useTransfer() hook instead. This will be removed in a future version.

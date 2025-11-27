@@ -65,7 +65,7 @@ const Comp = ({ children, hidden, sticky = true }: FooterProps) => {
                              max-sm:bottom-0 
                              max-sm:p-4 max-sm:w-full invisible sm:hidden w-full`}>
                 </div>
-            </ >
+            </>
             :
             children
     )

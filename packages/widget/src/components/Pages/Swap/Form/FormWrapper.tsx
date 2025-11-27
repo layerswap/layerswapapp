@@ -61,7 +61,7 @@ export default function FormWrapper({ children, type, partner }: { children?: Re
             (addressFormat(destinationAddressFromQuery?.toString(), to) === addressFormat(destination_address, to)) &&
             !isAddressFromQueryConfirmed
         ) {
-            const provider = to && getProvider(to, 'autofil')
+            const provider = to && getProvider(to, 'autofill')
             const isDestAddressConnected = destination_address && provider?.connectedWallets?.some((wallet) => addressFormat(wallet.address, to) === addressFormat(destination_address, to))
 
             const confirmed = !isDestAddressConnected ? await getConfirmation({

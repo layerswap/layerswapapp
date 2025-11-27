@@ -38,6 +38,24 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
         KnownInternalNames.Networks.HyperliquidTestnet,
     ], [asSourceSupportedNetworks])
 
+    const isNotAvailableCondition = useCallback((connectorId: string | undefined, network: string | undefined, purpose?: "withdrawal" | "autofill" | "asSource") => {
+        if (!network) return false
+        if (!connectorId) return true
+
+        if (!purpose) {
+            return resolveSupportedNetworks([network], connectorId).length === 0
+        }
+
+        const supportedNetworksByPurpose = resolveSupportedNetworks(
+            purpose === "withdrawal" ? withdrawalSupportedNetworks :
+                purpose === "autofill" ? autofillSupportedNetworks :
+                    asSourceSupportedNetworks,
+            connectorId
+        )
+
+        return supportedNetworksByPurpose.length === 0 || !supportedNetworksByPurpose.includes(network)
+    }, [withdrawalSupportedNetworks, autofillSupportedNetworks, asSourceSupportedNetworks])
+
     const { disconnectAsync } = useDisconnect()
     const { switchAccountAsync } = useSwitchAccount()
     const { activeConnection, setActiveAddress } = useActiveEvmAccount()
@@ -254,7 +272,7 @@ export default function useEVMConnection({ networks }: WalletConnectionProviderP
             disconnectWallets,
             switchAccount,
             switchChain,
-            isNotAvailableCondition: isNotAvailable,
+            isNotAvailableCondition,
 
             transfer,
 
@@ -293,12 +311,6 @@ const getWalletConnectUri = async (
     }
     );
 };
-
-const isNotAvailable = (connector: string | undefined, network: string | undefined) => {
-    if (!network) return false
-    if (!connector) return true
-    return resolveSupportedNetworks([network], connector).length === 0
-}
 
 type ResolveWalletProps = {
     connection: {

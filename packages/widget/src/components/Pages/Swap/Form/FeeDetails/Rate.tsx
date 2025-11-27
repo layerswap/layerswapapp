@@ -2,27 +2,30 @@ import { useState } from "react"
 import { ArrowRight } from "lucide-react"
 import { truncateDecimals } from "@/components/utils/RoundDecimals"
 import { NetworkRouteToken } from "@/Models/Network"
-import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/shadcn/tooltip"
 
 export const RateElement = ({
     fromAsset,
     toAsset,
     requestAmount,
     receiveAmount,
+    totalFeeInUsd
 }: {
-    fromAsset: NetworkRouteToken | undefined
-    toAsset: NetworkRouteToken | undefined
-    requestAmount: number | undefined
-    receiveAmount: number | undefined
+    fromAsset: NetworkRouteToken
+    toAsset: NetworkRouteToken
+    requestAmount: number
+    receiveAmount: number
+    totalFeeInUsd: number
 }) => {
     const [flipped, setFlipped] = useState(false)
 
-    if (!requestAmount || !receiveAmount) {
+    if (toAsset.price_in_usd === 0) {
         return null
     }
 
-    const fromRate = receiveAmount / requestAmount
-    const toRate = requestAmount / receiveAmount
+    const totalFee = totalFeeInUsd ? totalFeeInUsd / toAsset.price_in_usd : 0
+
+    const fromRate = (receiveAmount + totalFee) / requestAmount
+    const toRate = requestAmount / (receiveAmount + totalFee)
 
     const fromRateTruncated = truncateDecimals(fromRate, fromAsset?.precision || 6)
     const toRateTruncated = truncateDecimals(toRate, toAsset?.precision || 6)

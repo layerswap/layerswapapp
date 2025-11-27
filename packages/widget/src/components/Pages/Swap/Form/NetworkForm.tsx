@@ -83,21 +83,12 @@ const NetworkForm: FC<Props> = ({ partner }) => {
 
     const shouldConnectWallet = (source && source?.deposit_methods?.includes('wallet') && depositMethod !== 'deposit_address' && !selectedSourceAccount) || (!source && !wallets.length && depositMethod !== 'deposit_address');
 
-    // useEffect(() => {
-    //     if (wallets?.length) {
-    //         const allWalletAddresses = wallets.flatMap(w => w.addresses).filter(Boolean);
-    //         posthog.setPersonProperties({
-    //             accounts: allWalletAddresses,
-    //         });
-    //     }
-    // }, [wallets]);
-
     return (
         <>
             <DepositMethodComponent />
             <Form className="h-full grow flex flex-col flex-1 justify-between w-full gap-3">
                 <Widget.Content>
-                    <div className="w-full flex flex-col justify-between flex-1 gap-3">
+                    <div className="w-full flex flex-col justify-between flex-1">
                         <div className='flex-col relative flex justify-between gap-2 w-full leading-4'>
                             {
                                 !(initialSettings?.hideFrom && values?.from) && <SourcePicker
@@ -123,30 +114,32 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                                 />
                             }
                         </div>
-                        {
-                            Number(values.amount) > 0 ?
+                        <div>
+                            {
+                                Number(values.amount) > 0 &&
                                 <ReserveGasNote
                                     maxAllowedAmount={minAllowedAmount}
                                     minAllowedAmount={maxAllowedAmount}
                                     onSubmit={handleReserveGas}
                                 />
-                                : null
-                        }
-                        {
-                            (values.toAsset?.refuel && !initialSettings.hideRefuel) ?
+                            }
+                            {
+                                values.toAsset?.refuel && !initialSettings.hideRefuel &&
                                 <RefuelToggle
                                     quote={quote}
                                     onButtonClick={() => setOpenRefuelModal(true)}
                                     minAllowedAmount={minAllowedAmount}
                                 />
-                                : null
-                        }
-                        {
-                            routeValidation.message
-                                ? <ValidationError />
-                                : null
-                        }
-                        <QuoteDetails swapValues={values} quote={quote} isQuoteLoading={isQuoteLoading} />
+                            }
+                            {
+                                routeValidation.message
+                                    ? <div className="mt-3">
+                                        <ValidationError />
+                                    </div>
+                                    : null
+                            }
+                            <QuoteDetails swapValues={values} quote={quote?.quote} reward={quote?.reward} isQuoteLoading={isQuoteLoading} />
+                        </div>
                     </div>
                 </Widget.Content>
                 <Widget.Footer showPoweredBy>

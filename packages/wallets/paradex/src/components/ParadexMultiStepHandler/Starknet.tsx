@@ -38,7 +38,10 @@ const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => 
             if (!snAccount) {
                 throw Error("Starknet account not found")
             }
-            const paradexAccount = await AuthorizeStarknet(snAccount as any)
+            if (!starknet?.node_url) {
+                throw Error("Starknet node url not found")
+            }
+            const paradexAccount = await AuthorizeStarknet(snAccount as any, starknet.node_url)
 
             const parsedCallData = JSON.parse(callData || "")
 

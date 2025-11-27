@@ -11,7 +11,7 @@ import { useConnectModal } from "@/components/Wallet/WalletModal";
 import { Network, NetworkRoute } from "@/Models/Network";
 import { useInitialSettings, useSettingsState } from "@/context/settings";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
-import { BackendTransactionStatus, DepositAction, SwapBasicData, SwapDetails, SwapItem, SwapResponse } from "@/lib/apiClients/layerSwapApiClient";
+import LayerSwapApiClient, { BackendTransactionStatus, DepositAction, SwapBasicData, SwapDetails } from "@/lib/apiClients/layerSwapApiClient";
 import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
 import { useWalletWithdrawalState } from "@/context/withdrawalContext";
@@ -23,6 +23,7 @@ import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/Icons/InfoIcon";
 import { addressFormat } from "@/lib/address/formatter";
 import { useBalance } from "@/lib/balances/useBalance";
+import KnownInternalNames from "@/lib/knownIds";
 
 export const ConnectWalletButton: FC<SubmitButtonProps> = ({ ...props }) => {
     const { swapBasicData } = useSwapDataState()
@@ -166,6 +167,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
     const initialSettings = useInitialSettings()
+
+    const layerswapApiClient = new LayerSwapApiClient()
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network?.name);
 
     const { networks } = useSettingsState()
@@ -234,7 +237,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 swapData = newSwapData.swap
                 depositActions = newSwapData.deposit_actions;
             }
-            if (!depositActions) {
+            if (!depositActions?.length) {
                 throw new Error('No deposit actions')
             }
 
@@ -248,13 +251,28 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             if (hash) {
                 onWalletWithdrawalSuccess?.();
                 setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, hash);
+                try {
+                    await layerswapApiClient.SwapCatchup(swapData.id, hash);
+                } catch (e) {
+                    console.error('Error in SwapCatchup:', e)
+                    const swapWithdrawalError = new Error(e);
+                    swapWithdrawalError.name = `SwapCatchupError`;
+                    swapWithdrawalError.cause = e;
+                    ErrorHandler({
+                        type: 'SwapWithdrawalError',
+                        message: swapWithdrawalError.message,
+                        name: swapWithdrawalError.name,
+                        stack: swapWithdrawalError.stack,
+                        cause: swapWithdrawalError.cause,
+                    });
+                }
             }
         }
         catch (e) {
             setSwapId(undefined)
             const error = e as Error;
-            ErrorHandler({ 
-                type: 'SwapWithdrawalError', 
+            ErrorHandler({
+                type: 'SwapWithdrawalError',
                 message: error.message,
                 name: error.name,
                 stack: error.stack,
@@ -335,7 +353,9 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
 
 const resolveTransactionData = (swapDetails: SwapDetails, swapBasicData: SwapBasicData, deposit_actions: DepositAction[], balances: TokenBalance[] | null | undefined, selectedWallet: Wallet): TransferProps => {
-    const depositAction = deposit_actions?.find(action => action.type === 'transfer');
+    const depositAction = deposit_actions?.find(action =>
+        action.type === 'transfer'
+        || ExceptionNetworks.includes(swapBasicData.source_network?.name) && action.type === 'manual_transfer');
     if (!depositAction) {
         throw new Error('No deposit action found')
     }
@@ -352,3 +372,8 @@ const resolveTransactionData = (swapDetails: SwapDetails, swapBasicData: SwapBas
         selectedWallet: selectedWallet,
     }
 }
+
+const ExceptionNetworks = [
+    KnownInternalNames.Networks.ImmutableXMainnet,
+    KnownInternalNames.Networks.ImmutableXSepolia
+]

@@ -1,7 +1,5 @@
 import { ReactNode, useState } from "react";
 import SecondaryButton from "../Buttons/secondaryButton";
-import { DocIframe } from "./docInIframe";
-import Modal from "../Modal/modal";
 
 export default function GuideLink({ userGuideUrl, text, button, buttonClassNames }: { userGuideUrl: string, text?: string, button?: ReactNode, buttonClassNames?: string }) {
     const [showGuide, setShowGuide] = useState(false);
@@ -14,17 +12,18 @@ export default function GuideLink({ userGuideUrl, text, button, buttonClassNames
                         {button}
                     </SecondaryButton>
                     :
-                    <span className='text-primary cursor-pointer hover:text-primary-400' onClick={() => setShowGuide(true)}>&nbsp;<span>{text}</span></span>
+                    <a target="_blank" href={userGuideUrl} className='text-primary cursor-pointer hover:text-primary-400'>&nbsp;<span>{text}</span></a>
             }
-            <Modal
+            {/* <VaulDrawer
                 className="bg-[#181c1f]"
-                height="full"
                 header={text || button}
                 show={showGuide}
                 setShow={setShowGuide}
                 modalId="guide">
-                <DocIframe onConfirm={() => setShowGuide(false)} URl={userGuideUrl} />
-            </Modal>
+                <VaulDrawer.Snap id="item-1" openFullHeight>
+                    <DocIframe onConfirm={() => setShowGuide(false)} URl={userGuideUrl} />
+                </VaulDrawer.Snap>
+            </VaulDrawer> */}
         </>
     )
 }

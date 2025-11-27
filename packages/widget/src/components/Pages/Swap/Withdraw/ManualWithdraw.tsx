@@ -26,22 +26,29 @@ import { Partner } from '@/Models/Partner'
 import { addressFormat } from '@/lib/address/formatter'
 import { isValidAddress } from '@/lib/address/validator'
 import { ExtendedAddress } from '@/components/Input/Address/AddressPicker/AddressWithIcon'
+import QuoteDetails from '../Form/FeeDetails'
 
 interface Props {
     swapBasicData: SwapBasicData;
-    quote: SwapQuote | undefined;
     depositActions: DepositAction[] | undefined;
     refuel?: Refuel | undefined
     partner?: Partner;
-    type: 'widget' | 'contained'
-
+    type: 'widget' | 'contained',
+    quote?: SwapQuote;
+    isQuoteLoading?: boolean;
 }
 
-const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refuel, partner, type }) => {
+const ManualWithdraw: FC<Props> = ({ swapBasicData, depositActions, refuel, partner, type, quote, isQuoteLoading }) => {
     const { wallets } = useWallet();
     const { createSwap, setSwapId } = useSwapDataUpdate()
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-    const [newNetwork, setNewNetwork] = useState<Network | null>(null);
+    const [selectedFrom, setSelectedFrom] = useState<{
+        network: Network | null;
+        token: Token | null;
+    }>({
+        network: swapBasicData?.source_network ?? null,
+        token: swapBasicData?.source_token ?? null,
+    });
 
     const [loading, setLoading] = useState(false)
     const { getConfirmation } = useAsyncModal();
@@ -62,8 +69,25 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
         }
     }
 
+    const swapValues = useMemo<SwapFormValues>(() => {
+        const fromNetwork = (selectedFrom.network ?? swapBasicData?.source_network) as NetworkRoute | undefined;
+        const fromToken = selectedFrom.token ?? swapBasicData?.source_token;
+
+        return {
+            amount: swapBasicData?.requested_amount?.toString(),
+            from: fromNetwork,
+            to: swapBasicData?.destination_network as NetworkRoute,
+            fromAsset: fromToken,
+            toAsset: swapBasicData?.destination_token,
+            refuel: !!refuel,
+            destination_address: swapBasicData?.destination_address,
+            fromExchange: swapBasicData?.source_exchange,
+            depositMethod: 'deposit_address',
+        };
+    }, [selectedFrom.network, selectedFrom.token, swapBasicData, refuel]);
+
     const handleClick = async (network: Network, token: Token) => {
-        const swapValues: SwapFormValues = {
+        const nextSwapValues: SwapFormValues = {
             amount: swapBasicData?.requested_amount?.toString(),
             from: network as NetworkRoute,
             to: swapBasicData?.destination_network as NetworkRoute,
@@ -79,18 +103,18 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
             setLoading(true);
 
             await handleLimitsUpdate({
-                swapValues,
+                swapValues: nextSwapValues,
                 network,
                 token,
                 getConfirmation
             })
 
-            const swapData = await createSwap(swapValues, initialSettings);
-            setNewNetwork(network);
+            const swapData = await createSwap(nextSwapValues, initialSettings);
             const swapId = swapData?.swap?.id;
             if (!swapId) throw new Error('Swap ID is undefined');
 
             setSwapId(swapId);
+            setSelectedFrom({ network, token });
             setIsPopoverOpen(false);
         } catch (e) {
             console.error('Swap creation error:', e);
@@ -133,14 +157,14 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
             <PopoverTrigger asChild>
                 <button className="inline-flex items-center gap-1 px-1.5 mx-1 bg-secondary-300 rounded-lg">
                     <ImageWithFallback
-                        src={newNetwork?.logo || swapBasicData?.source_network?.logo}
+                        src={selectedFrom.network?.logo ?? swapBasicData?.source_network?.logo}
                         alt="Project Logo"
                         height="16"
                         width="16"
                         loading="eager"
                         className="rounded-sm object-contain"
                     />
-                    <span>{newNetwork?.display_name || swapBasicData?.source_network?.display_name}</span>
+                    <span>{selectedFrom.network?.display_name ?? swapBasicData?.source_network?.display_name}</span>
                     <span className="pointer-events-none text-shadow-primary-text-tertiary">
                         <ChevronDown className="h-3.5 w-3.5 text-secondary-text" aria-hidden="true" />
                     </span>
@@ -256,7 +280,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                                         </span>
                                         <span>via</span>
                                         {swapBasicData?.source_exchange ? (
-                                            <span className="inline-flex items-center align-bottom">
+                                            <span className="inline-flex items-center align-bottom max-sm:mt-1">
                                                 {sourceNetworkPopover}
                                             </span>
                                         ) : (
@@ -309,6 +333,7 @@ const ManualWithdraw: FC<Props> = ({ swapBasicData, quote, depositActions, refue
                                     </span>
                                 }
                             />
+                            <QuoteDetails swapValues={swapValues} quote={quote} isQuoteLoading={isQuoteLoading} />
                         </>
                     )}
                 </div>

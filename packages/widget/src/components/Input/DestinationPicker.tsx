@@ -19,7 +19,7 @@ type Props = {
 const DestinationPicker = (props: Props) => {
     const { partner } = props
     const { values } = useFormikContext<SwapFormValues>()
-    const { fromAsset: fromCurrency, toAsset: toCurrency } = values
+    const { toAsset: toCurrency } = values
     const quoteArgs = useMemo(() => transformFormValuesToQuoteArgs(values, true), [values]);
     const { swapId } = useSwapDataState()
     const quoteRefreshInterval = !!swapId ? 0 : undefined;
@@ -41,7 +41,6 @@ const DestinationPicker = (props: Props) => {
             <div className="grid grid-cols-[1fr_auto] gap-2 w-full max-w-full">
                 <div className="min-w-0 overflow-hidden">
                     <ReceiveAmount
-                        source_token={fromCurrency}
                         destination_token={toCurrency}
                         fee={quote}
                         isFeeLoading={isQuoteLoading}

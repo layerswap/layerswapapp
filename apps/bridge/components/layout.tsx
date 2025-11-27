@@ -77,6 +77,8 @@ export default function Layout({ children, themeData }: Props) {
       <meta name="twitter:title" content="Layerswap App" />
       <meta name="twitter:description" content="Streamline your asset transaction experience with Layerswap across 50+ blockchains and 15+ exchanges. Fast, affordable and secure." />
       <meta name="twitter:image" content={`https://layerswap.io/${basePath}/opengraphtw.jpg`} />
+
+      <meta name="color-scheme" content="light dark"></meta>
     </Head>
     <AppWrapper>
       {children}

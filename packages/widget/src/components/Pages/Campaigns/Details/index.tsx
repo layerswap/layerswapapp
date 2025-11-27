@@ -22,7 +22,7 @@ export const CampaignDetailsComponent: FC<{ campaignName: string | undefined }> 
     const campaign = campaignsData?.data?.find(c => c.name === campaignName)
     const network = campaign?.network
 
-    const { provider } = useWallet(network, 'autofil')
+    const { provider } = useWallet(network, 'autofill')
     const { connect } = useConnectModal()
 
     const handleConnect = useCallback(async () => {
