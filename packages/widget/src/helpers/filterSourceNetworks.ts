@@ -2,16 +2,24 @@ import { LayerSwapSettings } from "@/Models";
 import { WalletConnectionProvider } from "@/types";
 
 export function filterSourceNetworks(settings: LayerSwapSettings, walletProviders: WalletConnectionProvider[]) {
-    const walletOnlyRoutes = settings.sourceRoutes?.filter(sourceRoute => sourceRoute.deposit_methods.length === 1 && sourceRoute.deposit_methods[0] === "wallet") || [];
     const allNetworkTypes: string[] = [...new Set(settings.sourceRoutes?.map(route => route.type))];
+    const routesByNetworkType = settings.sourceRoutes?.reduce((acc, route) => {
+        if (!acc[route.type]) {
+            acc[route.type] = [];
+        }
+        acc[route.type].push(route);
+        return acc;
+    }, {} as Record<string, typeof settings.sourceRoutes>) || {};
 
     const unavailableNetworkTypes: string[] = [];
 
-    walletOnlyRoutes.forEach(route => {
-        const isUnsupportedByAll = walletProviders.every(provider => !provider.withdrawalSupportedNetworks.includes(route.name));
+    Object.entries(routesByNetworkType).forEach(([networkType, routes]) => {
+        const walletOnlyRoutesForType = routes.filter(route => route.deposit_methods.length === 1 && route.deposit_methods[0] === "wallet");
 
-        if (isUnsupportedByAll && !unavailableNetworkTypes.includes(route.type)) {
-            unavailableNetworkTypes.push(route.type);
+        if (walletOnlyRoutesForType.length > 0) {
+            const hasAnySupportedRoute = routes.some(route => walletProviders.some(provider => provider.withdrawalSupportedNetworks.includes(route.name)));
+
+            if (!hasAnySupportedRoute) unavailableNetworkTypes.push(networkType);
         }
     });
 
