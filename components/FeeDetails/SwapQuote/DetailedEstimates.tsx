@@ -194,7 +194,7 @@ const Reward = ({ reward }: { reward: QuoteReward }) => {
 
 const Rate = ({ fromAsset, toAsset, requestAmount, receiveAmount, totalFee }) => {
     return <RowWrapper title="Rate">
-        <RateElement fromAsset={fromAsset} toAsset={toAsset} requestAmount={requestAmount} receiveAmount={receiveAmount} totalFee={totalFee} />
+        <RateElement fromAsset={fromAsset} toAsset={toAsset} requestAmount={requestAmount} receiveAmount={receiveAmount} />
     </RowWrapper>
 }
 
