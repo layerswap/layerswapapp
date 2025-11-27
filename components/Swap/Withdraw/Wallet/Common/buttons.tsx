@@ -250,6 +250,22 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                     await layerswapApiClient.SwapCatchup(swapBasicData.source_network?.name, hash);
                 } catch (e) {
                     console.error('Error in SwapCatchup:', e)
+                    const swapWithdrawalError = new Error(e);
+                    swapWithdrawalError.name = `SwapCatchupError`;
+                    swapWithdrawalError.cause = e;
+                    posthog.capture('$exception', {
+                        name: swapWithdrawalError.name,
+                        cause: swapWithdrawalError.cause,
+                        message: swapWithdrawalError.message,
+                        $layerswap_exception_type: "Swap Catchup Error",
+                        $fromAddress: selectedSourceAccount?.address,
+                        $toAddress: swapBasicData?.destination_address,
+                        $txHash: hash,
+                        $swapId: swapData.id,
+                        stack: swapWithdrawalError.stack,
+                        where: 'WalletTransaction',
+                        severity: 'error',
+                    });
                 }
             }
         }
