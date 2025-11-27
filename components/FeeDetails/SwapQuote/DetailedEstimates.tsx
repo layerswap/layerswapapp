@@ -97,7 +97,7 @@ export const GasFee = ({ values, quote }: { values: SwapValues, quote: SwapQuote
                         </span>
                     )}
                 </TooltipTrigger>
-                <TooltipContent className="!bg-secondary-300 !border-secondary-300 !text-primary-text">
+                <TooltipContent className="bg-secondary-300! border-secondary-300! text-primary-text!">
                     <span>{gas || '-'} </span>
                     <span>{gas ? gasCurrencyName : ''}</span>
                 </TooltipContent>
@@ -161,7 +161,7 @@ const Fees = ({ quote, values }: { quote: SwapQuote | undefined, values: SwapVal
                     </div>
                 )}
             </TooltipTrigger>
-            <TooltipContent className="!bg-secondary-300 !border-ssecondary-300 !text-primart-text">
+            <TooltipContent className="bg-secondary-300! border-ssecondary-300! text-primart-text!">
                 <span>{displayLsFee || '-'} </span>
                 <span>{displayLsFee ? currencyName : ''}</span>
             </TooltipContent>
@@ -184,15 +184,24 @@ const Reward = ({ reward }: { reward: QuoteReward }) => {
                     </span>
                 )}
             </TooltipTrigger>
-            <TooltipContent className="!bg-secondary-300 !border-secondary-300 !text-primart-text">
+            <TooltipContent className="bg-secondary-300! border-secondary-300! text-primart-text!">
                 <span>{reward?.amount || '-'} </span>
                 <span>{reward?.amount ? reward.token.symbol : ''}</span>
             </TooltipContent>
         </Tooltip>
     </RowWrapper>
 }
-
-const Rate = ({ fromAsset, toAsset, requestAmount, receiveAmount, totalFeeInUsd }) => {
+type RateProps = {
+    fromAsset?: NetworkRouteToken
+    toAsset?: NetworkRouteToken
+    requestAmount?: number
+    receiveAmount?: number
+    totalFeeInUsd?: number
+}
+const Rate = ({ fromAsset, toAsset, requestAmount, receiveAmount, totalFeeInUsd }: RateProps) => {
+    if (!fromAsset || !toAsset || !requestAmount || !receiveAmount || !totalFeeInUsd) {
+        return null
+    }
     return <RowWrapper title="Rate">
         <RateElement fromAsset={fromAsset} toAsset={toAsset} requestAmount={requestAmount} receiveAmount={receiveAmount} totalFeeInUsd={totalFeeInUsd} />
     </RowWrapper>
