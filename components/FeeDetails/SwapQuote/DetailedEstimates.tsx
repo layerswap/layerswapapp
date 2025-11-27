@@ -43,7 +43,7 @@ export const DetailedEstimates: FC<DetailedEstimatesProps> = ({
     return <div className="flex flex-col w-full px-2">
         {variant === "extended" && <GasFee values={values} quote={quote} />}
         <Fees quote={quote} values={values} />
-        {values.depositMethod !== "deposit_address" && <Rate fromAsset={values?.fromAsset} toAsset={values?.toAsset} requestAmount={quote?.requested_amount} receiveAmount={quote?.receive_amount} totalFee={quote?.total_fee} />}
+        {values.depositMethod !== "deposit_address" && <Rate fromAsset={values?.fromAsset} toAsset={values?.toAsset} requestAmount={quote?.requested_amount} receiveAmount={quote?.receive_amount} totalFeeInUsd={quote?.total_fee_in_usd} />}
         {values.depositMethod === "deposit_address" && variant === "extended" && values?.fromAsset?.contract && <ExchangeTokenContract fromAsset={values?.fromAsset} network={values?.from} />}
         {variant === "extended" && values.depositMethod === "wallet" && <Slippage quoteData={quote} values={values} />}
         <Estimates quote={quote} />
@@ -97,7 +97,7 @@ export const GasFee = ({ values, quote }: { values: SwapValues, quote: SwapQuote
                         </span>
                     )}
                 </TooltipTrigger>
-                <TooltipContent className="!bg-secondary-300 !border-secondary-300 !text-primary-text">
+                <TooltipContent className="bg-secondary-300! border-secondary-300! text-primary-text!">
                     <span>{gas || '-'} </span>
                     <span>{gas ? gasCurrencyName : ''}</span>
                 </TooltipContent>
@@ -111,38 +111,38 @@ const Fees = ({ quote, values }: { quote: SwapQuote | undefined, values: SwapVal
     const lsFeeAmountInUsd = quote?.total_fee_in_usd
     const feeDiscount = quote?.fee_discount
     const hasDiscount = feeDiscount != null && feeDiscount > 0
-    
+
     // total_fee is the original fee, discounted fee is total_fee - fee_discount
     const originalFee = quote?.total_fee
     const discountedFee = hasDiscount && originalFee !== undefined
         ? originalFee - feeDiscount
         : originalFee
-    
+
     // Calculate fees in USD
     const sourceTokenPriceInUsd = resolveTokenUsdPrice(values.fromAsset, quote)
     const originalFeeInUsd = originalFee !== undefined && sourceTokenPriceInUsd != null
         ? originalFee * sourceTokenPriceInUsd
         : null
-    
+
     // Calculate discounted fee in USD
     const discountedFeeInUsd = discountedFee !== undefined && sourceTokenPriceInUsd != null
         ? discountedFee * sourceTokenPriceInUsd
         : null
-    
-    const displayOriginalFeeInUsd = originalFeeInUsd != null 
+
+    const displayOriginalFeeInUsd = originalFeeInUsd != null
         ? (originalFeeInUsd < 0.01 ? '<$0.01' : `$${originalFeeInUsd.toFixed(2)}`)
         : null
-    
+
     const isFree = discountedFee !== undefined && discountedFee === 0
-    const displayLsFeeInUsd = isFree 
+    const displayLsFeeInUsd = isFree
         ? "Free"
-        : (discountedFeeInUsd != null 
+        : (discountedFeeInUsd != null
             ? (discountedFeeInUsd < 0.01 ? '<$0.01' : `$${discountedFeeInUsd.toFixed(2)}`)
             : null)
-    
+
     const currencyName = values.fromAsset?.symbol || ''
-    const displayLsFee = discountedFee !== undefined 
-        ? truncateDecimals(discountedFee, values.fromAsset?.decimals) 
+    const displayLsFee = discountedFee !== undefined
+        ? truncateDecimals(discountedFee, values.fromAsset?.decimals)
         : undefined
 
     return <RowWrapper title="Fees">
@@ -161,7 +161,7 @@ const Fees = ({ quote, values }: { quote: SwapQuote | undefined, values: SwapVal
                     </div>
                 )}
             </TooltipTrigger>
-            <TooltipContent className="!bg-secondary-300 !border-ssecondary-300 !text-primart-text">
+            <TooltipContent className="bg-secondary-300! border-ssecondary-300! text-primart-text!">
                 <span>{displayLsFee || '-'} </span>
                 <span>{displayLsFee ? currencyName : ''}</span>
             </TooltipContent>
@@ -184,17 +184,26 @@ const Reward = ({ reward }: { reward: QuoteReward }) => {
                     </span>
                 )}
             </TooltipTrigger>
-            <TooltipContent className="!bg-secondary-300 !border-secondary-300 !text-primart-text">
+            <TooltipContent className="bg-secondary-300! border-secondary-300! text-primart-text!">
                 <span>{reward?.amount || '-'} </span>
                 <span>{reward?.amount ? reward.token.symbol : ''}</span>
             </TooltipContent>
         </Tooltip>
     </RowWrapper>
 }
-
-const Rate = ({ fromAsset, toAsset, requestAmount, receiveAmount, totalFee }) => {
+type RateProps = {
+    fromAsset?: NetworkRouteToken
+    toAsset?: NetworkRouteToken
+    requestAmount?: number
+    receiveAmount?: number
+    totalFeeInUsd?: number
+}
+const Rate = ({ fromAsset, toAsset, requestAmount, receiveAmount, totalFeeInUsd }: RateProps) => {
+    if (!fromAsset || !toAsset || !requestAmount || !receiveAmount || !totalFeeInUsd) {
+        return null
+    }
     return <RowWrapper title="Rate">
-        <RateElement fromAsset={fromAsset} toAsset={toAsset} requestAmount={requestAmount} receiveAmount={receiveAmount} />
+        <RateElement fromAsset={fromAsset} toAsset={toAsset} requestAmount={requestAmount} receiveAmount={receiveAmount} totalFeeInUsd={totalFeeInUsd} />
     </RowWrapper>
 }
 
