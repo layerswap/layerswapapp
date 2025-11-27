@@ -12,7 +12,7 @@ import { Network, NetworkRoute } from "@/Models/Network";
 import { useQueryState } from "@/context/query";
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { useSwapTransactionStore } from "@/stores/swapTransactionStore";
-import { BackendTransactionStatus, DepositAction, SwapBasicData, SwapDetails } from "@/lib/apiClients/layerSwapApiClient";
+import LayerSwapApiClient, { BackendTransactionStatus, DepositAction, SwapBasicData, SwapDetails } from "@/lib/apiClients/layerSwapApiClient";
 import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
 import posthog from "posthog-js";
@@ -167,7 +167,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
     const { createSwap, setSwapId, setQuoteLoading } = useSwapDataUpdate()
     const { setSwapTransaction } = useSwapTransactionStore();
 
-    
+    const layerswapApiClient = new LayerSwapApiClient()
     const selectedSourceAccount = useSelectedAccount("from", swapBasicData.source_network?.name);
     const { wallets } = useWallet(swapBasicData.source_network, 'withdrawal')
 
@@ -187,7 +187,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             if (!selectedWallet?.isActive) {
                 throw new Error('Wallet is not active')
             }
-            
+
             setLoading(true)
             clearError?.()
             let swapData: SwapDetails | undefined = swapDetails
@@ -246,6 +246,11 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
             if (hash) {
                 onWalletWithdrawalSuccess?.();
                 setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, hash);
+                try {
+                    await layerswapApiClient.SwapCatchup(swapBasicData.source_network?.name, hash);
+                } catch (e) {
+                    console.error('Error in SwapCatchup:', e)
+                }
             }
         }
         catch (e) {
@@ -343,8 +348,8 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
 
 
 const resolveTransactionData = (swapDetails: SwapDetails, deposit_actions: DepositAction[], destination_address: string, source_network: Network): TransferProps => {
-    const depositAction = deposit_actions?.find(action => 
-        action.type === 'transfer' 
+    const depositAction = deposit_actions?.find(action =>
+        action.type === 'transfer'
         || ExceptionNetworks.includes(source_network.name) && action.type === 'manual_transfer');
     if (!depositAction) {
         throw new Error('No deposit action found')

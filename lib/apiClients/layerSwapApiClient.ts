@@ -73,6 +73,10 @@ export default class LayerSwapApiClient {
         return await this.UnauthenticatedRequest<ApiResponse<any>>("GET", `/transaction_status?network=${network}&transaction_id=${tx_id}`);
     }
 
+    async SwapCatchup(network: string, tx_id: string): Promise<ApiResponse<void>> {
+        return await this.AuthenticatedRequest<ApiResponse<void>>("POST", `/internal/networks/${network}/catchup`, { transaction_id: tx_id });
+    }
+
     private async AuthenticatedRequest<T extends EmptyApiResponse>(method: Method, endpoint: string, data?: any, header?: {}): Promise<T> {
         let uri = LayerSwapApiClient.apiBaseEndpoint + "/api/v2" + endpoint;
         return await this._authInterceptor(uri, { method: method, data: data, headers: { 'Access-Control-Allow-Origin': '*', ...(header ? header : {}) } })
