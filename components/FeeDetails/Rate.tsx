@@ -28,7 +28,16 @@ export const RateElement = ({
     const toRate = requestAmount / (receiveAmount + totalFee)
 
     const fromRateTruncated = truncateDecimals(fromRate, fromAsset?.precision || 6)
-    const toRateTruncated = truncateDecimals(toRate, toAsset?.precision || 6)
+
+    const dynamicToRatePrecision = getPrecisionWhereValueBelowCent(
+        toRate,
+        toAsset.price_in_usd
+    );
+
+    const toRateTruncated = truncateDecimals(
+        toRate,
+        Math.max(dynamicToRatePrecision, toAsset?.precision || 6)
+    );
 
     return (
         <div
@@ -51,3 +60,18 @@ export const RateElement = ({
         </div>
     )
 }
+
+const getPrecisionWhereValueBelowCent = (rate: number, priceInUsd: number) => {
+    if (!priceInUsd) return 6; 
+
+    for (let decimals = 1; decimals <= 18; decimals++) {
+        const truncated = Number(rate.toFixed(decimals));
+        const usdValue = truncated * priceInUsd;
+
+        if (usdValue < 0.01) {
+            return decimals;
+        }
+    }
+
+    return 18; 
+};
