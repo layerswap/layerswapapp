@@ -247,7 +247,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 onWalletWithdrawalSuccess?.();
                 setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, hash);
                 try {
-                    await layerswapApiClient.SwapCatchup(swapBasicData.source_network?.name, hash);
+                    await layerswapApiClient.SwapCatchup(swapData.id, hash);
                 } catch (e) {
                     console.error('Error in SwapCatchup:', e)
                     const swapWithdrawalError = new Error(e);
