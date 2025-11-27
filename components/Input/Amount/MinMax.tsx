@@ -43,6 +43,9 @@ const MinMax = (props: MinMaxProps) => {
         return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod })
     }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod])
 
+    let displayedMinAmount: number | undefined = limitsMinAmount || (fromCurrency.price_in_usd > 0 ? 0.01 / fromCurrency.price_in_usd : 0.01);
+    if (walletBalance?.amount && displayedMinAmount > walletBalance.amount)
+        displayedMinAmount = walletBalance.amount;
     const handleSetValue = (value: string) => {
         mutateBalances()
         setFieldValue('amount', value, true)
@@ -52,9 +55,7 @@ const MinMax = (props: MinMaxProps) => {
     const handleSetMinAmount = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
         e.stopPropagation()
-        if (!limitsMinAmount)
-            throw new Error("Wallet balance is not available");
-        handleSetValue(limitsMinAmount.toString())
+        handleSetValue(displayedMinAmount.toString())
     }
     const handleSetHalfAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
@@ -77,12 +78,12 @@ const MinMax = (props: MinMaxProps) => {
     return (
         <div className="flex gap-1.5 group text-xs leading-4" onMouseLeave={() => onActionHover(undefined)}>
             {
-                Number(limitsMinAmount) > 0 ?
+                (Number(limitsMinAmount) > 0 || maxAllowedAmount) ?
                     <ActionButton
                         label="Min"
-                        onMouseEnter={() => onActionHover(limitsMinAmount)}
+                        onMouseEnter={() => onActionHover(displayedMinAmount)}
                         onClick={handleSetMinAmount}
-                        disabled={!limitsMinAmount}
+                        disabled={!maxAllowedAmount}
                     />
                     :
                     null
