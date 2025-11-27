@@ -7,8 +7,8 @@ settings:
 catalogs:
   default:
     '@tanstack/react-query':
-      specifier: 5.90.5
-      version: 5.90.5
+      specifier: 5.90.11
+      version: 5.90.11
     '@types/react':
       specifier: 18.3.1
       version: 18.3.1
@@ -56,7 +56,7 @@ importers:
     devDependencies:
       '@changesets/cli':
         specifier: ^2.29.7
-        version: 2.29.7(@types/node@24.10.1)
+        version: 2.29.8(@types/node@24.10.1)
       '@types/node':
         specifier: ^24.5.1
         version: 24.10.1
@@ -71,7 +71,7 @@ importers:
         version: 8.5.6
       prettier:
         specifier: ^3.0.0
-        version: 3.6.2
+        version: 3.7.1
       rimraf:
         specifier: ^5.0.0
         version: 5.0.10
@@ -104,7 +104,7 @@ importers:
         version: 0.6.3(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
       '@bigmi/react':
         specifier: ^0.6.1
-        version: 0.6.3(@tanstack/query-core@5.90.11)(@tanstack/react-query@5.90.5(react@18.3.1))(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
+        version: 0.6.3(@tanstack/query-core@5.90.11)(@tanstack/react-query@5.90.11(react@18.3.1))(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
       '@layerswap/wallets':
         specifier: workspace:^
         version: link:../../packages/wallets/all
@@ -113,13 +113,13 @@ importers:
         version: link:../../packages/widget
       '@posthog/react':
         specifier: 1.4.0
-        version: 1.4.0(@types/react@18.3.1)(posthog-js@1.298.0)(react@18.3.1)
+        version: 1.4.0(@types/react@18.3.1)(posthog-js@1.298.1)(react@18.3.1)
       '@radix-ui/react-context-menu':
         specifier: ^1.0.0
         version: 1.0.0(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.90.5(react@18.3.1)
+        version: 5.90.11(react@18.3.1)
       '@uidotdev/usehooks':
         specifier: ^2.4.1
         version: 2.4.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -146,7 +146,7 @@ importers:
         version: 14.2.33(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       posthog-js:
         specifier: ^1.272.0
-        version: 1.298.0
+        version: 1.298.1
       react:
         specifier: 'catalog:'
         version: 18.3.1
@@ -167,7 +167,7 @@ importers:
         version: 2.40.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.0.5)
       wagmi:
         specifier: 'catalog:'
-        version: 2.14.11(@tanstack/query-core@5.90.11)(@tanstack/react-query@5.90.5(react@18.3.1))(@types/react@18.3.1)(bufferutil@4.0.9)(react@18.3.1)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.40.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.0.5))(zod@4.0.5)
+        version: 2.14.11(@tanstack/query-core@5.90.11)(@tanstack/react-query@5.90.11(react@18.3.1))(@types/react@18.3.1)(bufferutil@4.0.9)(react@18.3.1)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.40.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.0.5))(zod@4.0.5)
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@18.3.1)(react@18.3.1)
@@ -180,16 +180,16 @@ importers:
         version: 1.3.6(next@14.2.33(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@storybook/addon-docs':
         specifier: ^9.1.1
-        version: 9.1.16(@types/react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))
+        version: 9.1.16(@types/react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))
       '@storybook/addon-links':
         specifier: ^9.1.1
-        version: 9.1.16(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))
+        version: 9.1.16(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))
       '@storybook/addon-onboarding':
         specifier: ^9.1.1
-        version: 9.1.16(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))
+        version: 9.1.16(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))
       '@storybook/nextjs':
         specifier: ^9.1.1
-        version: 9.1.16(next@14.2.33(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))(type-fest@4.34.1)(typescript@5.9.3)(webpack-hot-middleware@2.26.1)(webpack@5.103.0)
+        version: 9.1.16(next@14.2.33(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))(type-fest@4.34.1)(typescript@5.9.3)(webpack-hot-middleware@2.26.1)(webpack@5.103.0)
       '@storybook/testing-library':
         specifier: ^0.2.1
         version: 0.2.2
@@ -219,13 +219,13 @@ importers:
         version: 6.24.1
       storybook:
         specifier: ^9.1.1
-        version: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10)
+        version: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10)
       storybook-addon-mock:
         specifier: ^6.0.1
-        version: 6.0.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))
+        version: 6.0.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))
       storybook-react-context:
         specifier: ^0.8.0
-        version: 0.8.0(@storybook/react@9.1.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))(typescript@5.9.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))
+        version: 0.8.0(@storybook/react@9.1.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))(typescript@5.9.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))
       tailwindcss:
         specifier: ^4.0.15
         version: 4.0.15
@@ -240,7 +240,7 @@ importers:
         version: 4.47.1(@types/react@18.3.1)(bufferutil@4.0.9)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(utf-8-validate@5.0.10)
       '@dynamic-labs/wagmi-connector':
         specifier: ^4.19.7
-        version: 4.47.1(a34f6802b98a86a0a00da6e32fb48e60)
+        version: 4.47.1(28dd954895fa1f4a409cb5da5c3ae980)
       '@layerswap/wallets':
         specifier: workspace:^
         version: link:../../packages/wallets/all
@@ -276,7 +276,7 @@ importers:
         version: 1.2.8(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.90.5(react@18.3.1)
+        version: 5.90.11(react@18.3.1)
       axios:
         specifier: 'catalog:'
         version: 1.12.2
@@ -300,7 +300,7 @@ importers:
         version: 15.3.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       posthog-js:
         specifier: ^1.276.0
-        version: 1.298.0
+        version: 1.298.1
       radix-ui:
         specifier: ^1.4.3
         version: 1.4.3(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -321,7 +321,7 @@ importers:
         version: 2.40.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.0.5)
       wagmi:
         specifier: 'catalog:'
-        version: 2.14.11(@tanstack/query-core@5.90.11)(@tanstack/react-query@5.90.5(react@18.3.1))(@types/react@18.3.1)(bufferutil@4.0.9)(react@18.3.1)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.40.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.0.5))(zod@4.0.5)
+        version: 2.14.11(@tanstack/query-core@5.90.11)(@tanstack/react-query@5.90.11(react@18.3.1))(@types/react@18.3.1)(bufferutil@4.0.9)(react@18.3.1)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.40.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.0.5))(zod@4.0.5)
       zustand:
         specifier: 'catalog:'
         version: 4.5.7(@types/react@18.3.1)(react@18.3.1)
@@ -602,9 +602,6 @@ importers:
       '@tailwindcss/postcss':
         specifier: ^4.0.15
         version: 4.0.15
-      '@tanstack/react-query':
-        specifier: 'catalog:'
-        version: 5.90.5(react@18.3.1)
       '@types/react':
         specifier: 'catalog:'
         version: 18.3.1
@@ -832,7 +829,7 @@ importers:
         version: 4.0.15
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.90.5(react@18.3.1)
+        version: 5.90.11(react@18.3.1)
       '@types/react':
         specifier: 'catalog:'
         version: 18.3.1
@@ -1761,8 +1758,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@changesets/apply-release-plan@7.0.13':
-    resolution: {integrity: sha512-BIW7bofD2yAWoE8H4V40FikC+1nNFEKBisMECccS16W1rt6qqhNTBDmIw5HaqmMgtLNz9e7oiALiEUuKrQ4oHg==}
+  '@changesets/apply-release-plan@7.0.14':
+    resolution: {integrity: sha512-ddBvf9PHdy2YY0OUiEl3TV78mH9sckndJR14QAt87KLEbIov81XO0q0QAmvooBxXlqRRP8I9B7XOzZwQG7JkWA==}
 
   '@changesets/assemble-release-plan@6.0.9':
     resolution: {integrity: sha512-tPgeeqCHIwNo8sypKlS3gOPmsS3wP0zHt67JDuL20P4QcXiw/O4Hl7oXiuLnP9yg+rXLQ2sScdV1Kkzde61iSQ==}
@@ -1770,12 +1767,12 @@ packages:
   '@changesets/changelog-git@0.2.1':
     resolution: {integrity: sha512-x/xEleCFLH28c3bQeQIyeZf8lFXyDFVn1SgcBiR2Tw/r4IAWlk1fzxCEZ6NxQAjF2Nwtczoen3OA2qR+UawQ8Q==}
 
-  '@changesets/cli@2.29.7':
-    resolution: {integrity: sha512-R7RqWoaksyyKXbKXBTbT4REdy22yH81mcFK6sWtqSanxUCbUi9Uf+6aqxZtDQouIqPdem2W56CdxXgsxdq7FLQ==}
+  '@changesets/cli@2.29.8':
+    resolution: {integrity: sha512-1weuGZpP63YWUYjay/E84qqwcnt5yJMM0tep10Up7Q5cS/DGe2IZ0Uj3HNMxGhCINZuR7aO9WBMdKnPit5ZDPA==}
     hasBin: true
 
-  '@changesets/config@3.1.1':
-    resolution: {integrity: sha512-bd+3Ap2TKXxljCggI0mKPfzCQKeV/TU4yO2h2C6vAihIo8tzseAn2e7klSuiyYYXvgu53zMN1OeYMIQkaQoWnA==}
+  '@changesets/config@3.1.2':
+    resolution: {integrity: sha512-CYiRhA4bWKemdYi/uwImjPxqWNpqGPNbEBdX1BdONALFIDK7MCUj6FPkzD+z9gJcvDFUQJn9aDVf4UG7OT6Kog==}
 
   '@changesets/errors@0.2.0':
     resolution: {integrity: sha512-6BLOQUscTpZeGljvyQXlWOItQyU71kCdGz7Pi8H8zdw6BI0g3m43iL4xKUVPWtG+qrrL9DTjpdn8eYuCQSRpow==}
@@ -1783,8 +1780,8 @@ packages:
   '@changesets/get-dependents-graph@2.1.3':
     resolution: {integrity: sha512-gphr+v0mv2I3Oxt19VdWRRUxq3sseyUpX9DaHpTUmLj92Y10AGy+XOtV+kbM6L/fDcpx7/ISDFK6T8A/P3lOdQ==}
 
-  '@changesets/get-release-plan@4.0.13':
-    resolution: {integrity: sha512-DWG1pus72FcNeXkM12tx+xtExyH/c9I1z+2aXlObH3i9YA7+WZEVaiHzHl03thpvAgWTRaH64MpfHxozfF7Dvg==}
+  '@changesets/get-release-plan@4.0.14':
+    resolution: {integrity: sha512-yjZMHpUHgl4Xl5gRlolVuxDkm4HgSJqT93Ri1Uz8kGrQb+5iJ8dkXJ20M2j/Y4iV5QzS2c5SeTxVSKX+2eMI0g==}
 
   '@changesets/get-version-range-type@0.4.0':
     resolution: {integrity: sha512-hwawtob9DryoGTpixy1D3ZXbGgJu1Rhr+ySH2PvTLHvkZuQ7sRT4oQwMh0hbqZH1weAooedEjRsbrWcGLCeyVQ==}
@@ -1795,14 +1792,14 @@ packages:
   '@changesets/logger@0.1.1':
     resolution: {integrity: sha512-OQtR36ZlnuTxKqoW4Sv6x5YIhOmClRd5pWsjZsddYxpWs517R0HkyiefQPIytCVh4ZcC5x9XaG8KTdd5iRQUfg==}
 
-  '@changesets/parse@0.4.1':
-    resolution: {integrity: sha512-iwksMs5Bf/wUItfcg+OXrEpravm5rEd9Bf4oyIPL4kVTmJQ7PNDSd6MDYkpSJR1pn7tz/k8Zf2DhTCqX08Ou+Q==}
+  '@changesets/parse@0.4.2':
+    resolution: {integrity: sha512-Uo5MC5mfg4OM0jU3up66fmSn6/NE9INK+8/Vn/7sMVcdWg46zfbvvUSjD9EMonVqPi9fbrJH9SXHn48Tr1f2yA==}
 
   '@changesets/pre@2.0.2':
     resolution: {integrity: sha512-HaL/gEyFVvkf9KFg6484wR9s0qjAXlZ8qWPDkTyKF6+zqjBe/I2mygg3MbpZ++hdi0ToqNUF8cjj7fBy0dg8Ug==}
 
-  '@changesets/read@0.6.5':
-    resolution: {integrity: sha512-UPzNGhsSjHD3Veb0xO/MwvasGe8eMyNrR/sT9gR8Q3DhOQZirgKhhXv/8hVsI0QpPjR004Z9iFxoJU6in3uGMg==}
+  '@changesets/read@0.6.6':
+    resolution: {integrity: sha512-P5QaN9hJSQQKJShzzpBT13FzOSPyHbqdoIBUd2DJdgvnECCyO6LmAOWSV+O8se2TaZJVwSXjL+v9yhb+a9JeJg==}
 
   '@changesets/should-skip-package@0.1.2':
     resolution: {integrity: sha512-qAK/WrqWLNCP22UDdBTMPH5f41elVDlsNyat180A33dWxuUDyNpg6fPi/FyTZwRriVjg0L8gnjJn2F9XAoF0qw==}
@@ -5185,7 +5182,6 @@ packages:
 
   '@simplewebauthn/types@12.0.0':
     resolution: {integrity: sha512-q6y8MkoV8V8jB4zzp18Uyj2I7oFp2/ONL8c3j8uT06AOWu3cIChc1au71QYHrP2b+xDapkGTiv+9lX7xkTlAsA==}
-    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   '@sinclair/typebox@0.27.8':
     resolution: {integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA==}
@@ -6563,16 +6559,8 @@ packages:
   '@tanstack/query-core@5.90.11':
     resolution: {integrity: sha512-f9z/nXhCgWDF4lHqgIE30jxLe4sYv15QodfdPDKYAk7nAEjNcndy4dHz3ezhdUaR23BpWa4I2EH4/DZ0//Uf8A==}
 
-  '@tanstack/query-core@5.90.5':
-    resolution: {integrity: sha512-wLamYp7FaDq6ZnNehypKI5fNvxHPfTYylE0m/ZpuuzJfJqhR5Pxg9gvGBHZx4n7J+V5Rg5mZxHHTlv25Zt5u+w==}
-
   '@tanstack/react-query@5.90.11':
     resolution: {integrity: sha512-3uyzz01D1fkTLXuxF3JfoJoHQMU2fxsfJwE+6N5hHy0dVNoZOvwKP8Z2k7k1KDeD54N20apcJnG75TBAStIrBA==}
-    peerDependencies:
-      react: ^18 || ^19
-
-  '@tanstack/react-query@5.90.5':
-    resolution: {integrity: sha512-pN+8UWpxZkEJ/Rnnj2v2Sxpx1WFlaa9L6a4UO89p6tTQbeo+m0MS8oYDjbggrR8QcTyjKoYWKS3xJQGr3ExT8Q==}
     peerDependencies:
       react: ^18 || ^19
 
@@ -6625,7 +6613,6 @@ packages:
 
   '@thumbmarkjs/thumbmarkjs@0.16.0':
     resolution: {integrity: sha512-NKyqCvP6DZKlRf6aGfnKS6Kntn2gnuBxa/ztstjy+oo1t23EHzQ54shtli0yV5WAtygmK1tti/uL2C2p/kW3HQ==}
-    deprecated: Please upgrade to v1
 
   '@ton/core@0.62.0':
     resolution: {integrity: sha512-GCYlzzx11rSESKkiHvNy9tL8zWth+ZtUbvV29WH478FvBp8xTw24AyoigwXWNV+OLCAcnwlGhZpTpxjD3wzCwA==}
@@ -7447,7 +7434,6 @@ packages:
 
   '@walletconnect/ethereum-provider@2.21.8':
     resolution: {integrity: sha512-yjDlPpGMkuSXoIdmX7q7K7mDjPBqBqRW3hjXExhrRpbScdP92ZEFHoJf3E4ALDxdaV894ivXrOmMyGsoY5Eexg==}
-    deprecated: 'Reliability and performance improvements. See: https://github.com/WalletConnect/walletconnect-monorepo/releases'
 
   '@walletconnect/events@1.0.1':
     resolution: {integrity: sha512-NPTqaoi0oPBVNuLv7qPaJazmGHs5JGyO8eEAk5VGKmJzDR7AHzD4k6ilox5kxk1iwiOnFopBOOMLs86Oa76HpQ==}
@@ -7536,7 +7522,6 @@ packages:
 
   '@walletconnect/universal-provider@2.21.8':
     resolution: {integrity: sha512-Nc1Z6VXnya152yucNDPnlTkrhG289tCUfcjiWqDmwNYzFSfdT5oJQHlnffQXlvoks90kn5Ru8Rnwag2CH1YOVQ==}
-    deprecated: 'Reliability and performance improvements. See: https://github.com/WalletConnect/walletconnect-monorepo/releases'
 
   '@walletconnect/utils@2.19.0':
     resolution: {integrity: sha512-LZ0D8kevknKfrfA0Sq3Hf3PpmM8oWyNfsyWwFR51t//2LBgtN2Amz5xyoDDJcjLibIbKAxpuo/i0JYAQxz+aPA==}
@@ -8946,8 +8931,8 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  electron-to-chromium@1.5.260:
-    resolution: {integrity: sha512-ov8rBoOBhVawpzdre+Cmz4FB+y66Eqrk6Gwqd8NGxuhv99GQ8XqMAr351KEkOt7gukXWDg6gJWEMKgL2RLMPtA==}
+  electron-to-chromium@1.5.262:
+    resolution: {integrity: sha512-NlAsMteRHek05jRUxUR0a5jpjYq9ykk6+kO0yRaMi5moe7u0fVIOeQ3Y30A8dIiWFBNUoQGi1ljb1i5VtS9WQQ==}
 
   elliptic@6.5.4:
     resolution: {integrity: sha512-iLhC6ULemrljPZb+QutR5TQGB+pdW6KGD5RSegS+8sorOZT+rdQFbsQFJgvN3eRqNALqJer4oQ16YvJHlU8hzQ==}
@@ -11655,8 +11640,8 @@ packages:
     resolution: {integrity: sha512-IQ7TZdoaqbT+LCpShg46jnZVlhWD2w6iQYAcYXfHARZ7X1t/UGhhceQDs5X0cGqKvYlHNOuv7Oa1xmb0oQuA3w==}
     engines: {node: '>=4'}
 
-  postcss-selector-parser@7.1.0:
-    resolution: {integrity: sha512-8sLjZwK0R+JlxlYcTuVnyT2v+htpdrjDOKuMcOVdYjt52Lh8hWRYpxBPoKx/Zg+bcjc3wx6fmQevMmUztS/ccA==}
+  postcss-selector-parser@7.1.1:
+    resolution: {integrity: sha512-orRsuYpJVw8LdAwqqLykBj9ecS5/cRHlI5+nvTo8LcCKmzDmqVORXtOIYEEQuL9D4BxtA1lm5isAqzQZCoQ6Eg==}
     engines: {node: '>=4'}
 
   postcss-value-parser@4.2.0:
@@ -11686,8 +11671,8 @@ packages:
     resolution: {integrity: sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==}
     engines: {node: '>=0.10.0'}
 
-  posthog-js@1.298.0:
-    resolution: {integrity: sha512-Zwzsf7TO8qJ6DFLuUlQSsT/5OIOcxSBZlKOSk3satkEnwKdmnBXUuxgVXRHrvq1kj7OB2PVAPgZiQ8iHHj9DRA==}
+  posthog-js@1.298.1:
+    resolution: {integrity: sha512-MynFhC2HO6sg5moUfpkd0s6RzAqcqFX75kjIi4Xrj2Gl0/YQWYvFUgvv8FCpWPKPs2mdvNWYhs+oqJg0BVVHPw==}
 
   preact@10.24.2:
     resolution: {integrity: sha512-1cSoF0aCC8uaARATfrlz4VCBqE8LwZwRfLgkxJOQwAlQt6ayTmi0D9OF7nXid1POI5SZidFuG9CnlXbDfLqY/Q==}
@@ -11700,8 +11685,8 @@ packages:
     engines: {node: '>=10.13.0'}
     hasBin: true
 
-  prettier@3.6.2:
-    resolution: {integrity: sha512-I7AIg5boAr5R0FFtJ6rCfD+LFsWHp81dolrFD8S79U9tb8Az2nGrJncnMSnys+bpQJfRUzqs9hnA81OAA3hCuQ==}
+  prettier@3.7.1:
+    resolution: {integrity: sha512-RWKXE4qB3u5Z6yz7omJkjWwmTfLdcbv44jUVHC5NpfXwFGzvpQM798FGv/6WNK879tc+Cn0AAyherCl1KjbyZQ==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -12562,8 +12547,8 @@ packages:
     resolution: {integrity: sha512-FB20IaLCDbh/XomkB+19f5jmNxG+RzNdRO7QUhm7nfH81UPIt2C/MyWAlHCYkbv2wznSEb73wpxbp9tytokTgQ==}
     engines: {node: '>=22'}
 
-  starknet@8.9.0:
-    resolution: {integrity: sha512-uhXSCKW0SMBGckd4yVlscVz4DMkQqZ+/RTpfxZ5J46e6AuCUHOqGKv61tqgUP9GhdvgHV/XyN+kdmlyZn3rXjA==}
+  starknet@8.9.1:
+    resolution: {integrity: sha512-8ybImGx182WyVg2FeM4VwGZYCucFEVD8nsQd1U7oLckWqNE8ivE6Cbn2XDfmg7bxgLvpi/oluFAAPI/RRgOg6Q==}
     engines: {node: '>=22'}
 
   starknetkit@3.2.0:
@@ -14936,20 +14921,6 @@ snapshots:
       - typescript
       - use-sync-external-store
 
-  '@bigmi/react@0.6.3(@tanstack/query-core@5.90.11)(@tanstack/react-query@5.90.5(react@18.3.1))(@types/react@18.3.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))':
-    dependencies:
-      '@bigmi/client': 0.6.3(@tanstack/query-core@5.90.11)(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
-      '@bigmi/core': 0.6.3(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))
-      '@tanstack/react-query': 5.90.5(react@18.3.1)
-      react: 18.3.1
-      react-dom: 18.3.1(react@18.3.1)
-    transitivePeerDependencies:
-      - '@tanstack/query-core'
-      - '@types/react'
-      - immer
-      - typescript
-      - use-sync-external-store
-
   '@biom3/design-tokens@0.4.8':
     dependencies:
       lodash.get: 4.4.2
@@ -14993,7 +14964,7 @@ snapshots:
       micro-sol-signer: 0.5.0
       mipd: 0.0.7(typescript@5.9.3)
       open: 10.2.0
-      starknet: 8.9.0
+      starknet: 8.9.1
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -15042,9 +15013,9 @@ snapshots:
   '@cbor-extract/cbor-extract-win32-x64@2.2.0':
     optional: true
 
-  '@changesets/apply-release-plan@7.0.13':
+  '@changesets/apply-release-plan@7.0.14':
     dependencies:
-      '@changesets/config': 3.1.1
+      '@changesets/config': 3.1.2
       '@changesets/get-version-range-type': 0.4.0
       '@changesets/git': 3.0.4
       '@changesets/should-skip-package': 0.1.2
@@ -15071,19 +15042,19 @@ snapshots:
     dependencies:
       '@changesets/types': 6.1.0
 
-  '@changesets/cli@2.29.7(@types/node@24.10.1)':
+  '@changesets/cli@2.29.8(@types/node@24.10.1)':
     dependencies:
-      '@changesets/apply-release-plan': 7.0.13
+      '@changesets/apply-release-plan': 7.0.14
       '@changesets/assemble-release-plan': 6.0.9
       '@changesets/changelog-git': 0.2.1
-      '@changesets/config': 3.1.1
+      '@changesets/config': 3.1.2
       '@changesets/errors': 0.2.0
       '@changesets/get-dependents-graph': 2.1.3
-      '@changesets/get-release-plan': 4.0.13
+      '@changesets/get-release-plan': 4.0.14
       '@changesets/git': 3.0.4
       '@changesets/logger': 0.1.1
       '@changesets/pre': 2.0.2
-      '@changesets/read': 0.6.5
+      '@changesets/read': 0.6.6
       '@changesets/should-skip-package': 0.1.2
       '@changesets/types': 6.1.0
       '@changesets/write': 0.4.0
@@ -15104,7 +15075,7 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@changesets/config@3.1.1':
+  '@changesets/config@3.1.2':
     dependencies:
       '@changesets/errors': 0.2.0
       '@changesets/get-dependents-graph': 2.1.3
@@ -15125,12 +15096,12 @@ snapshots:
       picocolors: 1.1.1
       semver: 7.7.3
 
-  '@changesets/get-release-plan@4.0.13':
+  '@changesets/get-release-plan@4.0.14':
     dependencies:
       '@changesets/assemble-release-plan': 6.0.9
-      '@changesets/config': 3.1.1
+      '@changesets/config': 3.1.2
       '@changesets/pre': 2.0.2
-      '@changesets/read': 0.6.5
+      '@changesets/read': 0.6.6
       '@changesets/types': 6.1.0
       '@manypkg/get-packages': 1.1.3
 
@@ -15148,10 +15119,10 @@ snapshots:
     dependencies:
       picocolors: 1.1.1
 
-  '@changesets/parse@0.4.1':
+  '@changesets/parse@0.4.2':
     dependencies:
       '@changesets/types': 6.1.0
-      js-yaml: 3.14.2
+      js-yaml: 4.1.1
 
   '@changesets/pre@2.0.2':
     dependencies:
@@ -15160,11 +15131,11 @@ snapshots:
       '@manypkg/get-packages': 1.1.3
       fs-extra: 7.0.1
 
-  '@changesets/read@0.6.5':
+  '@changesets/read@0.6.6':
     dependencies:
       '@changesets/git': 3.0.4
       '@changesets/logger': 0.1.1
-      '@changesets/parse': 0.4.1
+      '@changesets/parse': 0.4.2
       '@changesets/types': 6.1.0
       fs-extra: 7.0.1
       p-filter: 2.1.0
@@ -15701,7 +15672,7 @@ snapshots:
       - utf-8-validate
       - viem
 
-  '@dynamic-labs/wagmi-connector@4.47.1(a34f6802b98a86a0a00da6e32fb48e60)':
+  '@dynamic-labs/wagmi-connector@4.47.1(28dd954895fa1f4a409cb5da5c3ae980)':
     dependencies:
       '@dynamic-labs/assert-package-version': 4.47.1
       '@dynamic-labs/ethereum-core': 4.47.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(viem@2.40.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.0.5))
@@ -15714,7 +15685,7 @@ snapshots:
       eventemitter3: 5.0.1
       react: 18.3.1
       viem: 2.40.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.0.5)
-      wagmi: 2.14.11(@tanstack/query-core@5.90.11)(@tanstack/react-query@5.90.5(react@18.3.1))(@types/react@18.3.1)(bufferutil@4.0.9)(react@18.3.1)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.40.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.0.5))(zod@4.0.5)
+      wagmi: 2.14.11(@tanstack/query-core@5.90.11)(@tanstack/react-query@5.90.11(react@18.3.1))(@types/react@18.3.1)(bufferutil@4.0.9)(react@18.3.1)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.40.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.0.5))(zod@4.0.5)
 
   '@dynamic-labs/wallet-book@4.47.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
@@ -18194,9 +18165,9 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  '@posthog/react@1.4.0(@types/react@18.3.1)(posthog-js@1.298.0)(react@18.3.1)':
+  '@posthog/react@1.4.0(@types/react@18.3.1)(posthog-js@1.298.1)(react@18.3.1)':
     dependencies:
-      posthog-js: 1.298.0
+      posthog-js: 1.298.1
       react: 18.3.1
     optionalDependencies:
       '@types/react': 18.3.1
@@ -21031,7 +21002,7 @@ snapshots:
   '@scure/starknet@1.1.0':
     dependencies:
       '@noble/curves': 1.7.0
-      '@noble/hashes': 1.6.1
+      '@noble/hashes': 1.6.0
 
   '@segment/analytics-core@1.8.2':
     dependencies:
@@ -22746,33 +22717,33 @@ snapshots:
       - bare-url
       - debug
 
-  '@storybook/addon-docs@9.1.16(@types/react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))':
+  '@storybook/addon-docs@9.1.16(@types/react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))':
     dependencies:
       '@mdx-js/react': 3.1.1(@types/react@18.3.1)(react@18.3.1)
-      '@storybook/csf-plugin': 9.1.16(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))
+      '@storybook/csf-plugin': 9.1.16(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))
       '@storybook/icons': 1.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@storybook/react-dom-shim': 9.1.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))
+      '@storybook/react-dom-shim': 9.1.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10)
+      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10)
       ts-dedent: 2.2.0
     transitivePeerDependencies:
       - '@types/react'
 
-  '@storybook/addon-links@9.1.16(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))':
+  '@storybook/addon-links@9.1.16(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))':
     dependencies:
       '@storybook/global': 5.0.0
-      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10)
+      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10)
     optionalDependencies:
       react: 18.3.1
 
-  '@storybook/addon-onboarding@9.1.16(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))':
+  '@storybook/addon-onboarding@9.1.16(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))':
     dependencies:
-      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10)
+      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10)
 
-  '@storybook/builder-webpack5@9.1.16(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))(typescript@5.9.3)':
+  '@storybook/builder-webpack5@9.1.16(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))(typescript@5.9.3)':
     dependencies:
-      '@storybook/core-webpack': 9.1.16(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))
+      '@storybook/core-webpack': 9.1.16(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))
       case-sensitive-paths-webpack-plugin: 2.4.0
       cjs-module-lexer: 1.4.3
       css-loader: 6.11.0(webpack@5.103.0)
@@ -22780,7 +22751,7 @@ snapshots:
       fork-ts-checker-webpack-plugin: 8.0.0(typescript@5.9.3)(webpack@5.103.0)
       html-webpack-plugin: 5.6.5(webpack@5.103.0)
       magic-string: 0.30.21
-      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10)
+      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10)
       style-loader: 3.3.4(webpack@5.103.0)
       terser-webpack-plugin: 5.3.14(webpack@5.103.0)
       ts-dedent: 2.2.0
@@ -22797,14 +22768,14 @@ snapshots:
       - uglify-js
       - webpack-cli
 
-  '@storybook/core-webpack@9.1.16(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))':
+  '@storybook/core-webpack@9.1.16(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))':
     dependencies:
-      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10)
+      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10)
       ts-dedent: 2.2.0
 
-  '@storybook/csf-plugin@9.1.16(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))':
+  '@storybook/csf-plugin@9.1.16(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))':
     dependencies:
-      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10)
+      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10)
       unplugin: 1.16.1
 
   '@storybook/global@5.0.0': {}
@@ -22814,7 +22785,7 @@ snapshots:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  '@storybook/nextjs@9.1.16(next@14.2.33(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))(type-fest@4.34.1)(typescript@5.9.3)(webpack-hot-middleware@2.26.1)(webpack@5.103.0)':
+  '@storybook/nextjs@9.1.16(next@14.2.33(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))(type-fest@4.34.1)(typescript@5.9.3)(webpack-hot-middleware@2.26.1)(webpack@5.103.0)':
     dependencies:
       '@babel/core': 7.28.5
       '@babel/plugin-syntax-bigint': 7.8.3(@babel/core@7.28.5)
@@ -22830,9 +22801,9 @@ snapshots:
       '@babel/preset-typescript': 7.28.5(@babel/core@7.28.5)
       '@babel/runtime': 7.28.4
       '@pmmmwh/react-refresh-webpack-plugin': 0.5.17(react-refresh@0.14.2)(type-fest@4.34.1)(webpack-hot-middleware@2.26.1)(webpack@5.103.0)
-      '@storybook/builder-webpack5': 9.1.16(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))(typescript@5.9.3)
-      '@storybook/preset-react-webpack': 9.1.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))(typescript@5.9.3)
-      '@storybook/react': 9.1.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))(typescript@5.9.3)
+      '@storybook/builder-webpack5': 9.1.16(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))(typescript@5.9.3)
+      '@storybook/preset-react-webpack': 9.1.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))(typescript@5.9.3)
+      '@storybook/react': 9.1.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))(typescript@5.9.3)
       '@types/semver': 7.7.1
       babel-loader: 9.2.1(@babel/core@7.28.5)(webpack@5.103.0)
       css-loader: 6.11.0(webpack@5.103.0)
@@ -22848,7 +22819,7 @@ snapshots:
       resolve-url-loader: 5.0.0
       sass-loader: 16.0.6(webpack@5.103.0)
       semver: 7.7.3
-      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10)
+      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10)
       style-loader: 3.3.4(webpack@5.103.0)
       styled-jsx: 5.1.7(@babel/core@7.28.5)(react@18.3.1)
       tsconfig-paths: 4.2.0
@@ -22874,9 +22845,9 @@ snapshots:
       - webpack-hot-middleware
       - webpack-plugin-serve
 
-  '@storybook/preset-react-webpack@9.1.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))(typescript@5.9.3)':
+  '@storybook/preset-react-webpack@9.1.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))(typescript@5.9.3)':
     dependencies:
-      '@storybook/core-webpack': 9.1.16(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))
+      '@storybook/core-webpack': 9.1.16(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))
       '@storybook/react-docgen-typescript-plugin': 1.0.6--canary.9.0c3f3b7.0(typescript@5.9.3)(webpack@5.103.0)
       '@types/semver': 7.7.1
       find-up: 7.0.0
@@ -22886,7 +22857,7 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
       resolve: 1.22.11
       semver: 7.7.3
-      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10)
+      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10)
       tsconfig-paths: 4.2.0
       webpack: 5.103.0
     optionalDependencies:
@@ -22912,19 +22883,19 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@storybook/react-dom-shim@9.1.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))':
+  '@storybook/react-dom-shim@9.1.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))':
     dependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10)
+      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10)
 
-  '@storybook/react@9.1.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))(typescript@5.9.3)':
+  '@storybook/react@9.1.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))(typescript@5.9.3)':
     dependencies:
       '@storybook/global': 5.0.0
-      '@storybook/react-dom-shim': 9.1.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))
+      '@storybook/react-dom-shim': 9.1.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10)
+      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10)
     optionalDependencies:
       typescript: 5.9.3
 
@@ -23031,16 +23002,9 @@ snapshots:
 
   '@tanstack/query-core@5.90.11': {}
 
-  '@tanstack/query-core@5.90.5': {}
-
   '@tanstack/react-query@5.90.11(react@18.3.1)':
     dependencies:
       '@tanstack/query-core': 5.90.11
-      react: 18.3.1
-
-  '@tanstack/react-query@5.90.5(react@18.3.1)':
-    dependencies:
-      '@tanstack/query-core': 5.90.5
       react: 18.3.1
 
   '@tanstack/react-virtual@3.13.12(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
@@ -26147,7 +26111,7 @@ snapshots:
     dependencies:
       baseline-browser-mapping: 2.8.31
       caniuse-lite: 1.0.30001757
-      electron-to-chromium: 1.5.260
+      electron-to-chromium: 1.5.262
       node-releases: 2.0.27
       update-browserslist-db: 1.1.4(browserslist@4.28.0)
 
@@ -26950,7 +26914,7 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  electron-to-chromium@1.5.260: {}
+  electron-to-chromium@1.5.262: {}
 
   elliptic@6.5.4:
     dependencies:
@@ -29757,8 +29721,8 @@ snapshots:
   ox@0.6.7(typescript@5.9.3)(zod@3.25.76):
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
-      '@noble/curves': 1.9.7
-      '@noble/hashes': 1.8.0
+      '@noble/curves': 1.8.1
+      '@noble/hashes': 1.7.1
       '@scure/bip32': 1.6.2
       '@scure/bip39': 1.5.4
       abitype: 1.0.8(typescript@5.9.3)(zod@3.25.76)
@@ -29786,7 +29750,7 @@ snapshots:
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
       '@noble/ciphers': 1.3.0
-      '@noble/curves': 1.9.7
+      '@noble/curves': 1.9.2
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
@@ -29801,7 +29765,7 @@ snapshots:
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
       '@noble/ciphers': 1.3.0
-      '@noble/curves': 1.9.7
+      '@noble/curves': 1.9.2
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
@@ -30164,13 +30128,13 @@ snapshots:
     dependencies:
       icss-utils: 5.1.0(postcss@8.5.6)
       postcss: 8.5.6
-      postcss-selector-parser: 7.1.0
+      postcss-selector-parser: 7.1.1
       postcss-value-parser: 4.2.0
 
   postcss-modules-scope@3.2.1(postcss@8.5.6):
     dependencies:
       postcss: 8.5.6
-      postcss-selector-parser: 7.1.0
+      postcss-selector-parser: 7.1.1
 
   postcss-modules-values@4.0.0(postcss@8.5.6):
     dependencies:
@@ -30192,7 +30156,7 @@ snapshots:
       cssesc: 3.0.0
       util-deprecate: 1.0.2
 
-  postcss-selector-parser@7.1.0:
+  postcss-selector-parser@7.1.1:
     dependencies:
       cssesc: 3.0.0
       util-deprecate: 1.0.2
@@ -30225,7 +30189,7 @@ snapshots:
       xtend: 4.0.2
     optional: true
 
-  posthog-js@1.298.0:
+  posthog-js@1.298.1:
     dependencies:
       '@posthog/core': 1.6.0
       core-js: 3.47.0
@@ -30239,7 +30203,7 @@ snapshots:
 
   prettier@2.8.8: {}
 
-  prettier@3.6.2: {}
+  prettier@3.7.1: {}
 
   pretty-error@4.0.0:
     dependencies:
@@ -31383,7 +31347,7 @@ snapshots:
       pako: 2.1.0
       ts-mixer: 6.0.4
 
-  starknet@8.9.0:
+  starknet@8.9.1:
     dependencies:
       '@noble/curves': 1.7.0
       '@noble/hashes': 1.6.1
@@ -31481,26 +31445,26 @@ snapshots:
       es-errors: 1.3.0
       internal-slot: 1.1.0
 
-  storybook-addon-mock@6.0.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10)):
+  storybook-addon-mock@6.0.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10)):
     dependencies:
       mock-xmlhttprequest: 8.4.1
       path-to-regexp: 6.3.0
       polished: 4.3.1
       prop-types: 15.8.1
-      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10)
+      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10)
       whatwg-fetch: 3.6.20
     optionalDependencies:
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
-  storybook-react-context@0.8.0(@storybook/react@9.1.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))(typescript@5.9.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10)):
+  storybook-react-context@0.8.0(@storybook/react@9.1.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))(typescript@5.9.3))(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10)):
     dependencies:
-      '@storybook/react': 9.1.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10))(typescript@5.9.3)
+      '@storybook/react': 9.1.16(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10))(typescript@5.9.3)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
-      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10)
+      storybook: 9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10)
 
-  storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.6.2)(utf-8-validate@5.0.10):
+  storybook@9.1.16(@testing-library/dom@9.3.4)(bufferutil@4.0.9)(prettier@3.7.1)(utf-8-validate@5.0.10):
     dependencies:
       '@storybook/global': 5.0.0
       '@testing-library/jest-dom': 6.9.1
@@ -31515,7 +31479,7 @@ snapshots:
       semver: 7.7.3
       ws: 8.18.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)
     optionalDependencies:
-      prettier: 3.6.2
+      prettier: 3.7.1
     transitivePeerDependencies:
       - '@testing-library/dom'
       - bufferutil
@@ -32377,9 +32341,9 @@ snapshots:
 
   void-elements@3.1.0: {}
 
-  wagmi@2.14.11(@tanstack/query-core@5.90.11)(@tanstack/react-query@5.90.5(react@18.3.1))(@types/react@18.3.1)(bufferutil@4.0.9)(react@18.3.1)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.40.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.0.5))(zod@4.0.5):
+  wagmi@2.14.11(@tanstack/query-core@5.90.11)(@tanstack/react-query@5.90.11(react@18.3.1))(@types/react@18.3.1)(bufferutil@4.0.9)(react@18.3.1)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.40.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.0.5))(zod@4.0.5):
     dependencies:
-      '@tanstack/react-query': 5.90.5(react@18.3.1)
+      '@tanstack/react-query': 5.90.11(react@18.3.1)
       '@wagmi/connectors': 5.7.7(@types/react@18.3.1)(@wagmi/core@2.16.4(@tanstack/query-core@5.90.11)(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.6.0(react@18.3.1))(viem@2.40.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.0.5)))(bufferutil@4.0.9)(react@18.3.1)(typescript@5.9.3)(utf-8-validate@5.0.10)(viem@2.40.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.0.5))(zod@4.0.5)
       '@wagmi/core': 2.16.4(@tanstack/query-core@5.90.11)(@types/react@18.3.1)(react@18.3.1)(typescript@5.9.3)(use-sync-external-store@1.4.0(react@18.3.1))(viem@2.40.3(bufferutil@4.0.9)(typescript@5.9.3)(utf-8-validate@5.0.10)(zod@4.0.5))
       react: 18.3.1

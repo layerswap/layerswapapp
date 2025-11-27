@@ -6,4 +6,12 @@ export class LayerSwapSettings {
     networks: NetworkWithTokens[];
     sourceRoutes?: NetworkRoute[];
     destinationRoutes?: NetworkRoute[];
-};
+}
+
+export type AvailableSourceNetworkTypes = {
+    all: true
+    networks?: never
+} | {
+    all: false
+    networks: string[]
+}

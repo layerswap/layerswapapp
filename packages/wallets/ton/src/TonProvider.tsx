@@ -1,10 +1,10 @@
 import { THEME, TonConnectUIProvider } from "@tonconnect/ui-react"
 import { ThemeData } from "@layerswap/widget/types";
 import { TonClientConfig } from "./index";
-import type { ReactElement } from "react";
+import type { ReactElement, ReactNode } from "react";
 
 type TonConnectProviderProps = {
-    children: JSX.Element | JSX.Element[]
+    children: ReactNode
     themeData: ThemeData | undefined
     tonConfigs?: TonClientConfig
 }

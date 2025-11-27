@@ -262,7 +262,7 @@ const Connect: FC<{ connectFn?: () => Promise<Wallet | undefined | void>; setMou
     const { connect } = useConnectModal()
     const { providers } = useWallet()
 
-    const isProvidersReady =  providers.every(p => p.ready)
+    const isProvidersReady = providers.every(p => p.ready)
 
     const connectWallet = async () => {
         setMountWalletPortal && setMountWalletPortal(true)
