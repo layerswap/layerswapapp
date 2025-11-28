@@ -12,7 +12,7 @@ import { Network } from '@/Models/Network';
 import { useSettingsState } from './settings';
 import { QuoteError, transformSwapDataToQuoteArgs, useQuoteData } from '@/hooks/useFee';
 import { useRecentNetworksStore } from '@/stores/recentRoutesStore';
-import { useSelectedAccount } from './balanceAccounts';
+import { useSelectedAccount } from './swapAccounts';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
 import { useInitialSettings } from './settings';
 import { addressFormat } from '@/lib/address/formatter';

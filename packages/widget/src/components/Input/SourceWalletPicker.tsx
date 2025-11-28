@@ -12,7 +12,7 @@ import WalletsList from "@/components/Wallet/WalletComponents/WalletsList";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/shadcn/popover";
 import FilledCheck from "@/components/Icons/FilledCheck";
 import clsx from "clsx";
-import { useSelectedAccount, useUpdateBalanceAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount, useUpdateSwapAccount } from "@/context/swapAccounts";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 
 const SourceWalletPicker: FC = () => {
@@ -24,7 +24,7 @@ const SourceWalletPicker: FC = () => {
     } = useFormikContext<SwapFormValues>();
 
     const source_token = values.fromAsset
-    const selectSourceAccount = useUpdateBalanceAccount("from");
+    const selectSourceAccount = useUpdateSwapAccount("from");
 
     const { provider } = useWallet(values.from, "withdrawal")
     const selectedSourceAccount = useSelectedAccount("from", values.from?.name);
@@ -169,7 +169,7 @@ export const FormSourceWalletButton: FC = () => {
 
     const { isWalletModalOpen, cancel, selectedConnector, connect } = useConnectModal()
 
-    const selectSourceAccount = useUpdateBalanceAccount("from");
+    const selectSourceAccount = useUpdateSwapAccount("from");
 
     const handleWalletChange = () => {
         setOpenModal(true)

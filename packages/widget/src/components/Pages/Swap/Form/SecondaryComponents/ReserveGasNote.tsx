@@ -5,7 +5,7 @@ import { TokenBalance } from "@/Models/Balance"
 import { useBalance } from "@/lib/balances/useBalance";
 import useSWRGas from "@/lib/gases/useSWRGas"
 import { useQuoteData } from "@/hooks/useFee"
-import { useSelectedAccount } from "@/context/balanceAccounts"
+import { useSelectedAccount } from "@/context/swapAccounts"
 import { SwapFormValues } from "../SwapFormValues"
 
 type Props = {

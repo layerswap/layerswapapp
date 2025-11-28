@@ -14,7 +14,7 @@ import ExchangeGasIcon from '@/components/Icons/ExchangeGasIcon';
 import useSWRNftBalance from '@/lib/nft/useSWRNftBalance';
 import NumberFlow from '@number-flow/react';
 import { resolveTokenUsdPrice } from '@/helpers/tokenHelper';
-import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount } from '@/context/swapAccounts';
 import { SwapFormValues } from '../SwapFormValues';
 import { CupIcon } from '@/components/Icons/CupIcon';
 import { DetailedEstimates } from './SwapQuote/DetailedEstimates';

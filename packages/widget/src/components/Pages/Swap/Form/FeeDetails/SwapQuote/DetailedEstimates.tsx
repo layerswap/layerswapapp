@@ -6,7 +6,7 @@ import useWallet from "@/hooks/useWallet";
 import { QuoteReward, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 import useSWRNftBalance from "@/lib/nft/useSWRNftBalance";
 import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
-import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/swapAccounts";
 import { SwapValues } from "..";
 import { RateElement } from "../Rate";
 import { Slippage } from "../Slippage";

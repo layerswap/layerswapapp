@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { useInitialSettings } from '@/context/settings';
 import { useFormikContext } from 'formik';
 import { QuoteError } from './useFee';
-import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount } from '@/context/swapAccounts';
 import { SwapFormValues } from '@/components/Pages/Swap/Form/SwapFormValues';
 import { ICON_CLASSES_WARNING } from '@/components/Pages/Swap/Form/SecondaryComponents/validationError/constants';
 

@@ -1,5 +1,5 @@
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
-import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/swapAccounts";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useBalance } from "@/lib/balances/useBalance";
 import { FC } from "react";

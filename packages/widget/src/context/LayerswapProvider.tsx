@@ -17,7 +17,7 @@ import { WidgetLoading } from "@/components/WidgetLoading";
 import WalletsProviders from "@/components/Wallet/WalletProviders";
 import { CallbackProvider, CallbacksContextType } from "./callbackProvider";
 import { InitialSettings } from "@/Models/InitialSettings";
-import { BalanceAccountsProvider } from "./balanceAccounts";
+import { SwapAccountsProvider } from "./swapAccounts";
 import { WalletProvider } from "@/types";
 import { ResolverProviders } from "./resolverContext";
 import { ErrorProvider } from "./ErrorProvider";
@@ -78,11 +78,11 @@ const LayerswapProviderComponent: FC<LayerswapContextProps> = ({ children, callb
                                     walletProviders={walletProviders}
                                 >
                                     <ResolverProviders walletProviders={walletProviders}>
-                                        <BalanceAccountsProvider>
+                                        <SwapAccountsProvider>
                                             <AsyncModalProvider>
                                                 {children}
                                             </AsyncModalProvider>
-                                        </BalanceAccountsProvider>
+                                        </SwapAccountsProvider>
                                     </ResolverProviders>
                                 </WalletsProviders>
                             </ThemeWrapper>

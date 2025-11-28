@@ -11,7 +11,7 @@ import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import { useSettingsState } from "@/context/settings";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback";
-import { AccountIdentity, useSelectedAccount } from "@/context/balanceAccounts";
+import { AccountIdentity, useSelectedAccount } from "@/context/swapAccounts";
 import { useBalance } from "@/lib/balances/useBalance";
 
 type Props = {

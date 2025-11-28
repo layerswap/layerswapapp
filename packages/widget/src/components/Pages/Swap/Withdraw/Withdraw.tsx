@@ -9,7 +9,7 @@ import { SwapQuoteDetails } from './SwapQuoteDetails';
 import WalletTransferButton from './WalletTransferButton';
 import { useBalance } from '@/lib/balances/useBalance';
 import { useSettingsState } from '@/context/settings';
-import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount } from '@/context/swapAccounts';
 import { ErrorDisplay } from '@/components/Pages/Swap/Form/SecondaryComponents/validationError/ErrorDisplay';
 import { Partner } from '@/Models';
 

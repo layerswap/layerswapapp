@@ -16,7 +16,7 @@ import VaulDrawer from "@/components/Modal/vaulModal";
 import { addressFormat } from "@/lib/address/formatter";
 import AddressNote from "@/components/Input/Address/AddressNote";
 import { useBalance } from "@/lib/balances/useBalance";
-import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/swapAccounts";
 import SwapDetails from "../Withdraw/SwapDetails";
 import { SwapFormValues } from "./SwapFormValues";
 import { useCallbacks } from "@/context/callbackProvider";

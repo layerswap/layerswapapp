@@ -13,7 +13,7 @@ import AddressButton from "./AddressButton";
 import { useInitialSettings } from "@/context/settings";
 import ConnectedWallets from "./ConnectedWallets";
 import { Wallet } from "@/types/wallet";
-import { useSelectedAccount, useUpdateBalanceAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount, useUpdateSwapAccount } from "@/context/swapAccounts";
 import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import VaulDrawer from "@/components/Modal/vaulModal";
 
@@ -60,7 +60,7 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
 
     const initialSettings = useInitialSettings()
     const { destination_address, to: destination } = values
-    const selectDestinationAccount = useUpdateBalanceAccount("to");
+    const selectDestinationAccount = useUpdateSwapAccount("to");
 
     const { provider, unAvailableWallets } = useWallet(destination, 'autofill')
     const connectedWallets = provider?.connectedWallets?.filter(w => !w.isNotAvailable) || []

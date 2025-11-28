@@ -15,7 +15,7 @@ import LayerSwapApiClient, { BackendTransactionStatus, DepositAction, SwapBasicD
 import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
 import { useWalletWithdrawalState } from "@/context/withdrawalContext";
-import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/swapAccounts";
 import { SwapFormValues } from "../../../Form/SwapFormValues";
 import { ErrorHandler } from "@/lib/ErrorHandler";
 import { TokenBalance, TransferProps, Wallet } from "@/types";

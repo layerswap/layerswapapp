@@ -3,7 +3,7 @@ import Evm from './Evm';
 import Starknet from './Starknet';
 import { WalletIcon } from 'lucide-react';
 import { useActiveParadexAccount } from '../../ActiveParadexAccount';
-import { useWallet, KnownInternalNames, SubmitButton, useSettingsState, useSwapDataState, useSelectedAccount, useUpdateBalanceAccount, useConnectModal, } from "@layerswap/widget/internal"
+import { useWallet, KnownInternalNames, SubmitButton, useSettingsState, useSwapDataState, useSelectedAccount, useUpdateSwapAccount, useConnectModal, } from "@layerswap/widget/internal"
 import { WithdrawPageProps } from "@layerswap/widget/types"
 
 const ParadexWalletWithdraw: FC<WithdrawPageProps> = ({ refuel, swapBasicData, swapId }) => {
@@ -35,7 +35,7 @@ const ConnectWalletModal = () => {
     const { source_network } = swapBasicData || {}
     const { provider } = useWallet(source_network, 'withdrawal')
     const { connect } = useConnectModal()
-    const selectSourceAccount = useUpdateBalanceAccount("from");
+    const selectSourceAccount = useUpdateSwapAccount("from");
 
     const handleConnect = async () => {
         const result = await connect(provider)

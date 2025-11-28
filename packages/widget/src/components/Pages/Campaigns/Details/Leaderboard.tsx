@@ -9,7 +9,7 @@ import shortenAddress from "@/components/utils/ShortenAddress"
 import { truncateDecimals } from "@/components/utils/RoundDecimals"
 import AddressIcon from "@/components/Common/AddressIcon";
 import { ImageWithFallback } from "@/components/Common/ImageWithFallback"
-import { useSelectedAccount } from "@/context/balanceAccounts"
+import { useSelectedAccount } from "@/context/swapAccounts"
 import { useWallet } from "@/exports"
 import VaulDrawer from "@/components/Modal/vaulModal";
 
