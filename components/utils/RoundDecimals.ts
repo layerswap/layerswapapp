@@ -68,6 +68,8 @@ export const getPrecisionForMinUsd = (priceInUsd: number) => {
     if (!priceInUsd) return 6;
 
     const minTokenAmount = 0.01 / priceInUsd;
+
+    //Finds the smallest decimal precision where 10⁻ᵈ is below the $0.01-worth token amount.
     const decimals = Math.ceil(Math.log10(1 / minTokenAmount));
 
     return Math.min(Math.max(decimals, 1), 18);
