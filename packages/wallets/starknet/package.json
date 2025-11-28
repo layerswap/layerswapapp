@@ -50,7 +50,7 @@
     "ethers": "5.7.2",
     "get-starknet-core": "^3.3.4",
     "starknet": "catalog:",
-    "starknetkit": "^3.0.3"
+    "starknetkit": "^3.2.0"
   },
   "devDependencies": {
     "@layerswap/widget": "workspace:^",

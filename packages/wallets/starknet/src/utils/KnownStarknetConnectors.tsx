@@ -1,4 +1,4 @@
-import { ArgentXIcon, ArgentIcon, BraavosIcon, KeplrIcon } from "@layerswap/widget/internal";
+import { ArgentXIcon, ArgentIcon, BraavosIcon, KeplrIcon, XverseIcon } from "@layerswap/widget/internal";
 
 const KnownStarknetConnectors = [
     {
@@ -20,6 +20,10 @@ const KnownStarknetConnectors = [
     {
         id: 'keplr',
         icon: KeplrIcon
+    },
+    {
+        id: 'xverse wallet',
+        icon: XverseIcon
     }
 ]
 

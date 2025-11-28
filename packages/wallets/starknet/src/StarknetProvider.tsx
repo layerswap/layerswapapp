@@ -105,6 +105,9 @@ const StarknetProvider: FC<StarknetProviderProps> = ({ children, walletConnectCo
             defaultConnectors.push(
                 new InjectedConnector({ options: { id: "braavos" } }),
             )
+            defaultConnectors.push(
+                new InjectedConnector({ options: { id: "xverse" } }),
+            )
         }
 
         if ((isAndroid || isIOS) && !defaultConnectors.some(c => c.id === "braavos")) {

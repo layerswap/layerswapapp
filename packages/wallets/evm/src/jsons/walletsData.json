@@ -23018,12 +23018,12 @@
     },
     "7eb95f5e01a3c45f7f0111f736d73e5c88aa5f268256c6a38b7f631216f620fb": {
       "app": {
-        "android": "",
+        "android": "https://play.google.com/store/apps/details?id=com.qiewallet",
         "browser": "",
         "chrome": "https://chromewebstore.google.com/detail/qie-wallet-and-web3-domai/oljchdcgmibnjbbopolafbjncfhdacjb?authuser=1&hl=en",
         "edge": null,
         "firefox": null,
-        "ios": "",
+        "ios": "https://apps.apple.com/in/app/qie-wallet/id6445826746",
         "linux": "",
         "mac": "",
         "opera": null,
@@ -23062,18 +23062,20 @@
         "shortName": null
       },
       "mobile": {
-        "native": "",
-        "universal": ""
+        "native": "‭qiemobilewalletconnect://",
+        "universal": "https://www.qiewallet.me/"
       },
-      "name": "qie-wallet",
+      "name": "QIE Wallet",
       "rdns": "me.qiewallet",
       "sdks": [
-        "sign_v1"
+        "sign_v1",
+        "sign_v2"
       ],
       "slug": "qie-wallet",
       "updatedAt": "2025-10-14T04:51:18.643979+00:00",
       "versions": [
-        "1"
+        "1",
+        "2"
       ]
     },
     "7ee7b95f4ae8b3e08aab5158be7fe8e71f79bcd3717594254b34fa1f3cd4611a": {
