@@ -16,12 +16,14 @@ import useParadex from "../lib/wallets/paradex/useParadex";
 import useSVM from "../lib/wallets/solana/useSVM";
 import useBitcoin from "../lib/wallets/bitcoin/useBitcoin";
 import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
+import useWindowDimensions from "@/hooks/useWindowDimensions";
 
 const WalletProvidersContext = createContext<WalletProvider[]>([]);
 
 export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
     const { networks } = useSettingsState();
     const isMobilePlatform = isMobile();
+    const { isMobile: isMobileSize } = useWindowDimensions()
     const { goBack, onFinish, open, setOpen, selectedConnector, selectedMultiChainConnector } = useConnectModal()
 
     const bitcoin = useBitcoin()
@@ -61,7 +63,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
                     <div className="flex items-center gap-1">
                         {
                             (selectedConnector || selectedMultiChainConnector) &&
-                            <div className="sm:-ml-2 -ml-0">
+                            <div className="sm:-ml-2 ml-0">
                                 <IconButton onClick={goBack} icon={
                                     <ChevronLeft className="h-6 w-6" />
                                 }>
@@ -71,7 +73,7 @@ export const WalletProvidersProvider: React.FC<React.PropsWithChildren> = ({ chi
                         <p>{(selectedMultiChainConnector && !selectedConnector) ? "Select ecosystem" : "Connect wallet"}</p>
                     </div>
                 }>
-                <VaulDrawer.Snap openFullHeight={!isMobilePlatform} id='item-1' className="pb-4 sm:!pb-0 sm:h-full">
+                <VaulDrawer.Snap openFullHeight={!isMobileSize} id='item-1' className="pb-4 sm:pb-0! sm:h-full">
                     <ConnectorsList onFinish={onFinish} />
                 </VaulDrawer.Snap>
             </VaulDrawer>

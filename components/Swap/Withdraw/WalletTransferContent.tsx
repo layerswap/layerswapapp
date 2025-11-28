@@ -9,7 +9,7 @@ import { SelectAccountProps, Wallet } from '@/Models/WalletProvider';
 import { useSettingsState } from '@/context/settings';
 import WalletsList from '@/components/Wallet/WalletsList';
 import { SwapBasicData } from '@/lib/apiClients/layerSwapApiClient';
-import { useSelectedAccount, useUpdateBalanceAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount, useSelectSwapAccount } from '@/context/swapAccounts';
 import { useBalance } from '@/lib/balances/useBalance';
 
 type Props = {
@@ -25,7 +25,7 @@ const WalletTransferContent: FC<Props> = ({ openModal, setOpenModal, swapData })
     const { provider } = useWallet(source_network, 'withdrawal')
     const selectedSourceAccount = useSelectedAccount("from", source_network?.name);
     const availableWallets = provider?.connectedWallets?.filter(c => !c.isNotAvailable) || []
-    const selectSourceAccount = useUpdateBalanceAccount("from");
+    const selectSourceAccount = useSelectSwapAccount("from");
 
     const changeWallet = async (props: SelectAccountProps) => {
         selectSourceAccount({

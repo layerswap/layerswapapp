@@ -17,7 +17,7 @@ import sleep from "@/lib/wallets/utils/sleep";
 import { isDiffByPercent } from "@/components/utils/numbers";
 import posthog from "posthog-js";
 import { useWalletWithdrawalState } from "@/context/withdrawalContext";
-import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/swapAccounts";
 import { resolvePriceImpactValues } from "@/lib/fees";
 import InfoIcon from "@/components/icons/InfoIcon";
 import { useGoHome } from "@/hooks/useGoHome";
@@ -247,7 +247,7 @@ export const SendTransactionButton: FC<SendFromWalletButtonProps> = ({
                 onWalletWithdrawalSuccess?.();
                 setSwapTransaction(swapData.id, BackendTransactionStatus.Pending, hash);
                 try {
-                    await layerswapApiClient.SwapCatchup(swapBasicData.source_network?.name, hash);
+                    await layerswapApiClient.SwapCatchup(swapData.id, hash);
                 } catch (e) {
                     console.error('Error in SwapCatchup:', e)
                     const swapWithdrawalError = new Error(e);

@@ -231,11 +231,6 @@ export const THEME_COLORS: { [key: string]: ThemeData } = {
         headerLogo: 'none',
         footerLogo: 'block',
         footerLogoHeight: '20px',
-        header: {
-            hideMenu: true,
-            hideTabs: true,
-            hideWallets: true,
-        },
         primary: {
             DEFAULT: '243, 243, 243',
             '100': '255, 255, 255',

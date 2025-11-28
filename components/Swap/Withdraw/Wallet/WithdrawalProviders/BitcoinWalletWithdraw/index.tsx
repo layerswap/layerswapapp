@@ -11,7 +11,7 @@ import { useConnectModal } from '@/components/WalletModal';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import ActionMessages from '../../../messages/TransactionMessages';
 import { posthog } from 'posthog-js';
-import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount } from '@/context/swapAccounts';
 
 export const BitcoinWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {
     const [loading, setLoading] = useState(false);
