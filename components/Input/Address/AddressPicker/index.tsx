@@ -84,9 +84,10 @@ const AddressPicker: FC<Input> = forwardRef<HTMLInputElement, Input>(function Ad
             destination,
             wallets: connectedWallets,
             newAddress,
-            addressFromQuery: query.destination_address
+            addressFromQuery: query.destination_address,
+            destination_address,
         })
-    }, [address_book, destination, connectedWallets, newAddress, query.destination_address, connectedWalletskey])
+    }, [address_book, destination, connectedWallets, newAddress, query.destination_address, connectedWalletskey, destination_address])
 
     const destinationAddressItem = destination && destination_address ?
         groupedAddresses?.find(a => a.address.toLowerCase() === destination_address.toLowerCase())
@@ -229,12 +230,14 @@ const resolveAddressGroups = ({
     wallets,
     newAddress,
     addressFromQuery,
+    destination_address,
 }: {
     address_book: AddressBookItem[] | undefined,
     destination: NetworkRoute | undefined,
     wallets: Wallet[] | undefined,
     newAddress: { address: string, networkType: NetworkType | string } | undefined,
     addressFromQuery: string | undefined,
+    destination_address: string | undefined,
 }) => {
 
     if (!destination) return
@@ -258,6 +261,10 @@ const resolveAddressGroups = ({
 
     if (newAddress?.address && newAddress.networkType === destination?.type) {
         addresses.push({ address: newAddress.address, group: AddressGroup.ManualAdded })
+    }
+
+    if (!newAddress?.address && destination_address && isValidAddress(destination_address, destination)) {
+        addresses.push({ address: destination_address, group: AddressGroup.ManualAdded })
     }
 
     const uniqueAddresses = addresses.filter((a, index, self) => self.findIndex(t => addressFormat(t.address, destination) === addressFormat(a.address, destination)) === index)
