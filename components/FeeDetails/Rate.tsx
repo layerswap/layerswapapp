@@ -29,7 +29,7 @@ export const RateElement = ({
 
     const fromRateTruncated = truncateDecimals(fromRate, fromAsset?.precision || 6)
 
-    const dynamicToRatePrecision = getPrecisionWhereValueBelowCent(
+    const dynamicToRatePrecision = getPrecisionForMinUsd(
         toRate,
         toAsset.price_in_usd
     );
@@ -61,7 +61,7 @@ export const RateElement = ({
     )
 }
 
-const getPrecisionWhereValueBelowCent = (rate: number, priceInUsd: number) => {
+const getPrecisionForMinUsd = (rate: number, priceInUsd: number) => {
     if (!priceInUsd) return 6; 
 
     for (let decimals = 1; decimals <= 18; decimals++) {
