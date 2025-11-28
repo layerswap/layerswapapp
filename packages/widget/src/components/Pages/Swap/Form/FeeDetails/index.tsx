@@ -3,7 +3,7 @@ import { FC, useState } from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/shadcn/accordion';
 import clsx from 'clsx';
 import { ChevronDown } from 'lucide-react';
-import { Quote, QuoteReward, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
+import { QuoteReward, SwapQuote } from '@/lib/apiClients/layerSwapApiClient';
 import AverageCompletionTime from '@/components/Common/AverageCompletionTime';
 import useSWRGas from "@/lib/gases/useSWRGas";
 import useWallet from "@/hooks/useWallet";

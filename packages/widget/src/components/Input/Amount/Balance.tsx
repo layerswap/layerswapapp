@@ -1,11 +1,11 @@
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import { useSelectedAccount } from "@/context/swapAccounts";
-import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 import { useBalance } from "@/lib/balances/useBalance";
 import { FC } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import InfoIcon from "@/components/Icons/InfoIcon";
 import { NetworkRoute } from "@/Models/Network";
+import { SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 
 const Balance = ({ values, direction }: { values: SwapFormValues, direction: string }) => {
 

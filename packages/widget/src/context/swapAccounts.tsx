@@ -188,11 +188,11 @@ export function useNetworkBalance(direction: SwapDirection, networkName: string 
     return balance;
 }
 
-export function useUpdateSwapAccount(direction: SwapDirection) {
+export function useSelectSwapAccount(direction: SwapDirection) {
     const values = useContext<SwapAccountsUpdateContextType>(SwapAccountsUpdateContext as Context<SwapAccountsUpdateContextType>);
 
     if (values === undefined) {
-        throw new Error('useUpdateSwapAccount must be used within a SwapAccountsUpdateContext');
+        throw new Error('useSelectSwapAccount must be used within a SwapAccountsUpdateContext');
     }
     return direction === "from" ? values.selectSourceAccount : values.selectDestinationAccount;
 }

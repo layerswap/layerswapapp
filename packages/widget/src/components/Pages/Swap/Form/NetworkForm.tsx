@@ -118,8 +118,8 @@ const NetworkForm: FC<Props> = ({ partner }) => {
                             {
                                 Number(values.amount) > 0 &&
                                 <ReserveGasNote
-                                    maxAllowedAmount={minAllowedAmount}
-                                    minAllowedAmount={maxAllowedAmount}
+                                    maxAllowedAmount={maxAllowedAmount}
+                                    minAllowedAmount={minAllowedAmount}
                                     onSubmit={handleReserveGas}
                                 />
                             }

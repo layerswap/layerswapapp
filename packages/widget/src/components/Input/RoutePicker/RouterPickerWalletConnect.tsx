@@ -11,7 +11,7 @@ import ConnectButton from "@/components/Buttons/connectButton";
 import { WalletsIcons } from "@/components/Wallet/WalletComponents/ConnectedWallets";
 import { useFormikContext } from "formik";
 import { isValidAddress } from "@/lib/address/validator";
-import { AccountIdentity, useSwapAccounts, useUpdateSwapAccount } from "@/context/swapAccounts";
+import { AccountIdentity, useSwapAccounts, useSelectSwapAccount } from "@/context/swapAccounts";
 import { addressFormat } from "@/lib/address/formatter";
 import { SwapDirection, SwapFormValues } from "@/components/Pages/Swap/Form/SwapFormValues";
 
@@ -24,7 +24,7 @@ const PickerWalletConnect: FC<{ direction: SwapDirection }> = ({ direction }) =>
     } = useFormikContext<SwapFormValues>();
 
     const swapAccounts = useSwapAccounts(direction)
-    const selectSwapAccount = useUpdateSwapAccount(direction)
+    const selectSwapAccount = useSelectSwapAccount(direction)
 
     const { connect } = useConnectModal()
 

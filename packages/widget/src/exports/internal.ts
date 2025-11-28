@@ -18,7 +18,7 @@ export * from "../components/Buttons"
 export * from "../components/Pages/Swap/Withdraw/Wallet/Common/buttons"
 export * from "../components/Pages/Swap/Withdraw/Wallet/Common/actionMessage"
 export { default as ClickTooltip } from "../components/Common/ClickTooltip"
-export { useSelectedAccount, useUpdateSwapAccount, useSwapAccounts, useNetworkBalance } from "@/context/swapAccounts";
+export { useSelectedAccount, useSelectSwapAccount, useSwapAccounts, useNetworkBalance } from "@/context/swapAccounts";
 export { default as useWallet } from "@/hooks/useWallet"
 export * from "../lib/apiClients"
 export * from "../lib/formatUnits"
