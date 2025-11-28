@@ -63,3 +63,18 @@ export function isScientific(x) {
     //    and see if toString() uses 'e' (lowercased for consistency):
     return Number(s).toString().toLowerCase().includes('e');
 }
+
+export const getPrecisionForMinUsd = (priceInUsd: number) => {
+    if (!priceInUsd) return 6;
+
+    const minTokenAmount = 0.01 / priceInUsd;
+
+    for (let decimals = 1; decimals <= 18; decimals++) {
+        const smallestUnit = 1 / Math.pow(10, decimals);
+        if (smallestUnit < minTokenAmount) {
+            return decimals;
+        }
+    }
+
+    return 18;
+};
