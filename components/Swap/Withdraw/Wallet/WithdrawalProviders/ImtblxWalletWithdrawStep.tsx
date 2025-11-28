@@ -5,7 +5,7 @@ import GuideLink from '@/components/guideLink';
 import { ConnectWalletButton, SendTransactionButton } from '../Common/buttons';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
 import WarningMessage from '@/components/WarningMessage';
-import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount } from '@/context/swapAccounts';
 import useWallet from '@/hooks/useWallet';
 
 export const ImtblxWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {

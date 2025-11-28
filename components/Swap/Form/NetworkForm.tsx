@@ -26,7 +26,7 @@ import { useSwapDataState } from "@/context/swap";
 import RefuelToggle from "@/components/FeeDetails/Refuel";
 import ReserveGasNote from "@/components/ReserveGasNote";
 import RefuelModal from "@/components/FeeDetails/RefuelModal";
-import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/swapAccounts";
 import posthog from "posthog-js";
 
 type Props = {

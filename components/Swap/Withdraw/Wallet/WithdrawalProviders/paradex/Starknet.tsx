@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { AuthorizeStarknet } from '@/lib/wallets/paradex/Authorize/Starknet';
 import { TransferProps, WithdrawPageProps } from '../../Common/sharedTypes';
 import { SendTransactionButton } from '../../Common/buttons';
-import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount } from '@/context/swapAccounts';
 import useWallet from '@/hooks/useWallet';
 
 const StarknetComponent: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {

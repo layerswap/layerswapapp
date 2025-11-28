@@ -5,7 +5,7 @@ import { truncateDecimals } from "./utils/RoundDecimals"
 import { TokenBalance } from "../Models/Balance"
 import useSWRGas from "../lib/gases/useSWRGas"
 import { useQuoteData } from "@/hooks/useFee"
-import { useSelectedAccount } from "@/context/balanceAccounts"
+import { useSelectedAccount } from "@/context/swapAccounts"
 import { useBalance } from "@/lib/balances/useBalance";
 
 type Props = {

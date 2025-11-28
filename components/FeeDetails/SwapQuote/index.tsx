@@ -8,7 +8,7 @@ import { Network } from '@/Models/Network'
 import { SummaryRow } from './SummaryRow'
 import { DetailedEstimates } from './DetailedEstimates'
 import { addressFormat } from '@/lib/address/formatter'
-import { useSelectedAccount } from '@/context/balanceAccounts'
+import { useSelectedAccount } from '@/context/swapAccounts'
 import { Partner } from '@/Models/Partner'
 
 interface SwapValues extends Omit<SwapFormValues, 'from' | 'to'> {

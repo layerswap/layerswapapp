@@ -1,7 +1,7 @@
 import { SwapFormValues } from "@/components/DTOs/SwapFormValues";
 import { truncateDecimals } from "@/components/utils/RoundDecimals";
 import InfoIcon from "@/components/icons/InfoIcon";
-import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/swapAccounts";
 import { useBalance } from "@/lib/balances/useBalance";
 import { FC } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
