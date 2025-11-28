@@ -481,9 +481,6 @@ importers:
       '@fuels/react':
         specifier: ^0.43.2
         version: 0.43.2(@tanstack/react-query@5.90.11(react@18.3.1))(@types/react@18.3.1)(fuels@0.101.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      '@layerswap/widget':
-        specifier: workspace:^
-        version: link:../../widget
       bs58:
         specifier: ^6.0.0
         version: 6.0.0
@@ -503,6 +500,9 @@ importers:
         specifier: ^1.0.3
         version: 1.0.3
     devDependencies:
+      '@layerswap/widget':
+        specifier: workspace:^
+        version: link:../../widget
       react:
         specifier: 'catalog:'
         version: 18.3.1
@@ -21002,7 +21002,7 @@ snapshots:
   '@scure/starknet@1.1.0':
     dependencies:
       '@noble/curves': 1.7.0
-      '@noble/hashes': 1.6.0
+      '@noble/hashes': 1.6.1
 
   '@segment/analytics-core@1.8.2':
     dependencies:
@@ -27746,7 +27746,7 @@ snapshots:
 
   extension-port-stream@3.0.0:
     dependencies:
-      readable-stream: 3.6.2
+      readable-stream: 4.7.0
       webextension-polyfill: 0.10.0
 
   extsprintf@1.3.0: {}
@@ -29721,8 +29721,8 @@ snapshots:
   ox@0.6.7(typescript@5.9.3)(zod@3.25.76):
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
-      '@noble/curves': 1.8.1
-      '@noble/hashes': 1.7.1
+      '@noble/curves': 1.9.7
+      '@noble/hashes': 1.8.0
       '@scure/bip32': 1.6.2
       '@scure/bip39': 1.5.4
       abitype: 1.0.8(typescript@5.9.3)(zod@3.25.76)
@@ -29750,7 +29750,7 @@ snapshots:
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
       '@noble/ciphers': 1.3.0
-      '@noble/curves': 1.9.2
+      '@noble/curves': 1.9.7
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0
@@ -29765,7 +29765,7 @@ snapshots:
     dependencies:
       '@adraffy/ens-normalize': 1.11.1
       '@noble/ciphers': 1.3.0
-      '@noble/curves': 1.9.2
+      '@noble/curves': 1.9.7
       '@noble/hashes': 1.8.0
       '@scure/bip32': 1.7.0
       '@scure/bip39': 1.6.0

@@ -6,6 +6,7 @@ import { NetworkType, NetworkWithTokens, InternalConnector } from '@layerswap/wi
 import { useSettingsState } from '@layerswap/widget/internal'
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import type { ReactElement } from 'react'
+import { QueryClient, QueryClientContext, QueryClientProvider } from '@tanstack/react-query'
 
 export const BitcoinProvider = ({ children }: { children: ReactNode }): ReactElement => {
     const { networks } = useSettingsState()
@@ -14,12 +15,29 @@ export const BitcoinProvider = ({ children }: { children: ReactNode }): ReactEle
 
     return (
         <BigmiProvider config={config} reconnectOnMount={true}>
-            <ConnectorsContext>
-                {children}
-            </ConnectorsContext>
+            <QueryWrapper>
+                <ConnectorsContext>
+                    {children}
+                </ConnectorsContext>
+            </QueryWrapper>
         </BigmiProvider>
     )
 }
+
+const queryClient = new QueryClient()
+
+const QueryWrapper = ({ children }: { children: ReactNode }): ReactElement => {
+    const context = useContext(QueryClientContext)
+    if (context) {
+        return <>{children}</>
+    }
+    return (
+        <QueryClientProvider client={queryClient}>
+            {children}
+        </QueryClientProvider>
+    )
+}
+
 
 const ConnectorsContext = ({ children }: { children: ReactNode }): ReactElement => {
     const { connectors } = useConnect()
