@@ -1,5 +1,5 @@
 {
-  "count": 585,
+  "count": 586,
   "listings": {
     "00e39f835988d1bb783b2a0748e18bc6278dec03492d00b0e102a466cd8b3d77": {
       "app": {
@@ -44941,6 +44941,69 @@
         "2"
       ]
     },
+    "fd17a3e21cd546a9e3d3f1ec9ff7ce7760978c2579b8d0bb6144c50bca16b86c": {
+      "app": {
+        "android": "https://play.google.com/store/apps/details?id=com.wali.wallet",
+        "browser": null,
+        "chrome": null,
+        "edge": null,
+        "firefox": null,
+        "ios": "",
+        "linux": null,
+        "mac": null,
+        "opera": null,
+        "safari": null,
+        "windows": null
+      },
+      "app_type": "wallet",
+      "category": null,
+      "chains": [
+        "bip122:000000000019d6689c085ae165831e93",
+        "eip155:1",
+        "eip155:10",
+        "eip155:137",
+        "eip155:324",
+        "eip155:42161",
+        "eip155:56"
+      ],
+      "description": "Wali Wallet - Built for the diverse Web3 community. By integrating Multi-Party Computation (MPC) with smart hardware, we simplify the backup process for private keys and recovery phrases without compromising your asset sovereignty. Security meets simplicity.",
+      "desktop": {
+        "native": "",
+        "universal": ""
+      },
+      "homepage": "http://wali.network",
+      "id": "fd17a3e21cd546a9e3d3f1ec9ff7ce7760978c2579b8d0bb6144c50bca16b86c",
+      "image_id": "8f9d0a7b-7836-48cd-9957-2bad43e94200",
+      "image_url": {
+        "lg": "https://explorer-api.walletconnect.com/v3/logo/md/8f9d0a7b-7836-48cd-9957-2bad43e94200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "md": "https://explorer-api.walletconnect.com/v3/logo/md/8f9d0a7b-7836-48cd-9957-2bad43e94200?projectId=34357d3c125c2bcf2ce2bc3309d98715",
+        "sm": "https://explorer-api.walletconnect.com/v3/logo/sm/8f9d0a7b-7836-48cd-9957-2bad43e94200?projectId=34357d3c125c2bcf2ce2bc3309d98715"
+      },
+      "injected": null,
+      "metadata": {
+        "colors": {
+          "primary": null,
+          "secondary": null
+        },
+        "shortName": null
+      },
+      "mobile": {
+        "native": "wali://wali.network",
+        "universal": ""
+      },
+      "name": "Wali Wallet",
+      "rdns": null,
+      "sdks": [
+        "sign_v1",
+        "sign_v2"
+      ],
+      "slug": "wali-wallet",
+      "updatedAt": "2025-11-28T06:02:00.549935+00:00",
+      "versions": [
+        "1",
+        "2"
+      ]
+    },
     "fd20dc426fb37566d803205b19bbc1d4096b248ac04548e3cfb6b3a38bd033aa": {
       "app": {
         "android": "https://play.google.com/store/apps/details?id=org.toshi",
@@ -45505,5 +45568,5 @@
       ]
     }
   },
-  "total": 585
+  "total": 586
 }

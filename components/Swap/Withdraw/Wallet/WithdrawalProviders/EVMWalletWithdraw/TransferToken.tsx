@@ -7,7 +7,7 @@ import { SendTransactionButton } from "../../Common/buttons";
 import { isMobile } from "@/lib/openLink";
 import { sendTransaction } from '@wagmi/core'
 import { SwapBasicData } from "@/lib/apiClients/layerSwapApiClient";
-import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/swapAccounts";
 import useWallet from "@/hooks/useWallet";
 import { useSwapDataState } from "@/context/swap";
 import { posthog } from "posthog-js";

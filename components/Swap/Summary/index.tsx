@@ -5,7 +5,7 @@ import { TransactionType } from "@/lib/apiClients/layerSwapApiClient"
 import { shortenEmail } from "@/components/utils/ShortenAddress"
 import KnownInternalNames from "@/lib/knownIds"
 import { useQueryState } from "@/context/query"
-import { useSelectedAccount } from "@/context/balanceAccounts"
+import { useSelectedAccount } from "@/context/swapAccounts"
 
 const SwapSummary: FC = () => {
 

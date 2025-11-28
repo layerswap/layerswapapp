@@ -5,7 +5,7 @@ import { truncateDecimals } from "./utils/RoundDecimals"
 import { TokenBalance } from "../Models/Balance"
 import useSWRGas from "../lib/gases/useSWRGas"
 import { useQuoteData } from "@/hooks/useFee"
-import { useSelectedAccount } from "@/context/balanceAccounts"
+import { useSelectedAccount } from "@/context/swapAccounts"
 import { useBalance } from "@/lib/balances/useBalance";
 
 type Props = {
@@ -27,7 +27,6 @@ const ReserveGasNote = ({ onSubmit, minAllowedAmount, maxAllowedAmount }: Props)
     const mightBeOutOfGas = !!(nativeTokenBalance?.amount && !!(gasData && nativeTokenBalance?.isNativeCurrency && (Number(values.amount)
         + gasData.gas) > nativeTokenBalance.amount
         && minAllowedAmount
-        && nativeTokenBalance.amount > minAllowedAmount
         && !(maxAllowedAmount && (nativeTokenBalance.amount > (maxAllowedAmount + gasData.gas))))
     )
     const gasToReserveFormatted = mightBeOutOfGas ? truncateDecimals(gasData.gas, values?.fromAsset?.precision) : ''
@@ -52,7 +51,7 @@ const ReserveGasNote = ({ onSubmit, minAllowedAmount, maxAllowedAmount }: Props)
                                                 You might not be able to complete the transaction.
                                             </div>
                                             <div onClick={() => onSubmit(nativeTokenBalance, gasData.gas)} className="cursor-pointer border-b border-dotted border-primary-text w-fit hover:text-primary hover:border-primary text-primary-text">
-                                                <span>Reserve</span> <span>{gasToReserveFormatted}</span> <span>{values?.fromAsset?.symbol}</span> <span>for gas.</span>
+                                                <span>Reserve</span> <span>{gasToReserveFormatted}</span> <span>{nativeTokenBalance?.token}</span> <span>for gas.</span>
                                             </div>
                                         </div>
                                     </WarningMessage>

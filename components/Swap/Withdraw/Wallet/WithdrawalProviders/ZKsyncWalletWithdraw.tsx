@@ -13,7 +13,7 @@ import { formatUnits } from "viem";
 import Link from 'next/link';
 import KnownInternalNames from '@/lib/knownIds';
 import { TransferProps, WithdrawPageProps } from '../Common/sharedTypes';
-import { useSelectedAccount } from '@/context/balanceAccounts';
+import { useSelectedAccount } from '@/context/swapAccounts';
 import useWallet from '@/hooks/useWallet';
 
 export const ZkSyncWalletWithdrawStep: FC<WithdrawPageProps> = ({ swapBasicData, refuel }) => {

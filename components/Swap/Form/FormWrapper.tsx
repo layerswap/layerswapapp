@@ -18,7 +18,7 @@ import { QueryParams } from "@/Models/QueryParams";
 import VaulDrawer from "@/components/modal/vaulModal";
 import { addressFormat } from "@/lib/address/formatter";
 import AddressNote from "@/components/Input/Address/AddressNote";
-import { useSelectedAccount } from "@/context/balanceAccounts";
+import { useSelectedAccount } from "@/context/swapAccounts";
 import SwapDetails from "..";
 import { useBalance } from "@/lib/balances/useBalance";
 
