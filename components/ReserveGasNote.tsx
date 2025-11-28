@@ -26,7 +26,10 @@ const ReserveGasNote = ({ onSubmit, minAllowedAmount, maxAllowedAmount }: Props)
 
     const mightBeOutOfGas = !!(nativeTokenBalance?.amount && !!(gasData && nativeTokenBalance?.isNativeCurrency && (Number(values.amount)
         + gasData.gas) > nativeTokenBalance.amount
-        && minAllowedAmount
+        && minAllowedAmount && maxAllowedAmount && values.amount
+        && values.fromAsset?.symbol === values.from?.token?.symbol
+        && nativeTokenBalance.amount > minAllowedAmount
+        && !(Number(values.amount) > nativeTokenBalance.amount)
         && !(maxAllowedAmount && (nativeTokenBalance.amount > (maxAllowedAmount + gasData.gas))))
     )
     const gasToReserveFormatted = mightBeOutOfGas ? truncateDecimals(gasData.gas, values?.fromAsset?.precision) : ''
