@@ -190,7 +190,7 @@ const connectorsConfigs = [
     },
     {
         id: "xverse",
-        name: 'Xverse',
+        name: 'Xverse Wallet',
         installLink: "https://chromewebstore.google.com/detail/xverse-bitcoin-crypto-wal/idnnbdplmphpflfnlkomgpfbpcgelopg"
     }
 ]
