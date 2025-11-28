@@ -39,13 +39,13 @@ const MinMax = (props: MinMaxProps) => {
 
     const shouldPayGasWithTheToken = (native_currency?.symbol === fromCurrency?.symbol) || !native_currency
 
-    let maxAllowedAmount: number | undefined = useMemo(() => {
-        return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod })
+    let maxAllowedAmount: number = useMemo(() => {
+        return resolveMaxAllowedAmount({ fromCurrency, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod }) || 0
     }, [fromCurrency, limitsMinAmount, limitsMaxAmount, walletBalance, gasAmount, native_currency, depositMethod])
 
-    let displayedMinAmount: number | undefined = limitsMinAmount || (fromCurrency.price_in_usd > 0 ? 0.01 / fromCurrency.price_in_usd : 0.01);
-    if (walletBalance?.amount && displayedMinAmount > walletBalance.amount)
-        displayedMinAmount = walletBalance.amount;
+    const minAmount = limitsMinAmount || (fromCurrency.price_in_usd > 0 ? 0.01 / fromCurrency.price_in_usd : 0.01);
+
+    const halfOfBalance = walletBalance?.amount ? (walletBalance?.amount) / 2 : 0;
     const handleSetValue = (value: string) => {
         mutateBalances()
         setFieldValue('amount', value, true)
@@ -55,67 +55,50 @@ const MinMax = (props: MinMaxProps) => {
     const handleSetMinAmount = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
         e.stopPropagation()
-        handleSetValue(displayedMinAmount.toString())
+        handleSetValue(minAmount.toString())
     }
+
     const handleSetHalfAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
         e.stopPropagation()
-        if (!walletBalance?.amount)
-            throw new Error("Wallet balance is not available");
-        handleSetValue((walletBalance?.amount / 2).toString())
+        handleSetValue(halfOfBalance.toString())
     }
 
     const handleSetMaxAmount = async (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
         e.stopPropagation()
-        if (!maxAllowedAmount)
-            throw new Error("Max amount is not available");
         handleSetValue(maxAllowedAmount.toString())
     }
-    const halfOfBalance = (walletBalance?.amount || 0) / 2;
+
     const showMaxTooltip = !!(depositMethod === 'wallet' && walletBalance?.amount && shouldPayGasWithTheToken && (!limitsMaxAmount || walletBalance.amount < limitsMaxAmount))
+
+    if (!from || !fromCurrency)
+        return null;
 
     return (
         <div className="flex gap-1.5 group text-xs leading-4" onMouseLeave={() => onActionHover(undefined)}>
-            {
-                (Number(limitsMinAmount) > 0 || maxAllowedAmount) ?
+            <ActionButton
+                label="Min"
+                onMouseEnter={() => onActionHover(minAmount)}
+                onClick={handleSetMinAmount}
+            />
+            <ActionButton
+                label="50%"
+                onMouseEnter={() => onActionHover(halfOfBalance)}
+                onClick={handleSetHalfAmount}
+            />
+            <Tooltip disableHoverableContent={true}>
+                <TooltipTrigger asChild>
                     <ActionButton
-                        label="Min"
-                        onMouseEnter={() => onActionHover(displayedMinAmount)}
-                        onClick={handleSetMinAmount}
-                        disabled={!maxAllowedAmount}
+                        label="Max"
+                        onMouseEnter={() => onActionHover(maxAllowedAmount)}
+                        onClick={handleSetMaxAmount}
                     />
-                    :
-                    null
-            }
-            {
-                (depositMethod === 'wallet' && halfOfBalance > 0 && (halfOfBalance < (maxAllowedAmount || Infinity))) ?
-                    <ActionButton
-                        label="50%"
-                        onMouseEnter={() => onActionHover(halfOfBalance)}
-                        onClick={handleSetHalfAmount}
-                    />
-                    :
-                    null
-            }
-            {
-                Number(maxAllowedAmount) > 0 ?
-                    <Tooltip disableHoverableContent={true}>
-                        <TooltipTrigger asChild>
-                            <ActionButton
-                                label="Max"
-                                onMouseEnter={() => onActionHover(maxAllowedAmount)}
-                                disabled={!maxAllowedAmount}
-                                onClick={handleSetMaxAmount}
-                            />
-                        </TooltipTrigger>
-                        {showMaxTooltip ? <TooltipContent className="pointer-events-none w-80 grow p-2 !border-none !bg-secondary-300 text-xs rounded-xl" side="top" align="start" alignOffset={-10}>
-                            <p>Max is calculated based on your balance minus gas fee for the transaction</p>
-                        </TooltipContent> : null}
-                    </Tooltip>
-                    :
-                    null
-            }
+                </TooltipTrigger>
+                {showMaxTooltip ? <TooltipContent className="pointer-events-none w-80 grow p-2 border-none! bg-secondary-300! text-xs rounded-xl!" side="top" align="start" alignOffset={-10}>
+                    <p>Max is calculated based on your balance minus gas fee for the transaction</p>
+                </TooltipContent> : null}
+            </Tooltip>
         </div>
     )
 }
