@@ -40,7 +40,6 @@ const WalletsList: FC<Props> = (props) => {
                 address: result.address
             })
         }
-
     }, [provider, onSelect, network])
 
     const selectedSourceAccount = useSelectedAccount("from", selectedDepositMethod == 'wallet' ? network?.name : undefined);

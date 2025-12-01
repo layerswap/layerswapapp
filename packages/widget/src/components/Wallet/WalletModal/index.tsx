@@ -46,8 +46,10 @@ export function WalletModalProvider({ children }) {
     const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
 
     const connect = async ({ provider, connectCallback }: SharedType) => {
-        if (!provider?.availableWalletsForConnect) {
+        if (provider && (!provider?.availableWalletsForConnect || provider?.availableWalletsForConnect?.length == 1)) {
             await provider?.connectWallet()
+            setConnectConfig({ provider, connectCallback });
+            return
         }
         setSelectedProvider(provider);
         setOpen(true)

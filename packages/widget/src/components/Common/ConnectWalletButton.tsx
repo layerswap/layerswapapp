@@ -15,7 +15,7 @@ const ConnectWalletButton: FC<Props> = ({ provider, onConnect, descriptionText, 
 
     const [isLoading, setIsLoading] = useState(false)
     const { connect } = useConnectModal()
-    const isProviderReady = provider?.ready ?? true
+    const isProviderReady = typeof provider?.ready === 'boolean' ? provider.ready : true
 
     const handleConnect = async () => {
         if (!isProviderReady) return
