@@ -112,6 +112,7 @@ export default function useStarknet({ networks }: WalletConnectionProviderProps)
     name,
     id,
     providerIcon: logo,
+    ready: true,
   };
 }
 
