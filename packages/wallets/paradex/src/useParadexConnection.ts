@@ -205,7 +205,7 @@ export function useParadexConnection({ networks }: WalletConnectionProviderProps
         id,
         providerIcon,
         hideFromList: true,
-        ready: evmProvider.ready && starknetProvider.ready,
+        ready: (typeof evmProvider.ready === 'boolean' ? evmProvider.ready : true) && (typeof starknetProvider.ready === 'boolean' ? starknetProvider.ready : true),
         multiStepHandlers: [
             {
                 component: ParadexMultiStepHandler,

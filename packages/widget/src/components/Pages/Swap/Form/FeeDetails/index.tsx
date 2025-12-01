@@ -32,9 +32,10 @@ export interface QuoteComponentProps {
     destinationAddress?: string;
     reward?: QuoteReward | undefined;
     variant?: 'extended' | 'base';
+    triggerClassnames?: string
 }
 
-export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading, reward, variant = 'extended' }: QuoteComponentProps) {
+export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading, reward, variant = 'extended', triggerClassnames }: QuoteComponentProps) {
     const { toAsset, fromAsset: fromCurrency, destination_address } = values || {};
     const [isAccordionOpen, setIsAccordionOpen] = useState<boolean>(false);
 
@@ -46,6 +47,7 @@ export default function QuoteDetails({ swapValues: values, quote, isQuoteLoading
                     <AccordionItem value='quote' className='bg-secondary-500 rounded-2xl'>
                         <AccordionTrigger className={clsx(
                             'p-3.5 pr-5 w-full rounded-2xl flex items-center justify-between transition-colors duration-200 hover:bg-secondary-400 mt-3',
+                            triggerClassnames,
                             {
                                 'bg-secondary-500': !isAccordionOpen,
                                 'bg-secondary-400': isAccordionOpen,
