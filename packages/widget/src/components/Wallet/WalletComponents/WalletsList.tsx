@@ -31,22 +31,15 @@ const WalletsList: FC<Props> = (props) => {
     const { connect } = useConnectModal()
 
     const connectWallet = useCallback(async () => {
+        const result = await connect(provider)
 
-        try {
-            const result = await connect(provider)
-
-            if (result && onSelect && result.withdrawalSupportedNetworks?.some(n => n === network?.name)) {
-                onSelect({
-                    providerName: result.providerName,
-                    walletId: result.id,
-                    address: result.address
-                })
-            }
-        } catch (e) {
-            debugger
+        if (result && onSelect && result.withdrawalSupportedNetworks?.some(n => n === network?.name)) {
+            onSelect({
+                providerName: result.providerName,
+                walletId: result.id,
+                address: result.address
+            })
         }
-
-
     }, [provider, onSelect, network])
 
     const selectedSourceAccount = useSelectedAccount("from", selectedDepositMethod == 'wallet' ? network?.name : undefined);
