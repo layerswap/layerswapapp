@@ -31,7 +31,7 @@ const WalletsList: FC<Props> = (props) => {
     const { connect } = useConnectModal()
 
     const connectWallet = useCallback(async () => {
-        debugger
+
         try {
             const result = await connect(provider)
 
