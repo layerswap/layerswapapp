@@ -1,15 +1,8 @@
 "use client";
 import { LayerswapProvider, Swap, LayerSwapSettings } from '@layerswap/widget';
-import { EVMProvider } from '@layerswap/wallet-evm';
-import { StarknetProvider } from '@layerswap/wallet-starknet';
-import { SVMProvider } from '@layerswap/wallet-svm';
-import { BitcoinProvider } from '@layerswap/wallet-bitcoin';
-import { FuelProvider } from '@layerswap/wallet-fuel';
-import { TonProvider } from '@layerswap/wallet-ton';
-import { TronProvider } from '@layerswap/wallet-tron';
-import { ParadexProvider } from '@layerswap/wallet-paradex';
+import { getDefaultProviders } from "@layerswap/wallets";
 
-export function LayerswapWidget({ settings }: { settings: LayerSwapSettings }) {
+export function LayerswapWidget({ settings }: { settings?: LayerSwapSettings }) {
   const walletConnect = {
     projectId: '821ab14954640abd9a7974a70f74bc6c',
     name: 'Layerswap Example',
@@ -17,7 +10,13 @@ export function LayerswapWidget({ settings }: { settings: LayerSwapSettings }) {
     url: 'https://layerswap.io/app/',
     icons: ['https://layerswap.io/app/symbol.png']
   }
-
+  const walletProviders = getDefaultProviders({
+    walletConnect,
+    ton: {
+      tonApiKey: "Replace with your own TON API key",
+      manifestUrl: 'https://layerswap.io/app/tonconnect-manifest.json',
+    }
+  })
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-5">
       <h1 className="text-2xl font-bold text-white">
@@ -40,22 +39,8 @@ export function LayerswapWidget({ settings }: { settings: LayerSwapSettings }) {
             settings,
             // apiKey: "Replace with your own API key",
             version: 'mainnet', //'mainnet' or 'testnet'
-            // tonConfigs: {
-            //   tonApiKey: "Replace with your own TON API key",
-            //   manifestUrl: 'https://layerswap.io/app/tonconnect-manifest.json',
-            // },
-            walletConnect
           }}
-          walletProviders={[
-            EVMProvider,
-            StarknetProvider,
-            SVMProvider,
-            BitcoinProvider,
-            FuelProvider,
-            TonProvider,
-            TronProvider,
-            ParadexProvider
-          ]}
+          walletProviders={walletProviders}
         >
           <Swap />
         </LayerswapProvider>

@@ -9,8 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@layerswap/wallet-evm": "^1.0.2",
-    "@layerswap/widget": "^1.0.5",
+    "@layerswap/wallet-evm": "^1.1.0",
+    "@layerswap/widget": "^1.1.0",
     "@rainbow-me/rainbowkit": "^2.2.9",
     "@tanstack/react-query": "^5.90.7",
     "next": "^15.3.3",
