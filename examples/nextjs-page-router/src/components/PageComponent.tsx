@@ -33,11 +33,6 @@ export function PageComponent({ layerswapSettings }: { layerswapSettings: LayerS
                         settings: layerswapSettings,
                         // apiKey: "Replace with your own API key",
                         version: 'mainnet', //'mainnet' or 'testnet'
-                        // tonConfigs: {
-                        //     tonApiKey: "Replace with your own TON API key",
-                        //     manifestUrl: 'https://layerswap.io/app/tonconnect-manifest.json',
-                        // },
-                        walletConnect
                     }}
                     walletProviders={walletProviders}
                 >
