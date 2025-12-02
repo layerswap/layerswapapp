@@ -2,7 +2,7 @@
 import { LayerswapProvider, Swap, LayerSwapSettings } from '@layerswap/widget';
 import { getDefaultProviders } from "@layerswap/wallets";
 
-export function LayerswapWidget({ settings }: { settings: LayerSwapSettings }) {
+export function LayerswapWidget({ settings }: { settings?: LayerSwapSettings }) {
   const walletConnect = {
     projectId: '821ab14954640abd9a7974a70f74bc6c',
     name: 'Layerswap Example',
@@ -39,11 +39,6 @@ export function LayerswapWidget({ settings }: { settings: LayerSwapSettings }) {
             settings,
             // apiKey: "Replace with your own API key",
             version: 'mainnet', //'mainnet' or 'testnet'
-            // tonConfigs: {
-            //   tonApiKey: "Replace with your own TON API key",
-            //   manifestUrl: 'https://layerswap.io/app/tonconnect-manifest.json',
-            // },
-            walletConnect
           }}
           walletProviders={walletProviders}
         >

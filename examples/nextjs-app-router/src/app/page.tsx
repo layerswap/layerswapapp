@@ -3,7 +3,8 @@ import { getSettings } from '@layerswap/widget';
 import { LayerswapWidget } from '../components/LayerswapWidget';
 
 export default async function Page() {
-  const settings = await getSettings(process.env.NEXT_PUBLIC_API_KEY!);
+  const apiKey = process.env.NEXT_PUBLIC_API_KEY
+  const settings = apiKey ? await getSettings(apiKey) : undefined;
 
-  return <LayerswapWidget settings={settings!} />;
+  return <LayerswapWidget settings={settings || undefined} />;
 }
