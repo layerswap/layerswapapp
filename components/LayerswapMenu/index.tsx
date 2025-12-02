@@ -15,13 +15,8 @@ const ResetHandler = ({ goToStep, router }) => {
     const { isOpen } = useSelectorState()
 
     useEffect(() => {
-        if (isOpen) {
-            goToStep(MenuStep.Menu)
-            clearMenuPath(router)
-        } else {
-            goToStep(MenuStep.Menu)
-            clearMenuPath(router)
-        }
+        goToStep(MenuStep.Menu)
+        clearMenuPath(router)
     }, [isOpen, goToStep, router])
 
     return null
@@ -44,8 +39,8 @@ const Comp = () => {
         <div className="text-secondary-text cursor-pointer relative">
             <Selector>
                 <ResetHandler goToStep={goToStep} router={router} />
-                <SelectorTrigger disabled={false} className="bg-transparent! p-0! rounded-lg hover:bg-secondary-500 transition-colors sm:-mr-2 mr-0">
-                    <div className="p-2 inline-flex active:animate-press-down">
+                <SelectorTrigger disabled={false} className="bg-transparent p-0! rounded-lg hover:bg-secondary-500 hover:text-primary-text transition-colors sm:-mr-2 mr-0">
+                    <div className="p-1.5 inline-flex active:animate-press-down">
                         <MenuIcon strokeWidth="2" />
                     </div>
                 </SelectorTrigger>
