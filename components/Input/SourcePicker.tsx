@@ -51,7 +51,7 @@ const SourcePicker = ({ minAllowedAmount, maxAllowedAmount: maxAmountFromApi, fe
             }
             <div className="grid grid-cols-[1fr_auto] gap-2 w-full max-w-full">
                 <div className="min-w-0 overflow-hidden">
-                    <AmountField fee={fee} actionValue={actiontempValue} />
+                    <AmountField fee={fee} actionValue={actiontempValue} showQuickActions={showQuickActions} />
                 </div>
 
                 <div className="justify-self-end self-start">
