@@ -34,7 +34,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
         return addressFormat(w.address, network || null)
     }), [wallets, networks])
 
-    const { pendingDeposit, completed, isLoadingAny, isValidatingAny } = useSwapHistoryData(addresses)
+    const { pendingDeposit, completed, isLoadingAny, isValidatingAny } = useSwapHistoryData(["0xB2029bbd8C1cBCC43c3A7b7fE3d118b0C57D7C31"])
 
     const handleLoadMore = async () => {
         if (completed.hasMore) await completed.loadMore()
@@ -68,7 +68,7 @@ const HistoryList: FC<ListProps> = ({ onNewTransferClick }) => {
 
     const rowVirtualizer = useVirtualizer({
         count: (list?.length || 0),
-        getScrollElement: () => window.document.getElementById('virtualListContainer'),
+        getScrollElement: () => parentRef.current,
         estimateSize: () => 35,
     })
 
