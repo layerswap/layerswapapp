@@ -62,7 +62,7 @@ const Comp = () => {
                     }
                 >
                     {({ closeModal }) => (
-                        <div className="openpicker">
+                        <div className="openpicker h-full" id="virtualListContainer">
                             <Wizard wizardId='menuWizard' >
                                 <WizardItem StepName={MenuStep.Menu} inModal>
                                     <MenuList goToStep={handleGoToStep} />
