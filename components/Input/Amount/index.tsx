@@ -6,15 +6,17 @@ import { useQuoteData } from "@/hooks/useFee";
 import { formatUsd } from "@/components/utils/formatUsdAmount";
 import clsx from "clsx";
 import { resolveTokenUsdPrice } from "@/helpers/tokenHelper";
+import { getPrecisionForMinUsd, truncateDecimals } from "@/components/utils/RoundDecimals";
 
 interface AmountFieldProps {
     usdPosition?: "right" | "bottom";
     fee: ReturnType<typeof useQuoteData>['quote'];
     actionValue?: number;
     className?: string;
+    showQuickActions?: boolean;
 }
 
-const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", actionValue, fee, className }: AmountFieldProps, ref: any) {
+const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", actionValue, fee, className, showQuickActions }: AmountFieldProps, ref: any) {
     const { values, handleChange } = useFormikContext<SwapFormValues>();
     const { fromAsset: fromCurrency, amount, toAsset: toCurrency, fromExchange } = values || {};
     const name = "amount"
@@ -47,6 +49,17 @@ const AmountField = forwardRef(function AmountField({ usdPosition = "bottom", ac
         const width = getTextWidth(actionValue?.toString() || amount || "0", font);
         suffix.style.left = `${width + 16}px`;
     }, [amount, requestedAmountInUsd, actionValue]);
+
+    const dynamicPrecision = fromCurrency && getPrecisionForMinUsd(fromCurrency?.price_in_usd)
+    const truncatedAmount =
+        dynamicPrecision != null && amount
+            ? truncateDecimals(
+                Number(amount),
+                Math.max(dynamicPrecision, fromCurrency?.precision ?? 0)
+            )
+            : undefined;
+    console.log('amount', amount, actionValue);
+    console.log('truncatedAmount', truncatedAmount);
 
     const placeholder = '0'
 
