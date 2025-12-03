@@ -39,7 +39,7 @@ const Comp = () => {
         <div className="text-secondary-text cursor-pointer relative">
             <Selector>
                 <ResetHandler goToStep={goToStep} router={router} />
-                <SelectorTrigger disabled={false} className="bg-transparent p-0! rounded-lg hover:bg-secondary-500 hover:text-primary-text transition-colors sm:-mr-2 mr-0">
+                <SelectorTrigger disabled={false} className="bg-secondary-500 sm:bg-transparent p-0! rounded-lg hover:bg-secondary-500 hover:text-primary-text transition-colors sm:-mr-2 mr-0">
                     <div className="p-1.5 inline-flex active:animate-press-down">
                         <MenuIcon strokeWidth="2" />
                     </div>
