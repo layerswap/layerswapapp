@@ -3634,13 +3634,6 @@
   dependencies:
     "@noble/hashes" "1.4.0"
 
-"@noble/curves@1.7.0", "@noble/curves@~1.7.0":
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/@noble/curves/-/curves-1.7.0.tgz#0512360622439256df892f21d25b388f52505e45"
-  integrity sha512-UTMhXK9SeDhFJVrHeUJ5uZlI6ajXg10O6Ddocf9S6GjbSBVZsJo88HzKwXznNfGpMTRDyJkqMjNDPYgf0qFWnw==
-  dependencies:
-    "@noble/hashes" "1.6.0"
-
 "@noble/curves@1.8.0":
   version "1.8.0"
   resolved "https://registry.yarnpkg.com/@noble/curves/-/curves-1.8.0.tgz#fe035a23959e6aeadf695851b51a87465b5ba8f7"
@@ -3689,6 +3682,13 @@
   integrity sha512-t01iSXPuN+Eqzb4eBX0S5oubSqXbK/xXa1Ne18Hj8f9pStxztHCE2gfboSp/dZRLSqfuLpRK2nDXDK+W9puocA==
   dependencies:
     "@noble/hashes" "1.3.3"
+
+"@noble/curves@~1.7.0":
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/@noble/curves/-/curves-1.7.0.tgz#0512360622439256df892f21d25b388f52505e45"
+  integrity sha512-UTMhXK9SeDhFJVrHeUJ5uZlI6ajXg10O6Ddocf9S6GjbSBVZsJo88HzKwXznNfGpMTRDyJkqMjNDPYgf0qFWnw==
+  dependencies:
+    "@noble/hashes" "1.6.0"
 
 "@noble/curves@~1.8.1":
   version "1.8.2"
@@ -5164,11 +5164,6 @@
   resolved "https://registry.yarnpkg.com/@safe-global/safe-gateway-typescript-sdk/-/safe-gateway-typescript-sdk-3.23.1.tgz#1e86d471bcd2adb0f777246ccbea6fa39618e02c"
   integrity sha512-6ORQfwtEJYpalCeVO21L4XXGSdbEMfyp2hEv6cP82afKXSwvse6d3sdelgaPWUxHIsFRkWvHDdzh8IyyKHZKxw==
 
-"@scure/base@1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@scure/base/-/base-1.2.1.tgz#dd0b2a533063ca612c17aa9ad26424a2ff5aa865"
-  integrity sha512-DGmGtC8Tt63J5GfHgfl5CuAXh96VF/LD8K9Hr/Gv0J2lAoRGlPOMpqMpMbCTOoOJMZCk2Xt+DskdDyn6dEFdzQ==
-
 "@scure/base@1.2.6", "@scure/base@^1.1.3", "@scure/base@^1.2.1", "@scure/base@~1.2.1", "@scure/base@~1.2.2", "@scure/base@~1.2.4", "@scure/base@~1.2.5":
   version "1.2.6"
   resolved "https://registry.yarnpkg.com/@scure/base/-/base-1.2.6.tgz#ca917184b8231394dd8847509c67a0be522e59f6"
@@ -6412,11 +6407,6 @@
     "@starknet-io/get-starknet-core" "4.0.8"
     bowser "^2.11.0"
 
-"@starknet-io/starknet-types-07@npm:@starknet-io/types-js@~0.7.10":
-  version "0.7.10"
-  resolved "https://registry.yarnpkg.com/@starknet-io/types-js/-/types-js-0.7.10.tgz#d21dc973d0cd04d7b6293ce461f2f06a5873c760"
-  integrity sha512-1VtCqX4AHWJlRRSYGSn+4X1mqolI1Tdq62IwzoU2vUuEE72S1OlEeGhpvd6XsdqXcfHmVzYfj8k1XtKBQqwo9w==
-
 "@starknet-io/starknet-types-08@npm:@starknet-io/types-js@~0.8.4":
   version "0.8.4"
   resolved "https://registry.yarnpkg.com/@starknet-io/types-js/-/types-js-0.8.4.tgz#bbc07422e89cb5bac45da28e8457f0f17535950d"
@@ -6437,23 +6427,23 @@
   resolved "https://registry.yarnpkg.com/@starknet-io/types-js/-/types-js-0.9.1.tgz#0c93a54fb802cba4feddb56216887eb46ba068bc"
   integrity sha512-ngLjOFuWOI4EFij8V+nl5tgHVACr6jqgLNUQbgD+AgnTcAN33SemBPXDIsovwK1Mz1U04Cz3qjDOnTq7067ZQw==
 
-"@starknet-io/types-js@^0.7.7":
+"@starknet-io/types-js@^0.7.10", "@starknet-io/types-js@^0.7.7":
   version "0.7.10"
   resolved "https://registry.yarnpkg.com/@starknet-io/types-js/-/types-js-0.7.10.tgz#d21dc973d0cd04d7b6293ce461f2f06a5873c760"
   integrity sha512-1VtCqX4AHWJlRRSYGSn+4X1mqolI1Tdq62IwzoU2vUuEE72S1OlEeGhpvd6XsdqXcfHmVzYfj8k1XtKBQqwo9w==
 
-"@starknet-react/chains@^3.1.0", "@starknet-react/chains@^3.1.3":
-  version "3.1.3"
-  resolved "https://registry.yarnpkg.com/@starknet-react/chains/-/chains-3.1.3.tgz#13e5ef27e6c8abb375b5ba40a89a74fc890f88aa"
-  integrity sha512-b16VQyxqZXfiVmlKEkjfg+Oj8fdSnGWh1KU87O/unn6NpmaD9h511az1Cs6aW/j3qCIF1o5CrqfEnU1NWV7MVA==
+"@starknet-react/chains@^5.0.3":
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/@starknet-react/chains/-/chains-5.0.3.tgz#8b2e9d2ea6d2c96abc58060f6e6ba216e38cdb93"
+  integrity sha512-TxP391OTWgaqujT9Hu1Siljye54IHjEXrgkUuhMfxzf9sCu5q42ZzZgu9hLm0NcJgg9Fx2t75J0WB6eYmQ26fw==
 
-"@starknet-react/core@^3.7.2":
-  version "3.7.4"
-  resolved "https://registry.yarnpkg.com/@starknet-react/core/-/core-3.7.4.tgz#d4062c1055459074e6fb1827ecccfd1e6d793371"
-  integrity sha512-fHzme/TLyhSJRIo3BarehiM23IZuLeT0gM0jvTpz8w1/Y05tK+UywpyzBCkueU+iHEwhopsICDpOFhFtqaJJZA==
+"@starknet-react/core@^5.0.3":
+  version "5.0.3"
+  resolved "https://registry.yarnpkg.com/@starknet-react/core/-/core-5.0.3.tgz#fc3c23e83f8729473bfc9b185274464d653224ce"
+  integrity sha512-BxtcYL+SPqqDo1cpzfNYcYmSY4Ifjz1O5vq5vDdjx2iHEvHYzxBMjnyacJ+JsdRlQiuLNRGInooC/yzFkMrHAQ==
   dependencies:
-    "@starknet-io/types-js" "^0.7.7"
-    "@starknet-react/chains" "^3.1.3"
+    "@starknet-io/types-js" "^0.7.10"
+    "@starknet-react/chains" "^5.0.3"
     "@tanstack/react-query" "^5.25.0"
     abi-wan-kanabi "^2.2.4"
     eventemitter3 "^5.0.1"
@@ -18231,22 +18221,6 @@ starknet@^5.24.3:
     pako "^2.0.4"
     url-join "^4.0.1"
 
-starknet@^7.6.4:
-  version "7.6.4"
-  resolved "https://registry.yarnpkg.com/starknet/-/starknet-7.6.4.tgz#8ca2f3decbecde6316e7561b39f6a296a7fa33b5"
-  integrity sha512-FB20IaLCDbh/XomkB+19f5jmNxG+RzNdRO7QUhm7nfH81UPIt2C/MyWAlHCYkbv2wznSEb73wpxbp9tytokTgQ==
-  dependencies:
-    "@noble/curves" "1.7.0"
-    "@noble/hashes" "1.6.0"
-    "@scure/base" "1.2.1"
-    "@scure/starknet" "1.1.0"
-    "@starknet-io/starknet-types-07" "npm:@starknet-io/types-js@~0.7.10"
-    "@starknet-io/starknet-types-08" "npm:@starknet-io/types-js@~0.8.4"
-    abi-wan-kanabi "2.2.4"
-    lossless-json "^4.0.1"
-    pako "^2.0.4"
-    ts-mixer "^6.0.3"
-
 starknet@^8.5.2:
   version "8.9.1"
   resolved "https://registry.yarnpkg.com/starknet/-/starknet-8.9.1.tgz#614fd188a739287850f33e426cbc076a19100cca"
@@ -18263,10 +18237,10 @@ starknet@^8.5.2:
     pako "^2.0.4"
     ts-mixer "^6.0.3"
 
-starknetkit@^3.2.0:
-  version "3.2.0"
-  resolved "https://registry.yarnpkg.com/starknetkit/-/starknetkit-3.2.0.tgz#ed25ef3f40902e7efbf5eff7bfc9168c18fee061"
-  integrity sha512-8SIz4l9XtqWI+iLSm2ZqPP33i3ID4fNEDD7bBh6nzxh1ykW0JIAegkLA6epyZW0oT9fYR2Xt+X5lXRZX9Rt9qg==
+starknetkit@^3.4.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/starknetkit/-/starknetkit-3.4.0.tgz#27effe5efb5065c2f7cf52f7d298650be710a990"
+  integrity sha512-iF005POoNT2V/8Sg4rn1EP+9F2VVQGYb7g9xRGDzFBw0RGrAlddms7AZFeSTqwuh7U+nLgguF+upIQwmRwr7JQ==
   dependencies:
     "@argent/x-ui" "^1.109.0"
     "@cartridge/controller" "^0.10.0"
