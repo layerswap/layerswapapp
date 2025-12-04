@@ -1,6 +1,6 @@
 {
   "name": "@layerswap/wallets",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "All Layerswap Wallet Providers bundled together",
   "type": "module",
   "main": "dist/esm/index.js",
@@ -66,6 +66,6 @@
     "url": "https://github.com/layerswap/layerswapapp/issues"
   },
   "devDependencies": {
-    "@layerswap/widget": "^1.0.6"
+    "@layerswap/widget": "workspace:^"
   }
 }

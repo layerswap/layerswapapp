@@ -12,7 +12,7 @@
     "tag": false
   },
   "ignore": [
-    "@layerswap/wallets",
-    "@layerswap/bridge"
+    "@layerswap/bridge",
+    "widget-playground"
   ]
 }
