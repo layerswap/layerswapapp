@@ -2,7 +2,7 @@ import { Dispatch, FC, SetStateAction, useEffect, useMemo, useRef, useState } fr
 import useWallet from "../../hooks/useWallet";
 import { useConnectModal, WalletModalConnector } from ".";
 import { InternalConnector, Wallet, WalletProvider } from "../../Models/WalletProvider";
-import { CircleX, Link2Off, RotateCw, SlidersHorizontal } from "lucide-react";
+import { CircleX, Link2Off, RotateCw, ScanLine, SlidersHorizontal } from "lucide-react";
 import { resolveWalletConnectorIcon } from "../../lib/wallets/utils/resolveWalletIcon";
 import { QRCodeSVG } from "qrcode.react";
 import CopyButton from "../buttons/copyButton";
@@ -18,6 +18,7 @@ import { isMobile } from "@/lib/wallets/connectors/utils/isMobile";
 import { ImageWithFallback } from "../Common/ImageWithFallback";
 import { SearchComponent } from "../Input/Search";
 import { featuredWalletsIds } from "@/context/evmConnectorsContext";
+import SubmitButton from "../buttons/submitButton";
 
 const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = ({ onFinish }) => {
     const { providers } = useWallet();
@@ -26,6 +27,7 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     const [connectionError, setConnectionError] = useState<string | undefined>(undefined);
     const [searchValue, setSearchValue] = useState<string | undefined>(undefined)
     const [isScrolling, setIsScrolling] = useState(false);
+    const [showQrForBrowserExtension, setShowQrForBrowserExtension] = useState(false);
     const scrollTimeout = useRef<any>(null);
 
     const handleScroll = () => {
@@ -41,6 +43,10 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
     useEffect(() => {
         return () => clearTimeout(scrollTimeout.current as any);
     }, []);
+
+    useEffect(() => {
+        setShowQrForBrowserExtension(false);
+    }, [selectedConnector?.name]);
 
     const connect = async (connector: InternalConnector, provider: WalletProvider) => {
         try {
@@ -113,9 +119,41 @@ const ConnectorsList: FC<{ onFinish: (result: Wallet | undefined) => void }> = (
                     .map((connector) => ({ ...connector, providerName: provider.name, isHidden: true })))
             .flat(), [featuredProviders, searchValue])
 
-    const allConnectors: InternalConnector[] = useMemo(() => removeDuplicatesWithKey(([...allFeaturedConnectors, ...allHiddenConnectors] as InternalConnector[]).filter(c => searchValue?.length ? true : !c.isHidden).sort((a, b) => sortRecentConnectors(a, b, recentConnectors)), 'name'), [allFeaturedConnectors, allHiddenConnectors, searchValue?.length])
-
-    if (selectedConnector?.qr?.state) {
+    const allConnectors: InternalConnector[] = useMemo(() => {
+        const isMobilePlatform = isMobile();
+        return removeDuplicatesWithKey(
+            ([...allFeaturedConnectors, ...allHiddenConnectors] as InternalConnector[])
+                .filter(c => searchValue?.length ? true : !c.isHidden)
+                .filter(c => isMobilePlatform ? c.isMobileSupported !== false : true)
+                .sort((a, b) => sortRecentConnectors(a, b, recentConnectors)),
+            'name'
+        );
+    }, [allFeaturedConnectors, allHiddenConnectors, searchValue?.length, recentConnectors])
+    if (selectedConnector?.hasBrowserExtension && !showQrForBrowserExtension && selectedConnector?.qr?.state) {
+        const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
+        return <div className='w-full h-[60vh] sm:h-full flex flex-col justify-between font-semibold'>
+            <div className="flex grow items-center justify-center">
+                <div className="flex-col flex items-center gap-1">
+                    <ConnectorIcon className="w-11 h-auto p-0.5 rounded-md bg-secondary-800" />
+                    <div className="py-1 text-center text-base font-medium">
+                        <p>Wallet not found on your browser,</p>
+                        <p>make sure you have the wallet installed</p>
+                    </div>
+                </div>
+            </div>
+            <SubmitButton
+                onClick={() => setShowQrForBrowserExtension(true)}
+                buttonStyle="secondary"
+                className="w-full"
+            >
+                <span className="flex items-center justify-center gap-2">
+                    <ScanLine className="w-5 h-5" />
+                    Connect with your phone
+                </span>
+            </SubmitButton>
+        </div>
+    }
+    if (selectedConnector?.qr?.state && showQrForBrowserExtension) {
         const ConnectorIcon = resolveWalletConnectorIcon({ connector: selectedConnector?.name, iconUrl: selectedConnector.icon });
 
         return <div className="flex flex-col justify-start space-y-2">

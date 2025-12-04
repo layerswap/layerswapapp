@@ -18,6 +18,7 @@ export type WalletConnectWallet = {
         universal?: boolean;
     };
     rdns?: string;
+    hasBrowserExtension?: boolean;
     type: string;
     icon: string;
     projectId: string;
@@ -66,7 +67,8 @@ const resolveWallet = (wallet: any) => {
         customStoragePrefix: wallet.slug,
         order: resolveWalletConnectorIndex(wallet.slug),
         type: "other",
-        isMobileSupported: wallet.mobile.universal || wallet.mobile.native
+        isMobileSupported: wallet.mobile.universal || wallet.mobile.native,
+        hasBrowserExtension: wallet.injected != null
     }
 
     return w
