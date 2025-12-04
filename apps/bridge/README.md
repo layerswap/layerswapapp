@@ -22,6 +22,5 @@ This repository contains implementation of Layerswap UI
   ```yaml
   NEXT_PUBLIC_LS_API = https://api-dev.layerswap.cloud/
   NEXT_PUBLIC_API_KEY = mainnet #sandbox for testnets
-  NEXT_PUBLIC_IDENTITY_API = https://identity-api-dev.layerswap.cloud/
   ```
 

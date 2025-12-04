@@ -43,14 +43,14 @@
     "zustand": "catalog:"
   },
   "dependencies": {
-    "@starknet-io/types-js": "^0.9.2",
-    "@starknet-react/chains": "^3.1.0",
-    "@starknet-react/core": "^3.7.2",
+    "@starknet-io/types-js": "^0.10.0",
+    "@starknet-react/chains": "^5.0.3",
+    "@starknet-react/core": "^5.0.3",
     "bn.js": "^5.2.2",
     "ethers": "5.7.2",
     "get-starknet-core": "^3.3.4",
     "starknet": "catalog:",
-    "starknetkit": "^3.2.0"
+    "starknetkit": "^3.4.0"
   },
   "devDependencies": {
     "@layerswap/widget": "workspace:^",

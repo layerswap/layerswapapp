@@ -4,11 +4,13 @@ import { Connector, ConnectorNotConnectedError, UserNotConnectedError, StarknetC
 import { WalletConnectConfig } from "./index";
 import { KnownInternalNames, useSettingsState } from "@layerswap/widget/internal";
 //@ts-ignore
-import { ArgentMobileConnector } from "starknetkit/argentMobile";
+import { ArgentMobileConnector } from "starknetkit/argentMobile"
 // @ts-ignore
 import { InjectedConnector } from "starknetkit/injected"
 // @ts-ignore
 import { WebWalletConnector } from "starknetkit/webwallet"
+// @ts-ignore
+import { ControllerConnector } from "starknetkit/controller"
 import { RpcMessage, RequestFnCall, RpcTypeToMessageMap } from "@starknet-io/types-js";
 import useStarknetConnection, { resolveStarknetWallet } from "./useStarknetConnection";
 import { useStarknetStore } from "./starknetWalletStore";
@@ -128,6 +130,11 @@ const StarknetProvider: FC<StarknetProviderProps> = ({ children, walletConnectCo
                 description: walletConnectConfig?.description || 'Move crypto across exchanges, blockchains, and wallets.',
             }
         }))
+
+        defaultConnectors.push(
+            new ControllerConnector(),
+        )
+
         defaultConnectors.push(new WebWalletConnector())
 
         return defaultConnectors

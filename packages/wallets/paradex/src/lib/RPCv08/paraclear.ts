@@ -275,7 +275,7 @@ export async function withdraw(
         ? params.bridgeCall
         : [params.bridgeCall]),
     ],
-    { maxFee: maxFee.toString() },
+    { maxFee: maxFee.toString() } as any,
   );
 
   return { hash: result.transaction_hash as Hex };

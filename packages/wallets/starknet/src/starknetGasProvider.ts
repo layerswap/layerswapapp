@@ -1,5 +1,5 @@
 import { KnownInternalNames, formatUnits } from "@layerswap/widget/internal";
-import { CallData, cairo, type Call, type EstimateFeeResponse } from "starknet";
+import { CallData, cairo, type Call, type EstimateFeeResponseOverhead } from "starknet";
 import { GasProvider, GasProps, Network } from "@layerswap/widget/types";
 
 export class StarknetGasProvider implements GasProvider {
@@ -36,15 +36,15 @@ export class StarknetGasProvider implements GasProvider {
             entrypoint: "watch",
             calldata: ["69420"],
         };
-        const resp: EstimateFeeResponse = await starknetWalletAccount.estimateInvokeFee(
+        const resp: EstimateFeeResponseOverhead = await starknetWalletAccount.estimateInvokeFee(
             [transferCall, watch],
             { skipValidate: true }
         );
-        if (!resp?.suggestedMaxFee) {
+        if (!resp?.overall_fee) {
             throw new Error(`Couldn't get fee estimation for the transfer. Response: ${JSON.stringify(resp)}`);
         };
 
-        const feeInWei = resp.suggestedMaxFee.toString();
+        const feeInWei = resp.overall_fee.toString();
         const gas = Number(formatUnits(BigInt(feeInWei), network.token.decimals))
 
         return { gas, token: network.token }
