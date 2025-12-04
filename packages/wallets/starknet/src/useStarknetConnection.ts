@@ -1,9 +1,9 @@
 import { Connector, useConnect, useDisconnect } from "@starknet-react/core";
 import { InternalConnector, Wallet, WalletConnectionProvider, WalletConnectionProviderProps, NetworkWithTokens } from "@layerswap/widget/types";
-import { KnownInternalNames } from "@layerswap/widget/internal";
-import { resolveStarknetWalletConnectorIcon } from "./utils";
+import { KnownInternalNames, walletIconResolver } from "@layerswap/widget/internal";
 import { useStarknetStore } from "./starknetWalletStore";
 import { useStarknetTransfer } from "./useStarknetTransfer";
+import { resolveStarknetWalletIcon } from "./utils";
 
 const starknetNames = [KnownInternalNames.Networks.StarkNetGoerli, KnownInternalNames.Networks.StarkNetMainnet, KnownInternalNames.Networks.StarkNetSepolia]
 export default function useStarknetConnection({ networks }: WalletConnectionProviderProps): WalletConnectionProvider {
@@ -94,7 +94,7 @@ export default function useStarknetConnection({ networks }: WalletConnectionProv
         return {
             name: name,
             id: connector.id,
-            icon: typeof connector.icon === 'string' ? connector.icon : (connector.icon.light.startsWith('data:') ? connector.icon.light : `data:image/svg+xml;base64,${btoa(connector.icon.light.replaceAll('currentColor', '#FFFFFF'))}`),
+            icon: resolveStarknetWalletIcon({ icon: connector.icon }),
             type: connector?.["_wallet"] ? 'injected' : 'other',
             installUrl: connector?.["_wallet"] ? undefined : connectorsConfigs.find(c => c.id === connector.id)?.installLink,
         }
@@ -155,7 +155,7 @@ export async function resolveStarknetWallet(props: ResolveStarknetWalletProps): 
             address: account,
             addresses: [account],
             chainId: walletChain || '',
-            icon: resolveStarknetWalletConnectorIcon({ connector: connector.name, address: account }),
+            icon: walletIconResolver(address, resolveStarknetWalletIcon({ icon: connector.icon })),
             providerName: name,
             metadata: {
                 starknetAccount: walletAccount,
