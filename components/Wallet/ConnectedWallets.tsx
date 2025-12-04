@@ -61,15 +61,15 @@ export const WalletsIcons = ({ wallets }: WalletsIconsProps) => {
         <div className="-space-x-2 flex">
             {
                 firstWallet?.displayName &&
-                <firstWallet.icon className="rounded-full border-2 border-secondary-600 bg-secondary-700 shrink-0 h-6 w-6" />
+                <firstWallet.icon className="rounded-md border-2 border-secondary-600 bg-secondary-700 shrink-0 h-6 w-6" />
             }
             {
                 secondWallet?.displayName &&
-                <secondWallet.icon className="rounded-full border-2 border-secondary-600 bg-secondary-700 shrink-0 h-6 w-6" />
+                <secondWallet.icon className="rounded-md border-2 border-secondary-600 bg-secondary-700 shrink-0 h-6 w-6" />
             }
             {
                 uniqueWallets.length > 2 &&
-                <div className="h-6 w-6 shrink-0 rounded-full justify-center p-1 bg-secondary-600 text-primary-text overlfow-hidden text-xs">
+                <div className="h-6 w-6 shrink-0 rounded-md justify-center p-1 bg-secondary-600 text-primary-text overlfow-hidden text-xs">
                     <span><span>+</span>{uniqueWallets.length - 2}</span>
                 </div>
             }

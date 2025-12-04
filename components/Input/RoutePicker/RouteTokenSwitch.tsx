@@ -1,13 +1,13 @@
 import { FC } from "react";
 import { motion } from "framer-motion";
 import TokenIcon from "@/components/icons/TokenIcon";
-import { Globe } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/shadcn/tooltip";
 import clsx from "clsx";
 import { useRouteTokenSwitchStore } from "@/stores/routeTokenSwitchStore";
+import GlobeIcon from "@/components/icons/GlobeIcon";
 
 const switchValues = [
-    { value: false, id: 'network', label: "Group by Network", icon: Globe },
+    { value: false, id: 'network', label: "Group by Network", icon: GlobeIcon },
     { value: true, id: 'token', label: "Group by Token", icon: TokenIcon },
 ]
 
@@ -19,24 +19,24 @@ const RouteTokenSwitch: FC = () => {
 
     return (
         <div className="flex justify-end">
-            <div className="relative flex items-center bg-secondary-500 rounded-lg p-1">
+            <div className="relative flex items-center bg-secondary-500 rounded-xl p-1">
                 {
                     switchValues.map((item, index) => (
                         <Tooltip key={index}>
                             <TooltipTrigger
                                 type="button"
                                 onClick={() => { setShowTokens(item.value); }}
-                                className="z-10 flex items-center justify-center rounded-2xl px-4 py-1 relative">
+                                className="z-10 flex items-center justify-center rounded-lg px-4 py-1 relative">
                                 {activeTab === item.id && (
                                     <motion.span
                                         layoutId="bubble"
-                                        className="absolute inset-0 z-10 rounded-md bg-secondary-300 mix-blend-color"
+                                        className="absolute inset-0 z-10 rounded-lg bg-secondary-300 mix-blend-color"
                                         transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                                     />
                                 )}
                                 <item.icon
                                     className={clsx("text-primary-text-tertiary h-5 w-5", {
-                                        "!text-primary-text": activeTab === item.id,
+                                        "text-primary-text!": activeTab === item.id,
                                     })}
                                 />
                             </TooltipTrigger>
