@@ -7,11 +7,11 @@ Unified entry point for all Layerswap wallet providers. Import providers for mul
 Install the aggregator and common peer dependencies used by EVM wallets:
 
 ```bash
-npm install @layerswap/wallets wagmi viem @tanstack/react-query
+npm install @layerswap/wallets wagmi viem @tanstack/react-query @bigmi/client @bigmi/core @bigmi/react
 # or
-yarn add @layerswap/wallets wagmi viem @tanstack/react-query
+yarn add @layerswap/wallets wagmi viem @tanstack/react-query @bigmi/client @bigmi/core @bigmi/react
 # or
-pnpm add @layerswap/wallets wagmi viem @tanstack/react-query
+pnpm add @layerswap/wallets wagmi viem @tanstack/react-query @bigmi/client @bigmi/core @bigmi/react
 ```
 
 Notes:
